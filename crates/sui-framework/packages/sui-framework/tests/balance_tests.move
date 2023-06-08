@@ -7,20 +7,20 @@ module sui::coin_balance_tests {
     use sui::pay;
     use sui::coin;
     use sui::balance;
-    use sui::sui::SUI;
+    use sui::sui::OBC;
 
     #[test]
     fun type_morphing() {
         let scenario = test_scenario::begin(@0x1);
         let test = &mut scenario;
 
-        let balance = balance::zero<SUI>();
+        let balance = balance::zero<OBC>();
         let coin = coin::from_balance(balance, ctx(test));
         let balance = coin::into_balance(coin);
 
         balance::destroy_zero(balance);
 
-        let coin = coin::mint_for_testing<SUI>(100, ctx(test));
+        let coin = coin::mint_for_testing<OBC>(100, ctx(test));
         let balance_mut = coin::balance_mut(&mut coin);
         let sub_balance = balance::split(balance_mut, 50);
 

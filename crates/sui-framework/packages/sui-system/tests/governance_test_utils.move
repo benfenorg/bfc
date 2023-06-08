@@ -6,7 +6,7 @@ module sui_system::governance_test_utils {
     use sui::address;
     use sui::balance;
     use sui::object;
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{Self, StakedSui, StakingPool};
     use sui::test_utils::assert_eq;
@@ -41,7 +41,7 @@ module sui_system::governance_test_utils {
             b"/ip4/127.0.0.1/udp/80",
             b"/ip4/127.0.0.1/udp/80",
             b"/ip4/127.0.0.1/udp/80",
-            option::some(balance::create_for_testing<SUI>(init_stake_amount_in_sui * MIST_PER_SUI)),
+            option::some(balance::create_for_testing<OBC>(init_stake_amount_in_sui * MIST_PER_SUI)),
             1,
             0,
             true,
@@ -78,7 +78,7 @@ module sui_system::governance_test_utils {
         );
 
         let stake_subsidy = stake_subsidy::create(
-            balance::create_for_testing<SUI>(sui_supply_amount * MIST_PER_SUI), // sui_supply
+            balance::create_for_testing<OBC>(sui_supply_amount * MIST_PER_SUI), // sui_supply
             0,   // stake subsidy initial distribution amount
             10,  // stake_subsidy_period_length
             0,   // stake_subsidy_decrease_rate
@@ -88,7 +88,7 @@ module sui_system::governance_test_utils {
         sui_system::create(
             object::new(ctx), // it doesn't matter what ID sui system state has in tests
             validators,
-            balance::create_for_testing<SUI>(storage_fund_amount * MIST_PER_SUI), // storage_fund
+            balance::create_for_testing<OBC>(storage_fund_amount * MIST_PER_SUI), // storage_fund
             1,   // protocol version
             0,   // chain_start_timestamp_ms
             system_parameters,
@@ -120,7 +120,7 @@ module sui_system::governance_test_utils {
 
     public fun advance_epoch_with_reward_amounts_return_rebate(
         storage_charge: u64, computation_charge: u64, stoarge_rebate: u64, non_refundable_storage_rebate: u64, scenario: &mut Scenario,
-    ): Balance<SUI> {
+    ): Balance<OBC> {
         test_scenario::next_tx(scenario, @0x0);
         let new_epoch = tx_context::epoch(test_scenario::ctx(scenario)) + 1;
         let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
@@ -210,7 +210,7 @@ module sui_system::governance_test_utils {
             0,
             ctx
         );
-        sui_system::request_add_stake(&mut system_state, coin::mint_for_testing<SUI>(init_stake_amount * MIST_PER_SUI, ctx), validator, ctx);
+        sui_system::request_add_stake(&mut system_state, coin::mint_for_testing<OBC>(init_stake_amount * MIST_PER_SUI, ctx), validator, ctx);
         sui_system::request_add_validator_for_testing(&mut system_state, 0, ctx);
         test_scenario::return_shared(system_state);
     }
@@ -348,10 +348,10 @@ module sui_system::governance_test_utils {
     public fun total_sui_balance(addr: address, scenario: &mut Scenario): u64 {
         let sum = 0;
         test_scenario::next_tx(scenario, addr);
-        let coin_ids = test_scenario::ids_for_sender<Coin<SUI>>(scenario);
+        let coin_ids = test_scenario::ids_for_sender<Coin<OBC>>(scenario);
         let i = 0;
         while (i < vector::length(&coin_ids)) {
-            let coin = test_scenario::take_from_sender_by_id<Coin<SUI>>(scenario, *vector::borrow(&coin_ids, i));
+            let coin = test_scenario::take_from_sender_by_id<Coin<OBC>>(scenario, *vector::borrow(&coin_ids, i));
             sum = sum + coin::value(&coin);
             test_scenario::return_to_sender(scenario, coin);
             i = i + 1;

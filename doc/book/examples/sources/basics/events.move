@@ -4,7 +4,7 @@
 /// Extended example of a shared object. Now with addition of events!
 module examples::donuts_with_events {
     use sui::transfer;
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID, UID};
     use sui::balance::{Self, Balance};
@@ -25,7 +25,7 @@ module examples::donuts_with_events {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<SUI>
+        balance: Balance<OBC>
     }
 
     // ====== Events ======
@@ -56,7 +56,7 @@ module examples::donuts_with_events {
 
     /// Buy a donut.
     public entry fun buy_donut(
-        shop: &mut DonutShop, payment: &mut Coin<SUI>, ctx: &mut TxContext
+        shop: &mut DonutShop, payment: &mut Coin<OBC>, ctx: &mut TxContext
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 

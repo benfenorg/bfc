@@ -16,12 +16,12 @@ use sui_types::{
 
 const STR_ALL: &str = "All";
 const STR_EXIT: &str = "Exit";
-const STR_SUI: &str = "Sui";
-const STR_STAKED_SUI: &str = "StakedSui";
+const STR_SUI: &str = "OBC";
+const STR_STAKED_SUI: &str = "StakedOBC";
 const STR_PACKAGE: &str = "Package";
 const STR_COIN_METADATA: &str = "CoinMetadata";
 const STR_OTHER: &str = "Other";
-const STR_SUI_DISTRIBUTION: &str = "Sui Distribution";
+const STR_SUI_DISTRIBUTION: &str = "OBC Distribution";
 const STR_OBJECTS: &str = "Objects";
 const STR_VALIDATORS: &str = "Validators";
 
@@ -207,7 +207,7 @@ fn examine_object(
                 for gas_coin in sui_map.values() {
                     display_sui(gas_coin, owner_map);
                 }
-                print_divider("Sui");
+                print_divider("OBC");
             }
             Ok(name) if name == STR_STAKED_SUI => {
                 for staked_sui_coin in staked_sui_map.values() {

@@ -3,7 +3,7 @@
 
 #[test_only]
 module sui_system::validator_tests {
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::test_scenario;
     use sui::url;
     use std::string::Self;
@@ -137,8 +137,8 @@ module sui_system::validator_tests {
 
         test_scenario::next_tx(scenario, sender);
         {
-            let coin_ids = test_scenario::ids_for_sender<Coin<SUI>>(scenario);
-            let withdraw = test_scenario::take_from_sender_by_id<Coin<SUI>>(scenario, *vector::borrow(&coin_ids, 0));
+            let coin_ids = test_scenario::ids_for_sender<Coin<OBC>>(scenario);
+            let withdraw = test_scenario::take_from_sender_by_id<Coin<OBC>>(scenario, *vector::borrow(&coin_ids, 0));
             assert!(coin::value(&withdraw) == 10_000_000_000, 0);
             test_scenario::return_to_sender(scenario, withdraw);
         };

@@ -7,7 +7,7 @@ module basics::sandwich {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 
@@ -31,7 +31,7 @@ module basics::sandwich {
     // Grocery is created on module init
     struct Grocery has key {
         id: UID,
-        profits: Balance<SUI>
+        profits: Balance<OBC>
     }
 
     /// Price for ham
@@ -48,7 +48,7 @@ module basics::sandwich {
     fun init(ctx: &mut TxContext) {
         transfer::share_object(Grocery {
             id: object::new(ctx),
-            profits: balance::zero<SUI>()
+            profits: balance::zero<OBC>()
         });
 
         transfer::transfer(GroceryOwnerCapability {
@@ -59,7 +59,7 @@ module basics::sandwich {
     /// Exchange `c` for some ham
     public entry fun buy_ham(
         grocery: &mut Grocery,
-        c: Coin<SUI>,
+        c: Coin<OBC>,
         ctx: &mut TxContext
     ) {
         let b = coin::into_balance(c);
@@ -71,7 +71,7 @@ module basics::sandwich {
     /// Exchange `c` for some bread
     public entry fun buy_bread(
         grocery: &mut Grocery,
-        c: Coin<SUI>,
+        c: Coin<OBC>,
         ctx: &mut TxContext
     ) {
         let b = coin::into_balance(c);
@@ -119,7 +119,7 @@ module basics::test_sandwich {
     use basics::sandwich::{Self, Grocery, GroceryOwnerCapability, Bread, Ham};
     use sui::test_scenario;
     use sui::coin::{Self};
-    use sui::sui::SUI;
+    use sui::sui::OBC;
 
     #[test]
     fun test_make_sandwich() {
@@ -141,13 +141,13 @@ module basics::test_sandwich {
 
             sandwich::buy_ham(
                 grocery,
-                coin::mint_for_testing<SUI>(10, ctx),
+                coin::mint_for_testing<OBC>(10, ctx),
                 ctx
             );
 
             sandwich::buy_bread(
                 grocery,
-                coin::mint_for_testing<SUI>(2, ctx),
+                coin::mint_for_testing<OBC>(2, ctx),
                 ctx
             );
 

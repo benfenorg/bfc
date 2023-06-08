@@ -157,12 +157,12 @@ module sui::balance {
 #[test_only]
 module sui::balance_tests {
     use sui::balance;
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::test_utils;
 
     #[test]
     fun test_balance() {
-        let balance = balance::zero<SUI>();
+        let balance = balance::zero<OBC>();
         let another = balance::create_for_testing(1000);
 
         balance::join(&mut balance, another);

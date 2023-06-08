@@ -7,7 +7,7 @@ module sui_system::validator {
     use std::bcs;
 
     use sui::balance::{Self, Balance};
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use sui::object::{Self, ID};
@@ -299,7 +299,7 @@ module sui_system::validator {
     /// Request to add stake to the validator's staking pool, processed at the end of the epoch.
     public(friend) fun request_add_stake(
         self: &mut Validator,
-        stake: Balance<SUI>,
+        stake: Balance<OBC>,
         staker_address: address,
         ctx: &mut TxContext,
     ) {
@@ -328,7 +328,7 @@ module sui_system::validator {
     /// Request to add stake to the validator's staking pool at genesis
     public(friend) fun request_add_stake_at_genesis(
         self: &mut Validator,
-        stake: Balance<SUI>,
+        stake: Balance<OBC>,
         staker_address: address,
         ctx: &mut TxContext,
     ) {
@@ -354,7 +354,7 @@ module sui_system::validator {
         self: &mut Validator,
         staked_sui: StakedSui,
         ctx: &mut TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<OBC> {
         let principal_amount = staking_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = staking_pool::stake_activation_epoch(&staked_sui);
         let withdrawn_stake = staking_pool::request_withdraw_stake(
@@ -417,7 +417,7 @@ module sui_system::validator {
     }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<SUI>) {
+    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<OBC>) {
         self.next_epoch_stake = self.next_epoch_stake + balance::value(&reward);
         staking_pool::deposit_rewards(&mut self.staking_pool, reward);
     }
@@ -930,7 +930,7 @@ module sui_system::validator {
         p2p_address: vector<u8>,
         primary_address: vector<u8>,
         worker_address: vector<u8>,
-        initial_stake_option: Option<Balance<SUI>>,
+        initial_stake_option: Option<Balance<OBC>>,
         gas_price: u64,
         commission_rate: u64,
         is_active_at_genesis: bool,

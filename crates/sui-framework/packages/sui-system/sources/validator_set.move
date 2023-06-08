@@ -6,7 +6,7 @@ module sui_system::validator_set {
     use std::vector;
 
     use sui::balance::{Self, Balance};
-    use sui::sui::SUI;
+    use sui::sui::OBC;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator, staking_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -289,7 +289,7 @@ module sui_system::validator_set {
     public(friend) fun request_add_stake(
         self: &mut ValidatorSet,
         validator_address: address,
-        stake: Balance<SUI>,
+        stake: Balance<OBC>,
         ctx: &mut TxContext,
     ) {
         let sui_amount = balance::value(&stake);
@@ -308,7 +308,7 @@ module sui_system::validator_set {
         self: &mut ValidatorSet,
         staked_sui: StakedSui,
         ctx: &mut TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<OBC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
             if (table::contains(&self.staking_pool_mappings, staking_pool_id)) { // This is an active validator.
@@ -346,8 +346,8 @@ module sui_system::validator_set {
     ///   5. At the end, we calculate the total stake for the new epoch.
     public(friend) fun advance_epoch(
         self: &mut ValidatorSet,
-        computation_reward: &mut Balance<SUI>,
-        storage_fund_reward: &mut Balance<SUI>,
+        computation_reward: &mut Balance<OBC>,
+        storage_fund_reward: &mut Balance<OBC>,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
         reward_slashing_rate: u64,
         low_stake_threshold: u64,
@@ -1130,8 +1130,8 @@ module sui_system::validator_set {
         validators: &mut vector<Validator>,
         adjusted_staking_reward_amounts: &vector<u64>,
         adjusted_storage_fund_reward_amounts: &vector<u64>,
-        staking_rewards: &mut Balance<SUI>,
-        storage_fund_reward: &mut Balance<SUI>,
+        staking_rewards: &mut Balance<OBC>,
+        storage_fund_reward: &mut Balance<OBC>,
         ctx: &mut TxContext
     ) {
         let length = vector::length(validators);

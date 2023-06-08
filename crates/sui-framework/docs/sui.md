@@ -3,11 +3,11 @@
 
 # Module `0x2::sui`
 
-Coin<SUI> is the token used to pay for gas in Sui.
+Coin<OBC> is the token used to pay for gas in Sui.
 It has 9 decimals, and the smallest unit (10^-9) is called "mist".
 
 
--  [Struct `SUI`](#0x2_sui_SUI)
+-  [Struct `OBC`](#0x2_sui_OBC)
 -  [Constants](#@Constants_0)
 -  [Function `new`](#0x2_sui_new)
 -  [Function `transfer`](#0x2_sui_transfer)
@@ -23,14 +23,14 @@ It has 9 decimals, and the smallest unit (10^-9) is called "mist".
 
 
 
-<a name="0x2_sui_SUI"></a>
+<a name="0x2_sui_OBC"></a>
 
-## Struct `SUI`
+## Struct `OBC`
 
 Name of the coin
 
 
-<pre><code><b>struct</b> <a href="sui.md#0x2_sui_SUI">SUI</a> <b>has</b> drop
+<pre><code><b>struct</b> <a href="sui.md#0x2_sui_OBC">OBC</a> <b>has</b> drop
 </code></pre>
 
 
@@ -110,11 +110,11 @@ The total supply of Sui denominated in whole Sui tokens (10 Billion)
 
 ## Function `new`
 
-Register the <code><a href="sui.md#0x2_sui_SUI">SUI</a></code> Coin to acquire its <code>Supply</code>.
+Register the <code>SUI</code> Coin to acquire its <code>Supply</code>.
 This should be called only once during genesis creation.
 
 
-<pre><code><b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="sui.md#0x2_sui_SUI">sui::SUI</a>&gt;
+<pre><code><b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="sui.md#0x2_sui_OBC">sui::OBC</a>&gt;
 </code></pre>
 
 
@@ -123,15 +123,15 @@ This should be called only once during genesis creation.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(ctx: &<b>mut</b> TxContext): Balance&lt;<a href="sui.md#0x2_sui_SUI">SUI</a>&gt; {
+<pre><code><b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(ctx: &<b>mut</b> TxContext): Balance&lt;<a href="sui.md#0x2_sui_OBC">OBC</a>&gt; {
     <b>assert</b>!(<a href="tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="sui.md#0x2_sui_ENotSystemAddress">ENotSystemAddress</a>);
     <b>assert</b>!(<a href="tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="sui.md#0x2_sui_EAlreadyMinted">EAlreadyMinted</a>);
 
     <b>let</b> (treasury, metadata) = <a href="coin.md#0x2_coin_create_currency">coin::create_currency</a>(
-        <a href="sui.md#0x2_sui_SUI">SUI</a> {},
+        <a href="sui.md#0x2_sui_OBC">OBC</a> {},
         9,
-        b"<a href="sui.md#0x2_sui_SUI">SUI</a>",
-        b"Sui",
+        b"<a href="sui.md#0x2_sui_OBC">OBC</a>",
+        b"Obc",
         // TODO: add appropriate description and logo <a href="url.md#0x2_url">url</a>
         b"",
         <a href="_none">option::none</a>(),
@@ -155,7 +155,7 @@ This should be called only once during genesis creation.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="transfer.md#0x2_transfer">transfer</a>(c: <a href="coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, recipient: <b>address</b>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="transfer.md#0x2_transfer">transfer</a>(c: <a href="coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="sui.md#0x2_sui_OBC">sui::OBC</a>&gt;, recipient: <b>address</b>)
 </code></pre>
 
 
@@ -164,7 +164,7 @@ This should be called only once during genesis creation.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="transfer.md#0x2_transfer">transfer</a>(c: <a href="coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="sui.md#0x2_sui_SUI">SUI</a>&gt;, recipient: <b>address</b>) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="transfer.md#0x2_transfer">transfer</a>(c: <a href="coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="sui.md#0x2_sui_OBC">OBC</a>&gt;, recipient: <b>address</b>) {
     <a href="transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(c, recipient)
 }
 </code></pre>
