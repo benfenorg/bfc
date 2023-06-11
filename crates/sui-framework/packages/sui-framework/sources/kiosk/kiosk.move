@@ -43,7 +43,7 @@ module sui::kiosk {
     };
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::event;
 
     /// Trying to withdraw profits and sender is not owner.

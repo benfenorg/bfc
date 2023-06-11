@@ -8,7 +8,7 @@ module sui::pay_tests {
     use sui::coin::{Self, Coin};
     use sui::pay;
     use sui::balance;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::test_utils;
 
     const TEST_SENDER_ADDR: address = @0xA11CE;

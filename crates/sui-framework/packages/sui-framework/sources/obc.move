@@ -3,7 +3,7 @@
 
 /// Coin<OBC> is the token used to pay for gas in Sui.
 /// It has 9 decimals, and the smallest unit (10^-9) is called "mist".
-module sui::sui {
+module sui::obc {
     use std::option;
     use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};

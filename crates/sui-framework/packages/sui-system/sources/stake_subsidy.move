@@ -4,7 +4,7 @@
 module sui_system::stake_subsidy {
     use sui::balance::{Self, Balance};
     use sui::math;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::bag::Bag;
     use sui::bag;
     use sui::tx_context::TxContext;

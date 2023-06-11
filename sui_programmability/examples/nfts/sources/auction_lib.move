@@ -10,7 +10,7 @@ module nfts::auction_lib {
 
     use sui::coin;
     use sui::balance::{Self, Balance};
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::object::{Self, UID};
     use sui::transfer;
     use sui::tx_context::{Self,TxContext};
@@ -21,7 +21,7 @@ module nfts::auction_lib {
     /// Stores information about an auction bid.
     struct BidData has store {
         /// Coin representing the current (highest) bid.
-        funds: Balance<SUI>,
+        funds: Balance<OBC>,
         /// Address of the highest bidder.
         highest_bidder: address,
     }
@@ -66,7 +66,7 @@ module nfts::auction_lib {
     public fun update_auction<T: key + store>(
         auction: &mut Auction<T>,
         bidder: address,
-        funds: Balance<SUI>,
+        funds: Balance<OBC>,
         ctx: &mut TxContext,
     ) {
         if (option::is_none(&auction.bid_data)) {
@@ -151,7 +151,7 @@ module nfts::auction_lib {
     }
 
     /// Helper for the most common operation - wrapping a balance and sending it
-    fun send_balance(balance: Balance<SUI>, to: address, ctx: &mut TxContext) {
+    fun send_balance(balance: Balance<OBC>, to: address, ctx: &mut TxContext) {
         transfer::public_transfer(coin::from_balance(balance, ctx), to)
     }
 

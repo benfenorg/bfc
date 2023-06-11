@@ -7,7 +7,7 @@ module examples::restricted_transfer {
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::transfer;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
 
     /// For when paid amount is not equal to the transfer price.
     const EWrongAmount: u64 = 0;

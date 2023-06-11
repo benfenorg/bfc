@@ -6,7 +6,7 @@ module sui_system::stake_tests {
     use sui::coin;
     use sui::test_scenario;
     use sui_system::sui_system::{Self, SuiSystemState};
-    use sui_system::staking_pool::{Self, StakedSui};
+    use sui_system::staking_pool::{Self, StakedObc};
     use sui::test_utils::assert_eq;
     use sui_system::validator_set;
     use sui::test_utils;
@@ -52,7 +52,7 @@ module sui_system::stake_tests {
 
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let staked_sui = test_scenario::take_from_sender<StakedSui>(scenario);
+            let staked_sui = test_scenario::take_from_sender<StakedObc>(scenario);
             let ctx = test_scenario::ctx(scenario);
             staking_pool::split_staked_sui(&mut staked_sui, 20 * MIST_PER_SUI, ctx);
             test_scenario::return_to_sender(scenario, staked_sui);
@@ -61,11 +61,11 @@ module sui_system::stake_tests {
         // Verify the correctness of the split and send the join txn
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let staked_sui_ids = test_scenario::ids_for_sender<StakedSui>(scenario);
+            let staked_sui_ids = test_scenario::ids_for_sender<StakedObc>(scenario);
             assert!(vector::length(&staked_sui_ids) == 2, 101); // staked sui split to 2 coins
 
-            let part1 = test_scenario::take_from_sender_by_id<StakedSui>(scenario, *vector::borrow(&staked_sui_ids, 0));
-            let part2 = test_scenario::take_from_sender_by_id<StakedSui>(scenario, *vector::borrow(&staked_sui_ids, 1));
+            let part1 = test_scenario::take_from_sender_by_id<StakedObc>(scenario, *vector::borrow(&staked_sui_ids, 0));
+            let part2 = test_scenario::take_from_sender_by_id<StakedObc>(scenario, *vector::borrow(&staked_sui_ids, 1));
 
             let amount1 = staking_pool::staked_sui_amount(&part1);
             let amount2 = staking_pool::staked_sui_amount(&part2);
@@ -94,9 +94,9 @@ module sui_system::stake_tests {
         // Verify that these cannot be merged
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let staked_sui_ids = test_scenario::ids_for_sender<StakedSui>(scenario);
-            let part1 = test_scenario::take_from_sender_by_id<StakedSui>(scenario, *vector::borrow(&staked_sui_ids, 0));
-            let part2 = test_scenario::take_from_sender_by_id<StakedSui>(scenario, *vector::borrow(&staked_sui_ids, 1));
+            let staked_sui_ids = test_scenario::ids_for_sender<StakedObc>(scenario);
+            let part1 = test_scenario::take_from_sender_by_id<StakedObc>(scenario, *vector::borrow(&staked_sui_ids, 0));
+            let part2 = test_scenario::take_from_sender_by_id<StakedObc>(scenario, *vector::borrow(&staked_sui_ids, 1));
 
             staking_pool::join_staked_sui(&mut part1, part2);
 
@@ -116,7 +116,7 @@ module sui_system::stake_tests {
 
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let staked_sui = test_scenario::take_from_sender<StakedSui>(scenario);
+            let staked_sui = test_scenario::take_from_sender<StakedObc>(scenario);
             let ctx = test_scenario::ctx(scenario);
             // The remaining amount after splitting is below the threshold so this should fail.
             staking_pool::split_staked_sui(&mut staked_sui, 1 * MIST_PER_SUI + 1, ctx);
@@ -136,7 +136,7 @@ module sui_system::stake_tests {
 
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let staked_sui = test_scenario::take_from_sender<StakedSui>(scenario);
+            let staked_sui = test_scenario::take_from_sender<StakedObc>(scenario);
             let ctx = test_scenario::ctx(scenario);
             // The remaining amount after splitting is below the threshold so this should fail.
             let stake = staking_pool::split(&mut staked_sui, 1 * MIST_PER_SUI + 1, ctx);
@@ -174,7 +174,7 @@ module sui_system::stake_tests {
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
 
-            let staked_sui = test_scenario::take_from_sender<StakedSui>(scenario);
+            let staked_sui = test_scenario::take_from_sender<StakedObc>(scenario);
             assert!(staking_pool::staked_sui_amount(&staked_sui) == 60 * MIST_PER_SUI, 105);
 
 
@@ -254,7 +254,7 @@ module sui_system::stake_tests {
                         VALIDATOR_ADDR_1
                     ), 0);
 
-            let staked_sui = test_scenario::take_from_sender<StakedSui>(scenario);
+            let staked_sui = test_scenario::take_from_sender<StakedObc>(scenario);
             assert_eq(staking_pool::staked_sui_amount(&staked_sui), 100 * MIST_PER_SUI);
 
             // Unstake from VALIDATOR_ADDR_1
@@ -306,7 +306,7 @@ module sui_system::stake_tests {
             let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let system_state_mut_ref = &mut system_state;
 
-            let staked_sui = test_scenario::take_from_sender<StakedSui>(scenario);
+            let staked_sui = test_scenario::take_from_sender<StakedObc>(scenario);
             assert_eq(staking_pool::staked_sui_amount(&staked_sui), 100 * MIST_PER_SUI);
 
             // Unstake from VALIDATOR_ADDR_1

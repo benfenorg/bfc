@@ -9,7 +9,7 @@
 module sui::kiosk_tests {
     use sui::kiosk_test_utils::{Self as test, Asset};
     use sui::transfer_policy as policy;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::kiosk;
     use sui::coin;
 

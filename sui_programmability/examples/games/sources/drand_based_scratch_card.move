@@ -31,7 +31,7 @@ module games::drand_based_scratch_card {
     use sui::hmac::hmac_sha3_256;
     use sui::object::{Self, ID, UID};
 
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 
@@ -58,7 +58,7 @@ module games::drand_based_scratch_card {
     struct Reward has key {
         id: UID,
         game_id: ID,
-        balance: Balance<SUI>,
+        balance: Balance<OBC>,
     }
 
     /// Ticket represents a participant in a single game.
@@ -80,7 +80,7 @@ module games::drand_based_scratch_card {
     /// The reward must be a positive balance, dividable by reward_factor. reward/reward_factor will be the ticket
     /// price. base_drand_round is the current drand round.
     public entry fun create(
-        reward: Coin<SUI>,
+        reward: Coin<OBC>,
         reward_factor: u64,
         base_drand_round: u64,
         ctx: &mut TxContext
@@ -108,7 +108,7 @@ module games::drand_based_scratch_card {
     /// Buy a ticket for a specific game, costing reward/reward_factor SUI. Can be called only during the epoch in which
     /// the game was created.
     /// Note that the reward might have been withdrawn already. It's the user's responsibility to verify that.
-    public entry fun buy_ticket(coin: Coin<SUI>, game: &Game, ctx: &mut TxContext) {
+    public entry fun buy_ticket(coin: Coin<OBC>, game: &Game, ctx: &mut TxContext) {
         assert!(coin::value(&coin) * game.reward_factor == game.reward_amount, EInvalidDeposit);
         assert!(tx_context::epoch(ctx) == game.base_epoch, EInvalidEpoch);
         let ticket = Ticket {

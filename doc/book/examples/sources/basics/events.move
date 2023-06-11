@@ -4,7 +4,7 @@
 /// Extended example of a shared object. Now with addition of events!
 module examples::donuts_with_events {
     use sui::transfer;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID, UID};
     use sui::balance::{Self, Balance};

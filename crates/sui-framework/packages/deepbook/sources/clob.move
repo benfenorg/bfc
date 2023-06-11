@@ -12,7 +12,7 @@ module deepbook::clob {
     use sui::event;
     use sui::linked_table::{Self, LinkedTable};
     use sui::object::{Self, UID, ID};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::table::{Self, Table, contains, add, borrow_mut};
     use sui::transfer;
     use sui::tx_context::TxContext;

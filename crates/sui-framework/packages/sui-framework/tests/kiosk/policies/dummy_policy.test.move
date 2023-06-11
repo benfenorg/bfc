@@ -5,7 +5,7 @@
 /// Dummy policy which showcases all of the methods.
 module sui::dummy_policy {
     use sui::coin::Coin;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::transfer_policy::{
         Self as policy,
         TransferPolicy,

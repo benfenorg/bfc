@@ -31,7 +31,7 @@ module sui::transfer_policy {
     use sui::vec_set::{Self, VecSet};
     use sui::dynamic_field as df;
     use sui::balance::{Self, Balance};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::coin::{Self, Coin};
     use sui::event;
 

@@ -43,8 +43,8 @@ module sui_system::sui_system {
 
     use sui::coin::{Self, Coin};
     use sui::object::UID;
-    use sui_system::staking_pool::StakedSui;
-    use sui::sui::OBC;
+    use sui_system::staking_pool::StakedObc;
+    use sui::obc::OBC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::Validator;
@@ -258,7 +258,7 @@ module sui_system::sui_system {
     /// Withdraw some portion of a stake from a validator's staking pool.
     public entry fun request_withdraw_stake(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedSui,
+        staked_sui: StakedObc,
         ctx: &mut TxContext,
     ) {
         let withdrawn_stake = request_withdraw_stake_non_entry(wrapper, staked_sui, ctx);
@@ -268,7 +268,7 @@ module sui_system::sui_system {
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
     public fun request_withdraw_stake_non_entry(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedSui,
+        staked_sui: StakedObc,
         ctx: &mut TxContext,
     ) : Balance<OBC> {
         let self = load_system_state_mut(wrapper);

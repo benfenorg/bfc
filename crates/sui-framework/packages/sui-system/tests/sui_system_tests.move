@@ -8,7 +8,7 @@
 #[test_only]
 module sui_system::sui_system_tests {
     use sui::test_scenario::{Self, Scenario};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui_system::governance_test_utils::{add_validator_full_flow, advance_epoch, remove_validator, set_up_sui_system_state, create_sui_system_state_for_testing};
     use sui_system::sui_system::{Self, SuiSystemState};
     use sui_system::sui_system_state_inner;

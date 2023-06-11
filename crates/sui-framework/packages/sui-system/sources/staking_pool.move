@@ -3,7 +3,7 @@
 
 module sui_system::staking_pool {
     use sui::balance::{Self, Balance};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use std::option::{Self, Option};
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
@@ -77,7 +77,7 @@ module sui_system::staking_pool {
     }
 
     /// A self-custodial object holding the staked SUI tokens.
-    struct StakedSui has key {
+    struct StakedObc has key {
         id: UID,
         /// ID of the staking pool we are staking with.
         pool_id: ID,
@@ -120,7 +120,7 @@ module sui_system::staking_pool {
         let sui_amount = balance::value(&stake);
         assert!(!is_inactive(pool), EDelegationToInactivePool);
         assert!(sui_amount > 0, EDelegationOfZeroSui);
-        let staked_sui = StakedSui {
+        let staked_sui = StakedObc {
             id: object::new(ctx),
             pool_id: object::id(pool),
             stake_activation_epoch,
@@ -135,7 +135,7 @@ module sui_system::staking_pool {
     /// A proportional amount of pool token withdraw is recorded and processed at epoch change time.
     public(friend) fun request_withdraw_stake(
         pool: &mut StakingPool,
-        staked_sui: StakedSui,
+        staked_sui: StakedObc,
         ctx: &mut TxContext
     ) : Balance<OBC> {
         let (pool_token_withdraw_amount, principal_withdraw) =
@@ -163,7 +163,7 @@ module sui_system::staking_pool {
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(friend) fun withdraw_from_principal(
         pool: &mut StakingPool,
-        staked_sui: StakedSui,
+        staked_sui: StakedObc,
     ) : (u64, Balance<OBC>) {
 
         // Check that the stake information matches the pool.
@@ -179,8 +179,8 @@ module sui_system::staking_pool {
         )
     }
 
-    fun unwrap_staked_sui(staked_sui: StakedSui): Balance<OBC> {
-        let StakedSui {
+    fun unwrap_staked_sui(staked_sui: StakedObc): Balance<OBC> {
+        let StakedObc {
             id,
             pool_id: _,
             stake_activation_epoch: _,
@@ -287,11 +287,11 @@ module sui_system::staking_pool {
 
     public fun sui_balance(pool: &StakingPool): u64 { pool.sui_balance }
 
-    public fun pool_id(staked_sui: &StakedSui): ID { staked_sui.pool_id }
+    public fun pool_id(staked_sui: &StakedObc): ID { staked_sui.pool_id }
 
-    public fun staked_sui_amount(staked_sui: &StakedSui): u64 { balance::value(&staked_sui.principal) }
+    public fun staked_sui_amount(staked_sui: &StakedObc): u64 { balance::value(&staked_sui.principal) }
 
-    public fun stake_activation_epoch(staked_sui: &StakedSui): u64 {
+    public fun stake_activation_epoch(staked_sui: &StakedObc): u64 {
         staked_sui.stake_activation_epoch
     }
 
@@ -308,14 +308,14 @@ module sui_system::staking_pool {
     /// Split StakedSui `self` to two parts, one with principal `split_amount`,
     /// and the remaining principal is left in `self`.
     /// All the other parameters of the StakedSui like `stake_activation_epoch` or `pool_id` remain the same.
-    public fun split(self: &mut StakedSui, split_amount: u64, ctx: &mut TxContext): StakedSui {
+    public fun split(self: &mut StakedObc, split_amount: u64, ctx: &mut TxContext): StakedObc {
         let original_amount = balance::value(&self.principal);
         assert!(split_amount <= original_amount, EInsufficientSuiTokenBalance);
         let remaining_amount = original_amount - split_amount;
         // Both resulting parts should have at least MIN_STAKING_THRESHOLD.
         assert!(remaining_amount >= MIN_STAKING_THRESHOLD, EStakedSuiBelowThreshold);
         assert!(split_amount >= MIN_STAKING_THRESHOLD, EStakedSuiBelowThreshold);
-        StakedSui {
+        StakedObc {
             id: object::new(ctx),
             pool_id: self.pool_id,
             stake_activation_epoch: self.stake_activation_epoch,
@@ -325,15 +325,15 @@ module sui_system::staking_pool {
 
     /// Split the given StakedSui to the two parts, one with principal `split_amount`,
     /// transfer the newly split part to the sender address.
-    public entry fun split_staked_sui(stake: &mut StakedSui, split_amount: u64, ctx: &mut TxContext) {
+    public entry fun split_staked_sui(stake: &mut StakedObc, split_amount: u64, ctx: &mut TxContext) {
         transfer::transfer(split(stake, split_amount, ctx), tx_context::sender(ctx));
     }
 
     /// Consume the staked sui `other` and add its value to `self`.
     /// Aborts if some of the staking parameters are incompatible (pool id, stake activation epoch, etc.)
-    public entry fun join_staked_sui(self: &mut StakedSui, other: StakedSui) {
+    public entry fun join_staked_sui(self: &mut StakedObc, other: StakedObc) {
         assert!(is_equal_staking_metadata(self, &other), EIncompatibleStakedSui);
-        let StakedSui {
+        let StakedObc {
             id,
             pool_id: _,
             stake_activation_epoch: _,
@@ -345,7 +345,7 @@ module sui_system::staking_pool {
     }
 
     /// Returns true if all the staking parameters of the staked sui except the principal are identical
-    public fun is_equal_staking_metadata(self: &StakedSui, other: &StakedSui): bool {
+    public fun is_equal_staking_metadata(self: &StakedObc, other: &StakedObc): bool {
         (self.pool_id == other.pool_id) &&
         (self.stake_activation_epoch == other.stake_activation_epoch)
     }
@@ -429,7 +429,7 @@ module sui_system::staking_pool {
     #[test_only]
     public fun calculate_rewards(
         pool: &StakingPool,
-        staked_sui: &StakedSui,
+        staked_sui: &StakedObc,
         current_epoch: u64,
     ): u64 {
         let staked_amount = staked_sui_amount(staked_sui);

@@ -5,7 +5,7 @@
 /// An example module implementing a fixed commission for the `TransferPolicy`.
 /// Follows the "transfer rules" layout and implements each of the steps.
 module sui::fixed_commission {
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::coin::Coin;
     use sui::transfer_policy::{
         Self as policy,

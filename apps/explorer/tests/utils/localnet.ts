@@ -29,7 +29,7 @@ export async function split_coin(address: string) {
     const tx = new TransactionBlock();
     tx.moveCall({
         target: '0x2::pay::split',
-        typeArguments: ['0x2::sui::SUI'],
+        typeArguments: ['0x2::obc::OBC'],
         arguments: [tx.object(coin_id), tx.pure(10)],
     });
 

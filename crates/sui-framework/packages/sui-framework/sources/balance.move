@@ -7,7 +7,7 @@
 module sui::balance {
     use sui::tx_context::{Self, TxContext};
 
-    friend sui::sui;
+    friend sui::obc;
 
     /// For when trying to destroy a non-zero balance.
     const ENonZero: u64 = 0;
@@ -157,7 +157,7 @@ module sui::balance {
 #[test_only]
 module sui::balance_tests {
     use sui::balance;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::test_utils;
 
     #[test]

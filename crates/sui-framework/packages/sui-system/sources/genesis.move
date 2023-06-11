@@ -7,7 +7,7 @@ module sui_system::genesis {
     use sui::balance::{Self, Balance};
     use sui::coin;
     use sui::object::UID;
-    use sui::sui::{Self, OBC};
+    use sui::obc::{Self, OBC};
     use sui_system::sui_system;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator};
@@ -226,7 +226,7 @@ module sui_system::genesis {
                     ctx
                 );
             } else {
-                sui::transfer(
+                obc::transfer(
                     coin::from_balance(allocation_balance, ctx),
                     recipient_address,
                 );

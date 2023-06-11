@@ -6,11 +6,11 @@ module sui_system::validator_set {
     use std::vector;
 
     use sui::balance::{Self, Balance};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator, staking_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
-    use sui_system::staking_pool::{PoolTokenExchangeRate, StakedSui, pool_id};
+    use sui_system::staking_pool::{PoolTokenExchangeRate, StakedObc, pool_id};
     use sui::object::{Self, ID};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
@@ -306,7 +306,7 @@ module sui_system::validator_set {
     ///    the stake and any rewards corresponding to it will be immediately processed.
     public(friend) fun request_withdraw_stake(
         self: &mut ValidatorSet,
-        staked_sui: StakedSui,
+        staked_sui: StakedObc,
         ctx: &mut TxContext,
     ) : Balance<OBC> {
         let staking_pool_id = pool_id(&staked_sui);

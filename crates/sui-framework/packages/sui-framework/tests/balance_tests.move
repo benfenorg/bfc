@@ -7,7 +7,7 @@ module sui::coin_balance_tests {
     use sui::pay;
     use sui::coin;
     use sui::balance;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
 
     #[test]
     fun type_morphing() {

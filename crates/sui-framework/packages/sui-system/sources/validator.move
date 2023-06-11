@@ -7,12 +7,12 @@ module sui_system::validator {
     use std::bcs;
 
     use sui::balance::{Self, Balance};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use sui::object::{Self, ID};
     use std::option::{Option, Self};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedSui, StakingPool};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedObc, StakingPool};
     use std::string::{Self, String};
     use sui::url::Url;
     use sui::url;
@@ -352,7 +352,7 @@ module sui_system::validator {
     /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
     public(friend) fun request_withdraw_stake(
         self: &mut Validator,
-        staked_sui: StakedSui,
+        staked_sui: StakedObc,
         ctx: &mut TxContext,
     ) : Balance<OBC> {
         let principal_amount = staking_pool::staked_sui_amount(&staked_sui);

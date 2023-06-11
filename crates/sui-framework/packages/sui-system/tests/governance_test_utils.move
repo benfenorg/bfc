@@ -6,9 +6,9 @@ module sui_system::governance_test_utils {
     use sui::address;
     use sui::balance;
     use sui::object;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::coin::{Self, Coin};
-    use sui_system::staking_pool::{Self, StakedSui, StakingPool};
+    use sui_system::staking_pool::{Self, StakedObc, StakingPool};
     use sui::test_utils::assert_eq;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator};
@@ -178,7 +178,7 @@ module sui_system::governance_test_utils {
         staker: address, staked_sui_idx: u64, scenario: &mut Scenario
     ) {
         test_scenario::next_tx(scenario, staker);
-        let stake_sui_ids = test_scenario::ids_for_sender<StakedSui>(scenario);
+        let stake_sui_ids = test_scenario::ids_for_sender<StakedObc>(scenario);
         let staked_sui = test_scenario::take_from_sender_by_id(scenario, *vector::borrow(&stake_sui_ids, staked_sui_idx));
         let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
 
@@ -333,12 +333,12 @@ module sui_system::governance_test_utils {
     public fun stake_plus_current_rewards(addr: address, staking_pool: &StakingPool, scenario: &mut Scenario): u64 {
         let sum = 0;
         test_scenario::next_tx(scenario, addr);
-        let stake_ids = test_scenario::ids_for_sender<StakedSui>(scenario);
+        let stake_ids = test_scenario::ids_for_sender<StakedObc>(scenario);
         let current_epoch = tx_context::epoch(test_scenario::ctx(scenario));
 
         while (!vector::is_empty(&stake_ids)) {
             let staked_sui_id = vector::pop_back(&mut stake_ids);
-            let staked_sui = test_scenario::take_from_sender_by_id<StakedSui>(scenario, staked_sui_id);
+            let staked_sui = test_scenario::take_from_sender_by_id<StakedObc>(scenario, staked_sui_id);
             sum = sum + staking_pool::calculate_rewards(staking_pool, &staked_sui, current_epoch);
             test_scenario::return_to_sender(scenario, staked_sui);
         };

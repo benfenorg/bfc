@@ -7,7 +7,7 @@ module basics::sandwich {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 
@@ -119,7 +119,7 @@ module basics::test_sandwich {
     use basics::sandwich::{Self, Grocery, GroceryOwnerCapability, Bread, Ham};
     use sui::test_scenario;
     use sui::coin::{Self};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
 
     #[test]
     fun test_make_sandwich() {

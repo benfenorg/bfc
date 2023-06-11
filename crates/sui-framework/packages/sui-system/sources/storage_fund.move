@@ -3,7 +3,7 @@
 
 module sui_system::storage_fund {
     use sui::balance::{Self, Balance};
-    use sui::sui::OBC;
+    use sui::obc::OBC;
 
     friend sui_system::sui_system_state_inner;
 

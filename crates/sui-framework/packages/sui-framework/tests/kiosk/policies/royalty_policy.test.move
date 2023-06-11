@@ -4,7 +4,7 @@
 #[test_only]
 /// A `TransferPolicy` Rule which implements percentage-based royalty fee.
 module sui::royalty_policy {
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::coin::{Self, Coin};
     use sui::tx_context::TxContext;
     use sui::transfer_policy::{
@@ -62,7 +62,7 @@ module sui::royalty_policy {
 #[test_only]
 module sui::royalty_policy_tests {
     use sui::coin;
-    use sui::sui::OBC;
+    use sui::obc::OBC;
     use sui::royalty_policy;
     use sui::tx_context::dummy as ctx;
     use sui::transfer_policy as policy;
