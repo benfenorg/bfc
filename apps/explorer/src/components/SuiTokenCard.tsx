@@ -36,7 +36,7 @@ export function SuiTokenCard() {
                                 variant="heading4/semibold"
                                 color="steel-darker"
                             >
-                                1 SUI = {formattedPrice}
+                                1 OBC = {formattedPrice}
                             </Heading>
                         </div>
                         <Text variant="subtitleSmallExtra/medium" color="steel">
@@ -56,7 +56,7 @@ export function SuiTokenCard() {
                     <StatsWrapper
                         label="Total Supply"
                         size="sm"
-                        postfix="SUI"
+                        postfix="OBC"
                         unavailable={isLoading}
                     >
                         {formatAmount(totalSupply)}

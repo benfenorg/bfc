@@ -133,7 +133,7 @@ const getResultsForAddress = async (
     };
 };
 
-// Query for validator by pool id or sui address.
+// Query for validator by pool id or token address.
 const getResultsForValidatorByPoolIdOrSuiAddress = async (
     systemStateSummery: SuiSystemStateSummary | null,
     query: string
@@ -145,7 +145,7 @@ const getResultsForValidatorByPoolIdOrSuiAddress = async (
     )
         return null;
 
-    // find validator by pool id or sui address
+    // find validator by pool id or token address
     const validator = systemStateSummery.activeValidators?.find(
         ({ stakingPoolId, suiAddress }) =>
             stakingPoolId === normalized || suiAddress === query

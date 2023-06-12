@@ -203,7 +203,7 @@ export function validatorsTableData(
                 cell: (props: any) => {
                     const atRisk = props.getValue();
                     return atRisk !== null ? (
-                        <Tooltip tip="Staked SUI is below the minimum SUI stake threshold to remain a validator.">
+                        <Tooltip tip="Staked OBC is below the minimum OBC stake threshold to remain a validator.">
                             <div className="flex cursor-pointer flex-nowrap items-center">
                                 <Text color="issue" variant="bodySmall/medium">
                                     At Risk
@@ -349,8 +349,8 @@ function ValidatorPageResult() {
                             </div>
                             <div className="flex flex-col gap-8">
                                 <Stats
-                                    label="Total SUI Staked"
-                                    tooltip="The total SUI staked on the network by validators and delegators to validate the network and earn rewards."
+                                    label="Total OBC Staked"
+                                    tooltip="The total OBC staked on the network by validators and delegators to validate the network and earn rewards."
                                     unavailable={totalStaked <= 0}
                                 >
                                     <DelegationAmount

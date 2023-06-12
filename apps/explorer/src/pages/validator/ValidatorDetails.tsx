@@ -117,7 +117,7 @@ function ValidatorDetails() {
                         }
                     >
                         <Text variant="bodySmall/medium">
-                            Staked SUI is below the minimum SUI stake threshold
+                            Staked OBC is below the minimum OBC stake threshold
                             to remain a validator.
                         </Text>
                     </Banner>

@@ -151,7 +151,7 @@ function NetworkVersion({
     return (
         <div className="flex flex-col justify-between px-4 py-2">
             <Text variant="subtitle/normal" color="steel">
-                Sui {label}
+                OBC {label}
             </Text>
             <Text variant="subtitle/normal" color="steel">
                 v{binaryVersion} (Protocol {version})

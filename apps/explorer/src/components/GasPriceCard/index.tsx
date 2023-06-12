@@ -28,7 +28,7 @@ import { Stats } from '~/ui/Stats';
 import { Text } from '~/ui/Text';
 import { Tooltip } from '~/ui/Tooltip';
 
-const UNITS = ['MIST', 'SUI'] as const;
+const UNITS = ['MIST', 'OBC'] as const;
 type UnitsType = (typeof UNITS)[number];
 const GRAPH_DURATIONS = ['7 EPOCHS', '30 EPOCHS'] as const;
 type GraphDurationsType = (typeof GRAPH_DURATIONS)[number];
@@ -92,7 +92,7 @@ function useGasPriceAverage(totalEpochs: number) {
     return { ...historicalData, data: average };
 }
 
-function useGasPriceFormat(gasPrice: bigint | null, unit: 'MIST' | 'SUI') {
+function useGasPriceFormat(gasPrice: bigint | null, unit: 'MIST' | 'OBC') {
     return gasPrice !== null
         ? formatBalance(
               gasPrice,
@@ -102,7 +102,7 @@ function useGasPriceFormat(gasPrice: bigint | null, unit: 'MIST' | 'SUI') {
         : null;
 }
 
-// TODO: Delete this prop once we roll out the SUI token card
+// TODO: Delete this prop once we roll out the  token card
 export function GasPriceCard({
     useLargeSpacing,
 }: {

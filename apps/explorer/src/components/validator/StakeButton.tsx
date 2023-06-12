@@ -12,7 +12,7 @@ import { useParams } from 'react-router-dom';
 
 import { Button } from '~/ui/Button';
 
-// This is a custom feature supported by the Sui Wallet:
+// This is a custom feature supported by the  Wallet:
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
     'suiWallet:stake': {
@@ -50,7 +50,7 @@ export function StakeButton() {
                 variant="outline"
                 href="https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil"
             >
-                Install Sui Wallet to stake SUI
+                Install OBC Wallet to stake OBC
             </Button>
         );
     }
@@ -59,7 +59,7 @@ export function StakeButton() {
         return (
             <ConnectButton
                 className="!border !border-solid !border-steel-dark !bg-transparent !px-4 !py-3 !text-body !font-semibold !text-steel-dark !shadow-none"
-                connectText="Stake SUI"
+                connectText="Stake OBC"
             />
         );
     }
@@ -74,7 +74,7 @@ export function StakeButton() {
                     connect(stakeSupportedWallets[0].name);
                 }}
             >
-                Stake SUI on a supported wallet
+                Stake OBC on a supported wallet
             </Button>
         );
     }
@@ -89,7 +89,7 @@ export function StakeButton() {
                 ).features['suiWallet:stake']?.stake({ validatorAddress: id! });
             }}
         >
-            Stake SUI
+            Stake OBC
         </Button>
     );
 }

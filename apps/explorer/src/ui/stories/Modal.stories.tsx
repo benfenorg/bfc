@@ -64,10 +64,10 @@ export const Image: StoryObj<ImageModalProps> = {
         return (
             <div>
                 <ImageModal
-                    title="Sui"
+                    title="OBC"
                     open={open}
                     src="https://images.unsplash.com/photo-1562016600-ece13e8ba570?auto=format&fit=crop&w=738&q=80"
-                    alt="Sui"
+                    alt="OBC"
                     onClose={() => setOpen(false)}
                     subtitle="Still water runs deep."
                 />

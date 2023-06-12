@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
 
 test('home page', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/Sui Explorer/);
+    await expect(page).toHaveTitle(/OBC Explorer/);
     await expect(page.getByTestId('home-page')).toBeVisible();
 });
 
