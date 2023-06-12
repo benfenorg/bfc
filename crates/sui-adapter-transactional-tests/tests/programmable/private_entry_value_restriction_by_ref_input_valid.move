@@ -11,7 +11,7 @@ module test::m1 {
     use sui::object::{Self, UID};
     use sui::tx_context::TxContext;
     use sui::coin::Coin;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
 
     struct R has key, store { id: UID }
     public fun r(ctx: &mut TxContext): R { R { id: object::new(ctx) } }
@@ -21,7 +21,7 @@ module test::m1 {
     public entry fun clean(_: &mut R, _extra_arg: u64) {}
     entry fun priv(_: &mut R) { }
 
-    entry fun coin(_: &mut Coin<SUI>) {}
+    entry fun coin(_: &mut Coin<OBC>) {}
 }
 
 //# programmable --sender A --inputs @A

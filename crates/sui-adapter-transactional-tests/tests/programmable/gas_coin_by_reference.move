@@ -23,22 +23,22 @@ module test::m1 {
 
 // can pass to Move function by ref
 //# programmable --sender A
-//> test::m1::t1<sui::coin::Coin<sui::sui::SUI>>(Gas)
+//> test::m1::t1<sui::coin::Coin<sui::obc::OBC>>(Gas)
 
 //# programmable --sender A
-//> test::m1::t2<sui::coin::Coin<sui::sui::SUI>>(Gas)
+//> test::m1::t2<sui::coin::Coin<sui::obc::OBC>>(Gas)
 
 //# programmable --sender A
-//> test::m1::t2<sui::coin::Coin<sui::sui::SUI>>(Gas)
+//> test::m1::t2<sui::coin::Coin<sui::obc::OBC>>(Gas)
 
 //# programmable --sender A
-//> test::m1::t4<sui::coin::Coin<sui::sui::SUI>>(Gas)
+//> test::m1::t4<sui::coin::Coin<sui::obc::OBC>>(Gas)
 
 //# programmable --sender A
-//> test::m1::t5<sui::coin::Coin<sui::sui::SUI>>(Gas)
+//> test::m1::t5<sui::coin::Coin<sui::obc::OBC>>(Gas)
 
 //# programmable --sender A
-//> test::m1::t6<sui::coin::Coin<sui::sui::SUI>>(Gas)
+//> test::m1::t6<sui::coin::Coin<sui::obc::OBC>>(Gas)
 
 // can pass to merge and split
 //# programmable --sender A --inputs 10  --gas-budget 100000000000000

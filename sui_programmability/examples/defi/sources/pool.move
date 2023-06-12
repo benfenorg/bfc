@@ -14,7 +14,7 @@
 /// module me::my_pool {
 ///   use defi::pool;
 ///   use sui::coin::Coin;
-///   use sui::sui::SUI;
+///   use sui::obc::OBC;
 ///   use sui::tx_context::TxContext;
 ///
 ///   struct POOL_TEAM has drop {}
