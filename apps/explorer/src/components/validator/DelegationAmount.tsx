@@ -22,7 +22,12 @@ export function DelegationAmount({
     const delegationAmount = inMIST
         ? formatBalance(amount, 0, CoinFormat.FULL)
         : formattedAmount;
-    const delegationSymbol = inMIST ? 'MIST' : symbol;
+
+    //replace sui with OBC by alex.later todo change the SUI_TYPE_ARG
+    let delegationSymbol = inMIST ? 'MIST' : symbol;
+    delegationSymbol = 'SUI' ? 'OBC' : 'MIST';
+
+
     return isStats ? (
         <div className="flex items-end gap-1.5 break-all">
             <Heading as="div" variant="heading3/semibold" color="steel-darker">

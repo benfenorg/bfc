@@ -82,6 +82,8 @@ function ValidatorDetails() {
             </div>
         );
     }
+
+
     const { apy, isApyApproxZero } = rollingAverageApys?.[id] ?? { apy: null };
 
     const tallyingScore =

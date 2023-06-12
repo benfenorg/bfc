@@ -18,7 +18,11 @@ export function StakeColumn({
     inMIST = false,
 }: StakeColumnProps) {
     const coinFormat = hideCoinSymbol ? CoinFormat.FULL : CoinFormat.ROUNDED;
-    const [amount, symbol] = useFormatCoin(stake, SUI_TYPE_ARG, coinFormat);
+    let [amount, symbol] = useFormatCoin(stake, SUI_TYPE_ARG, coinFormat);
+
+    //change by alex, in obc
+    symbol = 'SUI' ? 'OBC' : 'MIST';
+
     return (
         <div className="flex items-end gap-0.5">
             <Text variant="bodySmall/medium" color="steel-darker">

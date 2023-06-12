@@ -41,11 +41,14 @@ export function TokenView({ data }: { data: SuiObjectResponse }) {
     const objectId = getObjectId(data);
     const objectType = parseObjectType(data);
     const storageRebate = getSuiObjectData(data)?.storageRebate;
-    const [storageRebateFormatted, symbol] = useFormatCoin(
+    let [storageRebateFormatted, symbol] = useFormatCoin(
         storageRebate,
         SUI_TYPE_ARG,
         CoinFormat.FULL
     );
+
+    //change by alex
+    symbol = 'SUI' ? 'OBC' : 'MIST';
 
     const [fileType, setFileType] = useState<undefined | string>(undefined);
 

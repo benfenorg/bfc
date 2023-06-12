@@ -24,11 +24,14 @@ interface GasProps {
 }
 
 function GasAmount({ amount }: GasProps) {
-    const [formattedAmount, symbol] = useFormatCoin(
+    let [formattedAmount, symbol] = useFormatCoin(
         amount,
         SUI_TYPE_ARG,
         CoinFormat.FULL
     );
+
+    //change by alex
+    symbol = 'SUI' ? 'OBC' : 'MIST';
 
     if (!amount) {
         return null;
@@ -57,11 +60,15 @@ function GasAmount({ amount }: GasProps) {
 }
 
 function TotalGasAmount({ amount }: GasProps) {
-    const [formattedAmount, symbol] = useFormatCoin(
+    let [formattedAmount, symbol] = useFormatCoin(
         amount,
         SUI_TYPE_ARG,
         CoinFormat.FULL
     );
+
+    //change by alex
+    symbol = 'SUI' ? 'OBC' : 'MIST';
+
 
     if (!amount) {
         return null;

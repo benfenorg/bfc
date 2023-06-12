@@ -20,6 +20,9 @@ export function SuiAmount({
     );
     if (!amount) return <Text variant="bodySmall/medium">--</Text>;
 
+    //change in OBChain by alex.
+    coinType = 'SUI' ? 'OBC' : 'MIST';
+
     return (
         <div className="leading-1 flex items-end gap-0.5">
             <Text variant="bodySmall/medium" color="steel-darker">

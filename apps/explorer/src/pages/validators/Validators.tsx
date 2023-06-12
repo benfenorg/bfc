@@ -45,6 +45,8 @@ export function validatorsTableData(
                 const totalStake = validator.stakingPoolSuiBalance;
                 const img = validator.imageUrl;
 
+                console.error('validator=============', validator.stakingPoolSuiBalance);
+
                 const event = getValidatorMoveEvent(
                     validatorEvents,
                     validator.suiAddress
@@ -257,6 +259,7 @@ function ValidatorPageResult() {
         );
     }, [data]);
 
+
     const averageAPY = useMemo(() => {
         if (!validatorsApy || Object.keys(validatorsApy)?.length === 0)
             return null;
@@ -299,6 +302,7 @@ function ValidatorPageResult() {
             validatorsApy || null
         );
     }, [data, validatorEvents, validatorsApy]);
+
 
     if (isError || validatorEventError) {
         return (

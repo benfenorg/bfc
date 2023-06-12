@@ -33,6 +33,7 @@ export function ValidatorStats({
     const commission = Number(validatorData.commissionRate) / 100;
     const rewardsPoolBalance = Number(validatorData.rewardsPool);
 
+    console.log("==========> validatorData: ", totalStake, commission, rewardsPoolBalance)
     return (
         <div className="flex flex-col items-stretch gap-5 md:flex-row">
             <div className="flex-grow">
