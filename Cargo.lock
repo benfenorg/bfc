@@ -9665,6 +9665,7 @@ dependencies = [
  "eyre",
  "fastcrypto",
  "futures",
+ "hex",
  "hyper",
  "itertools",
  "jsonrpsee",

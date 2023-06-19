@@ -74,6 +74,7 @@ pub mod epoch_data;
 #[cfg(feature = "test-utils")]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
+mod obc_base_types;
 
 /// 0x1-- account address where Move stdlib modules are stored
 /// Same as the ObjectID
