@@ -63,6 +63,7 @@ use std::cmp::max;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
+use tracing::info;
 
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
@@ -484,6 +485,7 @@ impl SuiAddress {
         D: serde::de::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
+        info!("deserializing address from hex: {}", s);
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
         Ok(Some(value))
     }
@@ -495,6 +497,10 @@ impl SuiAddress {
 
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
+
+        let byteString = String::from_utf8(bytes.as_ref().to_vec()).unwrap();
+        info!("suiAddress byteString: {}", byteString);
+
         <[u8; SUI_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
             .map_err(|_| SuiError::InvalidAddress)
             .map(SuiAddress)
@@ -514,10 +520,11 @@ impl From<AccountAddress> for SuiAddress {
 }
 
 impl TryFrom<&[u8]> for SuiAddress {
-    type Error = SuiError;
 
+    type Error = SuiError;
     /// Tries to convert the provided byte array into a SuiAddress.
     fn try_from(bytes: &[u8]) -> Result<Self, SuiError> {
+        info!("tryFrom u8 for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -527,12 +534,15 @@ impl TryFrom<Vec<u8>> for SuiAddress {
 
     /// Tries to convert the provided byte buffer into a SuiAddress.
     fn try_from(bytes: Vec<u8>) -> Result<Self, SuiError> {
+        info!("tryFrom Vec<u8> for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
 
 impl AsRef<[u8]> for SuiAddress {
+
     fn as_ref(&self) -> &[u8] {
+        info!("AsRef u8 for SuiAddress");
         &self.0[..]
     }
 }
@@ -540,6 +550,7 @@ impl AsRef<[u8]> for SuiAddress {
 impl FromStr for SuiAddress {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        info!("FromStr for SuiAddress");
         decode_bytes_hex(s).map_err(|e| anyhow!(e))
     }
 }
@@ -556,6 +567,7 @@ impl<T: SuiPublicKey> From<&T> for SuiAddress {
 
 impl From<&PublicKey> for SuiAddress {
     fn from(pk: &PublicKey) -> Self {
+        info!("From<&PublicKey> for SuiAddress");
         let mut hasher = DefaultHash::default();
         hasher.update([pk.flag()]);
         hasher.update(pk);
