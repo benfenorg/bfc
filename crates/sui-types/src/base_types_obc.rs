@@ -109,4 +109,21 @@ pub mod obc_address_util {
 
         //return address.to_string();
     }
+
+
+    pub fn convert_to_obc_address(prefix: &str, evm_address: &str) -> String {
+        let mut address = evm_address.to_string();
+
+        let result = sha256(address.as_str());
+        let mut hex = hex::encode(result);
+        hex.truncate(4);
+
+        let mut address = prefix.to_string();
+        address.push_str(&evm_address[2..]);
+        address.push_str(hex.as_str());
+
+
+        return address;
+    }
+
 }

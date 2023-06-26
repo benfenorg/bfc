@@ -30,6 +30,9 @@ use sui_keys::keypair_file::{
 };
 use sui_keys::keystore::{AccountKeystore, Keystore};
 use sui_types::base_types::SuiAddress;
+use sui_types::base_types_obc::obc_address_util::convert_to_evm_address;
+use sui_types::base_types_obc::obc_address_util::convert_to_obc_address;
+
 use sui_types::crypto::{
     get_authority_key_pair, get_key_pair_from_rng, EncodeDecodeBase64, SignatureScheme, SuiKeyPair,
 };
@@ -121,6 +124,11 @@ pub enum KeyToolCommand {
     /// Convert private key from wallet format (hex of 32 byte private key) to sui.keystore format
     /// (base64 of 33 byte flag || private key) or vice versa.
     Convert {
+        value: String,
+    },
+
+    /// Convert OBCAddress and SuiAddress to each other
+    OBCAddressConvert {
         value: String,
     },
 
@@ -362,6 +370,11 @@ impl KeyToolCommand {
                         info!("Invalid private key format");
                     }
                 },
+            },
+
+            //
+            KeyToolCommand::OBCAddressConvert { value } => {
+                convert_obc_sui_address(value);
             },
 
             KeyToolCommand::Base64PubKeyToAddress { base64_key } => {
@@ -648,3 +661,36 @@ fn store_and_print_keypair(address: SuiAddress, keypair: SuiKeyPair) {
         path.to_str().unwrap()
     );
 }
+
+
+
+fn convert_obc_sui_address(value: String){
+    println!("Enter the obcAddress or suiAddress to convert");
+
+    let mut suiAddress = String::from("0x");
+    let mut obcAddress = String::from("OBC");
+
+
+    //obc address
+    if value.starts_with("OBC") || value.starts_with("obc") {
+        obcAddress = value.clone();
+        suiAddress = convert_to_evm_address(value);
+
+
+    }else{
+        //sui address
+        if value.starts_with("0x") {
+            suiAddress = value.clone();
+            obcAddress = convert_to_obc_address("OBC", value.as_str());
+
+        }else{
+            println!("Invalid address");
+        }
+    }
+
+
+
+    println!("Sui Address: {}", suiAddress);
+    println!("OBC Address: {}", obcAddress);
+}
+

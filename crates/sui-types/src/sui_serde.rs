@@ -29,7 +29,7 @@ use crate::{
     parse_sui_struct_tag, parse_sui_type_tag, DEEPBOOK_ADDRESS, SUI_CLOCK_ADDRESS,
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
-use crate::base_types::{SUI_ADDRESS_LENGTH, SuiAddress};
+use crate::base_types::{SuiAddress};
 use crate::base_types_obc::obc_address_util::convert_to_evm_address;
 
 #[inline]
