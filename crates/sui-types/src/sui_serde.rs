@@ -167,7 +167,21 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
+        let mut s = String::deserialize(deserializer)?;
+
+        //obcAddress convert to suiAddress format...
+        if s.starts_with("obc") || s.starts_with("OBC") {
+            let sui = convert_to_evm_address(s.clone());
+            if sui.len() > 0{
+                s = String::from(sui);
+            }else{
+                //todo..
+                info!("deserializing error obc address from hex: {}", s);
+                return Err("invalid obc address").map_err(serde::de::Error::custom)
+            }
+        }
+        //end of obcAddress convert to suiAddress format...
+
         if s.starts_with("0x") {
             AccountAddress::from_hex_literal(&s)
         } else {

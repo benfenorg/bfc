@@ -550,7 +550,6 @@ impl TryFrom<Vec<u8>> for SuiAddress {
 impl AsRef<[u8]> for SuiAddress {
 
     fn as_ref(&self) -> &[u8] {
-        info!("AsRef u8 for SuiAddress");
         &self.0[..]
     }
 }
@@ -558,7 +557,6 @@ impl AsRef<[u8]> for SuiAddress {
 impl FromStr for SuiAddress {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        info!("FromStr for SuiAddress");
         decode_bytes_hex(s).map_err(|e| anyhow!(e))
     }
 }

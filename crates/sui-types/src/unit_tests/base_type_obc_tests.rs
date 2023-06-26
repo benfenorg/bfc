@@ -14,7 +14,7 @@ mod tests{
         println!("Hello, world!");
 
         let Prefix = "OBC";
-        let evmAddress = "0x62fddd83afa021ea277fbec75260010ccf3d908bdc7c4b31fec514886ef57619";
+        let evmAddress = "0xffc044c1cba10650f59e502a38330b6b00ed74f045e23478a5e2b98467041ba1";
 
         let result =  convertToOBAddress(Prefix, evmAddress);
 
