@@ -98,14 +98,13 @@ pub mod obc_address_util {
 
         let verify_code = ob_address[ob_address.len()-4..].to_string();
 
-        return address
 
-        // return if verify_code == hex {
-        //     address
-        // } else {
-        //     //todo, throw error
-        //     String::from("")
-        // }
+        return if verify_code == hex {
+            address
+        } else {
+            //todo, throw error
+            String::from("")
+        }
 
 
         //return address.to_string();

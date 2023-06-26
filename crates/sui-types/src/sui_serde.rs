@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
+use tonic::codegen::Body;
 use tracing::info;
 use shared_crypto::intent::AppId::Sui;
 
@@ -131,6 +132,10 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
              let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0{
                s = String::from(sui);
+            }else{
+                //todo..
+                info!("deserializing error obc address from hex: {}", s);
+                return Err("invalid obc address").map_err(serde::de::Error::custom)
             }
         }
         info!("deserializing address from hex: {}", s);

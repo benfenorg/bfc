@@ -14,7 +14,7 @@ mod tests{
         println!("Hello, world!");
 
         let Prefix = "OBC";
-        let evmAddress = "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
+        let evmAddress = "0x62fddd83afa021ea277fbec75260010ccf3d908bdc7c4b31fec514886ef57619";
 
         let result =  convertToOBAddress(Prefix, evmAddress);
 
@@ -23,7 +23,7 @@ mod tests{
 
         ////===============
 
-        let evmAddress = convertToEvmAddress(result);
+        let evmAddress = convert_to_evm_address(result);
         println!("the evm convert result is {}", evmAddress);
     }
 
@@ -50,7 +50,7 @@ fn convertToOBAddress(prefix: &str, evm_address: &str) -> String {
     hex.truncate(4);
 
     let mut address = prefix.to_string();
-    address.push_str(&evm_address[3..]);
+    address.push_str(&evm_address[2..]);
     address.push_str(hex.as_str());
 
 
@@ -58,9 +58,12 @@ fn convertToOBAddress(prefix: &str, evm_address: &str) -> String {
 }
 
 // 0x99ec891ff6602457efc2c5086c8926f4fe78cebc02a79a55485a6c56aca2b572
-pub fn convertToEvmAddress(ob_address: String) -> String {
+pub fn convert_to_evm_address(ob_address: String) -> String {
+    if ob_address.len()==0 {
+        return String::from("")
+    }
 
-    let mut address = ob_address[3..].to_string(); //remove obc
+    let mut address = ob_address[3..].to_string();
     let evm_prefix = String::from("0x");
     address.insert_str(0, evm_prefix.as_str());
     address.truncate(address.len()-4);
@@ -72,9 +75,15 @@ pub fn convertToEvmAddress(ob_address: String) -> String {
 
     let verify_code = ob_address[ob_address.len()-4..].to_string();
 
-    return if verify_code == hex {
-        address
-    } else {
-        String::from("")
-    }
+    return address
+
+    // return if verify_code == hex {
+    //     address
+    // } else {
+    //     //todo, throw error
+    //     String::from("")
+    // }
+
+
+    //return address.to_string();
 }
