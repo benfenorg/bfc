@@ -75,6 +75,7 @@ pub mod epoch_data;
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
 mod obc_base_types;
+mod base_types_obc;
 
 /// 0x1-- account address where Move stdlib modules are stored
 /// Same as the ObjectID

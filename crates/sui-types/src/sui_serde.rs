@@ -8,7 +8,7 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 use std::str::FromStr;
 
-use fastcrypto::encoding::Hex;
+use fastcrypto::encoding::{decode_bytes_hex, Hex};
 use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::{StructTag, TypeTag};
 use schemars::JsonSchema;
@@ -19,6 +19,8 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
+use tracing::info;
+use shared_crypto::intent::AppId::Sui;
 
 use sui_protocol_config::ProtocolVersion;
 
@@ -26,6 +28,8 @@ use crate::{
     parse_sui_struct_tag, parse_sui_type_tag, DEEPBOOK_ADDRESS, SUI_CLOCK_ADDRESS,
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
+use crate::base_types::{SUI_ADDRESS_LENGTH, SuiAddress};
+use crate::base_types_obc::obc_address_util::convert_to_evm_address;
 
 #[inline]
 fn to_custom_error<'de, D, E>(e: E) -> D::Error
@@ -97,6 +101,49 @@ where
         }
     }
 }
+
+
+
+
+
+
+///===============
+/// custom serde for AccountAddress
+pub struct HexOBCAddress;
+
+impl SerializeAs<[u8; 32]> for HexOBCAddress {
+    fn serialize_as<S>(value: &[u8;32], serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        Hex::serialize_as(value, serializer)
+    }
+}
+
+//0x99ec891ff6602457efc2c5086c8926f4fe78cebc02a79a55485a6c56aca2b572
+impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
+    fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
+        where
+            D: Deserializer<'de>,
+    {
+        let mut s = String::deserialize(deserializer)?;
+        if s.starts_with("obc") || s.starts_with("OBC"){
+             let sui = convert_to_evm_address(s.clone());
+            if sui.len() > 0{
+               s = String::from(sui);
+            }
+        }
+        info!("deserializing address from hex: {}", s);
+        let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
+        Ok(value)
+    }
+}
+
+///
+///
+///
+
+
 
 /// custom serde for AccountAddress
 pub struct HexAccountAddress;
