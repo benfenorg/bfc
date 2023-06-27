@@ -94,18 +94,19 @@ pub mod obc_address_util {
         address.insert_str(0, evm_prefix.as_str());
         address.truncate(address.len()-4);
 
-        let result = sha256_string(address.as_str());
-        let mut hex = hex::encode(result);
-        hex.truncate(4);
+        let mut result = sha256_string(&address[2..]);
+        let checkSum = result.get(0..4).unwrap();
+
 
 
         let verify_code = ob_address[ob_address.len()-4..].to_string();
 
 
-        return if verify_code == hex {
+        return if verify_code == checkSum {
             address
         } else {
             //todo, throw error
+            println!("verify_code: {}, checkSum: {}", verify_code, checkSum);
             String::from("")
         }
 
@@ -115,15 +116,14 @@ pub mod obc_address_util {
 
 
     pub fn convert_to_obc_address(prefix: &str, evm_address: &str) -> String {
-        let mut address = evm_address.to_string();
 
-        let result = sha256_string(address.as_str());
-        let mut hex = hex::encode(result);
-        hex.truncate(4);
+        //let mut address = evm_address.to_string();
+        let mut result = sha256_string(&evm_address[2..]);
+        let checkSum = result.get(0..4).unwrap();
 
         let mut address = prefix.to_string();
         address.push_str(&evm_address[2..]);
-        address.push_str(hex.as_str());
+        address.push_str(checkSum);
 
 
         return address;
