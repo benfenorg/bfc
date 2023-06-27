@@ -126,7 +126,6 @@ pub struct ObjectID(
 );
 
 pub type ObjectRef = (ObjectID, SequenceNumber, ObjectDigest);
-
 pub fn random_object_ref() -> ObjectRef {
     (
         ObjectID::random(),
@@ -532,7 +531,7 @@ impl TryFrom<&[u8]> for SuiAddress {
     type Error = SuiError;
     /// Tries to convert the provided byte array into a SuiAddress.
     fn try_from(bytes: &[u8]) -> Result<Self, SuiError> {
-        info!("tryFrom u8 for SuiAddress");
+        //info!("tryFrom u8 for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -542,7 +541,7 @@ impl TryFrom<Vec<u8>> for SuiAddress {
 
     /// Tries to convert the provided byte buffer into a SuiAddress.
     fn try_from(bytes: Vec<u8>) -> Result<Self, SuiError> {
-        info!("tryFrom Vec<u8> for SuiAddress");
+        //info!("tryFrom Vec<u8> for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -573,7 +572,7 @@ impl<T: SuiPublicKey> From<&T> for SuiAddress {
 
 impl From<&PublicKey> for SuiAddress {
     fn from(pk: &PublicKey) -> Self {
-        info!("From<&PublicKey> for SuiAddress");
+        //info!("From<&PublicKey> for SuiAddress");
         let mut hasher = DefaultHash::default();
         hasher.update([pk.flag()]);
         hasher.update(pk);
