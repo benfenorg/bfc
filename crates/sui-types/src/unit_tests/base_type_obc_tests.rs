@@ -1,6 +1,7 @@
 use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use hex;
+use sha2::{Digest, Sha256};
+
 
 
 
@@ -28,15 +29,24 @@ mod tests{
     }
 
 
+
+
+    #[test]
+    fn test_sha256_string() {
+        let input = "d62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
+        let result =  sha256_string(input);
+        println!("the sha256 result is {}", result);
+    }
 }
 
 
 
-fn sha256(input: &str) -> String {
-    let mut hasher = DefaultHasher::new();
-    input.hash(&mut hasher);
-    let result = hasher.finish();
 
+
+fn sha256_string(input: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(input.as_bytes());
+    let result = hasher.finalize();
     format!("{:x}", result)
 }
 
@@ -45,7 +55,7 @@ fn sha256(input: &str) -> String {
 fn convertToOBAddress(prefix: &str, evm_address: &str) -> String {
     let mut address = evm_address.to_string();
 
-    let result = sha256(address.as_str());
+    let result = sha256_string(address.as_str());
     let mut hex = hex::encode(result);
     hex.truncate(4);
 
@@ -68,7 +78,7 @@ pub fn convert_to_evm_address(ob_address: String) -> String {
     address.insert_str(0, evm_prefix.as_str());
     address.truncate(address.len()-4);
 
-    let result = sha256(address.as_str());
+    let result = sha256_string(address.as_str());
     let mut hex = hex::encode(result);
     hex.truncate(4);
 

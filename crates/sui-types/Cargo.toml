@@ -36,6 +36,8 @@ indexmap = "1.9.2"
 derivative = "2.2.0"
 parking_lot = "0.12.1"
 hex = "0.4.3"
+sha2 = "0.9.5"
+
 
 move-binary-format.workspace = true
 move-bytecode-utils.workspace = true

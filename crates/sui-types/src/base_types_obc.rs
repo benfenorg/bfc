@@ -8,6 +8,8 @@ use serde_with::serde_as;
 //use crate::sui_serde::Readable;
 use std::convert::TryFrom;
 use hex;
+use sha2::{Digest, Sha256};
+
 #[cfg(test)]
 #[path = "unit_tests/base_type_obc_tests.rs"]
 mod base_type_obc_tests;
@@ -71,15 +73,16 @@ impl TryFrom<&[u8]> for ObcAddress {
 
 pub mod obc_address_util {
     use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
+    use sha2::{Digest, Sha256};
 
-    fn sha256(input: &str) -> String {
-        let mut hasher = DefaultHasher::new();
-        input.hash(&mut hasher);
-        let result = hasher.finish();
 
+    fn sha256_string(input: &str) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(input.as_bytes());
+        let result = hasher.finalize();
         format!("{:x}", result)
     }
+
 
     pub fn convert_to_evm_address(ob_address: String) -> String {
         if ob_address.len()==0 {
@@ -91,7 +94,7 @@ pub mod obc_address_util {
         address.insert_str(0, evm_prefix.as_str());
         address.truncate(address.len()-4);
 
-        let result = sha256(address.as_str());
+        let result = sha256_string(address.as_str());
         let mut hex = hex::encode(result);
         hex.truncate(4);
 
@@ -114,7 +117,7 @@ pub mod obc_address_util {
     pub fn convert_to_obc_address(prefix: &str, evm_address: &str) -> String {
         let mut address = evm_address.to_string();
 
-        let result = sha256(address.as_str());
+        let result = sha256_string(address.as_str());
         let mut hex = hex::encode(result);
         hex.truncate(4);
 
