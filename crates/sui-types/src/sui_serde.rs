@@ -5,7 +5,7 @@ use std::fmt;
 use std::fmt::Write;
 use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
-use std::ops::Deref;
+use std::ops::{Add, Deref};
 use std::str::FromStr;
 
 use fastcrypto::encoding::{decode_bytes_hex, Hex};
@@ -31,6 +31,7 @@ use crate::{
 };
 use crate::base_types::{SuiAddress};
 use crate::base_types_obc::obc_address_util::convert_to_evm_address;
+use crate::base_types_obc::obc_address_util::sha256_string;
 
 #[inline]
 fn to_custom_error<'de, D, E>(e: E) -> D::Error
@@ -117,11 +118,27 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
         where
             S: Serializer,
     {
+        info!("serializing HexOBCAddress to hex: ");
+        if(serializer.is_human_readable()){
+            let mut s = String::new();
+            for i in 0..value.len() {
+                write!(s, "{:02x}", value[i]).unwrap();
+            }
+            let mut result = sha256_string(&s.clone());
+            let checkSum = result.get(0..4).unwrap();
+
+
+
+            let obcAddress = String::from("OBC") + &s + checkSum;
+            info!("is_human_readable serializing address to hex: {}", obcAddress);
+
+            return obcAddress.serialize(serializer);
+        }
+
         Hex::serialize_as(value, serializer)
     }
 }
 
-//0x99ec891ff6602457efc2c5086c8926f4fe78cebc02a79a55485a6c56aca2b572
 impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
     fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
         where
