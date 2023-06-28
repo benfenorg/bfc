@@ -21,6 +21,7 @@ use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
 use tonic::codegen::Body;
 use tracing::info;
+use sha2::{Digest, Sha256};
 use shared_crypto::intent::AppId::Sui;
 
 use sui_protocol_config::ProtocolVersion;
@@ -175,8 +176,25 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
     where
         S: Serializer,
     {
+
+        if serializer.is_human_readable() {
+            let mut s = String::new();
+            for i in 0..value.len() {
+                write!(s, "{:02x}", value[i]).unwrap();
+            }
+            //let temp =  serializer.clone().serialize_str(&s.clone());
+            let mut hasher = Sha256::new();
+            hasher.update(s.as_bytes());
+            let mut result = format!("{:x}",  hasher.finalize());
+            let checkSum = result.get(0..4).unwrap();
+            let obcAddress = String::from("OBC") + &s + checkSum;
+
+            return obcAddress.serialize(serializer);
+        }
+
         Hex::serialize_as(value, serializer)
     }
+
 }
 
 impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
