@@ -3,7 +3,7 @@
 
 import { useGetSystemState } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
-import { type SuiValidatorSummary } from '@mysten/sui.js';
+import { type SuiValidatorSummary, sui2ObcAddress } from '@mysten/sui.js';
 import { useMemo } from 'react';
 
 import { StakeColumn } from './StakeColumn';
@@ -52,7 +52,7 @@ const validatorsTable = (
                         />
                     )}
 
-                    <Link to={`/validator/${encodeURIComponent(address)}`}>
+                    <Link to={`/validator/${encodeURIComponent(sui2ObcAddress(address))}`}>
                         {name}
                     </Link>
                 </div>

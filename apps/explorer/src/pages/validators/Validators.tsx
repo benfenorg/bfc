@@ -9,7 +9,11 @@ import {
     formatPercentageDisplay,
     useGetSystemState,
 } from '@mysten/core';
-import { type SuiEvent, type SuiValidatorSummary } from '@mysten/sui.js';
+import {
+    sui2ObcAddress,
+    type SuiEvent,
+    type SuiValidatorSummary,
+} from '@mysten/sui.js';
 import { lazy, Suspense, useMemo } from 'react';
 
 import { ErrorBoundary } from '~/components/error-boundary/ErrorBoundary';
@@ -45,7 +49,10 @@ export function validatorsTableData(
                 const totalStake = validator.stakingPoolSuiBalance;
                 const img = validator.imageUrl;
 
-                console.error('validator=============', validator.stakingPoolSuiBalance);
+                console.error(
+                    'validator=============',
+                    validator.stakingPoolSuiBalance
+                );
 
                 const event = getValidatorMoveEvent(
                     validatorEvents,
@@ -109,7 +116,7 @@ export function validatorsTableData(
                     return (
                         <Link
                             to={`/validator/${encodeURIComponent(
-                                props.row.original.address
+                                sui2ObcAddress(props.row.original.address)
                             )}`}
                         >
                             <div className="flex items-center gap-2.5">
@@ -259,7 +266,6 @@ function ValidatorPageResult() {
         );
     }, [data]);
 
-
     const averageAPY = useMemo(() => {
         if (!validatorsApy || Object.keys(validatorsApy)?.length === 0)
             return null;
@@ -302,7 +308,6 @@ function ValidatorPageResult() {
             validatorsApy || null
         );
     }, [data, validatorEvents, validatorsApy]);
-
 
     if (isError || validatorEventError) {
         return (

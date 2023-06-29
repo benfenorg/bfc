@@ -6,7 +6,7 @@ import {
     useGetValidatorsEvents,
     useGetSystemState,
 } from '@mysten/core';
-import { type SuiSystemStateSummary } from '@mysten/sui.js';
+import { type SuiSystemStateSummary, sui2ObcAddress } from '@mysten/sui.js';
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -38,7 +38,8 @@ function ValidatorDetails() {
         return (
             data.activeValidators.find(
                 ({ suiAddress, stakingPoolId }) =>
-                    suiAddress === id || stakingPoolId === id
+                    sui2ObcAddress(suiAddress) === id ||
+                    sui2ObcAddress(stakingPoolId) === id
             ) || null
         );
     }, [id, data]);
@@ -82,7 +83,6 @@ function ValidatorDetails() {
             </div>
         );
     }
-
 
     const { apy, isApyApproxZero } = rollingAverageApys?.[id] ?? { apy: null };
 

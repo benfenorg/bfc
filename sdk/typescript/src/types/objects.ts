@@ -25,6 +25,7 @@ import {
   TransactionDigest,
 } from './common';
 import { OwnedObjectRef } from './transactions';
+import { sui2ObcAddress } from '../utils/format';
 
 export const ObjectType = union([string(), literal('package')]);
 export type ObjectType = Infer<typeof ObjectType>;
@@ -285,13 +286,15 @@ export function getObjectReference(
 export function getObjectId(
   data: SuiObjectResponse | SuiObjectRef | OwnedObjectRef,
 ): ObjectId {
+  let id: string;
   if ('objectId' in data) {
-    return data.objectId;
+    id = data.objectId;
+  } else {
+    id =
+      getObjectReference(data)?.objectId ??
+      getObjectNotExistsResponse(data as SuiObjectResponse)!;
   }
-  return (
-    getObjectReference(data)?.objectId ??
-    getObjectNotExistsResponse(data as SuiObjectResponse)!
-  );
+  return sui2ObcAddress(id);
 }
 
 export function getObjectVersion(

@@ -12,6 +12,7 @@ import {
 } from 'superstruct';
 import { CallArg } from './sui-bcs';
 import { fromB58 } from '@mysten/bcs';
+import { sui2ObcAddress } from '../utils/format';
 
 export const TransactionDigest = string();
 export type TransactionDigest = Infer<typeof TransactionDigest>;
@@ -79,7 +80,9 @@ export function isValidTransactionDigest(
 
 export const SUI_ADDRESS_LENGTH = 32;
 export function isValidSuiAddress(value: string): value is SuiAddress {
-  return isHex(value) && getHexByteLength(value) === SUI_ADDRESS_LENGTH;
+  const obc = sui2ObcAddress(value);
+  const hex = obc.replace(/^OBC/, '');
+  return isHex(hex) && getHexByteLength(hex) === SUI_ADDRESS_LENGTH;
 }
 
 export function isValidSuiObjectId(value: string): boolean {
@@ -152,11 +155,15 @@ export function normalizeSuiAddress(
   value: string,
   forceAdd0x: boolean = false,
 ): SuiAddress {
+  if (/^OBC/.test(value)) {
+    return value;
+  }
   let address = value.toLowerCase();
   if (!forceAdd0x && address.startsWith('0x')) {
     address = address.slice(2);
   }
-  return `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
+  address = `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
+  return sui2ObcAddress(address);
 }
 
 export function normalizeSuiObjectId(
@@ -171,5 +178,7 @@ function isHex(value: string): boolean {
 }
 
 function getHexByteLength(value: string): number {
-  return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
+  return /^(0x|0X)/.test(value)
+    ? (value.length - 6) / 2
+    : (value.length - 4) / 2;
 }

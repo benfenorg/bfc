@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { isSuiNSName } from '@mysten/core';
-import { formatAddress, formatDigest } from '@mysten/sui.js';
+import { formatAddress, formatDigest, sui2ObcAddress } from '@mysten/sui.js';
 
 import { Link, type LinkProps } from '~/ui/Link';
 
@@ -22,9 +22,24 @@ function createInternalLink<T extends string>(
         label,
         ...props
     }: BaseInternalLinkProps & Record<T, string>) => {
-        const truncatedAddress = noTruncate ? id : formatter(id);
+        let converted: string = id;
+        if (['address', 'object', 'validator'].includes(base)) {
+            const queryIndex = id.indexOf('?');
+            if (queryIndex === -1) {
+                converted = sui2ObcAddress(id);
+            } else {
+                converted =
+                    sui2ObcAddress(id.slice(0, queryIndex)) +
+                    id.slice(queryIndex);
+            }
+        }
+        const truncatedAddress = noTruncate ? converted : formatter(converted);
         return (
-            <Link variant="mono" to={`/${base}/${encodeURI(id)}`} {...props}>
+            <Link
+                variant="mono"
+                to={`/${base}/${encodeURI(converted)}`}
+                {...props}
+            >
                 {label || truncatedAddress}
             </Link>
         );

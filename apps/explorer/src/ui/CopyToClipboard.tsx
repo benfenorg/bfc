@@ -3,6 +3,7 @@
 
 import { useCopyToClipboard } from '@mysten/core';
 import { Copy12, Copy16, CopyNew24 } from '@mysten/icons';
+import { sui2ObcAddress } from '@mysten/sui.js';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { toast } from 'react-hot-toast';
 
@@ -52,7 +53,7 @@ export function CopyToClipboard({
     const CopyIcon = ICON_SIZES[size!];
 
     return (
-        <Link onClick={() => copyToClipBoard(copyText)}>
+        <Link onClick={() => copyToClipBoard(sui2ObcAddress(copyText))}>
             <span className="sr-only">Copy</span>
             <CopyIcon className={iconStyles({ size, color })} />
         </Link>

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ArrowUpRight12 } from '@mysten/icons';
-import { type SuiValidatorSummary } from '@mysten/sui.js';
+import { sui2ObcAddress, type SuiValidatorSummary } from '@mysten/sui.js';
 
 import { StakeButton } from './StakeButton';
 
@@ -68,7 +68,7 @@ export function ValidatorMeta({ validatorData }: ValidatorMetaProps) {
                     <DescriptionItem title="Pool ID" align="start">
                         <div className="flex items-start gap-1 break-all">
                             <Text variant="pBody/medium" color="steel-darker">
-                                {validatorData.stakingPoolId}
+                                {sui2ObcAddress(validatorData.stakingPoolId)}
                             </Text>
                             <CopyToClipboard
                                 size="md"

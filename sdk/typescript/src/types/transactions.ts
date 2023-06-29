@@ -33,6 +33,7 @@ import {
   SuiMovePackage,
   SuiObjectRef,
 } from './objects';
+import { sui2ObcAddress } from '../utils/format';
 
 export const EpochId = string();
 
@@ -472,7 +473,8 @@ export function getTransactionSignature(
 export function getTransactionSender(
   tx: SuiTransactionBlockResponse,
 ): SuiAddress | undefined {
-  return tx.transaction?.data.sender;
+  let sender = tx.transaction?.data.sender;
+  return sender ? sui2ObcAddress(sender) : undefined;
 }
 
 export function getGasData(
