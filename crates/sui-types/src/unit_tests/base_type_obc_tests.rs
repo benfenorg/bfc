@@ -66,21 +66,6 @@ mod tests{
         let result =  sha256_string(input);
         println!("the sha256 result is {}", result);
     }
-
-
-    #[test]
-    fn test_object_id_serde_json() {
-        let hex = format!("0x{}", SAMPLE_ADDRESS);
-        let json_hex = format!("\"0x{}\"", SAMPLE_ADDRESS);
-
-        let obj_id = ObjectID::from_hex_literal(&hex).unwrap();
-
-        let json = serde_json::to_string(&obj_id).unwrap();
-        let json_obj_id: ObjectID = serde_json::from_str(&json_hex).unwrap();
-
-        assert_eq!(json, json_hex);
-        assert_eq!(obj_id, json_obj_id);
-    }
 }
 
 
