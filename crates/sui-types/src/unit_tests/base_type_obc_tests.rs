@@ -62,9 +62,17 @@ mod tests{
 
     #[test]
     fn test_sha256_string() {
-        let input = "d62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
-        let result =  sha256_string(input);
-        println!("the sha256 result is {}", result);
+        let object_id_vec = SAMPLE_ADDRESS_VEC.to_vec();
+        let object_id = ObjectID::try_from(object_id_vec.clone()).unwrap();
+        let json_serialized = serde_json::to_string(&object_id).unwrap();
+        let bcs_serialized = bcs::to_bytes(&object_id).unwrap();
+
+        let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
+        let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
+        let expected_json_address_obce = format!("\"OBC{}{}\"", SAMPLE_ADDRESS, check_sum);
+
+        assert_eq!(expected_json_address == json_serialized || expected_json_address_obce == json_serialized, true);
+        assert_eq!(object_id_vec, bcs_serialized);
     }
 }
 
@@ -124,4 +132,11 @@ pub fn local_convert_to_evm_address(ob_address: String) -> String {
 
 
     //return address
+}
+
+
+fn get_check_sum(input: String) -> String {
+    let result = sha256_string(&input.clone());
+    let check_sum = result.get(0..4).unwrap();
+    return check_sum.to_string();
 }
