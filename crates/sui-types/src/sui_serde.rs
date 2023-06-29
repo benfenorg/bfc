@@ -5,7 +5,7 @@ use std::fmt;
 use std::fmt::Write;
 use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
-use std::ops::{Add, Deref};
+use std::ops::{Deref};
 use std::str::FromStr;
 
 use fastcrypto::encoding::{decode_bytes_hex, Hex};
@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
-use tonic::codegen::Body;
+//use tonic::codegen::Body;
 use tracing::info;
 use sha2::{Digest, Sha256};
 use shared_crypto::intent::AppId::Sui;
@@ -30,7 +30,7 @@ use crate::{
     parse_sui_struct_tag, parse_sui_type_tag, DEEPBOOK_ADDRESS, SUI_CLOCK_ADDRESS,
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
-use crate::base_types::{SuiAddress};
+//use crate::base_types::{SuiAddress};
 use crate::base_types_obc::obc_address_util::convert_to_evm_address;
 use crate::base_types_obc::obc_address_util::sha256_string;
 
@@ -120,20 +120,20 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
             S: Serializer,
     {
         info!("serializing HexOBCAddress to hex: ");
-        if(serializer.is_human_readable()){
+        if serializer.is_human_readable(){
             let mut s = String::new();
             for i in 0..value.len() {
                 write!(s, "{:02x}", value[i]).unwrap();
             }
-            let mut result = sha256_string(&s.clone());
-            let checkSum = result.get(0..4).unwrap();
+            let result = sha256_string(&s.clone());
+            let check_sum = result.get(0..4).unwrap();
 
 
 
-            let obcAddress = String::from("OBC") + &s + checkSum;
-            info!("is_human_readable serializing address to hex: {}", obcAddress);
+            let obc_address = String::from("OBC") + &s + check_sum;
+            info!("is_human_readable serializing address to hex: {}", obc_address);
 
-            return obcAddress.serialize(serializer);
+            return obc_address.serialize(serializer);
         }
 
         Hex::serialize_as(value, serializer)
@@ -147,11 +147,11 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
     {
         let mut s = String::deserialize(deserializer)?;
         if s.starts_with("obc") || s.starts_with("OBC"){
+            info!("HexOBCAddress converting obcAddress: {}", s);
              let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0{
                s = String::from(sui);
             }else{
-                //todo..
                 info!("HexOBCAddress deserializing error obc address from hex: {}", s);
                 return Err("invalid obc address").map_err(serde::de::Error::custom)
             }
@@ -185,11 +185,11 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
             //let temp =  serializer.clone().serialize_str(&s.clone());
             let mut hasher = Sha256::new();
             hasher.update(s.as_bytes());
-            let mut result = format!("{:x}",  hasher.finalize());
-            let checkSum = result.get(0..4).unwrap();
-            let obcAddress = String::from("OBC") + &s + checkSum;
+            let result = format!("{:x}",  hasher.finalize());
+            let check_sum = result.get(0..4).unwrap();
+            let obc_address = String::from("OBC") + &s + check_sum;
 
-            return obcAddress.serialize(serializer);
+            return obc_address.serialize(serializer);
         }
 
         Hex::serialize_as(value, serializer)

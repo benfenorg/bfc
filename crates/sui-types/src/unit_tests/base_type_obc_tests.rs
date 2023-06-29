@@ -1,12 +1,16 @@
-use std::collections::hash_map::DefaultHasher;
+//use std::collections::hash_map::DefaultHasher;
 use hex;
 use sha2::{Digest, Sha256};
 use super::*;
 
-
+const SAMPLE_ADDRESS: &str = "af306e86c74e937552df132b41a6cb3af58559f5342c6e82a98f7d1f7a4a9f30";
+const SAMPLE_ADDRESS_VEC: [u8; 32] = [
+    175, 48, 110, 134, 199, 78, 147, 117, 82, 223, 19, 43, 65, 166, 203, 58, 245, 133, 89, 245, 52,
+    44, 110, 130, 169, 143, 125, 31, 122, 74, 159, 48,
+];
 #[cfg(test)]
 mod tests{
-    use crate::base_types_obc::obc_address_util::convert_to_obc_address;
+    //use crate::base_types_obc::obc_address_util::convert_to_obc_address;
     use super::*;
 
 
@@ -16,8 +20,8 @@ mod tests{
         let result = obc_address_util::convert_to_evm_address(String::from("OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede"));
         println!("the evm convert result is {}", result);
 
-        let suiAddress = obc_address_util::convert_to_obc_address("OBC", "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857");
-        println!("the obc convert result is {}", suiAddress);
+        let sui_address = obc_address_util::convert_to_obc_address("OBC", "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857");
+        println!("the obc convert result is {}", sui_address);
 
 
     }
@@ -28,19 +32,19 @@ mod tests{
     fn test_convert_sample(){
         println!("Hello, world!");
 
-        let Prefix = "OBC";
-        let evmAddress = "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
+        let prefix = "OBC";
+        let evm_address = "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
 
-        let obcAddress =  local_convertToOBAddress(Prefix, evmAddress);
+        let obc_address =  local_convert_to_obaddress(prefix, evm_address);
 
         //OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede
-        println!("the ob convert result is {}", obcAddress);
+        println!("the ob convert result is {}", obc_address);
 
 
         ////===============
 
-        //let evmAddress = convert_to_evm_address(result);
-        //println!("the evm convert result is {}", evmAddress);
+        //let evm_address = convert_to_evm_address(result);
+        //println!("the evm convert result is {}", evm_address);
     }
 
 
@@ -48,8 +52,8 @@ mod tests{
     fn test_convert_sample2(){
         ////===============
         let result = "OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede";
-        let evmAddress = local_convert_to_evm_address(result.to_string());
-        println!("the evm convert result is {}", evmAddress);
+        let evm_address = local_convert_to_evm_address(result.to_string());
+        println!("the evm convert result is {}", evm_address);
     }
     //0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857
 
@@ -61,6 +65,21 @@ mod tests{
         let input = "d62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
         let result =  sha256_string(input);
         println!("the sha256 result is {}", result);
+    }
+
+
+    #[test]
+    fn test_object_id_serde_json() {
+        let hex = format!("0x{}", SAMPLE_ADDRESS);
+        let json_hex = format!("\"0x{}\"", SAMPLE_ADDRESS);
+
+        let obj_id = ObjectID::from_hex_literal(&hex).unwrap();
+
+        let json = serde_json::to_string(&obj_id).unwrap();
+        let json_obj_id: ObjectID = serde_json::from_str(&json_hex).unwrap();
+
+        assert_eq!(json, json_hex);
+        assert_eq!(obj_id, json_obj_id);
     }
 }
 
@@ -77,18 +96,18 @@ fn sha256_string(input: &str) -> String {
 
 
 //OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede
-fn local_convertToOBAddress(prefix: &str, evm_address: &str) -> String {
-    let mut address = evm_address.to_string();
+fn local_convert_to_obaddress(prefix: &str, evm_address: &str) -> String {
+    //let mut address = evm_address.to_string();
 
-    let mut result = sha256_string(&evm_address[2..]);
+    let  result = sha256_string(&evm_address[2..]);
     //let mut hex = hex::encode(result);
     //result.truncate(4);
-    let checkSum = result.get(0..4).unwrap();
-    println!("the checkSum is {}", checkSum);
+    let check_sum = result.get(0..4).unwrap();
+    println!("the check_sum is {}", check_sum);
 
     let mut address = prefix.to_string();
     address.push_str(&evm_address[2..]);
-    address.push_str(checkSum);
+    address.push_str(check_sum);
 
 
     return address;
@@ -111,15 +130,13 @@ pub fn local_convert_to_evm_address(ob_address: String) -> String {
 
     let verify_code = ob_address[ob_address.len()-4..].to_string();
 
-    return address
-
-    // return if verify_code == hex {
-    //     address
-    // } else {
-    //     //todo, throw error
-    //     String::from("")
-    // }
+    return if verify_code == hex {
+        address
+    } else {
+        //todo, throw error
+        String::from("")
+    };
 
 
-    //return address.to_string();
+    //return address
 }

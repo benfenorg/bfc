@@ -8,7 +8,7 @@ use serde_with::serde_as;
 //use crate::sui_serde::Readable;
 use std::convert::TryFrom;
 use hex;
-use sha2::{Digest, Sha256};
+//use sha2::{Digest, Sha256};
 
 #[cfg(test)]
 #[path = "unit_tests/base_type_obc_tests.rs"]
@@ -94,19 +94,18 @@ pub mod obc_address_util {
         address.insert_str(0, evm_prefix.as_str());
         address.truncate(address.len()-4);
 
-        let mut result = sha256_string(&address[2..]);
-        let checkSum = result.get(0..4).unwrap();
+        let result = sha256_string(&address[2..]);
+        let check_sum = result.get(0..4).unwrap();
 
 
 
         let verify_code = ob_address[ob_address.len()-4..].to_string();
 
 
-        return if verify_code == checkSum {
+        return if verify_code == check_sum {
             address
         } else {
-            //todo, throw error
-            println!("verify_code: {}, checkSum: {}", verify_code, checkSum);
+            println!("verify_code: {}, check_sum: {}", verify_code, check_sum);
             String::from("")
         }
 
@@ -118,12 +117,12 @@ pub mod obc_address_util {
     pub fn convert_to_obc_address(prefix: &str, evm_address: &str) -> String {
 
         //let mut address = evm_address.to_string();
-        let mut result = sha256_string(&evm_address[2..]);
-        let checkSum = result.get(0..4).unwrap();
+        let result = sha256_string(&evm_address[2..]);
+        let check_sum = result.get(0..4).unwrap();
 
         let mut address = prefix.to_string();
         address.push_str(&evm_address[2..]);
-        address.push_str(checkSum);
+        address.push_str(check_sum);
 
 
         return address;
