@@ -667,21 +667,21 @@ fn store_and_print_keypair(address: SuiAddress, keypair: SuiKeyPair) {
 fn convert_obc_sui_address(value: String){
     println!("Enter the obcAddress or suiAddress to convert");
 
-    let mut suiAddress = String::from("0x");
-    let mut obcAddress = String::from("OBC");
+    let mut sui_address = String::from("0x");
+    let mut obc_address = String::from("OBC");
 
 
     //obc address
     if value.starts_with("OBC") || value.starts_with("obc") {
-        obcAddress = value.clone();
-        suiAddress = convert_to_evm_address(value);
+        obc_address = value.clone();
+        sui_address = convert_to_evm_address(value);
 
 
     }else{
         //sui address
         if value.starts_with("0x") {
-            suiAddress = value.clone();
-            obcAddress = convert_to_obc_address("OBC", value.as_str());
+            sui_address = value.clone();
+            obc_address = convert_to_obc_address("OBC", value.as_str());
 
         }else{
             println!("Invalid address");
@@ -690,7 +690,7 @@ fn convert_obc_sui_address(value: String){
 
 
 
-    println!("Sui Address: {}", suiAddress);
-    println!("OBC Address: {}", obcAddress);
+    println!("Sui Address: {}", sui_address);
+    println!("OBC Address: {}", obc_address);
 }
 
