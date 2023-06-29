@@ -207,6 +207,10 @@ fn test_object_id_serde_with_expected_value() {
     let bcs_serialized = bcs::to_bytes(&object_id).unwrap();
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
+    let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
+    let expected_json_address_obce = format!("\"OBC{}{}\"", SAMPLE_ADDRESS, check_sum);
+
+    assert_eq!(expected_json_address == json_serialized || expected_json_address_obce == json_serialized, true);
     assert_eq!(expected_json_address, json_serialized);
     assert_eq!(object_id_vec, bcs_serialized);
 }
