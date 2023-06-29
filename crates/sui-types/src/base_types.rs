@@ -489,7 +489,7 @@ impl SuiAddress {
     {
         let s = String::deserialize(deserializer)?;
 
-        info!("deserializing address from hex: {}", s);
+        info!("optional_address_from_hex address from hex: {}", s);
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
         Ok(Some(value))
     }

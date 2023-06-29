@@ -152,11 +152,11 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
                s = String::from(sui);
             }else{
                 //todo..
-                info!("deserializing error obc address from hex: {}", s);
+                info!("HexOBCAddress deserializing error obc address from hex: {}", s);
                 return Err("invalid obc address").map_err(serde::de::Error::custom)
             }
         }
-        info!("deserializing address from hex: {}", s);
+        info!("HexOBCAddress deserializing address from hex: {}", s);
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
         Ok(value)
     }
