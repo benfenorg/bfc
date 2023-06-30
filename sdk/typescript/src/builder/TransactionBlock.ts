@@ -9,7 +9,7 @@ import {
   extractStructTag,
   getObjectReference,
   getSharedObjectInitialVersion,
-  normalizeSuiObjectId,
+  normalizeHexAddress,
   ObjectId,
   SuiMoveNormalizedType,
   SuiObjectRef,
@@ -529,7 +529,7 @@ export class TransactionBlock {
           const normalized = await expectProvider(
             provider,
           ).getNormalizedMoveFunction({
-            package: normalizeSuiObjectId(packageId),
+            package: normalizeHexAddress(packageId),
             module: moduleName,
             function: functionName,
           });

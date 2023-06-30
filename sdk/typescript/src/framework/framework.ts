@@ -10,7 +10,7 @@ import {
   getObjectId,
   getObjectType,
 } from '../types/objects';
-import { normalizeSuiObjectId, ObjectId, SuiAddress } from '../types/common';
+import { normalizeHexAddress, ObjectId, SuiAddress } from '../types/common';
 
 import { getOption, Option } from '../types/option';
 import { CoinStruct } from '../types/coin';
@@ -27,7 +27,7 @@ export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
 export const VALIDATORS_EVENTS_QUERY =
   '0x3::validator_set::ValidatorEpochInfoEventV2';
 
-export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
+export const SUI_CLOCK_OBJECT_ID = normalizeHexAddress('0x6');
 
 // `sui::pay` module is used for Coin management (split, join, join_and_transfer etc);
 export const PAY_MODULE_NAME = 'pay';
@@ -85,7 +85,7 @@ export class Coin {
 
   static getCoinStructTag(coinTypeArg: string): StructTag {
     return {
-      address: normalizeSuiObjectId(coinTypeArg.split('::')[0]),
+      address: normalizeHexAddress(coinTypeArg.split('::')[0]),
       module: coinTypeArg.split('::')[1],
       name: coinTypeArg.split('::')[2],
       typeParams: [],

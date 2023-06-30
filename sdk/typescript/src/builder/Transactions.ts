@@ -19,7 +19,7 @@ import {
   unknown,
   record,
 } from 'superstruct';
-import { ObjectId, normalizeSuiObjectId } from '../types/common';
+import { ObjectId, normalizeHexAddress } from '../types/common';
 import { TRANSACTION_TYPE, WellKnownEncoding, create } from './utils';
 import { TypeTagSerializer } from '../signers/txn-data-serializers/type-tag-serializer';
 
@@ -210,7 +210,7 @@ export const Transactions = {
         modules: modules.map((module) =>
           typeof module === 'string' ? Array.from(fromB64(module)) : module,
         ),
-        dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+        dependencies: dependencies.map((dep) => normalizeHexAddress(dep)),
       },
       PublishTransaction,
     );
@@ -232,7 +232,7 @@ export const Transactions = {
         modules: modules.map((module) =>
           typeof module === 'string' ? Array.from(fromB64(module)) : module,
         ),
-        dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+        dependencies: dependencies.map((dep) => normalizeHexAddress(dep)),
         packageId,
         ticket,
       },

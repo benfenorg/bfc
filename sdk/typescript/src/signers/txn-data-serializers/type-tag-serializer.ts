@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { normalizeSuiAddress, TypeTag } from '../../types';
+import { normalizeHexAddress, TypeTag } from '../../types';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;
 const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
@@ -40,7 +40,7 @@ export class TypeTagSerializer {
     const structMatch = str.match(STRUCT_REGEX);
     if (structMatch) {
       const address = normalizeAddress
-        ? normalizeSuiAddress(structMatch[1])
+        ? normalizeHexAddress(structMatch[1])
         : structMatch[1];
       return {
         struct: {

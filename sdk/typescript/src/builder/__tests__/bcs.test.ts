@@ -10,7 +10,7 @@ import {
   TRANSACTION,
   TransferObjectsTransaction,
 } from '..';
-import { normalizeSuiAddress } from '../../types';
+import { normalizeHexAddress } from '../../types';
 
 // Oooh-weeee we nailed it!
 it('can serialize simplified programmable call struct', () => {
@@ -71,10 +71,10 @@ function ref(): { objectId: string; version: string; digest: string } {
 }
 
 it('can serialize transaction data with a programmable transaction', () => {
-  let sui = normalizeSuiAddress('0x2').slice(3, -4);
+  let sui = normalizeHexAddress('0x2').replace(/^0x/, '');
   let txData = {
     V1: {
-      sender: normalizeSuiAddress('0xBAD').slice(3, -4),
+      sender: normalizeHexAddress('0xBAD').replace(/^0x/, ''),
       expiration: { None: true },
       gasData: {
         payment: [ref()],

@@ -17,7 +17,7 @@ import {
   union,
 } from 'superstruct';
 import { hashTypedData } from '../cryptography/hash';
-import { normalizeSuiAddress, SuiObjectRef } from '../types';
+import { normalizeHexAddress, SuiObjectRef } from '../types';
 import { builder } from './bcs';
 import { TransactionType, TransactionBlockInput } from './Transactions';
 import { BuilderCallArg, PureCallArg } from './Inputs';
@@ -67,7 +67,7 @@ export type SerializedTransactionDataBuilder = Infer<
 >;
 
 function prepareSuiAddress(address: string) {
-  return normalizeSuiAddress(address).replace('0x', '');
+  return normalizeHexAddress(address).replace('0x', '');
 }
 
 // NOTE: This value should be kept in sync with the corresponding value in

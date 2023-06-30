@@ -118,7 +118,7 @@ export function parseStructTag(type: string): StructTag {
     : [];
 
   return {
-    address: normalizeSuiAddress(address),
+    address: normalizeHexAddress(address),
     module,
     name,
     typeParams,
@@ -167,6 +167,14 @@ export function normalizeSuiAddress(
   }
   address = `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
   return sui2ObcAddress(address);
+}
+
+export function normalizeHexAddress(value: string): SuiAddress {
+  let address = value.toLowerCase();
+  if (address.startsWith('0x')) {
+    address = address.slice(2);
+  }
+  return `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
 }
 
 export function normalizeSuiObjectId(

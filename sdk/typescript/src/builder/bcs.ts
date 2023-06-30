@@ -3,7 +3,7 @@
 
 import { BCS, TypeName } from '@mysten/bcs';
 import { bcs } from '../types/sui-bcs';
-import { normalizeSuiAddress, TypeTag } from '../types';
+import { normalizeHexAddress, TypeTag } from '../types';
 import { TypeTagSerializer } from '../signers/txn-data-serializers/type-tag-serializer';
 import { TransactionArgument, MoveCallTransaction } from './Transactions';
 
@@ -192,7 +192,7 @@ builder.registerType(
       this,
       writer,
       {
-        package: normalizeSuiAddress(pkg),
+        package: normalizeHexAddress(pkg),
         module,
         function: fun,
         type_arguments,

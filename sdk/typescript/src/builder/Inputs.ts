@@ -11,7 +11,7 @@ import {
   union,
 } from 'superstruct';
 import {
-  normalizeSuiAddress,
+  normalizeHexAddress,
   ObjectId,
   SharedObjectRef,
   SuiObjectRef,
@@ -57,7 +57,7 @@ export const Inputs = {
         ImmOrOwned: {
           digest,
           version,
-          objectId: normalizeSuiAddress(objectId),
+          objectId: normalizeHexAddress(objectId),
         },
       },
     };
@@ -72,7 +72,7 @@ export const Inputs = {
         Shared: {
           mutable,
           initialSharedVersion,
-          objectId: normalizeSuiAddress(objectId),
+          objectId: normalizeHexAddress(objectId),
         },
       },
     };
@@ -81,12 +81,12 @@ export const Inputs = {
 
 export function getIdFromCallArg(arg: ObjectId | ObjectCallArg) {
   if (typeof arg === 'string') {
-    return normalizeSuiAddress(arg);
+    return normalizeHexAddress(arg);
   }
   if ('ImmOrOwned' in arg.Object) {
-    return normalizeSuiAddress(arg.Object.ImmOrOwned.objectId);
+    return normalizeHexAddress(arg.Object.ImmOrOwned.objectId);
   }
-  return normalizeSuiAddress(arg.Object.Shared.objectId);
+  return normalizeHexAddress(arg.Object.Shared.objectId);
 }
 
 export function getSharedObjectInput(

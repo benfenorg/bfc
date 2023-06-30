@@ -5,7 +5,7 @@ import { TransactionBlock } from '../builder';
 import { JsonRpcProvider } from '../providers/json-rpc-provider';
 import {
   getObjectReference,
-  normalizeSuiObjectId,
+  normalizeHexAddress,
   ObjectId,
   SuiAddress,
   SUI_SYSTEM_ADDRESS,
@@ -15,7 +15,7 @@ import {
  * Address of the Sui System object.
  * Always the same in every Sui network (local, devnet, testnet).
  */
-export const SUI_SYSTEM_STATE_OBJECT_ID: string = normalizeSuiObjectId('0x5');
+export const SUI_SYSTEM_STATE_OBJECT_ID: string = normalizeHexAddress('0x5');
 
 export const SUI_SYSTEM_MODULE_NAME = 'sui_system';
 export const ADD_STAKE_FUN_NAME = 'request_add_stake';
