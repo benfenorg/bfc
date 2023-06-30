@@ -23,7 +23,7 @@ export const MOVE_STDLIB_ADDRESS = '0x1';
 export const OBJECT_MODULE_NAME = 'object';
 export const UID_STRUCT_NAME = 'UID';
 export const ID_STRUCT_NAME = 'ID';
-export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::sui::SUI`;
+export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
 export const VALIDATORS_EVENTS_QUERY =
   '0x3::validator_set::ValidatorEpochInfoEventV2';
 

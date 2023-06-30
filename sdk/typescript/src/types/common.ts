@@ -81,6 +81,9 @@ export function isValidTransactionDigest(
 export const SUI_ADDRESS_LENGTH = 32;
 export function isValidSuiAddress(value: string): value is SuiAddress {
   const obc = sui2ObcAddress(value);
+  if (!obc.startsWith('OBC')) {
+    return false;
+  }
   const hex = obc.replace(/^OBC/, '');
   return isHex(hex) && getHexByteLength(hex) === SUI_ADDRESS_LENGTH;
 }

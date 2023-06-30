@@ -209,7 +209,7 @@ export class JsonRpcProvider {
    */
   async getBalance(input: {
     owner: SuiAddress;
-    /** optional fully qualified type names for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC), default to 0x2::sui::SUI if not specified. */
+    /** optional fully qualified type names for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC), default to 0x2::obc::OBC if not specified. */
     coinType?: string | null;
   }): Promise<CoinBalance> {
     if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {

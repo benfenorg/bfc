@@ -39,7 +39,7 @@ describe('Object Reading API', () => {
     );
     objectInfos.forEach((objectInfo) =>
       expect(getObjectType(objectInfo)).to.equal(
-        '0x2::coin::Coin<0x2::sui::SUI>',
+        '0x2::coin::Coin<0x2::obc::OBC>',
       ),
     );
   });
@@ -62,7 +62,7 @@ describe('Object Reading API', () => {
 
     objectInfos.forEach((objectInfo) =>
       expect(getObjectType(objectInfo)).to.equal(
-        '0x2::coin::Coin<0x2::sui::SUI>',
+        '0x2::coin::Coin<0x2::obc::OBC>',
       ),
     );
   });
