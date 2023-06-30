@@ -7,7 +7,7 @@ use schemars::JsonSchema;
 use serde_with::serde_as;
 //use crate::sui_serde::Readable;
 use std::convert::TryFrom;
-use hex;
+//use hex;
 //use sha2::{Digest, Sha256};
 
 #[cfg(test)]
@@ -72,7 +72,7 @@ impl TryFrom<&[u8]> for ObcAddress {
 }
 
 pub mod obc_address_util {
-    use std::collections::hash_map::DefaultHasher;
+    //use std::collections::hash_map::DefaultHasher;
     use sha2::{Digest, Sha256};
 
 

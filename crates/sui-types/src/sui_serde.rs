@@ -22,7 +22,7 @@ use serde_with::{Bytes, DeserializeAs, SerializeAs};
 //use tonic::codegen::Body;
 use tracing::info;
 use sha2::{Digest, Sha256};
-use shared_crypto::intent::AppId::Sui;
+//use shared_crypto::intent::AppId::Sui;
 
 use sui_protocol_config::ProtocolVersion;
 
