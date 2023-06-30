@@ -8,7 +8,7 @@ describe('parseStructTag', () => {
   it('parses struct tags correctly', () => {
     expect(parseStructTag('0x2::foo::bar')).toMatchInlineSnapshot(`
       {
-        "address": "0x0000000000000000000000000000000000000000000000000000000000000002",
+        "address": "OBC000000000000000000000000000000000000000000000000000000000000000268e4",
         "module": "foo",
         "name": "bar",
         "typeParams": [],
@@ -19,17 +19,17 @@ describe('parseStructTag', () => {
       parseStructTag('0x2::foo::bar<0x3::baz::qux<0x4::nested::result>, bool>'),
     ).toMatchInlineSnapshot(`
       {
-        "address": "0x0000000000000000000000000000000000000000000000000000000000000002",
+        "address": "OBC000000000000000000000000000000000000000000000000000000000000000268e4",
         "module": "foo",
         "name": "bar",
         "typeParams": [
           {
-            "address": "0x0000000000000000000000000000000000000000000000000000000000000003",
+            "address": "OBC0000000000000000000000000000000000000000000000000000000000000003ac7e",
             "module": "baz",
             "name": "qux",
             "typeParams": [
               {
-                "address": "0x0000000000000000000000000000000000000000000000000000000000000004",
+                "address": "OBC00000000000000000000000000000000000000000000000000000000000000041fb4",
                 "module": "nested",
                 "name": "result",
                 "typeParams": [],
@@ -46,11 +46,11 @@ describe('parseStructTag', () => {
 describe('normalizeStructTag', () => {
   it('normalizes package addresses', () => {
     expect(normalizeStructTag('0x2::kiosk::Item')).toEqual(
-      '0x0000000000000000000000000000000000000000000000000000000000000002::kiosk::Item',
+      'OBC000000000000000000000000000000000000000000000000000000000000000268e4::kiosk::Item',
     );
 
     expect(normalizeStructTag('0x2::foo::bar<0x3::another::package>')).toEqual(
-      '0x0000000000000000000000000000000000000000000000000000000000000002::foo::bar<0x0000000000000000000000000000000000000000000000000000000000000003::another::package>',
+      'OBC000000000000000000000000000000000000000000000000000000000000000268e4::foo::bar<OBC0000000000000000000000000000000000000000000000000000000000000003ac7e::another::package>',
     );
   });
 });

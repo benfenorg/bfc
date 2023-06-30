@@ -38,17 +38,17 @@ const TEST_CASES = [
   [
     'film crazy soon outside stand loop subway crumble thrive popular green nuclear struggle pistol arm wife phrase warfare march wheat nephew ask sunny firm',
     'AQA9EYZoLXirIahsXHQMDfdi5DPQ72wLA79zke4EY6CP',
-    '0x9e8f732575cc5386f8df3c784cd3ed1b53ce538da79926b2ad54dcc1197d2532',
+    'OBC9e8f732575cc5386f8df3c784cd3ed1b53ce538da79926b2ad54dcc1197d25320b54',
   ],
   [
     'require decline left thought grid priority false tiny gasp angle royal system attack beef setup reward aunt skill wasp tray vital bounce inflict level',
     'Ae+TTptXI6WaJfzplSrphnrbTD5qgftfMX5kTyca7unQ',
-    '0x9fd5a804ed6b46d36949ff7434247f0fd594673973ece24aede6b86a7b5dae01',
+    'OBC9fd5a804ed6b46d36949ff7434247f0fd594673973ece24aede6b86a7b5dae016dfa',
   ],
   [
     'organ crash swim stick traffic remember army arctic mesh slice swear summer police vast chaos cradle squirrel hood useless evidence pet hub soap lake',
     'AY2iJpGSDMhvGILPjjpyeM1bV4Jky979nUenB5kvQeSj',
-    '0x60287d7c38dee783c2ab1077216124011774be6b0764d62bd05f32c88979d5c5',
+    'OBC60287d7c38dee783c2ab1077216124011774be6b0764d62bd05f32c88979d5c5d153',
   ],
 ];
 

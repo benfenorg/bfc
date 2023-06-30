@@ -71,10 +71,10 @@ function ref(): { objectId: string; version: string; digest: string } {
 }
 
 it('can serialize transaction data with a programmable transaction', () => {
-  let sui = normalizeSuiAddress('0x2').replace('0x', '');
+  let sui = normalizeSuiAddress('0x2').slice(3, -4);
   let txData = {
     V1: {
-      sender: normalizeSuiAddress('0xBAD').replace('0x', ''),
+      sender: normalizeSuiAddress('0xBAD').slice(3, -4),
       expiration: { None: true },
       gasData: {
         payment: [ref()],

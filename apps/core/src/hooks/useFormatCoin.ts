@@ -60,8 +60,8 @@ export function useCoinMetadata(coinType?: string | null) {
                     decimals: 9,
                     description: '',
                     iconUrl: null,
-                    name: 'Sui',
-                    symbol: 'SUI',
+                    name: 'OBC',
+                    symbol: 'OBC',
                 };
 
                 return metadata;

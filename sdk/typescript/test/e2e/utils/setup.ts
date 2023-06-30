@@ -234,7 +234,7 @@ export async function paySui(
     (
       await signer.provider.getCoins({
         owner: await signer.getAddress(),
-        coinType: '0x2::sui::SUI',
+        coinType: '0x2::obc::OBC',
       })
     ).data[0].coinObjectId;
 

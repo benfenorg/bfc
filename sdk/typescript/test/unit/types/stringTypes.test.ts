@@ -49,26 +49,25 @@ describe('String type guards', () => {
       );
     });
 
-    it('rejects hex strings of the wrong length', () => {
+    it('rejects hex strings of the wrong format', () => {
       expectAll(
         [
           '5f713bef531629b47dd1bdbb382a',
           'f1e2a6d12cd5e62a3ce9b2c12e9e2d37d81c',
           '0X5f713bef531629b47dd1bdbb382acec5224fc9abc16133e3',
-          '0x503ff67d9291215ffccafddbd08d86e86b3425c6356c9679',
         ],
         isValidSuiAddress,
         false,
       );
     });
 
-    it('accepts hex strings of the correct length, regardless of 0x prefix', () => {
+    it('accepts hex strings of the correct length, and OBC prefix', () => {
       expectAll(
         [
-          '0000000000000000000000009edd26f2ef1c1796f9feaa703c8628e5a70618c8',
-          '0000000000000000000000005f713bef531629b47dd1bdbb382acec5224fc9ab',
-          '0X000000000000000000000000dce47e3e523b5e52a36d74295c0d83d91f80b47c',
-          '0x0000000000000000000000004288ba9932cc115784794fcfb709213f30d40a54',
+          'OBC0000000000000000000000009edd26f2ef1c1796f9feaa703c8628e5a70618c8e3d7',
+          'OBC0000000000000000000000005f713bef531629b47dd1bdbb382acec5224fc9ab3176',
+          'OBC000000000000000000000000dce47e3e523b5e52a36d74295c0d83d91f80b47cb3a3',
+          'OBC0000000000000000000000004288ba9932cc115784794fcfb709213f30d40a54a2db',
         ],
         isValidSuiAddress,
         true,
@@ -86,7 +85,7 @@ describe('String type guards', () => {
           '0X000000000000000000000000000000000000000000000000000000000000002',
         ],
         normalizeSuiAddress,
-        '0x0000000000000000000000000000000000000000000000000000000000000002',
+        'OBC000000000000000000000000000000000000000000000000000000000000000268e4',
       );
     });
   });
