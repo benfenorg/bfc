@@ -106,7 +106,7 @@ pub async fn get_gas_obj_ref(
 ) -> anyhow::Result<ObjectRef> {
     let coins = sui_client
         .coin_read_api()
-        .get_coins(sui_address, Some("0x2::sui::SUI".into()), None, None)
+        .get_coins(sui_address, Some("0x2::obc::OBC".into()), None, None)
         .await?
         .data;
     let gas_obj = coins.iter().find(|c| c.balance >= minimal_gas_balance);
