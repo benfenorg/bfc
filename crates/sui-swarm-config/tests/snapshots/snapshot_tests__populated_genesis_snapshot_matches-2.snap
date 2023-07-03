@@ -9,7 +9,7 @@ validators:
   total_stake: 20000000000000000
   active_validators:
     - metadata:
-        sui_address: "0x60307f36c284875bf298d4d85a673046648b1ac4b47e712e42ab10d57dd77a26"
+        sui_address: OBC60307f36c284875bf298d4d85a673046648b1ac4b47e712e42ab10d57dd77a26b9ae
         protocol_pubkey_bytes:
           - 153
           - 242
@@ -240,13 +240,13 @@ validators:
         next_epoch_worker_address: ~
         extra_fields:
           id:
-            id: "0x8c654935d59e6a68f0f2452d6ed03f3f99c41fd86c9c4f6ee028dbeb177e6b2e"
+            id: OBC6d8ced7dfaee61e82b0cb9a0f4d348769ac1bcb9c2575f48d9018869788340c1c4f6
           size: 0
       voting_power: 10000
-      operation_cap_id: "0xbe46fe0f6218034a7f900eac77a4f9db0ad6e641c650f570e69bf5352c303082"
+      operation_cap_id: OBC39175cfb2f3f4c20740713baa27e039fba5f1ecf2d32ccec316043e12a561f582bf9
       gas_price: 1000
       staking_pool:
-        id: "0x5551bbcfc2ef9972c10acf670db4ddcd21fb2355c27d79fdfebd466b437877d9"
+        id: OBC1a19ddc09e94703651fe969889896b1af1cfc4a1c954a5565a26069845d0b555244e
         activation_epoch: 0
         deactivation_epoch: ~
         sui_balance: 20000000000000000
@@ -254,14 +254,14 @@ validators:
           value: 0
         pool_token_balance: 20000000000000000
         exchange_rates:
-          id: "0xfa0b9a7c99be35274bf3e7cc49c4b0b30c76d7b6475fa7c08367d3b9228468ee"
+          id: OBCfb7aba9810b5c0cd505a7618bbf4fc038ae6c20397347a6fee2625c985317ef8dc67
           size: 1
         pending_stake: 0
         pending_total_sui_withdraw: 0
         pending_pool_token_withdraw: 0
         extra_fields:
           id:
-            id: "0x3138c277bf4d9fe9e66f7028585d57955f2c0ed656f6a8dbce3a67e34531ad18"
+            id: OBC07b3bb9fb594b4b5375423990912ef3141087c766d7acde74fdf528c7413850447fb
           size: 0
       commission_rate: 200
       next_epoch_stake: 20000000000000000
@@ -269,27 +269,27 @@ validators:
       next_epoch_commission_rate: 200
       extra_fields:
         id:
-          id: "0xfce13204d873ee854353f56e55eccff8699d121d405c336002e1c910655238c2"
+          id: OBCbb61ef0165f53230cceb63a3799d24b0628917d8cfd646078f26dea6c363165edeac
         size: 0
   pending_active_validators:
     contents:
-      id: "0xbd1bdc5891612e5b9a90dddbd5e3adccf80e70df52e72d963039a9de17a8e008"
+      id: OBCae65086768187d894f05ed92d0681e7a511d3742541e594990240631c3c33d0dc17e
       size: 0
   pending_removals: []
   staking_pool_mappings:
-    id: "0xebee6aa676ce79c8eb8a0f715f19bc8123061cec45b2a2afeafadcb6b655d72f"
+    id: OBC96d97313ad50c28f6692c0db18948c7695c39e81fd0a2ac48c235c0901b19ee1a0f6
     size: 1
   inactive_validators:
-    id: "0xde3c5e832c0fd20ef6d8623e3a80bf2ef9bcd0302b9b8a50e45653e13cc8824b"
+    id: OBCd0a7a7776aecaca7249fe153f853fdf8667e50f538d4fe823c8b64e6272228d8d4cc
     size: 0
   validator_candidates:
-    id: "0x0a3b3e21f1db02d4d4756c6376870ec52b01e0c50b2a0d3a7e12a9d80a525e49"
+    id: OBC7c643260e9eed9271422db4ae577586de8b611c92dc2b6622c7b8fce27e29f0a8792
     size: 0
   at_risk_validators:
     contents: []
   extra_fields:
     id:
-      id: "0x26d6067a3fac3f3831b758b9ebb63be483585cce650267247184e2fe040858ba"
+      id: OBC1de478d287426323fdef7926158591ef04daedf804a83ead2423e944c8fe9b13eb51
     size: 0
 storage_fund:
   total_object_storage_rebates:
@@ -306,7 +306,7 @@ parameters:
   validator_low_stake_grace_period: 7
   extra_fields:
     id:
-      id: "0x99f670ffee1387a34bf4660e295391da9903032c27ca75938e4c9068e9c9a589"
+      id: OBCd43be008b71d610a1e7c120541ba2d50721b09d5710035dacd7c9d8269b8f92aebf4
     size: 0
 reference_gas_price: 1000
 validator_report_records:
@@ -320,7 +320,7 @@ stake_subsidy:
   stake_subsidy_decrease_rate: 1000
   extra_fields:
     id:
-      id: "0x8ac8bb9abcbfadb43bb96390f27f137497b22f5a816dc674c0b0898169225a7d"
+      id: OBC1e4fab73d4ab2c7e725aa44615f4342381429b2952c83b7b45e2d9c4a6cc91cb3539
     size: 0
 safe_mode: false
 safe_mode_storage_rewards:
@@ -332,6 +332,6 @@ safe_mode_non_refundable_storage_fee: 0
 epoch_start_timestamp_ms: 10
 extra_fields:
   id:
-    id: "0xde436d8ce488734a65e06d20954933fc8d7882ca4169532e78c9bdb26cd48b12"
+    id: OBC14613d606578157cd6712c8269ed578d8f5eda773d1a94493a73885adc7c65d09e31
   size: 0
 

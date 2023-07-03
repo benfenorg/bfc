@@ -411,7 +411,7 @@ mod add_stake {
             // Assert that a `StakedSui` object matching the amount delegated is created.
             // Assert that this staked sui
             let object = runner
-                .get_created_object_of_type_name(effects, "StakedSui")
+                .get_created_object_of_type_name(effects, "StakedObc")
                 .await
                 .unwrap();
             let store = runner.db().await;
