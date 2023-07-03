@@ -706,7 +706,11 @@ fn resolve_object_arg(idx: usize, arg: &JsonValue) -> Result<ObjectID, anyhow::E
     // Every elem has to be a string convertible to a ObjectID
     match arg {
         JsonValue::String(s) => {
-            let s = s.trim().to_lowercase();
+            let mut s = s.trim().to_lowercase();
+
+            if s.starts_with(OBC_PREFIX_UPPER) || s.starts_with(OBC_PREFIX_LOWER){
+                s = convert_to_evm_address(s.clone());
+            }
             if !s.starts_with(HEX_PREFIX) {
                 bail!("ObjectID hex string must start with 0x.",);
             }
