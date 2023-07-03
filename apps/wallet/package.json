@@ -1,7 +1,7 @@
 {
-    "name": "sui-wallet",
+    "name": "obc-wallet",
     "private": true,
-    "description": "A wallet for Sui",
+    "description": "A wallet for OBC",
     "main": "./dist/ui.js",
     "scripts": {
         "build": "pnpm build:prod",
