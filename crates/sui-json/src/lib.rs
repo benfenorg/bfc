@@ -31,11 +31,12 @@ use serde_json::{json, Number, Value as JsonValue};
 use sui_types::base_types::{
     ObjectID, SuiAddress, TxContext, TxContextKind, RESOLVED_ASCII_STR, RESOLVED_STD_OPTION,
     RESOLVED_UTF8_STR, STD_ASCII_MODULE_NAME, STD_ASCII_STRUCT_NAME, STD_OPTION_MODULE_NAME,
-    STD_OPTION_STRUCT_NAME, STD_UTF8_MODULE_NAME, STD_UTF8_STRUCT_NAME, base_types_obc::convert_to_evm_address,
+    STD_OPTION_STRUCT_NAME, STD_UTF8_MODULE_NAME, STD_UTF8_STRUCT_NAME,
 };
 use sui_types::id::{ID, RESOLVED_SUI_ID};
 use sui_types::move_package::MovePackage;
 use sui_types::MOVE_STDLIB_ADDRESS;
+use sui_types::base_types_obc::obc_address_util::convert_to_evm_address;
 
 const HEX_PREFIX: &str = "0x";
 const OBC_PREFIX_UPPER: &str = "OBC";
