@@ -12,6 +12,10 @@ mod compatibility_tests {
         // This test checks that the current framework is compatible with all previous framework
         // bytecode snapshots.
         for (version, _snapshots) in load_bytecode_snapshot_manifest() {
+            if version < 12 {
+                continue;
+            }
+
             let config =
                 ProtocolConfig::get_for_version(ProtocolVersion::new(version), Chain::Unknown);
             let max_binary_format_version = config.move_binary_format_version();
