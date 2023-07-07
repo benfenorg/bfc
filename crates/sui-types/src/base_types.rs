@@ -29,8 +29,8 @@ use crate::multisig::MultiSigPublicKey;
 use crate::object::{Object, Owner};
 use crate::parse_sui_struct_tag;
 use crate::signature::GenericSignature;
-use crate::sui_serde::Readable;
 use crate::sui_serde::HexOBCAddress;
+use crate::sui_serde::Readable;
 use crate::sui_serde::{to_sui_struct_tag_string, HexAccountAddress};
 use crate::transaction::Transaction;
 use crate::transaction::VerifiedTransaction;
@@ -443,7 +443,7 @@ pub const SUI_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
 
 #[serde_as]
 #[derive(
-    Eq, Default, PartialEq, Ord, PartialOrd, Copy, Clone, Hash, Serialize,Deserialize, JsonSchema,
+    Eq, Default, PartialEq, Ord, PartialOrd, Copy, Clone, Hash, Serialize, Deserialize, JsonSchema,
 )]
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
 pub struct SuiAddress(
@@ -453,9 +453,6 @@ pub struct SuiAddress(
 );
 
 impl SuiAddress {
-
-
-
     pub const ZERO: Self = Self([0u8; SUI_ADDRESS_LENGTH]);
 
     /// Convert the address to a byte buffer.
@@ -501,7 +498,6 @@ impl SuiAddress {
 
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
-
         //let byte_string = String::from_utf8(bytes.as_ref().to_vec()).unwrap();
         //info!("suiAddress byte_string: {}", byte_string);
 
@@ -509,10 +505,7 @@ impl SuiAddress {
             .map_err(|_| SuiError::InvalidAddress)
             .map(SuiAddress)
     }
-
-
 }
-
 
 impl From<ObjectID> for SuiAddress {
     fn from(object_id: ObjectID) -> SuiAddress {
@@ -527,7 +520,6 @@ impl From<AccountAddress> for SuiAddress {
 }
 
 impl TryFrom<&[u8]> for SuiAddress {
-
     type Error = SuiError;
     /// Tries to convert the provided byte array into a SuiAddress.
     fn try_from(bytes: &[u8]) -> Result<Self, SuiError> {
@@ -547,7 +539,6 @@ impl TryFrom<Vec<u8>> for SuiAddress {
 }
 
 impl AsRef<[u8]> for SuiAddress {
-
     fn as_ref(&self) -> &[u8] {
         &self.0[..]
     }

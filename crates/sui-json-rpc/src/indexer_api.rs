@@ -409,15 +409,12 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
                     SuiMoveValue::Option(boxed_addr) => match **boxed_addr {
                         Some(SuiMoveValue::Address(ref addr)) => Ok(Some(*addr)),
                         _ => Ok(None),
-
-
                     },
                     _ => Err(Error::UnexpectedError(format!(
                         "No SuiAddress found in: {:?}",
                         address_str_move_value
                     ))),
                 }?;
-
 
                 return Ok(addr_opt);
             }
