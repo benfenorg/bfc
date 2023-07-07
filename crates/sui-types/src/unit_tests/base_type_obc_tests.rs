@@ -33,8 +33,6 @@ mod tests{
 
         #[test]
     fn test_convert_sample(){
-        println!("Hello, world!");
-
         let prefix = "OBC";
         let evm_address = "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
 
