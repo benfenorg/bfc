@@ -33,6 +33,8 @@ env:
   RUST_BACKTRACE: short
   # RUSTFLAGS: -D warnings
   RUSTDOCFLAGS: -D warnings
+  HTTPS_PROXY: ${{ variables.https_proxy }}
+
 
 jobs:
   diff:
