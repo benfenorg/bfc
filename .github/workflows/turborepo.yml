@@ -5,7 +5,9 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-
+env:
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   audit:
     name: pnpm audit
