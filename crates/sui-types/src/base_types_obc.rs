@@ -84,6 +84,7 @@ pub mod obc_address_util {
         return if verify_code == check_sum {
             address
         } else {
+            println!("verify_code: {}, check_sum: {}", verify_code, check_sum);
             String::from("")
         };
 
