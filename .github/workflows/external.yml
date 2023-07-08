@@ -36,7 +36,7 @@ env:
 
 jobs:
   diff:
-    runs-on: [ubuntu-latest]
+    runs-on: [self-obc]
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }} 
       isMove: ${{ steps.diff.outputs.isMove }}
@@ -80,7 +80,7 @@ jobs:
     needs: diff
     timeout-minutes: 20
     if: needs.diff.outputs.isMove == 'true'
-    runs-on: [ubuntu-ghcloud]
+    runs-on: [self-obc]
 
     steps:
       - uses: actions/checkout@v3
@@ -129,7 +129,7 @@ jobs:
   clippy:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-ghcloud]
+    runs-on: [self-obc]
     steps:
       - uses: arduino/setup-protoc@v1
         # this avoids rate-limiting
@@ -151,7 +151,7 @@ jobs:
   rustfmt:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-latest]
+    runs-on: [self-obc]
     steps:
       - uses: actions/checkout@v3
       - run: rustup component add rustfmt
@@ -165,7 +165,7 @@ jobs:
     name: cargo-deny (advisories, licenses, bans, ...)
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-latest]
+    runs-on: [self-obc]
     steps:
       - uses: actions/checkout@v3
       - uses: mystenlabs/cargo-deny-action@main
