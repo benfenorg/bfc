@@ -149,7 +149,7 @@ jobs:
     name: indexer
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: self-hosted
+    runs-on: [self-hosted]
     services:
       postgres:
         image: postgres
