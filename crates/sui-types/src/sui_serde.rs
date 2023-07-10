@@ -5,7 +5,7 @@ use std::fmt;
 use std::fmt::Write;
 use std::fmt::{Debug, Display, Formatter};
 use std::marker::PhantomData;
-use std::ops::{Deref};
+use std::ops::Deref;
 use std::str::FromStr;
 
 use fastcrypto::encoding::{decode_bytes_hex, Hex};
@@ -20,8 +20,8 @@ use serde_with::serde_as;
 use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
 //use tonic::codegen::Body;
-use tracing::info;
 use sha2::{Digest, Sha256};
+use tracing::info;
 //use shared_crypto::intent::AppId::Sui;
 
 use sui_protocol_config::ProtocolVersion;
@@ -105,22 +105,17 @@ where
     }
 }
 
-
-
-
-
-
 ///===============
 /// custom serde for AccountAddress
 pub struct HexOBCAddress;
 
 impl SerializeAs<[u8; 32]> for HexOBCAddress {
-    fn serialize_as<S>(value: &[u8;32], serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    fn serialize_as<S>(value: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
     {
         info!("serializing HexOBCAddress to hex: ");
-        if serializer.is_human_readable(){
+        if serializer.is_human_readable() {
             let mut s = String::new();
             for i in 0..value.len() {
                 write!(s, "{:02x}", value[i]).unwrap();
@@ -128,10 +123,11 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
             let result = sha256_string(&s.clone());
             let check_sum = result.get(0..4).unwrap();
 
-
-
             let obc_address = String::from("OBC") + &s + check_sum;
-            info!("is_human_readable serializing address to hex: {}", obc_address);
+            info!(
+                "is_human_readable serializing address to hex: {}",
+                obc_address
+            );
 
             return obc_address.serialize(serializer);
         }
@@ -142,18 +138,21 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
 
 impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
     fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         let mut s = String::deserialize(deserializer)?;
-        if s.starts_with("obc") || s.starts_with("OBC"){
+        if s.starts_with("obc") || s.starts_with("OBC") {
             info!("HexOBCAddress converting obcAddress: {}", s);
-             let sui = convert_to_evm_address(s.clone());
-            if sui.len() > 0{
-               s = String::from(sui);
-            }else{
-                info!("HexOBCAddress deserializing error obc address from hex: {}", s);
-                return Err("invalid obc address").map_err(serde::de::Error::custom)
+            let sui = convert_to_evm_address(s.clone());
+            if sui.len() > 0 {
+                s = String::from(sui);
+            } else {
+                info!(
+                    "HexOBCAddress deserializing error obc address from hex: {}",
+                    s
+                );
+                return Err("invalid obc address").map_err(serde::de::Error::custom);
             }
         }
         info!("HexOBCAddress deserializing address from hex: {}", s);
@@ -166,8 +165,6 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
 ///
 ///
 
-
-
 /// custom serde for AccountAddress
 pub struct HexAccountAddress;
 
@@ -176,7 +173,6 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
     where
         S: Serializer,
     {
-
         if serializer.is_human_readable() {
             let mut s = String::new();
             for i in 0..value.len() {
@@ -185,7 +181,7 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
             //let temp =  serializer.clone().serialize_str(&s.clone());
             let mut hasher = Sha256::new();
             hasher.update(s.as_bytes());
-            let result = format!("{:x}",  hasher.finalize());
+            let result = format!("{:x}", hasher.finalize());
             let check_sum = result.get(0..4).unwrap();
             let obc_address = String::from("OBC") + &s + check_sum;
 
@@ -194,7 +190,6 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
 
         Hex::serialize_as(value, serializer)
     }
-
 }
 
 impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
@@ -207,12 +202,12 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
         //obcAddress convert to suiAddress format...
         if s.starts_with("obc") || s.starts_with("OBC") {
             let sui = convert_to_evm_address(s.clone());
-            if sui.len() > 0{
+            if sui.len() > 0 {
                 s = String::from(sui);
-            }else{
+            } else {
                 //todo..
                 info!("deserializing error obc address from hex: {}", s);
-                return Err("invalid obc address").map_err(serde::de::Error::custom)
+                return Err("invalid obc address").map_err(serde::de::Error::custom);
             }
         }
         //end of obcAddress convert to suiAddress format...

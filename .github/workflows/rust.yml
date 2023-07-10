@@ -33,10 +33,12 @@ env:
   RUST_BACKTRACE: short
   # RUSTFLAGS: -D warnings
   RUSTDOCFLAGS: -D warnings
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+
 
 jobs:
   diff:
-    runs-on: [ubuntu-latest]
+    runs-on: self-hosted
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
       isMove: ${{ steps.diff.outputs.isMove }}
@@ -48,12 +50,12 @@ jobs:
 
   license-check:
     name: license-check
-    runs-on: [ubuntu-latest]
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
       - name: Install cargo-hakari, and cache the binary
-        uses: baptiste0928/cargo-install@48c92f3d491efa23daace9891498a14c5aaa1afd
+        uses: baptiste0928/cargo-install
         with:
           crate: cargo-hakari
           locked: true
@@ -71,7 +73,7 @@ jobs:
       # causes #[sim_test] to only run under the deterministic `simtest` job, and not the
       # non-deterministic `test` job.
       SUI_SKIP_SIMTESTS: 1
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     strategy:
       matrix:
         os:
@@ -109,7 +111,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     strategy:
       matrix:
         os:
@@ -140,7 +142,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: [ubuntu-ghcloud]
+    runs-on: self-hosted
     env:
       MSIM_WATCHDOG_TIMEOUT_MS: 60000
     steps:
@@ -161,7 +163,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: [ubuntu-ghcloud]
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
 
@@ -200,7 +202,7 @@ jobs:
     name: test
     needs: diff
     if: needs.diff.outputs.isRust == 'false'
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     strategy:
       matrix:
         os:
@@ -213,7 +215,7 @@ jobs:
   clippy:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-ghcloud]
+    runs-on: self-hosted
     steps:
       - uses: arduino/setup-protoc@v1
         # this avoids rate-limiting
@@ -235,7 +237,7 @@ jobs:
   rustfmt:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-latest]
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - run: rustup component add rustfmt
@@ -249,7 +251,7 @@ jobs:
     name: cargo-deny (advisories, licenses, bans, ...)
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-latest]
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - uses: mystenlabs/cargo-deny-action@main
@@ -259,7 +261,7 @@ jobs:
   #  needs: diff
   #  if: needs.diff.outputs.isRust == 'true'
   #  timeout-minutes: 45
-  #  runs-on: [ubuntu-ghcloud]
+  #  runs-on: self-hosted
   #  services:
   #    postgres:
   #      image: postgres

@@ -71,11 +71,11 @@ pub mod zk_login_util;
 
 pub mod epoch_data;
 
+pub mod base_types_obc;
+mod obc_base_types;
 #[cfg(feature = "test-utils")]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
-mod obc_base_types;
-pub mod base_types_obc;
 
 /// 0x1-- account address where Move stdlib modules are stored
 /// Same as the ObjectID

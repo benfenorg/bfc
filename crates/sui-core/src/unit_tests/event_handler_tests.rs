@@ -16,10 +16,10 @@ use serde::Serialize;
 use serde_json::json;
 use sui_json_rpc_types::SuiMoveStruct;
 
+use sha2::{Digest, Sha256};
 use sui_types::base_types::ObjectID;
 use sui_types::gas_coin::GasCoin;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS};
-use sha2::{Digest, Sha256};
 
 #[test]
 fn test_to_json_value() {
@@ -53,10 +53,10 @@ fn test_to_json_value() {
     );
     let addr = move_event.coins[0].id().to_string();
     let addr_without_pre = addr.get(2..).unwrap();
-    let checksum =get_check_sum(addr_without_pre.to_string());
+    let checksum = get_check_sum(addr_without_pre.to_string());
     let expected_addr_obc = format!("OBC{}{}", addr_without_pre, checksum);
 
-    print!("{}",expected_addr_obc);
+    print!("{}", expected_addr_obc);
     assert_eq!(
         Some(&json!(expected_addr_obc)),
         json_value.pointer("/coins/0/id/id")
@@ -163,4 +163,3 @@ fn get_check_sum(input: String) -> String {
     let check_sum = result.get(0..4).unwrap();
     return check_sum.to_string();
 }
-

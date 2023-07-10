@@ -29,6 +29,8 @@ jobs:
         uses: actions-rs/cargo@844f36862e911db73fe0815f00a4a2602c279505 # pin@v1
         env:
           RUSTDOCFLAGS: "--enable-index-page -Zunstable-options"
+          HTTPS_PROXY: ${{ vars.https_proxy }}
+          HTTP_PROXY: ${{ vars.http_proxy }}
         with:
           command: doc
           args: --workspace --no-deps
