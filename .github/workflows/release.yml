@@ -34,7 +34,7 @@ jobs:
   release-build:
     # needs: release
     timeout-minutes: 45
-    runs-on: obc
+    runs-on: sui-test
     strategy:
       fail-fast: false
     steps:
