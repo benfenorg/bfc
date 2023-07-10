@@ -34,7 +34,7 @@ jobs:
   release-build:
     # needs: release
     timeout-minutes: 45
-    runs-on: wubin
+    runs-on: sui-test-server
     strategy:
       fail-fast: false
     steps:
