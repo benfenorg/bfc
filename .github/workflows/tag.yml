@@ -32,7 +32,7 @@ env:
 jobs:
   tag:
     name: Tag
-    runs-on: ob
+    runs-on: obc
 
     steps:
     - name: Checkout
