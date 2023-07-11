@@ -34,6 +34,7 @@ env:
   RUST_BACKTRACE: short
   HTTPS_PROXY: ${{ vars.https_proxy }}
   HTTP_PROXY: ${{ vars.http_proxy }}
+  PATH: ${{ vars.PATH }}
 jobs:
   diff:
     runs-on: self-hosted
