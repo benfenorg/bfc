@@ -35,7 +35,7 @@ env:
 
 jobs:
   diff:
-    runs-on: wubin
+    runs-on: ob
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -47,7 +47,7 @@ jobs:
   bench:
     needs: diff
     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: wubin
+    runs-on: ob
     steps:
     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
     # Turn off the caching on self-hosted jobs
@@ -149,7 +149,7 @@ jobs:
     name: indexer
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: wubin
+    runs-on: ob
     services:
       postgres:
         image: postgres
