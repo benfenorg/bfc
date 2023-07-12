@@ -49,7 +49,7 @@ jobs:
   bench:
     needs: diff
     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: self-hosted
+    runs-on: ob
     steps:
     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
     # Turn off the caching on self-hosted jobs
