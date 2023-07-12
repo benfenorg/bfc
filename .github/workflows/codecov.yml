@@ -10,7 +10,7 @@ on:
 
 jobs:
   diff:
-    runs-on: wubin
+    runs-on: obc
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
