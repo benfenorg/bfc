@@ -10,7 +10,7 @@ on:
 
 jobs:
   diff:
-    runs-on: [ubuntu-latest]
+    runs-on: wubin
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
