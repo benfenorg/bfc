@@ -35,17 +35,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: taiki-e/install-action@nextest
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 256
-      # Enable caching of the 'librocksdb-sys' crate by additionally caching the
-      # 'librocksdb-sys' src directory which is managed by cargo
-      - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
-        with:
-          path: ~/.cargo/registry/src/**/librocksdb-sys-*
-      # We run only the integration tests that are ignored under the primary package.
-      # These are considered the end-to-end "slow" tests for us
       - name: cargo nextest
         run: |
           cargo nextest run -E 'kind(test) and not test(test_get_collections_with_missing_certificates) and package(narwhal-primary) + package(narwhal-consensus)' --profile narwhalnightly --run-ignored ignored-only
