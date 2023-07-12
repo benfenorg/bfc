@@ -24,7 +24,7 @@ on:
 jobs:
   test:
     name: Sui Protocol Version Monitor
-    runs-on: [self-hosted, self-hosted-arc]
+    runs-on: obc
 
     steps:
     - name: Read last protocol version in ${{ inputs.environment }}
