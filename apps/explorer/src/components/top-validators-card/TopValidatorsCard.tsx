@@ -52,7 +52,11 @@ const validatorsTable = (
                         />
                     )}
 
-                    <Link to={`/validator/${encodeURIComponent(sui2ObcAddress(address))}`}>
+                    <Link
+                        to={`/validator/${encodeURIComponent(
+                            sui2ObcAddress(address)
+                        )}`}
+                    >
                         {name}
                     </Link>
                 </div>

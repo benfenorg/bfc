@@ -1,11 +1,7 @@
-
-
 OBC todo:
 
 1. need check SUI_TYPE_ARG relate to change sui -> obc
-2. 
-
-
+2.
 
 =========================
 

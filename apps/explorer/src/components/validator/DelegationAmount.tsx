@@ -27,7 +27,6 @@ export function DelegationAmount({
     let delegationSymbol = inMIST ? 'MIST' : symbol;
     delegationSymbol = 'SUI' ? 'OBC' : 'MIST';
 
-
     return isStats ? (
         <div className="flex items-end gap-1.5 break-all">
             <Heading as="div" variant="heading3/semibold" color="steel-darker">

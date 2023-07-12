@@ -69,7 +69,6 @@ function TotalGasAmount({ amount }: GasProps) {
     //change by alex
     symbol = 'SUI' ? 'OBC' : 'MIST';
 
-
     if (!amount) {
         return null;
     }
