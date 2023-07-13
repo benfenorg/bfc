@@ -32,12 +32,12 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-  PATH: ${{ vars.PATH }}
+  #PATH: ${{ vars.PATH }}
   #HTTPS_PROXY: ${{ vars.https_proxy }}
   #HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   diff:
-    runs-on: alex-mac1
+    runs-on: wubin
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -49,7 +49,7 @@ jobs:
   bench:
     needs: diff
     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: alex-mac1
+    runs-on: wubin
     steps:
     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
     # Turn off the caching on self-hosted jobs
@@ -147,42 +147,42 @@ jobs:
           ```
           ${{ steps.get-comment-body.outputs.narwhal }}
           ```
-  indexer-bench:
-    name: indexer
-    needs: diff
-    if: needs.diff.outputs.isRust == 'true'
-    runs-on: alex-mac1
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgrespw
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    steps:
-      - uses: actions/checkout@v3
+#   indexer-bench:
+#     name: indexer
+#     needs: diff
+#     if: needs.diff.outputs.isRust == 'true'
+#     runs-on: wubin
+#     services:
+#       postgres:
+#         image: postgres
+#         env:
+#           POSTGRES_PASSWORD: postgrespw
+#         options: >-
+#           --health-cmd pg_isready
+#           --health-interval 10s
+#           --health-timeout 5s
+#           --health-retries 5
+#         ports:
+#           - 5432:5432
+#     steps:
+#       - uses: actions/checkout@v3
 
-      - name: Run indexer benchmark
-        run: |
-          cargo bench --bench indexer_benchmark -- --output-format bencher | tee output.txt
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
+#       - name: Run indexer benchmark
+#         run: |
+#           cargo bench --bench indexer_benchmark -- --output-format bencher | tee output.txt
+#         env:
+#           POSTGRES_HOST: localhost
+#           POSTGRES_PORT: 5432
 
-      - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          tool: "cargo"
-          output-file-path: output.txt
-          benchmark-data-dir-path: "bench/indexer"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: true
+#       - name: Store benchmark result
+#         uses: benchmark-action/github-action-benchmark@v1
+#         with:
+#           tool: "cargo"
+#           output-file-path: output.txt
+#           benchmark-data-dir-path: "bench/indexer"
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           auto-push: true
+#           # Show alert with commit comment on detecting possible performance regression
+#           alert-threshold: '200%'
+#           comment-on-alert: true
+#           fail-on-alert: true
