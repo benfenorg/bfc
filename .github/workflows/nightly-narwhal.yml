@@ -31,7 +31,7 @@ env:
 jobs:
   end-to-end-tests:
     name: Narwhal run long-running end-to-end tests
-    runs-on: wubin
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@v3
       - uses: taiki-e/install-action@nextest
@@ -41,7 +41,7 @@ jobs:
 
   report-status:
     name: Report Status
-    runs-on: wubin
+    runs-on: yizhuang
     if: always()
     needs: [end-to-end-tests]
     steps:
