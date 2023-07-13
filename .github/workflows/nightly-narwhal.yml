@@ -41,7 +41,7 @@ jobs:
 
   report-status:
     name: Report Status
-    runs-on: yizhuang
+    runs-on: self-hosted
     if: always()
     needs: [end-to-end-tests]
     steps:
@@ -53,7 +53,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
         with:
-          channel-id: 'narwhal-tusk'
+          channel-id: 'alert'
           payload: |
             {
               "text": "NARWAL Workflow *${{ github.workflow }}* failed",
