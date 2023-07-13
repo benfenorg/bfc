@@ -27,7 +27,8 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-
+  PATH: ${{ vars.PATH }}
+  
 jobs:
   end-to-end-tests:
     name: Narwhal run long-running end-to-end tests
