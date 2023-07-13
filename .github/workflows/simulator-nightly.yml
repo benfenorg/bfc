@@ -98,7 +98,7 @@ jobs:
         SUI_SHA: ${{ env.sui_sha }}
         GH_JOB_LINK: ${{ env.gh_job_link }}
       with:
-        channel-id: 'simtest-nightly'
+        channel-id: 'openfish-alert'
         payload: |
           {
             "text": "*${{ github.workflow }}* workflow status: `${{ env.WORKFLOW_CONCLUSION }}`",
