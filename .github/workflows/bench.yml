@@ -32,12 +32,12 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-  #PATH: ${{ vars.PATH }}
-  #HTTPS_PROXY: ${{ vars.https_proxy }}
-  #HTTP_PROXY: ${{ vars.http_proxy }}
+  PATH: ${{ vars.PATH }}
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   diff:
-    runs-on: wubin
+    runs-on: yizhuang
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -49,7 +49,7 @@ jobs:
   bench:
     needs: diff
     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: wubin
+    runs-on: yizhuang
     steps:
     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
     # Turn off the caching on self-hosted jobs
@@ -151,7 +151,7 @@ jobs:
 #     name: indexer
 #     needs: diff
 #     if: needs.diff.outputs.isRust == 'true'
-#     runs-on: wubin
+#     runs-on: yizhuang
 #     services:
 #       postgres:
 #         image: postgres
