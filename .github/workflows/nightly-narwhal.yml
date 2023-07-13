@@ -27,12 +27,11 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-  PATH: ${{ vars.PATH }}
   
 jobs:
   end-to-end-tests:
     name: Narwhal run long-running end-to-end tests
-    runs-on: yizhuang
+    runs-on: wubin
     steps:
       - uses: actions/checkout@v3
       - name: cargo nextest
@@ -41,7 +40,7 @@ jobs:
 
   report-status:
     name: Report Status
-    runs-on: self-hosted
+    runs-on: wubin
     if: always()
     needs: [end-to-end-tests]
     steps:
