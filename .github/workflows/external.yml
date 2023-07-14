@@ -38,14 +38,15 @@ jobs:
   diff:
     runs-on: [self-hosted]
     outputs:
-      isRust: ${{ steps.diff.outputs.isRust }} 
+      isRust: true #${{ steps.diff.outputs.isRust }} 
       isMove: ${{ steps.diff.outputs.isMove }}
     steps:
       - uses: actions/checkout@v3
       - name: Detect Changes
         uses: "./.github/actions/diffs"
         id: diff
-
+  
+  
   external-crates-test:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
