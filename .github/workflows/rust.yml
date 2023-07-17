@@ -41,8 +41,8 @@ jobs:
   diff:
     runs-on: yizhuang
     outputs:
-      isRust: ${{ steps.diff.outputs.isRust }}
-      isMove: ${{ steps.diff.outputs.isMove }}
+      isRust: true #${{ steps.diff.outputs.isRust }}
+      isMove: true #${{ steps.diff.outputs.isMove }}
     steps:
       - uses: actions/checkout@v3
       - name: Detect Changes
