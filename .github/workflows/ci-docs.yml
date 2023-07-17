@@ -18,14 +18,7 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791 # pin@v2
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2023-06-15
-          override: true
-
+        
       - name: Generate documentation
         uses: actions-rs/cargo@844f36862e911db73fe0815f00a4a2602c279505 # pin@v1
         env:
