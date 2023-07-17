@@ -16,7 +16,7 @@ jobs:
       # able to authenticate with the cluster.
       id-token: write
       contents: read
-    runs-on: wubin
+    runs-on: yizhuang
 
     steps:
       - name: Install Teleport
@@ -68,7 +68,7 @@ jobs:
   notify:
     name: Notify
     needs: [simtest]
-    runs-on: wubin
+    runs-on: yizhuang
     if: always() # always notify
 
     steps:
