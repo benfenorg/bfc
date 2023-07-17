@@ -78,10 +78,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: taiki-e/install-action@nextest
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 256
       - name: Install python dependencies
         run: |
           pip install pyopenssl --upgrade
@@ -159,7 +155,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: self-hosted
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@v3
 
