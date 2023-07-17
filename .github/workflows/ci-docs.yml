@@ -29,8 +29,8 @@ jobs:
           HTTPS_PROXY: ${{ vars.https_proxy }}
           HTTP_PROXY: ${{ vars.http_proxy }}
         with:
-          command: doc
-          args: --workspace --no-deps
+          run: doc
+          args: rustup run  1.68.2
 
       - name: Deploy documentation
         uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # pin@v3
