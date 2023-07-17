@@ -11,6 +11,9 @@ on:
   workflow_dispatch:
 env:
   PATH: ${{ vars.PATH }}
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
+
 jobs:
   docs:
     name: Generate crate documentation
