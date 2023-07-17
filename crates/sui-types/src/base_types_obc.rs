@@ -1,3 +1,7 @@
+// Copyright (c) 2021, Facebook, Inc. and its affiliates
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::base_types::ObjectID;
 use crate::error::SuiError;
 use fastcrypto::encoding::{Encoding, Hex};
