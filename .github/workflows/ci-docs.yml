@@ -9,11 +9,12 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
   workflow_dispatch:
-
+env:
+  PATH: ${{ vars.PATH }}
 jobs:
   docs:
     name: Generate crate documentation
-    runs-on: obc
+    runs-on: yizhuang
     steps:
       - name: Checkout sources
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791 # pin@v2
