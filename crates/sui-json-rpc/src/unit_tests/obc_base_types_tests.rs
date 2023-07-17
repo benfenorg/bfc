@@ -1,3 +1,7 @@
+// Copyright (c) 2021, Facebook, Inc. and its affiliates
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
 use hex;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
