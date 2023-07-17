@@ -34,7 +34,8 @@ env:
   # RUSTFLAGS: -D warnings
   RUSTDOCFLAGS: -D warnings
   HTTPS_PROXY: ${{ vars.https_proxy }}
-
+  HTTP_PROXY: ${{ vars.http_proxy }}
+  PATH: ${{ vars.PATH }}
 
 jobs:
   diff:
@@ -54,11 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
-      - name: Install cargo-hakari, and cache the binary
-        uses: baptiste0928/cargo-install@48c92f3d491efa23daace9891498a14c5aaa1afd
-        with:
-          crate: cargo-hakari
-          locked: true
       - run: cargo xlint
       - run: |
           cargo hakari generate --diff  # workspace-hack Cargo.toml is up-to-date
