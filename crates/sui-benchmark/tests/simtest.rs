@@ -294,7 +294,6 @@ mod test {
         if min_ver < 12 {
             return;
         }
-        
         let timeout = tokio::time::timeout(
             Duration::from_secs(1000),
             test_protocol_upgrade_compatibility_impl(min_ver),
