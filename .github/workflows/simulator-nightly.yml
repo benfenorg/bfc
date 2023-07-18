@@ -24,20 +24,8 @@ jobs:
     runs-on: yizhuang
     steps:
       # Cargo clean and git restore on any left over files from git checkout
-      - name: Environment clean
-        run: |
-         cargo clean && git restore .
-
-      # Deleting files in tmpfs that usually fill up pretty quickly after each run
-      - name: Tmpfs clean
-        run: |
-          sudo rm -rfd /tmp/*
-
-      # Checkout out the latest sui repo
-      - name: Checkout sui repo
-        run: |
-          git fetch origin main && git rebase origin/main
-
+      - name: Checkout
+        uses: actions/checkout@v3
       # Setting up cargo and simtest
       - name: Install simtest
         run: |
