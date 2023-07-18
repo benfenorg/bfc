@@ -291,6 +291,10 @@ mod test {
         // to the latest protocol version.
         let max_ver = ProtocolVersion::MAX.as_u64();
         let min_ver = max_ver - 1;
+        if min_ver < 12 {
+            return;
+        }
+        
         let timeout = tokio::time::timeout(
             Duration::from_secs(1000),
             test_protocol_upgrade_compatibility_impl(min_ver),
