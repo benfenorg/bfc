@@ -7,11 +7,6 @@ on:
   schedule:
     - cron: '0 9 * * *' # UTC timing is every day at 1am PST
   workflow_dispatch:
-  
-env:
-  PATH: ${{ vars.PATH }}
-  HTTPS_PROXY: ${{ vars.https_proxy }}
-  HTTP_PROXY: ${{ vars.http_proxy }}
 
 jobs:
   simtest:
@@ -21,34 +16,59 @@ jobs:
       # able to authenticate with the cluster.
       id-token: write
       contents: read
-    runs-on: yizhuang
+    runs-on: ubuntu-latest
 
     steps:
+      - name: Install Teleport
+        uses: teleport-actions/setup@8d23169da0f80ce14d25ed791272faa1c07f4f1e # pin@v1
+        with:
+          version: 11.3.1
+      - name: Authorize against Teleport
+        id: auth
+        uses: teleport-actions/auth@9091dad16a564f3c5b9c2ec520b234a4872b6879 # pin@v1
+        with:
+          # Specify the publically accessible address of your Teleport proxy.
+          proxy: proxy.mysten-int.com:443
+          # Specify the name of the join token for your bot.
+          token: sui-simtest-token
+          # Specify the length of time that the generated credentials should be
+          # valid for. This is optional and defaults to "1h"
+          certificate-ttl: 2h
+
+      # Cargo clean and git restore on any left over files from git checkout      
+      - name: Environment clean
+        run: | 
+          tsh -i ${{ steps.auth.outputs.identity-file }} --ttl 5 ssh ubuntu@simtest-01 "source ~/.bashrc && source ~/.cargo/env && cd ~/sui && cargo clean && git restore ."
+ 
+      # Deleting files in tmpfs that usually fill up pretty quickly after each run
+      - name: Tmpfs clean
+        run: |  
+          tsh -i ${{ steps.auth.outputs.identity-file }} --ttl 5 ssh ubuntu@simtest-01 "sudo rm -rfd /tmp/*"
 
       # Checkout out the latest sui repo
       - name: Checkout sui repo
         run: |
-          source ~/.bashrc && source ~/.cargo/env && git fetch origin main && git rebase origin/main
+          tsh -i ${{ steps.auth.outputs.identity-file }} --ttl 10 ssh ubuntu@simtest-01 "source ~/.bashrc && source ~/.cargo/env && cd ~/sui && git fetch origin main && git rebase origin/main"
 
       # Setting up cargo and simtest
       - name: Install simtest
         run: |
-          source ~/.bashrc && source ~/.cargo/env && ./scripts/simtest/install.sh
+          tsh -i ${{ steps.auth.outputs.identity-file }} --ttl 10 ssh ubuntu@simtest-01 "source ~/.bashrc && source ~/.cargo/env && cd ~/sui && ./scripts/simtest/install.sh"
 
       # Build simtest
       - name: Build simtest
         run: |
-         source ~/.bashrc && source ~/.cargo/env  && CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 USE_MOCK_CRYPTO=1 ./scripts/simtest/cargo-simtest simtest build
+          tsh -i ${{ steps.auth.outputs.identity-file }} --ttl 30 ssh ubuntu@simtest-01 "source ~/.bashrc && source ~/.cargo/env && cd ~/sui && CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 USE_MOCK_CRYPTO=1 ./scripts/simtest/cargo-simtest simtest build"
 
       # Run simulator tests
       - name: Run simtest
         run: |
-          source ~/.bashrc && source ~/.cargo/env && RUSTUP_MAX_RETRIES=10 CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 RUST_BACKTRACE=short RUST_LOG=off USE_MOCK_CRYPTO=1 NUM_CPUS=12 ./scripts/simtest/simtest-run.sh
+          tsh -i ${{ steps.auth.outputs.identity-file }} --ttl 120 ssh ubuntu@simtest-01 "source ~/.bashrc && source ~/.cargo/env && cd ~/sui && RUSTUP_MAX_RETRIES=10 CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 RUST_BACKTRACE=short RUST_LOG=off USE_MOCK_CRYPTO=1 NUM_CPUS=12 ./scripts/simtest/simtest-run.sh"
   
   notify:
     name: Notify
     needs: [simtest]
-    runs-on: yizhuang
+    runs-on: ubuntu-latest
     if: always() # always notify
 
     steps:
@@ -78,7 +98,7 @@ jobs:
         SUI_SHA: ${{ env.sui_sha }}
         GH_JOB_LINK: ${{ env.gh_job_link }}
       with:
-        channel-id: 'openfish-alert'
+        channel-id: 'simtest-nightly'
         payload: |
           {
             "text": "*${{ github.workflow }}* workflow status: `${{ env.WORKFLOW_CONCLUSION }}`",
