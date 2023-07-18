@@ -55,12 +55,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
+      - run: |
+          curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf > rustup.sh && sh rustup.sh -y
       - run: cargo install cargo-hakari && cargo xlint
       - run: |
           cargo hakari generate --diff  # workspace-hack Cargo.toml is up-to-date
           cargo hakari manage-deps --dry-run  # all workspace crates depend on workspace-hack  
-      - run: |
-          curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf > rustup.sh && sh rustup.sh -y && sudo bash -c "echo source $HOME/.cargo/env >> /etc/bash.bashrc"
 
 #   test:
 #     needs: diff
