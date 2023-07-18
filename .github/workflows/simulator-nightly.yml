@@ -23,22 +23,22 @@ jobs:
       # Checkout out the latest sui repo
       - name: Checkout sui repo
         run: |
-          source ~/.bashrc && source ~/.cargo/env && cd ~/sui && git fetch origin main && git rebase origin/main
+          source ~/.bashrc && source ~/.cargo/env && cd ~/obc && git fetch origin main && git rebase origin/main
 
       # Setting up cargo and simtest
       - name: Install simtest
         run: |
-          source ~/.bashrc && source ~/.cargo/env && cd ~/sui && ./scripts/simtest/install.sh
+          source ~/.bashrc && source ~/.cargo/env && cd ~/obc && ./scripts/simtest/install.sh
 
       # Build simtest
       - name: Build simtest
         run: |
-         source ~/.bashrc && source ~/.cargo/env && cd ~/sui && CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 USE_MOCK_CRYPTO=1 ./scripts/simtest/cargo-simtest simtest build
+         source ~/.bashrc && source ~/.cargo/env && cd ~/obc && CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 USE_MOCK_CRYPTO=1 ./scripts/simtest/cargo-simtest simtest build
 
       # Run simulator tests
       - name: Run simtest
         run: |
-          source ~/.bashrc && source ~/.cargo/env && cd ~/sui && RUSTUP_MAX_RETRIES=10 CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 RUST_BACKTRACE=short RUST_LOG=off USE_MOCK_CRYPTO=1 NUM_CPUS=12 ./scripts/simtest/simtest-run.sh
+          source ~/.bashrc && source ~/.cargo/env && cd ~/obc && RUSTUP_MAX_RETRIES=10 CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_NET_RETRY=10 RUST_BACKTRACE=short RUST_LOG=off USE_MOCK_CRYPTO=1 NUM_CPUS=12 ./scripts/simtest/simtest-run.sh
   
   notify:
     name: Notify
