@@ -16,7 +16,7 @@ jobs:
       # able to authenticate with the cluster.
       id-token: write
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: sui-test
 
     steps:
       - name: Install Teleport
