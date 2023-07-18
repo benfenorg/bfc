@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-cargo-status:
-    runs-on: sui-test
+    runs-on: ubuntu-latest
     steps:
       - name: auto Check cargo status
         run: |
