@@ -99,53 +99,53 @@ jobs:
 #       - run: scripts/changed-files.sh
 #         shell: bash
 
-  windows-build:
-    needs: diff
-    if: needs.diff.outputs.isRust == 'true'
-    timeout-minutes: 45
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        os:
-          - [windows-ghcloud]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v3
-      - uses: taiki-e/install-action@nextest
-      - name: Install postgres (Windows)
-        shell: bash
-        run: |
-          choco install postgresql12 --force --params '/Password:root'
-          echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
-          echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
-          echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
-          echo "PG_DATABASE_URL=postgres://postgres:root@localhost/" >> $GITHUB_ENV
-          echo "PG_EXAMPLE_DATABASE_URL=postgres://postgres:root@localhost/diesel_example" >> $GITHUB_ENV
-      - name: cargo build
-        run: |
-          cargo build --all-features
-        shell: bash
-
-#   simtest:
+#   windows-build:
 #     needs: diff
 #     if: needs.diff.outputs.isRust == 'true'
 #     timeout-minutes: 45
-#     runs-on: yizhuang
-#     env:
-#       MSIM_WATCHDOG_TIMEOUT_MS: 60000
+#     runs-on: self-hosted
+#     strategy:
+#       matrix:
+#         os:
+#           - [windows-ghcloud]
+#       fail-fast: false
 #     steps:
 #       - uses: actions/checkout@v3
 #       - uses: taiki-e/install-action@nextest
-#       - name: Set Swap Space
-#         uses: pierotofy/set-swap-space@master
-#         with:
-#           swap-size-gb: 256
-#       - name: cargo simtest
+#       - name: Install postgres (Windows)
+#         shell: bash
 #         run: |
-#           scripts/simtest/cargo-simtest simtest
-#       - name: check new tests for flakiness
+#           choco install postgresql12 --force --params '/Password:root'
+#           echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
+#           echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
+#           echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
+#           echo "PG_DATABASE_URL=postgres://postgres:root@localhost/" >> $GITHUB_ENV
+#           echo "PG_EXAMPLE_DATABASE_URL=postgres://postgres:root@localhost/diesel_example" >> $GITHUB_ENV
+#       - name: cargo build
 #         run: |
-#           scripts/simtest/stress-new-tests.sh
+#           cargo build --all-features
+#         shell: bash
+
+  simtest:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    timeout-minutes: 45
+    runs-on: yizhuang
+    env:
+      MSIM_WATCHDOG_TIMEOUT_MS: 60000
+    steps:
+      - uses: actions/checkout@v3
+      - uses: taiki-e/install-action@nextest
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 256
+      - name: cargo simtest
+        run: |
+          scripts/simtest/cargo-simtest simtest
+      - name: check new tests for flakiness
+        run: |
+          scripts/simtest/stress-new-tests.sh
 
 #   rosetta-validation:
 #     needs: diff
@@ -186,19 +186,19 @@ jobs:
   # there are no rust changes in a given PR/commit. This ensures that we can
   # continue to block on the rust tests passing in the case of rust changes and
   # otherwise not block pushes to main.
-  test-notrust:
-    name: test
-    needs: diff
-    if: needs.diff.outputs.isRust == 'false'
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        os:
-          - [self-hosted]
-          - [windows-ghcloud]
-      fail-fast: false
-    steps:
-      - run: 'echo "No build required" '
+#   test-notrust:
+#     name: test
+#     needs: diff
+#     if: needs.diff.outputs.isRust == 'false'
+#     runs-on: self-hosted
+#     strategy:
+#       matrix:
+#         os:
+#           - [self-hosted]
+#           - [windows-ghcloud]
+#       fail-fast: false
+#     steps:
+#       - run: 'echo "No build required" '
 
   clippy:
     needs: diff
