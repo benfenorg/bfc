@@ -44,7 +44,7 @@ jobs:
   notify:
     name: Notify
     needs: [simtest]
-    runs-on: ubuntu-latest
+    runs-on: yizhuang
     if: always() # always notify
 
     steps:
