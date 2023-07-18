@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '0 9 * * *' # UTC timing is every day at 1am PST
   workflow_dispatch:
+  
+env:
+  PATH: ${{ vars.PATH }}
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 
 jobs:
   simtest:
