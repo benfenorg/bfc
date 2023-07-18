@@ -76,7 +76,8 @@ jobs:
           pip install pyopenssl --upgrade
       - name: External crates tests
         run: |
-          cargo xtest
+          rustup run 1.68.2 cargo xtest
+          # cargo xtest
 
   move-prover:
     name: move-prover
