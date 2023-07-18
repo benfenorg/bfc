@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-cargo-status:
-    runs-on: yizhuang
+    runs-on: sui-test
     steps:
       - name: auto Check cargo status
         run: |
