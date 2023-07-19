@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-cargo-status:
-    runs-on: ubuntu-latest
+    runs-on: yizhuang
     steps:
       - name: auto Check cargo status
         run: |
