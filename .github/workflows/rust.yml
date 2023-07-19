@@ -39,7 +39,7 @@ env:
 
 jobs:
   diff:
-    runs-on: yizhuang
+    runs-on: windows-latest
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }}
       isMove: true #${{ steps.diff.outputs.isMove }}
