@@ -36,7 +36,7 @@ env:
 
 jobs:
   diff:
-    runs-on: windows-latest
+    runs-on: windows-host
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }}
       isMove: true #${{ steps.diff.outputs.isMove }}
@@ -102,7 +102,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: windows-latest
+    runs-on: windows-host
     strategy:
       matrix:
         os:
