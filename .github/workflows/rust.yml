@@ -105,7 +105,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: windows-host
+    runs-on: windows-latest
     strategy:
       matrix:
         os:
