@@ -36,7 +36,7 @@ env:
 
 jobs:
   diff:
-    runs-on: windows-host
+    runs-on: windows-latest
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }}
       isMove: true #${{ steps.diff.outputs.isMove }}
@@ -102,7 +102,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: windows-host
+    runs-on: windows-latest
     strategy:
       matrix:
         os:
@@ -120,6 +120,8 @@ jobs:
           echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
           echo "PG_DATABASE_URL=postgres://postgres:root@localhost/" >> $GITHUB_ENV
           echo "PG_EXAMPLE_DATABASE_URL=postgres://postgres:root@localhost/diesel_example" >> $GITHUB_ENV
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
       - name: cargo build
         run: |
           cargo build --all-features
@@ -189,7 +191,7 @@ jobs:
     name: test
     needs: diff
     if: needs.diff.outputs.isRust == 'false'
-    runs-on: windows-host
+    runs-on: windows-latest
     strategy:
       matrix:
         os:
