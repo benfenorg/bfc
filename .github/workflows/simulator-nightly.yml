@@ -27,6 +27,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       # Setting up cargo and simtest
+      - name: Install cargo next
+        run: |
+          cargo install cargo-nextest --locked
       - name: Install simtest
         run: |
           ./scripts/simtest/install.sh
