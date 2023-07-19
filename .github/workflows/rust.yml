@@ -103,13 +103,12 @@ jobs:
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
     runs-on: windows-latest
-    strategy:
-      matrix:
-        os:
-          - [windows-ghcloud]
-      fail-fast: false
     steps:
       - uses: actions/checkout@v3
+      - uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+          platform: x64
       - uses: taiki-e/install-action@nextest
       - name: Install postgres (Windows)
         shell: bash
