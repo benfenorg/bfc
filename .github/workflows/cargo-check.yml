@@ -5,6 +5,9 @@ on:
   schedule:
     # Update on every hour at 10 past the hour
     - cron:  '10 * * * *'
+    
+env:
+  PATH: ${{ vars.PATH }}
 
 jobs:
   update-cargo-status:
