@@ -67,7 +67,8 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh_job_link=$(gh api -X GET 'repos/hellokittyboy-code/obc/actions/runs/${{ github.run_id }}/jobs' --jq '.jobs.[0].html_url')
+        gh_job_link="https://github.com/hellokittyboy-code/obc/actions"
+        #$(gh api -X GET 'repos/hellokittyboy-code/obc/actions/runs/${{ github.run_id }}/jobs' --jq '.jobs.[0].html_url')
         echo "gh_job_link=${gh_job_link}" >> $GITHUB_ENV        
 
     - name: Post to slack
