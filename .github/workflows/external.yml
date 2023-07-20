@@ -33,12 +33,12 @@ env:
   RUST_BACKTRACE: short
   # RUSTFLAGS: -D warnings
   RUSTDOCFLAGS: -D warnings
-  PATH: ${{ vars.PATH }}
-  HTTPS_PROXY: ${{ vars.https_proxy }}
-  HTTP_PROXY: ${{ vars.http_proxy }}
+#   PATH: ${{ vars.PATH }}
+#   HTTPS_PROXY: ${{ vars.https_proxy }}
+#   HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   diff:
-    runs-on: yizhuang
+    runs-on: wubin
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }} 
       isMove: ${{ steps.diff.outputs.isMove }}
@@ -58,12 +58,12 @@ jobs:
       # causes #[sim_test] to only run under the deterministic `simtest` job, and not the
       # non-deterministic `test` job.
       SUI_SKIP_SIMTESTS: 1
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - yizhuang
-      fail-fast: false
+    runs-on: wubin
+#     strategy:
+#       matrix:
+#         os:
+#           - yizhuang
+#       fail-fast: false
     steps:
       - uses: actions/checkout@v3
       - uses: taiki-e/install-action@nextest
@@ -84,7 +84,7 @@ jobs:
     needs: diff
     timeout-minutes: 20
     if: needs.diff.outputs.isMove == 'true'
-    runs-on: yizhuang
+    runs-on: wubin
 
     steps:
       - uses: actions/checkout@v3
@@ -117,22 +117,22 @@ jobs:
   # continue to block on the rust tests passing in the case of rust changes and
   # otherwise not block pushes to main.
   external-crates-test-notrust:
-    name: external-crates-test
+    name: external-crates-test2
     needs: diff
     if: needs.diff.outputs.isRust == 'false'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - yizhuang
-      fail-fast: false
+    runs-on: wubin
+#     strategy:
+#       matrix:
+#         os:
+#           - yizhuang
+#       fail-fast: false
     steps:
       - run: 'echo "No build required" '
 
   clippy:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: yizhuang
+    runs-on: wubin
     steps:
       - uses: actions/checkout@v3
       - run: rustup component add clippy
@@ -150,7 +150,7 @@ jobs:
   rustfmt:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: yizhuang
+    runs-on: wubin
     steps:
       - uses: actions/checkout@v3
       - run: rustup component add rustfmt
@@ -164,7 +164,7 @@ jobs:
     name: cargo-deny (advisories, licenses, bans, ...)
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: yizhuang
+    runs-on: wubin
     steps:
       - uses: actions/checkout@v3
       - uses: mystenlabs/cargo-deny-action@main
