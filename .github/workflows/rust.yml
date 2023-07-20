@@ -33,10 +33,13 @@ env:
   RUST_BACKTRACE: short
   # RUSTFLAGS: -D warnings
   RUSTDOCFLAGS: -D warnings
+  PATH: ${{ vars.PATH }}
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 
 jobs:
   diff:
-    runs-on: wubin
+    runs-on: yizhuang
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }}
       isMove: true #${{ steps.diff.outputs.isMove }}
@@ -145,7 +148,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: wubin
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@v3
 
