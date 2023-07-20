@@ -36,7 +36,7 @@ env:
 
 jobs:
   diff:
-    runs-on: windows-host
+    runs-on: wubin
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }}
       isMove: true #${{ steps.diff.outputs.isMove }}
@@ -98,13 +98,13 @@ jobs:
 #       - run: scripts/changed-files.sh
 #         shell: bash
 
-  windows-build:
-    needs: diff
-    if: needs.diff.outputs.isRust == 'true'
-    timeout-minutes: 45
-    runs-on: windows-host
-    steps:
-      - uses: actions/checkout@v3     
+#   windows-build:
+#     needs: diff
+#     if: needs.diff.outputs.isRust == 'true'
+#     timeout-minutes: 45
+#     runs-on: windows-host
+#     steps:
+#       - uses: actions/checkout@v3     
 #       - name: Install postgres (Windows)
 #         shell: bash
 #         run: |
@@ -116,9 +116,9 @@ jobs:
 #           echo "PG_EXAMPLE_DATABASE_URL=postgres://postgres:root@localhost/diesel_example" >> $GITHUB_ENV
 #       - name: Install Protoc
 #         uses: arduino/setup-protoc@v2
-      - name: cargo build
-        run: |
-          cargo build --all-features
+#       - name: cargo build
+#         run: |
+#           cargo build --all-features
 
 #   simtest:
 #     needs: diff
@@ -141,58 +141,58 @@ jobs:
 #         run: |
 #           scripts/simtest/stress-new-tests.sh
 
-#   rosetta-validation:
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     timeout-minutes: 45
-#     runs-on: yizhuang
-#     steps:
-#       - uses: actions/checkout@v3
+  rosetta-validation:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    timeout-minutes: 45
+    runs-on: wubin
+    steps:
+      - uses: actions/checkout@v3
 
-#       - name: Setup environment
-#         run: .github/scripts/rosetta/setup.sh
-#         shell: bash
+      - name: Setup environment
+        run: .github/scripts/rosetta/setup.sh
+        shell: bash
 
-#       - name: Start local Sui network
-#         run: |
-#           sui start --no-full-node &
-#         shell: bash
+      - name: Start local Sui network
+        run: |
+          sui start --no-full-node &
+        shell: bash
 
-#       - name: Start Rosetta servers
-#         run: .github/scripts/rosetta/start_rosetta.sh
-#         shell: bash
+      - name: Start Rosetta servers
+        run: .github/scripts/rosetta/start_rosetta.sh
+        shell: bash
 
-#       - name: Sleep for 20 seconds
-#         run: sleep 20s
-#         shell: bash
+      - name: Sleep for 20 seconds
+        run: sleep 20s
+        shell: bash
 
-#       - name: Run check:construction test
-#         run: |
-#           ./bin/rosetta-cli --configuration-file rosetta_cli.json check:construction
-#         shell: bash
+      - name: Run check:construction test
+        run: |
+          ./bin/rosetta-cli --configuration-file rosetta_cli.json check:construction
+        shell: bash
 
-#       - name: Run check:data test
-#         run: |
-#           ./bin/rosetta-cli --configuration-file rosetta_cli.json check:data
-#         shell: bash
+      - name: Run check:data test
+        run: |
+          ./bin/rosetta-cli --configuration-file rosetta_cli.json check:data
+        shell: bash
 
   # This is a no-op job that allows the resulting action names to line up when
   # there are no rust changes in a given PR/commit. This ensures that we can
   # continue to block on the rust tests passing in the case of rust changes and
   # otherwise not block pushes to main.
-  test-notrust:
-    name: test
-    needs: diff
-    if: needs.diff.outputs.isRust == 'false'
-    runs-on: windows-host
-    strategy:
-      matrix:
-        os:
-          - [self-hosted]
-          - [windows-ghcloud]
-      fail-fast: false
-    steps:
-      - run: 'echo "No build required" '
+#   test-notrust:
+#     name: test
+#     needs: diff
+#     if: needs.diff.outputs.isRust == 'false'
+#     runs-on: windows-host
+#     strategy:
+#       matrix:
+#         os:
+#           - [self-hosted]
+#           - [windows-ghcloud]
+#       fail-fast: false
+#     steps:
+#       - run: 'echo "No build required" '
 
 #   clippy:
 #     needs: diff
