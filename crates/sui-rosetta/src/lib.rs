@@ -28,7 +28,7 @@ mod state;
 pub mod types;
 
 pub static SUI: Lazy<Currency> = Lazy::new(|| Currency {
-    symbol: "SUI".to_string(),
+    symbol: "OBC".to_string(),
     decimals: 9,
 });
 
