@@ -36,7 +36,7 @@ env:
 
 jobs:
   diff:
-    runs-on: windows-latest
+    runs-on: s4032
     outputs:
       isRust: true #${{ steps.diff.outputs.isRust }}
       isMove: true #${{ steps.diff.outputs.isMove }}
@@ -102,7 +102,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: windows-latest
+    runs-on: s4032
     steps:
       - uses: actions/checkout@v3
       - uses: KyleMayes/install-llvm-action@v1
@@ -190,7 +190,7 @@ jobs:
     name: test
     needs: diff
     if: needs.diff.outputs.isRust == 'false'
-    runs-on: windows-latest
+    runs-on: s4032
     strategy:
       matrix:
         os:
