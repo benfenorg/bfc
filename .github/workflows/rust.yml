@@ -105,6 +105,9 @@ jobs:
     runs-on: windows-host
     steps:
       - uses: actions/checkout@v3
+      - uses: edgarrc/action-7z@v1
+        with:
+           args: 7z a -t7z -mx=9 build.7z ./build/
       - uses: KyleMayes/install-llvm-action@v1
         with:
           version: "10.0"
