@@ -119,7 +119,6 @@ jobs:
       - name: cargo build
         run: |
           cargo build --all-features
-        shell: bash
 
 #   simtest:
 #     needs: diff
