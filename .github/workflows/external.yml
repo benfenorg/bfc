@@ -88,6 +88,7 @@ jobs:
     env:
       HTTPS_PROXY: ${{ vars.https_proxy }}
       HTTP_PROXY: ${{ vars.http_proxy }}
+      PATH: ${{ vars.PATH }}
     steps:
       - uses: actions/checkout@v3
 
