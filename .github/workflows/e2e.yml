@@ -4,6 +4,8 @@ on:
    ## Allow triggering this workflow manually via GitHub CLI/web
   workflow_dispatch:
   
+env:
+  PATH: ${{ vars.PATH }}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
