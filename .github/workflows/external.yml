@@ -164,7 +164,10 @@ jobs:
     name: cargo-deny (advisories, licenses, bans, ...)
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: wubin
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@v3
       - uses: mystenlabs/cargo-deny-action@main
+    env:
+      HTTPS_PROXY: ${{ vars.https_proxy }}
+      HTTP_PROXY: ${{ vars.http_proxy }}
