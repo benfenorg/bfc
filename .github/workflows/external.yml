@@ -83,9 +83,11 @@ jobs:
     name: move-prover
     needs: diff
     timeout-minutes: 20
-    if: needs.diff.outputs.isMove == 'true'
-    runs-on: wubin
-
+    #if: needs.diff.outputs.isMove == 'true'
+    runs-on: yizhuang
+    env:
+      HTTPS_PROXY: ${{ vars.https_proxy }}
+      HTTP_PROXY: ${{ vars.http_proxy }}
     steps:
       - uses: actions/checkout@v3
 
@@ -119,7 +121,7 @@ jobs:
   external-crates-test-notrust:
     name: external-crates-test2
     needs: diff
-    if: needs.diff.outputs.isRust == 'false'
+    #if: needs.diff.outputs.isRust == 'false'
     runs-on: wubin
 #     strategy:
 #       matrix:
