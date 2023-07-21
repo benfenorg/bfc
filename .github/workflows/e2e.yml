@@ -5,10 +5,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   diff:
-    runs-on: ubuntu-latest
+    runs-on: yizhuang
     outputs:
       isWallet: ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-wallet')) }}
-      isExplorer: ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-explorer')) }}
+      isExplorer: true # ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-explorer')) }}
       isTypescriptSDK: ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), '@mysten/sui.js')) }}
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -25,7 +25,7 @@ jobs:
     name: Localnet
     needs: diff
     if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true' || needs.diff.outputs.isWallet == 'true' || needs.diff.outputs.isRust == 'true'
-    runs-on: ubuntu-ghcloud
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
       # Disabled for now as it makes test runs take longer
@@ -86,7 +86,7 @@ jobs:
     needs: diff
     # TODO: add wallet e2e to the `if` condition when available
     if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
-    runs-on: ubuntu-ghcloud
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
       - name: Run E2E Test Runner with devnet branch
@@ -100,7 +100,7 @@ jobs:
     needs: diff
     # TODO: add wallet e2e to the `if` condition when available
     if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
-    runs-on: ubuntu-ghcloud
+    runs-on: yizhuang
     steps:
       - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
       - name: Run E2E Test Runner with testnet branch
