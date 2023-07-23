@@ -168,7 +168,7 @@ jobs:
 
       - name: Run check:construction test
         run: |
-          ./bin/rosetta-cli --configuration-file rosetta_cli.json check:construction
+          cp /tmp/rosetta-cli ./bin/ &&  ./bin/rosetta-cli --configuration-file rosetta_cli.json check:construction
         shell: bash
 
       - name: Run check:data test
