@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   diff:
-    runs-on: wubin
+    runs-on: ubuntu-latest
     outputs:
       isWallet: ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-wallet')) }}
       isExplorer: true # ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-explorer')) }}
