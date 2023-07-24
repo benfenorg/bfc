@@ -167,13 +167,11 @@ jobs:
         shell: bash
 
       - name: Run check:construction test
-        run: |
-          cp /tmp/rosetta-cli ./ &&  ./rosetta-cli --configuration-file rosetta_cli.json check:construction
+        run: cp /tmp/rosetta-cli ./ &&  ./rosetta-cli --configuration-file rosetta_cli.json check:construction
         shell: bash
 
       - name: Run check:data test
-        run: |
-          ./rosetta-cli --configuration-file rosetta_cli.json check:data || ./rosetta-cli --configuration-file rosetta_cli.json check:data
+        run: ./rosetta-cli --configuration-file rosetta_cli.json check:data || ./rosetta-cli --configuration-file rosetta_cli.json check:data
         shell: bash
 
   # This is a no-op job that allows the resulting action names to line up when
