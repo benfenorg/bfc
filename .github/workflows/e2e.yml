@@ -5,13 +5,12 @@ on:
   workflow_dispatch:
   
 env:
-  PATH: ${{ vars.PATH }}
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
   diff:
-    runs-on: yizhuang
+    runs-on: wubin
     outputs:
       isWallet: ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-wallet')) }}
       isExplorer: true # ${{ (steps.turbo.outputs.packages && contains(fromJson(steps.turbo.outputs.packages), 'sui-explorer')) }}
@@ -92,7 +91,7 @@ jobs:
     needs: diff
     # TODO: add wallet e2e to the `if` condition when available
     if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
-    runs-on: yizhuang
+    runs-on: wubin
     steps:
       - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
       - name: Run E2E Test Runner with devnet branch
@@ -106,7 +105,7 @@ jobs:
     needs: diff
     # TODO: add wallet e2e to the `if` condition when available
     if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
-    runs-on: yizhuang
+    runs-on: wubin
     steps:
       - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
       - name: Run E2E Test Runner with testnet branch
