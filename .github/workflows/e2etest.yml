@@ -1,4 +1,5 @@
 name: End to end single test.
+description: End to end single test.
 
 on:
   workflow_dispatch:
