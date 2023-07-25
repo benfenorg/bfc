@@ -106,7 +106,7 @@ pub async fn get_gas_obj_ref(
 ) -> anyhow::Result<ObjectRef> {
     let coins = sui_client
         .coin_read_api()
-        .get_coins(sui_address, Some("0x2::obc::OBC".into()), None, None)
+        .get_coins(sui_address, Some("0x2::sui::SUI".into()), None, None)
         .await?
         .data;
     let gas_obj = coins.iter().find(|c| c.balance >= minimal_gas_balance);
@@ -338,8 +338,7 @@ async fn execute_tx(
     action: &str,
 ) -> anyhow::Result<()> {
     let tx =
-        Transaction::from_data_and_signer(tx_data, Intent::sui_transaction(), vec![account_key])
-            .verify()?;
+        Transaction::from_data_and_signer(tx_data, Intent::sui_transaction(), vec![account_key]);
     info!("Executing {:?}", tx.digest());
     let tx_digest = *tx.digest();
     let resp = sui_client

@@ -4,7 +4,7 @@
 module sui_system::stake_subsidy {
     use sui::balance::{Self, Balance};
     use sui::math;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::bag::Bag;
     use sui::bag;
     use sui::tx_context::TxContext;
@@ -17,7 +17,7 @@ module sui_system::stake_subsidy {
 
     struct StakeSubsidy has store {
         /// Balance of SUI set aside for stake subsidies that will be drawn down over time.
-        balance: Balance<OBC>,
+        balance: Balance<SUI>,
 
         /// Count of the number of times stake subsidies have been distributed.
         distribution_counter: u64,
@@ -42,7 +42,7 @@ module sui_system::stake_subsidy {
     const ESubsidyDecreaseRateTooLarge: u64 = 0;
 
     public(friend) fun create(
-        balance: Balance<OBC>,
+        balance: Balance<SUI>,
         initial_distribution_amount: u64,
         stake_subsidy_period_length: u64,
         stake_subsidy_decrease_rate: u16,
@@ -65,7 +65,7 @@ module sui_system::stake_subsidy {
     }
 
     /// Advance the epoch counter and draw down the subsidy for the epoch.
-    public(friend) fun advance_epoch(self: &mut StakeSubsidy): Balance<OBC> {
+    public(friend) fun advance_epoch(self: &mut StakeSubsidy): Balance<SUI> {
         // Take the minimum of the reward amount and the remaining balance in
         // order to ensure we don't overdraft the remaining stake subsidy
         // balance

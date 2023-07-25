@@ -7,7 +7,7 @@ module fungible_tokens::basket_tests {
     use fungible_tokens::managed::MANAGED;
     use sui::pay;
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::test_scenario;
 
     #[test]
@@ -28,7 +28,7 @@ module fungible_tokens::basket_tests {
             assert!(basket::total_supply(reserve) == 0, 0);
 
             let num_coins = 10;
-            let sui = coin::mint_for_testing<OBC>(num_coins, ctx);
+            let sui = coin::mint_for_testing<SUI>(num_coins, ctx);
             let managed = coin::mint_for_testing<MANAGED>(num_coins, ctx);
             let basket = basket::mint(reserve, sui, managed, ctx);
             assert!(coin::value(&basket) == num_coins, 1);

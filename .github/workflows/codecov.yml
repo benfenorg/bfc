@@ -7,13 +7,10 @@ on:
     branches:
       - main
     types: [opened, reopened, synchronize]
-env:
-    PATH: ${{ vars.PATH }}
-    HTTPS_PROXY: ${{ vars.https_proxy }}
-    HTTP_PROXY: ${{ vars.http_proxy }}
+
 jobs:
   diff:
-    runs-on: obc
+    runs-on: [ubuntu-latest]
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -25,8 +22,8 @@ jobs:
   codecov-grcov:
     name: Generate code coverage
     needs: diff
-#     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: obc
+    if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
+    runs-on: [ubuntu-ghcloud]
     strategy:
       fail-fast: true
     steps:
@@ -35,7 +32,7 @@ jobs:
       # Enable caching of the 'librocksdb-sys' crate by additionally caching the
       # 'librocksdb-sys' src directory which is managed by cargo
       - name: Install grcov, and cache the binary
-        uses: baptiste0928/cargo-install@48c92f3d491efa23daace9891498a14c5aaa1afd # pin@v2
+        uses: baptiste0928/cargo-install@30f432979e99f3ea66a8fa2eede53c07063995d8 # pin@v2
         with:
           crate: grcov
           locked: true

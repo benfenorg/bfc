@@ -36,116 +36,160 @@ env:
 
 jobs:
   diff:
-    runs-on: wubin
+    runs-on: [ubuntu-latest]
     outputs:
-      isRust: true #${{ steps.diff.outputs.isRust }}
-      isMove: true #${{ steps.diff.outputs.isMove }}
+      isRust: ${{ steps.diff.outputs.isRust }}
+      isMove: ${{ steps.diff.outputs.isMove }}
+      isReleaseNotesEligible: ${{ steps.diff.outputs.isReleaseNotesEligible }}
     steps:
       - uses: actions/checkout@v3
       - name: Detect Changes
         uses: "./.github/actions/diffs"
         id: diff
 
-#   license-check:
-#     name: license-check
-#     runs-on: yizhuang
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
-#       - run: |
-#           curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf > rustup.sh && sh rustup.sh -y
-#       - run: cargo install cargo-hakari && cargo xlint
-#       - run: |
-#           cargo hakari generate --diff  # workspace-hack Cargo.toml is up-to-date
-#           cargo hakari manage-deps --dry-run  # all workspace crates depend on workspace-hack  
+  license-check:
+    name: license-check
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
+      - name: Install cargo-hakari, and cache the binary
+        uses: baptiste0928/cargo-install@30f432979e99f3ea66a8fa2eede53c07063995d8
+        with:
+          crate: cargo-hakari
+          locked: true
+      - run: cargo xlint
+      - run: |
+          cargo hakari generate --diff  # workspace-hack Cargo.toml is up-to-date
+          cargo hakari manage-deps --dry-run  # all workspace crates depend on workspace-hack
 
-#   test:
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     timeout-minutes: 45
-#     env:
-#       # Tests written with #[sim_test] are often flaky if run as #[tokio::test] - this var
-#       # causes #[sim_test] to only run under the deterministic `simtest` job, and not the
-#       # non-deterministic `test` job.
-#       SUI_SKIP_SIMTESTS: 1
-#     runs-on: yizhuang
-#     strategy:
-#       matrix:
-#         os:
-#           - yizhuang
-#       fail-fast: false
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: taiki-e/install-action@nextest
-#       - name: Install python dependencies
-#         run: |
-#           pip install pyopenssl --upgrade
-#           if [ -f narwhal/benchmark/requirements.txt ]; then pip install -r narwhal/benchmark/requirements.txt; fi
-#       - name: cargo test
-#         run: |
-#           cargo nextest run --profile ci
-#       - name: benchmark (smoke)
-#         run: |
-#           cargo run --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 10 --num-server-threads 24 --num-transfer-accounts 2 bench --target-qps 100 --num-workers 10  --transfer-object 50 --shared-counter 50 --run-duration 10s --stress-stat-collection
-#           pushd narwhal/benchmark && fab smoke && popd
-#       - name: doctests
-#         run: |
-#           cargo test --doc
-#       - name: rustdoc
-#         run: |
-#           cargo doc --workspace --no-deps
-#       # Ensure there are no uncommitted changes in the repo after running tests
-#       - run: scripts/changed-files.sh
-#         shell: bash
+  release-notes-description-check:
+    name: release-notes-check
+    needs: diff
+    if: needs.diff.outputs.isReleaseNotesEligible == 'true'
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check Pull Request Description
+        shell: bash
+        run: |
+          export PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          export DESCRIPTION=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/MystenLabs/sui/pulls/${PR_NUMBER}" \
+            | jq --raw-output .body)
 
-#   windows-build:
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     timeout-minutes: 45
-#     runs-on: windows-host
-#     steps:
-#       - uses: actions/checkout@v3     
-#       - name: Install postgres (Windows)
-#         shell: bash
-#         run: |
-#           choco install postgresql12 --force --params '/Password:root'
-#           echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
-#           echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
-#           echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
-#           echo "PG_DATABASE_URL=postgres://postgres:root@localhost/" >> $GITHUB_ENV
-#           echo "PG_EXAMPLE_DATABASE_URL=postgres://postgres:root@localhost/diesel_example" >> $GITHUB_ENV
-#       - name: Install Protoc
-#         uses: arduino/setup-protoc@v2
-#       - name: cargo build
-#         run: |
-#           cargo build --all-features
+          if [[ "${DESCRIPTION}" == *"[x]"*  ]]; then
+            if [[ "${DESCRIPTION}" =~ Release[[:space:]]notes[[:space:]]+.* ]]; then
+              exit 0
+            else
+              echo "At least one '[x]' was checked under 'Type of Change (Check all that apply)', you need to add a blob under the 'Release Notes' section."
+              exit 1
+            fi
+          fi
 
-#   simtest:
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     timeout-minutes: 45
-#     runs-on: yizhuang
-#     env:
-#       MSIM_WATCHDOG_TIMEOUT_MS: 60000
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: taiki-e/install-action@nextest
-#       - name: Set Swap Space
-#         uses: pierotofy/set-swap-space@master
-#         with:
-#           swap-size-gb: 256
-#       - name: cargo simtest
-#         run: |
-#           scripts/simtest/cargo-simtest simtest
-#       - name: check new tests for flakiness
-#         run: |
-#           scripts/simtest/stress-new-tests.sh
+  test:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    timeout-minutes: 45
+    env:
+      # Tests written with #[sim_test] are often flaky if run as #[tokio::test] - this var
+      # causes #[sim_test] to only run under the deterministic `simtest` job, and not the
+      # non-deterministic `test` job.
+      SUI_SKIP_SIMTESTS: 1
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - [ubuntu-ghcloud]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: taiki-e/install-action@nextest
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 256
+      - name: Install python dependencies
+        run: |
+          pip install pyopenssl --upgrade
+          if [ -f narwhal/benchmark/requirements.txt ]; then pip install -r narwhal/benchmark/requirements.txt; fi
+      - name: cargo test
+        run: |
+          cargo nextest run --profile ci
+      - name: benchmark (smoke)
+        run: |
+          cargo run --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 10 --num-server-threads 24 --num-transfer-accounts 2 bench --target-qps 100 --num-workers 10  --transfer-object 50 --shared-counter 50 --run-duration 10s --stress-stat-collection
+          pushd narwhal/benchmark && fab smoke && popd
+      - name: doctests
+        run: |
+          cargo test --doc
+      - name: rustdoc
+        run: |
+          cargo doc --workspace --no-deps
+      - name: sui-execution
+        run: |
+          ./scripts/execution_layer.py generate-lib
+      # Ensure there are no uncommitted changes in the repo after running tests
+      - run: scripts/changed-files.sh
+        shell: bash
+
+  windows-build:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    timeout-minutes: 45
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - [windows-ghcloud]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: taiki-e/install-action@nextest
+      - uses: arduino/setup-protoc@v1
+        # this avoids rate-limiting
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install postgres (Windows)
+        shell: bash
+        run: |
+          choco install postgresql12 --force --params '/Password:root'
+          echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
+          echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
+          echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
+          echo "PG_DATABASE_URL=postgres://postgres:root@localhost/" >> $GITHUB_ENV
+          echo "PG_EXAMPLE_DATABASE_URL=postgres://postgres:root@localhost/diesel_example" >> $GITHUB_ENV
+      - name: cargo build
+        run: |
+          cargo build --all-features
+        shell: bash
+
+  simtest:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    timeout-minutes: 45
+    runs-on: [ubuntu-ghcloud]
+    env:
+      MSIM_WATCHDOG_TIMEOUT_MS: 60000
+    steps:
+      - uses: actions/checkout@v3
+      - uses: taiki-e/install-action@nextest
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 256
+      - name: cargo simtest
+        run: |
+          scripts/simtest/cargo-simtest simtest
+      - name: check new tests for flakiness
+        run: |
+          scripts/simtest/stress-new-tests.sh
 
   rosetta-validation:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     timeout-minutes: 45
-    runs-on: wubin
+    runs-on: [ubuntu-ghcloud]
     steps:
       - uses: actions/checkout@v3
 
@@ -163,81 +207,105 @@ jobs:
         shell: bash
 
       - name: Sleep for 20 seconds
-        run: sleep 20
+        run: sleep 20s
         shell: bash
 
       - name: Run check:construction test
-        run: cp /tmp/rosetta-cli ./ &&  ./rosetta-cli --configuration-file rosetta_cli.json check:construction
+        run: |
+          ./bin/rosetta-cli --configuration-file rosetta_cli.json check:construction
         shell: bash
 
       - name: Run check:data test
-        run: ./rosetta-cli --configuration-file rosetta_cli.json check:data || ./rosetta-cli --configuration-file rosetta_cli.json check:data
+        run: |
+          ./bin/rosetta-cli --configuration-file rosetta_cli.json check:data
         shell: bash
 
   # This is a no-op job that allows the resulting action names to line up when
   # there are no rust changes in a given PR/commit. This ensures that we can
   # continue to block on the rust tests passing in the case of rust changes and
   # otherwise not block pushes to main.
-#   test-notrust:
-#     name: test
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'false'
-#     runs-on: windows-host
-#     strategy:
-#       matrix:
-#         os:
-#           - [self-hosted]
-#           - [windows-ghcloud]
-#       fail-fast: false
-#     steps:
-#       - run: 'echo "No build required" '
+  test-notrust:
+    name: test
+    needs: diff
+    if: needs.diff.outputs.isRust == 'false'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - [ubuntu-ghcloud]
+          - [windows-ghcloud]
+      fail-fast: false
+    steps:
+      - run: 'echo "No build required" '
 
-#   clippy:
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     runs-on: yizhuang
-#     steps:
-#       - uses: actions/checkout@v3
-#       - run: rustup component add clippy
-#       # TODO(bradh): debug and re-enable this; the caching is breaking the clippy build
-#       # Enable caching of the 'librocksdb-sys' crate by additionally caching the
-#       # 'librocksdb-sys' src directory which is managed by cargo
-#       # - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
-#       #   with:
-#       #     path: ~/.cargo/registry/src/**/librocksdb-sys-*
+  clippy:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    runs-on: [ubuntu-ghcloud]
+    steps:
+      - uses: arduino/setup-protoc@v1
+        # this avoids rate-limiting
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
+      - run: rustup component add clippy
+      # TODO(bradh): debug and re-enable this; the caching is breaking the clippy build
+      # Enable caching of the 'librocksdb-sys' crate by additionally caching the
+      # 'librocksdb-sys' src directory which is managed by cargo
+      # - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
+      #   with:
+      #     path: ~/.cargo/registry/src/**/librocksdb-sys-*
 
-#       # See '.cargo/config' for list of enabled/disappled clippy lints
-#       - name: cargo clippy
-#         run: cargo xclippy
+      # See '.cargo/config' for list of enabled/disappled clippy lints
+      - name: cargo clippy
+        run: cargo xclippy -D warnings
 
-#   rustfmt:
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     runs-on: yizhuang
-#     steps:
-#       - uses: actions/checkout@v3
-#       - run: rustup component add rustfmt
-#       - name: rustfmt
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: fmt
-#           args: --all --check
+  rustfmt:
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - run: rustup component add rustfmt
+      - name: rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all --check
 
-#   cargo-deny:
-#     name: cargo-deny (advisories, licenses, bans, ...)
-#     needs: diff
-#     if: needs.diff.outputs.isRust == 'true'
-#     runs-on: yizhuang
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: mystenlabs/cargo-deny-action@main
+  cargo-deny:
+    name: cargo-deny (advisories, licenses, bans, ...)
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mystenlabs/cargo-deny-action@main
+
+  sui-excution-cut:
+    name: cutting a new execution layer
+    needs: diff
+    if: needs.diff.outputs.isRust == 'true'
+    runs-on: [ubuntu-ghcloud]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install cargo-hakari, and cache the binary
+        uses: baptiste0928/cargo-install@30f432979e99f3ea66a8fa2eede53c07063995d8
+        with:
+          crate: cargo-hakari
+          locked: true
+      - name: Make cut
+        run: ./scripts/execution_layer.py cut for_ci_test
+      - name: Check execution builds
+        run: cargo build -p sui-execution
+
 
   #indexer:
   #  name: indexer
   #  needs: diff
   #  if: needs.diff.outputs.isRust == 'true'
   #  timeout-minutes: 45
-  #  runs-on: self-hosted
+  #  runs-on: [ubuntu-ghcloud]
   #  services:
   #    postgres:
   #      image: postgres

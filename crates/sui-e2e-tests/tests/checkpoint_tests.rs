@@ -3,15 +3,13 @@
 
 use std::time::Duration;
 use sui_macros::sim_test;
-use test_utils::network::TestClusterBuilder;
+use sui_test_transaction_builder::make_transfer_sui_transaction;
+use test_cluster::TestClusterBuilder;
 
 #[sim_test]
 async fn basic_checkpoints_integration_test() {
-    let test_cluster = TestClusterBuilder::new().build().await.unwrap();
-    let tx = test_cluster
-        .wallet
-        .make_transfer_sui_transaction(None, None)
-        .await;
+    let test_cluster = TestClusterBuilder::new().build().await;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet, None, None).await;
     let digest = *tx.digest();
     test_cluster.execute_transaction(tx).await;
 
@@ -21,7 +19,12 @@ async fn basic_checkpoints_integration_test() {
             .validator_node_handles()
             .into_iter()
             .all(|handle| {
-                handle.with(|node| node.is_transaction_executed_in_checkpoint(&digest).unwrap())
+                handle.with(|node| {
+                    node.state()
+                        .epoch_store_for_testing()
+                        .is_transaction_executed_in_checkpoint(&digest)
+                        .unwrap()
+                })
             });
         if all_included {
             // success

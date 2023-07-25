@@ -26,10 +26,10 @@ use crate::governance::STAKED_SUI_STRUCT_NAME;
 use crate::governance::STAKING_POOL_MODULE_NAME;
 use crate::messages_checkpoint::CheckpointTimestamp;
 use crate::multisig::MultiSigPublicKey;
+use crate::multisig_legacy::MultiSigPublicKeyLegacy;
 use crate::object::{Object, Owner};
 use crate::parse_sui_struct_tag;
 use crate::signature::GenericSignature;
-use crate::sui_serde::HexOBCAddress;
 use crate::sui_serde::Readable;
 use crate::sui_serde::{to_sui_struct_tag_string, HexAccountAddress};
 use crate::transaction::Transaction;
@@ -64,7 +64,6 @@ use std::cmp::max;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
-use tracing::info;
 
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
@@ -126,6 +125,7 @@ pub struct ObjectID(
 );
 
 pub type ObjectRef = (ObjectID, SequenceNumber, ObjectDigest);
+
 pub fn random_object_ref() -> ObjectRef {
     (
         ObjectID::random(),
@@ -448,7 +448,7 @@ pub const SUI_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
 pub struct SuiAddress(
     #[schemars(with = "Hex")]
-    #[serde_as(as = "Readable<HexOBCAddress, _>")]
+    #[serde_as(as = "Readable<Hex, _>")]
     [u8; SUI_ADDRESS_LENGTH],
 );
 
@@ -485,8 +485,6 @@ impl SuiAddress {
         D: serde::de::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-
-        info!("optional_address_from_hex address from hex: {}", s);
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
         Ok(Some(value))
     }
@@ -498,9 +496,6 @@ impl SuiAddress {
 
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
-        //let byte_string = String::from_utf8(bytes.as_ref().to_vec()).unwrap();
-        //info!("suiAddress byte_string: {}", byte_string);
-
         <[u8; SUI_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
             .map_err(|_| SuiError::InvalidAddress)
             .map(SuiAddress)
@@ -521,9 +516,9 @@ impl From<AccountAddress> for SuiAddress {
 
 impl TryFrom<&[u8]> for SuiAddress {
     type Error = SuiError;
+
     /// Tries to convert the provided byte array into a SuiAddress.
     fn try_from(bytes: &[u8]) -> Result<Self, SuiError> {
-        //info!("tryFrom u8 for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -533,7 +528,6 @@ impl TryFrom<Vec<u8>> for SuiAddress {
 
     /// Tries to convert the provided byte buffer into a SuiAddress.
     fn try_from(bytes: Vec<u8>) -> Result<Self, SuiError> {
-        //info!("tryFrom Vec<u8> for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -563,12 +557,30 @@ impl<T: SuiPublicKey> From<&T> for SuiAddress {
 
 impl From<&PublicKey> for SuiAddress {
     fn from(pk: &PublicKey) -> Self {
-        //info!("From<&PublicKey> for SuiAddress");
         let mut hasher = DefaultHash::default();
         hasher.update([pk.flag()]);
         hasher.update(pk);
         let g_arr = hasher.finalize();
         SuiAddress(g_arr.digest)
+    }
+}
+
+impl From<&MultiSigPublicKeyLegacy> for SuiAddress {
+    /// Derive a SuiAddress from [struct MultiSigPublicKey]. A MultiSig address
+    /// is defined as the 32-byte Blake2b hash of serializing the flag, the
+    /// threshold, concatenation of all n flag, public keys and
+    /// its weight. `flag_MultiSig || threshold || flag_1 || pk_1 || weight_1
+    /// || ... || flag_n || pk_n || weight_n`.
+    fn from(multisig_pk: &MultiSigPublicKeyLegacy) -> Self {
+        let mut hasher = DefaultHash::default();
+        hasher.update([SignatureScheme::MultiSig.flag()]);
+        hasher.update(multisig_pk.threshold().to_le_bytes());
+        multisig_pk.pubkeys().iter().for_each(|(pk, w)| {
+            hasher.update([pk.flag()]);
+            hasher.update(pk.as_ref());
+            hasher.update(w.to_le_bytes());
+        });
+        SuiAddress(hasher.finalize().digest)
     }
 }
 
@@ -621,6 +633,7 @@ impl TryFrom<&GenericSignature> for SuiAddress {
                 SuiAddress::from(&pub_key)
             }
             GenericSignature::MultiSig(ms) => ms.get_pk().into(),
+            GenericSignature::MultiSigLegacy(ms) => ms.get_pk().into(),
             GenericSignature::ZkLoginAuthenticator(zklogin) => zklogin.into(),
         })
     }
@@ -638,7 +651,7 @@ impl fmt::Debug for SuiAddress {
     }
 }
 
-#[cfg(feature = "test-utils")]
+#[cfg(any(test, feature = "test-utils"))]
 /// Generate a fake SuiAddress with repeated one byte.
 pub fn dbg_addr(name: u8) -> SuiAddress {
     let addr = [name; SUI_ADDRESS_LENGTH];

@@ -52,9 +52,11 @@ pub mod message_envelope;
 pub mod messages_checkpoint;
 pub mod messages_consensus;
 pub mod messages_grpc;
+pub mod messages_safe_client;
 pub mod metrics;
 pub mod move_package;
 pub mod multisig;
+pub mod multisig_legacy;
 pub mod object;
 pub mod programmable_transaction_builder;
 pub mod quorum_driver_types;
@@ -71,9 +73,7 @@ pub mod zk_login_util;
 
 pub mod epoch_data;
 
-pub mod base_types_obc;
-mod obc_base_types;
-#[cfg(feature = "test-utils")]
+#[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
 

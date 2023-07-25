@@ -34,7 +34,7 @@ pub mod apis;
 pub mod error;
 pub mod sui_client_config;
 pub mod wallet_context;
-pub const SUI_COIN_TYPE: &str = "0x2::obc::OBC";
+pub const SUI_COIN_TYPE: &str = "0x2::sui::SUI";
 
 pub struct SuiClientBuilder {
     request_timeout: Duration,

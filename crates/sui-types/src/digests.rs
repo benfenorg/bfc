@@ -46,6 +46,18 @@ impl Digest {
     pub const fn into_inner(self) -> [u8; 32] {
         self.0
     }
+
+    pub fn next_lexicographical(&self) -> Option<Self> {
+        let mut next_digest = *self;
+        let pos = next_digest.0.iter().rposition(|&byte| byte != 255)?;
+        next_digest.0[pos] += 1;
+        next_digest
+            .0
+            .iter_mut()
+            .skip(pos + 1)
+            .for_each(|byte| *byte = 0);
+        Some(next_digest)
+    }
 }
 
 impl AsRef<[u8]> for Digest {
@@ -207,6 +219,10 @@ impl CheckpointDigest {
     pub fn base58_encode(&self) -> String {
         Base58::encode(self.0)
     }
+
+    pub fn next_lexicographical(&self) -> Option<Self> {
+        self.0.next_lexicographical().map(Self)
+    }
 }
 
 impl AsRef<[u8]> for CheckpointDigest {
@@ -294,6 +310,10 @@ impl CheckpointContentsDigest {
     pub fn base58_encode(&self) -> String {
         Base58::encode(self.0)
     }
+
+    pub fn next_lexicographical(&self) -> Option<Self> {
+        self.0.next_lexicographical().map(Self)
+    }
 }
 
 impl AsRef<[u8]> for CheckpointContentsDigest {
@@ -331,6 +351,16 @@ impl fmt::Debug for CheckpointContentsDigest {
         f.debug_tuple("CheckpointContentsDigest")
             .field(&self.0)
             .finish()
+    }
+}
+
+impl std::str::FromStr for CheckpointContentsDigest {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut result = [0; 32];
+        result.copy_from_slice(&Base58::decode(s).map_err(|e| anyhow::anyhow!(e))?);
+        Ok(CheckpointContentsDigest::new(result))
     }
 }
 
@@ -426,6 +456,10 @@ impl TransactionDigest {
 
     pub fn base58_encode(&self) -> String {
         Base58::encode(self.0)
+    }
+
+    pub fn next_lexicographical(&self) -> Option<Self> {
+        self.0.next_lexicographical().map(Self)
     }
 }
 
@@ -527,6 +561,10 @@ impl TransactionEffectsDigest {
     pub fn base58_encode(&self) -> String {
         Base58::encode(self.0)
     }
+
+    pub fn next_lexicographical(&self) -> Option<Self> {
+        self.0.next_lexicographical().map(Self)
+    }
 }
 
 impl AsRef<[u8]> for TransactionEffectsDigest {
@@ -592,6 +630,10 @@ impl TransactionEventsDigest {
 
     pub fn random() -> Self {
         Self(Digest::random())
+    }
+
+    pub fn next_lexicographical(&self) -> Option<Self> {
+        self.0.next_lexicographical().map(Self)
     }
 }
 

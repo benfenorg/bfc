@@ -30,7 +30,7 @@ env:
 jobs:
   release:
     name: build release binaries
-    runs-on: yizhuang
+    runs-on: [ubuntu-ghcloud]
     steps:
       - uses: actions/checkout@v3
       - name: cargo build
@@ -72,7 +72,7 @@ jobs:
 
   report-status:
     name: Report Status
-    runs-on: yizhuang
+    runs-on: ubuntu-latest
     if: always()
     needs: [release]
     steps:

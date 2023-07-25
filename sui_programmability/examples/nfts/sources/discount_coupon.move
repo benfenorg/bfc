@@ -4,7 +4,7 @@
 module nfts::discount_coupon {
     use sui::coin;
     use sui::object::{Self, UID};
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 
@@ -32,7 +32,7 @@ module nfts::discount_coupon {
 
     /// Mint then transfer a new `DiscountCoupon` NFT, and top up recipient with some SUI.
     public entry fun mint_and_topup(
-        coin: coin::Coin<OBC>,
+        coin: coin::Coin<SUI>,
         discount: u8,
         expiration: u64,
         recipient: address,

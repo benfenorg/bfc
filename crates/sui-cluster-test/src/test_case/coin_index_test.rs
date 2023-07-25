@@ -12,6 +12,7 @@ use sui_json::SuiJsonValue;
 use sui_json_rpc_types::ObjectChange;
 use sui_json_rpc_types::SuiTransactionBlockResponse;
 use sui_json_rpc_types::{Balance, SuiTransactionBlockResponseOptions};
+use sui_test_transaction_builder::make_staking_transaction;
 use sui_types::base_types::{ObjectID, ObjectRef};
 use sui_types::gas_coin::GAS;
 use sui_types::object::Owner;
@@ -103,10 +104,7 @@ impl TestCaseImpl for CoinIndexTest {
             .get(0)
             .unwrap()
             .sui_address;
-        let txn = ctx
-            .get_wallet()
-            .make_staking_transaction(validator_addr)
-            .await;
+        let txn = make_staking_transaction(ctx.get_wallet(), validator_addr).await;
 
         let response = client
             .quorum_driver_api()
@@ -148,7 +146,7 @@ impl TestCaseImpl for CoinIndexTest {
             "token package published, package: {:?}, cap: {:?}",
             package, cap
         );
-        let sui_type_str = "0x2::obc::OBC";
+        let sui_type_str = "0x2::sui::SUI";
         let coin_type_str = format!("{}::managed::MANAGED", package.0);
         info!("coin type: {}", coin_type_str);
 
@@ -177,7 +175,7 @@ impl TestCaseImpl for CoinIndexTest {
         let balance_changes = &response.balance_changes.unwrap();
         let sui_balance_change = balance_changes
             .iter()
-            .find(|b| b.coin_type.to_string().contains("OBC"))
+            .find(|b| b.coin_type.to_string().contains("SUI"))
             .unwrap();
         let managed_balance_change = balance_changes
             .iter()

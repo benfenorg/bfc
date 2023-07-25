@@ -9,9 +9,10 @@
   "updateInternalDependencies": "minor",
   "privatePackages": false,
   "ignore": [
-    "obc-wallet",
-    "obc-explorer",
+    "sui-wallet",
+    "sui-explorer",
     "@mysten/core",
+    "@mysten/ui",
     "sui-wallet-adapter-demo",
     "wallet-kit-site",
     "sponsored-transactions"

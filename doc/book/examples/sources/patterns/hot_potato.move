@@ -3,7 +3,7 @@
 
 module examples::trade_in {
     use sui::transfer;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::tx_context::{TxContext};
@@ -43,7 +43,7 @@ module examples::trade_in {
     }
 
     /// Pay the full price for the phone and consume the `Receipt`.
-    public fun pay_full(receipt: Receipt, payment: Coin<OBC>) {
+    public fun pay_full(receipt: Receipt, payment: Coin<SUI>) {
         let Receipt { price } = receipt;
         assert!(coin::value(&payment) == price, EIncorrectAmount);
 
@@ -52,7 +52,7 @@ module examples::trade_in {
     }
 
     /// Give back an old phone and get 50% of its price as a discount for the new one.
-    public fun trade_in(receipt: Receipt, old_phone: Phone, payment: Coin<OBC>) {
+    public fun trade_in(receipt: Receipt, old_phone: Phone, payment: Coin<SUI>) {
         let Receipt { price } = receipt;
         let tradein_price = if (old_phone.model == 1) MODEL_ONE_PRICE else MODEL_TWO_PRICE;
         let to_pay = price - (tradein_price / 2);

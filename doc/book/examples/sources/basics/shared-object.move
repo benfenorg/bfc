@@ -6,7 +6,7 @@
 /// requires additional effort by securing access if needed.
 module examples::donuts {
     use sui::transfer;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::balance::{Self, Balance};
@@ -25,9 +25,10 @@ module examples::donuts {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<OBC>
+        balance: Balance<SUI>
     }
 
+    #[allow(unused_function)]
     /// Init function is often ideal place for initializing
     /// a shared object as it is called only once.
     ///
@@ -47,7 +48,7 @@ module examples::donuts {
 
     /// Entry function available to everyone who owns a Coin.
     public entry fun buy_donut(
-        shop: &mut DonutShop, payment: &mut Coin<OBC>, ctx: &mut TxContext
+        shop: &mut DonutShop, payment: &mut Coin<SUI>, ctx: &mut TxContext
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 

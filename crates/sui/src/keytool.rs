@@ -7,7 +7,7 @@ use fastcrypto::ed25519::Ed25519KeyPair;
 use fastcrypto::encoding::{decode_bytes_hex, Base64, Encoding, Hex};
 use fastcrypto::hash::HashFunction;
 use fastcrypto::secp256k1::recoverable::Secp256k1Sig;
-use fastcrypto::traits::KeyPair;
+use fastcrypto::traits::{KeyPair, ToFromBytes};
 use fastcrypto_zkp::bn254::api::Bn254Fr;
 use fastcrypto_zkp::bn254::poseidon::PoseidonWrapper;
 use fastcrypto_zkp::bn254::zk_login::OAuthProvider;
@@ -30,15 +30,13 @@ use sui_keys::keypair_file::{
 };
 use sui_keys::keystore::{AccountKeystore, Keystore};
 use sui_types::base_types::SuiAddress;
-use sui_types::base_types_obc::obc_address_util::convert_to_evm_address;
-use sui_types::base_types_obc::obc_address_util::convert_to_obc_address;
-
 use sui_types::crypto::{
     get_authority_key_pair, get_key_pair_from_rng, EncodeDecodeBase64, SignatureScheme, SuiKeyPair,
 };
 use sui_types::crypto::{DefaultHash, PublicKey, Signature};
 use sui_types::multisig::{MultiSig, MultiSigPublicKey, ThresholdUnit, WeightUnit};
-use sui_types::signature::GenericSignature;
+use sui_types::multisig_legacy::{MultiSigLegacy, MultiSigPublicKeyLegacy};
+use sui_types::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
 use sui_types::transaction::TransactionData;
 use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
 use sui_types::zk_login_util::AddressParams;
@@ -113,22 +111,17 @@ pub enum KeyToolCommand {
         #[clap(long)]
         base64pk: String,
     },
-    /// Add a new key to sui.keystore based on the input mnemonic phrase, the key scheme flag {ed25519 | secp256k1 | secp256r1}
+    /// Add a new key to sui.keystore using either the input mnemonic phrase or a private key (from the Wallet), the key scheme flag {ed25519 | secp256k1 | secp256r1}
     /// and an optional derivation path, default to m/44'/784'/0'/0'/0' for ed25519 or m/54'/784'/0'/0/0 for secp256k1
     /// or m/74'/784'/0'/0/0 for secp256r1. Supports mnemonic phrase of word length 12, 15, 18`, 21, 24.
     Import {
-        mnemonic_phrase: String,
+        input_string: String,
         key_scheme: SignatureScheme,
         derivation_path: Option<DerivationPath>,
     },
     /// Convert private key from wallet format (hex of 32 byte private key) to sui.keystore format
     /// (base64 of 33 byte flag || private key) or vice versa.
     Convert {
-        value: String,
-    },
-
-    /// Convert OBCAddress and SuiAddress to each other
-    OBCAddressConvert {
         value: String,
     },
 
@@ -155,9 +148,15 @@ pub enum KeyToolCommand {
         weights: Vec<WeightUnit>,
     },
 
-    /// Provides a list of signatures (`flag || sig || pk` encoded in Base64), threshold, a list of public keys.
-    /// Returns a valid MultiSig and its sender address. The result can be used as signature field for `sui client execute-signed-tx`.
-    /// The number of sigs must be greater than the threshold. The number of sigs must be smaller than the number of pks.
+    /// Provides a list of participating signatures (`flag || sig || pk` encoded in Base64),
+    /// threshold, a list of all public keys and a list of their weights that define the
+    /// MultiSig address. Returns a valid MultiSig signature and its sender address. The
+    /// result can be used as signature field for `sui client execute-signed-tx`. The sum
+    /// of weights of all signatures must be >= the threshold.
+    ///
+    /// The order of `sigs` must be the same as the order of `pks`.
+    /// e.g. for [pk1, pk2, pk3, pk4, pk5], [sig1, sig2, sig5] is valid, but
+    /// [sig2, sig1, sig5] is invalid.
     MultiSigCombinePartialSig {
         #[clap(long, multiple_occurrences = false, multiple_values = true)]
         sigs: Vec<Signature>,
@@ -169,10 +168,24 @@ pub enum KeyToolCommand {
         threshold: ThresholdUnit,
     },
 
+    MultiSigCombinePartialSigLegacy {
+        #[clap(long, multiple_occurrences = false, multiple_values = true)]
+        sigs: Vec<Signature>,
+        #[clap(long, multiple_occurrences = false, multiple_values = true)]
+        pks: Vec<PublicKey>,
+        #[clap(long, multiple_occurrences = false, multiple_values = true)]
+        weights: Vec<WeightUnit>,
+        #[clap(long)]
+        threshold: ThresholdUnit,
+    },
+
     /// Given a Base64 encoded MultiSig signature, decode its components.
+    /// If tx_bytes is passed in, verify the multisig.
     DecodeMultiSig {
         #[clap(long)]
         multisig: MultiSig,
+        #[clap(long)]
+        tx_bytes: Option<String>,
     },
 
     /// Given a Base64 encoded transaction bytes, decode its components.
@@ -341,40 +354,43 @@ impl KeyToolCommand {
             }
 
             KeyToolCommand::Import {
-                mnemonic_phrase,
+                input_string,
                 key_scheme,
                 derivation_path,
             } => {
-                let address =
-                    keystore.import_from_mnemonic(&mnemonic_phrase, key_scheme, derivation_path)?;
-                info!("Key imported for address [{address}]");
+                // check if input is a private key -- should start with 0x
+                if input_string.starts_with("0x") {
+                    let bytes = Hex::decode(&input_string).map_err(|_| {
+                        anyhow!("Private key is malformed. Importing private key failed.")
+                    })?;
+                    match key_scheme {
+                        SignatureScheme::ED25519 => {
+                            let kp = Ed25519KeyPair::from_bytes(&bytes).map_err(|_| anyhow!("Cannot decode ed25519 keypair from the private key. Importing private key failed."))?;
+                            let skp = SuiKeyPair::Ed25519(kp);
+                            let address: SuiAddress = Into::<SuiAddress>::into(&skp.public());
+                            keystore.add_key(skp)?;
+                            eprintln!("Private key imported successfully.");
+                            println!("{address}")
+                        }
+                        _ => return Err(anyhow!(
+                            "Only ed25519 signature scheme is supported for private keys at the moment."
+                        ))
+                    }
+                } else {
+                    let address = keystore.import_from_mnemonic(
+                        &input_string,
+                        key_scheme,
+                        derivation_path,
+                    )?;
+                    eprintln!("Mnemonic imported successfully.");
+                    println!("{address}")
+                }
             }
 
-            KeyToolCommand::Convert { value } => match Base64::decode(&value) {
-                Ok(decoded) => {
-                    assert_eq!(decoded.len(), 33);
-                    info!(
-                        "Wallet formatted private key: 0x{}",
-                        Hex::encode(&decoded[1..])
-                    );
-                }
-                Err(_) => match Hex::decode(&value) {
-                    Ok(decoded) => {
-                        assert_eq!(decoded.len(), 32);
-                        let mut res = Vec::new();
-                        res.extend_from_slice(&[SignatureScheme::ED25519.flag()]);
-                        res.extend_from_slice(&decoded);
-                        info!("Keystore formatted private key: {:?}", Base64::encode(&res));
-                    }
-                    Err(_) => {
-                        info!("Invalid private key format");
-                    }
-                },
-            },
-
-            //
-            KeyToolCommand::OBCAddressConvert { value } => {
-                convert_obc_sui_address(value);
+            KeyToolCommand::Convert { value } => {
+                let base64 = convert_string_to_base64(value)?;
+                eprintln!("Successfully converted private key to base64.");
+                println!("{base64}");
             }
 
             KeyToolCommand::Base64PubKeyToAddress { base64_key } => {
@@ -544,10 +560,28 @@ impl KeyToolCommand {
                 println!("MultiSig serialized: {:?}", generic_sig.encode_base64());
             }
 
-            KeyToolCommand::DecodeMultiSig { multisig } => {
+            KeyToolCommand::MultiSigCombinePartialSigLegacy {
+                sigs,
+                pks,
+                weights,
+                threshold,
+            } => {
+                let multisig_pk = MultiSigPublicKeyLegacy::new(pks, weights, threshold)?;
+                let address: SuiAddress = (&multisig_pk).into();
+                let multisig = MultiSigLegacy::combine(sigs, multisig_pk)?;
+                let generic_sig: GenericSignature = multisig.into();
+                println!("MultiSig address: {address}");
+                println!("MultiSig legacy parsed: {:?}", generic_sig);
+                println!(
+                    "MultiSig legacy serialized: {:?}",
+                    generic_sig.encode_base64()
+                );
+            }
+
+            KeyToolCommand::DecodeMultiSig { multisig, tx_bytes } => {
                 let pks = multisig.get_pk().pubkeys();
                 let sigs = multisig.get_sigs();
-                let bitmap = multisig.get_bitmap();
+                let bitmap = multisig.get_indices()?;
                 println!(
                     "All pubkeys: {:?}, threshold: {:?}",
                     pks.iter()
@@ -572,10 +606,22 @@ impl KeyToolCommand {
                         w
                     );
                 }
-                println!(
-                    "Multisig address: {:?}",
-                    SuiAddress::from(multisig.get_pk())
-                );
+
+                let author = SuiAddress::from(multisig.get_pk());
+                println!("Multisig address: {:?}", author);
+
+                if tx_bytes.is_some() {
+                    let tx_bytes = Base64::decode(&tx_bytes.unwrap())
+                        .map_err(|e| anyhow!("Invalid base64 tx bytes: {:?}", e))?;
+                    let tx_data: TransactionData = bcs::from_bytes(&tx_bytes)?;
+                    let res = GenericSignature::MultiSig(multisig).verify_authenticator(
+                        &IntentMessage::new(Intent::sui_transaction(), tx_data),
+                        author,
+                        None,
+                        &VerifyParams::default(),
+                    );
+                    println!("Verify multisig: {:?}", res);
+                };
             }
 
             KeyToolCommand::DecodeTxBytes { tx_bytes } => {
@@ -648,6 +694,31 @@ impl KeyToolCommand {
     }
 }
 
+fn convert_string_to_base64(value: String) -> Result<String, anyhow::Error> {
+    match Base64::decode(&value) {
+        Ok(decoded) => {
+            assert_eq!(decoded.len(), 33);
+            let hex_encoded = Hex::encode(&decoded[1..]);
+            info!("Wallet formatted private key: 0x{}", hex_encoded);
+            Ok(hex_encoded)
+        }
+        Err(_) => match Hex::decode(&value) {
+            Ok(decoded) => {
+                assert_eq!(decoded.len(), 32);
+                let mut res = Vec::new();
+                res.extend_from_slice(&[SignatureScheme::ED25519.flag()]);
+                res.extend_from_slice(&decoded);
+                info!("Keystore formatted private key: {:?}", Base64::encode(&res));
+                Ok(Base64::encode(&res))
+            }
+            Err(_) => {
+                info!("Invalid private key format");
+                Err(anyhow!("Invalid private key format"))
+            }
+        },
+    }
+}
+
 fn store_and_print_keypair(address: SuiAddress, keypair: SuiKeyPair) {
     let path_str = format!("{}.key", address).to_lowercase();
     let path = Path::new(&path_str);
@@ -660,28 +731,4 @@ fn store_and_print_keypair(address: SuiAddress, keypair: SuiKeyPair) {
         "Address, keypair and key scheme written to {}",
         path.to_str().unwrap()
     );
-}
-
-fn convert_obc_sui_address(value: String) {
-    println!("Enter the obcAddress or suiAddress to convert");
-
-    let mut sui_address = String::from("0x");
-    let mut obc_address = String::from("OBC");
-
-    //obc address
-    if value.starts_with("OBC") || value.starts_with("obc") {
-        obc_address = value.clone();
-        sui_address = convert_to_evm_address(value);
-    } else {
-        //sui address
-        if value.starts_with("0x") {
-            sui_address = value.clone();
-            obc_address = convert_to_obc_address("OBC", value.as_str());
-        } else {
-            println!("Invalid address");
-        }
-    }
-
-    println!("Sui Address: {}", sui_address);
-    println!("OBC Address: {}", obc_address);
 }

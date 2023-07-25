@@ -5,7 +5,7 @@
 module nfts::discount_coupon_tests {
     use nfts::discount_coupon::{Self, DiscountCoupon};
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::test_scenario::Self;
     use sui::transfer;
     use sui::tx_context::TxContext;
@@ -17,11 +17,12 @@ module nfts::discount_coupon_tests {
     // const MINT_FAILED: u64 = 0;
     // const TRANSFER_FAILED: u64 = 1;
 
+    #[allow(unused_function)]
     // Initializes the "state of the world" that mimics what should
     // be available in Sui genesis state (e.g., mints and distributes
     // coins to users).
     fun init(ctx: &mut TxContext) {
-        let coin = coin::mint_for_testing<OBC>(100, ctx);
+        let coin = coin::mint_for_testing<SUI>(100, ctx);
         transfer::public_transfer(coin, ISSUER_ADDRESS);
     }
 
@@ -36,7 +37,7 @@ module nfts::discount_coupon_tests {
         // Mint and transfer NFT + top up recipient's address.
         test_scenario::next_tx(scenario, ISSUER_ADDRESS);
         {
-            let coin = test_scenario::take_from_sender<Coin<OBC>>(scenario);
+            let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
             discount_coupon::mint_and_topup(coin, 10, 1648820870, USER1_ADDRESS, test_scenario::ctx(scenario));
         };
 

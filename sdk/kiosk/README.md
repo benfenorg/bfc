@@ -1,9 +1,10 @@
 # Kiosk SDK
 
-> **This package is still in active development. Use at your own risk**.
-> Currently, the only supported environment is **Sui Testnet**.
+> **This package is still in active development. Use at your own risk**. Currently, the only
+> supported environment is **Sui Testnet**.
 
-This Kiosk SDK library provides different utilities to interact/create/manage a [Kiosk](https://github.com/MystenLabs/sui/tree/main/kiosk).
+This Kiosk SDK library provides different utilities to interact/create/manage a
+[Kiosk](https://github.com/MystenLabs/sui/tree/main/kiosk).
 
 ## Installation
 
@@ -24,29 +25,23 @@ Here are some indicative examples on how to use the kiosk SDK.
 
 ```typescript
 import { fetchKiosk } from '@mysten/kiosk';
-import { Connection, JsonRpcProvider } from '@mysten/sui.js';
+import { SuiClient } from '@mysten/sui.js/client';
 
-const provider = new JsonRpcProvider(
-  new Connection({ fullnode: 'https://fullnode.testnet.sui.io:443' }),
+const client = new SuiClient(
+	url: 'https://fullnode.testnet.sui.io:443',
 );
 
 const getKiosk = async () => {
-  const kioskAddress = `0xSomeKioskAddress`;
+	const kioskAddress = `0xSomeKioskAddress`;
 
-  const {
-    data: res,
-    nextCursor,
-    hasNextPage,
-  } = await fetchKiosk(
-    provider,
-    kioskAddress,
-    { limit: 100 },
-    { withListingPrices: true, withKioskFields: true },
-  ); // could also add `cursor` for pagination
+	const { data } = await fetchKiosk(
+		client,
+		kioskAddress,
+		{}, // empty pagination, currently disabled.
+		{ withListingPrices: true, withKioskFields: true },
+	);
 
-  console.log(res); // { items: [],  itemIds: [],  listingIds: [], kiosk: {...} }
-  console.log(nextCursor); // null
-  console.log(hasNextPage); // false
+	console.log(data); // { items: [],  itemIds: [],  listingIds: [], kiosk: {...} }
 };
 ```
 
@@ -57,10 +52,10 @@ const getKiosk = async () => {
 
 ```typescript
 import { queryTransferPolicy, purchaseAndResolvePolicies, place, testnetEnvironment } from '@mysten/kiosk';
-import { Connection, JsonRpcProvider } from '@mysten/sui.js';
+import { SuiClient } from '@mysten/sui.js/client';
 
-const provider = new JsonRpcProvider(
-  new Connection({ fullnode: 'https://fullnode.testnet.sui.io:443' }),
+const client = new SuiClient(
+  url: 'https://fullnode.testnet.sui.io:443',
 );
 
  // the kiosk we're purchasing from
@@ -82,7 +77,7 @@ const ownedKioskCap = `0xMyKioskOwnerCap`;
 const purchaseItem = async (item, kioskId) => {
 
   // fetch the policy of the item (could be an array, if there's more than one transfer policy)
-  const policies = await queryTransferPolicy(provider, item.type);
+  const policies = await queryTransferPolicy(client, item.type);
   // selecting the first one for simplicity.
   const policyId = policy[0]?.id;
   // initialize tx block.
@@ -123,15 +118,15 @@ import { createKioskAndShare } from '@mysten/kiosk';
 import { TransactionBlock } from '@mysten/sui.js';
 
 const createKiosk = async () => {
-  const accountAddress = '0xSomeSuiAddress';
+	const accountAddress = '0xSomeSuiAddress';
 
-  const tx = new TransactionBlock();
-  const kiosk_cap = createKioskAndShare(tx);
+	const tx = new TransactionBlock();
+	const kiosk_cap = createKioskAndShare(tx);
 
-  tx.transferObjects([kiosk_cap], tx.pure(accountAddress, 'address'));
+	tx.transferObjects([kiosk_cap], tx.pure(accountAddress, 'address'));
 
-  // ... continue to sign and execute the transaction
-  // ...
+	// ... continue to sign and execute the transaction
+	// ...
 };
 ```
 
@@ -145,18 +140,18 @@ import { placeAndList } from '@mysten/kiosk';
 import { TransactionBlock } from '@mysten/sui.js';
 
 const placeAndListToKiosk = async () => {
-  const kiosk = 'SomeKioskId';
-  const kioskCap = 'KioskCapObjectId';
-  const itemType = '0xItemAddr::some:ItemType';
-  const item = 'SomeItemId';
-  const price = '100000';
+	const kiosk = 'SomeKioskId';
+	const kioskCap = 'KioskCapObjectId';
+	const itemType = '0xItemAddr::some:ItemType';
+	const item = 'SomeItemId';
+	const price = '100000';
 
-  const tx = new TransactionBlock();
+	const tx = new TransactionBlock();
 
-  placeAndList(tx, itemType, kiosk, kioskCap, item, price);
+	placeAndList(tx, itemType, kiosk, kioskCap, item, price);
 
-  // ... continue to sign and execute the transaction
-  // ...
+	// ... continue to sign and execute the transaction
+	// ...
 };
 ```
 
@@ -170,20 +165,20 @@ import { withdrawFromKiosk } from '@mysten/kiosk';
 import { TransactionBlock } from '@mysten/sui.js';
 
 const withdraw = async () => {
-  const kiosk = 'SomeKioskId';
-  const kioskCap = 'KioskCapObjectId';
-  const address = '0xSomeAddressThatReceivesTheFunds';
-  const amount = '100000';
+	const kiosk = 'SomeKioskId';
+	const kioskCap = 'KioskCapObjectId';
+	const address = '0xSomeAddressThatReceivesTheFunds';
+	const amount = '100000';
 
-  const tx = new TransactionBlock();
+	const tx = new TransactionBlock();
 
-  withdrawFromKiosk(tx, kiosk, kioskCap, amount);
+	withdrawFromKiosk(tx, kiosk, kioskCap, amount);
 
-  // transfer the Coin to self or any other address.
-  tx.transferObjects([coin], tx.pure(address, 'address'));
+	// transfer the Coin to self or any other address.
+	tx.transferObjects([coin], tx.pure(address, 'address'));
 
-  // ... continue to sign and execute the transaction
-  // ...
+	// ... continue to sign and execute the transaction
+	// ...
 };
 ```
 

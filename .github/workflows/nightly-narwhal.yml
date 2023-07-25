@@ -27,23 +27,32 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-  #PATH: ${{ vars.PATH }}
-  #HTTPS_PROXY: ${{ vars.https_proxy }}
-  #HTTP_PROXY: ${{ vars.http_proxy }}
-  
+
 jobs:
   end-to-end-tests:
     name: Narwhal run long-running end-to-end tests
-    runs-on: yizhuang
+    runs-on: ubuntu-ghcloud
     steps:
       - uses: actions/checkout@v3
+      - uses: taiki-e/install-action@nextest
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 256
+      # Enable caching of the 'librocksdb-sys' crate by additionally caching the
+      # 'librocksdb-sys' src directory which is managed by cargo
+      - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
+        with:
+          path: ~/.cargo/registry/src/**/librocksdb-sys-*
+      # We run only the integration tests that are ignored under the primary package.
+      # These are considered the end-to-end "slow" tests for us
       - name: cargo nextest
         run: |
           cargo nextest run -E 'kind(test) and not test(test_get_collections_with_missing_certificates) and package(narwhal-primary) + package(narwhal-consensus)' --profile narwhalnightly --run-ignored ignored-only
 
   report-status:
     name: Report Status
-    runs-on: yizhuang
+    runs-on: ubuntu-latest
     if: always()
     needs: [end-to-end-tests]
     steps:
@@ -55,7 +64,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
         with:
-          channel-id: 'alert'
+          channel-id: 'narwhal-tusk'
           payload: |
             {
               "text": "NARWAL Workflow *${{ github.workflow }}* failed",

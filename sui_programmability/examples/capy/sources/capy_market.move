@@ -12,7 +12,7 @@ module capy::capy_market {
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::pay;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::event::emit;
     use sui::coin::{Self, Coin};
     use sui::dynamic_object_field as dof;
@@ -85,6 +85,7 @@ module capy::capy_market {
 
     // ======= Publishing =======
 
+    #[allow(unused_function)]
     /// By default create two Markets
     fun init(ctx: &mut TxContext) {
         publish<Capy>(ctx);
@@ -186,7 +187,7 @@ module capy::capy_market {
     ) {
         let sender = tx_context::sender(ctx);
         assert!(dof::exists_(&market.id, sender), ENoProfits);
-        let profit = dof::remove<address, Coin<OBC>>(&mut market.id, sender);
+        let profit = dof::remove<address, Coin<SUI>>(&mut market.id, sender);
 
         emit(ProfitsCollected<T> {
             owner: sender,
@@ -202,7 +203,7 @@ module capy::capy_market {
     public fun purchase<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        paid: Coin<OBC>,
+        paid: Coin<SUI>,
         ctx: &TxContext
     ): T {
         let Listing { id, price, owner } = dof::remove<ID, Listing>(&mut market.id, listing_id);
@@ -220,7 +221,7 @@ module capy::capy_market {
         // if there's a balance attached to the marketplace - merge it with paid.
         // if not -> leave a Coin hanging as a dynamic field of the marketplace.
         if (dof::exists_(&market.id, owner)) {
-            coin::join(dof::borrow_mut<address, Coin<OBC>>(&mut market.id, owner), paid)
+            coin::join(dof::borrow_mut<address, Coin<SUI>>(&mut market.id, owner), paid)
         } else {
             dof::add(&mut market.id, owner, paid)
         };
@@ -233,7 +234,7 @@ module capy::capy_market {
     entry fun purchase_and_take<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        paid: Coin<OBC>,
+        paid: Coin<SUI>,
         ctx: &TxContext
     ) {
         transfer::public_transfer(
@@ -242,11 +243,11 @@ module capy::capy_market {
         )
     }
 
-    /// Use `&mut Coin<OBC>` to purchase `T` from marketplace.
+    /// Use `&mut Coin<SUI>` to purchase `T` from marketplace.
     entry fun purchase_and_take_mut<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        paid: &mut Coin<OBC>,
+        paid: &mut Coin<SUI>,
         ctx: &mut TxContext
     ) {
         let listing = dof::borrow<ID, Listing>(&market.id, *&listing_id);
@@ -258,7 +259,7 @@ module capy::capy_market {
     entry fun purchase_and_take_mul_coins<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        coins: vector<Coin<OBC>>,
+        coins: vector<Coin<SUI>>,
         ctx: &mut TxContext
     ) {
         let listing = dof::borrow<ID, Listing>(&market.id, *&listing_id);

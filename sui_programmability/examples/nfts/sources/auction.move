@@ -34,7 +34,7 @@
 module nfts::auction {
     use sui::coin::{Self, Coin};
     use sui::balance::Balance;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::object::{Self, ID, UID};
     use sui::transfer;
     use sui::tx_context::{Self,TxContext};
@@ -54,7 +54,7 @@ module nfts::auction {
         /// ID of the Auction object this bid is intended for
         auction_id: ID,
         /// Coin used for bidding.
-        bid: Balance<OBC>
+        bid: Balance<SUI>
     }
 
     // Entry functions.
@@ -76,7 +76,7 @@ module nfts::auction {
     /// Creates a bid a and send it to the auctioneer along with the
     /// ID of the auction. This is executed by a bidder.
     public fun bid(
-        coin: Coin<OBC>, auction_id: ID, auctioneer: address, ctx: &mut TxContext
+        coin: Coin<SUI>, auction_id: ID, auctioneer: address, ctx: &mut TxContext
     ) {
         let bid = Bid {
             id: object::new(ctx),

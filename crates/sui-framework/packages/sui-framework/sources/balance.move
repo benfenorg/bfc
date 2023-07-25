@@ -7,7 +7,7 @@
 module sui::balance {
     use sui::tx_context::{Self, TxContext};
 
-    friend sui::obc;
+    friend sui::sui;
 
     /// For when trying to destroy a non-zero balance.
     const ENonZero: u64 = 0;
@@ -118,6 +118,7 @@ module sui::balance {
         aborts_if balance.value != 0 with ENonZero;
     }
 
+    #[allow(unused_function)]
     /// CAUTION: this function creates a `Balance` without increasing the supply.
     /// It should only be called by the epoch change system txn to create staking rewards,
     /// and nowhere else.
@@ -126,6 +127,7 @@ module sui::balance {
         Balance { value }
     }
 
+    #[allow(unused_function)]
     /// CAUTION: this function destroys a `Balance` without decreasing the supply.
     /// It should only be called by the epoch change system txn to destroy storage rebates,
     /// and nowhere else.
@@ -157,12 +159,12 @@ module sui::balance {
 #[test_only]
 module sui::balance_tests {
     use sui::balance;
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::test_utils;
 
     #[test]
     fun test_balance() {
-        let balance = balance::zero<OBC>();
+        let balance = balance::zero<SUI>();
         let another = balance::create_for_testing(1000);
 
         balance::join(&mut balance, another);

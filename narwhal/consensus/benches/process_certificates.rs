@@ -7,6 +7,7 @@ use criterion::{
 };
 use fastcrypto::hash::Hash;
 use narwhal_consensus as consensus;
+use narwhal_consensus::consensus::{LeaderSchedule, LeaderSwapTable};
 use pprof::criterion::{Output, PProfProfiler};
 use prometheus::Registry;
 use std::{collections::BTreeSet, sync::Arc};
@@ -57,11 +58,12 @@ pub fn process_certificates(c: &mut Criterion) {
         let mut ordering_engine = Bullshark {
             committee: committee.clone(),
             store: store.consensus_store,
+            protocol_config: latest_protocol_version(),
             metrics,
             last_successful_leader_election_timestamp: Instant::now(),
-            last_leader_election: Default::default(),
             max_inserted_certificate_round: 0,
             num_sub_dags_per_schedule: 100,
+            leader_schedule: LeaderSchedule::new(committee.clone(), LeaderSwapTable::default()),
         };
         consensus_group.bench_with_input(
             BenchmarkId::new("batched", certificates.len()),

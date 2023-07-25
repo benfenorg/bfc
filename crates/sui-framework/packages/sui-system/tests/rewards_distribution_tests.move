@@ -109,7 +109,7 @@ module sui_system::rewards_distribution_tests {
         advance_epoch_with_reward_amounts(0, 40, scenario);
 
         unstake(STAKER_ADDR_2, 0, scenario); // unstake 600 principal SUI
-        // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<OBC>
+        // additional 600 SUI of principal and 46 SUI of rewards withdrawn to Coin<SUI>
         // For this stake, the staking exchange rate is 100 : 140 and the unstaking
         // exchange rate is 528 : 750 -ish so the total sui withdraw will be:
         // (600 * 100 / 140) * 750 / 528 = ~608. Together with the 120 SUI we already have,

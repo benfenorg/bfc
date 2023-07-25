@@ -23,14 +23,14 @@ mod test {
     use sui_config::{AUTHORITIES_DB_NAME, SUI_KEYSTORE_FILENAME};
     use sui_core::authority::authority_store_tables::AuthorityPerpetualTables;
     use sui_core::authority::framework_injection;
-    use sui_core::checkpoints::CheckpointStore;
+    use sui_core::checkpoints::{CheckpointStore, CheckpointWatermark};
     use sui_framework::BuiltInFramework;
     use sui_macros::{register_fail_point_async, register_fail_points, sim_test};
     use sui_protocol_config::{ProtocolVersion, SupportedProtocolVersions};
     use sui_simulator::{configs::*, SimConfig};
     use sui_types::base_types::{ObjectRef, SuiAddress};
     use sui_types::messages_checkpoint::VerifiedCheckpoint;
-    use test_utils::network::{TestCluster, TestClusterBuilder};
+    use test_cluster::{TestCluster, TestClusterBuilder};
     use tracing::{error, info};
     use typed_store::traits::Map;
 
@@ -91,6 +91,7 @@ mod test {
         test_simulated_load(TestInitData::new(&test_cluster).await, 120).await;
     }
 
+    #[ignore("Disabled due to flakiness - re-enable when failure is fixed")]
     #[sim_test(config = "test_config()")]
     async fn test_simulated_load_reconfig_restarts() {
         // TODO added to invalidate a failing test seed in CI. Remove me
@@ -252,6 +253,26 @@ mod test {
         test_simulated_load(TestInitData::new(&test_cluster).await, 120).await;
     }
 
+    #[sim_test(config = "test_config()")]
+    async fn test_simulated_load_checkpoint_pruning() {
+        let test_cluster = build_test_cluster(4, 1000).await;
+        test_simulated_load(TestInitData::new(&test_cluster).await, 30).await;
+
+        let swarm_dir = test_cluster.swarm.dir().join(AUTHORITIES_DB_NAME);
+        let random_validator_path = std::fs::read_dir(swarm_dir).unwrap().next().unwrap();
+        let validator_path = random_validator_path.unwrap().path();
+        let checkpoint_store =
+            CheckpointStore::open_readonly(&validator_path.join("live").join("checkpoints"));
+
+        let pruned = checkpoint_store
+            .watermarks
+            .get(&CheckpointWatermark::HighestPruned)
+            .unwrap()
+            .unwrap()
+            .0;
+        assert!(pruned > 0);
+    }
+
     // TODO add this back once flakiness is resolved
     #[ignore]
     #[sim_test(config = "test_config()")]
@@ -291,9 +312,6 @@ mod test {
         // to the latest protocol version.
         let max_ver = ProtocolVersion::MAX.as_u64();
         let min_ver = max_ver - 1;
-        if min_ver < 12 {
-            return;
-        }
         let timeout = tokio::time::timeout(
             Duration::from_secs(1000),
             test_protocol_upgrade_compatibility_impl(min_ver),
@@ -323,8 +341,7 @@ mod test {
             .with_objects(init_framework.into_iter().map(|p| p.genesis_object()))
             .with_stake_subsidy_start_epoch(10)
             .build()
-            .await
-            .unwrap();
+            .await;
 
         let test_init_data = TestInitData::new(&test_cluster).await;
         let test_init_data_clone = test_init_data.clone();
@@ -336,7 +353,7 @@ mod test {
                 info!("Targeting protocol version: {}", version);
                 test_cluster.wait_for_all_nodes_upgrade_to(version).await;
                 info!("All nodes are at protocol version: {}", version);
-                // Let all nodes run for a bit at this version.
+                // Let all nodes run for a few epochs at this version.
                 tokio::time::sleep(Duration::from_secs(50)).await;
                 if version == max_ver {
                     let stake_subsidy_start_epoch = test_cluster
@@ -375,12 +392,14 @@ mod test {
         });
 
         test_simulated_load(test_init_data_clone, 120).await;
-        loop {
+        for _ in 0..30 {
             if finished.load(Ordering::Relaxed) {
                 break;
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
+
+        assert!(finished.load(Ordering::SeqCst));
     }
 
     async fn build_test_cluster(
@@ -390,7 +409,6 @@ mod test {
         init_test_cluster_builder(default_num_validators, default_epoch_duration_ms)
             .build()
             .await
-            .unwrap()
     }
 
     fn init_test_cluster_builder(
@@ -481,6 +499,7 @@ mod test {
         let adversarial_weight = 0;
 
         let shared_counter_hotness_factor = 50;
+        let shared_counter_max_tip = 0;
 
         let workloads = WorkloadConfiguration::build_workloads(
             num_workers,
@@ -493,6 +512,7 @@ mod test {
             adversarial_cfg,
             batch_payment_size,
             shared_counter_hotness_factor,
+            shared_counter_max_tip,
             target_qps,
             in_flight_ratio,
             bank,

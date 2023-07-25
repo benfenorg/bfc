@@ -5,8 +5,8 @@ module sui_system::sui_system_state_inner {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{ID};
-    use sui_system::staking_pool::{stake_activation_epoch, StakedObc};
-    use sui::obc::OBC;
+    use sui_system::staking_pool::{stake_activation_epoch, StakedSui};
+    use sui::sui::SUI;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator};
@@ -14,6 +14,7 @@ module sui_system::sui_system_state_inner {
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::stake_subsidy::{Self, StakeSubsidy};
     use sui_system::storage_fund::{Self, StorageFund};
+    use sui_system::staking_pool::PoolTokenExchangeRate;
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::{Self, VecSet};
     use std::option;
@@ -144,8 +145,8 @@ module sui_system::sui_system_state_inner {
         /// when advance_epoch_safe_mode is executed. They will eventually be processed once we
         /// are out of safe mode.
         safe_mode: bool,
-        safe_mode_storage_rewards: Balance<OBC>,
-        safe_mode_computation_rewards: Balance<OBC>,
+        safe_mode_storage_rewards: Balance<SUI>,
+        safe_mode_computation_rewards: Balance<SUI>,
         safe_mode_storage_rebates: u64,
         safe_mode_non_refundable_storage_fee: u64,
 
@@ -192,8 +193,8 @@ module sui_system::sui_system_state_inner {
         /// when advance_epoch_safe_mode is executed. They will eventually be processed once we
         /// are out of safe mode.
         safe_mode: bool,
-        safe_mode_storage_rewards: Balance<OBC>,
-        safe_mode_computation_rewards: Balance<OBC>,
+        safe_mode_storage_rewards: Balance<SUI>,
+        safe_mode_computation_rewards: Balance<SUI>,
         safe_mode_storage_rebates: u64,
         safe_mode_non_refundable_storage_fee: u64,
 
@@ -239,7 +240,7 @@ module sui_system::sui_system_state_inner {
     /// This function will be called only once in genesis.
     public(friend) fun create(
         validators: vector<Validator>,
-        initial_storage_fund: Balance<OBC>,
+        initial_storage_fund: Balance<SUI>,
         protocol_version: u64,
         epoch_start_timestamp_ms: u64,
         parameters: SystemParameters,
@@ -504,36 +505,36 @@ module sui_system::sui_system_state_inner {
     /// Add stake to a validator's staking pool.
     public(friend) fun request_add_stake(
         self: &mut SuiSystemStateInnerV2,
-        stake: Coin<OBC>,
+        stake: Coin<SUI>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) {
+    ) : StakedSui {
         validator_set::request_add_stake(
             &mut self.validators,
             validator_address,
             coin::into_balance(stake),
             ctx,
-        );
+        )
     }
 
     /// Add stake to a validator's staking pool using multiple coins.
     public(friend) fun request_add_stake_mul_coin(
         self: &mut SuiSystemStateInnerV2,
-        stakes: vector<Coin<OBC>>,
+        stakes: vector<Coin<SUI>>,
         stake_amount: option::Option<u64>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) {
+    ) : StakedSui {
         let balance = extract_coin_balance(stakes, stake_amount, ctx);
-        validator_set::request_add_stake(&mut self.validators, validator_address, balance, ctx);
+        validator_set::request_add_stake(&mut self.validators, validator_address, balance, ctx)
     }
 
     /// Withdraw some portion of a stake from a validator's staking pool.
     public(friend) fun request_withdraw_stake(
         self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedObc,
+        staked_sui: StakedSui,
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<SUI> {
         assert!(
             stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
             EStakeWithdrawBeforeActivation
@@ -832,8 +833,8 @@ module sui_system::sui_system_state_inner {
         self: &mut SuiSystemStateInnerV2,
         new_epoch: u64,
         next_protocol_version: u64,
-        storage_reward: Balance<OBC>,
-        computation_reward: Balance<OBC>,
+        storage_reward: Balance<SUI>,
+        computation_reward: Balance<SUI>,
         storage_rebate_amount: u64,
         non_refundable_storage_fee_amount: u64,
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
@@ -841,7 +842,7 @@ module sui_system::sui_system_state_inner {
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<SUI> {
         let prev_epoch_start_timestamp = self.epoch_start_timestamp_ms;
         self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
 
@@ -1038,8 +1039,21 @@ module sui_system::sui_system_state_inner {
         storage_fund::total_object_storage_rebates(&self.storage_fund)
     }
 
-    /// Extract required Balance from vector of Coin<OBC>, transfer the remainder back to sender.
-    fun extract_coin_balance(coins: vector<Coin<OBC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<OBC> {
+    public(friend) fun pool_exchange_rates(
+        self: &mut SuiSystemStateInnerV2,
+        pool_id: &ID
+    ): &Table<u64, PoolTokenExchangeRate>  {
+        let validators = &mut self.validators;
+        validator_set::pool_exchange_rates(validators, pool_id)
+    }
+
+    public(friend) fun active_validator_addresses(self: &SuiSystemStateInnerV2): vector<address> {
+        let validator_set = &self.validators;
+        validator_set::active_validator_addresses(validator_set)
+    }
+
+    /// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
+    fun extract_coin_balance(coins: vector<Coin<SUI>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<SUI> {
         let merged_coin = vector::pop_back(&mut coins);
         pay::join_vec(&mut merged_coin, coins);
 

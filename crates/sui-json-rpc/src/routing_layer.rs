@@ -14,7 +14,6 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use sui_open_rpc::MethodRouting;
 use tower::{Layer, Service};
-use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct RoutingLayer {
@@ -124,7 +123,6 @@ where
                         disable_routing,
                     )
                 };
-                info!("Request body: {:?}", String::from_utf8_lossy(&body));
                 Request::from_parts(parts, Body::from(body))
             } else {
                 req

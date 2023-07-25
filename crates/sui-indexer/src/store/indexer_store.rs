@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use async_trait::async_trait;
-use prometheus::Histogram;
+use prometheus::{Histogram, IntCounter};
 
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
@@ -21,13 +21,14 @@ use sui_types::storage::ObjectStore;
 use crate::errors::IndexerError;
 use crate::metrics::IndexerMetrics;
 use crate::models::addresses::{ActiveAddress, Address, AddressStats};
+use crate::models::checkpoint_metrics::CheckpointMetrics;
 use crate::models::checkpoints::Checkpoint;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::events::Event;
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
 use crate::models::system_state::{DBSystemStateSummary, DBValidatorSummary};
-use crate::models::transaction_index::{InputObject, MoveCall, Recipient};
+use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
 use crate::types::CheckpointTransactionBlockResponse;
 
@@ -35,13 +36,20 @@ use crate::types::CheckpointTransactionBlockResponse;
 pub trait IndexerStore {
     type ModuleCache;
 
-    async fn get_latest_checkpoint_sequence_number(&self) -> Result<i64, IndexerError>;
+    async fn get_latest_tx_checkpoint_sequence_number(&self) -> Result<i64, IndexerError>;
+    async fn get_latest_object_checkpoint_sequence_number(&self) -> Result<i64, IndexerError>;
     async fn get_checkpoint(&self, id: CheckpointId) -> Result<RpcCheckpoint, IndexerError>;
     async fn get_checkpoints(
         &self,
         cursor: Option<CheckpointId>,
         limit: usize,
     ) -> Result<Vec<RpcCheckpoint>, IndexerError>;
+    async fn get_indexer_checkpoint(&self) -> Result<Checkpoint, IndexerError>;
+    async fn get_indexer_checkpoints(
+        &self,
+        cursor: i64,
+        limit: usize,
+    ) -> Result<Vec<Checkpoint>, IndexerError>;
     async fn get_checkpoint_sequence_number(
         &self,
         digest: CheckpointDigest,
@@ -108,9 +116,9 @@ pub trait IndexerStore {
         is_descending: bool,
     ) -> Result<Vec<Transaction>, IndexerError>;
 
-    async fn get_transaction_page_by_transaction_kind(
+    async fn get_transaction_page_by_transaction_kinds(
         &self,
-        kind: String,
+        kind_names: Vec<String>,
         start_sequence: Option<i64>,
         limit: usize,
         is_descending: bool,
@@ -119,14 +127,6 @@ pub trait IndexerStore {
     async fn get_transaction_page_by_sender_address(
         &self,
         sender_address: String,
-        start_sequence: Option<i64>,
-        limit: usize,
-        is_descending: bool,
-    ) -> Result<Vec<Transaction>, IndexerError>;
-
-    async fn get_transaction_page_by_mutated_object(
-        &self,
-        object_id: String,
         start_sequence: Option<i64>,
         limit: usize,
         is_descending: bool,
@@ -151,6 +151,15 @@ pub trait IndexerStore {
     ) -> Result<Vec<Transaction>, IndexerError>;
 
     async fn get_transaction_page_by_input_object(
+        &self,
+        object_id: ObjectID,
+        version: Option<i64>,
+        start_sequence: Option<i64>,
+        limit: usize,
+        is_descending: bool,
+    ) -> Result<Vec<Transaction>, IndexerError>;
+
+    async fn get_transaction_page_by_changed_object(
         &self,
         object_id: ObjectID,
         version: Option<i64>,
@@ -187,6 +196,12 @@ pub trait IndexerStore {
         is_descending: bool,
     ) -> Result<Option<i64>, IndexerError>;
 
+    async fn get_changed_object_sequence_by_digest(
+        &self,
+        tx_digest: Option<String>,
+        is_descending: bool,
+    ) -> Result<Option<i64>, IndexerError>;
+
     async fn get_recipient_sequence_by_digest(
         &self,
         tx_digest: Option<String>,
@@ -201,21 +216,16 @@ pub trait IndexerStore {
         tx: Transaction,
         tx_object_changes: TransactionObjectChanges,
     ) -> Result<usize, IndexerError>;
-    // TODO(gegaowp): keep this method in this trait for now for easier reverting,
-    // will remove it if it's no longer needed.
-    fn persist_all_checkpoint_data(
-        &self,
-        data: &TemporaryCheckpointStore,
-    ) -> Result<usize, IndexerError>;
     async fn persist_checkpoint_transactions(
         &self,
         checkpoint: &Checkpoint,
         transactions: &[Transaction],
+        total_transaction_chunk_committed_counter: IntCounter,
     ) -> Result<usize, IndexerError>;
     async fn persist_object_changes(
         &self,
-        checkpoint: &Checkpoint,
         tx_object_changes: &[TransactionObjectChanges],
+        total_object_change_chunk_committed_counter: IntCounter,
         object_mutation_latency: Histogram,
         object_deletion_latency: Histogram,
     ) -> Result<(), IndexerError>;
@@ -230,11 +240,16 @@ pub trait IndexerStore {
     async fn persist_transaction_index_tables(
         &self,
         input_objects: &[InputObject],
+        changed_objects: &[ChangedObject],
         move_calls: &[MoveCall],
         recipients: &[Recipient],
     ) -> Result<(), IndexerError>;
 
     async fn persist_epoch(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
+    async fn get_network_total_transactions_previous_epoch(
+        &self,
+        epoch: i64,
+    ) -> Result<i64, IndexerError>;
 
     async fn get_epochs(
         &self,
@@ -258,6 +273,31 @@ pub trait IndexerStore {
         &self,
         checkpoint: i64,
     ) -> Result<AddressStats, IndexerError>;
+    async fn get_all_epoch_address_stats(
+        &self,
+        descending_order: Option<bool>,
+    ) -> Result<Vec<AddressStats>, IndexerError>;
+
+    /// methods for checkpoint metrics
+    async fn calculate_checkpoint_metrics(
+        &self,
+        current_checkpoint: i64,
+        last_checkpoint_metrics: &CheckpointMetrics,
+        checkpoints: &[Checkpoint],
+    ) -> Result<CheckpointMetrics, IndexerError>;
+    async fn persist_checkpoint_metrics(
+        &self,
+        checkpoint_metrics: &CheckpointMetrics,
+    ) -> Result<(), IndexerError>;
+    async fn get_latest_checkpoint_metrics(&self) -> Result<CheckpointMetrics, IndexerError>;
+
+    /// TPS related methods
+    async fn calculate_real_time_tps(&self, current_checkpoint: i64) -> Result<f64, IndexerError>;
+    async fn calculate_peak_tps_30d(
+        &self,
+        current_checkpoint: i64,
+        current_timestamp_ms: i64,
+    ) -> Result<f64, IndexerError>;
 }
 
 #[derive(Clone, Debug)]
@@ -310,17 +350,19 @@ pub struct TemporaryCheckpointStore {
     pub object_changes: Vec<TransactionObjectChanges>,
     pub packages: Vec<Package>,
     pub input_objects: Vec<InputObject>,
+    pub changed_objects: Vec<ChangedObject>,
     pub move_calls: Vec<MoveCall>,
     pub recipients: Vec<Recipient>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct TransactionObjectChanges {
     pub changed_objects: Vec<Object>,
     pub deleted_objects: Vec<DeletedObject>,
 }
 
 // Per epoch indexing
+#[derive(Clone, Debug)]
 pub struct TemporaryEpochStore {
     pub last_epoch: Option<DBEpochInfo>,
     pub new_epoch: DBEpochInfo,

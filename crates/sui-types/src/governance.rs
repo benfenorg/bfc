@@ -43,7 +43,7 @@ pub const VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST: u64 = 15_000_000 * MIST_PER_S
 pub const VALIDATOR_LOW_STAKE_GRACE_PERIOD: u64 = 7;
 
 pub const STAKING_POOL_MODULE_NAME: &IdentStr = ident_str!("staking_pool");
-pub const STAKED_SUI_STRUCT_NAME: &IdentStr = ident_str!("StakedObc");
+pub const STAKED_SUI_STRUCT_NAME: &IdentStr = ident_str!("StakedSui");
 
 pub const ADD_STAKE_MUL_COIN_FUN_NAME: &IdentStr = ident_str!("request_add_stake_mul_coin");
 pub const ADD_STAKE_FUN_NAME: &IdentStr = ident_str!("request_add_stake");

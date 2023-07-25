@@ -7,13 +7,14 @@ module sui_system::validator {
     use std::bcs;
 
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use sui::object::{Self, ID};
     use std::option::{Option, Self};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedObc, StakingPool};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedSui, StakingPool};
     use std::string::{Self, String};
+    use sui::transfer;
     use sui::url::Url;
     use sui::url;
     use sui::event;
@@ -299,15 +300,15 @@ module sui_system::validator {
     /// Request to add stake to the validator's staking pool, processed at the end of the epoch.
     public(friend) fun request_add_stake(
         self: &mut Validator,
-        stake: Balance<OBC>,
+        stake: Balance<SUI>,
         staker_address: address,
         ctx: &mut TxContext,
-    ) {
+    ) : StakedSui {
         let stake_amount = balance::value(&stake);
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;
-        staking_pool::request_add_stake(
-            &mut self.staking_pool, stake, staker_address, stake_epoch, ctx
+        let staked_sui = staking_pool::request_add_stake(
+            &mut self.staking_pool, stake, stake_epoch, ctx
         );
         // Process stake right away if staking pool is preactive.
         if (staking_pool::is_preactive(&self.staking_pool)) {
@@ -323,12 +324,13 @@ module sui_system::validator {
                 amount: stake_amount,
             }
         );
+        staked_sui
     }
 
     /// Request to add stake to the validator's staking pool at genesis
     public(friend) fun request_add_stake_at_genesis(
         self: &mut Validator,
-        stake: Balance<OBC>,
+        stake: Balance<SUI>,
         staker_address: address,
         ctx: &mut TxContext,
     ) {
@@ -336,13 +338,14 @@ module sui_system::validator {
         let stake_amount = balance::value(&stake);
         assert!(stake_amount > 0, EInvalidStakeAmount);
 
-        staking_pool::request_add_stake(
+        let staked_sui = staking_pool::request_add_stake(
             &mut self.staking_pool,
             stake,
-            staker_address,
             0, // epoch 0 -- genesis
             ctx
         );
+
+        transfer::public_transfer(staked_sui, staker_address);
 
         // Process stake right away
         staking_pool::process_pending_stake(&mut self.staking_pool);
@@ -352,9 +355,9 @@ module sui_system::validator {
     /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
     public(friend) fun request_withdraw_stake(
         self: &mut Validator,
-        staked_sui: StakedObc,
+        staked_sui: StakedSui,
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<SUI> {
         let principal_amount = staking_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = staking_pool::stake_activation_epoch(&staked_sui);
         let withdrawn_stake = staking_pool::request_withdraw_stake(
@@ -417,7 +420,7 @@ module sui_system::validator {
     }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<OBC>) {
+    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<SUI>) {
         self.next_epoch_stake = self.next_epoch_stake + balance::value(&reward);
         staking_pool::deposit_rewards(&mut self.staking_pool, reward);
     }
@@ -875,8 +878,7 @@ module sui_system::validator {
         // TODO: specify actual function behavior
      }
 
-    #[test_only]
-    public fun get_staking_pool_ref(self: &Validator) : &StakingPool {
+    public(friend) fun get_staking_pool_ref(self: &Validator) : &StakingPool {
         &self.staking_pool
     }
 
@@ -930,7 +932,7 @@ module sui_system::validator {
         p2p_address: vector<u8>,
         primary_address: vector<u8>,
         worker_address: vector<u8>,
-        initial_stake_option: Option<Balance<OBC>>,
+        initial_stake_option: Option<Balance<SUI>>,
         gas_price: u64,
         commission_rate: u64,
         is_active_at_genesis: bool,

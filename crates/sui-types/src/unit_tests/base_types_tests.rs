@@ -9,13 +9,13 @@ use std::str::FromStr;
 use fastcrypto::encoding::Base58;
 use fastcrypto::traits::EncodeDecodeBase64;
 use move_binary_format::file_format;
-use sha2::{Digest, Sha256};
 
 use crate::crypto::bcs_signable_test::{Bar, Foo};
 use crate::crypto::{
     get_key_pair, get_key_pair_from_bytes, AccountKeyPair, AuthorityKeyPair, AuthoritySignature,
     Signature, SuiAuthoritySignature, SuiSignature,
 };
+use crate::digests::Digest;
 use crate::id::{ID, UID};
 use crate::{gas_coin::GasCoin, object::Object, SUI_FRAMEWORK_ADDRESS};
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
@@ -179,14 +179,13 @@ fn test_object_id_deserialize_from_json_value() {
 fn test_object_id_serde_json() {
     let hex = format!("0x{}", SAMPLE_ADDRESS);
     let json_hex = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let json_obc = format!("\"OBC{}53c5\"", SAMPLE_ADDRESS);
 
     let obj_id = ObjectID::from_hex_literal(&hex).unwrap();
 
     let json = serde_json::to_string(&obj_id).unwrap();
     let json_obj_id: ObjectID = serde_json::from_str(&json_hex).unwrap();
 
-    assert_eq!(json == json_hex || json == json_obc, true);
+    assert_eq!(json, json_hex);
     assert_eq!(obj_id, json_obj_id);
 }
 
@@ -207,14 +206,7 @@ fn test_object_id_serde_with_expected_value() {
     let bcs_serialized = bcs::to_bytes(&object_id).unwrap();
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
-    let expected_json_address_obce = format!("\"OBC{}{}\"", SAMPLE_ADDRESS, check_sum);
-
-    assert_eq!(
-        expected_json_address == json_serialized || expected_json_address_obce == json_serialized,
-        true
-    );
-    //assert_eq!(expected_json_address, json_serialized);
+    assert_eq!(expected_json_address, json_serialized);
     assert_eq!(object_id_vec, bcs_serialized);
 }
 
@@ -260,12 +252,7 @@ fn test_address_serde_not_human_readable() {
 fn test_address_serde_human_readable() {
     let address = SuiAddress::random_for_testing_only();
     let serialized = serde_json::to_string(&address).unwrap();
-    let checksum = get_check_sum(Hex::encode(address));
-    assert_eq!(
-        format!("\"0x{}\"", Hex::encode(address)) == serialized
-            || format!("\"OBC{}{}\"", Hex::encode(address), checksum) == serialized,
-        true
-    );
+    assert_eq!(format!("\"0x{}\"", Hex::encode(address)), serialized);
     let deserialized: SuiAddress = serde_json::from_str(&serialized).unwrap();
     assert_eq!(deserialized, address);
 }
@@ -277,12 +264,7 @@ fn test_address_serde_with_expected_value() {
     let bcs_serialized = bcs::to_bytes(&address).unwrap();
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let expected_json_address_obc = format!("\"OBC{}53c5\"", SAMPLE_ADDRESS);
-
-    assert_eq!(
-        expected_json_address == json_serialized || expected_json_address_obc == json_serialized,
-        true
-    );
+    assert_eq!(expected_json_address, json_serialized);
     assert_eq!(SAMPLE_ADDRESS_VEC.to_vec(), bcs_serialized);
 }
 
@@ -364,7 +346,7 @@ fn test_move_package_size_for_gas_metering() {
     let package = Object::new_package(
         &[module],
         TransactionDigest::genesis(),
-        ProtocolConfig::get_for_max_version().max_move_package_size(),
+        ProtocolConfig::get_for_max_version_UNSAFE().max_move_package_size(),
         &[], // empty dependencies for empty package (no modules)
     )
     .unwrap();
@@ -456,15 +438,30 @@ fn move_object_type_consistency() {
     assert_consistent(&ID::type_());
 }
 
-fn sha256_string(input: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(input.as_bytes());
-    let result = hasher.finalize();
-    format!("{:x}", result)
-}
+#[test]
+fn next_lexicographical_digest() {
+    let mut output = [0; 32];
+    output[31] = 1;
+    assert_eq!(
+        TransactionDigest::ZERO.next_lexicographical(),
+        Some(TransactionDigest::from(output))
+    );
 
-fn get_check_sum(input: String) -> String {
-    let result = sha256_string(&input.clone());
-    let check_sum = result.get(0..4).unwrap();
-    return check_sum.to_string();
+    let max = [255; 32];
+    let mut input = max;
+    input[31] = 254;
+    assert_eq!(Digest::from(max).next_lexicographical(), None);
+    assert_eq!(
+        Digest::from(input).next_lexicographical(),
+        Some(Digest::from(max))
+    );
+
+    input = max;
+    input[0] = 0;
+    output = [0; 32];
+    output[0] = 1;
+    assert_eq!(
+        Digest::from(input).next_lexicographical(),
+        Some(Digest::from(output))
+    );
 }

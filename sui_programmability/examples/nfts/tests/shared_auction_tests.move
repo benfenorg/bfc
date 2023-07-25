@@ -6,7 +6,7 @@ module nfts::shared_auction_tests {
     use std::vector;
 
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::object::{Self, UID};
     use sui::test_scenario::Self;
     use sui::transfer;
@@ -34,7 +34,7 @@ module nfts::shared_auction_tests {
     fun init_bidders(ctx: &mut TxContext, bidders: vector<address>) {
         while (!vector::is_empty(&bidders)) {
             let bidder = vector::pop_back(&mut bidders);
-            let coin = coin::mint_for_testing<OBC>(COIN_VALUE, ctx);
+            let coin = coin::mint_for_testing<SUI>(COIN_VALUE, ctx);
             transfer::public_transfer(coin, bidder);
         };
     }
@@ -69,7 +69,7 @@ module nfts::shared_auction_tests {
         // a transaction by the first bidder to put a bid
         test_scenario::next_tx(scenario, bidder1);
         {
-            let coin = test_scenario::take_from_sender<Coin<OBC>>(scenario);
+            let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
             let auction_val = test_scenario::take_shared<Auction<SomeItemToSell>>(scenario);
             let auction = &mut auction_val;
 
@@ -83,7 +83,7 @@ module nfts::shared_auction_tests {
         // bidder's)
         test_scenario::next_tx(scenario, bidder2);
         {
-            let coin = test_scenario::take_from_sender<Coin<OBC>>(scenario);
+            let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
             let auction_val = test_scenario::take_shared<Auction<SomeItemToSell>>(scenario);
             let auction = &mut auction_val;
 
@@ -96,7 +96,7 @@ module nfts::shared_auction_tests {
         // have been returned (as a result of the failed bid).
         test_scenario::next_tx(scenario, bidder2);
         {
-            let coin = test_scenario::take_from_sender<Coin<OBC>>(scenario);
+            let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
 
             assert!(coin::value(&coin) == COIN_VALUE, EWRONG_COIN_VALUE);
 

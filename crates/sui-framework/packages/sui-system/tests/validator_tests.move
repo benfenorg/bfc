@@ -3,7 +3,7 @@
 
 #[test_only]
 module sui_system::validator_tests {
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::test_scenario;
     use sui::url;
     use std::string::Self;
@@ -13,7 +13,7 @@ module sui_system::validator_tests {
     use std::ascii;
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use sui_system::staking_pool::{Self, StakedObc};
+    use sui_system::staking_pool::{Self, StakedSui};
     use std::vector;
     use sui::test_utils;
     use sui::bag;
@@ -88,7 +88,7 @@ module sui_system::validator_tests {
         // Check that after destroy, the original stake still exists.
          test_scenario::next_tx(scenario, sender);
          {
-             let stake = test_scenario::take_from_sender<StakedObc>(scenario);
+             let stake = test_scenario::take_from_sender<StakedSui>(scenario);
              assert!(staking_pool::staked_sui_amount(&stake) == 10_000_000_000, 0);
              test_scenario::return_to_sender(scenario, stake);
          };
@@ -107,7 +107,8 @@ module sui_system::validator_tests {
         {
             let ctx = test_scenario::ctx(scenario);
             let new_stake = coin::into_balance(coin::mint_for_testing(30_000_000_000, ctx));
-            validator::request_add_stake(&mut validator, new_stake, sender, ctx);
+            let stake = validator::request_add_stake(&mut validator, new_stake, sender, ctx);
+            transfer::public_transfer(stake, sender);
 
             assert!(validator::total_stake(&validator) == 10_000_000_000, 0);
             assert!(validator::pending_stake_amount(&validator) == 30_000_000_000, 0);
@@ -115,8 +116,8 @@ module sui_system::validator_tests {
 
         test_scenario::next_tx(scenario, sender);
         {
-            let coin_ids = test_scenario::ids_for_sender<StakedObc>(scenario);
-            let stake = test_scenario::take_from_sender_by_id<StakedObc>(scenario, *vector::borrow(&coin_ids, 0));
+            let coin_ids = test_scenario::ids_for_sender<StakedSui>(scenario);
+            let stake = test_scenario::take_from_sender_by_id<StakedSui>(scenario, *vector::borrow(&coin_ids, 0));
             let ctx = test_scenario::ctx(scenario);
             let withdrawn_balance = validator::request_withdraw_stake(&mut validator, stake, ctx);
             transfer::public_transfer(coin::from_balance(withdrawn_balance, ctx), sender);
@@ -137,8 +138,8 @@ module sui_system::validator_tests {
 
         test_scenario::next_tx(scenario, sender);
         {
-            let coin_ids = test_scenario::ids_for_sender<Coin<OBC>>(scenario);
-            let withdraw = test_scenario::take_from_sender_by_id<Coin<OBC>>(scenario, *vector::borrow(&coin_ids, 0));
+            let coin_ids = test_scenario::ids_for_sender<Coin<SUI>>(scenario);
+            let withdraw = test_scenario::take_from_sender_by_id<Coin<SUI>>(scenario, *vector::borrow(&coin_ids, 0));
             assert!(coin::value(&withdraw) == 10_000_000_000, 0);
             test_scenario::return_to_sender(scenario, withdraw);
         };
