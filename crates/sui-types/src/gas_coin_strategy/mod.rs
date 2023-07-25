@@ -1,7 +1,7 @@
 // Copyright (c) OpenBlock Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::gas_coin::{GasCoin, GAS};
+use crate::gas_coin::{GasCoin};
 use anyhow::{format_err, Result};
 use std::fmt::{self};
 use core::str::FromStr;
@@ -66,5 +66,5 @@ impl FromStr for GasCoinStrategy {
 
 pub trait GasCoinExchange {
     /// Exchange any coin to default platform coin
-    fn exchange(any_coin: GasCoin, amount: u64) -> GAS;
+    fn exchange(any_coin: GasCoin, amount: u64) -> u64;
 }
