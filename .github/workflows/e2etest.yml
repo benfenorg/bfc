@@ -1,5 +1,5 @@
-name: Detect Changes in Turbo Workspace
-description: Run e2e tests with specified branch
+name: End to end single test.
+description: End to end single test.
 
 on: 
   workflow_dispatch:
