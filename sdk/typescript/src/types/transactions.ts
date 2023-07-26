@@ -17,9 +17,29 @@ import {
 	nullable,
 } from 'superstruct';
 
+<<<<<<< Updated upstream
 import { ObjectOwner, SuiJsonValue } from './common.js';
 import { SuiEvent } from './events.js';
 import { SuiGasData, SuiMovePackage, SuiObjectRef } from './objects.js';
+=======
+import {
+  ObjectId,
+  ObjectOwner,
+  SequenceNumber,
+  SuiAddress,
+  SuiJsonValue,
+  TransactionDigest,
+  TransactionEventDigest,
+} from './common';
+import { SuiEvent } from './events';
+import {
+  ObjectDigest,
+  SuiGasData,
+  SuiMovePackage,
+  SuiObjectRef,
+} from './objects';
+import { sui2ObcAddress } from '../utils/format';
+>>>>>>> Stashed changes
 
 /** @deprecated Use `string` instead. */
 export const EpochId = string();
@@ -429,8 +449,16 @@ export function getTransactionSignature(tx: SuiTransactionBlockResponse): string
 
 /* ----------------------------- TransactionData ---------------------------- */
 
+<<<<<<< Updated upstream
 export function getTransactionSender(tx: SuiTransactionBlockResponse): string | undefined {
 	return tx.transaction?.data.sender;
+=======
+export function getTransactionSender(
+  tx: SuiTransactionBlockResponse,
+): SuiAddress | undefined {
+  let sender = tx.transaction?.data.sender;
+  return sender ? sui2ObcAddress(sender) : undefined;
+>>>>>>> Stashed changes
 }
 
 export function getGasData(tx: SuiTransactionBlockResponse): SuiGasData | undefined {

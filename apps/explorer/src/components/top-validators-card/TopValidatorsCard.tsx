@@ -3,8 +3,12 @@
 
 import { useGetSystemState } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
+<<<<<<< Updated upstream
 import { type SuiValidatorSummary } from '@mysten/sui.js';
 import { Text } from '@mysten/ui';
+=======
+import { type SuiValidatorSummary, sui2ObcAddress } from '@mysten/sui.js';
+>>>>>>> Stashed changes
 import { useMemo } from 'react';
 
 import { StakeColumn } from './StakeColumn';
@@ -46,6 +50,7 @@ const validatorsTable = (
 					<div className="flex items-center gap-2.5">
 						{showIcon && <ImageIcon src={logo} size="sm" fallback={name} label={name} circle />}
 
+<<<<<<< Updated upstream
 						<ValidatorLink
 							address={address}
 							label={name}
@@ -97,6 +102,40 @@ const validatorsTable = (
 			},
 		],
 	};
+=======
+                    <Link
+                        to={`/validator/${encodeURIComponent(
+                            sui2ObcAddress(address)
+                        )}`}
+                    >
+                        {name}
+                    </Link>
+                </div>
+            ),
+            stake: <StakeColumn stake={stake} />,
+            delegation: (
+                <Text variant="bodySmall/medium" color="steel-darker">
+                    {stake.toString()}
+                </Text>
+            ),
+            address: <ValidatorLink address={address} noTruncate={!limit} />,
+        })),
+        columns: [
+            {
+                header: 'Name',
+                accessorKey: 'name',
+            },
+            {
+                header: 'Address',
+                accessorKey: 'address',
+            },
+            {
+                header: 'Stake',
+                accessorKey: 'stake',
+            },
+        ],
+    };
+>>>>>>> Stashed changes
 };
 
 type TopValidatorsCardProps = {

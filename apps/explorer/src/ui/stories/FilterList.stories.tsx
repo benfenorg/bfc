@@ -11,6 +11,7 @@ export default {
 } as Meta;
 
 export const Default: StoryObj<FilterListProps> = {
+<<<<<<< Updated upstream
 	render: (props) => {
 		const [value, onChange] = useState('');
 		return <FilterList {...props} value={value} onChange={onChange} />;
@@ -21,4 +22,16 @@ export const Default: StoryObj<FilterListProps> = {
 		size: 'sm',
 		lessSpacing: true,
 	},
+=======
+    render: (props) => {
+        const [value, onChange] = useState('');
+        return <FilterList {...props} value={value} onChange={onChange} />;
+    },
+    args: {
+        options: ['MINT', 'OBC'],
+        disabled: false,
+        size: 'sm',
+        lessSpacing: true,
+    },
+>>>>>>> Stashed changes
 };

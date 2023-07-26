@@ -10,10 +10,17 @@ export default {
 } as Meta;
 
 export const Default: StoryObj<AmountProps> = {
+<<<<<<< Updated upstream
 	args: {
 		amount: 1000,
 		symbol: 'SUI',
 	},
+=======
+    args: {
+        amount: 1000,
+        symbol: 'OBC',
+    },
+>>>>>>> Stashed changes
 };
 
 export const LargeSize: StoryObj<AmountProps> = {

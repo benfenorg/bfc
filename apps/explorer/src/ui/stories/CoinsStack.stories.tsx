@@ -22,6 +22,7 @@ export default {
 } as Meta;
 
 export const Default: StoryObj<CoinsStackProps> = {
+<<<<<<< Updated upstream
 	args: {
 		coinTypes: [
 			'0x2::sui::SUI',
@@ -29,4 +30,13 @@ export const Default: StoryObj<CoinsStackProps> = {
 			'random',
 		],
 	},
+=======
+    args: {
+        coinTypes: [
+            '0x2::obc::OBC',
+            '0xc0d761079b1e7fa4dbd8a881b7464cf8c400c0de72460fdf8ca44e3f1842715e::sui_inu::SUI_INU',
+            'random',
+        ],
+    },
+>>>>>>> Stashed changes
 };

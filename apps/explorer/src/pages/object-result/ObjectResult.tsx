@@ -3,6 +3,7 @@
 
 import { useGetObject } from '@mysten/core';
 import { LoadingIndicator } from '@mysten/ui';
+import { sui2ObcAddress } from '@mysten/sui.js';
 import { useParams } from 'react-router-dom';
 
 import { translate, type DataType } from './ObjectResultType';
@@ -16,15 +17,13 @@ import { PageHeader } from '~/ui/PageHeader';
 const PACKAGE_TYPE_NAME = 'Move Package';
 
 function Fail({ objID }: { objID: string | undefined }) {
-	return (
-		<PageLayout
-			content={
-				<Banner variant="error" spacing="lg" fullWidth>
-					Data could not be extracted on the following specified object ID: {objID}
-				</Banner>
-			}
-		/>
-	);
+	//TODO to be check
+    return (
+        <Banner variant="error" spacing="lg" fullWidth>
+            Data could not be extracted on the following specified object ID:{' '}
+            {objID ? sui2ObcAddress(objID) : ''}
+        </Banner>
+    );
 }
 
 export function ObjectResult() {

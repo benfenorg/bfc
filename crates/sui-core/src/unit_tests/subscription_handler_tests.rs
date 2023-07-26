@@ -16,6 +16,7 @@ use serde::Serialize;
 use serde_json::json;
 use sui_json_rpc_types::SuiMoveStruct;
 
+use sha2::{Digest, Sha256};
 use sui_types::base_types::ObjectID;
 use sui_types::gas_coin::GasCoin;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS};
@@ -50,12 +51,23 @@ fn test_to_json_value() {
         Some(&json!("3000000")),
         json_value.pointer("/coins/2/balance")
     );
+    let addr = move_event.coins[0].id().to_string();
+    let addr_without_pre = addr.get(2..).unwrap();
+    let checksum = get_check_sum(addr_without_pre.to_string());
+    let expected_addr_obc = format!("OBC{}{}", addr_without_pre, checksum);
+
+    print!("{}", expected_addr_obc);
     assert_eq!(
-        Some(&json!(move_event.coins[0].id().to_string())),
+        Some(&json!(expected_addr_obc)),
         json_value.pointer("/coins/0/id/id")
     );
+
+    let creator_addr = format!("{:#x}", move_event.creator);
+    let creator_addr_without_pre = creator_addr.get(2..).unwrap();
+    let checksum = get_check_sum(creator_addr_without_pre.to_string());
+    let expected_addr_obc = format!("OBC{}{}", creator_addr_without_pre, checksum);
     assert_eq!(
-        Some(&json!(format!("{:#x}", move_event.creator))),
+        Some(&json!(expected_addr_obc)),
         json_value.pointer("/creator")
     );
     assert_eq!(Some(&json!("100")), json_value.pointer("/data/0"));
@@ -137,4 +149,17 @@ impl UTF8String {
             )],
         }
     }
+}
+
+fn sha256_string(input: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(input.as_bytes());
+    let result = hasher.finalize();
+    format!("{:x}", result)
+}
+
+fn get_check_sum(input: String) -> String {
+    let result = sha256_string(&input.clone());
+    let check_sum = result.get(0..4).unwrap();
+    return check_sum.to_string();
 }

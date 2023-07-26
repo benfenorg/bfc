@@ -32,10 +32,12 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-
+  PATH: ${{ vars.PATH }}
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   diff:
-    runs-on: [ubuntu-latest]
+    runs-on: yizhuang
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -47,7 +49,7 @@ jobs:
   bench:
     needs: diff
     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-ghcloud]
+    runs-on: yizhuang
     steps:
     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
     # Turn off the caching on self-hosted jobs
@@ -76,10 +78,10 @@ jobs:
     - name: Run benchmarks
       run: |
         set -o pipefail
-        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 16 --num-server-threads 32 --num-transfer-accounts 2 bench --committee-size 4 --target-qps 1000 --num-workers 16  --transfer-object 100 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/owned_4_500.txt
-        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 16 --num-server-threads 32 --num-transfer-accounts 2 bench --committee-size 4 --target-qps 1000 --num-workers 16  --shared-counter 100 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/shared_4_500.txt
-        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 16 --num-server-threads 32 --num-transfer-accounts 2 bench --committee-size 20 --target-qps 200 --num-workers 16  --transfer-object 100 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/owned_20_150.txt
-        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 16 --num-server-threads 32 --num-transfer-accounts 2 bench --committee-size 20 --target-qps 200 --num-workers 16  --shared-counter 100 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/shared_20_50.txt
+        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 2 --num-server-threads 4 --num-transfer-accounts 2 bench --committee-size 4 --target-qps 50 --num-workers 8  --transfer-object 5 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/owned_4_500.txt
+        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 2 --num-server-threads 4 --num-transfer-accounts 2 bench --committee-size 4 --target-qps 50 --num-workers 8  --shared-counter 5 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/shared_4_500.txt
+        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 2 --num-server-threads 4 --num-transfer-accounts 2 bench --committee-size 20 --target-qps 20 --num-workers 8  --transfer-object 5 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/owned_20_150.txt
+        cargo run --release --package sui-benchmark --bin stress -- --log-path /tmp/stress.log --num-client-threads 2 --num-server-threads 4 --num-transfer-accounts 2 bench --committee-size 20 --target-qps 20 --num-workers 8  --shared-counter 5 --run-duration 60s --stress-stat-collection 2>&1 | huniq | tee -a artifacts/shared_20_50.txt
         pushd narwhal/benchmark && fab local | tee -a ../../artifacts/narwhal.txt && popd
 
     - name: Retrieve benchmark results
@@ -149,7 +151,7 @@ jobs:
     name: indexer
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
-    runs-on: ubuntu-ghcloud
+    runs-on: yizhuang
     services:
       postgres:
         image: postgres

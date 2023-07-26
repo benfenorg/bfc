@@ -6,7 +6,7 @@ module sui_system::validator_set_tests {
     use sui::balance;
     use sui::coin;
     use sui::tx_context::TxContext;
-    use sui_system::staking_pool::StakedSui;
+    use sui_system::staking_pool::StakedObc;
     use sui_system::validator::{Self, Validator, staking_pool_id};
     use sui_system::validator_set::{Self, ValidatorSet, active_validator_addresses};
     use sui::test_scenario::{Self, Scenario};
@@ -380,7 +380,7 @@ module sui_system::validator_set_tests {
         // Withdraw the stake from @0x4.
         test_scenario::next_tx(scenario, @0x42);
         {
-            let stake = test_scenario::take_from_sender<StakedSui>(scenario);
+            let stake = test_scenario::take_from_sender<StakedObc>(scenario);
             let ctx = test_scenario::ctx(scenario);
             let withdrawn_balance = validator_set::request_withdraw_stake(
                 &mut validator_set,

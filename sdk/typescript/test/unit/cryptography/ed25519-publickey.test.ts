@@ -8,6 +8,7 @@ import { Ed25519PublicKey } from '../../../src/keypairs/ed25519';
 // cargo build --bin sui
 // ../sui/target/debug/sui client new-address ed25519
 // ../sui/target/debug/sui keytool list
+<<<<<<< Updated upstream
 const TEST_CASES = [
 	{
 		rawPublicKey: 'UdGRWooy48vGTs0HBokIis5NK+DUjiWc9ENUlcfCCBE=',
@@ -25,6 +26,22 @@ const TEST_CASES = [
 		suiAddress: '0x3a1b4410ebe9c3386a429c349ba7929aafab739c277f97f32622b971972a14a2',
 	},
 ];
+=======
+let TEST_CASES = new Map<string, string>([
+  [
+    'UdGRWooy48vGTs0HBokIis5NK+DUjiWc9ENUlcfCCBE=',
+    'OBCd77a6cd55073e98d4029b1b0b8bd8d88f45f343dad2732fc9a7965094e635c5539f3',
+  ],
+  [
+    '0PTAfQmNiabgbak9U/stWZzKc5nsRqokda2qnV2DTfg=',
+    'OBC7e8fd489c3d3cd9cc7cbcc577dc5d6de831e654edd9997d95c412d013e6eea2358fc',
+  ],
+  [
+    '6L/l0uhGt//9cf6nLQ0+24Uv2qanX/R6tn7lWUJX1Xk=',
+    'OBC3a1b4410ebe9c3386a429c349ba7929aafab739c277f97f32622b971972a14a285ff',
+  ],
+]);
+>>>>>>> Stashed changes
 
 const VALID_KEY_BASE64 = 'Uz39UFseB/B38iBwjesIU1JZxY6y+TRL9P84JFw41W4=';
 

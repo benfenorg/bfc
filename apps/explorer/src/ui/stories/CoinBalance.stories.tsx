@@ -22,10 +22,10 @@ export default {
 } as Meta;
 
 export const Default: StoryObj<CoinBalanceProps> = {
-	args: {
-		amount: 1000,
-		coinType: '0x2::sui::SUI',
-	},
+    args: {
+        amount: 1000,
+        coinType: '0x2::obc::OBC',
+    },
 };
 
 export const WithoutSymbol: StoryObj<CoinBalanceProps> = {

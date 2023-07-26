@@ -16,6 +16,7 @@ import {
 	string,
 	union,
 } from 'superstruct';
+<<<<<<< Updated upstream
 import { hashTypedData } from './hash.js';
 import { SuiObjectRef } from '../types/index.js';
 import { builder } from './bcs.js';
@@ -23,6 +24,14 @@ import { TransactionType, TransactionBlockInput } from './Transactions.js';
 import { BuilderCallArg, PureCallArg } from './Inputs.js';
 import { create } from './utils.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
+=======
+import { hashTypedData } from '../cryptography/hash';
+import { normalizeHexAddress, SuiObjectRef } from '../types';
+import { builder } from './bcs';
+import { TransactionType, TransactionBlockInput } from './Transactions';
+import { BuilderCallArg, PureCallArg } from './Inputs';
+import { create } from './utils';
+>>>>>>> Stashed changes
 
 export const TransactionExpiration = optional(
 	nullable(
@@ -61,7 +70,11 @@ export const SerializedTransactionDataBuilder = object({
 export type SerializedTransactionDataBuilder = Infer<typeof SerializedTransactionDataBuilder>;
 
 function prepareSuiAddress(address: string) {
+<<<<<<< Updated upstream
 	return normalizeSuiAddress(address).replace('0x', '');
+=======
+  return normalizeHexAddress(address).replace('0x', '');
+>>>>>>> Stashed changes
 }
 
 export class TransactionBlockDataBuilder {

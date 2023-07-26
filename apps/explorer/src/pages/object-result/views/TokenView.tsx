@@ -30,6 +30,7 @@ import { TabHeader } from '~/ui/Tabs';
 import { extractName, parseImageURL, parseObjectType } from '~/utils/objectUtils';
 
 export function TokenView({ data }: { data: SuiObjectResponse }) {
+<<<<<<< Updated upstream
 	const display = getObjectDisplay(data)?.data;
 	const imgUrl = parseImageURL(display);
 	const objOwner = getObjectOwner(data);
@@ -45,6 +46,25 @@ export function TokenView({ data }: { data: SuiObjectResponse }) {
 	const [fileType, setFileType] = useState<undefined | string>(undefined);
 
 	const video = useResolveVideo(data);
+=======
+    const display = getObjectDisplay(data)?.data;
+    const imgUrl = parseImageURL(display);
+    const objOwner = getObjectOwner(data);
+    const name = extractName(display);
+    const objectId = getObjectId(data);
+    const objectType = parseObjectType(data);
+    const storageRebate = getSuiObjectData(data)?.storageRebate;
+    let [storageRebateFormatted, symbol] = useFormatCoin(
+        storageRebate,
+        SUI_TYPE_ARG,
+        CoinFormat.FULL
+    );
+
+    //change by alex
+    symbol = 'SUI' ? 'OBC' : 'MIST';
+
+    const [fileType, setFileType] = useState<undefined | string>(undefined);
+>>>>>>> Stashed changes
 
 	useEffect(() => {
 		const controller = new AbortController();

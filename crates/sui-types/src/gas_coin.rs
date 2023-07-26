@@ -31,8 +31,8 @@ pub const TOTAL_SUPPLY_SUI: u64 = 10_000_000_000;
 /// Total supply denominated in Mist
 pub const TOTAL_SUPPLY_MIST: u64 = TOTAL_SUPPLY_SUI * MIST_PER_SUI;
 
-pub const GAS_MODULE_NAME: &IdentStr = ident_str!("sui");
-pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("SUI");
+pub const GAS_MODULE_NAME: &IdentStr = ident_str!("obc");
+pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("OBC");
 
 pub use checked::*;
 

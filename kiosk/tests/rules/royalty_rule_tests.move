@@ -4,7 +4,7 @@
 #[test_only]
 module kiosk::royalty_rule_tests {
     use sui::coin;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::tx_context::dummy as ctx;
     use sui::transfer_policy as policy;
     use sui::transfer_policy_tests as test;
@@ -20,7 +20,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 0, 0);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(0, ctx);
+        let payment = coin::mint_for_testing<OBC>(0, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -39,7 +39,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 0, 0);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(10, ctx);
+        let payment = coin::mint_for_testing<OBC>(10, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -57,7 +57,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 100, 0);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(1000, ctx);
+        let payment = coin::mint_for_testing<OBC>(1000, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -75,7 +75,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 10_000, 0);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(100_000, ctx);
+        let payment = coin::mint_for_testing<OBC>(100_000, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -93,7 +93,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 100, 10_000);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(10_000, ctx);
+        let payment = coin::mint_for_testing<OBC>(10_000, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -109,7 +109,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 1000, 10_000);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(10_000, ctx);
+        let payment = coin::mint_for_testing<OBC>(10_000, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -125,7 +125,7 @@ module kiosk::royalty_rule_tests {
         royalty_rule::add(&mut policy, &cap, 20_00, 10_000);
 
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(20_000, ctx);
+        let payment = coin::mint_for_testing<OBC>(20_000, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);
@@ -153,7 +153,7 @@ module kiosk::royalty_rule_tests {
 
         // Requires 1_000 MIST, coin has only 999
         let request = policy::new_request(test::fresh_id(ctx), 100_000, test::fresh_id(ctx));
-        let payment = coin::mint_for_testing<SUI>(999, ctx);
+        let payment = coin::mint_for_testing<OBC>(999, ctx);
 
         royalty_rule::pay(&mut policy, &mut request, payment);
         policy::confirm_request(&mut policy, request);

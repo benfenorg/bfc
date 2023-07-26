@@ -7,7 +7,7 @@ module examples::restricted_transfer {
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::transfer;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
 
     /// For when paid amount is not equal to the transfer price.
     const EWrongAmount: u64 = 0;
@@ -26,7 +26,7 @@ module examples::restricted_transfer {
     /// transfers and collects fees.
     struct LandRegistry has key {
         id: UID,
-        balance: Balance<SUI>,
+        balance: Balance<OBC>,
         fee: u64
     }
 
@@ -39,7 +39,7 @@ module examples::restricted_transfer {
 
         transfer::share_object(LandRegistry {
             id: object::new(ctx),
-            balance: balance::zero<SUI>(),
+            balance: balance::zero<OBC>(),
             fee: 10000
         })
     }
@@ -62,7 +62,7 @@ module examples::restricted_transfer {
     public entry fun transfer_ownership(
         registry: &mut LandRegistry,
         paper: TitleDeed,
-        fee: Coin<SUI>,
+        fee: Coin<OBC>,
         to: address,
     ) {
         assert!(coin::value(&fee) == registry.fee, EWrongAmount);

@@ -36,7 +36,7 @@ env:
 jobs:
   release-build:
     timeout-minutes: 45
-    runs-on: [ubuntu-ghcloud]
+    runs-on: wubin
     strategy:
       fail-fast: false
     steps:

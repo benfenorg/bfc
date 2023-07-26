@@ -60,7 +60,7 @@ type WalletEventsMap = {
 };
 
 // NOTE: Because this runs in a content script, we can't fetch the manifest.
-const name = process.env.APP_NAME || 'Sui Wallet';
+const name = process.env.APP_NAME || 'OBC Wallet';
 
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {

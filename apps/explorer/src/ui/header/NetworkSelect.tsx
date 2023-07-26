@@ -131,6 +131,7 @@ function NetworkVersion({
 	version: number | string;
 	binaryVersion: string;
 }) {
+<<<<<<< Updated upstream
 	return (
 		<div className="flex flex-col justify-between px-4 py-2">
 			<Text variant="subtitle/normal" color="steel">
@@ -141,6 +142,18 @@ function NetworkVersion({
 			</Text>
 		</div>
 	);
+=======
+    return (
+        <div className="flex flex-col justify-between px-4 py-2">
+            <Text variant="subtitle/normal" color="steel">
+                OBC {label}
+            </Text>
+            <Text variant="subtitle/normal" color="steel">
+                v{binaryVersion} (Protocol {version})
+            </Text>
+        </div>
+    );
+>>>>>>> Stashed changes
 }
 
 function NetworkSelectPanel({ networks, onChange, value }: Omit<NetworkSelectProps, 'version'>) {

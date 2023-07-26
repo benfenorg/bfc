@@ -1,3 +1,10 @@
+OBC todo:
+
+1. need check SUI_TYPE_ARG relate to change sui -> obc
+2.
+
+=========================
+
 # Sui Explorer Frontend
 
 [Sui Explorer](https://explorer.sui.io/) is a network explorer for the Sui network, similar in functionality to [Etherscan](https://etherscan.io/) or [Solana Explorer](https://explorer.solana.com/). Use Sui Explorer to see the latest transactions and objects.

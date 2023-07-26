@@ -42,8 +42,15 @@ const OUTPUT_ROOT = resolve(PROJECT_ROOT, 'dist');
 const TS_CONFIGS_ROOT = resolve(CONFIGS_ROOT, 'ts');
 const IS_DEV = process.env.NODE_ENV === 'development';
 const IS_PROD = process.env.NODE_ENV === 'production';
-const TS_CONFIG_FILE = resolve(TS_CONFIGS_ROOT, `tsconfig.${IS_DEV ? 'dev' : 'prod'}.json`);
-const APP_NAME = WALLET_BETA ? 'Sui Wallet (BETA)' : IS_DEV ? 'Sui Wallet (DEV)' : 'Sui Wallet';
+const TS_CONFIG_FILE = resolve(
+    TS_CONFIGS_ROOT,
+    `tsconfig.${IS_DEV ? 'dev' : 'prod'}.json`
+);
+const APP_NAME = WALLET_BETA
+    ? 'OBC Wallet (BETA)'
+    : IS_DEV
+    ? 'OBC Wallet (DEV)'
+    : 'OBC Wallet';
 
 function loadTsConfig(tsConfigFilePath: string) {
 	return new Promise<string>((res, rej) => {

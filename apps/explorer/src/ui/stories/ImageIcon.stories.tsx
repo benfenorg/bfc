@@ -18,19 +18,19 @@ export const extraLargeImage: StoryObj<ImageIconProps> = {
 };
 
 export const largeIconNoImage: StoryObj<ImageIconProps> = {
-	args: {
-		src: null,
-		fallback: 'Sui',
-		label: 'Sui',
-		size: 'lg',
-	},
+    args: {
+        src: null,
+        fallback: 'OBC',
+        label: 'OBC',
+        size: 'lg',
+    },
 };
 
 export const smallIconImage: StoryObj<ImageIconProps> = {
-	args: {
-		src: 'https://ipfs.io/ipfs/QmZPWWy5Si54R3d26toaqRiqvCH7HkGdXkxwUgCm2oKKM2?filename=img-sq-01.png',
-		label: 'Sui',
-		size: 'sm',
-		fallback: 'Sui',
-	},
+    args: {
+        src: 'https://ipfs.io/ipfs/QmZPWWy5Si54R3d26toaqRiqvCH7HkGdXkxwUgCm2oKKM2?filename=img-sq-01.png',
+        label: 'OBC',
+        size: 'sm',
+        fallback: 'OBC',
+    },
 };

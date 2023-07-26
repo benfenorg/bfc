@@ -12,9 +12,9 @@ test('address page', async ({ page }) => {
 });
 
 test('owned objects (coins) are displayed', async ({ page }) => {
-	const address = await faucet();
-	await page.goto(`/address/${address}`);
-	await expect(await page.getByTestId('ownedcoinlabel')).toContainText('SUI');
+    const address = await faucet();
+    await page.goto(`/address/${address}`);
+    await expect(await page.getByTestId('ownedcoinlabel')).toContainText('OBC');
 });
 
 // TODO: rewrite this test after the removal of devnet_nft

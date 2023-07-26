@@ -50,18 +50,16 @@ export function useCoinMetadata(coinType?: string | null) {
 			if (!coinType) {
 				throw new Error('Fetching coin metadata should be disabled when coin type is disabled.');
 			}
-
-			// Optimize the known case of SUI to avoid a network call:
-			if (coinType === SUI_TYPE_ARG) {
-				const metadata: CoinMetadata = {
-					id: null,
-					decimals: 9,
-					description: '',
-					iconUrl: null,
-					name: 'Sui',
-					symbol: 'SUI',
-				};
-
+            // Optimize the known case of SUI to avoid a network call:
+            if (coinType === SUI_TYPE_ARG) {
+                const metadata: CoinMetadata = {
+                    id: null,
+                    decimals: 9,
+                    description: '',
+                    iconUrl: null,
+                    name: 'OBC',
+                    symbol: 'OBC',
+                };
 				return metadata;
 			}
 

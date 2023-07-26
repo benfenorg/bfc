@@ -41,6 +41,7 @@ tokio = { workspace = true, features = ["full", "tracing", "test-util"] }
 tokio-retry.workspace = true
 tokio-stream.workspace = true
 tracing.workspace = true
+sha2 = "0.9.5"
 
 fastcrypto.workspace = true
 fastcrypto-zkp.workspace = true

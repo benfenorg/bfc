@@ -18,8 +18,19 @@ import {
 	nullable,
 	tuple,
 } from 'superstruct';
+<<<<<<< Updated upstream
 import { ObjectOwner } from './common.js';
 import type { OwnedObjectRef } from './transactions.js';
+=======
+import {
+  ObjectId,
+  ObjectOwner,
+  SequenceNumber,
+  TransactionDigest,
+} from './common';
+import { OwnedObjectRef } from './transactions';
+import { sui2ObcAddress } from '../utils/format';
+>>>>>>> Stashed changes
 
 export const ObjectType = union([string(), literal('package')]);
 export type ObjectType = Infer<typeof ObjectType>;
@@ -60,11 +71,19 @@ export const MovePackageContent = record(string(), string());
 export type MovePackageContent = Infer<typeof MovePackageContent>;
 
 export const SuiMoveObject = object({
+<<<<<<< Updated upstream
 	/** Move type (e.g., "0x2::coin::Coin<0x2::sui::SUI>") */
 	type: string(),
 	/** Fields and values stored inside the Move object */
 	fields: ObjectContentFields,
 	hasPublicTransfer: boolean(),
+=======
+  /** Move type (e.g., "0x2::coin::Coin<0x2::obc::OBC>") */
+  type: string(),
+  /** Fields and values stored inside the Move object */
+  fields: ObjectContentFields,
+  hasPublicTransfer: boolean(),
+>>>>>>> Stashed changes
 });
 export type SuiMoveObject = Infer<typeof SuiMoveObject>;
 
@@ -81,11 +100,19 @@ export const SuiParsedData = union([
 export type SuiParsedData = Infer<typeof SuiParsedData>;
 
 export const SuiRawMoveObject = object({
+<<<<<<< Updated upstream
 	/** Move type (e.g., "0x2::coin::Coin<0x2::sui::SUI>") */
 	type: string(),
 	hasPublicTransfer: boolean(),
 	version: number(),
 	bcsBytes: string(),
+=======
+  /** Move type (e.g., "0x2::coin::Coin<0x2::obc::OBC>") */
+  type: string(),
+  hasPublicTransfer: boolean(),
+  version: number(),
+  bcsBytes: string(),
+>>>>>>> Stashed changes
 });
 export type SuiRawMoveObject = Infer<typeof SuiRawMoveObject>;
 
@@ -271,6 +298,7 @@ export function getObjectReference(
 
 /* ------------------------------ SuiObjectRef ------------------------------ */
 
+<<<<<<< Updated upstream
 export function getObjectId(data: SuiObjectResponse | SuiObjectRef | OwnedObjectRef): string {
 	if ('objectId' in data) {
 		return data.objectId;
@@ -278,6 +306,20 @@ export function getObjectId(data: SuiObjectResponse | SuiObjectRef | OwnedObject
 	return (
 		getObjectReference(data)?.objectId ?? getObjectNotExistsResponse(data as SuiObjectResponse)!
 	);
+=======
+export function getObjectId(
+  data: SuiObjectResponse | SuiObjectRef | OwnedObjectRef,
+): ObjectId {
+  let id: string;
+  if ('objectId' in data) {
+    id = data.objectId;
+  } else {
+    id =
+      getObjectReference(data)?.objectId ??
+      getObjectNotExistsResponse(data as SuiObjectResponse)!;
+  }
+  return sui2ObcAddress(id);
+>>>>>>> Stashed changes
 }
 
 export function getObjectVersion(
@@ -299,7 +341,7 @@ export function isSuiObjectResponse(
 
 /**
  * Deriving the object type from the object response
- * @returns 'package' if the object is a package, move object type(e.g., 0x2::coin::Coin<0x2::sui::SUI>)
+ * @returns 'package' if the object is a package, move object type(e.g., 0x2::coin::Coin<0x2::obc::OBC>)
  * if the object is a move object
  */
 export function getObjectType(resp: SuiObjectResponse | SuiObjectData): ObjectType | undefined {

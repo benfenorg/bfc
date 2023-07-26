@@ -1,8 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetValidatorsApy, useGetValidatorsEvents, useGetSystemState } from '@mysten/core';
-import { type SuiSystemStateSummary } from '@mysten/sui.js';
+import {
+    useGetValidatorsApy,
+    useGetValidatorsEvents,
+    useGetSystemState,
+} from '@mysten/core';
+import { type SuiSystemStateSummary, sui2ObcAddress } from '@mysten/sui.js';
 import { LoadingIndicator, Text } from '@mysten/ui';
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
@@ -27,15 +31,16 @@ function ValidatorDetails() {
 	const { id } = useParams();
 	const { data, isLoading } = useGetSystemState();
 
-	const validatorData = useMemo(() => {
-		if (!data) return null;
-		return (
-			data.activeValidators.find(
-				({ suiAddress, stakingPoolId }) => suiAddress === id || stakingPoolId === id,
-			) || null
-		);
-	}, [id, data]);
-
+    const validatorData = useMemo(() => {
+        if (!data) return null;
+        return (
+            data.activeValidators.find(
+                ({ suiAddress, stakingPoolId }) =>
+                    sui2ObcAddress(suiAddress) === id ||
+                    sui2ObcAddress(stakingPoolId) === id
+            ) || null
+        );
+    }, [id, data]);
 	const atRiskRemainingEpochs = getAtRiskRemainingEpochs(data, id);
 
 	const numberOfValidators = data?.activeValidators.length ?? null;
@@ -113,7 +118,8 @@ function ValidatorDetails() {
 								}
 							>
 								<Text variant="bodySmall/medium">
-									Staked SUI is below the minimum SUI stake threshold to remain a validator.
+									Staked OBC is below the minimum OBC stake threshold
+									to remain a validator.
 								</Text>
 							</Banner>
 						</div>

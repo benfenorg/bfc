@@ -1,13 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type {
-	SuiObjectResponse,
-	SuiMoveObject,
-	SuiObjectInfo,
-	SuiObjectData,
-} from '../types/objects.js';
-import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js';
+import {
+  getObjectFields,
+  SuiObjectResponse,
+  SuiMoveObject,
+  SuiObjectInfo,
+  SuiObjectData,
+  getObjectId,
+  getObjectType,
+} from '../types/objects';
+import { normalizeHexAddress, ObjectId, SuiAddress } from '../types/common';
 
 import type { Option } from '../types/option.js';
 import { getOption } from '../types/option.js';
@@ -23,10 +26,11 @@ export const MOVE_STDLIB_ADDRESS = '0x1';
 export const OBJECT_MODULE_NAME = 'object';
 export const UID_STRUCT_NAME = 'UID';
 export const ID_STRUCT_NAME = 'ID';
-export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::sui::SUI`;
-export const VALIDATORS_EVENTS_QUERY = '0x3::validator_set::ValidatorEpochInfoEventV2';
+export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
+export const VALIDATORS_EVENTS_QUERY =
+  '0x3::validator_set::ValidatorEpochInfoEventV2';
 
-export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
+export const SUI_CLOCK_OBJECT_ID = normalizeHexAddress('0x6');
 
 // `sui::pay` module is used for Coin management (split, join, join_and_transfer etc);
 export const PAY_MODULE_NAME = 'pay';
@@ -80,14 +84,14 @@ export class Coin {
 		return coinTypeArg.substring(coinTypeArg.lastIndexOf(':') + 1);
 	}
 
-	static getCoinStructTag(coinTypeArg: string): StructTag {
-		return {
-			address: normalizeSuiObjectId(coinTypeArg.split('::')[0]),
-			module: coinTypeArg.split('::')[1],
-			name: coinTypeArg.split('::')[2],
-			typeParams: [],
-		};
-	}
+  static getCoinStructTag(coinTypeArg: string): StructTag {
+    return {
+      address: normalizeHexAddress(coinTypeArg.split('::')[0]),
+      module: coinTypeArg.split('::')[1],
+      name: coinTypeArg.split('::')[2],
+      typeParams: [],
+    };
+  }
 
 	public static getID(obj: ObjectData): string {
 		if ('fields' in obj) {

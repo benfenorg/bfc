@@ -12,7 +12,7 @@ module deepbook::clob {
     use sui::event;
     use sui::linked_table::{Self, LinkedTable};
     use sui::object::{Self, UID, ID};
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::table::{Self, Table, contains, add, borrow_mut};
     use sui::transfer;
     use sui::tx_context::TxContext;
@@ -179,7 +179,7 @@ module deepbook::clob {
         base_custodian: Custodian<BaseAsset>,
         quote_custodian: Custodian<QuoteAsset>,
         // Stores the fee paid to create this pool. These funds are not accessible.
-        creation_fee: Balance<SUI>,
+        creation_fee: Balance<OBC>,
         // Deprecated.
         base_asset_trading_fees: Balance<BaseAsset>,
         // Stores the trading fees paid in `QuoteAsset`. These funds are not accessible.
@@ -204,7 +204,7 @@ module deepbook::clob {
         maker_rebate_rate: u64,
         tick_size: u64,
         lot_size: u64,
-        creation_fee: Balance<SUI>,
+        creation_fee: Balance<OBC>,
         ctx: &mut TxContext,
     ) {
         let base_type_name = type_name::get<BaseAsset>();
@@ -249,7 +249,7 @@ module deepbook::clob {
     public fun create_pool<BaseAsset, QuoteAsset>(
         _tick_size: u64,
         _lot_size: u64,
-        _creation_fee: Coin<SUI>,
+        _creation_fee: Coin<OBC>,
         _ctx: &mut TxContext,
     ) {
         abort DEPRECATED
@@ -1362,7 +1362,7 @@ module deepbook::clob {
 
         test_scenario::next_tx(scenario, sender);
         {
-            create_pool_<SUI, USD>(
+            create_pool_<OBC, USD>(
                 taker_fee_rate,
                 maker_rebate_rate,
                 tick_size,

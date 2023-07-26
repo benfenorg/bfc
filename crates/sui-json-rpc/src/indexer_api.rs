@@ -47,6 +47,7 @@ const NAME_SERVICE_VALUE: &str = "value";
 const NAME_SERVICE_TARGET_ADDRESS: &str = "target_address";
 const NAME_SERVICE_DOMAIN_MODULE: &IdentStr = ident_str!("domain");
 const NAME_SERVICE_DOMAIN_STRUCT: &IdentStr = ident_str!("Domain");
+
 const NAME_SERVICE_DEFAULT_PACKAGE_ADDRESS: &str =
     "0xd22b24490e0bae52676651b4f56660a5ff8022a2576e0089f79b3c88d44e08f0";
 const NAME_SERVICE_DEFAULT_REGISTRY: &str =
@@ -429,8 +430,11 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
                         address_str_move_value
                     ))),
                 }?;
+
                 return Ok(addr_opt);
             }
+            //open for none testing...
+            //return Ok(Some(SuiAddress::from_str(NAME_SERVICE_TESTING_ADDRESS,)?));
             Ok(None)
         })
     }

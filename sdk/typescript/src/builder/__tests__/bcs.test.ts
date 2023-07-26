@@ -3,9 +3,20 @@
 
 import { toB58 } from '@mysten/bcs';
 import { it, expect } from 'vitest';
+<<<<<<< Updated upstream
 import type { MoveCallTransaction, TransferObjectsTransaction } from '../index.js';
 import { builder, PROGRAMMABLE_CALL, TRANSACTION } from '../index.js';
 import { normalizeSuiAddress } from '../../utils/sui-types.js';
+=======
+import {
+  builder,
+  PROGRAMMABLE_CALL,
+  MoveCallTransaction,
+  TRANSACTION,
+  TransferObjectsTransaction,
+} from '..';
+import { normalizeHexAddress } from '../../types';
+>>>>>>> Stashed changes
 
 // Oooh-weeee we nailed it!
 it('can serialize simplified programmable call struct', () => {
@@ -60,6 +71,7 @@ function ref(): { objectId: string; version: string; digest: string } {
 }
 
 it('can serialize transaction data with a programmable transaction', () => {
+<<<<<<< Updated upstream
 	let sui = normalizeSuiAddress('0x2').replace('0x', '');
 	let txData = {
 		V1: {
@@ -145,6 +157,97 @@ it('can serialize transaction data with a programmable transaction', () => {
 			},
 		},
 	};
+=======
+  let sui = normalizeHexAddress('0x2').replace(/^0x/, '');
+  let txData = {
+    V1: {
+      sender: normalizeHexAddress('0xBAD').replace(/^0x/, ''),
+      expiration: { None: true },
+      gasData: {
+        payment: [ref()],
+        owner: sui,
+        price: '1',
+        budget: '1000000',
+      },
+      kind: {
+        ProgrammableTransaction: {
+          inputs: [
+            // first argument is the publisher object
+            { Object: { ImmOrOwned: ref() } },
+            // second argument is a vector of names
+            {
+              Pure: Array.from(
+                builder
+                  .ser('vector<string>', ['name', 'description', 'img_url'])
+                  .toBytes(),
+              ),
+            },
+            // third argument is a vector of values
+            {
+              Pure: Array.from(
+                builder
+                  .ser('vector<string>', [
+                    'Capy {name}',
+                    'A cute little creature',
+                    'https://api.capy.art/{id}/svg',
+                  ])
+                  .toBytes(),
+              ),
+            },
+            // 4th and last argument is the account address to send display to
+            {
+              Pure: Array.from(
+                builder.ser('address', ref().objectId).toBytes(),
+              ),
+            },
+          ],
+          transactions: [
+            {
+              kind: 'MoveCall',
+              target: `${sui}::display::new`,
+              typeArguments: [`${sui}::capy::Capy`],
+              arguments: [
+                // publisher object
+                { kind: 'Input', index: 0 },
+              ],
+            },
+            {
+              kind: 'MoveCall',
+              target: `${sui}::display::add_multiple`,
+              typeArguments: [`${sui}::capy::Capy`],
+              arguments: [
+                // result of the first transaction
+                { kind: 'Result', index: 0 },
+                // second argument - vector of names
+                { kind: 'Input', index: 1 },
+                // third argument - vector of values
+                { kind: 'Input', index: 2 },
+              ],
+            },
+            {
+              kind: 'MoveCall',
+              target: `${sui}::display::update_version`,
+              typeArguments: [`${sui}::capy::Capy`],
+              arguments: [
+                // result of the first transaction again
+                { kind: 'Result', index: 0 },
+              ],
+            },
+            {
+              kind: 'TransferObjects',
+              objects: [
+                // the display object
+                { kind: 'Result', index: 0 },
+              ],
+              // address is also an input
+              address: { kind: 'Input', index: 3 },
+            },
+          ],
+        },
+      },
+    },
+  };
+>>>>>>> Stashed changes
 
 	const type = 'TransactionData';
 	const bytes = builder.ser(type, txData).toBytes();

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< Updated upstream
 import type { TypeName } from '@mysten/bcs';
 import { BCS } from '@mysten/bcs';
 import { bcs } from '../types/sui-bcs.js';
@@ -8,6 +9,13 @@ import type { TypeTag } from '../types/sui-bcs.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
 import type { TransactionArgument, MoveCallTransaction } from './Transactions.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
+=======
+import { BCS, TypeName } from '@mysten/bcs';
+import { bcs } from '../types/sui-bcs';
+import { normalizeHexAddress, TypeTag } from '../types';
+import { TypeTagSerializer } from '../signers/txn-data-serializers/type-tag-serializer';
+import { TransactionArgument, MoveCallTransaction } from './Transactions';
+>>>>>>> Stashed changes
 
 export const ARGUMENT_INNER = 'Argument';
 export const VECTOR = 'vector';
@@ -206,6 +214,7 @@ builder.registerType(
 			TypeTagSerializer.parseFromStr(tag, true),
 		);
 
+<<<<<<< Updated upstream
 		return this.getTypeInterface(PROGRAMMABLE_CALL_INNER)._encodeRaw.call(
 			this,
 			writer,
@@ -224,6 +233,26 @@ builder.registerType(
 		let data: ProgrammableCallInner = builder
 			.getTypeInterface(PROGRAMMABLE_CALL_INNER)
 			._decodeRaw.call(this, reader, typeParams, typeMap);
+=======
+    return this.getTypeInterface(PROGRAMMABLE_CALL_INNER)._encodeRaw.call(
+      this,
+      writer,
+      {
+        package: normalizeHexAddress(pkg),
+        module,
+        function: fun,
+        type_arguments,
+        arguments: data.arguments,
+      } as ProgrammableCallInner,
+      typeParams,
+      typeMap,
+    );
+  },
+  function decodeProgrammableTx(this: BCS, reader, typeParams, typeMap) {
+    let data: ProgrammableCallInner = builder
+      .getTypeInterface(PROGRAMMABLE_CALL_INNER)
+      ._decodeRaw.call(this, reader, typeParams, typeMap);
+>>>>>>> Stashed changes
 
 		return {
 			target: [data.package, data.module, data.function].join('::'),

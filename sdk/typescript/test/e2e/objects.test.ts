@@ -20,22 +20,24 @@ describe('Object Reading API', () => {
 		expect(gasObjects.data.length).to.greaterThan(0);
 	});
 
-	it('Get Object', async () => {
-		const gasObjects = await toolbox.getGasObjectsOwnedByAddress();
-		expect(gasObjects.length).to.greaterThan(0);
-		const objectInfos = await Promise.all(
-			gasObjects.map((gasObject) => {
-				const details = gasObject.data as SuiObjectData;
-				return toolbox.client.getObject({
-					id: details.objectId,
-					options: { showType: true },
-				});
-			}),
-		);
-		objectInfos.forEach((objectInfo) =>
-			expect(getObjectType(objectInfo)).to.equal('0x2::coin::Coin<0x2::sui::SUI>'),
-		);
-	});
+  it('Get Object', async () => {
+    const gasObjects = await toolbox.getGasObjectsOwnedByAddress();
+    expect(gasObjects.length).to.greaterThan(0);
+    const objectInfos = await Promise.all(
+      gasObjects.map((gasObject) => {
+        const details = gasObject.data as SuiObjectData;
+        return toolbox.provider.getObject({
+          id: details.objectId,
+          options: { showType: true },
+        });
+      }),
+    );
+    objectInfos.forEach((objectInfo) =>
+      expect(getObjectType(objectInfo)).to.equal(
+        '0x2::coin::Coin<0x2::obc::OBC>',
+      ),
+    );
+  });
 
 	it('Get Objects', async () => {
 		const gasObjects = await toolbox.getGasObjectsOwnedByAddress();
@@ -53,10 +55,13 @@ describe('Object Reading API', () => {
 
 		expect(gasObjects.length).to.equal(objectInfos.length);
 
-		objectInfos.forEach((objectInfo) =>
-			expect(getObjectType(objectInfo)).to.equal('0x2::coin::Coin<0x2::sui::SUI>'),
-		);
-	});
+
+    objectInfos.forEach((objectInfo) =>
+      expect(getObjectType(objectInfo)).to.equal(
+        '0x2::coin::Coin<0x2::obc::OBC>',
+      ),
+    );
+  });
 
 	it('handles trying to get non-existent old objects', async () => {
 		const res = await toolbox.client.tryGetPastObject({

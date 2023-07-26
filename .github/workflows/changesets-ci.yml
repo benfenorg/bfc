@@ -2,7 +2,7 @@ name: Changesets CI
 on: pull_request
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted,alex-mac1]
     steps:
       - name: checkout code repository
         uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3

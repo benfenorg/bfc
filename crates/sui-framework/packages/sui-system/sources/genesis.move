@@ -7,7 +7,7 @@ module sui_system::genesis {
     use sui::balance::{Self, Balance};
     use sui::coin;
     use sui::object::UID;
-    use sui::sui::{Self, SUI};
+    use sui::obc::{Self, OBC};
     use sui_system::sui_system;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator};
@@ -83,7 +83,7 @@ module sui_system::genesis {
     /// all the information we need in the system.
     fun create(
         sui_system_state_id: UID,
-        sui_supply: Balance<SUI>,
+        sui_supply: Balance<OBC>,
         genesis_chain_parameters: GenesisChainParameters,
         genesis_validators: vector<GenesisValidatorMetadata>,
         token_distribution_schedule: TokenDistributionSchedule,
@@ -202,7 +202,7 @@ module sui_system::genesis {
     }
 
     fun allocate_tokens(
-        sui_supply: Balance<SUI>,
+        sui_supply: Balance<OBC>,
         allocations: vector<TokenAllocation>,
         validators: &mut vector<Validator>,
         ctx: &mut TxContext,
@@ -227,7 +227,7 @@ module sui_system::genesis {
                     ctx
                 );
             } else {
-                sui::transfer(
+                obc::transfer(
                     coin::from_balance(allocation_balance, ctx),
                     recipient_address,
                 );

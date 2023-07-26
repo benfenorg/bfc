@@ -6,7 +6,7 @@
 /// requires additional effort by securing access if needed.
 module examples::donuts {
     use sui::transfer;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::balance::{Self, Balance};
@@ -25,7 +25,7 @@ module examples::donuts {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<SUI>
+        balance: Balance<OBC>
     }
 
     #[allow(unused_function)]
@@ -48,7 +48,7 @@ module examples::donuts {
 
     /// Entry function available to everyone who owns a Coin.
     public entry fun buy_donut(
-        shop: &mut DonutShop, payment: &mut Coin<SUI>, ctx: &mut TxContext
+        shop: &mut DonutShop, payment: &mut Coin<OBC>, ctx: &mut TxContext
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 

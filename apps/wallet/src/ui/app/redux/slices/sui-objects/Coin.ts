@@ -8,8 +8,8 @@ import type { SuiObjectData, SuiMoveObject } from '@mysten/sui.js';
 const COIN_TYPE = '0x2::coin::Coin';
 const COIN_TYPE_ARG_REGEX = /^0x2::coin::Coin<(.+)>$/;
 
-export const GAS_TYPE_ARG = '0x2::sui::SUI';
-export const GAS_SYMBOL = 'SUI';
+export const GAS_TYPE_ARG = '0x2::obc::OBC';
+export const GAS_SYMBOL = 'OBC';
 
 // TODO use sdk
 export class Coin {

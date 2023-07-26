@@ -5,11 +5,13 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-
+env:
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   audit:
     name: pnpm audit
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -25,7 +27,7 @@ jobs:
 
   build:
     name: Lint, Build, and Test
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v3

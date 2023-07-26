@@ -11,6 +11,7 @@ type StakeColumnProps = {
 	inMIST?: boolean;
 };
 
+<<<<<<< Updated upstream
 export function StakeColumn({ stake, hideCoinSymbol, inMIST = false }: StakeColumnProps) {
 	const coinFormat = hideCoinSymbol ? CoinFormat.FULL : CoinFormat.ROUNDED;
 	const [amount, symbol] = useFormatCoin(stake, SUI_TYPE_ARG, coinFormat);
@@ -26,4 +27,29 @@ export function StakeColumn({ stake, hideCoinSymbol, inMIST = false }: StakeColu
 			)}
 		</div>
 	);
+=======
+export function StakeColumn({
+    stake,
+    hideCoinSymbol,
+    inMIST = false,
+}: StakeColumnProps) {
+    const coinFormat = hideCoinSymbol ? CoinFormat.FULL : CoinFormat.ROUNDED;
+    let [amount, symbol] = useFormatCoin(stake, SUI_TYPE_ARG, coinFormat);
+
+    //change by alex, in obc
+    symbol = 'SUI' ? 'OBC' : 'MIST';
+
+    return (
+        <div className="flex items-end gap-0.5">
+            <Text variant="bodySmall/medium" color="steel-darker">
+                {inMIST ? formatBalance(stake, 0, coinFormat) : amount}
+            </Text>
+            {!hideCoinSymbol && (
+                <Text variant="captionSmall/medium" color="steel-dark">
+                    {inMIST ? 'MIST' : symbol}
+                </Text>
+            )}
+        </div>
+    );
+>>>>>>> Stashed changes
 }

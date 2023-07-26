@@ -8,7 +8,7 @@ module games::hero {
     use sui::event;
     use sui::object::{Self, ID, UID};
     use sui::math;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use std::option::{Self, Option};
@@ -246,7 +246,7 @@ module games::hero {
     /// for it.
     public fun create_sword(
         game: &GameInfo,
-        payment: Coin<SUI>,
+        payment: Coin<OBC>,
         ctx: &mut TxContext
     ): Sword {
         let value = coin::value(&payment);
@@ -267,7 +267,7 @@ module games::hero {
     }
 
     public entry fun acquire_hero(
-        game: &GameInfo, payment: Coin<SUI>, ctx: &mut TxContext
+        game: &GameInfo, payment: Coin<OBC>, ctx: &mut TxContext
     ) {
         let sword = create_sword(game, payment, ctx);
         let hero = create_hero(game, sword, ctx);

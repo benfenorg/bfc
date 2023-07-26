@@ -7,10 +7,13 @@ on:
     branches:
       - main
     types: [opened, reopened, synchronize]
-
+env:
+    PATH: ${{ vars.PATH }}
+    HTTPS_PROXY: ${{ vars.https_proxy }}
+    HTTP_PROXY: ${{ vars.http_proxy }}
 jobs:
   diff:
-    runs-on: [ubuntu-latest]
+    runs-on: obc
     outputs:
       isRust: ${{ steps.diff.outputs.isRust }}
     steps:
@@ -22,8 +25,8 @@ jobs:
   codecov-grcov:
     name: Generate code coverage
     needs: diff
-    if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
-    runs-on: [ubuntu-ghcloud]
+#     if: github.event.pull_request.draft == false && needs.diff.outputs.isRust == 'true'
+    runs-on: obc
     strategy:
       fail-fast: true
     steps:

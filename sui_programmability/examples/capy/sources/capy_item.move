@@ -11,7 +11,7 @@ module capy::capy_item {
     use sui::object::{Self, ID, UID};
     use sui::tx_context::{sender, TxContext};
     use std::string::{Self, String};
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::balance::{Self, Balance};
     use std::option::{Self, Option};
     use sui::dynamic_object_field as dof;
@@ -29,7 +29,7 @@ module capy::capy_item {
     /// to be later acquirable by the Capy Admin.
     struct ItemStore has key {
         id: UID,
-        balance: Balance<SUI>
+        balance: Balance<OBC>
     }
 
     /// A Capy item, that is being purchased from the `ItemStore`.
@@ -115,10 +115,10 @@ module capy::capy_item {
         });
     }
 
-    /// Buy an Item from the `ItemStore`. Pay `Coin<SUI>` and
+    /// Buy an Item from the `ItemStore`. Pay `Coin<OBC>` and
     /// receive a `CapyItem`.
     public entry fun buy_and_take(
-        s: &mut ItemStore, name: vector<u8>, payment: Coin<SUI>, ctx: &mut TxContext
+        s: &mut ItemStore, name: vector<u8>, payment: Coin<OBC>, ctx: &mut TxContext
     ) {
         let listing_mut = dof::borrow_mut<vector<u8>, ListedItem>(&mut s.id, name);
 
@@ -150,7 +150,7 @@ module capy::capy_item {
     /// Buy a CapyItem with a single Coin which may be bigger than the
     /// price of the listing.
     public entry fun buy_mut(
-        s: &mut ItemStore, name: vector<u8>, payment: &mut Coin<SUI>, ctx: &mut TxContext
+        s: &mut ItemStore, name: vector<u8>, payment: &mut Coin<OBC>, ctx: &mut TxContext
     ) {
         let listing = dof::borrow<vector<u8>, ListedItem>(&mut s.id, name);
         let paid = coin::split(payment, listing.price, ctx);
@@ -160,7 +160,7 @@ module capy::capy_item {
     /// Buy a CapyItem with multiple Coins by joining them first and then
     /// calling the `buy_mut` function.
     public entry fun buy_mul_coin(
-        s: &mut ItemStore, name: vector<u8>, coins: vector<Coin<SUI>>, ctx: &mut TxContext
+        s: &mut ItemStore, name: vector<u8>, coins: vector<Coin<OBC>>, ctx: &mut TxContext
     ) {
         let paid = vec::pop_back(&mut coins);
         pay::join_vec(&mut paid, coins);

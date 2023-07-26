@@ -8,7 +8,7 @@ module sui::pay_tests {
     use sui::coin::{Self, Coin};
     use sui::pay;
     use sui::balance;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::test_utils;
 
     const TEST_SENDER_ADDR: address = @0xA11CE;
@@ -18,23 +18,23 @@ module sui::pay_tests {
         let scenario_val = test_scenario::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        let coin = coin::mint_for_testing<SUI>(10, ctx);
+        let coin = coin::mint_for_testing<OBC>(10, ctx);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         pay::divide_and_keep(&mut coin, 3, test_scenario::ctx(scenario));
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<OBC>>(scenario);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin2 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin2 = test_scenario::take_from_sender<Coin<OBC>>(scenario);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         assert!(coin::value(&coin1) == 3, 0);
         assert!(coin::value(&coin2) == 3, 0);
         assert!(coin::value(&coin) == 4, 0);
         assert!(
-            !test_scenario::has_most_recent_for_sender<Coin<SUI>>(scenario),
+            !test_scenario::has_most_recent_for_sender<Coin<OBC>>(scenario),
             1
         );
 
@@ -49,7 +49,7 @@ module sui::pay_tests {
         let scenario_val = test_scenario::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        let coin = coin::mint_for_testing<SUI>(10, ctx);
+        let coin = coin::mint_for_testing<OBC>(10, ctx);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         let split_coins = coin::divide_into_n(&mut coin, 3, test_scenario::ctx(scenario));
@@ -73,17 +73,17 @@ module sui::pay_tests {
         let scenario_val = test_scenario::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        let coin = coin::mint_for_testing<SUI>(10, ctx);
+        let coin = coin::mint_for_testing<OBC>(10, ctx);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         let v = vector[1, 4];
         pay::split_vec(&mut coin, v, test_scenario::ctx(scenario));
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<OBC>>(scenario);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin2 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin2 = test_scenario::take_from_sender<Coin<OBC>>(scenario);
 
         assert!(coin::value(&coin1) == 4, 0);
         assert!(coin::value(&coin2) == 1, 0);
@@ -100,14 +100,14 @@ module sui::pay_tests {
         let scenario_val = test_scenario::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        let coin = coin::mint_for_testing<SUI>(10, ctx);
+        let coin = coin::mint_for_testing<OBC>(10, ctx);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         // Send 3 of 10
         pay::split_and_transfer(&mut coin, 3, TEST_SENDER_ADDR, test_scenario::ctx(scenario));
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<OBC>>(scenario);
         assert!(coin::value(&coin1) == 3, 0);
         assert!(coin::value(&coin) == 7, 0);
 
@@ -122,13 +122,13 @@ module sui::pay_tests {
         let scenario_val = test_scenario::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        let coin = coin::mint_for_testing<SUI>(10, ctx);
+        let coin = coin::mint_for_testing<OBC>(10, ctx);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         // Send 20 of 10 (should fail)
         pay::split_and_transfer(&mut coin, 20, TEST_SENDER_ADDR, test_scenario::ctx(scenario));
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin_transfer_fail = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin_transfer_fail = test_scenario::take_from_sender<Coin<OBC>>(scenario);
         assert!(coin::value(&coin_transfer_fail) == 7, 0);
 
         test_utils::destroy(coin);
@@ -141,7 +141,7 @@ module sui::pay_tests {
         let scenario_val = test_scenario::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        let coin = coin::mint_for_testing<SUI>(10, ctx);
+        let coin = coin::mint_for_testing<OBC>(10, ctx);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
         // divide_into_n with `n = 4` creates a vector of `n-1` = `3` coins containing balance `2`
@@ -149,7 +149,7 @@ module sui::pay_tests {
         pay::join_vec_and_transfer(coin_vector, TEST_SENDER_ADDR);
 
         test_scenario::next_tx(scenario, TEST_SENDER_ADDR);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<OBC>>(scenario);
 
         // result is `3` coins of balance `2`
         assert!(coin::value(&coin1) == 6, 0);

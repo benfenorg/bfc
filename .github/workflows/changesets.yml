@@ -9,19 +9,9 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dispatch Changesets To Operations
-        uses: peter-evans/repository-dispatch@26b39ed245ab8f31526069329e112ab2fb224588 # pin@v2
-        with:
-          repository: MystenLabs/sui-operations
-          token: ${{ secrets.CHANGESETS_DEPLOY_DISPATCH }}
-          event-type: changesets
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
 
   version:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Generate token
         id: generate_token

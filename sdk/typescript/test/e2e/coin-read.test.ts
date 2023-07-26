@@ -51,6 +51,7 @@ describe('CoinRead API', () => {
 		expect(someSuiCoins.nextCursor).toBeTruthy();
 	});
 
+<<<<<<< Updated upstream
 	it('Get balance with/without type', async () => {
 		const suiBalance = await toolbox.client.getBalance({
 			owner: toolbox.address(),
@@ -58,6 +59,15 @@ describe('CoinRead API', () => {
 		expect(suiBalance.coinType).toEqual('0x2::sui::SUI');
 		expect(suiBalance.coinObjectCount).toEqual(5);
 		expect(Number(suiBalance.totalBalance)).toBeGreaterThan(0);
+=======
+  it('Get balance with/without type', async () => {
+    const suiBalance = await toolbox.provider.getBalance({
+      owner: toolbox.address(),
+    });
+    expect(suiBalance.coinType).toEqual('0x2::obc::OBC');
+    expect(suiBalance.coinObjectCount).toEqual(5);
+    expect(Number(suiBalance.totalBalance)).toBeGreaterThan(0);
+>>>>>>> Stashed changes
 
 		const testBalance = await toolbox.client.getBalance({
 			owner: publishToolbox.address(),

@@ -11,6 +11,7 @@ type DelegationAmountProps = {
 	inMIST?: boolean;
 };
 
+<<<<<<< Updated upstream
 export function DelegationAmount({ amount, isStats, inMIST = false }: DelegationAmountProps) {
 	const [formattedAmount, symbol] = useFormatCoin(amount, SUI_TYPE_ARG);
 	const delegationAmount = inMIST ? formatBalance(amount, 0, CoinFormat.FULL) : formattedAmount;
@@ -32,4 +33,37 @@ export function DelegationAmount({ amount, isStats, inMIST = false }: Delegation
 			</div>
 		</div>
 	);
+=======
+export function DelegationAmount({
+    amount,
+    isStats,
+    inMIST = false,
+}: DelegationAmountProps) {
+    const [formattedAmount, symbol] = useFormatCoin(amount, SUI_TYPE_ARG);
+    const delegationAmount = inMIST
+        ? formatBalance(amount, 0, CoinFormat.FULL)
+        : formattedAmount;
+
+    //replace sui with OBC by alex.later todo change the SUI_TYPE_ARG
+    let delegationSymbol = inMIST ? 'MIST' : symbol;
+    delegationSymbol = 'SUI' ? 'OBC' : 'MIST';
+
+    return isStats ? (
+        <div className="flex items-end gap-1.5 break-all">
+            <Heading as="div" variant="heading3/semibold" color="steel-darker">
+                {delegationAmount}
+            </Heading>
+            <Heading variant="heading4/medium" color="steel-darker">
+                {delegationSymbol}
+            </Heading>
+        </div>
+    ) : (
+        <div className="flex h-full items-center gap-1">
+            <div className="flex items-baseline gap-0.5 break-all text-steel-darker">
+                <Text variant="body/medium">{delegationAmount}</Text>
+                <Text variant="subtitleSmall/medium">{delegationSymbol}</Text>
+            </div>
+        </div>
+    );
+>>>>>>> Stashed changes
 }
