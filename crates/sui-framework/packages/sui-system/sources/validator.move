@@ -303,7 +303,7 @@ module sui_system::validator {
         stake: Balance<OBC>,
         staker_address: address,
         ctx: &mut TxContext,
-    ) : StakedSui {
+    ) : StakedObc {
         let stake_amount = balance::value(&stake);
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;

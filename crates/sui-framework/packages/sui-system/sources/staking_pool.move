@@ -115,7 +115,7 @@ module sui_system::staking_pool {
         stake: Balance<OBC>,
         stake_activation_epoch: u64,
         ctx: &mut TxContext
-    ) : StakedSui {
+    ) : StakedObc {
         let sui_amount = balance::value(&stake);
         assert!(!is_inactive(pool), EDelegationToInactivePool);
         assert!(sui_amount > 0, EDelegationOfZeroSui);

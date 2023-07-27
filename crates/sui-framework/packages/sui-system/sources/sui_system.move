@@ -247,10 +247,10 @@ module sui_system::sui_system {
     /// The non-entry version of `request_add_stake`, which returns the staked SUI instead of transferring it to the sender.
     public fun request_add_stake_non_entry(
         wrapper: &mut SuiSystemState,
-        stake: Coin<SUI>,
+        stake: Coin<OBC>,
         validator_address: address,
         ctx: &mut TxContext,
-    ): StakedSui {
+    ): StakedObc {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_add_stake(self, stake, validator_address, ctx)
     }

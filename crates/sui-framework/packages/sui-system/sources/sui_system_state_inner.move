@@ -508,7 +508,7 @@ module sui_system::sui_system_state_inner {
         stake: Coin<OBC>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) : StakedSui {
+    ) : StakedObc {
         validator_set::request_add_stake(
             &mut self.validators,
             validator_address,
@@ -524,7 +524,7 @@ module sui_system::sui_system_state_inner {
         stake_amount: option::Option<u64>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) : StakedSui {
+    ) : StakedObc {
         let balance = extract_coin_balance(stakes, stake_amount, ctx);
         validator_set::request_add_stake(&mut self.validators, validator_address, balance, ctx)
     }

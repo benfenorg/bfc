@@ -292,7 +292,7 @@ module sui_system::validator_set {
         validator_address: address,
         stake: Balance<OBC>,
         ctx: &mut TxContext,
-    ) : StakedSui {
+    ) : StakedObc {
         let sui_amount = balance::value(&stake);
         assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
         let validator = get_candidate_or_active_validator_mut(self, validator_address);
