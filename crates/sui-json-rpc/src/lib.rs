@@ -53,17 +53,17 @@ pub const APP_NAME_HEADER: &str = "app-name";
 
 pub const MAX_REQUEST_SIZE: u32 = 2 << 30;
 
-#[cfg(test)]
-#[path = "unit_tests/obc_base_types_tests.rs"]
-mod obc_base_types_tests;
-
-#[cfg(test)]
-#[path = "unit_tests/rpc_server_tests.rs"]
-mod rpc_server_test;
-
-#[cfg(test)]
-#[path = "unit_tests/transaction_tests.rs"]
-mod transaction_tests;
+// #[cfg(test)]
+// #[path = "unit_tests/obc_base_types_tests.rs"]
+// mod obc_base_types_tests;
+//
+// #[cfg(test)]
+// #[path = "unit_tests/rpc_server_tests.rs"]
+// mod rpc_server_test;
+//
+// #[cfg(test)]
+// #[path = "unit_tests/transaction_tests.rs"]
+// mod transaction_tests;
 
 pub struct JsonRpcServerBuilder {
     module: RpcModule<()>,

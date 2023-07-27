@@ -9940,6 +9940,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bcs",
+ "hex",
  "hyper",
  "jsonrpsee",
  "jsonrpsee-proc-macros",
