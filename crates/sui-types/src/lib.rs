@@ -77,6 +77,7 @@ mod obc_base_types;
 #[cfg(feature = "test-utils")]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
+mod gas_coin_strategy;
 
 /// 0x1-- account address where Move stdlib modules are stored
 /// Same as the ObjectID
