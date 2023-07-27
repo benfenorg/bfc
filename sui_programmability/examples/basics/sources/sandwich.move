@@ -98,7 +98,7 @@ module basics::sandwich {
     }
 
     /// Owner of the grocery can collect profits by passing his capability
-    public fun collect_profits(_cap: &GroceryOwnerCapability, grocery: &mut Grocery, ctx: &mut TxContext): Coin<SUI> {
+    public fun collect_profits(_cap: &GroceryOwnerCapability, grocery: &mut Grocery, ctx: &mut TxContext): Coin<OBC> {
         let amount = balance::value(&grocery.profits);
 
         assert!(amount > 0, ENoProfits);
