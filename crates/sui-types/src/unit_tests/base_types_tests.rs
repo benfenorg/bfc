@@ -9,7 +9,8 @@ use std::str::FromStr;
 use fastcrypto::encoding::Base58;
 use fastcrypto::traits::EncodeDecodeBase64;
 use move_binary_format::file_format;
-use sha2::{Digest, Sha256};
+
+//use sha2::{Digest, Sha256};
 
 use crate::crypto::bcs_signable_test::{Bar, Foo};
 use crate::crypto::{
@@ -486,6 +487,7 @@ fn next_lexicographical_digest() {
 }
 
 fn sha256_string(input: &str) -> String {
+    use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(input.as_bytes());
     let result = hasher.finalize();
