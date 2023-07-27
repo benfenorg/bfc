@@ -611,7 +611,7 @@ async fn test_delegation_parsing() -> Result<(), anyhow::Error> {
             "operation_identifier":{"index":0},
             "type":"Stake",
             "account": { "address" : sender.to_string() },
-            "amount" : { "value": "-100000" , "currency": { "symbol": "SUI", "decimals": 9}},
+            "amount" : { "value": "-100000" , "currency": { "symbol": "OBC", "decimals": 9}},
             "metadata": { "Stake" : {"validator": validator.to_string()} }
         }]
     ))

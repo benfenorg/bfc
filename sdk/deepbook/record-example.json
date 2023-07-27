@@ -1,3 +1,4 @@
+sdk/deepbook/record-example.json
 {
 	"deepBook": {
 		"pools": [
@@ -62,7 +63,7 @@
 			},
 			{
 				"type": "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
-				"symbol": "SUI",
+				"symbol": "OBC",
 				"decimals": 9
 			}
 		]
