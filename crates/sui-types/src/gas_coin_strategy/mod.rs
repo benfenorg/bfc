@@ -6,6 +6,9 @@ use anyhow::{format_err, Result};
 use std::fmt::{self};
 use core::str::FromStr;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
+use crate::base_types::SuiAddress;
+use crate::collection_types::VecMap;
+use serde::{Deserialize, Serialize};
 
 
 pub mod price_oracle;
@@ -67,4 +70,16 @@ impl FromStr for GasCoinStrategy {
 pub trait GasCoinExchange {
     /// Exchange any coin to default platform coin
     fn exchange(any_coin: GasCoin, amount: u64) -> u64;
+}
+
+/// Rust version of the Move sui_system::gas_coin_map::GasCoinMap type
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct GasCoinMap {
+    pub active_gas_coins: VecMap<SuiAddress, GasCoinEntity>,
+}
+
+/// Rust version of the Move sui_system::gas_coin_map::GasCoinEntity type
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct GasCoinEntity {
+    pub id_address: SuiAddress
 }
