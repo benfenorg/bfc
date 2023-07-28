@@ -10627,6 +10627,7 @@ dependencies = [
  "move-symbol-pool",
  "rand 0.8.5",
  "sui-json-rpc-types",
+ "sui-move",
  "sui-move-build",
  "sui-sdk",
  "sui-test-transaction-builder",
