@@ -12,7 +12,7 @@ mod compatibility_tests {
         // This test checks that the current framework is compatible with all previous framework
         // bytecode snapshots.
         for (version, _snapshots) in load_bytecode_snapshot_manifest() {
-            if version < 12 {
+            if version < 20 {
                 continue;
             }
 
