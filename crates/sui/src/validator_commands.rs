@@ -623,7 +623,7 @@ async fn construct_unsigned_0x5_txn(
     )
 }
 
-async fn call_0x5(
+pub async fn call_0x5(
     context: &mut WalletContext,
     function: &'static str,
     call_args: Vec<CallArg>,
