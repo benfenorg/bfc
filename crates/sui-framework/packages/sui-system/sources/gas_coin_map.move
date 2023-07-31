@@ -3,6 +3,10 @@ module sui_system::gas_coin_map {
     use sui::object;
     use sui::vec_map::{Self, VecMap};
     use std::vector;
+    use sui::tx_context::TxContext;
+
+    friend sui_system::genesis;
+    friend sui_system::sui_system_state_inner;
 
     struct GasCoinMap has store {
         ///The current active gas coin
@@ -13,7 +17,7 @@ module sui_system::gas_coin_map {
         id_address: address
     }
     /// Init gas coin map
-    public(friend) fun new(init_gas_coins: VecMap<address, GasCoinEntity>): GasCoinMap {
+    public(friend) fun new(init_gas_coins: VecMap<address, GasCoinEntity>, ctx: &mut TxContext): GasCoinMap {
         let active_gas_coins = vec_map::empty<address, GasCoinEntity>();
         let init_keys = vec_map::keys(&init_gas_coins);
         let num_coins = vector::length(&init_keys);
@@ -27,6 +31,12 @@ module sui_system::gas_coin_map {
             active_gas_coins
         };
         map
+    }
+
+    public(friend) fun new_entity(id_address: address): GasCoinEntity {
+        GasCoinEntity {
+            id_address,
+        }
     }
 
     public(friend) fun request_add_gas_coin<CoinType>(

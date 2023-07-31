@@ -77,6 +77,7 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
+<b>use</b> <a href="gas_coin_map.md#0x3_gas_coin_map">0x3::gas_coin_map</a>;
 <b>use</b> <a href="stake_subsidy.md#0x3_stake_subsidy">0x3::stake_subsidy</a>;
 <b>use</b> <a href="staking_pool.md#0x3_staking_pool">0x3::staking_pool</a>;
 <b>use</b> <a href="storage_fund.md#0x3_storage_fund">0x3::storage_fund</a>;
@@ -287,6 +288,12 @@ The top-level object containing all information of the Sui system.
  Contains all information about the validators.
 </dd>
 <dt>
+<code><a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>: <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a></code>
+</dt>
+<dd>
+ Contains gas coin information
+</dd>
+<dt>
 <code><a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_StorageFund">storage_fund::StorageFund</a></code>
 </dt>
 <dd>
@@ -417,6 +424,12 @@ Uses SystemParametersV2 as the parameters.
 </dt>
 <dd>
  Contains all information about the validators.
+</dd>
+<dt>
+<code><a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>: <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a></code>
+</dt>
+<dd>
+ Contains gas coin information
 </dd>
 <dt>
 <code><a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_StorageFund">storage_fund::StorageFund</a></code>
@@ -762,12 +775,18 @@ This function will be called only once in genesis.
     <b>let</b> validators = <a href="validator_set.md#0x3_validator_set_new">validator_set::new</a>(validators, ctx);
     <b>let</b> reference_gas_price = <a href="validator_set.md#0x3_validator_set_derive_reference_gas_price">validator_set::derive_reference_gas_price</a>(&validators);
     // This type is fixed <b>as</b> it's created at <a href="genesis.md#0x3_genesis">genesis</a>. It should not be updated during type upgrade.
+    <b>let</b> init_gas_coins_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<b>address</b>, GasCoinEntity&gt;();
+    <b>let</b> init_coin = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(initial_storage_fund, ctx);
+    <b>let</b> coin_id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>(&init_coin);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> init_gas_coins_map, coin_id_address, <a href="gas_coin_map.md#0x3_gas_coin_map_new_entity">gas_coin_map::new_entity</a>(coin_id_address));
+    <b>let</b> <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0x3_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> system_state = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInner">SuiSystemStateInner</a> {
         epoch: 0,
         protocol_version,
         system_state_version: <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_genesis_system_state_version">genesis_system_state_version</a>(),
         validators,
-        <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_new">storage_fund::new</a>(initial_storage_fund),
+        <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>,
+        <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_new">storage_fund::new</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(init_coin)),
         parameters,
         reference_gas_price,
         validator_report_records: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
@@ -853,6 +872,7 @@ This function will be called only once in genesis.
         protocol_version,
         system_state_version: _,
         validators,
+        <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>,
         <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>,
         parameters,
         reference_gas_price,
@@ -881,6 +901,7 @@ This function will be called only once in genesis.
         protocol_version,
         system_state_version: 2,
         validators,
+        <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>,
         <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>,
         parameters: <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemParametersV2">SystemParametersV2</a> {
             epoch_duration_ms,

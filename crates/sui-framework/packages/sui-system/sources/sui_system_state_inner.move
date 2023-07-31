@@ -23,6 +23,9 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
+    use sui_system::gas_coin_map::{GasCoinMap, GasCoinEntity};
+    use sui_system::gas_coin_map;
+    use sui::object;
 
     friend sui_system::genesis;
     friend sui_system::sui_system;
@@ -119,6 +122,8 @@ module sui_system::sui_system_state_inner {
         system_state_version: u64,
         /// Contains all information about the validators.
         validators: ValidatorSet,
+        /// Contains gas coin information
+        gas_coin_map: GasCoinMap,
         /// The storage fund.
         storage_fund: StorageFund,
         /// A list of system config parameters.
@@ -167,6 +172,8 @@ module sui_system::sui_system_state_inner {
         system_state_version: u64,
         /// Contains all information about the validators.
         validators: ValidatorSet,
+        /// Contains gas coin information
+        gas_coin_map: GasCoinMap,
         /// The storage fund.
         storage_fund: StorageFund,
         /// A list of system config parameters.
@@ -249,12 +256,18 @@ module sui_system::sui_system_state_inner {
         let validators = validator_set::new(validators, ctx);
         let reference_gas_price = validator_set::derive_reference_gas_price(&validators);
         // This type is fixed as it's created at genesis. It should not be updated during type upgrade.
+        let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
+        let init_coin = coin::from_balance(initial_storage_fund, ctx);
+        let coin_id_address = object::id_address(&init_coin);
+        vec_map::insert(&mut init_gas_coins_map, coin_id_address, gas_coin_map::new_entity(coin_id_address));
+        let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let system_state = SuiSystemStateInner {
             epoch: 0,
             protocol_version,
             system_state_version: genesis_system_state_version(),
             validators,
-            storage_fund: storage_fund::new(initial_storage_fund),
+            gas_coin_map,
+            storage_fund: storage_fund::new(coin::into_balance(init_coin)),
             parameters,
             reference_gas_price,
             validator_report_records: vec_map::empty(),
@@ -300,6 +313,7 @@ module sui_system::sui_system_state_inner {
             protocol_version,
             system_state_version: _,
             validators,
+            gas_coin_map,
             storage_fund,
             parameters,
             reference_gas_price,
@@ -328,6 +342,7 @@ module sui_system::sui_system_state_inner {
             protocol_version,
             system_state_version: 2,
             validators,
+            gas_coin_map,
             storage_fund,
             parameters: SystemParametersV2 {
                 epoch_duration_ms,
