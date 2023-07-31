@@ -8,6 +8,9 @@ module sui_system::gas_coin_map {
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
 
+    #[test_only]
+    friend sui_system::gas_coin_map_tests;
+
     struct GasCoinMap has store {
         ///The current active gas coin
         active_gas_coins: VecMap<address, GasCoinEntity>,
@@ -37,6 +40,10 @@ module sui_system::gas_coin_map {
         GasCoinEntity {
             id_address,
         }
+    }
+
+    public(friend) fun map_size(self: &GasCoinMap): u64 {
+        vec_map::size(&self.active_gas_coins)
     }
 
     public(friend) fun request_add_gas_coin<CoinType>(
