@@ -16,12 +16,12 @@ module sui_system::gas_coin_map_tests {
     use sui::pay;
     use sui::transfer;
     use sui::tx_context;
-
-    struct COIN_TESTS has drop {}
+    
+    struct GAS_COIN_MAP_TESTS has drop {}
 
     #[test]
     fun test_gas_coin_map_flow() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let scenario_val = test_scenario::begin(@0x3);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         //init gas coin map
@@ -35,14 +35,18 @@ module sui_system::gas_coin_map_tests {
         pay::keep(init_coin, ctx);
 
         //add gas coin to map
-        let witness = COIN_TESTS{};
-        let (treasury, metadata) = coin::create_currency(witness, 6, b"COIN_TESTS", b"coin_name", b"description", option::some(url::new_unsafe_from_bytes(b"icon_url")), ctx);
-        let balance = coin::mint_balance<COIN_TESTS>(&mut treasury, 1000);
+        let witness = GAS_COIN_MAP_TESTS{};
+        let (treasury, metadata) = coin::create_currency(witness, 6, b"GAS_COIN_MAP_TESTS", b"my_coin_gas_name", b"description", option::some(url::new_unsafe_from_bytes(b"icon_url")), ctx);
+        let balance = coin::mint_balance<GAS_COIN_MAP_TESTS>(&mut treasury, 1000);
         let coin1 = coin::from_balance(balance, ctx);
-        gas_coin_map::request_add_gas_coin<COIN_TESTS>(&mut gas_coin_map, &coin1);
+        gas_coin_map::request_add_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1);
         assert!(gas_coin_map::map_size(&gas_coin_map) == 2, 101);
-        pay::keep(coin1, ctx);
 
+        //remove gas coin from map
+        gas_coin_map::request_remove_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1);
+        assert!(gas_coin_map::map_size(&gas_coin_map) == 1, 102);
+
+        pay::keep(coin1, ctx);
         transfer::public_freeze_object(metadata);
         transfer::public_transfer(treasury, tx_context::sender(ctx));
         test_utils::destroy(gas_coin_map);

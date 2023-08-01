@@ -20,7 +20,7 @@ module sui_system::gas_coin_map {
         id_address: address
     }
     /// Init gas coin map
-    public(friend) fun new(init_gas_coins: VecMap<address, GasCoinEntity>, ctx: &mut TxContext): GasCoinMap {
+    public(friend) fun new(init_gas_coins: VecMap<address, GasCoinEntity>, _ctx: &mut TxContext): GasCoinMap {
         let active_gas_coins = vec_map::empty<address, GasCoinEntity>();
         let init_keys = vec_map::keys(&init_gas_coins);
         let num_coins = vector::length(&init_keys);
