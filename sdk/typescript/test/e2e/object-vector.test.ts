@@ -75,7 +75,6 @@ describe('Test Move call with a vector of objects as input', () => {
 		},
 	);
 
-<<<<<<< Updated upstream
 	it('Test regular arg mixed with object vector arg', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
 		const coin = coins[3].data as SuiObjectData;
@@ -86,7 +85,7 @@ describe('Test Move call with a vector of objects as input', () => {
 		});
 		tx.moveCall({
 			target: `${SUI_FRAMEWORK_ADDRESS}::pay::join_vec`,
-			typeArguments: ['0x2::sui::SUI'],
+			typeArguments: ['0x2::obc::OBC'],
 			arguments: [tx.object(coinIDs[0]), vec],
 		});
 		tx.setGasPayment([coin]);
@@ -99,28 +98,4 @@ describe('Test Move call with a vector of objects as input', () => {
 		});
 		expect(getExecutionStatusType(result)).toEqual('success');
 	});
-=======
-  it('Test regular arg mixed with object vector arg', async () => {
-    const coins = await toolbox.getGasObjectsOwnedByAddress();
-    const coin = coins[3].data as SuiObjectData;
-    const coinIDs = coins.map((coin) => Coin.getID(coin));
-    const tx = new TransactionBlock();
-    const vec = tx.makeMoveVec({
-      objects: [tx.object(coinIDs[1]), tx.object(coinIDs[2])],
-    });
-    tx.moveCall({
-      target: `${SUI_FRAMEWORK_ADDRESS}::pay::join_vec`,
-      typeArguments: ['0x2::obc::OBC'],
-      arguments: [tx.object(coinIDs[0]), vec],
-    });
-    tx.setGasPayment([coin]);
-    const result = await toolbox.signer.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
-      options: {
-        showEffects: true,
-      },
-    });
-    expect(getExecutionStatusType(result)).toEqual('success');
-  });
->>>>>>> Stashed changes
 });

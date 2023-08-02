@@ -5,10 +5,9 @@ import { it, describe, expect } from 'vitest';
 import { TypeTagSerializer } from '../../../../src/builder/type-tag-serializer.js';
 
 describe('parseFromStr', () => {
-<<<<<<< Updated upstream
 	it('parses nested struct type from a string', () => {
 		const typeStr =
-			'0x2::balance::Supply<0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::amm::LP<0x2::sui::SUI, 0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80::example_coin::EXAMPLE_COIN>>';
+			'0x2::balance::Supply<0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::amm::LP<0x2::obc::OBC, 0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80::example_coin::EXAMPLE_COIN>>';
 		const act = TypeTagSerializer.parseFromStr(typeStr);
 		const exp = {
 			struct: {
@@ -25,8 +24,8 @@ describe('parseFromStr', () => {
 								{
 									struct: {
 										address: '0x2',
-										module: 'sui',
-										name: 'SUI',
+										module: 'obc',
+										name: 'OBC',
 										typeParams: [],
 									},
 								},
@@ -46,48 +45,6 @@ describe('parseFromStr', () => {
 		};
 		expect(act).toEqual(exp);
 	});
-=======
-  it('parses nested struct type from a string', () => {
-    const typeStr =
-      '0x2::balance::Supply<0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::amm::LP<0x2::obc::OBC, 0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80::example_coin::EXAMPLE_COIN>>';
-    const act = TypeTagSerializer.parseFromStr(typeStr);
-    const exp = {
-      struct: {
-        address: '0x2',
-        module: 'balance',
-        name: 'Supply',
-        typeParams: [
-          {
-            struct: {
-              address: '0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7',
-              module: 'amm',
-              name: 'LP',
-              typeParams: [
-                {
-                  struct: {
-                    address: '0x2',
-                    module: 'obc',
-                    name: 'OBC',
-                    typeParams: [],
-                  },
-                },
-                {
-                  struct: {
-                    address: '0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80',
-                    module: 'example_coin',
-                    name: 'EXAMPLE_COIN',
-                    typeParams: [],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    };
-    expect(act).toEqual(exp);
-  });
->>>>>>> Stashed changes
 
 	it('parses non parametrized struct type from a string', () => {
 		const typeStr = '0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::foo::FOO';
@@ -105,7 +62,6 @@ describe('parseFromStr', () => {
 });
 
 describe('tagToString', () => {
-<<<<<<< Updated upstream
 	it('converts nested struct type to a string', () => {
 		const type = {
 			struct: {
@@ -122,8 +78,8 @@ describe('tagToString', () => {
 								{
 									struct: {
 										address: '0x2',
-										module: 'sui',
-										name: 'SUI',
+										module: 'obc',
+										name: 'OBC',
 										typeParams: [],
 									},
 								},
@@ -143,49 +99,7 @@ describe('tagToString', () => {
 		};
 		const act = TypeTagSerializer.tagToString(type);
 		const exp =
-			'0x2::balance::Supply<0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::amm::LP<0x2::sui::SUI, 0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80::example_coin::EXAMPLE_COIN>>';
+			'0x2::balance::Supply<0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::amm::LP<0x2::obc::OBC, 0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80::example_coin::EXAMPLE_COIN>>';
 		expect(act).toEqual(exp);
 	});
-=======
-  it('converts nested struct type to a string', () => {
-    const type = {
-      struct: {
-        address: '0x2',
-        module: 'balance',
-        name: 'Supply',
-        typeParams: [
-          {
-            struct: {
-              address: '0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7',
-              module: 'amm',
-              name: 'LP',
-              typeParams: [
-                {
-                  struct: {
-                    address: '0x2',
-                    module: 'obc',
-                    name: 'OBC',
-                    typeParams: [],
-                  },
-                },
-                {
-                  struct: {
-                    address: '0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80',
-                    module: 'example_coin',
-                    name: 'EXAMPLE_COIN',
-                    typeParams: [],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    };
-    const act = TypeTagSerializer.tagToString(type);
-    const exp =
-      '0x2::balance::Supply<0x72de5feb63c0ab6ed1cda7e5b367f3d0a999add7::amm::LP<0x2::obc::OBC, 0xfee024a3c0c03ada5cdbda7d0e8b68802e6dec80::example_coin::EXAMPLE_COIN>>';
-    expect(act).toEqual(exp);
-  });
->>>>>>> Stashed changes
 });

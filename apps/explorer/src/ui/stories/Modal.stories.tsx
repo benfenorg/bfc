@@ -54,7 +54,6 @@ export const Default: StoryObj<ModalProps> = {
 	args: {},
 };
 
-<<<<<<< Updated upstream
 export const Image: StoryObj<ObjectModalProps> = {
 	name: 'Image Modal',
 	render: () => {
@@ -62,29 +61,13 @@ export const Image: StoryObj<ObjectModalProps> = {
 		return (
 			<div>
 				<ObjectModal
-					title="Sui"
+					title="OBC"
 					open={open}
 					src="https://images.unsplash.com/photo-1562016600-ece13e8ba570?auto=format&fit=crop&w=738&q=80"
-					alt="Sui"
+					alt="OBC"
 					onClose={() => setOpen(false)}
 					subtitle="Still water runs deep."
 				/>
-=======
-export const Image: StoryObj<ImageModalProps> = {
-    name: 'Image Modal',
-    render: () => {
-        const [open, setOpen] = useState(true);
-        return (
-            <div>
-                <ImageModal
-                    title="OBC"
-                    open={open}
-                    src="https://images.unsplash.com/photo-1562016600-ece13e8ba570?auto=format&fit=crop&w=738&q=80"
-                    alt="OBC"
-                    onClose={() => setOpen(false)}
-                    subtitle="Still water runs deep."
-                />
->>>>>>> Stashed changes
 
 				<Link onClick={() => setOpen(true)}>Click to open</Link>
 			</div>

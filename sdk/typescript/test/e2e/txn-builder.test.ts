@@ -66,31 +66,17 @@ describe('Transaction Builders', () => {
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
 
-<<<<<<< Updated upstream
 	it('MoveCall', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
 		const coin_0 = coins[0].data as SuiObjectData;
 		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: '0x2::pay::split',
-			typeArguments: ['0x2::sui::SUI'],
+			typeArguments: ['0x2::obc::OBC'],
 			arguments: [tx.object(coin_0.objectId), tx.pure(DEFAULT_GAS_BUDGET * 2)],
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
-=======
-  it('MoveCall', async () => {
-    const coins = await toolbox.getGasObjectsOwnedByAddress();
-    const coin_0 = coins[0].data as SuiObjectData;
-    const tx = new TransactionBlock();
-    tx.moveCall({
-      target: '0x2::pay::split',
-      typeArguments: ['0x2::obc::OBC'],
-      arguments: [tx.object(coin_0.objectId), tx.pure(DEFAULT_GAS_BUDGET * 2)],
-    });
-    await validateTransaction(toolbox.signer, tx);
-  });
->>>>>>> Stashed changes
 
 	it(
 		'MoveCall Shared Object',

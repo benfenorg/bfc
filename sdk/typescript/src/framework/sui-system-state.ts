@@ -1,24 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< Updated upstream
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
 import { TransactionBlock } from '../builder/index.js';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
-import { getObjectReference } from '../types/index.js';
+import { getObjectReference, normalizeHexAddress } from '../types/index.js';
 import type { SuiClient } from '../client/index.js';
 import { SUI_SYSTEM_ADDRESS } from './framework.js';
-=======
-import { TransactionBlock } from '../builder';
-import { JsonRpcProvider } from '../providers/json-rpc-provider';
-import {
-  getObjectReference,
-  normalizeHexAddress,
-  ObjectId,
-  SuiAddress,
-  SUI_SYSTEM_ADDRESS,
-} from '../types';
->>>>>>> Stashed changes
 
 /**
  * Address of the Sui System object.

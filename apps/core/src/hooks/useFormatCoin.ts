@@ -50,16 +50,16 @@ export function useCoinMetadata(coinType?: string | null) {
 			if (!coinType) {
 				throw new Error('Fetching coin metadata should be disabled when coin type is disabled.');
 			}
-            // Optimize the known case of SUI to avoid a network call:
-            if (coinType === SUI_TYPE_ARG) {
-                const metadata: CoinMetadata = {
-                    id: null,
-                    decimals: 9,
-                    description: '',
-                    iconUrl: null,
-                    name: 'OBC',
-                    symbol: 'OBC',
-                };
+			// Optimize the known case of SUI to avoid a network call:
+			if (coinType === SUI_TYPE_ARG) {
+				const metadata: CoinMetadata = {
+					id: null,
+					decimals: 9,
+					description: '',
+					iconUrl: null,
+					name: 'OBC',
+					symbol: 'OBC',
+				};
 				return metadata;
 			}
 
@@ -94,10 +94,20 @@ export function useFormatCoin(
 	coinType?: string | null,
 	format: CoinFormat = CoinFormat.ROUNDED,
 ): FormattedCoin {
-	const fallbackSymbol = useMemo(() => (coinType ? Coin.getCoinSymbol(coinType) : ''), [coinType]);
-
 	const queryResult = useCoinMetadata(coinType);
 	const { isFetched, data } = queryResult;
+
+	const fallbackSymbol = useMemo(() => {
+		let type = data?.symbol;
+		if (!type) {
+			if (!coinType) {
+				type = '';
+			} else {
+				type = Coin.getCoinSymbol(coinType);
+			}
+		}
+		return type === 'SUI' ? 'OBC' : type;
+	}, [coinType, data]);
 
 	const formatted = useMemo(() => {
 		if (typeof balance === 'undefined' || balance === null) return '';
@@ -107,5 +117,5 @@ export function useFormatCoin(
 		return formatBalance(balance, data?.decimals ?? 0, format);
 	}, [data?.decimals, isFetched, balance, format]);
 
-	return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
+	return [formatted, isFetched ? fallbackSymbol : '', queryResult];
 }

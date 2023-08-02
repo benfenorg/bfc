@@ -11,13 +11,6 @@ import {
 } from '@mysten/wallet-kit';
 import { useParams } from 'react-router-dom';
 
-<<<<<<< Updated upstream
-// This is a custom feature supported by the Sui Wallet:
-=======
-import { Button } from '~/ui/Button';
-
-// This is a custom feature supported by the  Wallet:
->>>>>>> Stashed changes
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
 	'suiWallet:stake': {
@@ -47,7 +40,6 @@ export function StakeButton() {
 	const currentWalletSupportsStake =
 		currentWallet && !!stakeSupportedWallets.find(({ name }) => currentWallet.name === name);
 
-<<<<<<< Updated upstream
 	if (!stakeSupportedWallets.length) {
 		return (
 			<Button size="lg" asChild>
@@ -56,7 +48,7 @@ export function StakeButton() {
 					target="_blank"
 					rel="noreferrer noopener"
 				>
-					Install Sui Wallet to stake SUI
+					Install OBC Wallet to stake OBC
 				</a>
 			</Button>
 		);
@@ -66,7 +58,7 @@ export function StakeButton() {
 		return (
 			<ConnectButton
 				className="!border !border-solid !border-steel-dark !bg-transparent !px-4 !py-3 !text-body !font-semibold !text-steel-dark !shadow-none"
-				connectText="Stake SUI"
+				connectText="Stake OBC"
 			/>
 		);
 	}
@@ -80,7 +72,7 @@ export function StakeButton() {
 					connect(stakeSupportedWallets[0].name);
 				}}
 			>
-				Stake SUI on a supported wallet
+				Stake OBC on a supported wallet
 			</Button>
 		);
 	}
@@ -94,58 +86,7 @@ export function StakeButton() {
 				]?.stake({ validatorAddress: id! });
 			}}
 		>
-			Stake SUI
+			Stake OBC
 		</Button>
 	);
-=======
-    if (!stakeSupportedWallets.length) {
-        return (
-            <Button
-                size="lg"
-                variant="outline"
-                href="https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil"
-            >
-                Install OBC Wallet to stake OBC
-            </Button>
-        );
-    }
-
-    if (!currentWallet) {
-        return (
-            <ConnectButton
-                className="!border !border-solid !border-steel-dark !bg-transparent !px-4 !py-3 !text-body !font-semibold !text-steel-dark !shadow-none"
-                connectText="Stake OBC"
-            />
-        );
-    }
-
-    if (!currentWalletSupportsStake) {
-        return (
-            <Button
-                size="lg"
-                variant="outline"
-                onClick={() => {
-                    // Always just assume we should connect to the first stake supported wallet for now:
-                    connect(stakeSupportedWallets[0].name);
-                }}
-            >
-                Stake OBC on a supported wallet
-            </Button>
-        );
-    }
-
-    return (
-        <Button
-            size="lg"
-            onClick={() => {
-                (
-                    (currentWallet as StandardWalletAdapter)
-                        .wallet as StakeWallet
-                ).features['suiWallet:stake']?.stake({ validatorAddress: id! });
-            }}
-        >
-            Stake OBC
-        </Button>
-    );
->>>>>>> Stashed changes
 }

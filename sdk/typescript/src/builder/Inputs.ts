@@ -3,22 +3,10 @@
 
 import type { Infer } from 'superstruct';
 
-import {
-  array,
-  boolean,
-  Infer,
-  integer,
-  object,
-  string,
-  union,
-} from 'superstruct';
-import {
-  normalizeHexAddress,
-  ObjectId,
-  SharedObjectRef,
-  SuiObjectRef,
-} from '../types';
-import { builder } from './bcs';
+import { array, boolean, integer, object, string, union } from 'superstruct';
+import type { SharedObjectRef } from '../types/index.js';
+import { normalizeHexAddress, SuiObjectRef } from '../types/index.js';
+import { builder } from './bcs.js';
 
 const ObjectArg = union([
 	object({ ImmOrOwned: SuiObjectRef }),
@@ -40,7 +28,6 @@ export const BuilderCallArg = union([PureCallArg, ObjectCallArg]);
 export type BuilderCallArg = Infer<typeof BuilderCallArg>;
 
 export const Inputs = {
-<<<<<<< Updated upstream
 	Pure(data: unknown, type?: string): PureCallArg {
 		return {
 			Pure: Array.from(
@@ -57,7 +44,7 @@ export const Inputs = {
 				ImmOrOwned: {
 					digest,
 					version,
-					objectId: normalizeSuiAddress(objectId),
+					objectId: normalizeHexAddress(objectId),
 				},
 			},
 		};
@@ -68,7 +55,7 @@ export const Inputs = {
 				Shared: {
 					mutable,
 					initialSharedVersion,
-					objectId: normalizeSuiAddress(objectId),
+					objectId: normalizeHexAddress(objectId),
 				},
 			},
 		};
@@ -77,61 +64,12 @@ export const Inputs = {
 
 export function getIdFromCallArg(arg: string | ObjectCallArg) {
 	if (typeof arg === 'string') {
-		return normalizeSuiAddress(arg);
+		return normalizeHexAddress(arg);
 	}
 	if ('ImmOrOwned' in arg.Object) {
-		return normalizeSuiAddress(arg.Object.ImmOrOwned.objectId);
+		return normalizeHexAddress(arg.Object.ImmOrOwned.objectId);
 	}
-	return normalizeSuiAddress(arg.Object.Shared.objectId);
-=======
-  Pure(data: unknown, type?: string): PureCallArg {
-    return {
-      Pure: Array.from(
-        data instanceof Uint8Array
-          ? data
-          : builder
-              .ser(type!, data, { maxSize: MAX_PURE_ARGUMENT_SIZE })
-              .toBytes(),
-      ),
-    };
-  },
-  ObjectRef({ objectId, digest, version }: SuiObjectRef): ObjectCallArg {
-    return {
-      Object: {
-        ImmOrOwned: {
-          digest,
-          version,
-          objectId: normalizeHexAddress(objectId),
-        },
-      },
-    };
-  },
-  SharedObjectRef({
-    objectId,
-    mutable,
-    initialSharedVersion,
-  }: SharedObjectRef): ObjectCallArg {
-    return {
-      Object: {
-        Shared: {
-          mutable,
-          initialSharedVersion,
-          objectId: normalizeHexAddress(objectId),
-        },
-      },
-    };
-  },
-};
-
-export function getIdFromCallArg(arg: ObjectId | ObjectCallArg) {
-  if (typeof arg === 'string') {
-    return normalizeHexAddress(arg);
-  }
-  if ('ImmOrOwned' in arg.Object) {
-    return normalizeHexAddress(arg.Object.ImmOrOwned.objectId);
-  }
-  return normalizeHexAddress(arg.Object.Shared.objectId);
->>>>>>> Stashed changes
+	return normalizeHexAddress(arg.Object.Shared.objectId);
 }
 
 export function getSharedObjectInput(arg: BuilderCallArg): SharedObjectRef | undefined {

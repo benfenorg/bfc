@@ -219,6 +219,8 @@ export {
 	formatAddress,
 	/** @deprecated Import from @mysten/sui.js/utils instead */
 	formatDigest,
+	sui2ObcAddress,
+	obc2SuiAddress,
 } from './utils/format.js';
 
 export {

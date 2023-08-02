@@ -192,32 +192,12 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Sui address');
 		}
 
-<<<<<<< Updated upstream
 		return await this.client.requestWithType(
 			'suix_getAllCoins',
 			[input.owner, input.cursor, input.limit],
 			PaginatedCoins,
 		);
 	}
-=======
-  /**
-   * Get the total coin balance for one coin type, owned by the address owner.
-   */
-  async getBalance(input: {
-    owner: SuiAddress;
-    /** optional fully qualified type names for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC), default to 0x2::obc::OBC if not specified. */
-    coinType?: string | null;
-  }): Promise<CoinBalance> {
-    if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-      throw new Error('Invalid Sui address');
-    }
-    return await this.client.requestWithType(
-      'suix_getBalance',
-      [input.owner, input.coinType],
-      CoinBalance,
-    );
-  }
->>>>>>> Stashed changes
 
 	/**
 	 * Get the total coin balance for one coin type, owned by the address owner.

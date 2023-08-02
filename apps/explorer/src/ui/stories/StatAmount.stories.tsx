@@ -10,19 +10,10 @@ export default {
 } as Meta;
 
 export const defaultAmount: StoryObj<StatAmountProps> = {
-<<<<<<< Updated upstream
 	args: {
 		amount: 9740991,
-		symbol: 'SUI',
+		symbol: 'OBC',
 		dollarAmount: 123.56,
 		date: 1667942429177,
 	},
-=======
-    args: {
-        amount: 9740991,
-        symbol: 'OBC',
-        dollarAmount: 123.56,
-        date: 1667942429177,
-    },
->>>>>>> Stashed changes
 };

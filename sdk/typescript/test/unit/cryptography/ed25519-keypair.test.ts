@@ -13,39 +13,21 @@ const PRIVATE_KEY_SIZE = 32;
 
 // Test case generated against rust keytool cli. See https://github.com/MystenLabs/sui/blob/edd2cd31e0b05d336b1b03b6e79a67d8dd00d06b/crates/sui/src/unit_tests/keytool_tests.rs#L165
 const TEST_CASES = [
-<<<<<<< Updated upstream
 	[
 		'film crazy soon outside stand loop subway crumble thrive popular green nuclear struggle pistol arm wife phrase warfare march wheat nephew ask sunny firm',
 		'AN0JMHpDum3BhrVwnkylH0/HGRHBQ/fO/8+MYOawO8j6',
-		'0xa2d14fad60c56049ecf75246a481934691214ce413e6a8ae2fe6834c173a6133',
+		'OBCa2d14fad60c56049ecf75246a481934691214ce413e6a8ae2fe6834c173a61331748',
 	],
 	[
 		'require decline left thought grid priority false tiny gasp angle royal system attack beef setup reward aunt skill wasp tray vital bounce inflict level',
 		'AJrA997C1eVz6wYIp7bO8dpITSRBXpvg1m70/P3gusu2',
-		'0x1ada6e6f3f3e4055096f606c746690f1108fcc2ca479055cc434a3e1d3f758aa',
+		'OBC1ada6e6f3f3e4055096f606c746690f1108fcc2ca479055cc434a3e1d3f758aa321f',
 	],
 	[
 		'organ crash swim stick traffic remember army arctic mesh slice swear summer police vast chaos cradle squirrel hood useless evidence pet hub soap lake',
 		'AAEMSIQeqyz09StSwuOW4MElQcZ+4jHW4/QcWlJEf5Yk',
-		'0xe69e896ca10f5a77732769803cc2b5707f0ab9d4407afb5e4b4464b89769af14',
+		'OBCe69e896ca10f5a77732769803cc2b5707f0ab9d4407afb5e4b4464b89769af14d216',
 	],
-=======
-  [
-    'film crazy soon outside stand loop subway crumble thrive popular green nuclear struggle pistol arm wife phrase warfare march wheat nephew ask sunny firm',
-    'AN0JMHpDum3BhrVwnkylH0/HGRHBQ/fO/8+MYOawO8j6',
-    'OBCa2d14fad60c56049ecf75246a481934691214ce413e6a8ae2fe6834c173a61331748',
-  ],
-  [
-    'require decline left thought grid priority false tiny gasp angle royal system attack beef setup reward aunt skill wasp tray vital bounce inflict level',
-    'AJrA997C1eVz6wYIp7bO8dpITSRBXpvg1m70/P3gusu2',
-    'OBC1ada6e6f3f3e4055096f606c746690f1108fcc2ca479055cc434a3e1d3f758aa321f',
-  ],
-  [
-    'organ crash swim stick traffic remember army arctic mesh slice swear summer police vast chaos cradle squirrel hood useless evidence pet hub soap lake',
-    'AAEMSIQeqyz09StSwuOW4MElQcZ+4jHW4/QcWlJEf5Yk',
-    'OBCe69e896ca10f5a77732769803cc2b5707f0ab9d4407afb5e4b4464b89769af14d216',
-  ],
->>>>>>> Stashed changes
 ];
 
 const TEST_MNEMONIC =

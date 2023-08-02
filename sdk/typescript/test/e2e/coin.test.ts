@@ -16,11 +16,10 @@ describe('Coin related API', () => {
 		});
 	});
 
-<<<<<<< Updated upstream
 	it('test getCoinStructTag', async () => {
 		const toolbox = await setup();
 		const exampleStructTag = {
-			address: normalizeSuiObjectId('0x2'),
+			address: normalizeHexAddress('0x2'),
 			module: 'sui',
 			name: 'SUI',
 			typeParams: [],
@@ -29,18 +28,4 @@ describe('Coin related API', () => {
 		const coinTypeArg: string = Coin.getCoinTypeArg(coins[0])!;
 		expect(Coin.getCoinStructTag(coinTypeArg)).toStrictEqual(exampleStructTag);
 	});
-=======
-  it('test getCoinStructTag', async () => {
-    const toolbox = await setup();
-    const exampleStructTag = {
-      address: normalizeHexAddress('0x2'),
-      module: 'sui',
-      name: 'SUI',
-      typeParams: [],
-    };
-    const coins = await toolbox.getGasObjectsOwnedByAddress();
-    const coinTypeArg: string = Coin.getCoinTypeArg(coins[0])!;
-    expect(Coin.getCoinStructTag(coinTypeArg)).toStrictEqual(exampleStructTag);
-  });
->>>>>>> Stashed changes
 });

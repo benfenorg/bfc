@@ -18,16 +18,10 @@ import {
 	unknown,
 	record,
 } from 'superstruct';
-<<<<<<< Updated upstream
 import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
-=======
-import { ObjectId, normalizeHexAddress } from '../types/common';
-import { TRANSACTION_TYPE, WellKnownEncoding, create } from './utils';
-import { TypeTagSerializer } from '../signers/txn-data-serializers/type-tag-serializer';
->>>>>>> Stashed changes
+import { normalizeHexAddress } from '../types/common.js';
 
 const option = <T extends Struct<any, any>>(some: T) =>
 	union([object({ None: union([literal(true), literal(null)]) }), object({ Some: some })]);
@@ -155,7 +149,6 @@ export function getTransactionType(data: unknown) {
  * Simple helpers used to construct transactions:
  */
 export const Transactions = {
-<<<<<<< Updated upstream
 	MoveCall(
 		input: Omit<MoveCallTransaction, 'kind' | 'arguments' | 'typeArguments'> & {
 			arguments?: TransactionArgument[];
@@ -200,7 +193,7 @@ export const Transactions = {
 				modules: modules.map((module) =>
 					typeof module === 'string' ? Array.from(fromB64(module)) : module,
 				),
-				dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+				dependencies: dependencies.map((dep) => normalizeHexAddress(dep)),
 			},
 			PublishTransaction,
 		);
@@ -222,7 +215,7 @@ export const Transactions = {
 				modules: modules.map((module) =>
 					typeof module === 'string' ? Array.from(fromB64(module)) : module,
 				),
-				dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+				dependencies: dependencies.map((dep) => normalizeHexAddress(dep)),
 				packageId,
 				ticket,
 			},
@@ -244,105 +237,4 @@ export const Transactions = {
 			MakeMoveVecTransaction,
 		);
 	},
-=======
-  MoveCall(
-    input: Omit<MoveCallTransaction, 'kind' | 'arguments' | 'typeArguments'> & {
-      arguments?: TransactionArgument[];
-      typeArguments?: string[];
-    },
-  ): MoveCallTransaction {
-    return create(
-      {
-        kind: 'MoveCall',
-        target: input.target,
-        arguments: input.arguments ?? [],
-        typeArguments: input.typeArguments ?? [],
-      },
-      MoveCallTransaction,
-    );
-  },
-  TransferObjects(
-    objects: TransactionArgument[],
-    address: TransactionArgument,
-  ): TransferObjectsTransaction {
-    return create(
-      { kind: 'TransferObjects', objects, address },
-      TransferObjectsTransaction,
-    );
-  },
-  SplitCoins(
-    coin: TransactionArgument,
-    amounts: TransactionArgument[],
-  ): SplitCoinsTransaction {
-    return create({ kind: 'SplitCoins', coin, amounts }, SplitCoinsTransaction);
-  },
-  MergeCoins(
-    destination: TransactionArgument,
-    sources: TransactionArgument[],
-  ): MergeCoinsTransaction {
-    return create(
-      { kind: 'MergeCoins', destination, sources },
-      MergeCoinsTransaction,
-    );
-  },
-  Publish({
-    modules,
-    dependencies,
-  }: {
-    modules: number[][] | string[];
-    dependencies: ObjectId[];
-  }): PublishTransaction {
-    return create(
-      {
-        kind: 'Publish',
-        modules: modules.map((module) =>
-          typeof module === 'string' ? Array.from(fromB64(module)) : module,
-        ),
-        dependencies: dependencies.map((dep) => normalizeHexAddress(dep)),
-      },
-      PublishTransaction,
-    );
-  },
-  Upgrade({
-    modules,
-    dependencies,
-    packageId,
-    ticket,
-  }: {
-    modules: number[][] | string[];
-    dependencies: ObjectId[];
-    packageId: ObjectId;
-    ticket: TransactionArgument;
-  }): UpgradeTransaction {
-    return create(
-      {
-        kind: 'Upgrade',
-        modules: modules.map((module) =>
-          typeof module === 'string' ? Array.from(fromB64(module)) : module,
-        ),
-        dependencies: dependencies.map((dep) => normalizeHexAddress(dep)),
-        packageId,
-        ticket,
-      },
-      UpgradeTransaction,
-    );
-  },
-  MakeMoveVec({
-    type,
-    objects,
-  }: Omit<MakeMoveVecTransaction, 'kind' | 'type'> & {
-    type?: string;
-  }): MakeMoveVecTransaction {
-    return create(
-      {
-        kind: 'MakeMoveVec',
-        type: type
-          ? { Some: TypeTagSerializer.parseFromStr(type) }
-          : { None: null },
-        objects,
-      },
-      MakeMoveVecTransaction,
-    );
-  },
->>>>>>> Stashed changes
 };

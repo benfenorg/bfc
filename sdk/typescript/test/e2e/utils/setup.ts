@@ -208,25 +208,14 @@ export async function paySui(
 
 	expect(recipients.length === amounts.length, 'recipients and amounts must be the same length');
 
-<<<<<<< Updated upstream
 	coinId =
 		coinId ??
 		(
 			await client.getCoins({
 				owner: signer.getPublicKey().toSuiAddress(),
-				coinType: '0x2::sui::SUI',
+				coinType: '0x2::obc::OBC',
 			})
 		).data[0].coinObjectId;
-=======
-  coinId =
-    coinId ??
-    (
-      await signer.provider.getCoins({
-        owner: await signer.getAddress(),
-        coinType: '0x2::obc::OBC',
-      })
-    ).data[0].coinObjectId;
->>>>>>> Stashed changes
 
 	recipients.forEach((recipient, i) => {
 		const coin = tx.splitCoins(tx.object(coinId!), [tx.pure(amounts![i])]);

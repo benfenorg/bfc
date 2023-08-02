@@ -19,14 +19,14 @@ export function SuiAmount({
 	);
 	if (!amount) return <Text variant="bodySmall/medium">--</Text>;
 
-    return (
-        <div className="leading-1 flex items-end gap-0.5">
-            <Text variant="bodySmall/medium" color="steel-darker">
-                {formattedAmount}
-            </Text>
-            <Text variant="captionSmall/normal" color="steel-dark">
-                {coinType === 'SUI' ? 'OBC' : 'MIST'}
-            </Text>
-        </div>
-    );
+	return (
+		<div className="leading-1 flex items-end gap-0.5">
+			<Text variant="bodySmall/medium" color="steel-darker">
+				{formattedAmount}
+			</Text>
+			<Text variant="captionSmall/normal" color="steel-dark">
+				{coinType === 'SUI' ? 'OBC' : 'MIST'}
+			</Text>
+		</div>
+	);
 }

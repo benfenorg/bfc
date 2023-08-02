@@ -14,32 +14,26 @@ interface BaseInternalLinkProps extends LinkProps {
 function createInternalLink<T extends string>(
 	base: string,
 	propName: T,
-	formatter: (id: string) => string = (id) => id
+	formatter: (id: string) => string = (id) => id,
 ) {
 	return ({
-				[propName]: id,
-				noTruncate,
-				label,
-				...props
-			}: BaseInternalLinkProps & Record<T, string>) => {
+		[propName]: id,
+		noTruncate,
+		label,
+		...props
+	}: BaseInternalLinkProps & Record<T, string>) => {
 		let converted: string = id;
 		if (['address', 'object', 'validator'].includes(base)) {
 			const queryIndex = id.indexOf('?');
 			if (queryIndex === -1) {
 				converted = sui2ObcAddress(id);
 			} else {
-				converted =
-					sui2ObcAddress(id.slice(0, queryIndex)) +
-					id.slice(queryIndex);
+				converted = sui2ObcAddress(id.slice(0, queryIndex)) + id.slice(queryIndex);
 			}
 		}
 		const truncatedAddress = noTruncate ? converted : formatter(converted);
 		return (
-			<Link
-				variant="mono"
-				to={`/${base}/${encodeURI(converted)}`}
-				{...props}
-			>
+			<Link variant="mono" to={`/${base}/${encodeURI(converted)}`} {...props}>
 				{label || truncatedAddress}
 			</Link>
 		);
@@ -47,37 +41,14 @@ function createInternalLink<T extends string>(
 }
 
 export const EpochLink = createInternalLink('epoch', 'epoch');
-export const CheckpointLink = createInternalLink(
-	'checkpoint',
-	'digest',
-	formatAddress
-);
-export const CheckpointSequenceLink = createInternalLink(
-	'checkpoint',
-	'sequence'
-);
-export const AddressLink = createInternalLink(
-	'address',
-	'address',
-	(addressOrNs) => {
-		if (isSuiNSName(addressOrNs)) {
-			return addressOrNs;
-		}
-		return formatAddress(addressOrNs);
+export const CheckpointLink = createInternalLink('checkpoint', 'digest', formatAddress);
+export const CheckpointSequenceLink = createInternalLink('checkpoint', 'sequence');
+export const AddressLink = createInternalLink('address', 'address', (addressOrNs) => {
+	if (isSuiNSName(addressOrNs)) {
+		return addressOrNs;
 	}
-);
-export const ObjectLink = createInternalLink(
-	'object',
-	'objectId',
-	formatAddress
-);
-export const TransactionLink = createInternalLink(
-	'txblock',
-	'digest',
-	formatDigest
-);
-export const ValidatorLink = createInternalLink(
-	'validator',
-	'address',
-	formatAddress
-);
+	return formatAddress(addressOrNs);
+});
+export const ObjectLink = createInternalLink('object', 'objectId', formatAddress);
+export const TransactionLink = createInternalLink('txblock', 'digest', formatDigest);
+export const ValidatorLink = createInternalLink('validator', 'address', formatAddress);
