@@ -1,18 +1,20 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
+import type { Infer } from 'superstruct';
 import {
-  define,
-  Infer,
-  literal,
-  number,
-  object,
-  string,
-  union,
+	boolean,
+	define,
+	literal,
+	nullable,
+	number,
+	object,
+	record,
+	string,
+	union,
 } from 'superstruct';
-import { CallArg } from './sui-bcs';
+import type { CallArg } from './sui-bcs.js';
 import { fromB58 } from '@mysten/bcs';
-import { sui2ObcAddress } from '../utils/format';
+import { sui2ObcAddress } from '../utils/format.js';
 
 export const TransactionDigest = string();
 export type TransactionDigest = Infer<typeof TransactionDigest>;
@@ -33,27 +35,22 @@ export const SequenceNumber = string();
 export type SequenceNumber = Infer<typeof SequenceNumber>;
 
 export const ObjectOwner = union([
-  object({
-    AddressOwner: SuiAddress,
-  }),
-  object({
-    ObjectOwner: SuiAddress,
-  }),
-  object({
-    Shared: object({
-      initial_shared_version: number(),
-    }),
-  }),
-  literal('Immutable'),
+	object({
+		AddressOwner: SuiAddress,
+	}),
+	object({
+		ObjectOwner: SuiAddress,
+	}),
+	object({
+		Shared: object({
+			initial_shared_version: number(),
+		}),
+	}),
+	literal('Immutable'),
 ]);
 export type ObjectOwner = Infer<typeof ObjectOwner>;
 
-export type SuiJsonValue =
-  | boolean
-  | number
-  | string
-  | CallArg
-  | Array<SuiJsonValue>;
+export type SuiJsonValue = boolean | number | string | CallArg | Array<SuiJsonValue>;
 export const SuiJsonValue = define<SuiJsonValue>('SuiJsonValue', () => true);
 
 // source of truth is
@@ -61,15 +58,13 @@ export const SuiJsonValue = define<SuiJsonValue>('SuiJsonValue', () => true);
 const TX_DIGEST_LENGTH = 32;
 
 /** Returns whether the tx digest is valid based on the serialization format */
-export function isValidTransactionDigest(
-  value: string,
-): value is TransactionDigest {
-  try {
-    const buffer = fromB58(value);
-    return buffer.length === TX_DIGEST_LENGTH;
-  } catch (e) {
-    return false;
-  }
+export function isValidTransactionDigest(value: string): value is TransactionDigest {
+	try {
+		const buffer = fromB58(value);
+		return buffer.length === TX_DIGEST_LENGTH;
+	} catch (e) {
+		return false;
+	}
 }
 
 // TODO - can we automatically sync this with rust length definition?
@@ -80,67 +75,65 @@ export function isValidTransactionDigest(
 
 export const SUI_ADDRESS_LENGTH = 32;
 export function isValidSuiAddress(value: string): value is SuiAddress {
-  const obc = sui2ObcAddress(value);
-  if (!obc.startsWith('OBC')) {
-    return false;
-  }
-  const hex = obc.replace(/^OBC/, '');
-  return isHex(hex) && getHexByteLength(hex) === SUI_ADDRESS_LENGTH;
+	const obc = sui2ObcAddress(value);
+	if (!obc.startsWith('OBC')) {
+		return false;
+	}
+	const hex = obc.replace(/^OBC/, '');
+	return isHex(hex) && getHexByteLength(hex) === SUI_ADDRESS_LENGTH;
 }
 
 export function isValidSuiObjectId(value: string): boolean {
-  return isValidSuiAddress(value);
+	return isValidSuiAddress(value);
 }
 
 type StructTag = {
-  address: string;
-  module: string;
-  name: string;
-  typeParams: (string | StructTag)[];
+	address: string;
+	module: string;
+	name: string;
+	typeParams: (string | StructTag)[];
 };
 
 function parseTypeTag(type: string): string | StructTag {
-  if (!type.includes('::')) return type;
+	if (!type.includes('::')) return type;
 
-  return parseStructTag(type);
+	return parseStructTag(type);
 }
 
 export function parseStructTag(type: string): StructTag {
-  const [address, module] = type.split('::');
+	const [address, module] = type.split('::');
 
-  const rest = type.slice(address.length + module.length + 4);
-  const name = rest.includes('<') ? rest.slice(0, rest.indexOf('<')) : rest;
-  const typeParams = rest.includes('<')
-    ? rest
-        .slice(rest.indexOf('<') + 1, rest.lastIndexOf('>'))
-        .split(',')
-        .map((typeParam) => parseTypeTag(typeParam.trim()))
-    : [];
+	const rest = type.slice(address.length + module.length + 4);
+	const name = rest.includes('<') ? rest.slice(0, rest.indexOf('<')) : rest;
+	const typeParams = rest.includes('<')
+		? rest
+				.slice(rest.indexOf('<') + 1, rest.lastIndexOf('>'))
+				.split(',')
+				.map((typeParam) => parseTypeTag(typeParam.trim()))
+		: [];
 
-  return {
-    address: normalizeHexAddress(address),
-    module,
-    name,
-    typeParams,
-  };
+	return {
+		address: normalizeHexAddress(address),
+		module,
+		name,
+		typeParams,
+	};
 }
 
 export function normalizeStructTag(type: string | StructTag): string {
-  const { address, module, name, typeParams } =
-    typeof type === 'string' ? parseStructTag(type) : type;
+	const { address, module, name, typeParams } =
+		typeof type === 'string' ? parseStructTag(type) : type;
 
-  const formattedTypeParams =
-    typeParams.length > 0
-      ? `<${typeParams
-          .map((typeParam) =>
-            typeof typeParam === 'string'
-              ? typeParam
-              : normalizeStructTag(typeParam),
-          )
-          .join(',')}>`
-      : '';
+	const formattedTypeParams =
+		typeParams.length > 0
+			? `<${typeParams
+					.map((typeParam) =>
+						typeof typeParam === 'string' ? typeParam : normalizeStructTag(typeParam),
+					)
+					.join(',')}>`
+			: '';
 
-  return `${address}::${module}::${name}${formattedTypeParams}`;
+	return `${address}::${module}::${name}${formattedTypeParams}`;
 }
 
 /**
@@ -154,42 +147,50 @@ export function normalizeStructTag(type: string | StructTag): string {
  * setting `forceAdd0x` to true
  *
  */
-export function normalizeSuiAddress(
-  value: string,
-  forceAdd0x: boolean = false,
-): SuiAddress {
-  if (/^OBC/.test(value)) {
-    return value;
-  }
-  let address = value.toLowerCase();
-  if (!forceAdd0x && address.startsWith('0x')) {
-    address = address.slice(2);
-  }
-  address = `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
-  return sui2ObcAddress(address);
+export function normalizeSuiAddress(value: string, forceAdd0x: boolean = false): SuiAddress {
+	if (/^OBC/.test(value)) {
+		return value;
+	}
+	let address = value.toLowerCase();
+	if (!forceAdd0x && address.startsWith('0x')) {
+		address = address.slice(2);
+	}
+	address = `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
+	return sui2ObcAddress(address);
 }
 
 export function normalizeHexAddress(value: string): SuiAddress {
-  let address = value.toLowerCase();
-  if (address.startsWith('0x')) {
-    address = address.slice(2);
-  }
-  return `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
+	let address = value.toLowerCase();
+	if (address.startsWith('0x')) {
+		address = address.slice(2);
+	}
+	return `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
 }
 
-export function normalizeSuiObjectId(
-  value: string,
-  forceAdd0x: boolean = false,
-): ObjectId {
-  return normalizeSuiAddress(value, forceAdd0x);
+export function normalizeSuiObjectId(value: string, forceAdd0x: boolean = false): ObjectId {
+	return normalizeSuiAddress(value, forceAdd0x);
 }
 
 function isHex(value: string): boolean {
-  return /^(0x|0X)?[a-fA-F0-9]+$/.test(value) && value.length % 2 === 0;
+	return /^(0x|0X)?[a-fA-F0-9]+$/.test(value) && value.length % 2 === 0;
 }
 
 function getHexByteLength(value: string): number {
-  return /^(0x|0X)/.test(value)
-    ? (value.length - 6) / 2
-    : (value.length - 4) / 2;
+	return /^(0x|0X)/.test(value) ? (value.length - 6) / 2 : (value.length - 4) / 2;
 }
+
+const ProtocolConfigValue = union([
+	object({ u32: string() }),
+	object({ u64: string() }),
+	object({ f64: string() }),
+]);
+type ProtocolConfigValue = Infer<typeof ProtocolConfigValue>;
+
+export const ProtocolConfig = object({
+	attributes: record(string(), nullable(ProtocolConfigValue)),
+	featureFlags: record(string(), boolean()),
+	maxSupportedProtocolVersion: string(),
+	minSupportedProtocolVersion: string(),
+	protocolVersion: string(),
+});
+export type ProtocolConfig = Infer<typeof ProtocolConfig>;

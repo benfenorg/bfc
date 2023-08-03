@@ -10,23 +10,23 @@ test('home page', async ({ page }) => {
 });
 
 test('redirects home when visiting an unknown route', async ({ page }) => {
-    await page.goto('/unknown-route');
-    await expect(page).toHaveURL('/');
+	await page.goto('/unknown-route');
+	await expect(page).toHaveURL('/');
 });
 
 test('has a go home button', async ({ page }) => {
-    await page.goto('/transactions');
-    await expect(page.getByTestId('home-page')).not.toBeVisible();
-    await page.getByTestId('nav-logo-button').click();
-    await expect(page).toHaveURL('/');
+	await page.goto('/transactions');
+	await expect(page.getByTestId('home-page')).not.toBeVisible();
+	await page.getByTestId('nav-logo-button').click();
+	await expect(page).toHaveURL('/');
 });
 
 test('displays the validator table', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByTestId('validators-table')).toBeVisible();
+	await page.goto('/');
+	await expect(page.getByTestId('validators-table')).toBeVisible();
 });
 
 test('displays the node map', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByTestId('node-map')).toBeVisible();
+	await page.goto('/');
+	await expect(page.getByTestId('node-map')).toBeVisible();
 });

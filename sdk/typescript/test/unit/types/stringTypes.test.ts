@@ -3,51 +3,41 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  isValidTransactionDigest,
-  isValidSuiAddress,
-  normalizeSuiAddress,
+	isValidTransactionDigest,
+	isValidSuiAddress,
+	normalizeSuiAddress,
 } from '../../../src/index';
 
 describe('String type guards', () => {
-  function expectAll<T>(data: T[], check: (value: T) => any, expected: any) {
-    data.forEach((d) => expect(check(d)).toBe(expected));
-  }
+	function expectAll<T>(data: T[], check: (value: T) => any, expected: any) {
+		data.forEach((d) => expect(check(d)).toBe(expected));
+	}
 
-  describe('isValidTransactionDigest()', () => {
-    it('rejects base58 strings of the wrong length', () => {
-      expect(isValidTransactionDigest('r')).toBe(false);
-      expect(isValidTransactionDigest('HXLk')).toBe(false);
-      expect(isValidTransactionDigest('3mJ6x8dSE2KLrk')).toBe(false);
-    });
+	describe('isValidTransactionDigest()', () => {
+		it('rejects base58 strings of the wrong length', () => {
+			expect(isValidTransactionDigest('r')).toBe(false);
+			expect(isValidTransactionDigest('HXLk')).toBe(false);
+			expect(isValidTransactionDigest('3mJ6x8dSE2KLrk')).toBe(false);
+		});
 
-    it('accepts base58 strings of the correct length', () => {
-      expect(
-        isValidTransactionDigest('vQMG8nrGirX14JLfyzy15DrYD3gwRC1eUmBmBzYUsgh'),
-      ).toBe(true);
-      expect(
-        isValidTransactionDigest(
-          '7msXn7aieHy73WkRxh3Xdqh9PEoPYBmJW59iE4TVvz62',
-        ),
-      ).toBe(true);
-      expect(
-        isValidTransactionDigest(
-          'C6G8PsqwNpMqrK7ApwuQUvDgzkFcUaUy6Y5ycrAN2q3F',
-        ),
-      ).toBe(true);
-    });
-  });
+		it('accepts base58 strings of the correct length', () => {
+			expect(isValidTransactionDigest('vQMG8nrGirX14JLfyzy15DrYD3gwRC1eUmBmBzYUsgh')).toBe(true);
+			expect(isValidTransactionDigest('7msXn7aieHy73WkRxh3Xdqh9PEoPYBmJW59iE4TVvz62')).toBe(true);
+			expect(isValidTransactionDigest('C6G8PsqwNpMqrK7ApwuQUvDgzkFcUaUy6Y5ycrAN2q3F')).toBe(true);
+		});
+	});
 
-  describe('isValidSuiAddress() / isValidObjectID()', () => {
-    it('rejects non-hex strings', () => {
-      expectAll(
-        [
-          'MDpQc 1IIzkie1dJdj nfm85XmRCJmk KHVUU05Abg==',
-          'X09wJFxwQDdTU1tzMy5NJXdSTnknPCh9J0tNUCdmIw  ',
-        ],
-        isValidSuiAddress,
-        false,
-      );
-    });
+	describe('isValidSuiAddress() / isValidObjectID()', () => {
+		it('rejects non-hex strings', () => {
+			expectAll(
+				[
+					'MDpQc 1IIzkie1dJdj nfm85XmRCJmk KHVUU05Abg==',
+					'X09wJFxwQDdTU1tzMy5NJXdSTnknPCh9J0tNUCdmIw  ',
+				],
+				isValidSuiAddress,
+				false,
+			);
+		});
 
     it('rejects hex strings of the wrong format', () => {
       expectAll(

@@ -11,15 +11,16 @@ import { Card } from '~/ui/Card';
 import { Heading } from '~/ui/Heading';
 import { Text } from '~/ui/Text';
 
+//TODO to be check
 export function SuiTokenCard() {
     const { data, isLoading } = useSuiCoinData();
     const { currentPrice, totalSupply, marketCap } = data || {};
 
     const formattedPrice = currentPrice
         ? currentPrice.toLocaleString('en', {
-              style: 'currency',
-              currency: 'USD',
-          })
+            style: 'currency',
+            currency: 'USD',
+        })
         : '--';
 
     return (

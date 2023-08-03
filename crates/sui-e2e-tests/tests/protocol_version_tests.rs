@@ -1,26 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use mysten_metrics::RegistryService;
-use prometheus::Registry;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
-use test_utils::authority::start_node;
+use test_cluster::TestClusterBuilder;
 
 #[tokio::test]
 #[should_panic]
 async fn test_validator_panics_on_unsupported_protocol_version() {
-    let dir = tempfile::TempDir::new().unwrap();
     let latest_version = ProtocolVersion::MAX;
-    let network_config = sui_swarm_config::network_config_builder::ConfigBuilder::new(&dir)
+    let _test_cluster = TestClusterBuilder::new()
+        .with_num_validators(1)
         .with_protocol_version(ProtocolVersion::new(latest_version.as_u64() + 1))
         .with_supported_protocol_versions(SupportedProtocolVersions::new_for_testing(
             latest_version.as_u64(),
             latest_version.as_u64(),
         ))
-        .build();
-
-    let registry_service = RegistryService::new(Registry::new());
-    let _sui_node = start_node(&network_config.validator_configs[0], registry_service).await;
+        .build()
+        .await;
 }
 
 #[test]
@@ -33,13 +29,13 @@ fn test_protocol_overrides() {
     });
 
     assert_eq!(
-        ProtocolConfig::get_for_max_version().max_function_definitions(),
+        ProtocolConfig::get_for_max_version_UNSAFE().max_function_definitions(),
         42
     );
 }
 
 // Same as the previous test, to ensure we have test isolation with all the caching that
-// happens in get_for_min_version/get_for_max_version.
+// happens in get_for_min_version/get_for_max_version_UNSAFE.
 #[test]
 fn test_protocol_overrides_2() {
     telemetry_subscribers::init_for_testing();
@@ -50,7 +46,7 @@ fn test_protocol_overrides_2() {
     });
 
     assert_eq!(
-        ProtocolConfig::get_for_max_version().max_function_definitions(),
+        ProtocolConfig::get_for_max_version_UNSAFE().max_function_definitions(),
         43
     );
 }
@@ -67,10 +63,11 @@ mod sim_only_tests {
     use sui_core::authority::framework_injection;
     use sui_framework::BuiltInFramework;
     use sui_json_rpc::api::WriteApiClient;
+    use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
     use sui_macros::*;
     use sui_move_build::{BuildConfig, CompiledPackage};
     use sui_protocol_config::SupportedProtocolVersions;
-    use sui_types::base_types::ObjectID;
+    use sui_types::base_types::{ObjectID, ObjectRef};
     use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
     use sui_types::id::ID;
     use sui_types::object::Owner;
@@ -79,14 +76,17 @@ mod sim_only_tests {
         SuiSystemState, SuiSystemStateTrait, SUI_SYSTEM_STATE_SIM_TEST_DEEP_V2,
         SUI_SYSTEM_STATE_SIM_TEST_SHALLOW_V2, SUI_SYSTEM_STATE_SIM_TEST_V1,
     };
-    use sui_types::transaction::{Command, ProgrammableMoveCall};
+    use sui_types::transaction::{
+        CallArg, Command, ObjectArg, ProgrammableMoveCall, ProgrammableTransaction,
+        TransactionData, TEST_ONLY_GAS_UNIT_FOR_GENERIC,
+    };
     use sui_types::{
         base_types::SequenceNumber, digests::TransactionDigest, object::Object,
         programmable_transaction_builder::ProgrammableTransactionBuilder, storage::ObjectStore,
         transaction::TransactionKind, MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID,
     };
-    use test_utils::network::{TestCluster, TestClusterBuilder};
+    use test_cluster::TestCluster;
     use tokio::time::{sleep, Duration};
     use tracing::info;
 
@@ -103,8 +103,7 @@ mod sim_only_tests {
                 START, FINISH,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
 
         expect_upgrade_succeeded(&test_cluster).await;
     }
@@ -124,11 +123,10 @@ mod sim_only_tests {
                 START, FINISH,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
 
-        let validator = test_cluster.get_validator_addresses()[0].clone();
-        test_cluster.stop_validator(validator);
+        let validator = test_cluster.get_validator_pubkeys()[0].clone();
+        test_cluster.stop_node(&validator);
 
         assert_eq!(
             test_cluster
@@ -137,12 +135,12 @@ mod sim_only_tests {
                 .protocol_version(),
             FINISH
         );
-        test_cluster.start_validator(validator).await;
+        test_cluster.start_node(&validator).await;
 
         test_cluster.wait_for_epoch(Some(2)).await;
         let validator_handle = test_cluster
             .swarm
-            .validator(validator.clone())
+            .node(&validator)
             .unwrap()
             .get_node_handle()
             .unwrap();
@@ -179,13 +177,12 @@ mod sim_only_tests {
                 }
             }))
             .build()
-            .await
-            .unwrap();
+            .await;
 
         expect_upgrade_succeeded(&test_cluster).await;
 
         // verify that the node that didn't support the new version shut itself down.
-        for v in test_cluster.swarm.validators() {
+        for v in test_cluster.swarm.validator_nodes() {
             if !v
                 .config
                 .supported_protocol_versions
@@ -214,10 +211,9 @@ mod sim_only_tests {
                 }
             }))
             .build()
-            .await
-            .unwrap();
+            .await;
 
-        test_cluster.swarm.validators().for_each(|v| {
+        test_cluster.swarm.validator_nodes().for_each(|v| {
             let node_handle = v.get_node_handle().expect("node should be running");
             node_handle.with(|node| {
                 node.set_override_protocol_upgrade_buffer_stake(0, 0)
@@ -248,10 +244,9 @@ mod sim_only_tests {
                 }
             }))
             .build()
-            .await
-            .unwrap();
+            .await;
 
-        test_cluster.swarm.validators().for_each(|v| {
+        test_cluster.swarm.validator_nodes().for_each(|v| {
             let node_handle = v.get_node_handle().expect("node should be running");
             node_handle.with(|node| {
                 node.set_override_protocol_upgrade_buffer_stake(0, 0)
@@ -260,7 +255,7 @@ mod sim_only_tests {
         });
 
         // Verify that clearing the override is respected.
-        test_cluster.swarm.validators().for_each(|v| {
+        test_cluster.swarm.validator_nodes().for_each(|v| {
             let node_handle = v.get_node_handle().expect("node should be running");
             node_handle.with(|node| {
                 node.clear_override_protocol_upgrade_buffer_stake(0)
@@ -292,8 +287,7 @@ mod sim_only_tests {
                 }
             }))
             .build()
-            .await
-            .unwrap();
+            .await;
 
         expect_upgrade_failed(&test_cluster).await;
     }
@@ -329,8 +323,28 @@ mod sim_only_tests {
 
     #[sim_test]
     async fn test_framework_add_struct_ability() {
-        // Upgrade attempts to add an ability to a struct
+        // Upgrade adds an ability to a struct (allowed, except for `key`).
         let cluster = run_framework_upgrade("base", "add_struct_ability").await;
+
+        assert_eq!(call_canary(&cluster).await, 42);
+        let obj0 = create_obj(&cluster).await;
+
+        expect_upgrade_succeeded(&cluster).await;
+
+        // The upgrade happened
+        assert_eq!(call_canary(&cluster).await, 43);
+        let obj1 = create_obj(&cluster).await;
+
+        // Instances of the type that existed before and new instances are able to take advantage of
+        // the newly introduced ability
+        wrap_obj(&cluster, obj0).await;
+        wrap_obj(&cluster, obj1).await;
+    }
+
+    #[sim_test]
+    async fn test_framework_add_key_ability() {
+        // Upgrade adds the key ability to a struct (not allowed)
+        let cluster = run_framework_upgrade("base", "add_key_ability").await;
         assert_eq!(call_canary(&cluster).await, 42);
         expect_upgrade_failed(&cluster).await;
         assert_eq!(call_canary(&cluster).await, 42);
@@ -385,8 +399,7 @@ mod sim_only_tests {
                 START, FINISH,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
 
         expect_upgrade_succeeded(&cluster).await;
 
@@ -440,7 +453,6 @@ mod sim_only_tests {
             ))
             .build()
             .await
-            .unwrap()
     }
 
     async fn call_canary(cluster: &TestCluster) -> u64 {
@@ -455,6 +467,46 @@ mod sim_only_tests {
             },
         )
         .await
+    }
+
+    async fn create_obj(cluster: &TestCluster) -> ObjectRef {
+        execute_creating(cluster, {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            builder
+                .move_call(
+                    SUI_SYSTEM_PACKAGE_ID,
+                    ident_str!("msim_extra_1").to_owned(),
+                    ident_str!("mint").to_owned(),
+                    /* type_arguments */ vec![],
+                    /* call_args */ vec![],
+                )
+                .unwrap();
+            builder.finish()
+        })
+        .await
+        .first()
+        .unwrap()
+        .clone()
+    }
+
+    async fn wrap_obj(cluster: &TestCluster, obj: ObjectRef) -> ObjectRef {
+        execute_creating(cluster, {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            builder
+                .move_call(
+                    SUI_SYSTEM_PACKAGE_ID,
+                    ident_str!("msim_extra_1").to_owned(),
+                    ident_str!("wrap").to_owned(),
+                    /* type_arguments */ vec![],
+                    vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(obj))],
+                )
+                .unwrap();
+            builder.finish()
+        })
+        .await
+        .first()
+        .unwrap()
+        .clone()
     }
 
     async fn dev_inspect_call(cluster: &TestCluster, call: ProgrammableMoveCall) -> u64 {
@@ -482,6 +534,33 @@ mod sim_only_tests {
         let return_ = &results.first().unwrap().return_values.first().unwrap().0;
 
         bcs::from_bytes(&return_).unwrap()
+    }
+
+    async fn execute_creating(
+        cluster: &TestCluster,
+        ptb: ProgrammableTransaction,
+    ) -> Vec<ObjectRef> {
+        let context = &cluster.wallet;
+        let (sender, gas_object) = context.get_one_gas_object().await.unwrap().unwrap();
+
+        let rgp = context.get_reference_gas_price().await.unwrap();
+        let txn = context.sign_transaction(&TransactionData::new_programmable(
+            sender,
+            vec![gas_object],
+            ptb,
+            rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
+            rgp,
+        ));
+
+        context
+            .execute_transaction_must_succeed(txn)
+            .await
+            .effects
+            .unwrap()
+            .created()
+            .iter()
+            .map(|oref| oref.reference.to_object_ref())
+            .collect()
     }
 
     async fn expect_upgrade_failed(cluster: &TestCluster) {
@@ -514,13 +593,7 @@ mod sim_only_tests {
         cluster: &TestCluster,
         package: &ObjectID,
     ) -> TransactionEffects {
-        let node_handle = cluster
-            .swarm
-            .validators()
-            .next()
-            .unwrap()
-            .get_node_handle()
-            .unwrap();
+        let node_handle = &cluster.fullnode_handle.sui_node;
 
         node_handle
             .with_async(|node| async {
@@ -534,13 +607,7 @@ mod sim_only_tests {
     }
 
     async fn get_object(cluster: &TestCluster, package: &ObjectID) -> Object {
-        let node_handle = cluster
-            .swarm
-            .validators()
-            .next()
-            .unwrap()
-            .get_node_handle()
-            .unwrap();
+        let node_handle = &cluster.fullnode_handle.sui_node;
 
         node_handle
             .with_async(|node| async { node.state().db().get_object(package).unwrap().unwrap() })
@@ -560,8 +627,7 @@ mod sim_only_tests {
                 START, START,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
 
         expect_upgrade_failed(&test_cluster).await;
     }
@@ -580,14 +646,13 @@ mod sim_only_tests {
             ))
             .with_epoch_duration_ms(40000)
             .build()
-            .await
-            .unwrap();
+            .await;
 
         // We must stop the validators before overriding the system modules, otherwise the validators
         // may start running before the override and hence send capabilities indicating that they
         // only support the genesis system modules.
         test_cluster.stop_all_validators().await;
-        let first = test_cluster.swarm.validators().next().unwrap();
+        let first = test_cluster.swarm.validator_nodes().next().unwrap();
         let first_name = first.name();
         override_sui_system_modules_cb(Box::new(move |name| {
             if name == first_name {
@@ -597,7 +662,7 @@ mod sim_only_tests {
                 Some(sui_system_modules("compatible"))
             }
         }));
-        test_cluster.start_all_validator().await;
+        test_cluster.start_all_validators().await;
 
         expect_upgrade_succeeded(&test_cluster).await;
 
@@ -633,11 +698,10 @@ mod sim_only_tests {
                 START, FINISH,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
 
         test_cluster.stop_all_validators().await;
-        let mut validators = test_cluster.swarm.validators();
+        let mut validators = test_cluster.swarm.validator_nodes();
         let first = validators.next().unwrap().name();
         let second = validators.next().unwrap().name();
         override_sui_system_modules_cb(Box::new(move |name| {
@@ -647,7 +711,7 @@ mod sim_only_tests {
                 None
             }
         }));
-        test_cluster.start_all_validator().await;
+        test_cluster.start_all_validators().await;
 
         expect_upgrade_failed(&test_cluster).await;
     }
@@ -663,11 +727,10 @@ mod sim_only_tests {
                 START, FINISH,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
         let genesis_epoch_start_time = test_cluster
             .swarm
-            .validators()
+            .validator_nodes()
             .next()
             .unwrap()
             .get_node_handle()
@@ -710,8 +773,7 @@ mod sim_only_tests {
             ))
             .with_objects([sui_system_package_object("mock_sui_systems/base")])
             .build()
-            .await
-            .unwrap();
+            .await;
         // Make sure we can survive at least one epoch.
         test_cluster.wait_for_epoch(None).await;
     }
@@ -727,8 +789,7 @@ mod sim_only_tests {
             ))
             .with_objects([sui_system_package_object("mock_sui_systems/base")])
             .build()
-            .await
-            .unwrap();
+            .await;
         // Wait for the upgrade to finish. After the upgrade, the new framework will be installed,
         // but the system state object hasn't been upgraded yet.
         let system_state = test_cluster.wait_for_epoch(Some(1)).await;
@@ -760,8 +821,7 @@ mod sim_only_tests {
             ))
             .with_objects([sui_system_package_object("mock_sui_systems/base")])
             .build()
-            .await
-            .unwrap();
+            .await;
         // Wait for the upgrade to finish. After the upgrade, the new framework will be installed,
         // but the system state object hasn't been upgraded yet.
         let system_state = test_cluster.wait_for_epoch(Some(1)).await;
@@ -816,8 +876,7 @@ mod sim_only_tests {
                 START, FINISH,
             ))
             .build()
-            .await
-            .unwrap();
+            .await;
         // TODO: Replace the path with the new framework path when we test it for real.
         override_sui_system_modules("../../../sui-framework/packages/sui-system");
         // Wait for the upgrade to finish. After the upgrade, the new framework will be installed,

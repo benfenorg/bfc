@@ -26,6 +26,7 @@ use sui_types::transaction::{
     CertifiedTransaction, SenderSignedData, SharedInputObject, TransactionDataAPI,
     VerifiedCertificate, VerifiedSignedTransaction,
 };
+use sui_types::zk_login_util::OAuthProviderContent;
 use tracing::{debug, error, info, trace, warn};
 use typed_store::rocks::{
     default_db_options, DBBatch, DBMap, DBOptions, MetricConf, TypedStoreError,
@@ -48,13 +49,11 @@ use crate::module_cache_metrics::ResolverMetrics;
 use crate::signature_verifier::*;
 use crate::stake_aggregator::StakeAggregator;
 use move_bytecode_utils::module_cache::SyncModuleCache;
-use move_vm_runtime::move_vm::MoveVM;
-use move_vm_runtime::native_functions::NativeFunctionTable;
 use mysten_common::sync::notify_once::NotifyOnce;
 use mysten_common::sync::notify_read::NotifyRead;
 use mysten_metrics::monitored_scope;
 use prometheus::IntCounter;
-use sui_adapter::adapter;
+use sui_execution::{self, Executor};
 use sui_macros::fail_point;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_storage::mutex_table::{MutexGuard, MutexTable};
@@ -116,9 +115,7 @@ pub struct ExecutionIndicesWithHash {
 
 // Data related to VM and Move execution and type layout
 pub struct ExecutionComponents {
-    /// Move native functions that are available to invoke
-    pub(crate) native_functions: NativeFunctionTable,
-    pub(crate) move_vm: Arc<MoveVM>,
+    pub(crate) executor: Arc<dyn Executor + Send + Sync>,
     // TODO: use strategies (e.g. LRU?) to constraint memory usage
     pub(crate) module_cache: Arc<SyncModuleCache<ResolverWrapper<AuthorityStore>>>,
     metrics: Arc<ResolverMetrics>,
@@ -307,6 +304,13 @@ pub struct AuthorityEpochTables {
     /// Contains a single key, which overrides the value of
     /// ProtocolConfig::buffer_stake_for_protocol_upgrade_bps
     override_protocol_upgrade_buffer_stake: DBMap<u64, u64>,
+
+    /// When transaction is executed via checkpoint executor, we store association here
+    pub(crate) executed_transactions_to_checkpoint:
+        DBMap<TransactionDigest, CheckpointSequenceNumber>,
+
+    /// Map from kid (key id) to the fetched OAuthProviderContent for that key.
+    oauth_provider_jwk: DBMap<String, OAuthProviderContent>,
 }
 
 fn signed_transactions_table_default_config() -> DBOptions {
@@ -370,6 +374,31 @@ impl AuthorityEpochTables {
             .map(|(_k, v)| v)
             .collect()
     }
+
+    pub fn reset_db_for_execution_since_genesis(&self) -> SuiResult {
+        // TODO: Add new tables that get added to the db automatically
+        self.executed_transactions_to_checkpoint.unsafe_clear()?;
+        Ok(())
+    }
+
+    /// WARNING: This method is very subtle and can corrupt the database if used incorrectly.
+    /// It should only be used in one-off cases or tests after fully understanding the risk.
+    pub fn remove_executed_tx_subtle(&self, digest: &TransactionDigest) -> SuiResult {
+        self.executed_transactions_to_checkpoint.remove(digest)?;
+        Ok(())
+    }
+
+    pub fn get_last_consensus_index(&self) -> SuiResult<Option<ExecutionIndicesWithHash>> {
+        Ok(self.last_consensus_index.get(&LAST_CONSENSUS_INDEX_ADDR)?)
+    }
+
+    fn load_oauth_provider_jwk(&self) -> SuiResult<HashMap<String, Arc<OAuthProviderContent>>> {
+        Ok(self
+            .oauth_provider_jwk
+            .unbounded_iter()
+            .map(|(k, v)| (k, Arc::new(v)))
+            .collect())
+    }
 }
 
 pub(crate) const MUTEX_TABLE_SIZE: usize = 1024;
@@ -396,6 +425,7 @@ impl AuthorityPerEpochStore {
         let reconfig_state = tables
             .load_reconfig_state()
             .expect("Load reconfig state at initialization cannot fail");
+
         let epoch_alive_notify = NotifyOnce::new();
         let pending_consensus_transactions = tables.get_all_pending_consensus_transactions();
         let pending_consensus_certificates: HashSet<_> = pending_consensus_transactions
@@ -429,8 +459,17 @@ impl AuthorityPerEpochStore {
             cache_metrics,
             expensive_safety_check_config,
         );
+
+        let oauth_provider_jwk = tables
+            .load_oauth_provider_jwk()
+            .expect("Load oauth provider jwk at initialization cannot fail");
+
         let signature_verifier =
             SignatureVerifier::new(committee.clone(), signature_verifier_metrics);
+        for (_, v) in oauth_provider_jwk.iter() {
+            signature_verifier.insert_oauth_jwk(v);
+        }
+
         let is_validator = committee.authority_index(&name).is_some();
         if is_validator {
             assert!(epoch_start_configuration
@@ -551,12 +590,8 @@ impl AuthorityPerEpochStore {
         &self.execution_component.module_cache
     }
 
-    pub fn move_vm(&self) -> &Arc<MoveVM> {
-        &self.execution_component.move_vm
-    }
-
-    pub fn native_functions(&self) -> &NativeFunctionTable {
-        &self.execution_component.native_functions
+    pub fn executor(&self) -> &Arc<dyn Executor + Send + Sync> {
+        &self.execution_component.executor
     }
 
     pub async fn acquire_tx_guard(
@@ -660,8 +695,7 @@ impl AuthorityPerEpochStore {
 
     pub fn get_last_consensus_index(&self) -> SuiResult<ExecutionIndicesWithHash> {
         self.tables
-            .last_consensus_index
-            .get(&LAST_CONSENSUS_INDEX_ADDR)
+            .get_last_consensus_index()
             .map(|x| x.unwrap_or_default())
             .map_err(SuiError::from)
     }
@@ -674,9 +708,7 @@ impl AuthorityPerEpochStore {
         Ok(self
             .tables
             .state_hash_by_checkpoint
-            .unbounded_iter()
-            .skip_to(&from_checkpoint)?
-            .take_while(|(checkpoint, _)| *checkpoint <= to_checkpoint)
+            .range_iter(from_checkpoint..=to_checkpoint)
             .collect())
     }
 
@@ -759,6 +791,59 @@ impl AuthorityPerEpochStore {
             .assigned_shared_object_versions
             .insert(tx_digest, assigned_versions)?;
         Ok(())
+    }
+
+    pub fn insert_finalized_transactions(
+        &self,
+        digests: &[TransactionDigest],
+        sequence: CheckpointSequenceNumber,
+    ) -> SuiResult {
+        let mut batch = self.tables.executed_transactions_to_checkpoint.batch();
+        batch.insert_batch(
+            &self.tables.executed_transactions_to_checkpoint,
+            digests.iter().map(|d| (*d, sequence)),
+        )?;
+        batch.write()?;
+        trace!("Transactions {digests:?} finalized at checkpoint {sequence}");
+        Ok(())
+    }
+
+    pub fn is_transaction_executed_in_checkpoint(
+        &self,
+        digest: &TransactionDigest,
+    ) -> SuiResult<bool> {
+        Ok(self
+            .tables
+            .executed_transactions_to_checkpoint
+            .contains_key(digest)?)
+    }
+
+    pub fn get_transaction_checkpoint(
+        &self,
+        digest: &TransactionDigest,
+    ) -> SuiResult<Option<CheckpointSequenceNumber>> {
+        Ok(self
+            .tables
+            .executed_transactions_to_checkpoint
+            .get(digest)?)
+    }
+
+    pub fn multi_get_transaction_checkpoint(
+        &self,
+        digests: &[TransactionDigest],
+    ) -> SuiResult<Vec<Option<CheckpointSequenceNumber>>> {
+        Ok(self
+            .tables
+            .executed_transactions_to_checkpoint
+            .multi_get(digests)?
+            .into_iter()
+            .collect())
+    }
+
+    pub fn per_epoch_finalized_txns_enabled(&self) -> bool {
+        self.epoch_start_configuration
+            .flags()
+            .contains(&EpochFlag::PerEpochFinalizedTransactions)
     }
 
     // For each id in objects_to_init, return the next version for that id as recorded in the
@@ -888,9 +973,9 @@ impl AuthorityPerEpochStore {
         self.set_assigned_shared_object_versions(
             certificate,
             &effects
-                .shared_objects()
-                .iter()
-                .map(|(id, version, _)| (*id, *version))
+                .input_shared_objects()
+                .into_iter()
+                .map(|(obj_ref, _)| (obj_ref.0, obj_ref.1))
                 .collect(),
             parent_sync_store,
         )
@@ -1452,6 +1537,7 @@ impl AuthorityPerEpochStore {
         Ok(executable_txns)
     }
 
+    #[cfg(any(test, feature = "test-utils"))]
     pub(crate) async fn process_consensus_transactions_for_tests<C: CheckpointServiceNotify>(
         &self,
         transactions: Vec<VerifiedSequencedConsensusTransaction>,
@@ -1727,6 +1813,9 @@ impl AuthorityPerEpochStore {
                 kind: ConsensusTransactionKind::CheckpointSignature(info),
                 ..
             }) => {
+                // We usually call notify_checkpoint_signature in SuiTxValidator, but that step can
+                // be skipped when a batch is already part of a certificate, so we must also
+                // notify here.
                 checkpoint_service.notify_checkpoint_signature(self, info)?;
                 self.record_consensus_transaction_processed(batch, transaction, consensus_index)?;
                 Ok(ConsensusCertificateResult::ConsensusMessage)
@@ -2032,6 +2121,19 @@ impl AuthorityPerEpochStore {
             .epoch_total_duration
             .set(self.epoch_open_time.elapsed().as_millis() as i64);
     }
+
+    // TODO: should be pub(crate) when it is inserted only from consensus
+    pub fn insert_oauth_jwk(&self, content: &OAuthProviderContent) {
+        if self.signature_verifier.insert_oauth_jwk(content) {
+            self.tables
+                .oauth_provider_jwk
+                .insert(&content.kid().to_string(), content)
+                .expect("write to oauth_provider_jwk should not fail");
+            info!("Added new JWK with kid {}: {:?}", content.kid(), content);
+        } else {
+            info!("OAuth JWK with kid {} already exists", content.kid());
+        }
+    }
 }
 
 impl ExecutionComponents {
@@ -2041,22 +2143,20 @@ impl ExecutionComponents {
         metrics: Arc<ResolverMetrics>,
         expensive_safety_check_config: &ExpensiveSafetyCheckConfig,
     ) -> Self {
-        let native_functions = sui_move_natives::all_natives(/* silent */ true);
-        let move_vm = Arc::new(
-            adapter::new_move_vm(
-                native_functions.clone(),
-                protocol_config,
-                expensive_safety_check_config.enable_move_vm_paranoid_checks(),
-            )
-            .expect("We defined natives to not fail here"),
-        );
+        let silent = true;
+        let executor = sui_execution::executor(
+            protocol_config,
+            expensive_safety_check_config.enable_move_vm_paranoid_checks(),
+            silent,
+        )
+        .expect("Creating an executor should not fail here");
+
         let module_cache = Arc::new(SyncModuleCache::new(ResolverWrapper::new(
             store,
             metrics.clone(),
         )));
         Self {
-            native_functions,
-            move_vm,
+            executor,
             module_cache,
             metrics,
         }

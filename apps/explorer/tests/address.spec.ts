@@ -6,9 +6,9 @@ import { expect, test } from '@playwright/test';
 import { faucet, split_coin } from './utils/localnet';
 
 test('address page', async ({ page }) => {
-    const address = await faucet();
-    await page.goto(`/address/${address}`);
-    await expect(page.getByRole('heading', { name: address })).toBeVisible();
+	const address = await faucet();
+	await page.goto(`/address/${address}`);
+	await expect(page.getByRole('heading', { name: address })).toBeVisible();
 });
 
 test('owned objects (coins) are displayed', async ({ page }) => {
@@ -26,8 +26,8 @@ test('owned objects (coins) are displayed', async ({ page }) => {
 // });
 
 test('transactions table is displayed', async ({ page }) => {
-    const address = await faucet();
-    await split_coin(address);
-    await page.goto(`/address/${address}`);
-    await page.getByTestId('tx').locator('td').first().waitFor();
+	const address = await faucet();
+	await split_coin(address);
+	await page.goto(`/address/${address}`);
+	await page.getByTestId('tx').locator('td').first().waitFor();
 });

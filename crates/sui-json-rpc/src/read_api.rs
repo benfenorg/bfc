@@ -1,18 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fastcrypto::encoding::Base64;
 use futures::future::join_all;
 use itertools::Itertools;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 use linked_hash_map::LinkedHashMap;
-use move_binary_format::{file_format_common::VERSION_MAX, normalized::Module as NormalizedModule};
 use move_bytecode_utils::module_cache::GetModule;
 use move_core_types::language_storage::StructTag;
 use move_core_types::value::{MoveStruct, MoveStructLayout, MoveValue};
@@ -20,7 +18,6 @@ use tap::TapFallible;
 use tracing::{debug, error, info, instrument, warn};
 
 use mysten_metrics::spawn_monitored_task;
-use shared_crypto::intent::{AppId, Intent, IntentMessage, IntentScope, IntentVersion};
 use sui_core::authority::AuthorityState;
 use sui_json_rpc_types::{
     BalanceChange, Checkpoint, CheckpointId, CheckpointPage, DisplayFieldsResponse, EventFilter,
@@ -34,22 +31,20 @@ use sui_open_rpc::Module;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_types::base_types::{ObjectID, SequenceNumber, TransactionDigest};
 use sui_types::collection_types::VecMap;
-use sui_types::crypto::default_hash;
 use sui_types::digests::TransactionEventsDigest;
 use sui_types::display::DisplayVersionUpdatedEvent;
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
-use sui_types::error::SuiObjectResponseError;
+use sui_types::error::{SuiError, SuiObjectResponseError};
 use sui_types::messages_checkpoint::{CheckpointSequenceNumber, CheckpointTimestamp};
-use sui_types::move_package::normalize_modules;
-use sui_types::object::{Data, Object, ObjectRead, PastObjectRead};
+use sui_types::object::{Object, ObjectRead, PastObjectRead};
 use sui_types::sui_serde::BigInt;
 use sui_types::transaction::TransactionDataAPI;
-use sui_types::transaction::{TransactionData, VerifiedTransaction};
+use sui_types::transaction::VerifiedTransaction;
 
 use crate::api::JsonRpcMetrics;
 use crate::api::{validate_limit, ReadApiServer};
 use crate::api::{QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS};
-use crate::error::{Error, SuiRpcInputError};
+use crate::error::{Error, RpcInterimResult, SuiRpcInputError};
 use crate::with_tracing;
 use crate::{
     get_balance_changes_from_effect, get_object_changes, ObjectProviderCache, SuiRpcModule,
@@ -140,9 +135,9 @@ impl ReadApi {
     ) -> Result<Vec<SuiTransactionBlockResponse>, Error> {
         let num_digests = digests.len();
         if num_digests > *QUERY_MAX_RESULT_LIMIT {
-            return Err(Error::SuiRpcInputError(
-                SuiRpcInputError::SizeLimitExceeded(QUERY_MAX_RESULT_LIMIT.to_string()),
-            ));
+            Err(SuiRpcInputError::SizeLimitExceeded(
+                QUERY_MAX_RESULT_LIMIT.to_string(),
+            ))?
         }
         self.metrics
             .get_tx_blocks_limit
@@ -158,9 +153,7 @@ impl ReadApi {
                     .map(|k| (k, IntermediateTransactionResponse::new(*k))),
             );
         if temp_response.len() < num_digests {
-            return Err(Error::SuiRpcInputError(
-                SuiRpcInputError::ContainsDuplicates,
-            ));
+            Err(SuiRpcInputError::ContainsDuplicates)?
         }
 
         if opts.require_input() {
@@ -194,9 +187,14 @@ impl ReadApi {
 
         let state = self.state.clone();
         let digests_clone = digests.clone();
+        // TODO: this is reading from a deprecated DB. The replacement DB however
+        // is in the epoch store, and thus we risk breaking the read API for txes
+        // from old epochs. Should be migrated once we have indexer support, or
+        // when we can tolerate returning None for old txes.
         let checkpoint_seq_list =
             state
-            .multi_get_transaction_checkpoint(&digests_clone)
+            .database
+            .deprecated_multi_get_transaction_checkpoint(&digests_clone)
             .tap_err(
                 |err| debug!(digests=?digests_clone, "Failed to multi get checkpoint sequence number: {:?}", err))?;
         for ((_digest, cache_entry), seq) in temp_response
@@ -323,9 +321,9 @@ impl ReadApi {
                 results.push(get_balance_changes_from_effect(
                     &object_cache,
                     resp.effects.as_ref().ok_or_else(|| {
-                        Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(
+                        SuiRpcInputError::GenericNotFound(
                             "unable to derive balance changes because effect is empty".to_string(),
-                        ))
+                        )
                     })?,
                     input_objects,
                     None,
@@ -347,9 +345,9 @@ impl ReadApi {
             let mut results = vec![];
             for resp in temp_response.values() {
                 let effects = resp.effects.as_ref().ok_or_else(|| {
-                    Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(
+                    SuiRpcInputError::GenericNotFound(
                         "unable to derive object changes because effect is empty".to_string(),
-                    ))
+                    )
                 })?;
 
                 results.push(get_object_changes(
@@ -357,10 +355,10 @@ impl ReadApi {
                     resp.transaction
                         .as_ref()
                         .ok_or_else(|| {
-                            Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(
+                            SuiRpcInputError::GenericNotFound(
                                 "unable to derive object changes because transaction is empty"
                                     .to_string(),
-                            ))
+                            )
                         })?
                         .data()
                         .intent_message()
@@ -493,10 +491,9 @@ impl ReadApiServer for ReadApi {
                     .inc_by(objects.len() as u64);
                 Ok(objects)
             } else {
-                Err(Error::SuiRpcInputError(SuiRpcInputError::SizeLimitExceeded(
+                Err(SuiRpcInputError::SizeLimitExceeded(
                     QUERY_MAX_RESULT_LIMIT.to_string(),
-                ))
-                .into())
+                ))?
             }
         })
     }
@@ -524,7 +521,11 @@ impl ReadApiServer for ReadApi {
                 PastObjectRead::VersionFound(object_ref, o, layout) => {
                     let display_fields = if options.show_display {
                         // TODO (jian): api breaking change to also modify past objects.
-                        Some(get_display_fields(self, &o, &layout)?)
+                        Some(get_display_fields(self, &o, &layout).map_err(|e| {
+                            Error::UnexpectedError(format!(
+                                "Unable to render object at version {version}: {e}"
+                            ))
+                        })?)
                     } else {
                         None
                     };
@@ -583,10 +584,9 @@ impl ReadApiServer for ReadApi {
                     Ok(success)
                 }
             } else {
-                Err(Error::SuiRpcInputError(SuiRpcInputError::SizeLimitExceeded(
+                Err(SuiRpcInputError::SizeLimitExceeded(
                     QUERY_MAX_RESULT_LIMIT.to_string(),
-                ))
-                .into())
+                ))?
             }
         })
     }
@@ -651,12 +651,17 @@ impl ReadApiServer for ReadApi {
             }
 
             let state = self.state.clone();
-            if let Some((_, seq)) = spawn_monitored_task!(async move{
-            state.get_transaction_checkpoint_sequence(&digest)
-            .map_err(|e| {
-                error!("Failed to retrieve checkpoint sequence for transaction {digest:?} with error: {e:?}");
-                Error::from(e)
-            })}).await.map_err(Error::from)??
+            if let Some((_, seq)) = spawn_monitored_task!(async move {
+                // TODO: this is reading from a deprecated DB. The replacement DB however
+                // is in the epoch store, and thus we risk breaking the read API for txes
+                // from old epochs. Should be migrated once we have indexer support, or
+                // when we can tolerate returning None for old txes.
+                state.database.deprecated_get_transaction_checkpoint(&digest)
+                    .map_err(|e| {
+                        error!("Failed to retrieve checkpoint sequence for transaction {digest:?} with error: {e:?}");
+                        Error::from(e)
+                    })
+            }).await.map_err(Error::from)??
         {
             temp_response.checkpoint_seq = Some(seq);
         }
@@ -760,13 +765,13 @@ impl ReadApiServer for ReadApi {
     ) -> RpcResult<Vec<SuiTransactionBlockResponse>> {
         with_tracing!(async move {
             let cloned_self = self.clone();
-            Ok(spawn_monitored_task!(async move {
+            spawn_monitored_task!(async move {
                 cloned_self
                     .multi_get_transaction_blocks_internal(digests, opts)
                     .await
             })
             .await
-            .map_err(Error::from)??)
+            .map_err(Error::from)?
         })
     }
 
@@ -814,9 +819,9 @@ impl ReadApiServer for ReadApi {
                 .state
                 .get_latest_checkpoint_sequence_number()
                 .map_err(|e| {
-                    Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(format!(
+                    SuiRpcInputError::GenericNotFound(format!(
                         "Latest checkpoint sequence number was not found with error :{e}"
-                    )))
+                    ))
                 })?
                 .into())
         })
@@ -824,7 +829,7 @@ impl ReadApiServer for ReadApi {
 
     #[instrument(skip(self))]
     async fn get_checkpoint(&self, id: CheckpointId) -> RpcResult<Checkpoint> {
-        with_tracing!(async move { Ok(self.get_checkpoint_internal(id)?) })
+        with_tracing!(async move { self.get_checkpoint_internal(id) })
     }
 
     #[instrument(skip(self))]
@@ -836,7 +841,8 @@ impl ReadApiServer for ReadApi {
         descending_order: bool,
     ) -> RpcResult<CheckpointPage> {
         with_tracing!(async move {
-            let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
+            let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)
+                .map_err(SuiRpcInputError::from)?;
 
             let state = self.state.clone();
 
@@ -883,6 +889,7 @@ impl ReadApiServer for ReadApi {
         with_tracing!(async move {
             self.get_checkpoints(cursor, limit.map(|l| *l as usize), descending_order)
                 .await
+                .map_err(Error::from)
         })
     }
 
@@ -918,7 +925,7 @@ impl ReadApiServer for ReadApi {
         version: Option<BigInt<u64>>,
     ) -> RpcResult<ProtocolConfigResponse> {
         with_tracing!(async move {
-            Ok(version
+            version
                 .map(|v| {
                     ProtocolConfig::get_for_version_if_supported(
                         (*v).into(),
@@ -927,19 +934,18 @@ impl ReadApiServer for ReadApi {
                             .ok_or(anyhow!("Chain identifier not found"))?
                             .chain(),
                     )
-                    .ok_or(Error::SuiRpcInputError(
-                        SuiRpcInputError::ProtocolVersionUnsupported(
-                            ProtocolVersion::MIN.as_u64(),
-                            ProtocolVersion::MAX.as_u64(),
-                        ),
+                    .ok_or(SuiRpcInputError::ProtocolVersionUnsupported(
+                        ProtocolVersion::MIN.as_u64(),
+                        ProtocolVersion::MAX.as_u64(),
                     ))
+                    .map_err(Error::from)
                 })
                 .unwrap_or(Ok(self
                     .state
                     .load_epoch_store_one_call_per_task()
                     .protocol_config()
                     .clone()))
-                .map(ProtocolConfigResponse::from)?)
+                .map(ProtocolConfigResponse::from)
         })
     }
 
@@ -987,11 +993,29 @@ fn to_sui_transaction_events(
     )?)
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum ObjectDisplayError {
+    #[error("Not a move struct")]
+    NotMoveStruct,
+
+    #[error("Failed to extract layout")]
+    Layout,
+
+    #[error("Failed to extract Move object")]
+    MoveObject,
+
+    #[error(transparent)]
+    Deserialization(#[from] SuiError),
+
+    #[error("Failed to deserialize 'VersionUpdatedEvent': {0}")]
+    Bcs(#[from] bcs::Error),
+}
+
 fn get_display_fields(
     fullnode_api: &ReadApi,
     original_object: &Object,
     original_layout: &Option<MoveStructLayout>,
-) -> Result<DisplayFieldsResponse, Error> {
+) -> Result<DisplayFieldsResponse, ObjectDisplayError> {
     let Some((object_type, layout)) = get_object_type_and_struct(original_object, original_layout)? else {
         return Ok(DisplayFieldsResponse { data: None, error: None });
     };
@@ -1008,7 +1032,7 @@ fn get_display_object_by_type(
     fullnode_api: &ReadApi,
     object_type: &StructTag,
     // TODO: add query version support
-) -> Result<Option<DisplayVersionUpdatedEvent>, Error> {
+) -> Result<Option<DisplayVersionUpdatedEvent>, ObjectDisplayError> {
     let mut events = fullnode_api.state.query_events(
         EventFilter::MoveEventType(DisplayVersionUpdatedEvent::type_(object_type)),
         None,
@@ -1019,9 +1043,7 @@ fn get_display_object_by_type(
     // If there's any recent version of Display, give it to the client.
     // TODO: add support for version query.
     if let Some(event) = events.pop() {
-        let display: DisplayVersionUpdatedEvent = bcs::from_bytes(&event.bcs[..])
-            .map_err(|e| anyhow!("Failed to deserialize 'VersionUpdatedEvent': {e}"))?; // TODO: currently, this is called on a value returned from state. Is this a client or server error?
-
+        let display: DisplayVersionUpdatedEvent = bcs::from_bytes(&event.bcs[..])?;
         Ok(Some(display))
     } else {
         Ok(None)
@@ -1031,7 +1053,7 @@ fn get_display_object_by_type(
 fn get_object_type_and_struct(
     o: &Object,
     layout: &Option<MoveStructLayout>,
-) -> Result<Option<(StructTag, MoveStruct)>, Error> {
+) -> Result<Option<(StructTag, MoveStruct)>, ObjectDisplayError> {
     if let Some(object_type) = o.type_() {
         let move_struct = get_move_struct(o, layout)?;
         Ok(Some((object_type.clone().into(), move_struct)))
@@ -1040,91 +1062,21 @@ fn get_object_type_and_struct(
     }
 }
 
-fn get_move_struct(o: &Object, layout: &Option<MoveStructLayout>) -> Result<MoveStruct, Error> {
-    let layout = layout.as_ref().ok_or_else(|| {
-        Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(
-            "Failed to extract layout".to_string(),
-        ))
-    })?;
+fn get_move_struct(
+    o: &Object,
+    layout: &Option<MoveStructLayout>,
+) -> Result<MoveStruct, ObjectDisplayError> {
+    let layout = layout.as_ref().ok_or_else(|| ObjectDisplayError::Layout)?;
     Ok(o.data
         .try_as_move()
-        .ok_or_else(|| {
-            Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(
-                "Failed to extract Move object".to_string(),
-            ))
-        })?
+        .ok_or_else(|| ObjectDisplayError::MoveObject)?
         .to_move_struct(layout)?)
-}
-
-pub async fn get_move_module(
-    state: &AuthorityState,
-    package: ObjectID,
-    module_name: String,
-) -> Result<NormalizedModule, Error> {
-    let normalized = get_move_modules_by_package(state, package).await?;
-    Ok(match normalized.get(&module_name) {
-        Some(module) => Ok(module.clone()),
-        None => Err(SuiRpcInputError::GenericNotFound(format!(
-            "No module found with module name {}",
-            module_name
-        ))),
-    }?)
-}
-
-pub async fn get_move_modules_by_package(
-    state: &AuthorityState,
-    package: ObjectID,
-) -> Result<BTreeMap<String, NormalizedModule>, Error> {
-    let object_read = state.get_object_read(&package).tap_err(|_| {
-        warn!("Failed to call get_move_modules_by_package for package: {package:?}");
-    })?;
-
-    match object_read {
-        ObjectRead::Exists(_obj_ref, object, _layout) => match object.data {
-            Data::Package(p) => {
-                // we are on the read path - it's OK to use VERSION_MAX of the supported Move
-                // binary format
-                normalize_modules(
-                    p.serialized_module_map().values(),
-                    /* max_binary_format_version */ VERSION_MAX,
-                    /* no_extraneous_module_bytes */ false,
-                )
-                .map_err(|e| {
-                    error!("Failed to call get_move_modules_by_package for package: {package:?}");
-                    Error::from(e)
-                })
-            }
-            _ => Err(Error::SuiRpcInputError(SuiRpcInputError::GenericInvalid(
-                format!("Object is not a package with ID {}", package),
-            ))),
-        },
-        _ => Err(Error::SuiRpcInputError(SuiRpcInputError::GenericNotFound(
-            format!("Package object does not exist with ID {}", package),
-        ))),
-    }
-}
-
-pub fn get_transaction_data_and_digest(
-    tx_bytes: Base64,
-) -> Result<(TransactionData, TransactionDigest), Error> {
-    let tx_data =
-        bcs::from_bytes(&tx_bytes.to_vec().map_err(|e| anyhow!(e))?).map_err(Error::from)?; // TODO: is this a client or server error? Only used by dry_run_transaction_block
-    let intent_msg = IntentMessage::new(
-        Intent {
-            version: IntentVersion::V0,
-            scope: IntentScope::TransactionData,
-            app_id: AppId::Sui,
-        },
-        tx_data,
-    );
-    let txn_digest = TransactionDigest::new(default_hash(&intent_msg.value));
-    Ok((intent_msg.value, txn_digest))
 }
 
 pub fn get_rendered_fields(
     fields: VecMap<String, String>,
     move_struct: &MoveStruct,
-) -> Result<DisplayFieldsResponse, Error> {
+) -> Result<DisplayFieldsResponse, ObjectDisplayError> {
     let sui_move_value: SuiMoveValue = MoveValue::Struct(move_struct.clone()).into();
     if let SuiMoveValue::Struct(move_struct) = sui_move_value {
         let fields =
@@ -1156,9 +1108,7 @@ pub fn get_rendered_fields(
             error,
         });
     }
-    Err(SuiRpcInputError::GenericInvalid(
-        "Failed to parse move struct".to_string(),
-    ))?
+    Err(ObjectDisplayError::NotMoveStruct)?
 }
 
 fn parse_template(template: &str, move_struct: &SuiMoveStruct) -> Result<String, Error> {
@@ -1259,7 +1209,7 @@ fn convert_to_response(
     cache: IntermediateTransactionResponse,
     opts: &SuiTransactionBlockResponseOptions,
     module_cache: &impl GetModule,
-) -> RpcResult<SuiTransactionBlockResponse> {
+) -> RpcInterimResult<SuiTransactionBlockResponse> {
     let mut response = SuiTransactionBlockResponse::new(cache.digest);
     response.errors = cache.errors;
 

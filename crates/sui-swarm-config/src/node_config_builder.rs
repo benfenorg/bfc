@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use sui_config::node::{
     default_enable_index_processing, default_end_of_epoch_broadcast_channel_capacity,
     AuthorityKeyPairWithPath, AuthorityStorePruningConfig, DBCheckpointConfig,
-    ExpensiveSafetyCheckConfig, KeyPairWithPath, StateArchiveConfig,
+    ExpensiveSafetyCheckConfig, Genesis, KeyPairWithPath, StateArchiveConfig, StateSnapshotConfig,
     DEFAULT_GRPC_CONCURRENCY_LIMIT,
 };
 use sui_config::p2p::{P2pConfig, SeedPeer};
@@ -20,22 +20,27 @@ use sui_config::{
     FULL_NODE_DB_PATH,
 };
 use sui_protocol_config::SupportedProtocolVersions;
-use sui_types::crypto::{AuthorityKeyPair, AuthorityPublicKeyBytes, SuiKeyPair};
+use sui_types::crypto::{AuthorityKeyPair, AuthorityPublicKeyBytes, NetworkKeyPair, SuiKeyPair};
+use sui_types::multiaddr::Multiaddr;
 
 /// This builder contains information that's not included in ValidatorGenesisConfig for building
 /// a validator NodeConfig. It can be used to build either a genesis validator or a new validator.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct ValidatorConfigBuilder {
-    config_directory: PathBuf,
+    config_directory: Option<PathBuf>,
     supported_protocol_versions: Option<SupportedProtocolVersions>,
+    force_unpruned_checkpoints: bool,
 }
 
 impl ValidatorConfigBuilder {
-    pub fn new(config_directory: PathBuf) -> Self {
-        Self {
-            config_directory,
-            supported_protocol_versions: None,
-        }
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_config_directory(mut self, config_directory: PathBuf) -> Self {
+        assert!(self.config_directory.is_none());
+        self.config_directory = Some(config_directory);
+        self
     }
 
     pub fn with_supported_protocol_versions(
@@ -47,13 +52,20 @@ impl ValidatorConfigBuilder {
         self
     }
 
+    pub fn with_unpruned_checkpoints(mut self) -> Self {
+        self.force_unpruned_checkpoints = true;
+        self
+    }
+
     pub fn build(
         self,
         validator: ValidatorGenesisConfig,
         genesis: sui_config::genesis::Genesis,
     ) -> NodeConfig {
         let key_path = get_key_path(&validator.key_pair);
-        let config_directory = self.config_directory;
+        let config_directory = self
+            .config_directory
+            .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
         let db_path = config_directory
             .join(AUTHORITIES_DB_NAME)
             .join(key_path.clone());
@@ -97,6 +109,12 @@ impl ValidatorConfigBuilder {
             ..Default::default()
         };
 
+        let mut pruning_config = AuthorityStorePruningConfig::validator_config();
+        if self.force_unpruned_checkpoints {
+            pruning_config.set_num_epochs_to_retain_for_checkpoints(None);
+        }
+        let pruning_config = pruning_config;
+
         NodeConfig {
             protocol_key_pair: AuthorityKeyPairWithPath::new(validator.key_pair),
             network_key_pair: KeyPairWithPath::new(SuiKeyPair::Ed25519(validator.network_key_pair)),
@@ -116,7 +134,7 @@ impl ValidatorConfigBuilder {
             grpc_load_shed: None,
             grpc_concurrency_limit: Some(DEFAULT_GRPC_CONCURRENCY_LIMIT),
             p2p_config,
-            authority_store_pruning_config: AuthorityStorePruningConfig::validator_config(),
+            authority_store_pruning_config: pruning_config,
             end_of_epoch_broadcast_channel_capacity:
                 default_end_of_epoch_broadcast_channel_capacity(),
             checkpoint_executor_config: Default::default(),
@@ -124,14 +142,17 @@ impl ValidatorConfigBuilder {
             supported_protocol_versions: self.supported_protocol_versions,
             db_checkpoint_config: Default::default(),
             indirect_objects_threshold: usize::MAX,
-            expensive_safety_check_config: ExpensiveSafetyCheckConfig::new_enable_all(),
+            // By default, expensive checks will be enabled in debug build, but not in release build.
+            expensive_safety_check_config: ExpensiveSafetyCheckConfig::default(),
             name_service_package_address: None,
             name_service_registry_id: None,
             name_service_reverse_registry_id: None,
             transaction_deny_config: Default::default(),
             certificate_deny_config: Default::default(),
             state_debug_dump_config: Default::default(),
-            state_archive_config: StateArchiveConfig::default(),
+            state_archive_write_config: StateArchiveConfig::default(),
+            state_archive_read_config: vec![],
+            state_snapshot_write_config: StateSnapshotConfig::default(),
         }
     }
 
@@ -154,6 +175,15 @@ pub struct FullnodeConfigBuilder {
     supported_protocol_versions: Option<SupportedProtocolVersions>,
     db_checkpoint_config: Option<DBCheckpointConfig>,
     expensive_safety_check_config: Option<ExpensiveSafetyCheckConfig>,
+    db_path: Option<PathBuf>,
+    network_address: Option<Multiaddr>,
+    json_rpc_address: Option<SocketAddr>,
+    metrics_address: Option<SocketAddr>,
+    admin_interface_port: Option<u16>,
+    genesis: Option<Genesis>,
+    p2p_external_address: Option<Multiaddr>,
+    p2p_listen_address: Option<SocketAddr>,
+    network_key_pair: Option<KeyPairWithPath>,
 }
 
 impl FullnodeConfigBuilder {
@@ -196,6 +226,54 @@ impl FullnodeConfigBuilder {
         self
     }
 
+    pub fn with_db_path(mut self, db_path: PathBuf) -> Self {
+        self.db_path = Some(db_path);
+        self
+    }
+
+    pub fn with_network_address(mut self, network_address: Multiaddr) -> Self {
+        self.network_address = Some(network_address);
+        self
+    }
+
+    pub fn with_json_rpc_address(mut self, json_rpc_address: SocketAddr) -> Self {
+        self.json_rpc_address = Some(json_rpc_address);
+        self
+    }
+
+    pub fn with_metrics_address(mut self, metrics_address: SocketAddr) -> Self {
+        self.metrics_address = Some(metrics_address);
+        self
+    }
+
+    pub fn with_admin_interface_port(mut self, admin_interface_port: u16) -> Self {
+        self.admin_interface_port = Some(admin_interface_port);
+        self
+    }
+
+    pub fn with_genesis(mut self, genesis: Genesis) -> Self {
+        self.genesis = Some(genesis);
+        self
+    }
+
+    pub fn with_p2p_external_address(mut self, p2p_external_address: Multiaddr) -> Self {
+        self.p2p_external_address = Some(p2p_external_address);
+        self
+    }
+
+    pub fn with_p2p_listen_address(mut self, p2p_listen_address: SocketAddr) -> Self {
+        self.p2p_listen_address = Some(p2p_listen_address);
+        self
+    }
+
+    pub fn with_network_key_pair(mut self, network_key_pair: Option<NetworkKeyPair>) -> Self {
+        if let Some(network_key_pair) = network_key_pair {
+            self.network_key_pair =
+                Some(KeyPairWithPath::new(SuiKeyPair::Ed25519(network_key_pair)));
+        }
+        self
+    }
+
     pub fn build<R: rand::RngCore + rand::CryptoRng>(
         self,
         rng: &mut R,
@@ -215,7 +293,6 @@ impl FullnodeConfigBuilder {
         let config_directory = self
             .config_directory
             .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
-        let db_path = config_directory.join(FULL_NODE_DB_PATH).join(key_path);
 
         let p2p_config = {
             let seed_peers = network_config
@@ -230,13 +307,17 @@ impl FullnodeConfigBuilder {
                 .collect();
 
             P2pConfig {
-                listen_address: validator_config.p2p_listen_address.unwrap_or_else(|| {
-                    validator_config
-                        .p2p_address
-                        .udp_multiaddr_to_listen_address()
-                        .unwrap()
+                listen_address: self.p2p_listen_address.unwrap_or_else(|| {
+                    validator_config.p2p_listen_address.unwrap_or_else(|| {
+                        validator_config
+                            .p2p_address
+                            .udp_multiaddr_to_listen_address()
+                            .unwrap()
+                    })
                 }),
-                external_address: Some(validator_config.p2p_address),
+                external_address: self
+                    .p2p_external_address
+                    .or(Some(validator_config.p2p_address.clone())),
                 seed_peers,
                 ..Default::default()
             }
@@ -256,19 +337,28 @@ impl FullnodeConfigBuilder {
             worker_key_pair: KeyPairWithPath::new(SuiKeyPair::Ed25519(
                 validator_config.worker_key_pair,
             )),
-            network_key_pair: KeyPairWithPath::new(SuiKeyPair::Ed25519(
-                validator_config.network_key_pair,
+            network_key_pair: self.network_key_pair.unwrap_or(KeyPairWithPath::new(
+                SuiKeyPair::Ed25519(validator_config.network_key_pair),
             )),
-
-            db_path,
-            network_address: validator_config.network_address,
-            metrics_address: local_ip_utils::new_local_tcp_socket_for_testing(),
-            admin_interface_port: local_ip_utils::get_available_port(&localhost),
-            json_rpc_address,
+            db_path: self
+                .db_path
+                .unwrap_or(config_directory.join(FULL_NODE_DB_PATH).join(key_path)),
+            network_address: self
+                .network_address
+                .unwrap_or(validator_config.network_address),
+            metrics_address: self
+                .metrics_address
+                .unwrap_or(local_ip_utils::new_local_tcp_socket_for_testing()),
+            admin_interface_port: self
+                .admin_interface_port
+                .unwrap_or(local_ip_utils::get_available_port(&localhost)),
+            json_rpc_address: self.json_rpc_address.unwrap_or(json_rpc_address),
             consensus_config: None,
             enable_event_processing: true, // This is unused.
             enable_index_processing: default_enable_index_processing(),
-            genesis: sui_config::node::Genesis::new(network_config.genesis.clone()),
+            genesis: self.genesis.unwrap_or(sui_config::node::Genesis::new(
+                network_config.genesis.clone(),
+            )),
             grpc_load_shed: None,
             grpc_concurrency_limit: None,
             p2p_config,
@@ -289,7 +379,9 @@ impl FullnodeConfigBuilder {
             transaction_deny_config: Default::default(),
             certificate_deny_config: Default::default(),
             state_debug_dump_config: Default::default(),
-            state_archive_config: StateArchiveConfig::default(),
+            state_archive_write_config: StateArchiveConfig::default(),
+            state_archive_read_config: vec![],
+            state_snapshot_write_config: StateSnapshotConfig::default(),
         }
     }
 }

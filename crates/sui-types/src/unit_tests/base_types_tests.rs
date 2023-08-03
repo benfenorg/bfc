@@ -9,13 +9,15 @@ use std::str::FromStr;
 use fastcrypto::encoding::Base58;
 use fastcrypto::traits::EncodeDecodeBase64;
 use move_binary_format::file_format;
-use sha2::{Digest, Sha256};
+
+//use sha2::{Digest, Sha256};
 
 use crate::crypto::bcs_signable_test::{Bar, Foo};
 use crate::crypto::{
     get_key_pair, get_key_pair_from_bytes, AccountKeyPair, AuthorityKeyPair, AuthoritySignature,
     Signature, SuiAuthoritySignature, SuiSignature,
 };
+use crate::digests::Digest;
 use crate::id::{ID, UID};
 use crate::{gas_coin::GasCoin, object::Object, SUI_FRAMEWORK_ADDRESS};
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
@@ -364,7 +366,7 @@ fn test_move_package_size_for_gas_metering() {
     let package = Object::new_package(
         &[module],
         TransactionDigest::genesis(),
-        ProtocolConfig::get_for_max_version().max_move_package_size(),
+        ProtocolConfig::get_for_max_version_UNSAFE().max_move_package_size(),
         &[], // empty dependencies for empty package (no modules)
     )
     .unwrap();
@@ -456,7 +458,36 @@ fn move_object_type_consistency() {
     assert_consistent(&ID::type_());
 }
 
+#[test]
+fn next_lexicographical_digest() {
+    let mut output = [0; 32];
+    output[31] = 1;
+    assert_eq!(
+        TransactionDigest::ZERO.next_lexicographical(),
+        Some(TransactionDigest::from(output))
+    );
+
+    let max = [255; 32];
+    let mut input = max;
+    input[31] = 254;
+    assert_eq!(Digest::from(max).next_lexicographical(), None);
+    assert_eq!(
+        Digest::from(input).next_lexicographical(),
+        Some(Digest::from(max))
+    );
+
+    input = max;
+    input[0] = 0;
+    output = [0; 32];
+    output[0] = 1;
+    assert_eq!(
+        Digest::from(input).next_lexicographical(),
+        Some(Digest::from(output))
+    );
+}
+
 fn sha256_string(input: &str) -> String {
+    use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(input.as_bytes());
     let result = hasher.finalize();

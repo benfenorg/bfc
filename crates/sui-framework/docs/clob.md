@@ -686,6 +686,15 @@ Deprecated since v1.0.0, use <code><a href="clob.md#0xdee9_clob_OrderFilledV2">O
 
 
 
+<a name="0xdee9_clob_DEPRECATED"></a>
+
+
+
+<pre><code><b>const</b> <a href="clob.md#0xdee9_clob_DEPRECATED">DEPRECATED</a>: u64 = 0;
+</code></pre>
+
+
+
 <a name="0xdee9_clob_EInsufficientBaseCoin"></a>
 
 
@@ -1009,7 +1018,7 @@ Deprecated since v1.0.0, use <code><a href="clob.md#0xdee9_clob_OrderFilledV2">O
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_account">create_account</a>(ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="custodian.md#0xdee9_custodian_AccountCap">custodian::AccountCap</a>
+<pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_account">create_account</a>(_ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="custodian.md#0xdee9_custodian_AccountCap">custodian::AccountCap</a>
 </code></pre>
 
 
@@ -1018,8 +1027,8 @@ Deprecated since v1.0.0, use <code><a href="clob.md#0xdee9_clob_OrderFilledV2">O
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_account">create_account</a>(ctx: &<b>mut</b> TxContext): AccountCap {
-    mint_account_cap(ctx)
+<pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_account">create_account</a>(_ctx: &<b>mut</b> TxContext): AccountCap {
+    <b>abort</b> <a href="clob.md#0xdee9_clob_DEPRECATED">DEPRECATED</a>
 }
 </code></pre>
 
@@ -1100,7 +1109,7 @@ Deprecated since v1.0.0, use <code><a href="clob.md#0xdee9_clob_OrderFilledV2">O
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(_tick_size: u64, _lot_size: u64, _creation_fee: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1110,20 +1119,12 @@ Deprecated since v1.0.0, use <code><a href="clob.md#0xdee9_clob_OrderFilledV2">O
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="clob.md#0xdee9_clob_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(
-    tick_size: u64,
-    lot_size: u64,
-    creation_fee: Coin&lt;OBC&gt;,
-    ctx: &<b>mut</b> TxContext,
+    _tick_size: u64,
+    _lot_size: u64,
+    _creation_fee: Coin&lt;OBC&gt;,
+    _ctx: &<b>mut</b> TxContext,
 ) {
-    <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&creation_fee) == <a href="clob.md#0xdee9_clob_FEE_AMOUNT_FOR_CREATE_POOL">FEE_AMOUNT_FOR_CREATE_POOL</a>, <a href="clob.md#0xdee9_clob_EInvalidFee">EInvalidFee</a>);
-    <a href="clob.md#0xdee9_clob_create_pool_">create_pool_</a>&lt;BaseAsset, QuoteAsset&gt;(
-        <a href="clob.md#0xdee9_clob_REFERENCE_TAKER_FEE_RATE">REFERENCE_TAKER_FEE_RATE</a>,
-        <a href="clob.md#0xdee9_clob_REFERENCE_MAKER_REBATE_RATE">REFERENCE_MAKER_REBATE_RATE</a>,
-        tick_size,
-        lot_size,
-        <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(creation_fee),
-        ctx
-    )
+    <b>abort</b> <a href="clob.md#0xdee9_clob_DEPRECATED">DEPRECATED</a>
 }
 </code></pre>
 

@@ -27,6 +27,7 @@ module sui::obc {
     /// Name of the coin
     struct OBC has drop {}
 
+    #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
     fun new(ctx: &mut TxContext): Balance<OBC> {
