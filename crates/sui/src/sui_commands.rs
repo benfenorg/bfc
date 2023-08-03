@@ -35,6 +35,7 @@ use sui_swarm_config::network_config_builder::ConfigBuilder;
 use sui_swarm_config::node_config_builder::FullnodeConfigBuilder;
 use sui_types::crypto::{SignatureScheme, SuiKeyPair};
 use tracing::info;
+use crate::gas_coin_commands::GasCoinCommand;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Parser)]
@@ -120,6 +121,21 @@ pub enum SuiCommand {
         config: Option<PathBuf>,
         #[clap(subcommand)]
         cmd: Option<SuiValidatorCommand>,
+        /// Return command outputs in json format.
+        #[clap(long, global = true)]
+        json: bool,
+        #[clap(short = 'y', long = "yes")]
+        accept_defaults: bool,
+    },
+
+    /// A tool for gas coin configure.
+    #[clap(name = "gas_coin")]
+    GasCoin {
+        /// Sets the file storing the state of our user accounts (an empty one will be created if missing)
+        #[clap(long = "client.config")]
+        config: Option<PathBuf>,
+        #[clap(subcommand)]
+        cmd: Option<GasCoinCommand>,
         /// Return command outputs in json format.
         #[clap(long, global = true)]
         json: bool,
@@ -295,6 +311,25 @@ impl SuiCommand {
                     let mut app: Command = SuiCommand::command();
                     app.build();
                     app.find_subcommand_mut("validator").unwrap().print_help()?;
+                }
+                Ok(())
+            }
+            SuiCommand::GasCoin {
+                config,
+                cmd,
+                json,
+                accept_defaults,
+            }  => {
+                let config_path = config.unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));
+                prompt_if_no_config(&config_path, accept_defaults).await?;
+                let mut context = WalletContext::new(&config_path, None, None).await?;
+                if let Some(cmd) = cmd {
+                    cmd.execute(&mut context).await?.print(!json);
+                } else {
+                    // Print help
+                    let mut app: Command = SuiCommand::command();
+                    app.build();
+                    app.find_subcommand_mut("gas_coin").unwrap().print_help()?;
                 }
                 Ok(())
             }

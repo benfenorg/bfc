@@ -8,6 +8,10 @@ use sui_types::transaction::{CallArg, ObjectArg};
 use crate::validator_commands::call_0x5;
 use serde::Serialize;
 
+#[path = "unit_tests/gas_coin_tests.rs"]
+#[cfg(test)]
+mod gas_coin_tests;
+
 const DEFAULT_GAS_BUDGET: u64 = 100_000_000; // 0.1 SUI
 
 #[derive(Parser)]
@@ -35,6 +39,15 @@ pub enum GasCoinCommand {
 pub enum GasCoinCommandResponse {
     AddGasCoin,
     RemoveGasCoin,
+}
+impl GasCoinCommandResponse {
+    pub fn print(&self, _pretty: bool) {
+        match self {
+            // Don't print empty responses
+            GasCoinCommandResponse::AddGasCoin
+            | GasCoinCommandResponse::RemoveGasCoin => {}
+        }
+    }
 }
 
 impl GasCoinCommand {
