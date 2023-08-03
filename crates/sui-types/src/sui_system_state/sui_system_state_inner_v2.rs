@@ -14,6 +14,7 @@ use crate::sui_system_state::sui_system_state_inner_v1::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use crate::gas_coin_strategy::GasCoinMap;
 
 use super::epoch_start_sui_system_state::EpochStartValidatorInfoV1;
 use super::sui_system_state_inner_v1::ValidatorV1;
@@ -62,6 +63,7 @@ pub struct SuiSystemStateInnerV2 {
     pub protocol_version: u64,
     pub system_state_version: u64,
     pub validators: ValidatorSetV1,
+    pub gas_coin_map: GasCoinMap,
     pub storage_fund: StorageFundV1,
     pub parameters: SystemParametersV2,
     pub reference_gas_price: u64,
@@ -226,6 +228,7 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                         },
                     extra_fields: _,
                 },
+            gas_coin_map: _gas_coin_map,
             storage_fund,
             parameters:
                 SystemParametersV2 {
