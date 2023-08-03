@@ -1,12 +1,12 @@
 use crate::gas_coin_commands::{GasCoinCommandResponse, GasCoinCommand};
 use crate::sui_commands::SuiCommand::GasCoin;
 use sui_types::gas_coin::GasCoin as GasCoinObj;
-use test_utils::network::TestClusterBuilder;
+use test_cluster::TestClusterBuilder;
 use sui_types::base_types::{ObjectID};
 
 #[tokio::test]
 async fn test_gas_coin_config() -> Result<(), anyhow::Error> {
-    let test_cluster = TestClusterBuilder::new().build().await?;
+    let test_cluster = TestClusterBuilder::new().build().await;
     let mut context = test_cluster.wallet;
     let sui_client = context.get_client().await?;
     //execute add gas coin
