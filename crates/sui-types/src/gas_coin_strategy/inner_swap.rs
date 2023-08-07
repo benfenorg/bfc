@@ -1,7 +1,7 @@
 // Copyright (c) OpenBlock Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::gas_coin::{GasCoin};
+use crate::coin::Coin;
 use crate::gas_coin_strategy::GasCoinExchange;
 
 #[derive(Default)]
@@ -15,7 +15,7 @@ impl InnerSwap {
 
 impl GasCoinExchange for InnerSwap {
 
-    fn exchange(any_coin: GasCoin, amount: u64) -> u64 {
+    fn exchange(any_coin: Coin, amount: u64) -> u64 {
         //todo
         0
     }

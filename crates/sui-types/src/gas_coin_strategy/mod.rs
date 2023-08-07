@@ -9,6 +9,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 use crate::base_types::SuiAddress;
 use crate::collection_types::VecMap;
 use serde::{Deserialize, Serialize};
+use crate::coin::Coin;
 
 
 pub mod price_oracle;
@@ -69,7 +70,7 @@ impl FromStr for GasCoinStrategy {
 
 pub trait GasCoinExchange {
     /// Exchange any coin to default platform coin
-    fn exchange(any_coin: GasCoin, amount: u64) -> u64;
+    fn exchange(any_coin: Coin, amount: u64) -> u64;
 }
 
 /// Rust version of the Move sui_system::gas_coin_map::GasCoinMap type

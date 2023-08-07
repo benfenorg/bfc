@@ -4,9 +4,10 @@
 use crate::gas_coin::{GasCoin};
 use crate::gas_coin_strategy::GasCoinExchange;
 use anyhow::Result;
+use crate::coin::Coin;
 
 trait PriceOracle {
-    fn get_price(&self,first_coin: GasCoin,second_coin:GasCoin) -> Result<u64>;
+    fn get_price(&self,first_coin: Coin, second_coin:Coin) -> Result<u64>;
 }
 
 #[derive(Default)]
@@ -20,14 +21,14 @@ impl SwapPriceOracle {
 
 impl GasCoinExchange for SwapPriceOracle {
 
-    fn exchange(any_coin: GasCoin, amount: u64) -> u64 {
+    fn exchange(any_coin: Coin, amount: u64) -> u64 {
         //todo
         !todo!()
     }
 }
 
 impl PriceOracle for SwapPriceOracle {
-    fn get_price(&self,first_coin: GasCoin,second_coin:GasCoin) -> Result<u64>{
+    fn get_price(&self,first_coin: Coin, second_coin:Coin) -> Result<u64>{
         Ok(1)
     }
 }
@@ -42,7 +43,7 @@ impl ExternalPriceOracle {
 }
 
 impl PriceOracle for ExternalPriceOracle {
-    fn get_price(&self,first_coin: GasCoin,second_coin:GasCoin) -> Result<u64>{
+    fn get_price(&self,first_coin: Coin, second_coin:Coin) -> Result<u64>{
         Ok(1)
     }
 }
