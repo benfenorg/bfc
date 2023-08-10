@@ -81,7 +81,7 @@ impl GasCoinCommand {
     }
 }
 /// Get gas coin object ref.
-async fn get_object_ref(
+pub async fn get_object_ref(
     context: &mut WalletContext,
     coin_id: ObjectID,
 ) -> Result<ObjectRef> {

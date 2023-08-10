@@ -20,15 +20,21 @@ impl SwapPriceOracle {
 }
 
 impl GasCoinExchange for SwapPriceOracle {
+    fn exchange_obc(_any_coin: Coin) -> GasCoin {
+        todo!()
+    }
 
-    fn exchange(any_coin: Coin, amount: u64) -> u64 {
-        //todo
-        !todo!()
+    fn exchange(_any_coin_x: Coin, _any_coin_y: Coin) {
+        todo!()
+    }
+
+    fn price(_any_coin_x: Coin, _any_coin_y: Coin) {
+        todo!()
     }
 }
 
 impl PriceOracle for SwapPriceOracle {
-    fn get_price(&self,first_coin: Coin, second_coin:Coin) -> Result<u64>{
+    fn get_price(&self, _first_coin: Coin, _second_coin:Coin) -> Result<u64>{
         Ok(1)
     }
 }
@@ -43,7 +49,7 @@ impl ExternalPriceOracle {
 }
 
 impl PriceOracle for ExternalPriceOracle {
-    fn get_price(&self,first_coin: Coin, second_coin:Coin) -> Result<u64>{
+    fn get_price(&self, _first_coin: Coin, _second_coin:Coin) -> Result<u64>{
         Ok(1)
     }
 }

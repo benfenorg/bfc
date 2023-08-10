@@ -13,7 +13,6 @@ use crate::coin::Coin;
 
 
 pub mod price_oracle;
-pub mod inner_swap;
 
 #[derive(
 Clone,
@@ -70,7 +69,11 @@ impl FromStr for GasCoinStrategy {
 
 pub trait GasCoinExchange {
     /// Exchange any coin to default platform coin
-    fn exchange(any_coin: Coin, amount: u64) -> u64;
+    fn exchange_obc(any_coin: Coin) -> GasCoin;
+    /// Exchange any coin to another
+    fn exchange(any_coin_x: Coin, any_coin_y: Coin);
+    /// Get price of  any coin to another
+    fn price(any_coin_x: Coin, any_coin_y: Coin);
 }
 
 /// Rust version of the Move sui_system::gas_coin_map::GasCoinMap type
