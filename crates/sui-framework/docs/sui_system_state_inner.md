@@ -780,7 +780,7 @@ This function will be called only once in genesis.
     <b>let</b> init_gas_coins_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<b>address</b>, GasCoinEntity&gt;();
     <b>let</b> init_coin = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(initial_storage_fund, ctx);
     <b>let</b> coin_id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>(&init_coin);
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> init_gas_coins_map, coin_id_address, <a href="gas_coin_map.md#0x3_gas_coin_map_new_entity">gas_coin_map::new_entity</a>(coin_id_address));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> init_gas_coins_map, coin_id_address, <a href="gas_coin_map.md#0x3_gas_coin_map_new_default_entity">gas_coin_map::new_default_entity</a>(coin_id_address));
     <b>let</b> <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0x3_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> system_state = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInner">SuiSystemStateInner</a> {
         epoch: 0,

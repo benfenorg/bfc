@@ -11,13 +11,17 @@ module sui_system::gas_coin_map {
     #[test_only]
     friend sui_system::gas_coin_map_tests;
 
+    ///Default exchange rate
+    const DEFAULT_EXCHANGE_RATE: u64 = 1_000_000_000;
+
     struct GasCoinMap has store {
         ///The current active gas coin
         active_gas_coins: VecMap<address, GasCoinEntity>,
     }
 
     struct GasCoinEntity has store, drop {
-        id_address: address
+        id_address: address,
+        exchange_rate: u64
     }
     /// Init gas coin map
     public(friend) fun new(init_gas_coins: VecMap<address, GasCoinEntity>, _ctx: &mut TxContext): GasCoinMap {
@@ -36,9 +40,17 @@ module sui_system::gas_coin_map {
         map
     }
 
-    public(friend) fun new_entity(id_address: address): GasCoinEntity {
+    public(friend) fun new_default_entity(id_address: address): GasCoinEntity {
         GasCoinEntity {
             id_address,
+            exchange_rate:DEFAULT_EXCHANGE_RATE
+        }
+    }
+
+    public(friend) fun new_entity(id_address: address, exchange_rate: u64): GasCoinEntity {
+        GasCoinEntity {
+            id_address,
+            exchange_rate
         }
     }
 
@@ -48,11 +60,28 @@ module sui_system::gas_coin_map {
 
     public(friend) fun request_add_gas_coin<CoinType>(
         self: &mut GasCoinMap,
-        gas_coin: &Coin<CoinType>,) {
+        gas_coin: &Coin<CoinType>) {
         let id_address = object::id_address<Coin<CoinType>>(gas_coin);
         vec_map::insert(&mut self.active_gas_coins, id_address, GasCoinEntity {
             id_address,
+            exchange_rate: DEFAULT_EXCHANGE_RATE
         });
+    }
+
+    public(friend) fun request_update_gas_coin<CoinType>(
+        self: &mut GasCoinMap,
+        gas_coin: &Coin<CoinType>, exchange_rate: u64) {
+        let id_address = object::id_address<Coin<CoinType>>(gas_coin);
+        let entity = vec_map::get_mut(&mut self.active_gas_coins, &id_address);
+        entity.exchange_rate = exchange_rate
+    }
+
+    public(friend) fun requst_get_exchange_rate<CoinType>(
+        self: &GasCoinMap,
+        gas_coin: &Coin<CoinType>): u64 {
+        let id_address = object::id_address<Coin<CoinType>>(gas_coin);
+        let gas_entity = vec_map::get(&self.active_gas_coins, &id_address);
+        gas_entity.exchange_rate
     }
 
     public(friend) fun request_remove_gas_coin<CoinType>(

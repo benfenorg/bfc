@@ -85,5 +85,6 @@ pub struct GasCoinMap {
 /// Rust version of the Move sui_system::gas_coin_map::GasCoinEntity type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct GasCoinEntity {
-    pub id_address: SuiAddress
+    pub id_address: SuiAddress,
+    pub exchange_rate: u64
 }

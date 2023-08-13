@@ -29,7 +29,7 @@ module sui_system::gas_coin_map_tests {
         let dummy_coin = balance::zero<OBC>();
         let init_coin = coin::from_balance(dummy_coin, ctx);
         let coin_id_address = object::id_address(&init_coin);
-        vec_map::insert(&mut init_gas_coins_map, coin_id_address, gas_coin_map::new_entity(coin_id_address));
+        vec_map::insert(&mut init_gas_coins_map, coin_id_address, gas_coin_map::new_default_entity(coin_id_address));
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         assert!(gas_coin_map::map_size(&gas_coin_map) == 1, 100);
         pay::keep(init_coin, ctx);
@@ -42,9 +42,13 @@ module sui_system::gas_coin_map_tests {
         gas_coin_map::request_add_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1);
         assert!(gas_coin_map::map_size(&gas_coin_map) == 2, 101);
 
+        //update gas coin
+        gas_coin_map::request_update_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1, 2000000000);
+        assert!(gas_coin_map::requst_get_exchange_rate(&gas_coin_map, &coin1) == 2000000000, 102);
+
         //remove gas coin from map
         gas_coin_map::request_remove_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1);
-        assert!(gas_coin_map::map_size(&gas_coin_map) == 1, 102);
+        assert!(gas_coin_map::map_size(&gas_coin_map) == 1, 103);
 
         pay::keep(coin1, ctx);
         transfer::public_freeze_object(metadata);
