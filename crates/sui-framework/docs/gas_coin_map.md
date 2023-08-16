@@ -222,7 +222,7 @@ Init gas coin map
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_add_gas_coin">request_add_gas_coin</a>&lt;CoinType&gt;(self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_add_gas_coin">request_add_gas_coin</a>&lt;CoinType&gt;(self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;)
 </code></pre>
 
 
@@ -231,7 +231,7 @@ Init gas coin map
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_add_gas_coin">request_add_gas_coin</a>&lt;CoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_add_gas_coin">request_add_gas_coin</a>&lt;CoinType&gt;(
     self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">GasCoinMap</a>,
     gas_coin: &Coin&lt;CoinType&gt;) {
     <b>let</b> id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>&lt;Coin&lt;CoinType&gt;&gt;(gas_coin);
@@ -252,7 +252,7 @@ Init gas coin map
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_update_gas_coin">request_update_gas_coin</a>&lt;CoinType&gt;(self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;, exchange_rate: u64)
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_update_gas_coin">request_update_gas_coin</a>&lt;CoinType&gt;(self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;, exchange_rate: u64)
 </code></pre>
 
 
@@ -261,7 +261,7 @@ Init gas coin map
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_update_gas_coin">request_update_gas_coin</a>&lt;CoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_update_gas_coin">request_update_gas_coin</a>&lt;CoinType&gt;(
     self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">GasCoinMap</a>,
     gas_coin: &Coin&lt;CoinType&gt;, exchange_rate: u64) {
     <b>let</b> id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>&lt;Coin&lt;CoinType&gt;&gt;(gas_coin);
@@ -280,7 +280,7 @@ Init gas coin map
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">requst_get_exchange_rate</a>&lt;CoinType&gt;(self: &<a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">requst_get_exchange_rate</a>&lt;CoinType&gt;(self: &<a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;): u64
 </code></pre>
 
 
@@ -289,7 +289,7 @@ Init gas coin map
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">requst_get_exchange_rate</a>&lt;CoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">requst_get_exchange_rate</a>&lt;CoinType&gt;(
     self: &<a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">GasCoinMap</a>,
     gas_coin: &Coin&lt;CoinType&gt;): u64 {
     <b>let</b> id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>&lt;Coin&lt;CoinType&gt;&gt;(gas_coin);
@@ -308,7 +308,7 @@ Init gas coin map
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_remove_gas_coin">request_remove_gas_coin</a>&lt;CoinType&gt;(self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_remove_gas_coin">request_remove_gas_coin</a>&lt;CoinType&gt;(self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinType&gt;)
 </code></pre>
 
 
@@ -317,7 +317,7 @@ Init gas coin map
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_remove_gas_coin">request_remove_gas_coin</a>&lt;CoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="gas_coin_map.md#0x3_gas_coin_map_request_remove_gas_coin">request_remove_gas_coin</a>&lt;CoinType&gt;(
     self: &<b>mut</b> <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">GasCoinMap</a>,
     gas_coin: &Coin&lt;CoinType&gt;,) {
     <b>let</b> id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>&lt;Coin&lt;CoinType&gt;&gt;(gas_coin);
