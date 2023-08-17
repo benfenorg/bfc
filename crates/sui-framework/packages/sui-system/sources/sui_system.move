@@ -61,6 +61,9 @@ module sui_system::sui_system {
     #[test_only] use sui_system::validator_set::ValidatorSet;
     #[test_only] use sui_system::validator_set;
     #[test_only] use sui::vec_set::VecSet;
+    use sui_system::exchange_inner;
+    use sui::stable::STABLE;
+    use sui_system::exchange_inner::ExchangePool;
 
     friend sui_system::genesis;
 
@@ -518,6 +521,45 @@ module sui_system::sui_system {
         sui_system_state_inner::update_candidate_validator_network_pubkey(self, network_pubkey, ctx)
     }
 
+
+    /// Init gas exchange pool by add obc coin.
+    public entry fun request_init_exchange_gas_pool(
+        pool: &mut ExchangePool,
+        coin: Coin<OBC>) {
+        exchange_inner::add_obc(pool, coin)
+    }
+
+    /// Getter of the gas coin exchange pool rate
+    public entry fun request_exchange_rate(
+        self: &mut SuiSystemState,
+        stable: &Coin<STABLE>): u64 {
+        let inner_state = load_system_state(self);
+        sui_system_state_inner::gas_coin_rate(inner_state, stable)
+    }
+
+    /// Exchange gas coin from inner pool.
+    public entry fun request_exchange_gas(
+        self: &mut SuiSystemState,
+        pool: &mut ExchangePool,
+        stable: Coin<STABLE>,
+        ctx: &mut TxContext
+    ) {
+        let balance = request_exchange_gas_non_entry(self, pool, stable, ctx);
+        transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
+    }
+
+    /// Exchange gas coin from inner pool.
+    public fun request_exchange_gas_non_entry(
+        self: &mut SuiSystemState,
+        pool: &mut ExchangePool,
+        stable: Coin<STABLE>,
+        ctx: &mut TxContext
+    ): Balance<OBC> {
+        let inner_state = load_system_state(self);
+        let rate = sui_system_state_inner::gas_coin_rate(inner_state, &stable);
+        exchange_inner::request_exchange_gas(rate, pool, stable, ctx)
+    }
+
     /// Getter of the pool token exchange rate of a staking pool. Works for both active and inactive pools.
     public fun pool_exchange_rates(
         wrapper: &mut SuiSystemState,
@@ -540,6 +582,7 @@ module sui_system::sui_system {
     ///    gas coins.
     /// 3. Distribute computation charge to validator stake.
     /// 4. Update all validators.
+    #[allow(unused_function)]
     fun advance_epoch(
         storage_reward: Balance<OBC>,
         computation_reward: Balance<OBC>,

@@ -228,7 +228,7 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                         },
                     extra_fields: _,
                 },
-            gas_coin_map: _gas_coin_map,
+            gas_coin_map,
             storage_fund,
             parameters:
                 SystemParametersV2 {
@@ -288,6 +288,9 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
             active_validators: active_validators
                 .into_iter()
                 .map(|v| v.into_sui_validator_summary())
+                .collect(),
+            gas_coin_map: gas_coin_map.active_gas_coins.contents.into_iter()
+                .map(|e| (e.key, e.value.exchange_rate))
                 .collect(),
             pending_active_validators_id,
             pending_active_validators_size,

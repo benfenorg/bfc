@@ -27,6 +27,9 @@ module sui_system::sui_system_state_inner {
     use sui_system::gas_coin_map::{GasCoinMap, GasCoinEntity};
     use sui_system::gas_coin_map;
     use sui::object;
+    use sui::stable::STABLE;
+    use sui_system::exchange_inner::ExchangePool;
+    use sui_system::exchange_inner;
 
     friend sui_system::genesis;
     friend sui_system::sui_system;
@@ -125,6 +128,8 @@ module sui_system::sui_system_state_inner {
         validators: ValidatorSet,
         /// Contains gas coin information
         gas_coin_map: GasCoinMap,
+        /// Exchange gas coin pool
+        exchange_gas_coin_pool: ExchangePool,
         /// The storage fund.
         storage_fund: StorageFund,
         /// A list of system config parameters.
@@ -175,6 +180,8 @@ module sui_system::sui_system_state_inner {
         validators: ValidatorSet,
         /// Contains gas coin information
         gas_coin_map: GasCoinMap,
+        /// Exchange gas coin pool
+        exchange_gas_coin_pool: ExchangePool,
         /// The storage fund.
         storage_fund: StorageFund,
         /// A list of system config parameters.
@@ -262,12 +269,14 @@ module sui_system::sui_system_state_inner {
         let coin_id_address = object::id_address(&init_coin);
         vec_map::insert(&mut init_gas_coins_map, coin_id_address, gas_coin_map::new_default_entity(coin_id_address));
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
+        let exchange_gas_coin_pool =  exchange_inner::new_exchange_pool(ctx, 0);
         let system_state = SuiSystemStateInner {
             epoch: 0,
             protocol_version,
             system_state_version: genesis_system_state_version(),
             validators,
             gas_coin_map,
+            exchange_gas_coin_pool,
             storage_fund: storage_fund::new(coin::into_balance(init_coin)),
             parameters,
             reference_gas_price,
@@ -315,6 +324,7 @@ module sui_system::sui_system_state_inner {
             system_state_version: _,
             validators,
             gas_coin_map,
+            exchange_gas_coin_pool,
             storage_fund,
             parameters,
             reference_gas_price,
@@ -344,6 +354,7 @@ module sui_system::sui_system_state_inner {
             system_state_version: 2,
             validators,
             gas_coin_map,
+            exchange_gas_coin_pool,
             storage_fund,
             parameters: SystemParametersV2 {
                 epoch_duration_ms,
@@ -1065,6 +1076,10 @@ module sui_system::sui_system_state_inner {
     public(friend) fun active_validator_addresses(self: &SuiSystemStateInnerV2): vector<address> {
         let validator_set = &self.validators;
         validator_set::active_validator_addresses(validator_set)
+    }
+
+    public(friend) fun gas_coin_rate(self: &SuiSystemStateInnerV2, stable: &Coin<STABLE>): u64 {
+        gas_coin_map::requst_get_exchange_rate<STABLE>(&self.gas_coin_map, stable)
     }
 
     /// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.

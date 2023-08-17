@@ -7,6 +7,7 @@ module sui_system::gas_coin_map {
 
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
+    friend sui_system::exchange_inner;
 
     #[test_only]
     friend sui_system::gas_coin_map_tests;
@@ -19,7 +20,7 @@ module sui_system::gas_coin_map {
         active_gas_coins: VecMap<address, GasCoinEntity>,
     }
 
-    struct GasCoinEntity has store, drop {
+    struct GasCoinEntity has copy, store, drop {
         id_address: address,
         exchange_rate: u64
     }
@@ -60,7 +61,7 @@ module sui_system::gas_coin_map {
         vec_map::size(&self.active_gas_coins)
     }
 
-    public fun request_add_gas_coin<CoinType>(
+    public(friend) fun request_add_gas_coin<CoinType>(
         self: &mut GasCoinMap,
         gas_coin: &Coin<CoinType>) {
         let id_address = object::id_address<Coin<CoinType>>(gas_coin);
@@ -70,7 +71,7 @@ module sui_system::gas_coin_map {
         });
     }
 
-    public fun request_update_gas_coin<CoinType>(
+    public(friend) fun request_update_gas_coin<CoinType>(
         self: &mut GasCoinMap,
         gas_coin: &Coin<CoinType>, exchange_rate: u64) {
         let id_address = object::id_address<Coin<CoinType>>(gas_coin);
@@ -78,7 +79,7 @@ module sui_system::gas_coin_map {
         entity.exchange_rate = exchange_rate
     }
 
-    public fun requst_get_exchange_rate<CoinType>(
+    public(friend) fun requst_get_exchange_rate<CoinType>(
         self: &GasCoinMap,
         gas_coin: &Coin<CoinType>): u64 {
         let id_address = object::id_address<Coin<CoinType>>(gas_coin);
@@ -86,7 +87,7 @@ module sui_system::gas_coin_map {
         gas_entity.exchange_rate
     }
 
-    public fun request_remove_gas_coin<CoinType>(
+    public(friend) fun request_remove_gas_coin<CoinType>(
         self: &mut GasCoinMap,
         gas_coin: &Coin<CoinType>,) {
         let id_address = object::id_address<Coin<CoinType>>(gas_coin);

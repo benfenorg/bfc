@@ -78,6 +78,10 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `update_candidate_validator_worker_pubkey`](#0x3_sui_system_update_candidate_validator_worker_pubkey)
 -  [Function `update_validator_next_epoch_network_pubkey`](#0x3_sui_system_update_validator_next_epoch_network_pubkey)
 -  [Function `update_candidate_validator_network_pubkey`](#0x3_sui_system_update_candidate_validator_network_pubkey)
+-  [Function `request_init_exchange_gas_pool`](#0x3_sui_system_request_init_exchange_gas_pool)
+-  [Function `request_exchange_rate`](#0x3_sui_system_request_exchange_rate)
+-  [Function `request_exchange_gas`](#0x3_sui_system_request_exchange_gas)
+-  [Function `request_exchange_gas_non_entry`](#0x3_sui_system_request_exchange_gas_non_entry)
 -  [Function `pool_exchange_rates`](#0x3_sui_system_pool_exchange_rates)
 -  [Function `active_validator_addresses`](#0x3_sui_system_active_validator_addresses)
 -  [Function `advance_epoch`](#0x3_sui_system_advance_epoch)
@@ -92,9 +96,11 @@ the SuiSystemStateInner version, or vice versa.
 <b>use</b> <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">0x2::stable</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/table.md#0x2_table">0x2::table</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="exchange_inner.md#0x3_exchange_inner">0x3::exchange_inner</a>;
 <b>use</b> <a href="stake_subsidy.md#0x3_stake_subsidy">0x3::stake_subsidy</a>;
 <b>use</b> <a href="staking_pool.md#0x3_staking_pool">0x3::staking_pool</a>;
 <b>use</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner">0x3::sui_system_state_inner</a>;
@@ -1294,6 +1300,124 @@ Update candidate validator's public key of network key.
 
 </details>
 
+<a name="0x3_sui_system_request_init_exchange_gas_pool"></a>
+
+## Function `request_init_exchange_gas_pool`
+
+Init gas exchange pool by add obc coin.
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_init_exchange_gas_pool">request_init_exchange_gas_pool</a>(pool: &<b>mut</b> <a href="exchange_inner.md#0x3_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_init_exchange_gas_pool">request_init_exchange_gas_pool</a>(
+    pool: &<b>mut</b> ExchangePool,
+    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;) {
+    <a href="exchange_inner.md#0x3_exchange_inner_add_obc">exchange_inner::add_obc</a>(pool, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_request_exchange_rate"></a>
+
+## Function `request_exchange_rate`
+
+Getter of the gas coin exchange pool rate
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_exchange_rate">request_exchange_rate</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_exchange_rate">request_exchange_rate</a>(
+    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;STABLE&gt;): u64 {
+    <b>let</b> inner_state = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
+    <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_gas_coin_rate">sui_system_state_inner::gas_coin_rate</a>(inner_state, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_request_exchange_gas"></a>
+
+## Function `request_exchange_gas`
+
+Exchange gas coin from inner pool.
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_exchange_gas">request_exchange_gas</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, pool: &<b>mut</b> <a href="exchange_inner.md#0x3_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_exchange_gas">request_exchange_gas</a>(
+    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
+    pool: &<b>mut</b> ExchangePool,
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;STABLE&gt;,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="sui_system.md#0x3_sui_system_request_exchange_gas_non_entry">request_exchange_gas_non_entry</a>(self, pool, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, ctx);
+    <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx), <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_request_exchange_gas_non_entry"></a>
+
+## Function `request_exchange_gas_non_entry`
+
+Exchange gas coin from inner pool.
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_exchange_gas_non_entry">request_exchange_gas_non_entry</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, pool: &<b>mut</b> <a href="exchange_inner.md#0x3_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_exchange_gas_non_entry">request_exchange_gas_non_entry</a>(
+    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
+    pool: &<b>mut</b> ExchangePool,
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;STABLE&gt;,
+    ctx: &<b>mut</b> TxContext
+): Balance&lt;OBC&gt; {
+    <b>let</b> inner_state = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
+    <b>let</b> rate = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_gas_coin_rate">sui_system_state_inner::gas_coin_rate</a>(inner_state, &<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>);
+    <a href="exchange_inner.md#0x3_exchange_inner_request_exchange_gas">exchange_inner::request_exchange_gas</a>(rate, pool, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, ctx)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_sui_system_pool_exchange_rates"></a>
 
 ## Function `pool_exchange_rates`
@@ -1353,13 +1477,6 @@ Getter returning addresses of the currently active validators.
 
 ## Function `advance_epoch`
 
-This function should be called at the end of an epoch, and advances the system to the next epoch.
-It does the following things:
-1. Add storage charge to the storage fund.
-2. Burn the storage rebates from the storage fund. These are already refunded to transaction sender's
-gas coins.
-3. Distribute computation charge to validator stake.
-4. Update all validators.
 
 
 <pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_advance_epoch">advance_epoch</a>(storage_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, computation_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, new_epoch: u64, next_protocol_version: u64, storage_rebate: u64, non_refundable_storage_fee: u64, storage_fund_reinvest_rate: u64, reward_slashing_rate: u64, epoch_start_timestamp_ms: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
