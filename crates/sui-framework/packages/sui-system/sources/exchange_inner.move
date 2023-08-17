@@ -15,8 +15,9 @@ module sui_system::exchange_inner {
     friend sui_system::sui_system;
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
-    // friend sui_system::gas_coin_map;
 
+    #[test_only]
+    friend sui_system::exchange_inner_tests;
 
     const ENotActivePool: u64 = 1;
     const EZeroAmount: u64 = 2;
@@ -66,8 +67,16 @@ module sui_system::exchange_inner {
         option::is_some(&pool.activation_epoch)
     }
 
+    public(friend) fun get_obc_amount(pool: &ExchangePool): u64 {
+        pool.obc_balance
+    }
+
+    public(friend) fun get_stable_amount(pool: &ExchangePool): u64 {
+        pool.stable_token_balance
+    }
+
     /// Get obc amount by exchange rate
-    public(friend) fun get_obc_amount(exchange_rate: u64, token_amount: u64): u64 {
+    public(friend) fun exchange_obc_amount(exchange_rate: u64, token_amount: u64): u64 {
         let res = (token_amount as u128) / (exchange_rate as u128);
         (res as u64)
     }
@@ -82,11 +91,13 @@ module sui_system::exchange_inner {
         assert!(coin::value(&stable_coin) > 0, EZeroAmount);
         let tok_balance = coin::into_balance(stable_coin);
         let stable_amount = balance::value(&tok_balance);
-        let obc_amount= get_obc_amount(exchange_rate, stable_amount);
+        let obc_amount= exchange_obc_amount(exchange_rate, stable_amount);
         assert!(obc_amount > 0, EOBCZeroAmount);
         assert!(pool.obc_balance > obc_amount, ELackOfOBC);
         balance::join(&mut pool.stable_pool, tok_balance);
         let result = coin::take(&mut pool.obc_pool, obc_amount, ctx);
+        pool.obc_balance = pool.obc_balance - obc_amount;
+        pool.stable_token_balance = pool.stable_token_balance + stable_amount;
         coin::into_balance(result)
     }
 
@@ -101,7 +112,9 @@ module sui_system::exchange_inner {
             // let obc = stable_coin::request_swap_obc<CoinType>(coin::from_balance<CoinType>(pool.stable_pool, ctx), ctx);
             let obc = stable_coin::request_swap_obc<STABLE>(stable_coin::new_dummy<STABLE>(), ctx);
             // store obc to exchange pool
+            pool.obc_balance = pool.obc_balance + coin::value(&obc);
             balance::join(&mut pool.obc_pool, coin::into_balance(obc));
+            pool.stable_token_balance = 0;
         }
     }
 
@@ -109,6 +122,7 @@ module sui_system::exchange_inner {
     public(friend) fun request_withdraw_stable_gas(
         pool: &mut ExchangePool,
     ): Balance<STABLE> {
+        pool.stable_token_balance = 0;
          balance::withdraw_all<STABLE>(&mut pool.stable_pool)
     }
 }
