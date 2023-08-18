@@ -1078,7 +1078,26 @@ module sui_system::sui_system_state_inner {
         validator_set::active_validator_addresses(validator_set)
     }
 
-    public(friend) fun gas_coin_rate(self: &SuiSystemStateInnerV2, stable: &Coin<STABLE>): u64 {
+    public(friend) fun init_exchange_gas_pool(
+        self: &mut SuiSystemStateInnerV2,
+        coin: Coin<OBC>
+    ) {
+        exchange_inner::add_obc(&mut self.exchange_gas_coin_pool, coin)
+    }
+
+    public(friend) fun exchange_gas(
+        self: &mut SuiSystemStateInnerV2,
+        stable: Coin<STABLE>,
+        ctx: &mut TxContext
+    ): Balance<OBC>  {
+        let rate = gas_coin_map::requst_get_exchange_rate<STABLE>(&self.gas_coin_map, &stable);
+        exchange_inner::request_exchange_gas(rate, &mut self.exchange_gas_coin_pool, stable, ctx)
+    }
+
+    public(friend) fun gas_coin_rate(
+        self: &SuiSystemStateInnerV2,
+        stable: &Coin<STABLE>
+    ): u64 {
         gas_coin_map::requst_get_exchange_rate<STABLE>(&self.gas_coin_map, stable)
     }
 

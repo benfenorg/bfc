@@ -524,9 +524,10 @@ module sui_system::sui_system {
 
     /// Init gas exchange pool by add obc coin.
     public entry fun request_init_exchange_gas_pool(
-        pool: &mut ExchangePool,
+        self: &mut SuiSystemState,
         coin: Coin<OBC>) {
-        exchange_inner::add_obc(pool, coin)
+        let inner_state = load_system_state_mut(self);
+        sui_system_state_inner::init_exchange_gas_pool(inner_state, coin)
     }
 
     /// Getter of the gas coin exchange pool rate
@@ -540,24 +541,21 @@ module sui_system::sui_system {
     /// Exchange gas coin from inner pool.
     public entry fun request_exchange_gas(
         self: &mut SuiSystemState,
-        pool: &mut ExchangePool,
         stable: Coin<STABLE>,
         ctx: &mut TxContext
     ) {
-        let balance = request_exchange_gas_non_entry(self, pool, stable, ctx);
+        let balance = request_exchange_gas_no_entry(self, stable, ctx);
         transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
     }
 
     /// Exchange gas coin from inner pool.
-    public fun request_exchange_gas_non_entry(
+    public fun request_exchange_gas_no_entry(
         self: &mut SuiSystemState,
-        pool: &mut ExchangePool,
         stable: Coin<STABLE>,
         ctx: &mut TxContext
     ): Balance<OBC> {
-        let inner_state = load_system_state(self);
-        let rate = sui_system_state_inner::gas_coin_rate(inner_state, &stable);
-        exchange_inner::request_exchange_gas(rate, pool, stable, ctx)
+        let inner_state = load_system_state_mut(self);
+        sui_system_state_inner::exchange_gas(inner_state, stable, ctx)
     }
 
     /// Getter of the pool token exchange rate of a staking pool. Works for both active and inactive pools.

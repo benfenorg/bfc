@@ -62,6 +62,8 @@
 -  [Function `get_storage_fund_object_rebates`](#0x3_sui_system_state_inner_get_storage_fund_object_rebates)
 -  [Function `pool_exchange_rates`](#0x3_sui_system_state_inner_pool_exchange_rates)
 -  [Function `active_validator_addresses`](#0x3_sui_system_state_inner_active_validator_addresses)
+-  [Function `init_exchange_gas_pool`](#0x3_sui_system_state_inner_init_exchange_gas_pool)
+-  [Function `exchange_gas`](#0x3_sui_system_state_inner_exchange_gas)
 -  [Function `gas_coin_rate`](#0x3_sui_system_state_inner_gas_coin_rate)
 -  [Function `extract_coin_balance`](#0x3_sui_system_state_inner_extract_coin_balance)
 -  [Module Specification](#@Module_Specification_1)
@@ -2606,6 +2608,62 @@ Returns all the validators who are currently reporting <code>addr</code>
 
 </details>
 
+<a name="0x3_sui_system_state_inner_init_exchange_gas_pool"></a>
+
+## Function `init_exchange_gas_pool`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_init_exchange_gas_pool">init_exchange_gas_pool</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_init_exchange_gas_pool">init_exchange_gas_pool</a>(
+    self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
+    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;
+) {
+    <a href="exchange_inner.md#0x3_exchange_inner_add_obc">exchange_inner::add_obc</a>(&<b>mut</b> self.exchange_gas_coin_pool, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_state_inner_exchange_gas"></a>
+
+## Function `exchange_gas`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_exchange_gas">exchange_gas</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_exchange_gas">exchange_gas</a>(
+    self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;STABLE&gt;,
+    ctx: &<b>mut</b> TxContext
+): Balance&lt;OBC&gt;  {
+    <b>let</b> rate = <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">gas_coin_map::requst_get_exchange_rate</a>&lt;STABLE&gt;(&self.<a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>, &<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>);
+    <a href="exchange_inner.md#0x3_exchange_inner_request_exchange_gas">exchange_inner::request_exchange_gas</a>(rate, &<b>mut</b> self.exchange_gas_coin_pool, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, ctx)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_sui_system_state_inner_gas_coin_rate"></a>
 
 ## Function `gas_coin_rate`
@@ -2621,7 +2679,10 @@ Returns all the validators who are currently reporting <code>addr</code>
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_gas_coin_rate">gas_coin_rate</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;STABLE&gt;): u64 {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_gas_coin_rate">gas_coin_rate</a>(
+    self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;STABLE&gt;
+): u64 {
     <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">gas_coin_map::requst_get_exchange_rate</a>&lt;STABLE&gt;(&self.<a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
 }
 </code></pre>
