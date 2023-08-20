@@ -5,7 +5,7 @@ use sui_json_rpc_types::SuiObjectDataOptions;
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::base_types::{ObjectID, ObjectRef};
 use sui_types::transaction::{CallArg, ObjectArg};
-use crate::validator_commands::call_0x5;
+use crate::call_0x5;
 use serde::Serialize;
 
 #[path = "unit_tests/gas_coin_tests.rs"]

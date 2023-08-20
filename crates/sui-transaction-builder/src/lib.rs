@@ -22,7 +22,7 @@ use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::{ObjectID, ObjectInfo, ObjectRef, ObjectType, SuiAddress};
 use sui_types::error::UserInputError;
 use sui_types::gas_coin::GasCoin;
-use sui_types::governance::{ADD_STAKE_MUL_COIN_FUN_NAME, WITHDRAW_STAKE_FUN_NAME};
+use sui_types::governance::{ADD_STAKE_MUL_COIN_FUN_NAME, EXCHANGE_GAS_FUN_NAME, WITHDRAW_STAKE_FUN_NAME};
 use sui_types::move_package::MovePackage;
 use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
@@ -746,6 +746,52 @@ impl TransactionBuilder {
             gas_budget,
             gas_price,
         )
+    }
+
+    pub async fn request_exchange_gas_coin(
+        &self,
+        signer: SuiAddress,
+        stable: ObjectID,
+        gas: Option<ObjectID>,
+        gas_budget: u64,
+    ) -> anyhow::Result<TransactionData> {
+        let gas_price = self.0.get_reference_gas_price().await?;
+        let gas = self
+            .select_gas(signer, gas, gas_budget, vec![], gas_price)
+            .await?;
+        let (stable_ref, coin_type) = self.get_object_ref_and_type(stable).await?;
+        let ObjectType::Struct(type_) = &coin_type else{
+            return Err(anyhow!("Provided object [{stable}] is not a move object."))
+        };
+        ensure!(
+            type_.is_coin(),
+            "Expecting either Coin<T> input coin objects. Received [{type_}]"
+        );
+
+        let pt = {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            let arguments = vec![
+                builder.input(CallArg::SUI_SYSTEM_MUT).unwrap(),
+                builder
+                    .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref)))
+                    .unwrap(),
+            ];
+            builder.command(Command::move_call(
+                SUI_SYSTEM_PACKAGE_ID,
+                SUI_SYSTEM_MODULE_NAME.to_owned(),
+                EXCHANGE_GAS_FUN_NAME.to_owned(),
+                vec![], //todo who pay for?
+                arguments,
+            ));
+            builder.finish()
+        };
+        Ok(TransactionData::new_programmable(
+            signer,
+            vec![gas],
+            pt,
+            gas_budget,
+            gas_price,
+        ))
     }
 
     // TODO: we should add retrial to reduce the transaction building error rate

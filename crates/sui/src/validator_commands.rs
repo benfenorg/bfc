@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, bail, Result};
-use move_core_types::ident_str;
 use std::{
     collections::{BTreeMap, HashSet},
     fmt::{self, Debug, Display, Formatter, Write},
@@ -20,11 +19,9 @@ use sui_types::{
         sui_system_state_inner_v1::{UnverifiedValidatorOperationCapV1, ValidatorV1},
         sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary},
     },
-    SUI_SYSTEM_PACKAGE_ID,
 };
 use tap::tap::TapOptional;
 
-use crate::fire_drill::get_gas_obj_ref;
 use clap::*;
 use colored::Colorize;
 use fastcrypto::traits::ToFromBytes;
@@ -35,8 +32,7 @@ use fastcrypto::{
 use serde::Serialize;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
 use sui_json_rpc_types::{
-    SuiObjectDataOptions, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
-};
+    SuiObjectDataOptions, SuiTransactionBlockResponse};
 use sui_keys::keystore::AccountKeystore;
 use sui_keys::{
     key_derive::generate_new_key,
@@ -51,7 +47,8 @@ use sui_types::crypto::{
     generate_proof_of_possession, get_authority_key_pair, AuthorityPublicKeyBytes,
 };
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair};
-use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
+use sui_types::transaction::{CallArg, ObjectArg, TransactionData};
+use crate::{call_0x5, construct_unsigned_0x5_txn};
 
 #[path = "unit_tests/validator_tests.rs"]
 #[cfg(test)]
@@ -592,64 +589,6 @@ async fn get_validator_summary_from_cap_id(
         );
     }
     Ok((status, summary))
-}
-
-async fn construct_unsigned_0x5_txn(
-    context: &mut WalletContext,
-    sender: SuiAddress,
-    function: &'static str,
-    call_args: Vec<CallArg>,
-    gas_budget: u64,
-) -> anyhow::Result<TransactionData> {
-    let sui_client = context.get_client().await?;
-    let mut args = vec![CallArg::SUI_SYSTEM_MUT];
-    args.extend(call_args);
-    let rgp = sui_client
-        .governance_api()
-        .get_reference_gas_price()
-        .await?;
-
-    let gas_obj_ref = get_gas_obj_ref(sender, &sui_client, gas_budget).await?;
-    TransactionData::new_move_call(
-        sender,
-        SUI_SYSTEM_PACKAGE_ID,
-        ident_str!("sui_system").to_owned(),
-        ident_str!(function).to_owned(),
-        vec![],
-        gas_obj_ref,
-        args,
-        gas_budget,
-        rgp,
-    )
-}
-
-pub async fn call_0x5(
-    context: &mut WalletContext,
-    function: &'static str,
-    call_args: Vec<CallArg>,
-    gas_budget: u64,
-) -> anyhow::Result<SuiTransactionBlockResponse> {
-    let sender = context.active_address()?;
-    let tx_data =
-        construct_unsigned_0x5_txn(context, sender, function, call_args, gas_budget).await?;
-    let signature =
-        context
-            .config
-            .keystore
-            .sign_secure(&sender, &tx_data, Intent::sui_transaction())?;
-    let transaction = Transaction::from_data(tx_data, Intent::sui_transaction(), vec![signature]);
-    let sui_client = context.get_client().await?;
-    sui_client
-        .quorum_driver_api()
-        .execute_transaction_block(
-            transaction,
-            SuiTransactionBlockResponseOptions::new()
-                .with_input()
-                .with_effects(),
-            Some(sui_types::quorum_driver_types::ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await
-        .map_err(|err| anyhow::anyhow!(err.to_string()))
 }
 
 impl Display for SuiValidatorCommandResponse {
