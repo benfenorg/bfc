@@ -9,9 +9,7 @@ use crate::error::SuiError;
 use crate::storage::ObjectStore;
 use crate::sui_system_state::epoch_start_sui_system_state::EpochStartSystemState;
 use crate::sui_system_state::get_validators_from_table_vec;
-use crate::sui_system_state::sui_system_state_inner_v1::{
-    StakeSubsidyV1, StorageFundV1, ValidatorSetV1,
-};
+use crate::sui_system_state::sui_system_state_inner_v1::{ExchangePoolV1, StakeSubsidyV1, StorageFundV1, ValidatorSetV1};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use crate::gas_coin_strategy::GasCoinMap;
@@ -64,6 +62,7 @@ pub struct SuiSystemStateInnerV2 {
     pub system_state_version: u64,
     pub validators: ValidatorSetV1,
     pub gas_coin_map: GasCoinMap,
+    pub exchange_gas_coin_pool: ExchangePoolV1,
     pub storage_fund: StorageFundV1,
     pub parameters: SystemParametersV2,
     pub reference_gas_price: u64,
@@ -229,6 +228,7 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                     extra_fields: _,
                 },
             gas_coin_map,
+            exchange_gas_coin_pool:_ ,
             storage_fund,
             parameters:
                 SystemParametersV2 {

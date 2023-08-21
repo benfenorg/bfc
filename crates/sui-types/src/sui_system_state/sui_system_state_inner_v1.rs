@@ -450,6 +450,18 @@ pub struct ValidatorSetV1 {
     pub extra_fields: Bag,
 }
 
+// Rust version of the Move sui_system::sui_system_state_inner::ExchangePool type
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct ExchangePoolV1 {
+    pub id: ObjectID,
+    pub activation_epoch: Option<u64>,
+    pub deactivation_epoch: Option<u64>,
+    pub obc_balance: u64,
+    pub obc_pool: Balance,
+    pub stable_token_balance: u64,
+    pub stable_pool: Balance,
+}
+
 /// Rust version of the Move sui_system::storage_fund::StorageFund type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct StorageFundV1 {
@@ -465,6 +477,7 @@ pub struct SuiSystemStateInnerV1 {
     pub system_state_version: u64,
     pub validators: ValidatorSetV1,
     pub gas_coin_map: GasCoinMap,
+    pub exchange_gas_coin_pool: ExchangePoolV1,
     pub storage_fund: StorageFundV1,
     pub parameters: SystemParametersV1,
     pub reference_gas_price: u64,
@@ -652,6 +665,7 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                     extra_fields: _,
                 },
             gas_coin_map,
+            exchange_gas_coin_pool:_ ,
             storage_fund,
             parameters:
                 SystemParametersV1 {
