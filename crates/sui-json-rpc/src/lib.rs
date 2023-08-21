@@ -42,7 +42,6 @@ pub mod read_api;
 mod routing_layer;
 pub mod transaction_builder_api;
 pub mod transaction_execution_api;
-pub mod gas_exchange_inner_api;
 
 pub const CLIENT_SDK_TYPE_HEADER: &str = "client-sdk-type";
 /// The version number of the SDK itself. This can be different from the API version.

@@ -376,6 +376,10 @@ where
             .digest;
         Ok(ChainIdentifier::from(ci).to_string())
     }
+
+    async fn get_inner_exchange_rate(&self, _gas_coin: ObjectID) -> RpcResult<BigInt<u64>> {
+        todo!()
+    }
 }
 
 impl<S> SuiRpcModule for ReadApi<S>

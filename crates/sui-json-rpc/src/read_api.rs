@@ -29,7 +29,7 @@ use sui_json_rpc_types::{
 use sui_json_rpc_types::{SuiLoadedChildObject, SuiLoadedChildObjectsResponse};
 use sui_open_rpc::Module;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
-use sui_types::base_types::{ObjectID, SequenceNumber, TransactionDigest};
+use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress, TransactionDigest};
 use sui_types::collection_types::VecMap;
 use sui_types::digests::TransactionEventsDigest;
 use sui_types::display::DisplayVersionUpdatedEvent;
@@ -40,6 +40,7 @@ use sui_types::object::{Object, ObjectRead, PastObjectRead};
 use sui_types::sui_serde::BigInt;
 use sui_types::transaction::TransactionDataAPI;
 use sui_types::transaction::VerifiedTransaction;
+use sui_types::sui_system_state::SuiSystemStateTrait;
 
 use crate::api::JsonRpcMetrics;
 use crate::api::{validate_limit, ReadApiServer};
@@ -958,6 +959,19 @@ impl ReadApiServer for ReadApi {
                 .ok_or(anyhow!("Chain identifier not found"))?;
             Ok(ci.to_string())
         })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_inner_exchange_rate(&self, gas_coin: ObjectID) -> RpcResult<BigInt<u64>> {
+        let system_state_summary = self.state.database.get_sui_system_state_object()
+            .expect("Reading sui system state object cannot fail")
+            .into_sui_system_state_summary();
+        let gas_coin_map = system_state_summary.gas_coin_map;
+        let coin_addr = SuiAddress::from(gas_coin);
+        let (_, rate) = gas_coin_map.iter()
+            .find(|(address, _)| address == &coin_addr)
+            .ok_or(anyhow!("not found gas coin."))?;
+         Ok(BigInt::from(*rate))
     }
 }
 
