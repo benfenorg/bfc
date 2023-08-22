@@ -10,6 +10,7 @@ use anyhow::{anyhow, bail, ensure, Ok};
 use async_trait::async_trait;
 use futures::future::join_all;
 use move_binary_format::file_format::SignatureToken;
+use move_core_types::ident_str;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{StructTag, TypeTag};
 
@@ -242,6 +243,61 @@ impl TransactionBuilder {
             coin_refs,
             recipient,
             gas_object_ref,
+            gas_budget,
+            gas_price,
+        ))
+    }
+
+    pub async fn move_call_by_gas_coin(
+        &self,
+        signer: SuiAddress,
+        package_object_id: ObjectID,
+        module: &str,
+        function: &str,
+        type_args: Vec<SuiTypeTag>,
+        call_args: Vec<SuiJsonValue>,
+        gas: Option<ObjectID>,
+        stable: ObjectRef,
+        gas_budget: u64,
+    ) -> anyhow::Result<TransactionData> {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        let state = builder.input(CallArg::SUI_SYSTEM_MUT)?;
+        let stable_args = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable)))?;
+        builder.programmable_move_call(
+            SUI_SYSTEM_PACKAGE_ID,
+            ident_str!("sui_system").to_owned(),
+            ident_str!("request_exchange_gas").to_owned(),
+            vec![],
+            vec![state, stable_args],
+        );
+
+        self.single_move_call(
+            &mut builder,
+            package_object_id,
+            module,
+            function,
+            type_args,
+            call_args,
+        )
+            .await?;
+        let pt = builder.finish();
+        let input_objects = pt
+            .input_objects()?
+            .iter()
+            .flat_map(|obj| match obj {
+                InputObjectKind::ImmOrOwnedMoveObject((id, _, _)) => Some(*id),
+                _ => None,
+            })
+            .collect();
+        let gas_price = self.0.get_reference_gas_price().await?;
+        let gas = self
+            .select_gas(signer, gas, gas_budget, input_objects, gas_price)
+            .await?;
+
+        Ok(TransactionData::new(
+            TransactionKind::programmable(pt),
+            signer,
+            gas,
             gas_budget,
             gas_price,
         ))

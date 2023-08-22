@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use core::fmt;
-use std::{fmt::{Debug, Display, Formatter, Write}, option, path::PathBuf, sync::Arc};
+use std::{fmt::{Debug, Display, Formatter, Write}, path::PathBuf, sync::Arc};
 
 use anyhow::{anyhow, ensure};
 use bip32::DerivationPath;
@@ -47,7 +47,7 @@ use sui_types::crypto::SignatureScheme;
 use sui_types::dynamic_field::DynamicFieldType;
 use sui_types::move_package::UpgradeCap;
 use sui_types::signature::GenericSignature;
-use sui_types::transaction::{CallArg, ObjectArg, SenderSignedData, TransactionData, TransactionDataAPI};
+use sui_types::transaction::{SenderSignedData, TransactionData, TransactionDataAPI};
 use sui_types::{
     base_types::{ObjectID, SuiAddress},
     gas_coin::GasCoin,
@@ -56,7 +56,6 @@ use sui_types::{
     transaction::Transaction,
 };
 use tracing::info;
-use crate::call_0x5;
 use crate::gas_coin_commands::get_object_ref;
 
 
@@ -861,48 +860,39 @@ impl SuiClientCommands {
                 serialize_unsigned_transaction,
                 serialize_signed_transaction,
             } => {
-
+                   let tx_data =
                     if let Some(gas_obj) = gas {
-                        //gas exchange
                         let coin_to_merge_ref = get_object_ref(context, gas_obj).await?;
-                        let args_exchange = vec![
-                            CallArg::Object(ObjectArg::ImmOrOwnedObject(coin_to_merge_ref))
-                        ];
-                        let response =
-                            call_0x5(context, "request_exchange_gas", args_exchange, gas_budget).await?;
-                        if let Some(effects) = response.effects.as_ref() {
-                            let new_coins = effects.mutated();
-                            let mut new_object_id = option::Option::None;
-                            for new_coin in new_coins {
-                                let coin_to_merge = new_coin.reference.object_id;
-                                new_object_id = Some(coin_to_merge);
-                                break;
-                            }
-                            let tx_data = construct_move_call_transaction(
-                                package, &module, &function, type_args, new_object_id, gas_budget, args, context,
-                            ).await?;
-                            serialize_or_execute!(
-                                tx_data,
-                                serialize_unsigned_transaction,
-                                serialize_signed_transaction,
-                                context,
-                                Call
-                            )
-                        }else {
-                            return Err(anyhow!("Execute exchange gas coin failure."));
-                        }
+                        let from = context.get_object_owner(&gas_obj).await?;
+                        let client = context.get_client().await?;
+                        let type_args = type_args
+                            .into_iter()
+                            .map(|arg| arg.try_into())
+                            .collect::<Result<Vec<_>, _>>()?;
+                         client.transaction_builder()
+                             .move_call_by_gas_coin(
+                                 from,
+                                 package,
+                                 &module,
+                                 &function,
+                                 type_args,
+                                 args,
+                                 gas,
+                                 coin_to_merge_ref,
+                                 gas_budget,
+                             ).await?
                     }else {
-                        let tx_data = construct_move_call_transaction(
+                          construct_move_call_transaction(
                             package, &module, &function, type_args, gas, gas_budget, args, context,
-                        ).await?;
-                        serialize_or_execute!(
-                                tx_data,
-                                serialize_unsigned_transaction,
-                                serialize_signed_transaction,
-                                context,
-                                Call
-                            )
-                    }
+                        ).await?
+                    };
+                serialize_or_execute!(
+                    tx_data,
+                    serialize_unsigned_transaction,
+                    serialize_signed_transaction,
+                    context,
+                    Call
+                )
             }
 
             SuiClientCommands::Transfer {
