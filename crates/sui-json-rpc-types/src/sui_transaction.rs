@@ -329,6 +329,7 @@ impl SuiTransactionBlockKind {
                 storage_rebate: e.storage_rebate,
                 epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
             }),
+            TransactionKind::ChangeObcRound(_) =>  unimplemented!(),
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),
             }),

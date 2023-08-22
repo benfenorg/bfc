@@ -125,6 +125,7 @@ mod checked {
             TransactionKind::ProgrammableTransaction(_) => (),
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
+            | TransactionKind::ChangeObcRound(_)
             | TransactionKind::ConsensusCommitPrologue(_) => {
                 return Err(UserInputError::Unsupported(format!(
                     "Transaction kind {} is not supported in dev-inspect",

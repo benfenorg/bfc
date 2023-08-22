@@ -1225,6 +1225,7 @@ impl AuthorityState {
             TransactionKind::ProgrammableTransaction(_) => (),
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
+            | TransactionKind::ChangeObcRound(_)
             | TransactionKind::ConsensusCommitPrologue(_) => {
                 return Err(SuiError::UnsupportedFeatureError {
                     error: "dry-exec does not support system transactions".to_string(),

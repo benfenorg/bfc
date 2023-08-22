@@ -1,4 +1,4 @@
-module sui_system::exchange_inner {
+module obc_system::exchange_inner {
     use sui::coin::Coin;
     use sui::object;
     use sui::tx_context::TxContext;
@@ -9,15 +9,12 @@ module sui_system::exchange_inner {
     use std::option;
     use sui::balance;
     use sui::coin;
-    use sui_system::stable_coin;
+    use obc_system::stable_coin;
     use sui::stable::STABLE;
 
-    friend sui_system::sui_system;
-    friend sui_system::genesis;
-    friend sui_system::sui_system_state_inner;
 
     #[test_only]
-    friend sui_system::exchange_inner_tests;
+    friend obc_system::exchange_inner_tests;
 
     const ENotActivePool: u64 = 1;
     const EZeroAmount: u64 = 2;

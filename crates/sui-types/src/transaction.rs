@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{base_types::*, error::*};
-use crate::committee::{EpochId, ProtocolVersion};
+use crate::committee::{EpochId, ObcRoundId, ProtocolVersion};
 use crate::crypto::{
     default_hash, AuthoritySignInfo, AuthoritySignature, AuthorityStrongQuorumSignInfo,
     DefaultHash, Ed25519SuiSignature, EmptySignInfo, Signature, Signer, SuiSignatureInner,
@@ -163,6 +163,12 @@ pub struct ChangeEpoch {
     pub system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
 }
 
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+pub struct ChangeObcRound{
+    pub obc_round:ObcRoundId,
+}
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct GenesisTransaction {
     pub objects: Vec<GenesisObject>,
@@ -200,6 +206,7 @@ pub enum TransactionKind {
     Genesis(GenesisTransaction),
     ConsensusCommitPrologue(ConsensusCommitPrologue),
     // .. more transaction types go here
+    ChangeObcRound(ChangeObcRound),
 }
 
 impl VersionedProtocolMessage for TransactionKind {
@@ -213,7 +220,8 @@ impl VersionedProtocolMessage for TransactionKind {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ProgrammableTransaction(_) => Ok(()),
+            | TransactionKind::ProgrammableTransaction(_)
+            | TransactionKind::ChangeObcRound(_)=> Ok(()),
         }
     }
 }
@@ -891,6 +899,9 @@ impl TransactionKind {
                     mutable: true,
                 }]
             }
+            Self::ChangeObcRound(_)=>{
+                vec![]
+            }
             Self::ProgrammableTransaction(p) => return p.input_objects(),
         };
         // Ensure that there are no duplicate inputs. This cannot be removed because:
@@ -912,7 +923,8 @@ impl TransactionKind {
             TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ConsensusCommitPrologue(_) => (),
+            | TransactionKind::ConsensusCommitPrologue(_)
+            | TransactionKind::ChangeObcRound(_) => (),
         };
         Ok(())
     }
@@ -947,6 +959,9 @@ impl Display for TransactionKind {
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis")?;
+            }
+            Self::ChangeObcRound(_) => {
+                writeln!(writer, "Transaction Kind : ChangeObcRound")?;
             }
             Self::ConsensusCommitPrologue(p) => {
                 writeln!(writer, "Transaction Kind : Consensus Commit Prologue")?;
@@ -1570,7 +1585,8 @@ impl TransactionDataAPI for TransactionDataV1 {
             TransactionKind::ProgrammableTransaction(_) => true,
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::Genesis(_) => false,
+            | TransactionKind::Genesis(_)
+            | TransactionKind::ChangeObcRound(_) => false,
         };
         if allow_sponsored_tx {
             return Ok(());
