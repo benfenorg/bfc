@@ -6,8 +6,4 @@ module obc_system::obc_system {
     ){
 
     }
-
-    public entry fun length(): u64 {
-        32
-    }
 }
