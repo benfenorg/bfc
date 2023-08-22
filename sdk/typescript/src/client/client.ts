@@ -59,6 +59,7 @@ import { TransactionBlock } from '../builder/index.js';
 import { SuiHTTPTransport } from './http-transport.js';
 import type { SuiTransport } from './http-transport.js';
 import type { Keypair } from '../cryptography/index.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 export interface PaginationArguments<Cursor> {
 	/** Optional paging cursor */
@@ -302,7 +303,7 @@ export class SuiClient {
 		id: string;
 		options?: SuiObjectDataOptions;
 	}): Promise<SuiObjectResponse> {
-		if (!input.id || !isValidSuiObjectId(normalizeSuiObjectId(input.id))) {
+		if (!input.id || !isValidSuiObjectId(sui2ObcAddress(input.id))) {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({

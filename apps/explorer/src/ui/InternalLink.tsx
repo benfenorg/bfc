@@ -9,6 +9,7 @@ import { Link, type LinkProps } from '~/ui/Link';
 interface BaseInternalLinkProps extends LinkProps {
 	noTruncate?: boolean;
 	label?: string;
+	queryStrings?: Record<string, string>;
 }
 
 function createInternalLink<T extends string>(
@@ -20,8 +21,12 @@ function createInternalLink<T extends string>(
 		[propName]: id,
 		noTruncate,
 		label,
+		queryStrings = {},
 		...props
 	}: BaseInternalLinkProps & Record<T, string>) => {
+		const queryString = new URLSearchParams(queryStrings).toString();
+		const queryStringPrefix = queryString ? `?${queryString}` : '';
+
 		let converted: string = id;
 		if (['address', 'object', 'validator'].includes(base)) {
 			const queryIndex = id.indexOf('?');
@@ -33,7 +38,7 @@ function createInternalLink<T extends string>(
 		}
 		const truncatedAddress = noTruncate ? converted : formatter(converted);
 		return (
-			<Link variant="mono" to={`/${base}/${encodeURI(converted)}`} {...props}>
+			<Link variant="mono" to={`/${base}/${encodeURI(converted)}${queryStringPrefix}`} {...props}>
 				{label || truncatedAddress}
 			</Link>
 		);

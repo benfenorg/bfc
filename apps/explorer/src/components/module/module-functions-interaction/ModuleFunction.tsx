@@ -67,11 +67,20 @@ export function ModuleFunction({
 				target: `${packageId}::${moduleName}::${functionName}`,
 				typeArguments: types ?? [],
 				arguments:
-					params?.map((param, i) =>
-						getPureSerializationType(functionDetails.parameters[i], param)
-							? tx.pure(param)
-							: tx.object(param),
-					) ?? [],
+					params?.map((param, i) => {
+						let value: string | boolean | number = param;
+						const type = functionDetails.parameters[i];
+						if (typeof type === 'string') {
+							if (['U8', 'U16', 'U32', 'U64', 'U128', 'U256'].includes(type)) {
+								value = Number.parseInt(value);
+							} else if (type === 'Bool') {
+								value = value.toLowerCase() === 'true';
+							}
+						}
+						return getPureSerializationType(functionDetails.parameters[i], value)
+							? tx.pure(value)
+							: tx.object(param);
+					}) ?? [],
 			});
 			const result = await signAndExecuteTransactionBlock({
 				transactionBlock: tx,

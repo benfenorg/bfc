@@ -7,7 +7,7 @@ import { bcs } from '../types/sui-bcs.js';
 import type { TypeTag } from '../types/sui-bcs.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
 import type { TransactionArgument, MoveCallTransaction } from './Transactions.js';
-import { normalizeHexAddress } from '../types/index.js';
+import { normalizeSuiAddress } from '../utils/sui-types.js';
 
 export const ARGUMENT_INNER = 'Argument';
 export const VECTOR = 'vector';
@@ -210,7 +210,7 @@ builder.registerType(
 			this,
 			writer,
 			{
-				package: normalizeHexAddress(pkg),
+				package: normalizeSuiAddress(pkg),
 				module,
 				function: fun,
 				type_arguments,

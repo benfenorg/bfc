@@ -5,7 +5,8 @@ import type { Infer } from 'superstruct';
 
 import { array, boolean, integer, object, string, union } from 'superstruct';
 import type { SharedObjectRef } from '../types/index.js';
-import { normalizeHexAddress, SuiObjectRef } from '../types/index.js';
+import { SuiObjectRef } from '../types/index.js';
+import { normalizeSuiAddress } from '../utils/sui-types.js';
 import { builder } from './bcs.js';
 
 const ObjectArg = union([
@@ -44,7 +45,7 @@ export const Inputs = {
 				ImmOrOwned: {
 					digest,
 					version,
-					objectId: normalizeHexAddress(objectId),
+					objectId: normalizeSuiAddress(objectId),
 				},
 			},
 		};
@@ -55,7 +56,7 @@ export const Inputs = {
 				Shared: {
 					mutable,
 					initialSharedVersion,
-					objectId: normalizeHexAddress(objectId),
+					objectId: normalizeSuiAddress(objectId),
 				},
 			},
 		};
@@ -64,12 +65,12 @@ export const Inputs = {
 
 export function getIdFromCallArg(arg: string | ObjectCallArg) {
 	if (typeof arg === 'string') {
-		return normalizeHexAddress(arg);
+		return normalizeSuiAddress(arg);
 	}
 	if ('ImmOrOwned' in arg.Object) {
-		return normalizeHexAddress(arg.Object.ImmOrOwned.objectId);
+		return normalizeSuiAddress(arg.Object.ImmOrOwned.objectId);
 	}
-	return normalizeHexAddress(arg.Object.Shared.objectId);
+	return normalizeSuiAddress(arg.Object.Shared.objectId);
 }
 
 export function getSharedObjectInput(arg: BuilderCallArg): SharedObjectRef | undefined {

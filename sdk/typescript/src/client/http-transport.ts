@@ -65,7 +65,7 @@ export class SuiHTTPTransport implements SuiTransport {
 	}
 
 	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
-		return await this.rpcClient.request(input);
+		return this.rpcClient.request(input);
 	}
 
 	async subscribe<T>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {

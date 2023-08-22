@@ -31,7 +31,7 @@ runs:
       run: |
         cargo build --bin sui-test-validator --bin sui
       shell: bash
-
+      
     - name: Dowload from S3
       if: env.s3_file_exist != '' # only download if the s3 file exists
       working-directory: ./target/debug
@@ -44,9 +44,9 @@ runs:
       shell: bash
 
     # checkout current branch
-    - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
-      with:
-        clean: false
+    # - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
+    #   with:
+    #     clean: false
 
     - name: Install Nodejs
       uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516 # pin@v3
@@ -67,7 +67,8 @@ runs:
       shell: bash
 
     - name: Run TS SDK e2e tests
-      run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm sdk test:e2e'
+      #run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm sdk test:e2e'
+      run: pnpm sdk test:e2e
       shell: bash
 
     - name: Run Explorer e2e tests

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getObjectDisplay, SuiObjectData } from '../../src';
+import { getObjectDisplay, obc2SuiAddress, SuiObjectData } from '../../src';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Test Object Display Standard', () => {
@@ -34,9 +34,11 @@ describe('Test Object Display Standard', () => {
 		const expectedData = {
 			data: {
 				age: '10',
-				buyer: toolbox.address(),
+				buyer: obc2SuiAddress(toolbox.address()),
 				creator: 'Chris',
-				description: `Unique Boar from the Boars collection with First Boar and ${boarId}`,
+				description: `Unique Boar from the Boars collection with First Boar and ${obc2SuiAddress(
+					boarId,
+				)}`,
 				img_url: 'https://get-a-boar.com/first.png',
 				name: 'First Boar',
 				price: '',

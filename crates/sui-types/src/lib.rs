@@ -72,8 +72,8 @@ pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
-pub mod epoch_data;
 pub mod base_types_obc;
+pub mod epoch_data;
 mod obc_base_types;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
@@ -109,6 +109,13 @@ pub const SUI_CLOCK_ADDRESS: AccountAddress = address_from_single_byte(6);
 pub const SUI_CLOCK_OBJECT_ID: ObjectID = ObjectID::from_address(SUI_CLOCK_ADDRESS);
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
+
+/// 0x7: hardcoded object ID for the obc system.
+pub const OBC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
+pub const OBC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(OBC_SYSTEM_ADDRESS);
+pub const OBC_SYSTEM_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+
+
 /// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries
 /// All new system package ID's must be added here
 pub fn is_system_package(id: ObjectID) -> bool {
@@ -118,6 +125,7 @@ pub fn is_system_package(id: ObjectID) -> bool {
             | SUI_FRAMEWORK_PACKAGE_ID
             | SUI_SYSTEM_PACKAGE_ID
             | DEEPBOOK_PACKAGE_ID
+        |OBC_SYSTEM_PACKAGE_ID
     )
 }
 
@@ -155,6 +163,7 @@ fn resolve_address(addr: &str) -> Option<AccountAddress> {
         "std" => Some(MOVE_STDLIB_ADDRESS),
         "sui" => Some(SUI_FRAMEWORK_ADDRESS),
         "sui_system" => Some(SUI_SYSTEM_ADDRESS),
+        "obc_system" => Some(OBC_SYSTEM_ADDRESS),
         _ => None,
     }
 }

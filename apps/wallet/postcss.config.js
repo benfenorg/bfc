@@ -5,5 +5,5 @@ const postcssPresetEnv = require('postcss-preset-env');
 const tailwind = require('tailwindcss');
 
 module.exports = {
-    plugins: [require('postcss-preset-env'), require('tailwindcss')],
+	plugins: [postcssPresetEnv(), tailwind],
 };

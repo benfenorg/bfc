@@ -9,9 +9,9 @@ import {
 	extractStructTag,
 	getObjectReference,
 	getSharedObjectInitialVersion,
-	normalizeHexAddress,
 	SuiObjectRef,
 } from '../types/index.js';
+import { normalizeSuiAddress } from '../utils/sui-types.js';
 import type { TransactionArgument, TransactionType, MoveCallTransaction } from './Transactions.js';
 import { Transactions, TransactionBlockInput, getTransactionType } from './Transactions.js';
 import type { ObjectCallArg } from './Inputs.js';
@@ -29,6 +29,7 @@ import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
 import { SUI_TYPE_ARG } from '../framework/framework.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 type TransactionResult = TransactionArgument & TransactionArgument[];
 
@@ -460,7 +461,10 @@ export class TransactionBlock {
 						'Object' in input.value &&
 						'ImmOrOwned' in input.value.Object
 					) {
-						return coin.coinObjectId === input.value.Object.ImmOrOwned.objectId;
+						return (
+							sui2ObcAddress(coin.coinObjectId) ===
+							sui2ObcAddress(input.value.Object.ImmOrOwned.objectId)
+						);
 					}
 
 					return false;
@@ -573,7 +577,7 @@ export class TransactionBlock {
 					const [packageId, moduleName, functionName] = moveCall.target.split('::');
 
 					const normalized = await expectClient(options).getNormalizedMoveFunction({
-						package: normalizeHexAddress(packageId),
+						package: normalizeSuiAddress(packageId),
 						module: moduleName,
 						function: functionName,
 					});

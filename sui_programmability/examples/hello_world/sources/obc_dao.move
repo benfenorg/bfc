@@ -1,0 +1,936 @@
+module hello_world::obc_dao {
+    //use std::option::{Self, Option};
+    use sui::object::{Self, UID};
+    use sui::coin::{Self};
+    //use sui::balance::Balance;
+    //use sui::obc::OBC;
+    use sui::vec_map::{Self, VecMap};
+    use sui::clock::{Self, Clock};
+    use sui_system::staking_pool::{StakedObc, staked_sui_amount, split};
+
+
+    use std::string;
+    use sui::event;
+    use sui::tx_context::TxContext;
+    use sui::tx_context;
+    //use sui::obc;
+    use sui::transfer;
+    //use sui::bcs;
+    use sui_system::staking_pool;
+    //use std::string::index_of;
+    //use std::option::none;
+    //use std::debug;
+
+    const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
+
+    const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 1; // 3 days || 1 hour for test
+    const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 7; // 7 days || 7 hour for test
+    const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 7; // 7 days || 7 hour for test
+    const DEFAULT_VOTE_QUORUM_RATE: u8 = 50; // 50% default quorum rate
+
+
+    /// Proposal state
+    const PENDING: u8 = 1;
+    const ACTIVE: u8 = 2;
+    const DEFEATED: u8 = 3;
+    const AGREED: u8 = 4;
+    const QUEUED: u8 = 5;
+    const EXECUTABLE: u8 = 6;
+    const EXTRACTED: u8 = 7;
+
+
+    ///Error codes
+    const ERR_NOT_AUTHORIZED: u64 = 1401;
+    const ERR_ACTION_DELAY_TOO_SMALL: u64 = 1402;
+    const ERR_PROPOSAL_STATE_INVALID: u64 = 1403;
+    const ERR_PROPOSAL_ID_MISMATCH: u64 = 1404;
+    const ERR_PROPOSER_MISMATCH: u64 = 1405;
+    const ERR_QUORUM_RATE_INVALID: u64 = 1406;
+    const ERR_CONFIG_PARAM_INVALID: u64 = 1407;
+    const ERR_VOTE_STATE_MISMATCH: u64 = 1408;
+    const ERR_ACTION_MUST_EXIST: u64 = 1409;
+    const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
+    const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
+
+    //
+    struct DaoEvent has copy, drop, store {
+        name: string::String,
+    }
+    /// emitted when proposal created.
+    struct ProposalCreatedEvent has copy, drop, store {
+        /// the proposal id.
+        proposal_id: u64,
+        /// proposer is the user who create the proposal.
+        proposer: address,
+    }
+
+    /// emitted when user vote/revoke_vote.
+    struct VoteChangedEvent has copy, drop, store {
+        /// the proposal id.
+        proposal_id: u64,
+        /// the voter.
+        voter: address,
+        /// creator of the proposal.
+        proposer: address,
+        /// agree with the proposal or not
+        agree: bool,
+        /// latest vote count of the voter.
+        vote: u64,
+    }
+    struct  ActionCreateEvent has copy, drop, store{
+        actionId: u64,
+        /// Name for the action
+        name: string::String,
+        creator: address,
+    }
+
+    struct ProposalStateEvent has copy, drop, store{
+        proposalId: u64,
+        state: u8,
+    }
+    struct BooleanEvent has copy, drop, store{
+        value: bool,
+    }
+
+    /// global DAO info of the specified token type `Token`.
+    struct DaoGlobalInfo has key, store {
+        id: UID,
+        /// next proposal id.
+        next_proposal_id: u64,
+
+        // next action id
+        next_action_id: u64,
+
+        /// proposal creating event.
+        proposal_create_event: ProposalCreatedEvent,
+        /// voting event.
+        vote_changed_event: VoteChangedEvent,
+    }
+
+    /// Configuration of the `Token`'s DAO.
+    struct DaoConfig has copy, drop, store {
+        /// after proposal created, how long use should wait before he can vote (in milliseconds)
+        voting_delay: u64,
+        /// how long the voting window is (in milliseconds).
+        voting_period: u64,
+        /// the quorum rate to agree on the proposal.
+        /// if 50% votes needed, then the voting_quorum_rate should be 50.
+        /// it should between (0, 100].
+        voting_quorum_rate: u8,
+        /// how long the proposal should wait before it can be executed (in milliseconds).
+        min_action_delay: u64,
+    }
+    spec DaoConfig {
+        invariant voting_quorum_rate > 0 && voting_quorum_rate <= 100;
+        invariant voting_delay > 0;
+        invariant voting_period > 0;
+        invariant min_action_delay > 0;
+    }
+
+    struct Dao has key, store {
+        id: UID,
+        admin: address,
+        config: DaoConfig,
+        info: DaoGlobalInfo,
+
+        proposalRecord: VecMap<u64, ProposalInfo>,  //pid -> proposal address
+        actionRecord: VecMap<u64, OBCDaoAction>,    //actionId -> action address
+        votesRecord: VecMap<u64, u64>,  //pid -> vote count
+    }
+
+    struct OBCDaoAction has copy, drop, store{
+        actionId: u64,
+        /// Name for the action
+        name: string::String,
+    }
+    public fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
+        obcDaoAction.actionId
+    }
+
+    struct ProposalInfo has store, copy, drop{
+        pid: u64,
+        /// creator of the proposal
+        proposer: address,
+        /// when voting begins.
+        start_time: u64,
+        /// when voting ends.
+        end_time: u64,
+        /// count of voters who agree with the proposal
+        for_votes: u64,
+        /// count of voters who're against the proposal
+        against_votes: u64,
+        /// executable after this time.
+        eta: u64,
+        /// after how long, the agreed proposal can be executed.
+        action_delay: u64,
+        /// how many votes to reach to make the proposal pass.
+        quorum_votes: u64,
+        /// proposal action.
+        action: OBCDaoAction,
+    }
+
+    /// Proposal data struct.
+    struct Proposal has key , store{
+        /// id of the proposal
+        id: UID,
+        proposal: ProposalInfo,
+    }
+
+
+    /// User vote info.
+    struct Vote has key , store {
+        id: UID,
+        vid: u64,
+        /// vote for the proposal under the `proposer`.
+        proposer: address,
+        /// how many tokens to stake.
+        stake:  StakedObc,
+        /// vote for or vote against.
+        agree: bool,
+    }
+
+
+
+
+    //functions
+    entry public fun create_obcdao_action(
+            dao: &mut Dao,
+            actionName:vector<u8>,
+            ctx: &mut TxContext): OBCDaoAction {
+        //auth
+
+        // sender address
+        let sender = tx_context::sender(ctx);
+        let action_id = generate_next_action_id(dao);
+
+        let action = OBCDaoAction{
+            actionId: action_id,
+            name: string::utf8(actionName),
+            //description: string::utf8(actionName),
+        };
+
+        event::emit(
+            ActionCreateEvent{
+                actionId: action_id,
+                name: string::utf8(actionName),
+                creator: sender,
+            }
+        );
+        vec_map::insert(&mut dao.actionRecord, action_id, copy action);
+        action
+    }
+
+    // Part 3: transfer the OBC Dao object to the sender
+    entry public fun create_dao(ctx: &mut TxContext ) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        let daoConfig = new_dao_config(DEFAULT_VOTE_DELAY,
+                                                    DEFAULT_VOTE_PERIOD,
+                                                    DEFAULT_VOTE_QUORUM_RATE,
+                                                    DEFAULT_MIN_ACTION_DELAY);
+
+
+        let daoInfo = DaoGlobalInfo{
+            id: object::new(ctx),
+            next_proposal_id: 0,
+            next_action_id: 0,
+            proposal_create_event: ProposalCreatedEvent{
+                proposal_id: 0,
+                proposer: DEFAULT_TOKEN_ADDRESS,
+            },
+            vote_changed_event: VoteChangedEvent{
+                proposal_id: 0,
+                voter: DEFAULT_TOKEN_ADDRESS,
+                proposer: DEFAULT_TOKEN_ADDRESS,
+                agree: false,
+                vote: 0,
+            }
+        };
+        let dao_obj = Dao{
+            id: object::new(ctx),
+            admin: sender,
+            config: daoConfig,
+            info: daoInfo,
+            proposalRecord: vec_map::empty(),
+            actionRecord: vec_map::empty(),
+            votesRecord: vec_map::empty(),
+
+        };
+
+
+        transfer::transfer(dao_obj, sender);
+
+
+    }
+
+    fun getDaoActionByActionId(dao:&mut Dao, actionId: u64) : OBCDaoAction {
+        let data = vec_map::get(&dao.actionRecord, &actionId);
+        //assert!(action != none, ERR_ACTION_MUST_EXIST);
+        // let bcs = bcs::new(*data);
+        //
+        // // Use `peel_*` functions to peel values from the serialized bytes.
+        // // Order has to be the same as we used in serialization!
+        // let (actionId, name) = (
+        //     bcs::peel_u64(&mut bcs),  bcs::peel_vec_u8(&mut bcs)
+        // );
+        // // Pack a  struct with the results of serialization
+        // OBCDaoAction {actionId, name: string::utf8(name)}
+        *data
+        //event content.
+
+    }
+
+
+    // create a dao config
+    public fun new_dao_config(
+        voting_delay: u64,
+        voting_period: u64,
+        voting_quorum_rate: u8,
+        min_action_delay: u64,
+    ): DaoConfig {
+        DaoConfig { voting_delay, voting_period, voting_quorum_rate, min_action_delay }
+    }
+
+
+
+    /// propose a proposal.
+    /// `action`: the actual action to execute.
+    /// `action_delay`: the delay to execute after the proposal is agreed
+    entry public fun propose (
+        dao: &mut Dao,
+        action_id: u64,
+        action_delay: u64,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        //auth or add token cost to reduct ddos attack
+
+        // if (vec_map::contains(&dao.actionRecord, &action_id) == false) {
+        //     assert!(false, ERR_ACTION_MUST_EXIST);
+        // };
+
+        let action = getDaoActionByActionId(dao, action_id);
+
+        if (action_delay <= 0 || action_delay <= min_action_delay(dao)) {
+            action_delay = min_action_delay(dao);
+        };
+
+        let proposal_id = generate_next_proposal_id(dao);
+
+        let sender = tx_context::sender(ctx);
+        let start_time = clock::timestamp_ms(clock)  + voting_delay(dao);
+        let quorum_votes = quorum_votes(dao);
+        let object_id = object::new(ctx);
+
+        let proposalInfo = ProposalInfo {
+            pid: proposal_id,
+            proposer: sender,
+            start_time,
+            end_time: start_time + voting_period(dao),
+            for_votes: 0,
+            against_votes: 0,
+            eta: 0,
+            action_delay,
+            quorum_votes,
+            action,
+        };
+
+        let proposal = Proposal{
+            id: object_id,
+            proposal: copy proposalInfo,
+        };
+        vec_map::insert(&mut dao.proposalRecord, proposal_id, proposalInfo);
+
+
+        transfer::transfer(proposal, sender);
+        // emit event
+        event::emit(
+            ProposalCreatedEvent{
+                proposal_id,
+                proposer: sender,
+            }
+        );
+
+    }
+
+    /// votes for a proposal.
+    /// User can only vote once, then the stake is locked,
+    /// which can only be unstaked by user after the proposal is expired, or cancelled, or executed.
+    /// So think twice before casting vote.
+    entry public fun cast_vote(
+        proposal: &mut Proposal,
+        coin: StakedObc,
+        vote_amount: u64,
+        agreeInt: u8,
+        //clock: & Clock,
+        ctx: &mut TxContext,
+    )  {
+        let agree = agreeInt == 1;
+
+        {
+            //let state = proposal_state(proposal,clock);
+            // only when proposal is active, use can cast vote.
+            //assert!(state == ACTIVE, (ERR_PROPOSAL_STATE_INVALID));
+        };
+
+        {
+            if(vote_amount <= 0) {
+                assert!(false, ERR_VOTED_ERR_AMOUNT);
+            };
+            if(vote_amount > staking_pool::staked_sui_amount(&coin)){
+                assert!(false, ERR_VOTED_ERR_AMOUNT);
+            };
+        };
+
+        let sender = tx_context::sender(ctx);
+
+        let total_voted = {
+
+
+
+            let stakeCoin = split( &mut coin, vote_amount, ctx);
+            let stake_value = staking_pool::staked_sui_amount(&stakeCoin);
+            let my_vote = Vote {
+                id: object::new(ctx),
+                vid: proposal.proposal.pid,
+                proposer: proposal.proposal.proposer,
+                stake: stakeCoin,
+                agree,
+            };
+
+            if (agree) {
+                proposal.proposal.for_votes = proposal.proposal.for_votes + stake_value;
+            } else {
+                proposal.proposal.against_votes = proposal.proposal.against_votes + stake_value;
+            };
+            transfer::transfer(my_vote, sender);
+            transfer::public_transfer(coin, sender);
+            stake_value
+        };
+
+
+        // emit event
+        event::emit(
+            VoteChangedEvent{
+                proposal_id: proposal.proposal.pid,
+                voter: sender,
+                proposer: proposal.proposal.proposer,
+                agree,
+                vote: total_voted,
+            });
+    }
+
+
+
+    /// Let user change their vote during the voting time.
+    entry public fun change_vote(
+        my_vote: &mut Vote,
+        proposal: &mut Proposal,
+        agree: bool,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    )  {
+        {
+            let state = proposal_state(proposal, clock);
+            // only when proposal is active, user can change vote.
+            assert!(state == ACTIVE, (ERR_PROPOSAL_STATE_INVALID));
+        };
+
+
+        // sender address
+        let sender = tx_context::sender(ctx);
+        //let my_vote = vote
+        {
+            assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
+            assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+        };
+
+        // flip the vote
+        if (my_vote.agree != agree) {
+            let total_voted = do_flip_vote(my_vote, proposal);
+            // emit event
+            event::emit(
+                VoteChangedEvent{
+                    proposal_id: proposal.proposal.pid,
+                    voter: sender,
+                    proposer: proposal.proposal.proposer,
+                    agree,
+                    vote: total_voted, });
+
+        };
+    }
+
+    fun do_flip_vote(my_vote: &mut Vote,
+                     proposal: &mut Proposal): u64 {
+        my_vote.agree = !my_vote.agree;
+        let total_voted = staked_sui_amount(&my_vote.stake);
+        if (my_vote.agree) {
+            proposal.proposal.for_votes = proposal.proposal.for_votes + total_voted;
+            proposal.proposal.against_votes = proposal.proposal.against_votes - total_voted;
+        } else {
+            proposal.proposal.for_votes = proposal.proposal.for_votes - total_voted;
+            proposal.proposal.against_votes = proposal.proposal.against_votes + total_voted;
+        };
+        total_voted
+    }
+
+    /// Revoke some voting powers from vote on `proposal_id` of `proposer_address`.
+    entry public fun revoke_vote(
+        proposal: &mut Proposal,
+        my_vote:  Vote,
+        voting_power: u64,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    ){
+        {
+            let _state = proposal_state(proposal, clock);
+            // only when proposal is active, user can revoke vote.
+            //assert!(state == ACTIVE, (ERR_PROPOSAL_STATE_INVALID));
+        };
+        // get proposal
+
+        // get vote
+        let sender = tx_context::sender(ctx);
+        {
+            assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
+            assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+        };
+        // revoke vote on proposal
+        do_revoke_vote(proposal, &mut my_vote, voting_power,ctx);
+        // emit vote changed event
+        event::emit(
+            VoteChangedEvent{
+                proposal_id: proposal.proposal.pid,
+                voter: sender,
+                proposer: proposal.proposal.proposer,
+                agree: my_vote.agree,
+                vote: staked_sui_amount(&my_vote.stake),
+            }
+        );
+
+        if (staked_sui_amount(&my_vote.stake) == 0u64) {
+            let Vote {
+                proposer: _,
+                id: uid,
+                vid: _,
+                stake,
+                agree: _} = my_vote;
+
+            object::delete(uid);
+            transfer::public_transfer(stake, sender);
+        } else {
+            let some_vote = my_vote;
+            transfer::transfer(some_vote, sender);
+        };
+
+        //todo transfer back
+        //reverted_stake
+    }
+
+
+    fun do_revoke_vote(
+        proposal: &mut Proposal,
+        vote: &mut Vote,
+        to_revoke: u64,
+        ctx: &mut TxContext,
+    ){
+        spec {
+            assume vote.stake.value >= to_revoke;
+        };
+
+        //todo: unlock stake coin or return...
+        //// Token::withdraw(&mut vote.stake, to_revoke);
+        let reverted_stake = staking_pool::split(&mut vote.stake, to_revoke, ctx);
+
+        if (vote.agree) {
+            proposal.proposal.for_votes = proposal.proposal.for_votes - to_revoke;
+        } else {
+            proposal.proposal.against_votes = proposal.proposal.against_votes - to_revoke;
+        };
+        spec {
+            assert coin::value(reverted_stake) == to_revoke;
+        };
+
+        //reverted_stake
+        transfer::public_transfer(reverted_stake, tx_context::sender(ctx));
+    }
+
+    /// Retrieve back my staked token voted for a proposal.
+    entry public fun unstake_votes(
+        proposal: &mut Proposal,
+        vote: Vote,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    ) {
+        // only check state when proposal exists.
+        // because proposal can be destroyed after it ends in DEFEATED or EXTRACTED state.
+        {
+            let _state = proposal_state(proposal,clock);
+            // Only after vote period end, user can unstake his votes.
+            //assert!(state > ACTIVE, (ERR_PROPOSAL_STATE_INVALID));
+        };
+
+        let sender = tx_context::sender(ctx);
+        // delete vote.
+        let Vote { proposer, id,vid, stake, agree: _ } = vote;
+
+
+        object::delete(id);
+
+        // these checks are still required.
+        assert!(proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
+        assert!(vid == proposal.proposal.pid, (
+            ERR_VOTED_OTHERS_ALREADY));
+
+        transfer::public_transfer(stake, sender);
+    }
+    /// Get voter's vote info on proposal with `proposal_id` of `proposer_address`.
+    struct VoteInfoEvent has copy, drop,store{
+        proposal_id: u64,
+        voter: address,
+        proposer: address,
+        agree: bool,
+        vote: u64,
+    }
+    entry public fun vote_of(
+        vote: &Vote,
+        proposal: &mut Proposal,
+        ctx: &mut TxContext,
+    ){
+        assert!(vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
+        assert!(vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+        //(vote.agree, staking_pool::staked_sui_amount(&vote.stake))
+        event::emit(
+            VoteInfoEvent{
+                proposal_id: proposal.proposal.pid,
+                voter: tx_context::sender(ctx),
+                proposer: proposal.proposal.proposer,
+                agree: vote.agree,
+                vote: staked_sui_amount(&vote.stake),
+            }
+        );
+    }
+
+
+    /// Check whether voter has voted on proposal with `proposal_id` of `proposer_address`.
+
+    entry public fun has_vote(
+        vote: &Vote,
+        proposal: &mut Proposal,
+    ): bool  {
+        event::emit(
+            BooleanEvent{value:
+            vote.proposer == proposal.proposal.proposer && vote.vid == proposal.proposal.pid});
+        vote.proposer == proposal.proposal.proposer && vote.vid == proposal.proposal.pid
+    }
+
+
+    /// queue agreed proposal to execute.
+    public entry fun queue_proposal_action(
+        dao: &Dao,
+        proposal: &mut Proposal,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    )  {
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        // Only agreed proposal can be submitted.
+        assert!(
+            proposal_state(proposal, clock) == AGREED,
+            (ERR_PROPOSAL_STATE_INVALID)
+        );
+        proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
+    }
+
+    /// extract proposal action to execute.
+    public fun extract_proposal_action(
+        proposal: &mut Proposal,
+        clock: & Clock,
+    ): OBCDaoAction  {
+        // Only executable proposal's action can be extracted.
+        assert!(
+            proposal_state(proposal, clock) == EXECUTABLE,
+            (ERR_PROPOSAL_STATE_INVALID),
+        );
+        let action = proposal.proposal.action;
+        action
+    }
+
+
+    /// remove terminated proposal from proposer
+    public entry fun destroy_terminated_proposal(
+        dao: &mut Dao,
+        proposal: Proposal,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    )  {
+
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        let proposal_state = proposal_state(&proposal,clock);
+        assert!(
+            proposal_state == DEFEATED || proposal_state == EXTRACTED,
+            (ERR_PROPOSAL_STATE_INVALID),
+        );
+
+
+        vec_map::remove(&mut dao.proposalRecord, &proposal.proposal.pid);
+        if (proposal_state == DEFEATED) {
+            let _ =  proposal.proposal.action;
+        };
+
+        let Proposal {
+            id: uid,
+            proposal: ProposalInfo{
+                pid: _,
+                proposer: _,
+                start_time: _,
+                end_time: _,
+                for_votes: _,
+                against_votes: _,
+                eta: _,
+                action_delay: _,
+                quorum_votes: _,
+                action: _
+                } ,
+            } = proposal;
+
+         object::delete(uid);
+
+    }
+
+    /// check whether a proposal exists in `proposer_address` with id `proposal_id`.
+    public fun proposal_exists (
+        dao : &mut Dao,
+        proposal: &Proposal,
+    ): bool {
+        let result = vec_map::contains(&dao.proposalRecord, &proposal.proposal.pid);
+        result
+    }
+
+    /// Get the proposal state.
+    entry public fun proposal_state(
+        proposal: &Proposal,
+        clock: & Clock,
+    ): u8  {
+        assert!(proposal.proposal.pid == proposal.proposal.pid, (ERR_PROPOSAL_ID_MISMATCH));
+        let current_time =  clock::timestamp_ms(clock) ;
+        let status = judge_proposal_state(proposal, current_time);
+
+        // emit event
+        event::emit(
+            ProposalStateEvent {
+                proposalId: proposal.proposal.pid,
+                state: status,
+            });
+        status
+    }
+
+    fun judge_proposal_state(
+        proposal: &Proposal,
+        current_time: u64,
+    ): u8 {
+        if (current_time < proposal.proposal.start_time) {
+            // Pending
+            PENDING
+        } else if (current_time <= proposal.proposal.end_time) {
+            // Active
+            ACTIVE
+        } else if (proposal.proposal.for_votes <= proposal.proposal.against_votes ||
+            proposal.proposal.for_votes < proposal.proposal.quorum_votes) {
+            // Defeated
+            DEFEATED
+        } else if (proposal.proposal.eta == 0) {
+            // Agreed.
+            AGREED
+        } else if (current_time < proposal.proposal.eta) {
+            // Queued, waiting to execute
+            QUEUED
+        } else if (proposal.proposal.action.actionId != 0 ) {
+            EXECUTABLE
+        } else {
+            EXTRACTED
+        }
+    }
+
+    /// get proposal's information.
+    /// return: (id, start_time, end_time, for_votes, against_votes).
+    struct ProposalInfoEvent has copy, drop,store{
+        proposal_id: u64,
+        start_time: u64,
+        end_time: u64,
+        for_votes: u64,
+        against_votes: u64,
+    }
+    entry public fun proposal_info(
+        proposal: &Proposal,
+    ) {
+        event::emit(
+            ProposalInfoEvent{
+                proposal_id: proposal.proposal.pid,
+                start_time: proposal.proposal.start_time,
+                end_time: proposal.proposal.end_time,
+                for_votes: proposal.proposal.for_votes,
+                against_votes: proposal.proposal.against_votes,
+            }
+        );
+    }
+
+
+
+
+
+    fun generate_next_proposal_id(dao: &mut Dao): u64 {
+        let info = &mut dao.info;
+        let proposal_id = info.next_proposal_id;
+        info.next_proposal_id = proposal_id + 1;
+        proposal_id
+
+    }
+
+    fun generate_next_action_id(dao: &mut Dao): u64 {
+        let info = &mut dao.info;
+        let action_id = info.next_action_id;
+        info.next_action_id = action_id + 1;
+        action_id
+
+    }
+
+    //// Helper functions
+
+    /// Quorum votes to make proposal pass.
+    public fun quorum_votes(dao: &mut Dao): u64 {
+        //let market_cap = total_supply(Coin<OBC>);
+        //let balance_in_treasury = Treasury::balance<TokenT>();
+        let total_supply_sui: u64 = 10000000000;
+        let supply = total_supply_sui;
+
+        let rate = voting_quorum_rate(dao);
+        let rate = (rate as u64);
+        supply * rate / 100
+    }
+    /// get default voting delay of the DAO.
+    public fun voting_delay(dao: &mut Dao): u64 {
+        get_config(dao).voting_delay
+    }
+
+    /// get the default voting period of the DAO.
+    public fun voting_period(dao: &mut Dao): u64 {
+        get_config(dao).voting_period
+    }
+
+    /// Get the quorum rate in percent.
+    public fun voting_quorum_rate(dao: &mut Dao): u8 {
+        get_config(dao).voting_quorum_rate
+    }
+
+
+    /// Get the min_action_delay of the DAO.
+    public fun min_action_delay(dao: &mut Dao): u64 {
+        get_config(dao).min_action_delay
+    }
+
+    fun get_config(dao: &mut Dao): &mut DaoConfig {
+        &mut dao.config
+    }
+
+    /// update function, modify dao config.
+    /// if any param is 0, it means no change to that param.
+    public fun modify_dao_config(
+        dao: &mut Dao,
+        voting_delay: u64,
+        voting_period: u64,
+        voting_quorum_rate: u8,
+        min_action_delay: u64,
+        ctx: &mut TxContext,
+
+    ) {
+
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        let config = get_config(dao);
+        if (voting_period > 0) {
+            config.voting_period = voting_period;
+        };
+        if (voting_delay > 0) {
+            config.voting_delay = voting_delay;
+        };
+        if (voting_quorum_rate > 0) {
+            assert!(voting_quorum_rate <= 100, (ERR_QUORUM_RATE_INVALID));
+            config.voting_quorum_rate = voting_quorum_rate;
+        };
+        if (min_action_delay > 0) {
+            config.min_action_delay = min_action_delay;
+        };
+
+
+    }
+
+    /// set voting delay
+    entry public fun set_voting_delay(
+        dao: &mut Dao,
+        value: u64,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        let config = get_config(dao);
+        config.voting_delay = value;
+    }
+
+    /// set voting period
+    entry public fun set_voting_period(
+        dao: &mut Dao,
+        value: u64,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        let config = get_config(dao);
+        config.voting_period = value;
+    }
+
+    /// set voting quorum rate
+    entry public fun set_voting_quorum_rate(
+        dao: &mut Dao,
+        value: u8,
+        ctx: &mut TxContext,
+
+    ) {
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        assert!(value <= 100 && value > 0, (ERR_QUORUM_RATE_INVALID));
+        let config = get_config(dao);
+        config.voting_quorum_rate = value;
+    }
+
+
+    /// set min action delay
+    entry public fun set_min_action_delay(
+        dao: &mut Dao,
+        value: u64,
+        ctx: &mut TxContext,
+
+    ) {
+        let sender = tx_context::sender(ctx);
+        assert!(dao.admin == sender,(ERR_NOT_AUTHORIZED));
+
+        assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        let config = get_config(dao);
+        config.min_action_delay = value;
+    }
+
+
+
+}
+
+

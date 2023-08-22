@@ -10,6 +10,8 @@ import {
 	getExecutionStatusType,
 	Coin,
 	UpgradePolicy,
+	sui2ObcAddress,
+	obc2SuiAddress,
 } from '../../../src';
 import { TransactionBlock } from '../../../src/builder';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
@@ -39,7 +41,7 @@ export class TestToolbox {
 	}
 
 	address() {
-		return this.keypair.getPublicKey().toSuiAddress();
+		return sui2ObcAddress(this.keypair.getPublicKey().toSuiAddress());
 	}
 
 	// TODO(chris): replace this with provider.getCoins instead
@@ -52,7 +54,7 @@ export class TestToolbox {
 				showOwner: true,
 			},
 		});
-		return objects.data.filter((obj) => Coin.isSUI(obj));
+		return objects.data.filter((obj) => Coin.isOBC(obj));
 	}
 
 	public async getActiveValidators() {
@@ -117,7 +119,7 @@ export async function publishPackage(packagePath: string, toolbox?: TestToolbox)
 	});
 	expect(getExecutionStatusType(publishTxn)).toEqual('success');
 
-	const packageId = getPublishedObjectChanges(publishTxn)[0].packageId.replace(
+	const packageId = obc2SuiAddress(getPublishedObjectChanges(publishTxn)[0].packageId).replace(
 		/^(0x)(0+)/,
 		'0x',
 	) as string;

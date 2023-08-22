@@ -62,29 +62,23 @@
 -  [Function `get_storage_fund_object_rebates`](#0x3_sui_system_state_inner_get_storage_fund_object_rebates)
 -  [Function `pool_exchange_rates`](#0x3_sui_system_state_inner_pool_exchange_rates)
 -  [Function `active_validator_addresses`](#0x3_sui_system_state_inner_active_validator_addresses)
--  [Function `init_exchange_gas_pool`](#0x3_sui_system_state_inner_init_exchange_gas_pool)
--  [Function `exchange_gas`](#0x3_sui_system_state_inner_exchange_gas)
--  [Function `gas_coin_rate`](#0x3_sui_system_state_inner_gas_coin_rate)
 -  [Function `extract_coin_balance`](#0x3_sui_system_state_inner_extract_coin_balance)
 -  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="">0x1::option</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">0x2::bag</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/event.md#0x2_event">0x2::event</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/pay.md#0x2_pay">0x2::pay</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">0x2::stable</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/table.md#0x2_table">0x2::table</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
-<b>use</b> <a href="exchange_inner.md#0x3_exchange_inner">0x3::exchange_inner</a>;
-<b>use</b> <a href="gas_coin_map.md#0x3_gas_coin_map">0x3::gas_coin_map</a>;
+<b>use</b> <a href="">0x2::bag</a>;
+<b>use</b> <a href="">0x2::balance</a>;
+<b>use</b> <a href="">0x2::coin</a>;
+<b>use</b> <a href="">0x2::event</a>;
+<b>use</b> <a href="">0x2::obc</a>;
+<b>use</b> <a href="">0x2::object</a>;
+<b>use</b> <a href="">0x2::pay</a>;
+<b>use</b> <a href="">0x2::table</a>;
+<b>use</b> <a href="">0x2::transfer</a>;
+<b>use</b> <a href="">0x2::tx_context</a>;
+<b>use</b> <a href="">0x2::vec_map</a>;
+<b>use</b> <a href="">0x2::vec_set</a>;
 <b>use</b> <a href="stake_subsidy.md#0x3_stake_subsidy">0x3::stake_subsidy</a>;
 <b>use</b> <a href="staking_pool.md#0x3_staking_pool">0x3::staking_pool</a>;
 <b>use</b> <a href="storage_fund.md#0x3_storage_fund">0x3::storage_fund</a>;
@@ -160,7 +154,7 @@ A list of system config parameters.
  for this many epochs before being kicked out.
 </dd>
 <dt>
-<code>extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a></code>
+<code>extra_fields: <a href="_Bag">bag::Bag</a></code>
 </dt>
 <dd>
  Any extra fields that's not defined statically.
@@ -241,7 +235,7 @@ Added min_validator_count.
  for this many epochs before being kicked out.
 </dd>
 <dt>
-<code>extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a></code>
+<code>extra_fields: <a href="_Bag">bag::Bag</a></code>
 </dt>
 <dd>
  Any extra fields that's not defined statically.
@@ -295,18 +289,6 @@ The top-level object containing all information of the Sui system.
  Contains all information about the validators.
 </dd>
 <dt>
-<code><a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>: <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a></code>
-</dt>
-<dd>
- Contains gas coin information
-</dd>
-<dt>
-<code>exchange_gas_coin_pool: <a href="exchange_inner.md#0x3_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a></code>
-</dt>
-<dd>
- Exchange gas coin pool
-</dd>
-<dt>
 <code><a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_StorageFund">storage_fund::StorageFund</a></code>
 </dt>
 <dd>
@@ -325,7 +307,7 @@ The top-level object containing all information of the Sui system.
  The reference gas price for the current epoch.
 </dd>
 <dt>
-<code>validator_report_records: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;</code>
+<code>validator_report_records: <a href="_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;</code>
 </dt>
 <dd>
  A map storing the records of validator reporting each other.
@@ -355,13 +337,13 @@ The top-level object containing all information of the Sui system.
  are out of safe mode.
 </dd>
 <dt>
-<code>safe_mode_storage_rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>safe_mode_storage_rewards: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>safe_mode_computation_rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>safe_mode_computation_rewards: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -385,7 +367,7 @@ The top-level object containing all information of the Sui system.
  Unix timestamp of the current epoch start
 </dd>
 <dt>
-<code>extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a></code>
+<code>extra_fields: <a href="_Bag">bag::Bag</a></code>
 </dt>
 <dd>
  Any extra fields that's not defined statically.
@@ -439,18 +421,6 @@ Uses SystemParametersV2 as the parameters.
  Contains all information about the validators.
 </dd>
 <dt>
-<code><a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>: <a href="gas_coin_map.md#0x3_gas_coin_map_GasCoinMap">gas_coin_map::GasCoinMap</a></code>
-</dt>
-<dd>
- Contains gas coin information
-</dd>
-<dt>
-<code>exchange_gas_coin_pool: <a href="exchange_inner.md#0x3_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a></code>
-</dt>
-<dd>
- Exchange gas coin pool
-</dd>
-<dt>
 <code><a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_StorageFund">storage_fund::StorageFund</a></code>
 </dt>
 <dd>
@@ -469,7 +439,7 @@ Uses SystemParametersV2 as the parameters.
  The reference gas price for the current epoch.
 </dd>
 <dt>
-<code>validator_report_records: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;</code>
+<code>validator_report_records: <a href="_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;</code>
 </dt>
 <dd>
  A map storing the records of validator reporting each other.
@@ -499,13 +469,13 @@ Uses SystemParametersV2 as the parameters.
  are out of safe mode.
 </dd>
 <dt>
-<code>safe_mode_storage_rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>safe_mode_storage_rewards: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>safe_mode_computation_rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>safe_mode_computation_rewards: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -529,7 +499,7 @@ Uses SystemParametersV2 as the parameters.
  Unix timestamp of the current epoch start
 </dd>
 <dt>
-<code>extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a></code>
+<code>extra_fields: <a href="_Bag">bag::Bag</a></code>
 </dt>
 <dd>
  Any extra fields that's not defined statically.
@@ -773,7 +743,7 @@ Create a new SuiSystemState object and make it shared.
 This function will be called only once in genesis.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_create">create</a>(validators: <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, initial_storage_fund: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, protocol_version: u64, epoch_start_timestamp_ms: u64, parameters: <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemParameters">sui_system_state_inner::SystemParameters</a>, <a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>: <a href="stake_subsidy.md#0x3_stake_subsidy_StakeSubsidy">stake_subsidy::StakeSubsidy</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInner">sui_system_state_inner::SuiSystemStateInner</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_create">create</a>(validators: <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, initial_storage_fund: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;, protocol_version: u64, epoch_start_timestamp_ms: u64, parameters: <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemParameters">sui_system_state_inner::SystemParameters</a>, <a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>: <a href="stake_subsidy.md#0x3_stake_subsidy_StakeSubsidy">stake_subsidy::StakeSubsidy</a>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInner">sui_system_state_inner::SuiSystemStateInner</a>
 </code></pre>
 
 
@@ -794,31 +764,23 @@ This function will be called only once in genesis.
     <b>let</b> validators = <a href="validator_set.md#0x3_validator_set_new">validator_set::new</a>(validators, ctx);
     <b>let</b> reference_gas_price = <a href="validator_set.md#0x3_validator_set_derive_reference_gas_price">validator_set::derive_reference_gas_price</a>(&validators);
     // This type is fixed <b>as</b> it's created at <a href="genesis.md#0x3_genesis">genesis</a>. It should not be updated during type upgrade.
-    <b>let</b> init_gas_coins_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<b>address</b>, GasCoinEntity&gt;();
-    <b>let</b> init_coin = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(initial_storage_fund, ctx);
-    <b>let</b> coin_id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>(&init_coin);
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> init_gas_coins_map, coin_id_address, <a href="gas_coin_map.md#0x3_gas_coin_map_new_default_entity">gas_coin_map::new_default_entity</a>(coin_id_address));
-    <b>let</b> <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0x3_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
-    <b>let</b> exchange_gas_coin_pool =  <a href="exchange_inner.md#0x3_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>(ctx, 0);
     <b>let</b> system_state = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInner">SuiSystemStateInner</a> {
         epoch: 0,
         protocol_version,
         system_state_version: <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_genesis_system_state_version">genesis_system_state_version</a>(),
         validators,
-        <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>,
-        exchange_gas_coin_pool,
-        <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_new">storage_fund::new</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(init_coin)),
+        <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>: <a href="storage_fund.md#0x3_storage_fund_new">storage_fund::new</a>(initial_storage_fund),
         parameters,
         reference_gas_price,
-        validator_report_records: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        validator_report_records: <a href="_empty">vec_map::empty</a>(),
         <a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>,
         safe_mode: <b>false</b>,
-        safe_mode_storage_rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>(),
-        safe_mode_computation_rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>(),
+        safe_mode_storage_rewards: <a href="_zero">balance::zero</a>(),
+        safe_mode_computation_rewards: <a href="_zero">balance::zero</a>(),
         safe_mode_storage_rebates: 0,
         safe_mode_non_refundable_storage_fee: 0,
         epoch_start_timestamp_ms,
-        extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_new">bag::new</a>(ctx),
+        extra_fields: <a href="_new">bag::new</a>(ctx),
     };
     system_state
 }
@@ -834,7 +796,7 @@ This function will be called only once in genesis.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_create_system_parameters">create_system_parameters</a>(epoch_duration_ms: u64, stake_subsidy_start_epoch: u64, max_validator_count: u64, min_validator_joining_stake: u64, validator_low_stake_threshold: u64, validator_very_low_stake_threshold: u64, validator_low_stake_grace_period: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemParameters">sui_system_state_inner::SystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_create_system_parameters">create_system_parameters</a>(epoch_duration_ms: u64, stake_subsidy_start_epoch: u64, max_validator_count: u64, min_validator_joining_stake: u64, validator_low_stake_threshold: u64, validator_very_low_stake_threshold: u64, validator_low_stake_grace_period: u64, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemParameters">sui_system_state_inner::SystemParameters</a>
 </code></pre>
 
 
@@ -863,7 +825,7 @@ This function will be called only once in genesis.
         validator_low_stake_threshold,
         validator_very_low_stake_threshold,
         validator_low_stake_grace_period,
-        extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_new">bag::new</a>(ctx),
+        extra_fields: <a href="_new">bag::new</a>(ctx),
     }
 }
 </code></pre>
@@ -893,8 +855,6 @@ This function will be called only once in genesis.
         protocol_version,
         system_state_version: _,
         validators,
-        <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>,
-        exchange_gas_coin_pool,
         <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>,
         parameters,
         reference_gas_price,
@@ -923,8 +883,6 @@ This function will be called only once in genesis.
         protocol_version,
         system_state_version: 2,
         validators,
-        <a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>,
-        exchange_gas_coin_pool,
         <a href="storage_fund.md#0x3_storage_fund">storage_fund</a>,
         parameters: <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemParametersV2">SystemParametersV2</a> {
             epoch_duration_ms,
@@ -967,7 +925,7 @@ Note: <code>proof_of_possession</code> MUST be a valid signature using sui_addre
 To produce a valid PoP, run [fn test_proof_of_possession].
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_validator_candidate">request_add_validator_candidate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, pubkey_bytes: <a href="">vector</a>&lt;u8&gt;, network_pubkey_bytes: <a href="">vector</a>&lt;u8&gt;, worker_pubkey_bytes: <a href="">vector</a>&lt;u8&gt;, proof_of_possession: <a href="">vector</a>&lt;u8&gt;, name: <a href="">vector</a>&lt;u8&gt;, description: <a href="">vector</a>&lt;u8&gt;, image_url: <a href="">vector</a>&lt;u8&gt;, project_url: <a href="">vector</a>&lt;u8&gt;, net_address: <a href="">vector</a>&lt;u8&gt;, p2p_address: <a href="">vector</a>&lt;u8&gt;, primary_address: <a href="">vector</a>&lt;u8&gt;, worker_address: <a href="">vector</a>&lt;u8&gt;, gas_price: u64, commission_rate: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_validator_candidate">request_add_validator_candidate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, pubkey_bytes: <a href="">vector</a>&lt;u8&gt;, network_pubkey_bytes: <a href="">vector</a>&lt;u8&gt;, worker_pubkey_bytes: <a href="">vector</a>&lt;u8&gt;, proof_of_possession: <a href="">vector</a>&lt;u8&gt;, name: <a href="">vector</a>&lt;u8&gt;, description: <a href="">vector</a>&lt;u8&gt;, image_url: <a href="">vector</a>&lt;u8&gt;, project_url: <a href="">vector</a>&lt;u8&gt;, net_address: <a href="">vector</a>&lt;u8&gt;, p2p_address: <a href="">vector</a>&lt;u8&gt;, primary_address: <a href="">vector</a>&lt;u8&gt;, worker_address: <a href="">vector</a>&lt;u8&gt;, gas_price: u64, commission_rate: u64, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -995,7 +953,7 @@ To produce a valid PoP, run [fn test_proof_of_possession].
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator.md#0x3_validator_new">validator::new</a>(
-        <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx),
+        <a href="_sender">tx_context::sender</a>(ctx),
         pubkey_bytes,
         network_pubkey_bytes,
         worker_pubkey_bytes,
@@ -1029,7 +987,7 @@ Called by a validator candidate to remove themselves from the candidacy. After t
 their staking pool becomes deactivate.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_remove_validator_candidate">request_remove_validator_candidate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_remove_validator_candidate">request_remove_validator_candidate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1060,7 +1018,7 @@ stake the validator has doesn't meet the min threshold, or if the number of new 
 epoch has already reached the maximum.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_validator">request_add_validator</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_validator">request_add_validator</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1097,7 +1055,7 @@ At the end of the epoch, the <code><a href="validator.md#0x3_validator">validato
 of the validator.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_remove_validator">request_remove_validator</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_remove_validator">request_remove_validator</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1205,7 +1163,7 @@ A validator can call this function to set a new commission rate, updated at the 
 the epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_set_commission_rate">request_set_commission_rate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, new_commission_rate: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_set_commission_rate">request_set_commission_rate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, new_commission_rate: u64, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1238,7 +1196,7 @@ the epoch.
 This function is used to set new commission rate for candidate validators
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_set_candidate_validator_commission_rate">set_candidate_validator_commission_rate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, new_commission_rate: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_set_candidate_validator_commission_rate">set_candidate_validator_commission_rate</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, new_commission_rate: u64, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1268,7 +1226,7 @@ This function is used to set new commission rate for candidate validators
 Add stake to a validator's staking pool.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_stake">request_add_stake</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, stake: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_stake">request_add_stake</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, stake: <a href="_Coin">coin::Coin</a>&lt;<a href="_OBC">obc::OBC</a>&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
 </code></pre>
 
 
@@ -1286,7 +1244,7 @@ Add stake to a validator's staking pool.
     <a href="validator_set.md#0x3_validator_set_request_add_stake">validator_set::request_add_stake</a>(
         &<b>mut</b> self.validators,
         validator_address,
-        <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(stake),
+        <a href="_into_balance">coin::into_balance</a>(stake),
         ctx,
     )
 }
@@ -1303,7 +1261,7 @@ Add stake to a validator's staking pool.
 Add stake to a validator's staking pool using multiple coins.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_stake_mul_coin">request_add_stake_mul_coin</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, stakes: <a href="">vector</a>&lt;<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;&gt;, stake_amount: <a href="_Option">option::Option</a>&lt;u64&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_stake_mul_coin">request_add_stake_mul_coin</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, stakes: <a href="">vector</a>&lt;<a href="_Coin">coin::Coin</a>&lt;<a href="_OBC">obc::OBC</a>&gt;&gt;, stake_amount: <a href="_Option">option::Option</a>&lt;u64&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
 </code></pre>
 
 
@@ -1319,8 +1277,8 @@ Add stake to a validator's staking pool using multiple coins.
     validator_address: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) : StakedObc {
-    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_extract_coin_balance">extract_coin_balance</a>(stakes, stake_amount, ctx);
-    <a href="validator_set.md#0x3_validator_set_request_add_stake">validator_set::request_add_stake</a>(&<b>mut</b> self.validators, validator_address, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx)
+    <b>let</b> <a href="">balance</a> = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_extract_coin_balance">extract_coin_balance</a>(stakes, stake_amount, ctx);
+    <a href="validator_set.md#0x3_validator_set_request_add_stake">validator_set::request_add_stake</a>(&<b>mut</b> self.validators, validator_address, <a href="">balance</a>, ctx)
 }
 </code></pre>
 
@@ -1335,7 +1293,7 @@ Add stake to a validator's staking pool using multiple coins.
 Withdraw some portion of a stake from a validator's staking pool.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_withdraw_stake">request_withdraw_stake</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_withdraw_stake">request_withdraw_stake</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;
 </code></pre>
 
 
@@ -1350,7 +1308,7 @@ Withdraw some portion of a stake from a validator's staking pool.
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;OBC&gt; {
     <b>assert</b>!(
-        stake_activation_epoch(&staked_sui) &lt;= <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx),
+        stake_activation_epoch(&staked_sui) &lt;= <a href="_epoch">tx_context::epoch</a>(ctx),
         <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EStakeWithdrawBeforeActivation">EStakeWithdrawBeforeActivation</a>
     );
     <a href="validator_set.md#0x3_validator_set_request_withdraw_stake">validator_set::request_withdraw_stake</a>(
@@ -1440,7 +1398,7 @@ Undo a <code>report_validator</code> action. Aborts if
 
 
 
-<pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_report_validator_impl">report_validator_impl</a>(verified_cap: <a href="validator_cap.md#0x3_validator_cap_ValidatorOperationCap">validator_cap::ValidatorOperationCap</a>, reportee_addr: <b>address</b>, validator_report_records: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;)
+<pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_report_validator_impl">report_validator_impl</a>(verified_cap: <a href="validator_cap.md#0x3_validator_cap_ValidatorOperationCap">validator_cap::ValidatorOperationCap</a>, reportee_addr: <b>address</b>, validator_report_records: &<b>mut</b> <a href="_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;)
 </code></pre>
 
 
@@ -1456,12 +1414,12 @@ Undo a <code>report_validator</code> action. Aborts if
 ) {
     <b>let</b> reporter_address = *<a href="validator_cap.md#0x3_validator_cap_verified_operation_cap_address">validator_cap::verified_operation_cap_address</a>(&verified_cap);
     <b>assert</b>!(reporter_address != reportee_addr, <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_ECannotReportOneself">ECannotReportOneself</a>);
-    <b>if</b> (!<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(validator_report_records, &reportee_addr)) {
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(validator_report_records, reportee_addr, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_singleton">vec_set::singleton</a>(reporter_address));
+    <b>if</b> (!<a href="_contains">vec_map::contains</a>(validator_report_records, &reportee_addr)) {
+        <a href="_insert">vec_map::insert</a>(validator_report_records, reportee_addr, <a href="_singleton">vec_set::singleton</a>(reporter_address));
     } <b>else</b> {
-        <b>let</b> reporters = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(validator_report_records, &reportee_addr);
-        <b>if</b> (!<a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(reporters, &reporter_address)) {
-            <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(reporters, reporter_address);
+        <b>let</b> reporters = <a href="_get_mut">vec_map::get_mut</a>(validator_report_records, &reportee_addr);
+        <b>if</b> (!<a href="_contains">vec_set::contains</a>(reporters, &reporter_address)) {
+            <a href="_insert">vec_set::insert</a>(reporters, reporter_address);
         }
     }
 }
@@ -1477,7 +1435,7 @@ Undo a <code>report_validator</code> action. Aborts if
 
 
 
-<pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_undo_report_validator_impl">undo_report_validator_impl</a>(verified_cap: <a href="validator_cap.md#0x3_validator_cap_ValidatorOperationCap">validator_cap::ValidatorOperationCap</a>, reportee_addr: <b>address</b>, validator_report_records: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;)
+<pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_undo_report_validator_impl">undo_report_validator_impl</a>(verified_cap: <a href="validator_cap.md#0x3_validator_cap_ValidatorOperationCap">validator_cap::ValidatorOperationCap</a>, reportee_addr: <b>address</b>, validator_report_records: &<b>mut</b> <a href="_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;)
 </code></pre>
 
 
@@ -1491,15 +1449,15 @@ Undo a <code>report_validator</code> action. Aborts if
     reportee_addr: <b>address</b>,
     validator_report_records: &<b>mut</b> VecMap&lt;<b>address</b>, VecSet&lt;<b>address</b>&gt;&gt;,
 ) {
-    <b>assert</b>!(<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(validator_report_records, &reportee_addr), <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EReportRecordNotFound">EReportRecordNotFound</a>);
-    <b>let</b> reporters = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(validator_report_records, &reportee_addr);
+    <b>assert</b>!(<a href="_contains">vec_map::contains</a>(validator_report_records, &reportee_addr), <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EReportRecordNotFound">EReportRecordNotFound</a>);
+    <b>let</b> reporters = <a href="_get_mut">vec_map::get_mut</a>(validator_report_records, &reportee_addr);
 
     <b>let</b> reporter_addr = *<a href="validator_cap.md#0x3_validator_cap_verified_operation_cap_address">validator_cap::verified_operation_cap_address</a>(&verified_cap);
-    <b>assert</b>!(<a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(reporters, &reporter_addr), <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EReportRecordNotFound">EReportRecordNotFound</a>);
+    <b>assert</b>!(<a href="_contains">vec_set::contains</a>(reporters, &reporter_addr), <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EReportRecordNotFound">EReportRecordNotFound</a>);
 
-    <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_remove">vec_set::remove</a>(reporters, &reporter_addr);
-    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_is_empty">vec_set::is_empty</a>(reporters)) {
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(validator_report_records, &reportee_addr);
+    <a href="_remove">vec_set::remove</a>(reporters, &reporter_addr);
+    <b>if</b> (<a href="_is_empty">vec_set::is_empty</a>(reporters)) {
+        <a href="_remove">vec_map::remove</a>(validator_report_records, &reportee_addr);
     }
 }
 </code></pre>
@@ -1516,7 +1474,7 @@ Create a new <code>UnverifiedValidatorOperationCap</code>, transfer it to the
 validator and registers it. The original object is thus revoked.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_rotate_operation_cap">rotate_operation_cap</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_rotate_operation_cap">rotate_operation_cap</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1545,7 +1503,7 @@ validator and registers it. The original object is thus revoked.
 Update a validator's name.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_name">update_validator_name</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, name: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_name">update_validator_name</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, name: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1576,7 +1534,7 @@ Update a validator's name.
 Update a validator's description
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_description">update_validator_description</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, description: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_description">update_validator_description</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, description: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1606,7 +1564,7 @@ Update a validator's description
 Update a validator's image url
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_image_url">update_validator_image_url</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, image_url: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_image_url">update_validator_image_url</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, image_url: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1636,7 +1594,7 @@ Update a validator's image url
 Update a validator's project url
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_project_url">update_validator_project_url</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, project_url: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_project_url">update_validator_project_url</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, project_url: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1667,7 +1625,7 @@ Update a validator's network address.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_network_address">update_validator_next_epoch_network_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_network_address">update_validator_next_epoch_network_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1699,7 +1657,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's network address.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_network_address">update_candidate_validator_network_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_network_address">update_candidate_validator_network_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1730,7 +1688,7 @@ Update a validator's p2p address.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_p2p_address">update_validator_next_epoch_p2p_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, p2p_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_p2p_address">update_validator_next_epoch_p2p_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, p2p_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1762,7 +1720,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's p2p address.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_p2p_address">update_candidate_validator_p2p_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, p2p_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_p2p_address">update_candidate_validator_p2p_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, p2p_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1793,7 +1751,7 @@ Update a validator's narwhal primary address.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_primary_address">update_validator_next_epoch_primary_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, primary_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_primary_address">update_validator_next_epoch_primary_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, primary_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1823,7 +1781,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's narwhal primary address.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_primary_address">update_candidate_validator_primary_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, primary_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_primary_address">update_candidate_validator_primary_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, primary_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1854,7 +1812,7 @@ Update a validator's narwhal worker address.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_worker_address">update_validator_next_epoch_worker_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_worker_address">update_validator_next_epoch_worker_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1884,7 +1842,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's narwhal worker address.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_worker_address">update_candidate_validator_worker_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_worker_address">update_candidate_validator_worker_address</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_address: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1915,7 +1873,7 @@ Update a validator's public key of protocol key and proof of possession.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_protocol_pubkey">update_validator_next_epoch_protocol_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, protocol_pubkey: <a href="">vector</a>&lt;u8&gt;, proof_of_possession: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_protocol_pubkey">update_validator_next_epoch_protocol_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, protocol_pubkey: <a href="">vector</a>&lt;u8&gt;, proof_of_possession: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1948,7 +1906,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's public key of protocol key and proof of possession.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_protocol_pubkey">update_candidate_validator_protocol_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, protocol_pubkey: <a href="">vector</a>&lt;u8&gt;, proof_of_possession: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_protocol_pubkey">update_candidate_validator_protocol_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, protocol_pubkey: <a href="">vector</a>&lt;u8&gt;, proof_of_possession: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1980,7 +1938,7 @@ Update a validator's public key of worker key.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_worker_pubkey">update_validator_next_epoch_worker_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_worker_pubkey">update_validator_next_epoch_worker_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2012,7 +1970,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's public key of worker key.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_worker_pubkey">update_candidate_validator_worker_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_worker_pubkey">update_candidate_validator_worker_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, worker_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2043,7 +2001,7 @@ Update a validator's public key of network key.
 The change will only take effects starting from the next epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_network_pubkey">update_validator_next_epoch_network_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_validator_next_epoch_network_pubkey">update_validator_next_epoch_network_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2075,7 +2033,7 @@ The change will only take effects starting from the next epoch.
 Update candidate validator's public key of network key.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_network_pubkey">update_candidate_validator_network_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_update_candidate_validator_network_pubkey">update_candidate_validator_network_pubkey</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, network_pubkey: <a href="">vector</a>&lt;u8&gt;, ctx: &<a href="_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2111,7 +2069,7 @@ gas coins.
 4. Update all validators.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_advance_epoch">advance_epoch</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, new_epoch: u64, next_protocol_version: u64, storage_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, computation_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, storage_rebate_amount: u64, non_refundable_storage_fee_amount: u64, storage_fund_reinvest_rate: u64, reward_slashing_rate: u64, epoch_start_timestamp_ms: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_advance_epoch">advance_epoch</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, new_epoch: u64, next_protocol_version: u64, storage_reward: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;, computation_reward: <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;, storage_rebate_amount: u64, non_refundable_storage_fee_amount: u64, storage_fund_reinvest_rate: u64, reward_slashing_rate: u64, epoch_start_timestamp_ms: u64, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;
 </code></pre>
 
 
@@ -2151,10 +2109,10 @@ gas coins.
     };
 
     // Accumulate the gas summary during safe_mode before processing any rewards:
-    <b>let</b> safe_mode_storage_rewards = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> self.safe_mode_storage_rewards);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> storage_reward, safe_mode_storage_rewards);
-    <b>let</b> safe_mode_computation_rewards = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> self.safe_mode_computation_rewards);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> computation_reward, safe_mode_computation_rewards);
+    <b>let</b> safe_mode_storage_rewards = <a href="_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> self.safe_mode_storage_rewards);
+    <a href="_join">balance::join</a>(&<b>mut</b> storage_reward, safe_mode_storage_rewards);
+    <b>let</b> safe_mode_computation_rewards = <a href="_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> self.safe_mode_computation_rewards);
+    <a href="_join">balance::join</a>(&<b>mut</b> computation_reward, safe_mode_computation_rewards);
     storage_rebate_amount = storage_rebate_amount + self.safe_mode_storage_rebates;
     self.safe_mode_storage_rebates = 0;
     non_refundable_storage_fee_amount = non_refundable_storage_fee_amount + self.safe_mode_non_refundable_storage_fee;
@@ -2164,32 +2122,32 @@ gas coins.
     <b>let</b> storage_fund_balance = <a href="storage_fund.md#0x3_storage_fund_total_balance">storage_fund::total_balance</a>(&self.<a href="storage_fund.md#0x3_storage_fund">storage_fund</a>);
     <b>let</b> total_stake = storage_fund_balance + total_validators_stake;
 
-    <b>let</b> storage_charge = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&storage_reward);
-    <b>let</b> computation_charge = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&computation_reward);
+    <b>let</b> storage_charge = <a href="_value">balance::value</a>(&storage_reward);
+    <b>let</b> computation_charge = <a href="_value">balance::value</a>(&computation_reward);
 
     // Include stake subsidy in the rewards given out <b>to</b> validators and stakers.
     // Delay distributing any stake subsidies until after `stake_subsidy_start_epoch`.
     // And <b>if</b> this epoch is shorter than the regular epoch duration, don't distribute any stake subsidy.
     <b>let</b> <a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a> =
-        <b>if</b> (<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) &gt;= self.parameters.stake_subsidy_start_epoch  &&
+        <b>if</b> (<a href="_epoch">tx_context::epoch</a>(ctx) &gt;= self.parameters.stake_subsidy_start_epoch  &&
             epoch_start_timestamp_ms &gt;= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
         {
             <a href="stake_subsidy.md#0x3_stake_subsidy_advance_epoch">stake_subsidy::advance_epoch</a>(&<b>mut</b> self.<a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>)
         } <b>else</b> {
-            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>()
+            <a href="_zero">balance::zero</a>()
         };
 
-    <b>let</b> stake_subsidy_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> computation_reward, <a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>);
+    <b>let</b> stake_subsidy_amount = <a href="_value">balance::value</a>(&<a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>);
+    <a href="_join">balance::join</a>(&<b>mut</b> computation_reward, <a href="stake_subsidy.md#0x3_stake_subsidy">stake_subsidy</a>);
 
     <b>let</b> total_stake_u128 = (total_stake <b>as</b> u128);
     <b>let</b> computation_charge_u128 = (computation_charge <b>as</b> u128);
 
     <b>let</b> storage_fund_reward_amount = (storage_fund_balance <b>as</b> u128) * computation_charge_u128 / total_stake_u128;
-    <b>let</b> storage_fund_reward = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> computation_reward, (storage_fund_reward_amount <b>as</b> u64));
+    <b>let</b> storage_fund_reward = <a href="_split">balance::split</a>(&<b>mut</b> computation_reward, (storage_fund_reward_amount <b>as</b> u64));
     <b>let</b> storage_fund_reinvestment_amount =
         storage_fund_reward_amount * (storage_fund_reinvest_rate <b>as</b> u128) / <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_BASIS_POINT_DENOMINATOR">BASIS_POINT_DENOMINATOR</a>;
-    <b>let</b> storage_fund_reinvestment = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(
+    <b>let</b> storage_fund_reinvestment = <a href="_split">balance::split</a>(
         &<b>mut</b> storage_fund_reward,
         (storage_fund_reinvestment_amount <b>as</b> u64),
     );
@@ -2198,8 +2156,8 @@ gas coins.
     // Sanity check <b>to</b> make sure we are advancing <b>to</b> the right epoch.
     <b>assert</b>!(new_epoch == self.epoch, <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EAdvancedToWrongEpoch">EAdvancedToWrongEpoch</a>);
 
-    <b>let</b> computation_reward_amount_before_distribution = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&computation_reward);
-    <b>let</b> storage_fund_reward_amount_before_distribution = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&storage_fund_reward);
+    <b>let</b> computation_reward_amount_before_distribution = <a href="_value">balance::value</a>(&computation_reward);
+    <b>let</b> storage_fund_reward_amount_before_distribution = <a href="_value">balance::value</a>(&storage_fund_reward);
 
     <a href="validator_set.md#0x3_validator_set_advance_epoch">validator_set::advance_epoch</a>(
         &<b>mut</b> self.validators,
@@ -2215,8 +2173,8 @@ gas coins.
 
     <b>let</b> new_total_stake = <a href="validator_set.md#0x3_validator_set_total_stake">validator_set::total_stake</a>(&self.validators);
 
-    <b>let</b> computation_reward_amount_after_distribution = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&computation_reward);
-    <b>let</b> storage_fund_reward_amount_after_distribution = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&storage_fund_reward);
+    <b>let</b> computation_reward_amount_after_distribution = <a href="_value">balance::value</a>(&computation_reward);
+    <b>let</b> storage_fund_reward_amount_after_distribution = <a href="_value">balance::value</a>(&storage_fund_reward);
     <b>let</b> computation_reward_distributed = computation_reward_amount_before_distribution - computation_reward_amount_after_distribution;
     <b>let</b> storage_fund_reward_distributed = storage_fund_reward_amount_before_distribution - storage_fund_reward_amount_after_distribution;
 
@@ -2225,11 +2183,11 @@ gas coins.
     // Derive the reference gas price for the new epoch
     self.reference_gas_price = <a href="validator_set.md#0x3_validator_set_derive_reference_gas_price">validator_set::derive_reference_gas_price</a>(&self.validators);
     // Because of precision issues <b>with</b> integer divisions, we expect that there will be some
-    // remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> in `storage_fund_reward` and `computation_reward`.
+    // remaining <a href="">balance</a> in `storage_fund_reward` and `computation_reward`.
     // All of these go <b>to</b> the storage fund.
     <b>let</b> leftover_staking_rewards = storage_fund_reward;
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> leftover_staking_rewards, computation_reward);
-    <b>let</b> leftover_storage_fund_inflow = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&leftover_staking_rewards);
+    <a href="_join">balance::join</a>(&<b>mut</b> leftover_staking_rewards, computation_reward);
+    <b>let</b> leftover_storage_fund_inflow = <a href="_value">balance::value</a>(&leftover_staking_rewards);
 
     <b>let</b> refunded_storage_rebate =
         <a href="storage_fund.md#0x3_storage_fund_advance_epoch">storage_fund::advance_epoch</a>(
@@ -2241,7 +2199,7 @@ gas coins.
             non_refundable_storage_fee_amount,
         );
 
-    <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
+    <a href="_emit">event::emit</a>(
         <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SystemEpochInfoEvent">SystemEpochInfoEvent</a> {
             epoch: self.epoch,
             protocol_version: self.protocol_version,
@@ -2260,8 +2218,8 @@ gas coins.
     self.safe_mode = <b>false</b>;
     // Double check that the gas from safe mode <b>has</b> been processed.
     <b>assert</b>!(self.safe_mode_storage_rebates == 0
-        && <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.safe_mode_storage_rewards) == 0
-        && <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.safe_mode_computation_rewards) == 0, <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_ESafeModeGasNotProcessed">ESafeModeGasNotProcessed</a>);
+        && <a href="_value">balance::value</a>(&self.safe_mode_storage_rewards) == 0
+        && <a href="_value">balance::value</a>(&self.safe_mode_computation_rewards) == 0, <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_ESafeModeGasNotProcessed">ESafeModeGasNotProcessed</a>);
 
     // Return the storage rebate split from storage fund that's already refunded <b>to</b> the transaction senders.
     // This will be burnt at the last step of epoch change programmable transaction.
@@ -2432,7 +2390,7 @@ Returns the staking pool id of a given validator.
 Aborts if <code>validator_addr</code> is not an active validator.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_staking_pool_id">validator_staking_pool_id</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, validator_addr: <b>address</b>): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_staking_pool_id">validator_staking_pool_id</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, validator_addr: <b>address</b>): <a href="_ID">object::ID</a>
 </code></pre>
 
 
@@ -2458,7 +2416,7 @@ Aborts if <code>validator_addr</code> is not an active validator.
 Returns reference to the staking pool mappings that map pool ids to active validator addresses
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_staking_pool_mappings">validator_staking_pool_mappings</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>): &<a href="../../../.././build/Sui/docs/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, <b>address</b>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_staking_pool_mappings">validator_staking_pool_mappings</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>): &<a href="_Table">table::Table</a>&lt;<a href="_ID">object::ID</a>, <b>address</b>&gt;
 </code></pre>
 
 
@@ -2484,7 +2442,7 @@ Returns reference to the staking pool mappings that map pool ids to active valid
 Returns all the validators who are currently reporting <code>addr</code>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_get_reporters_of">get_reporters_of</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, addr: <b>address</b>): <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_get_reporters_of">get_reporters_of</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, addr: <b>address</b>): <a href="_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;
 </code></pre>
 
 
@@ -2495,10 +2453,10 @@ Returns all the validators who are currently reporting <code>addr</code>
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_get_reporters_of">get_reporters_of</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>, addr: <b>address</b>): VecSet&lt;<b>address</b>&gt; {
 
-    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.validator_report_records, &addr)) {
-        *<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&self.validator_report_records, &addr)
+    <b>if</b> (<a href="_contains">vec_map::contains</a>(&self.validator_report_records, &addr)) {
+        *<a href="_get">vec_map::get</a>(&self.validator_report_records, &addr)
     } <b>else</b> {
-        <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>()
+        <a href="_empty">vec_set::empty</a>()
     }
 }
 </code></pre>
@@ -2561,7 +2519,7 @@ Returns all the validators who are currently reporting <code>addr</code>
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_pool_exchange_rates">pool_exchange_rates</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, pool_id: &<a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>): &<a href="../../../.././build/Sui/docs/table.md#0x2_table_Table">table::Table</a>&lt;u64, <a href="staking_pool.md#0x3_staking_pool_PoolTokenExchangeRate">staking_pool::PoolTokenExchangeRate</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_pool_exchange_rates">pool_exchange_rates</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, pool_id: &<a href="_ID">object::ID</a>): &<a href="_Table">table::Table</a>&lt;u64, <a href="staking_pool.md#0x3_staking_pool_PoolTokenExchangeRate">staking_pool::PoolTokenExchangeRate</a>&gt;
 </code></pre>
 
 
@@ -2608,89 +2566,6 @@ Returns all the validators who are currently reporting <code>addr</code>
 
 </details>
 
-<a name="0x3_sui_system_state_inner_init_exchange_gas_pool"></a>
-
-## Function `init_exchange_gas_pool`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_init_exchange_gas_pool">init_exchange_gas_pool</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_init_exchange_gas_pool">init_exchange_gas_pool</a>(
-    self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
-    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;
-) {
-    <a href="exchange_inner.md#0x3_exchange_inner_add_obc">exchange_inner::add_obc</a>(&<b>mut</b> self.exchange_gas_coin_pool, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x3_sui_system_state_inner_exchange_gas"></a>
-
-## Function `exchange_gas`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_exchange_gas">exchange_gas</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_exchange_gas">exchange_gas</a>(
-    self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
-    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;STABLE&gt;,
-    ctx: &<b>mut</b> TxContext
-): Balance&lt;OBC&gt;  {
-    <b>let</b> rate = <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">gas_coin_map::requst_get_exchange_rate</a>&lt;STABLE&gt;(&self.<a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>, &<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>);
-    <a href="exchange_inner.md#0x3_exchange_inner_request_exchange_gas">exchange_inner::request_exchange_gas</a>(rate, &<b>mut</b> self.exchange_gas_coin_pool, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, ctx)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x3_sui_system_state_inner_gas_coin_rate"></a>
-
-## Function `gas_coin_rate`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_gas_coin_rate">gas_coin_rate</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_gas_coin_rate">gas_coin_rate</a>(
-    self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
-    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;STABLE&gt;
-): u64 {
-    <a href="gas_coin_map.md#0x3_gas_coin_map_requst_get_exchange_rate">gas_coin_map::requst_get_exchange_rate</a>&lt;STABLE&gt;(&self.<a href="gas_coin_map.md#0x3_gas_coin_map">gas_coin_map</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0x3_sui_system_state_inner_extract_coin_balance"></a>
 
 ## Function `extract_coin_balance`
@@ -2698,7 +2573,7 @@ Returns all the validators who are currently reporting <code>addr</code>
 Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
 
 
-<pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_extract_coin_balance">extract_coin_balance</a>(coins: <a href="">vector</a>&lt;<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;&gt;, amount: <a href="_Option">option::Option</a>&lt;u64&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+<pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_extract_coin_balance">extract_coin_balance</a>(coins: <a href="">vector</a>&lt;<a href="_Coin">coin::Coin</a>&lt;<a href="_OBC">obc::OBC</a>&gt;&gt;, amount: <a href="_Option">option::Option</a>&lt;u64&gt;, ctx: &<b>mut</b> <a href="_TxContext">tx_context::TxContext</a>): <a href="_Balance">balance::Balance</a>&lt;<a href="_OBC">obc::OBC</a>&gt;
 </code></pre>
 
 
@@ -2709,20 +2584,20 @@ Extract required Balance from vector of Coin<SUI>, transfer the remainder back t
 
 <pre><code><b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_extract_coin_balance">extract_coin_balance</a>(coins: <a href="">vector</a>&lt;Coin&lt;OBC&gt;&gt;, amount: <a href="_Option">option::Option</a>&lt;u64&gt;, ctx: &<b>mut</b> TxContext): Balance&lt;OBC&gt; {
     <b>let</b> merged_coin = <a href="_pop_back">vector::pop_back</a>(&<b>mut</b> coins);
-    <a href="../../../.././build/Sui/docs/pay.md#0x2_pay_join_vec">pay::join_vec</a>(&<b>mut</b> merged_coin, coins);
+    <a href="_join_vec">pay::join_vec</a>(&<b>mut</b> merged_coin, coins);
 
-    <b>let</b> total_balance = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(merged_coin);
+    <b>let</b> total_balance = <a href="_into_balance">coin::into_balance</a>(merged_coin);
     // <b>return</b> the full amount <b>if</b> amount is not specified
     <b>if</b> (<a href="_is_some">option::is_some</a>(&amount)) {
         <b>let</b> amount = <a href="_destroy_some">option::destroy_some</a>(amount);
-        <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> total_balance, amount);
-        // <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">transfer</a> back the remainder <b>if</b> non zero.
-        <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&total_balance) &gt; 0) {
-            <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(total_balance, ctx), <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+        <b>let</b> <a href="">balance</a> = <a href="_split">balance::split</a>(&<b>mut</b> total_balance, amount);
+        // <a href="">transfer</a> back the remainder <b>if</b> non zero.
+        <b>if</b> (<a href="_value">balance::value</a>(&total_balance) &gt; 0) {
+            <a href="_public_transfer">transfer::public_transfer</a>(<a href="_from_balance">coin::from_balance</a>(total_balance, ctx), <a href="_sender">tx_context::sender</a>(ctx));
         } <b>else</b> {
-            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(total_balance);
+            <a href="_destroy_zero">balance::destroy_zero</a>(total_balance);
         };
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
+        <a href="">balance</a>
     } <b>else</b> {
         total_balance
     }

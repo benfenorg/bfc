@@ -1,16 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  getObjectFields,
-  SuiObjectResponse,
-  SuiMoveObject,
-  SuiObjectInfo,
-  SuiObjectData,
-  getObjectId,
-  getObjectType,
-} from '../types/objects';
-import { normalizeHexAddress, ObjectId, SuiAddress } from '../types/common';
+import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js';
+import type {
+	SuiObjectResponse,
+	SuiMoveObject,
+	SuiObjectInfo,
+	SuiObjectData,
+} from '../types/objects.js';
 
 import type { Option } from '../types/option.js';
 import { getOption } from '../types/option.js';
@@ -18,7 +15,7 @@ import type { CoinStruct } from '../types/coin.js';
 import type { StructTag } from '../types/sui-bcs.js';
 import type { Infer } from 'superstruct';
 import { nullable, number, object, string } from 'superstruct';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 export const SUI_SYSTEM_ADDRESS = '0x3';
 export const SUI_FRAMEWORK_ADDRESS = '0x2';
@@ -27,10 +24,9 @@ export const OBJECT_MODULE_NAME = 'object';
 export const UID_STRUCT_NAME = 'UID';
 export const ID_STRUCT_NAME = 'ID';
 export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
-export const VALIDATORS_EVENTS_QUERY =
-  '0x3::validator_set::ValidatorEpochInfoEventV2';
+export const VALIDATORS_EVENTS_QUERY = '0x3::validator_set::ValidatorEpochInfoEventV2';
 
-export const SUI_CLOCK_OBJECT_ID = normalizeHexAddress('0x6');
+export const SUI_CLOCK_OBJECT_ID = sui2ObcAddress('0x6');
 
 // `sui::pay` module is used for Coin management (split, join, join_and_transfer etc);
 export const PAY_MODULE_NAME = 'pay';
@@ -80,18 +76,23 @@ export class Coin {
 		return arg ? Coin.getCoinSymbol(arg) === 'SUI' : false;
 	}
 
+	static isOBC(obj: ObjectData) {
+		const arg = Coin.getCoinTypeArg(obj);
+		return arg ? Coin.getCoinSymbol(arg) === 'OBC' : false;
+	}
+
 	static getCoinSymbol(coinTypeArg: string) {
 		return coinTypeArg.substring(coinTypeArg.lastIndexOf(':') + 1);
 	}
 
-  static getCoinStructTag(coinTypeArg: string): StructTag {
-    return {
-      address: normalizeHexAddress(coinTypeArg.split('::')[0]),
-      module: coinTypeArg.split('::')[1],
-      name: coinTypeArg.split('::')[2],
-      typeParams: [],
-    };
-  }
+	static getCoinStructTag(coinTypeArg: string): StructTag {
+		return {
+			address: sui2ObcAddress(coinTypeArg.split('::')[0]),
+			module: coinTypeArg.split('::')[1],
+			name: coinTypeArg.split('::')[2],
+			typeParams: [],
+		};
+	}
 
 	public static getID(obj: ObjectData): string {
 		if ('fields' in obj) {

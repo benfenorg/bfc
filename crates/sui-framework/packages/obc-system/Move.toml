@@ -1,0 +1,10 @@
+[package]
+name = "ObcSystem"
+version = "0.0.1"
+published-at = "0xC8"
+
+[dependencies]
+MoveStdlib = { local = "../move-stdlib" }
+
+[addresses]
+obc_system = "0xC8"

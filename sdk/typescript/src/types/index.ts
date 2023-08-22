@@ -20,7 +20,6 @@ export {
 	TransactionEventDigest,
 	/** @deprecated Use `string` instead. */
 	ObjectId,
-	normalizeHexAddress,
 } from './common.js';
 export {
 	/** @deprecated Import type from `@mysten/sui.js/client` instead */
