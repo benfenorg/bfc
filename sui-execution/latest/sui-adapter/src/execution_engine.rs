@@ -503,6 +503,9 @@ mod checked {
                     pt,
                 )
             }
+            TransactionKind::ChangeObcRound(_) => {
+                Ok(Mode::empty_results())
+            }
         }
     }
 

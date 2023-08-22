@@ -125,4 +125,5 @@ module sui_system::exchange_inner {
         pool.stable_token_balance = 0;
          balance::withdraw_all<STABLE>(&mut pool.stable_pool)
     }
+
 }
