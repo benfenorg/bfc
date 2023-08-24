@@ -13,7 +13,7 @@ module obc_system::exchange_inner {
     use sui::coin;
     use obc_system::stable_coin;
 
-    
+
     const ENotActivePool: u64 = 1;
     const EZeroAmount: u64 = 2;
     const EOBCZeroAmount: u64 = 3;

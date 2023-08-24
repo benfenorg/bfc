@@ -3985,7 +3985,67 @@ impl AuthorityState {
         Ok((system_obj, effects))
     }
 
-    /// This function is called at the very end of the epoch.
+    pub async fn create_and_execute_obc_round_tx(
+        &self,
+        epoch_store: &Arc<AuthorityPerEpochStore>,
+        checkpoint: CheckpointSequenceNumber,
+    ) -> anyhow::Result<()>{
+        let next_epoch = epoch_store.epoch() + 1;
+
+        let tx = VerifiedTransaction::new_change_obc_round(
+            1,
+        );
+
+        let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
+            tx.clone(),
+            next_epoch,
+            1,
+            checkpoint,
+        );
+
+        let tx_digest = executable_tx.digest();
+
+        if self
+            .database
+            .is_tx_already_executed(tx_digest)
+            .expect("read cannot fail")
+        {
+            warn!("change epoch tx has already been executed via state sync");
+            return Err(anyhow::anyhow!(
+                "change epoch tx has already been executed via state sync"
+            ));
+        }
+
+        let execution_guard = self
+            .database
+            .execution_lock_for_executable_transaction(&executable_tx)
+            .await?;
+        let (_, effects, _execution_error_opt) = self
+            .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
+            .await?;
+
+        // We must write tx and effects to the state sync tables so that state sync is able to
+        // deliver to the transaction to CheckpointExecutor after it is included in a certified
+        // checkpoint.
+        self.database
+            .insert_transaction_and_effects(&tx, &effects)
+            .map_err(|err| {
+                let err: anyhow::Error = err.into();
+                err
+            })?;
+
+        info!(
+            "Effects summary of the change epoch transaction: {:?}",
+            effects.summary_for_debug()
+        );
+        //epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
+        // The change epoch transaction cannot fail to execute.
+        assert!(effects.status().is_ok());
+
+        Ok(())
+    }
+
+        /// This function is called at the very end of the epoch.
     /// This step is required before updating new epoch in the db and calling reopen_epoch_db.
     async fn revert_uncommitted_epoch_transactions(
         &self,

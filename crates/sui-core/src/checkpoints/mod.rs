@@ -984,6 +984,7 @@ impl CheckpointBuilder {
                     vec![]
                 };
 
+                self.augment_obc_round(sequence_number).await?;
                 Some(EndOfEpochData {
                     next_epoch_committee: committee.voting_rights,
                     next_epoch_protocol_version: ProtocolVersion::new(
@@ -1064,6 +1065,16 @@ impl CheckpointBuilder {
         } else {
             current_gas_costs
         }
+    }
+
+    async fn augment_obc_round(
+        &self,
+        checkpoint: CheckpointSequenceNumber,
+    )-> anyhow::Result<()>{
+        self
+            .state
+            .create_and_execute_obc_round_tx(&self.epoch_store ,checkpoint)
+            .await
     }
 
     async fn augment_epoch_last_checkpoint(

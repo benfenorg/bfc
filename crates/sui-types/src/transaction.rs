@@ -1932,6 +1932,16 @@ impl VerifiedTransaction {
         .pipe(Self::new_system_transaction)
     }
 
+    pub fn new_change_obc_round(
+        round_id: ObcRoundId,
+    ) -> Self {
+        ChangeObcRound {
+            obc_round:round_id,
+        }
+            .pipe(TransactionKind::ChangeObcRound)
+            .pipe(Self::new_system_transaction)
+    }
+
     pub fn new_genesis_transaction(objects: Vec<GenesisObject>) -> Self {
         GenesisTransaction { objects }
             .pipe(TransactionKind::Genesis)
