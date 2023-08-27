@@ -2,9 +2,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use move_core_types::ident_str;
 use shared_crypto::intent::Intent;
-use sui_json_rpc_types::{SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
+use sui_json_rpc_types::{SuiObjectDataOptions, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::transaction::{CallArg, Transaction, TransactionData};
 
@@ -21,10 +22,39 @@ pub mod gas_coin_commands;
 pub mod genesis_ceremony;
 pub mod genesis_inspector;
 use sui_keys::keystore::AccountKeystore;
-use sui_types::base_types::SuiAddress;
+use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::SUI_SYSTEM_PACKAGE_ID;
 use crate::fire_drill::get_gas_obj_ref;
 
+
+/// Get gas coin object ref.
+pub async fn get_object_ref(
+    context: &mut WalletContext,
+    coin_id: ObjectID,
+) -> Result<ObjectRef> {
+    get_object_ref_with_type(context, coin_id)
+        .await
+        .map(|(obj_ref, _)| obj_ref)
+}
+
+/// Get gas coin object ref and type.
+pub async fn get_object_ref_with_type(
+    context: &mut WalletContext,
+    coin_id: ObjectID,
+) -> Result<(ObjectRef, ObjectType) > {
+    let sui_client = context.get_client().await?;
+    let gas_obj = sui_client
+        .read_api()
+        .get_object_with_options(
+            coin_id,
+            SuiObjectDataOptions::default()
+                .with_owner()
+                .with_type(),
+        )
+        .await?
+        .into_object()?;
+    Ok((gas_obj.object_ref(), gas_obj.object_type()?))
+}
 
 /// Common packaging of call system interface.
 pub async fn call_0x5(

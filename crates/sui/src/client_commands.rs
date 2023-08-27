@@ -56,7 +56,9 @@ use sui_types::{
     transaction::Transaction,
 };
 use tracing::info;
-use crate::gas_coin_commands::get_object_ref;
+use sui_types::base_types::ObjectType;
+use sui_types::stable_coin::STABLE;
+use crate::get_object_ref_with_type;
 
 
 macro_rules! serialize_or_execute {
@@ -860,32 +862,47 @@ impl SuiClientCommands {
                 serialize_unsigned_transaction,
                 serialize_signed_transaction,
             } => {
-                   let tx_data =
-                    if let Some(gas_obj) = gas {
-                        let coin_to_merge_ref = get_object_ref(context, gas_obj).await?;
-                        let from = context.get_object_owner(&gas_obj).await?;
-                        let client = context.get_client().await?;
-                        let type_args = type_args
-                            .into_iter()
-                            .map(|arg| arg.try_into())
-                            .collect::<Result<Vec<_>, _>>()?;
-                         client.transaction_builder()
-                             .move_call_by_gas_coin(
-                                 from,
-                                 package,
-                                 &module,
-                                 &function,
-                                 type_args,
-                                 args,
-                                 gas,
-                                 coin_to_merge_ref,
-                                 gas_budget,
-                             ).await?
-                    }else {
-                          construct_move_call_transaction(
-                            package, &module, &function, type_args, gas, gas_budget, args, context,
-                        ).await?
-                    };
+                   let tx_data = {
+                       if let Some(gas_obj) = gas  {
+                           let (coin_ref, coin_type) = get_object_ref_with_type(context, gas_obj).await?;
+                           let ObjectType::Struct(type_) = &coin_type else{
+                               return Err(anyhow!("Provided object [{gas_obj}] is not a move object."))
+                           };
+                           if let Some(type_tag_) = type_.coin_type_maybe() {
+                               if STABLE::is_gas_type(&type_tag_) {
+                                   let from = context.get_object_owner(&gas_obj).await?;
+                                   let client = context.get_client().await?;
+                                   let type_args = type_args
+                                       .into_iter()
+                                       .map(|arg| arg.try_into())
+                                       .collect::<Result<Vec<_>, _>>()?;
+                                   client.transaction_builder()
+                                       .move_call_by_gas_coin(
+                                           from,
+                                           package,
+                                           &module,
+                                           &function,
+                                           type_args,
+                                           args,
+                                           gas,
+                                           coin_ref,
+                                           gas_budget,
+                                       ).await?
+                               }else {
+                                   construct_move_call_transaction(
+                                       package, &module, &function, type_args, gas, gas_budget, args, context,
+                                   ).await?
+                               }
+                           }else {
+                               return Err(anyhow!("Provided type [{type_}] is not coin."))
+                           }
+
+                       }else {
+                           construct_move_call_transaction(
+                               package, &module, &function, type_args, gas, gas_budget, args, context,
+                           ).await?
+                       }
+                   };
                 serialize_or_execute!(
                     tx_data,
                     serialize_unsigned_transaction,

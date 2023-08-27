@@ -6,8 +6,7 @@ use sui_types::base_types::ObjectID;
 use sui_types::coin::Coin;
 use sui_types::gas_coin::GasCoin;
 use sui_types::transaction::{CallArg, ObjectArg};
-use crate::call_0x5;
-use crate::gas_coin_commands::get_object_ref;
+use crate::{call_0x5, get_object_ref};
 use crate::validator_commands::{ write_transaction_response};
 
 const DEFAULT_GAS_BUDGET: u64 = 100_000_000; // 0.1 SUI

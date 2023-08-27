@@ -34,6 +34,7 @@ use crate::{
     gas_coin::GasCoin,
 };
 use sui_protocol_config::ProtocolConfig;
+use crate::stable_coin::StableCoin;
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
 pub const OBJECT_START_VERSION: SequenceNumber = SequenceNumber::from_u64(1);
@@ -146,6 +147,19 @@ impl MoveObject {
                 256,
             )
             .unwrap()
+        }
+    }
+
+    pub fn new_stable_coin(version: SequenceNumber, id: ObjectID, value: u64) -> Self {
+        unsafe {
+            Self::new_from_execution_with_limit(
+                StableCoin::type_().into(),
+                true,
+                version,
+                StableCoin::new(id, value).to_bcs_bytes(),
+                256,
+            )
+                .unwrap()
         }
     }
 
@@ -1002,6 +1016,24 @@ impl Object {
             has_public_transfer: true,
             version,
             contents: GasCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
+        });
+        Self {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }
+    }
+    pub fn with_stable_id_owner_version_for_testing(
+        id: ObjectID,
+        version: SequenceNumber,
+        owner: SuiAddress,
+    ) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: StableCoin::type_().into(),
+            has_public_transfer: true,
+            version,
+            contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
         });
         Self {
             owner: Owner::AddressOwner(owner),

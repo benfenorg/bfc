@@ -1,11 +1,10 @@
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use clap::*;
-use sui_json_rpc_types::SuiObjectDataOptions;
 use sui_sdk::wallet_context::WalletContext;
-use sui_types::base_types::{ObjectID, ObjectRef};
+use sui_types::base_types::ObjectID;
 use sui_types::transaction::{CallArg, ObjectArg};
-use crate::call_0x5;
+use crate::{call_0x5, get_object_ref};
 use serde::Serialize;
 
 #[path = "unit_tests/gas_coin_tests.rs"]
@@ -79,23 +78,4 @@ impl GasCoinCommand {
         });
         ret
     }
-}
-/// Get gas coin object ref.
-pub async fn get_object_ref(
-    context: &mut WalletContext,
-    coin_id: ObjectID,
-) -> Result<ObjectRef> {
-    let sui_client = context.get_client().await?;
-    let gas_obj_ref = sui_client
-        .read_api()
-        .get_object_with_options(
-            coin_id,
-            SuiObjectDataOptions::default().with_owner(),
-        )
-        .await?
-        .object_ref_if_exists()
-        .ok_or_else(|| anyhow!("gas coin {} does not exist", coin_id))?;
-    Ok::<ObjectRef, anyhow::Error>(
-        gas_obj_ref,
-    )
 }

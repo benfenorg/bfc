@@ -66,6 +66,7 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
 use tracing::info;
+use crate::stable_coin::{STABLE, StableCoin};
 
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
@@ -254,7 +255,7 @@ impl MoveObjectType {
     /// Return true if `self` is `0x2::coin::Coin<t>`
     pub fn is_coin_t(&self, t: &TypeTag) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin => GAS::is_gas_type(t),
+            MoveObjectType_::GasCoin => GAS::is_gas_type(t) || STABLE::is_gas_type(t),
             MoveObjectType_::Coin(c) => t == c,
             MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => false,
         }
@@ -300,7 +301,7 @@ impl MoveObjectType {
 
     pub fn is(&self, s: &StructTag) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin => GasCoin::is_gas_coin(s),
+            MoveObjectType_::GasCoin => GasCoin::is_gas_coin(s) || StableCoin::is_gas_coin(s),
             MoveObjectType_::StakedSui => StakedSui::is_staked_sui(s),
             MoveObjectType_::Coin(inner) => {
                 Coin::is_coin(s) && s.type_params.len() == 1 && inner == &s.type_params[0]
@@ -312,7 +313,7 @@ impl MoveObjectType {
 
 impl From<StructTag> for MoveObjectType {
     fn from(mut s: StructTag) -> Self {
-        Self(if GasCoin::is_gas_coin(&s) {
+        Self(if GasCoin::is_gas_coin(&s) || StableCoin::is_gas_coin(&s) {
             MoveObjectType_::GasCoin
         } else if Coin::is_coin(&s) {
             // unwrap safe because a coin has exactly one type parameter
