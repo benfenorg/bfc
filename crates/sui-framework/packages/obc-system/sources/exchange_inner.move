@@ -7,14 +7,12 @@ module obc_system::exchange_inner {
     use sui::balance::Balance;
     use sui::obc::OBC;
     use std::option;
+    use obc_system::stable_coin::DummyCoin;
+    use obc_system::pool;
     use sui::balance;
     use sui::coin;
     use obc_system::stable_coin;
-    use sui::stable::STABLE;
 
-
-    #[test_only]
-    friend obc_system::exchange_inner_tests;
 
     const ENotActivePool: u64 = 1;
     const EZeroAmount: u64 = 2;
@@ -22,7 +20,7 @@ module obc_system::exchange_inner {
     const ELackOfOBC: u64 = 4;
 
 
-    struct ExchangePool has key, store {
+    struct ExchangePool<phantom T> has key, store {
         id: UID,
         /// The epoch at which this pool became active.
         /// The value is `None` if the pool is pre-active and `Some(<epoch_number>)` if active or inactive.
@@ -35,23 +33,23 @@ module obc_system::exchange_inner {
         stable_token_balance: u64,
         /// The epoch stable gas coins
         //todo replace generic types
-        stable_pool: Balance<STABLE>,
+        stable_pool: Balance<DummyCoin<T>>,
     }
 
     /// Init exchange pool for gas coin exchange
-    public(friend) fun new_exchange_pool(ctx: &mut TxContext, epoch: u64) : ExchangePool {
+    public(friend) fun new_exchange_pool<T>(ctx: &mut TxContext, epoch: u64) : ExchangePool<T> {
         ExchangePool {
             id: object::new(ctx),
             activation_epoch: option::some(epoch),
             obc_balance: 0,
             obc_pool: balance::zero(),
             stable_token_balance: 0,
-            stable_pool: balance::zero<STABLE>(),
+            stable_pool: balance::zero<DummyCoin<T>>(),
         }
     }
 
     /// Add obc to pool for gas exchange.
-    public(friend) fun add_obc(pool: &mut ExchangePool, coin: Coin<OBC>) {
+    public(friend) fun add_obc<T>(pool: &mut ExchangePool<T>, coin: Coin<OBC>) {
         let amount = coin::value(&coin);
         assert!( amount > 0, EZeroAmount);
         pool.obc_balance = pool.obc_balance + amount;
@@ -60,15 +58,15 @@ module obc_system::exchange_inner {
     }
 
     /// Returns true if the input exchange pool is active.
-    public fun is_active(pool: &ExchangePool): bool {
+    public fun is_active<T>(pool: &ExchangePool<T>): bool {
         option::is_some(&pool.activation_epoch)
     }
 
-    public(friend) fun get_obc_amount(pool: &ExchangePool): u64 {
+    public(friend) fun get_obc_amount<T>(pool: &ExchangePool<T>): u64 {
         pool.obc_balance
     }
 
-    public(friend) fun get_stable_amount(pool: &ExchangePool): u64 {
+    public(friend) fun get_stable_amount<T>(pool: &ExchangePool<T>): u64 {
         pool.stable_token_balance
     }
 
@@ -79,10 +77,10 @@ module obc_system::exchange_inner {
     }
 
     /// Request for exchange gas coin to default coin.
-    public(friend) fun request_exchange_gas(
+    public(friend) fun request_exchange_gas<T>(
         exchange_rate: u64,
-        pool: &mut ExchangePool,
-        stable_coin: Coin<STABLE>,
+        pool: &mut ExchangePool<T>,
+        stable_coin: Coin<DummyCoin<T>>,
         ctx: &mut TxContext
     ): Balance<OBC> {
         assert!(coin::value(&stable_coin) > 0, EZeroAmount);
@@ -99,15 +97,15 @@ module obc_system::exchange_inner {
     }
 
     /// Exchange all stable gas coins to default coins
-    public(friend) fun request_exchange_all(
-        pool: &mut ExchangePool,
+    public(friend) fun request_exchange_all<P,T>(
+        pool: &mut ExchangePool<T>,
         ctx: &mut TxContext
     ) {
         assert!(is_active(pool), ENotActivePool);
         if(pool.stable_token_balance > 0) {
             // call stable swap interface
             // let obc = stable_coin::request_swap_obc<CoinType>(coin::from_balance<CoinType>(pool.stable_pool, ctx), ctx);
-            let obc = stable_coin::request_swap_obc<STABLE>(stable_coin::new_dummy<STABLE>(), ctx);
+            let obc = coin::zero<OBC>(ctx);//pool::swap_token<P,T>(stable_coin::new_dummy<T>(ctx), ctx);
             // store obc to exchange pool
             pool.obc_balance = pool.obc_balance + coin::value(&obc);
             balance::join(&mut pool.obc_pool, coin::into_balance(obc));
@@ -116,11 +114,11 @@ module obc_system::exchange_inner {
     }
 
     /// Withdraw the stable gas coins.
-    public(friend) fun request_withdraw_stable_gas(
-        pool: &mut ExchangePool,
-    ): Balance<STABLE> {
+    public(friend) fun request_withdraw_stable_gas<T>(
+        pool: &mut ExchangePool<T>,
+    ): Balance<DummyCoin<T>> {
         pool.stable_token_balance = 0;
-         balance::withdraw_all<STABLE>(&mut pool.stable_pool)
+         balance::withdraw_all<DummyCoin<T>>(&mut pool.stable_pool)
     }
 
 }

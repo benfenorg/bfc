@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::base_types::AuthorityName;
-use crate::committee::{Committee, EpochId};
+use crate::committee::{Committee, EpochId, ObcRoundId};
 use crate::crypto::{
     AuthorityKeyPair, AuthorityQuorumSignInfo, AuthoritySignInfo, AuthoritySignInfoTrait,
     AuthoritySignature, AuthorityStrongQuorumSignInfo, EmptySignInfo, Signer,
@@ -562,6 +562,25 @@ impl<T: Message> VerifiedEnvelope<T, CertificateProof> {
             digest,
             data,
             auth_signature: CertificateProof::new_from_checkpoint(epoch, checkpoint),
+        })
+    }
+
+    pub fn new_round_from_checkpoint(
+        transaction: VerifiedEnvelope<T, EmptySignInfo>,
+        epoch: EpochId,
+        round: ObcRoundId,
+        checkpoint: CheckpointSequenceNumber,
+    ) -> Self {
+        let inner = transaction.into_inner();
+        let Envelope {
+            digest,
+            data,
+            auth_signature: _,
+        } = inner;
+        VerifiedEnvelope::new_unchecked(Envelope {
+            digest,
+            data,
+            auth_signature: CertificateProof::new_round_from_checkpoint(round,epoch,checkpoint),
         })
     }
 
