@@ -74,6 +74,7 @@ pub mod zk_login_util;
 
 pub mod base_types_obc;
 pub mod epoch_data;
+pub mod obc_system_state;
 mod obc_base_types;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]

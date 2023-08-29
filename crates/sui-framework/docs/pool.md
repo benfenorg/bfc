@@ -93,7 +93,7 @@ that 1000 is 100% and 1 is 0.1%
 
 </dd>
 <dt>
-<code>sui: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;obc::OBC&gt;</code>
+<code>sui: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -233,7 +233,7 @@ Share is calculated based on Uniswap's constant product formula:
 liquidity = sqrt( X * Y )
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_create_pool">create_pool</a>&lt;P: drop, T&gt;(_: P, token: <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, fee_percent: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="pool.md#0xc8_pool_LSP">pool::LSP</a>&lt;P, T&gt;&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_create_pool">create_pool</a>&lt;P: drop, T&gt;(_: P, token: <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, fee_percent: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="pool.md#0xc8_pool_LSP">pool::LSP</a>&lt;P, T&gt;&gt;
 </code></pre>
 
 
@@ -285,7 +285,7 @@ Entrypoint for the <code>swap_sui</code> method. Sends swapped token
 to sender.
 
 
-<pre><code>entry <b>fun</b> <a href="pool.md#0xc8_pool_swap_obc_">swap_obc_</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code>entry <b>fun</b> <a href="pool.md#0xc8_pool_swap_obc_">swap_obc_</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -316,7 +316,7 @@ Swap <code>Coin&lt;SUI&gt;</code> for the <code>Coin&lt;T&gt;</code>.
 Returns Coin<T>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_swap_obc">swap_obc</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_swap_obc">swap_obc</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;
 </code></pre>
 
 
@@ -361,7 +361,7 @@ Swap <code>Coin&lt;T&gt;</code> for the <code>Coin&lt;SUI&gt;</code>.
 Returns the swapped <code>Coin&lt;SUI&gt;</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_swap_token">swap_token</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, token: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_swap_token">swap_token</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, token: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
 </code></pre>
 
 
@@ -404,7 +404,7 @@ Entrypoint for the <code>add_liquidity</code> method. Sends <code>Coin&lt;<a hre
 the transaction sender.
 
 
-<pre><code>entry <b>fun</b> <a href="pool.md#0xc8_pool_add_liquidity_">add_liquidity_</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, token: <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code>entry <b>fun</b> <a href="pool.md#0xc8_pool_add_liquidity_">add_liquidity_</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, token: <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -436,7 +436,7 @@ Add liquidity to the <code><a href="pool.md#0xc8_pool_Pool">Pool</a></code>. Sen
 liquidity provider tokens.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_add_liquidity">add_liquidity</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, token: <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="pool.md#0xc8_pool_LSP">pool::LSP</a>&lt;P, T&gt;&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_add_liquidity">add_liquidity</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, sui: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, token: <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="pool.md#0xc8_pool_LSP">pool::LSP</a>&lt;P, T&gt;&gt;
 </code></pre>
 
 
@@ -520,7 +520,7 @@ Remove liquidity from the <code><a href="pool.md#0xc8_pool_Pool">Pool</a></code>
 Returns <code>Coin&lt;T&gt;</code> and <code>Coin&lt;SUI&gt;</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_remove_liquidity">remove_liquidity</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, lsp: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="pool.md#0xc8_pool_LSP">pool::LSP</a>&lt;P, T&gt;&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="pool.md#0xc8_pool_remove_liquidity">remove_liquidity</a>&lt;P, T&gt;(<a href="pool.md#0xc8_pool">pool</a>: &<b>mut</b> <a href="pool.md#0xc8_pool_Pool">pool::Pool</a>&lt;P, T&gt;, lsp: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="pool.md#0xc8_pool_LSP">pool::LSP</a>&lt;P, T&gt;&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;T&gt;)
 </code></pre>
 
 

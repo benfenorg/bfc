@@ -1,6 +1,11 @@
 module obc_system::obc_system {
-    use obc_system::exchange_inner;
     use sui::tx_context::TxContext;
+    use obc_system::obc::length;
+
+    struct ObcSystemStateInner has store {
+        /// The current epoch ID, starting from 0.
+        round: u64,
+    }
 
     public(friend) fun create(
         ctx: &mut TxContext,
@@ -12,5 +17,10 @@ module obc_system::obc_system {
         ctx: &mut TxContext
     ){
 
+    }
+
+    #[allow(unused_function)]
+    fun obc_round(ctx: &mut TxContext):u64 {
+        length()
     }
 }

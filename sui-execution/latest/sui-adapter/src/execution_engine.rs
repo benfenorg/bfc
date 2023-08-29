@@ -49,9 +49,10 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::Object,
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
+        obc_system_state::OBC_SYSTEM_MODULE_NAME,
         SUI_FRAMEWORK_ADDRESS,
     };
-    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -504,6 +505,14 @@ mod checked {
                 )
             }
             TransactionKind::ChangeObcRound(_) => {
+                obc_round(
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )?;
                 Ok(Mode::empty_results())
             }
         }
@@ -642,6 +651,93 @@ mod checked {
         );
 
         Ok(builder.finish())
+    }
+
+    pub fn construct_obc_round_safe_mode_pt(
+    ) -> Result<ProgrammableTransaction, ExecutionError> {
+        let mut builder = ProgrammableTransactionBuilder::new();
+
+        let mut arguments = vec![];
+
+        let args = vec![
+            CallArg::OBC_SYSTEM_MUT,
+        ];
+
+        let call_arg_arguments = args
+            .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
+
+        assert_invariant!(
+            call_arg_arguments.is_ok(),
+            "Unable to generate args for advance_epoch transaction!"
+        );
+
+        arguments.append(&mut call_arg_arguments.unwrap());
+
+        info!("Call arguments to obc round transaction:");
+
+        builder.programmable_move_call(
+            OBC_SYSTEM_PACKAGE_ID,
+            OBC_SYSTEM_MODULE_NAME.to_owned(),
+            ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME.to_owned(),
+            vec![],
+            arguments,
+        );
+
+        Ok(builder.finish())    
+    }
+    
+    fn obc_round(
+        temporary_store: &mut TemporaryStore<'_>,
+        tx_ctx: &mut TxContext,
+        move_vm: &Arc<MoveVM>,
+        gas_charger: &mut GasCharger,
+        protocol_config: &ProtocolConfig,
+        metrics: Arc<LimitsMetrics>,
+    )-> Result<(), ExecutionError>{
+        let advance_epoch_pt = construct_obc_round_safe_mode_pt()?;
+        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+            protocol_config,
+            metrics.clone(),
+            move_vm,
+            temporary_store,
+            tx_ctx,
+            gas_charger,
+            advance_epoch_pt,
+        );
+
+        #[cfg(msim)]
+        let result = maybe_modify_result(result, change_epoch.epoch);
+
+        if result.is_err() {
+            tracing::error!(
+            "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
+            result.as_ref().err(),
+            temporary_store.objects(),
+        );
+            temporary_store.drop_writes();
+            // Must reset the storage rebate since we are re-executing.
+            gas_charger.reset_storage_cost_and_rebate();
+
+            if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
+                temporary_store.advance_obc_round_mode(protocol_config);
+            } else {
+                let advance_epoch_safe_mode_pt =
+                construct_obc_round_safe_mode_pt()?;
+                programmable_transactions::execution::execute::<execution_mode::System>(
+                    protocol_config,
+                    metrics.clone(),
+                    move_vm,
+                    temporary_store,
+                    tx_ctx,
+                    gas_charger,
+                    advance_epoch_safe_mode_pt,
+                )
+                .expect("Advance epoch with safe mode must succeed");
+            }
+        }
+        Ok(())
     }
 
     fn advance_epoch(
