@@ -43,7 +43,7 @@ use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
 use sui_types::temporary_store::{InnerTemporaryStore, TemporaryStore};
 use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
-use sui_types::{SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use sui_types::{OBC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::trace;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
@@ -1072,6 +1072,25 @@ pub fn generate_genesis_system_object(
             vec![],
             arguments,
         );
+
+        // Step 5: Create the SuiSystemState UID
+        let obc_system_state_uid = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("object").to_owned(),
+            ident_str!("obc_system_state").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let arguments = vec![obc_system_state_uid];
+        builder.programmable_move_call(
+            OBC_SYSTEM_ADDRESS.into(),
+            ident_str!("obc_system").to_owned(),
+            ident_str!("create").to_owned(),
+            vec![],
+            arguments,
+        );
+
         builder.finish()
     };
 

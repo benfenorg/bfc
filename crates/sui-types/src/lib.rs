@@ -115,7 +115,10 @@ pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION
 /// 0x7: hardcoded object ID for the obc system.
 pub const OBC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
 pub const OBC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(OBC_SYSTEM_ADDRESS);
-pub const OBC_SYSTEM_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+
+pub const OBC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
+pub const OBC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(OBC_SYSTEM_STATE_ADDRESS);
+pub const OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 
 /// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries

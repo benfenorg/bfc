@@ -29,13 +29,8 @@ use move_core_types::{
     account_address::AccountAddress, ident_str, identifier::IdentStr, vm_status::StatusCode,
 };
 use std::{collections::BTreeMap, error::Error, num::NonZeroU64};
-use sui_types::{
-    clock::CLOCK_MODULE_NAME,
-    error::{ExecutionError, VMMVerifierErrorSubStatusCode},
-    id::OBJECT_MODULE_NAME,
-    sui_system_state::SUI_SYSTEM_MODULE_NAME,
-    SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS,
-};
+use sui_types::{clock::CLOCK_MODULE_NAME, error::{ExecutionError, VMMVerifierErrorSubStatusCode}, id::OBJECT_MODULE_NAME, sui_system_state::SUI_SYSTEM_MODULE_NAME, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, OBC_SYSTEM_ADDRESS};
+use sui_types::obc_system_state::OBC_SYSTEM_MODULE_NAME;
 
 use crate::{
     check_for_verifier_timeout, to_verification_timeout_error, verification_failure,
@@ -77,8 +72,15 @@ const SUI_CLOCK_CREATE: FunctionIdent = (
     CLOCK_MODULE_NAME,
     ident_str!("create"),
 );
+
+const OBC_SYSTEM_CREATE: FunctionIdent = (
+    &OBC_SYSTEM_ADDRESS,
+    OBC_SYSTEM_MODULE_NAME,
+    ident_str!("create"),
+);
+
 const FRESH_ID_FUNCTIONS: &[FunctionIdent] = &[OBJECT_NEW, OBJECT_NEW_UID_FROM_HASH, TS_NEW_OBJECT];
-const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE];
+const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE,OBC_SYSTEM_CREATE];
 
 impl AbstractValue {
     pub fn join(&self, value: &AbstractValue) -> AbstractValue {
