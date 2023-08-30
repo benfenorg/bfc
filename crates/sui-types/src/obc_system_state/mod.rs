@@ -9,7 +9,7 @@ use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
 use anyhow::Result;
 use sui_protocol_config::ProtocolConfig;
-use crate::{id::UID,OBC_SYSTEM_ADDRESS, OBC_SYSTEM_PACKAGE_ID};
+use crate::{id::UID, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_PACKAGE_ID, OBC_SYSTEM_STATE_OBJECT_ID};
 use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
 use serde::de::DeserializeOwned;
@@ -120,16 +120,17 @@ pub fn get_obc_system_state_wrapper(
     object_store: &dyn ObjectStore,
 ) -> Result<ObcSystemStateWrapper, SuiError> {
     let wrapper = object_store
-        .get_object(&OBC_SYSTEM_PACKAGE_ID)?
+        .get_object(&OBC_SYSTEM_STATE_OBJECT_ID)?
         // Don't panic here on None because object_store is a generic store.
         .ok_or_else(|| {
-            SuiError::SuiSystemStateReadError("SuiSystemStateWrapper object not found".to_owned())
+            SuiError::SuiSystemStateReadError("ObcSystemStateWrapper object not found".to_owned())
         })?;
     let move_object = wrapper.data.try_as_move().ok_or_else(|| {
         SuiError::SuiSystemStateReadError(
-            "SuiSystemStateWrapper object must be a Move object".to_owned(),
+            "ObcSystemStateWrapper object must be a Move object".to_owned(),
         )
     })?;
+
     let result = bcs::from_bytes::<ObcSystemStateWrapper>(move_object.contents())
         .map_err(|err| SuiError::SuiSystemStateReadError(err.to_string()))?;
     Ok(result)

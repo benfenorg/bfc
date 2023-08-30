@@ -1,4 +1,5 @@
 module obc_system::obc_system {
+    use sui::dynamic_field;
     use sui::object::UID;
     use sui::transfer;
     use sui::tx_context::TxContext;
@@ -6,11 +7,14 @@ module obc_system::obc_system {
 
     struct ObcSystemState has key {
         id: UID,
+        version:u64
     }
 
     struct ObcSystemStateInner has store {
         round: u64,
     }
+
+    const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
 
     #[allow(unused_function)]
     fun create(
@@ -18,15 +22,16 @@ module obc_system::obc_system {
         ctx: &mut TxContext,
     ){
         //let exchange_gas_coin_pool =  exchange_inner::new_exchange_pool(ctx, 0);
-        // let _system_state = ObcSystemStateInner{
-        //     round,
-        // };
+        let system_state = ObcSystemStateInner{
+             round:0,
+        };
 
         let self = ObcSystemState {
             id,
+            version:OBC_SYSTEM_STATE_VERSION_V1
         };
 
-        //dynamic_field::add(&mut self.id,1, system_state);
+        dynamic_field::add(&mut self.id,OBC_SYSTEM_STATE_VERSION_V1, system_state);
 
         transfer::share_object(self);
     }
