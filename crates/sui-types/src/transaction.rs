@@ -1481,6 +1481,7 @@ pub trait TransactionDataAPI {
     fn is_system_tx(&self) -> bool;
     fn is_change_epoch_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
+    fn is_change_obc_round_tx(&self) -> bool;
 
     /// Check if the transaction is sponsored (namely gas owner != sender)
     fn is_sponsored_tx(&self) -> bool;
@@ -1614,7 +1615,11 @@ impl TransactionDataAPI for TransactionDataV1 {
     }
 
     fn is_change_epoch_tx(&self) -> bool {
-        matches!(self.kind, TransactionKind::ChangeEpoch(_)|TransactionKind::ChangeObcRound(_))
+        matches!(self.kind, TransactionKind::ChangeEpoch(_))
+    }
+
+    fn is_change_obc_round_tx(&self) -> bool {
+        matches!(self.kind, TransactionKind::ChangeObcRound(_))
     }
 
     fn is_system_tx(&self) -> bool {

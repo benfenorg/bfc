@@ -670,7 +670,7 @@ mod checked {
 
         arguments.append(&mut args.unwrap());
 
-        error!("Call arguments to obc round transaction: {:?}",params);
+        info!("Call arguments to obc round transaction: {:?}",params);
 
         builder.programmable_move_call(
             OBC_SYSTEM_PACKAGE_ID,

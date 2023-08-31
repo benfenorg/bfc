@@ -946,6 +946,11 @@ impl CheckpointBuilder {
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
             let end_of_epoch_data = if last_checkpoint_of_epoch {
+                self.augment_obc_round(sequence_number,
+                                       &mut effects,
+                                       &mut signatures,
+                ).await?;
+
                 let system_state_obj = self
                     .augment_epoch_last_checkpoint(
                         &epoch_rolling_gas_cost_summary,
@@ -984,10 +989,6 @@ impl CheckpointBuilder {
                     vec![]
                 };
 
-                self.augment_obc_round(sequence_number,
-                                       &mut effects,
-                                       &mut signatures,
-                ).await?;
                 Some(EndOfEpochData {
                     next_epoch_committee: committee.voting_rights,
                     next_epoch_protocol_version: ProtocolVersion::new(

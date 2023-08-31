@@ -114,7 +114,6 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
     where
         S: Serializer,
     {
-        info!("serializing HexOBCAddress to hex: ");
         if serializer.is_human_readable() {
             let mut s = String::new();
             for i in 0..value.len() {
@@ -124,10 +123,6 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
             let check_sum = result.get(0..4).unwrap();
 
             let obc_address = String::from("OBC") + &s + check_sum;
-            info!(
-                "is_human_readable serializing address to hex: {}",
-                obc_address
-            );
 
             return obc_address.serialize(serializer);
         }
