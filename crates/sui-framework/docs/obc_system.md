@@ -11,13 +11,13 @@
 -  [Function `create`](#0xc8_obc_system_create)
 -  [Function `request_exchange_stable_obc`](#0xc8_obc_system_request_exchange_stable_obc)
 -  [Function `obc_round`](#0xc8_obc_system_obc_round)
+-  [Function `load_system_state_mut`](#0xc8_obc_system_load_system_state_mut)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
-<b>use</b> <a href="obc.md#0xc8_obc">0xc8::obc</a>;
 </code></pre>
 
 
@@ -167,7 +167,7 @@
 
 
 
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): u64
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, round: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -176,8 +176,34 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(ctx: &<b>mut</b> TxContext):u64 {
-    length()
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,round:u64,ctx: &<b>mut</b> TxContext){
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    system_state.round = round;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_load_system_state_mut"></a>
+
+## Function `load_system_state_mut`
+
+
+
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemStateInner">obc_system::ObcSystemStateInner</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemStateInner">ObcSystemStateInner</a> {
+    <b>let</b> inner = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> self.id, self.version);
+    inner
 }
 </code></pre>
 

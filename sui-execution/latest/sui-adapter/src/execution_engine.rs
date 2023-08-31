@@ -13,16 +13,16 @@ mod checked {
         collections::{BTreeSet, HashSet},
         sync::Arc,
     };
-    use sui_types::balance::{
+    use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
-    };
+    }, transaction::ChangeObcRound};
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{info, instrument, trace, warn};
+    use tracing::{info, instrument, trace, warn,error};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -49,7 +49,7 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::Object,
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        obc_system_state::OBC_SYSTEM_MODULE_NAME,
+        obc_system_state::{OBC_SYSTEM_MODULE_NAME,OBC_ROUND_FUNCTION_NAME,OBC_ROUND_SAFE_MODE_FUNCTION_NAME,ObcRoundParams},
         SUI_FRAMEWORK_ADDRESS,
     };
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};
@@ -504,8 +504,9 @@ mod checked {
                     pt,
                 )
             }
-            TransactionKind::ChangeObcRound(_) => {
+            TransactionKind::ChangeObcRound(change_round) => {
                 obc_round(
+                    change_round,
                     temporary_store,
                     tx_ctx,
                     move_vm,
@@ -652,8 +653,9 @@ mod checked {
 
         Ok(builder.finish())
     }
-
-    pub fn construct_obc_round_safe_mode_pt(
+    
+    pub fn construct_obc_round_pt(
+        params: &ObcRoundParams,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -661,34 +663,28 @@ mod checked {
 
         let args = vec![
             CallArg::OBC_SYSTEM_MUT,
-        ];
+            CallArg::Pure(bcs::to_bytes(&params.round_id).unwrap()),
+        ] .into_iter()
+        .map(|a| builder.input(a))
+        .collect::<Result<_, _>>();
 
-        let call_arg_arguments = args
-            .into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
+        arguments.append(&mut args.unwrap());
 
-        assert_invariant!(
-            call_arg_arguments.is_ok(),
-            "Unable to generate args for advance_epoch transaction!"
-        );
-
-        arguments.append(&mut call_arg_arguments.unwrap());
-
-        info!("Call arguments to obc round transaction:");
+        error!("Call arguments to obc round transaction: {:?}",params);
 
         builder.programmable_move_call(
             OBC_SYSTEM_PACKAGE_ID,
             OBC_SYSTEM_MODULE_NAME.to_owned(),
-            ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME.to_owned(),
+            OBC_ROUND_FUNCTION_NAME.to_owned(),
             vec![],
             arguments,
         );
 
         Ok(builder.finish())    
     }
-    
+
     fn obc_round(
+        change_round: ChangeObcRound,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
         move_vm: &Arc<MoveVM>,
@@ -696,7 +692,10 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     )-> Result<(), ExecutionError>{
-        let advance_epoch_pt = construct_obc_round_safe_mode_pt()?;
+        let params = ObcRoundParams {
+            round_id:change_round.obc_round
+        };
+        let advance_epoch_pt = construct_obc_round_pt(&params)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -708,7 +707,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let result = maybe_modify_result(result, change_epoch.epoch);
+        let result = maybe_modify_result(result, change_round.round_id);
 
         if result.is_err() {
             tracing::error!(
@@ -720,22 +719,7 @@ mod checked {
             // Must reset the storage rebate since we are re-executing.
             gas_charger.reset_storage_cost_and_rebate();
 
-            if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
-                temporary_store.advance_obc_round_mode(protocol_config);
-            } else {
-                let advance_epoch_safe_mode_pt =
-                construct_obc_round_safe_mode_pt()?;
-                programmable_transactions::execution::execute::<execution_mode::System>(
-                    protocol_config,
-                    metrics.clone(),
-                    move_vm,
-                    temporary_store,
-                    tx_ctx,
-                    gas_charger,
-                    advance_epoch_safe_mode_pt,
-                )
-                .expect("Advance epoch with safe mode must succeed");
-            }
+            temporary_store.advance_obc_round_mode(protocol_config);
         }
         Ok(())
     }

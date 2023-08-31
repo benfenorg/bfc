@@ -43,7 +43,14 @@ module obc_system::obc_system {
     }
 
     #[allow(unused_function)]
-    fun obc_round(ctx: &mut TxContext):u64 {
-        length()
+    fun obc_round(wrapper: &mut ObcSystemState,round:u64,ctx: &mut TxContext){
+        let system_state = load_system_state_mut(wrapper);
+        system_state.round = round;
     }
+
+    fun load_system_state_mut(self: &mut ObcSystemState): &mut ObcSystemStateInner {
+        let inner = dynamic_field::borrow_mut(&mut self.id, self.version);
+        inner
+    }
+
 }

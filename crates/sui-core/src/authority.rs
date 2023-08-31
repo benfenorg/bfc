@@ -3989,21 +3989,23 @@ impl AuthorityState {
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         checkpoint: CheckpointSequenceNumber,
-    ) -> anyhow::Result<()>{
+    ) -> anyhow::Result<TransactionEffects>{
         let epoch = epoch_store.epoch();
 
         let tx = VerifiedTransaction::new_change_obc_round(
-            1,
+            epoch+1,
         );
 
         let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
             tx.clone(),
             epoch,
-            1,
+            epoch+1,
             checkpoint,
         );
 
         let tx_digest = executable_tx.digest();
+
+        info!("round txn digest is {:?}",tx_digest);
 
         if self
             .database
@@ -4021,7 +4023,7 @@ impl AuthorityState {
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
 
-        error!(
+        info!(
             "Try to execute transaction: {:?}",tx_digest
         );
 
@@ -4032,12 +4034,13 @@ impl AuthorityState {
         // We must write tx and effects to the state sync tables so that state sync is able to
         // deliver to the transaction to CheckpointExecutor after it is included in a certified
         // checkpoint.
-        // self.database
-        //     .insert_transaction_and_effects(&tx, &effects)
-        //     .map_err(|err| {
-        //         let err: anyhow::Error = err.into();
-        //         err
-        //     })?;
+
+        self.database
+            .insert_transaction_and_effects(&tx, &effects)
+            .map_err(|err| {
+                let err: anyhow::Error = err.into();
+                err
+            })?;
 
         warn!(
             "Effects summary of the change obc round transaction: {:?}",
@@ -4048,7 +4051,7 @@ impl AuthorityState {
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
 
-        Ok(())
+        Ok(effects)
     }
 
         /// This function is called at the very end of the epoch.

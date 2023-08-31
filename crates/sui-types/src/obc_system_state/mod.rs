@@ -21,6 +21,10 @@ pub const OBC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("obc_round");
 pub const OBC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("obc_round_safe_mode");
 pub const OBC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("obc_system");
 
+#[derive(Debug)]
+pub struct ObcRoundParams {
+    pub round_id: u64,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ObcSystemStateWrapper {
