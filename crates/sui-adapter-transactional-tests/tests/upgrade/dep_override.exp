@@ -45,7 +45,7 @@ gas summary: computation_cost: 1000000, storage_cost: 7030000,  storage_rebate: 
 
 task 9 'run'. lines 87-87:
 created: object(9,0)
-mutated: object(0,1)
+mutated: object(0,2)
 gas summary: computation_cost: 1000000, storage_cost: 2325600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 10 'view-object'. lines 89-89:
@@ -55,7 +55,7 @@ Contents: Test_DepDepV1::DepDepM1::Obj {id: sui::object::UID {id: sui::object::I
 
 task 11 'run'. lines 91-91:
 created: object(11,0)
-mutated: object(0,1)
+mutated: object(0,2)
 gas summary: computation_cost: 1000000, storage_cost: 2325600,  storage_rebate: 978120, non_refundable_storage_fee: 9880
 
 task 12 'view-object'. lines 93-93:
@@ -65,7 +65,7 @@ Contents: Test_DepDepV1::DepDepM1::Obj {id: sui::object::UID {id: sui::object::I
 
 task 13 'run'. lines 95-95:
 created: object(13,0)
-mutated: object(0,1)
+mutated: object(0,2)
 gas summary: computation_cost: 1000000, storage_cost: 2325600,  storage_rebate: 978120, non_refundable_storage_fee: 9880
 
 task 14 'view-object'. lines 97-100:

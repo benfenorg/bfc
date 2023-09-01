@@ -30,7 +30,7 @@ gas summary: computation_cost: 1000000, storage_cost: 6908400,  storage_rebate: 
 
 task 6 'run'. lines 76-76:
 created: object(6,0)
-mutated: object(0,1)
+mutated: object(0,2)
 gas summary: computation_cost: 1000000, storage_cost: 2325600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 7 'view-object'. lines 78-80:
