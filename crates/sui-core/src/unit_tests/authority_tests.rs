@@ -1206,7 +1206,7 @@ async fn test_dry_run_with_stable_gas_coin() {
     let (validator, fullnode) = init_state_validator_with_fullnode().await;
     let (validator, object_basics) = publish_object_basics(validator).await;
     let (fullnode, _object_basics) = publish_object_basics(fullnode).await;
-    let gas_object = Object::with_stable_id_owner_version_for_testing(
+    let gas_object = Object::with_id_owner_version_for_testing(
         gas_object_id,
         SequenceNumber::from_u64(1),
         sender,

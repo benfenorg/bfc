@@ -725,7 +725,6 @@ impl TestClusterBuilder {
     pub async fn build(mut self) -> TestCluster {
         let swarm = self.start_swarm().await.unwrap();
         let working_dir = swarm.dir();
-
         let mut wallet_conf: SuiClientConfig =
             PersistedConfig::read(&working_dir.join(SUI_CLIENT_CONFIG)).unwrap();
 
@@ -806,11 +805,12 @@ impl TestClusterBuilder {
         swarm.config().save(&network_path)?;
         let mut keystore = Keystore::from(FileBasedKeystore::new(&keystore_path)?);
         for key in &swarm.config().account_keys {
+            info!("account key: {:?}", key);
             keystore.add_key(SuiKeyPair::Ed25519(key.copy()))?;
         }
 
         let active_address = keystore.addresses().first().cloned();
-
+        info!("key store addr: {:?}", keystore.addresses());
         // Create wallet config with stated authorities port
         SuiClientConfig {
             keystore: Keystore::from(FileBasedKeystore::new(&keystore_path)?),

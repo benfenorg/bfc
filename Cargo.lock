@@ -9921,6 +9921,7 @@ dependencies = [
  "sui-types",
  "tempfile",
  "tiny-bip39",
+ "tracing",
  "workspace-hack",
 ]
 
@@ -10851,6 +10852,7 @@ dependencies = [
  "sui-json-rpc-types",
  "sui-protocol-config",
  "sui-types",
+ "tracing",
  "workspace-hack",
 ]
 

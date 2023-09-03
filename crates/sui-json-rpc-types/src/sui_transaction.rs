@@ -411,6 +411,7 @@ pub trait SuiTransactionBlockEffectsAPI {
     fn executed_epoch(&self) -> EpochId;
     fn transaction_digest(&self) -> &TransactionDigest;
     fn gas_cost_summary(&self) -> &GasCostSummary;
+    fn mut_gas_cost_summary(&mut self) -> &mut GasCostSummary;
 
     /// Return an iterator of mutated objects, but excluding the gas object.
     fn mutated_excluding_gas(&self) -> Vec<OwnedObjectRef>;
@@ -533,6 +534,10 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
 
     fn gas_cost_summary(&self) -> &GasCostSummary {
         &self.gas_used
+    }
+
+    fn mut_gas_cost_summary(&mut self) -> &mut GasCostSummary {
+        &mut self.gas_used
     }
 
     fn mutated_excluding_gas(&self) -> Vec<OwnedObjectRef> {

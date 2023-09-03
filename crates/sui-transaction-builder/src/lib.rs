@@ -31,7 +31,8 @@ use sui_types::sui_system_state::SUI_SYSTEM_MODULE_NAME;
 use sui_types::transaction::{
     Argument, CallArg, Command, InputObjectKind, ObjectArg, TransactionData, TransactionKind,
 };
-use sui_types::{coin, fp_ensure, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{coin, fp_ensure, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_PACKAGE_ID};
+use tracing::info;
 
 #[async_trait]
 pub trait DataReader {
@@ -256,7 +257,6 @@ impl TransactionBuilder {
         function: &str,
         type_args: Vec<SuiTypeTag>,
         call_args: Vec<SuiJsonValue>,
-        gas: Option<ObjectID>,
         stable: ObjectRef,
         gas_budget: u64,
     ) -> anyhow::Result<TransactionData> {
@@ -281,23 +281,13 @@ impl TransactionBuilder {
         )
             .await?;
         let pt = builder.finish();
-        let input_objects = pt
-            .input_objects()?
-            .iter()
-            .flat_map(|obj| match obj {
-                InputObjectKind::ImmOrOwnedMoveObject((id, _, _)) => Some(*id),
-                _ => None,
-            })
-            .collect();
         let gas_price = self.0.get_reference_gas_price().await?;
-        let gas = self
-            .select_gas(signer, gas, gas_budget, input_objects, gas_price)
-            .await?;
 
+        info!("move_call_by_gas_coin gas ok!");
         Ok(TransactionData::new(
             TransactionKind::programmable(pt),
             signer,
-            gas,
+            stable,
             gas_budget,
             gas_price,
         ))
@@ -808,12 +798,12 @@ impl TransactionBuilder {
         &self,
         signer: SuiAddress,
         stable: ObjectID,
-        gas: Option<ObjectID>,
         gas_budget: u64,
     ) -> anyhow::Result<TransactionData> {
         let gas_price = self.0.get_reference_gas_price().await?;
+        let payer = SuiAddress::from(SUI_SYSTEM_ADDRESS); //todo modify to obc_system pay address
         let gas = self
-            .select_gas(signer, gas, gas_budget, vec![], gas_price)
+            .select_gas(payer, None, gas_budget, vec![], gas_price)
             .await?;
         let (stable_ref, coin_type) = self.get_object_ref_and_type(stable).await?;
         let ObjectType::Struct(type_) = &coin_type else{
@@ -836,17 +826,18 @@ impl TransactionBuilder {
                 SUI_SYSTEM_PACKAGE_ID,
                 SUI_SYSTEM_MODULE_NAME.to_owned(),
                 EXCHANGE_GAS_FUN_NAME.to_owned(),
-                vec![], //todo who pay for?
+                vec![],
                 arguments,
             ));
             builder.finish()
         };
-        Ok(TransactionData::new_programmable(
+        Ok(TransactionData::new_programmable_allow_sponsor(
             signer,
             vec![gas],
             pt,
             gas_budget,
             gas_price,
+            payer,
         ))
     }
 

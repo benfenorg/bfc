@@ -70,6 +70,7 @@ macro_rules! serialize_or_execute {
         if $serialize_unsigned {
             SuiClientCommandResult::SerializedUnsignedTransaction($tx_data)
         } else {
+            info!("sign and execute!!");
             let signature = $context.config.keystore.sign_secure(
                 &$tx_data.sender(),
                 &$tx_data,
@@ -862,54 +863,49 @@ impl SuiClientCommands {
                 serialize_unsigned_transaction,
                 serialize_signed_transaction,
             } => {
-                   let tx_data = {
-                       if let Some(gas_obj) = gas  {
-                           let (coin_ref, coin_type) = get_object_ref_with_type(context, gas_obj).await?;
-                           let ObjectType::Struct(type_) = &coin_type else{
-                               return Err(anyhow!("Provided object [{gas_obj}] is not a move object."))
-                           };
-                           if let Some(type_tag_) = type_.coin_type_maybe() {
-                               if STABLE::is_gas_type(&type_tag_) {
-                                   let from = context.get_object_owner(&gas_obj).await?;
-                                   let client = context.get_client().await?;
-                                   let type_args = type_args
-                                       .into_iter()
-                                       .map(|arg| arg.try_into())
-                                       .collect::<Result<Vec<_>, _>>()?;
-                                   client.transaction_builder()
-                                       .move_call_by_gas_coin(
-                                           from,
-                                           package,
-                                           &module,
-                                           &function,
-                                           type_args,
-                                           args,
-                                           gas,
-                                           coin_ref,
-                                           gas_budget,
-                                       ).await?
-                               }else {
-                                   construct_move_call_transaction(
-                                       package, &module, &function, type_args, gas, gas_budget, args, context,
-                                   ).await?
-                               }
-                           }else {
-                               return Err(anyhow!("Provided type [{type_}] is not coin."))
+                    let mut new_gas = gas;
+                   if let Some(gas_obj_id) = new_gas  {
+                       let (_, coin_type) = get_object_ref_with_type(context, gas_obj_id).await?;
+                       let ObjectType::Struct(type_) = &coin_type else{
+                           return Err(anyhow!("Provided object [{gas_obj_id}] is not a move object."))
+                       };
+                       if let Some(type_tag_) = type_.coin_type_maybe() {
+                           if STABLE::is_gas_type(&type_tag_) {
+                               let client = context.get_client().await?;
+                               // exchange to obc
+                               let gas_owner = context.try_get_object_owner(&new_gas).await?;
+                               let sender = gas_owner.unwrap_or(context.active_address()?);
+                               let exchange_txn = client.transaction_builder()
+                                   .request_exchange_gas_coin(
+                                       sender,
+                                       gas_obj_id,
+                                       gas_budget,
+                                   ).await?;
+                               serialize_or_execute!(
+                                    exchange_txn,
+                                    serialize_unsigned_transaction,
+                                    serialize_signed_transaction,
+                                    context,
+                                    Call
+                               );
+                               new_gas = None;
                            }
-
                        }else {
-                           construct_move_call_transaction(
-                               package, &module, &function, type_args, gas, gas_budget, args, context,
-                           ).await?
+                           return Err(anyhow!("Provided type [{type_}] is not coin."))
                        }
-                   };
-                serialize_or_execute!(
-                    tx_data,
-                    serialize_unsigned_transaction,
-                    serialize_signed_transaction,
-                    context,
-                    Call
-                )
+                   }
+                    let tx_data =
+                        construct_move_call_transaction(
+                            package, &module, &function, type_args, new_gas, gas_budget, args, context,
+                        ).await?;
+                    info!("txn data: {:?}", tx_data.clone());
+                    serialize_or_execute!(
+                        tx_data,
+                        serialize_unsigned_transaction,
+                        serialize_signed_transaction,
+                        context,
+                        Call
+                    )
             }
 
             SuiClientCommands::Transfer {

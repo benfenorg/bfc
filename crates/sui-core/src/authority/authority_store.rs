@@ -564,6 +564,7 @@ impl AuthorityStore {
                     self.get_object(id)?
                 }
                 InputObjectKind::ImmOrOwnedMoveObject(objref) => {
+                    println!("input: {:?}", objref);
                     self.get_object_by_key(&objref.0, objref.1)?
                 }
             }

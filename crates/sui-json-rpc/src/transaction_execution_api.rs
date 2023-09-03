@@ -33,8 +33,6 @@ use sui_types::transaction::{
     InputObjectKind, Transaction, TransactionData, TransactionDataAPI, TransactionKind,
 };
 use tracing::instrument;
-use sui_types::SUI_FRAMEWORK_ADDRESS;
-
 use crate::api::JsonRpcMetrics;
 use crate::api::WriteApiServer;
 use crate::error::{Error, SuiRpcInputError};
@@ -215,19 +213,6 @@ impl TransactionExecutionApi {
         tx_bytes: Base64,
     ) -> Result<(TransactionData, TransactionDigest, Vec<InputObjectKind>), SuiRpcInputError> {
         let tx_data: TransactionData = self.convert_bytes(tx_bytes)?;
-        if !(tx_data.gas_owner() == SuiAddress::from(SUI_FRAMEWORK_ADDRESS)) {
-            //update gas coin
-            println!("obc coin.");
-            // let state = self.get_state();
-            //
-            // if let Ok(object_read) = state.get_object_read(&tx_data.to_owned().) {
-            //     if let Ok(object) = object_read.into_object() {
-            //         if matches!(object.type_(), Some(type_) if type_.is(&object_struct_tag)) {
-            //             return Ok(id);
-            //         }
-            //     }
-            // }
-        }
 
         let input_objs = tx_data.input_objects()?;
         let intent_msg = IntentMessage::new(

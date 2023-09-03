@@ -97,7 +97,7 @@ mod checked {
             epoch_store.protocol_config(),
             metrics,
         )?;
-        let mut input_objects = transaction.input_objects()?;
+        let mut input_objects = transaction.kind_input_objects()?;
         let mut objects =
             store.check_input_objects(&input_objects, epoch_store.protocol_config())?;
 

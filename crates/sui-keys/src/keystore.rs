@@ -20,6 +20,7 @@ use sui_types::crypto::get_key_pair_from_rng;
 use sui_types::crypto::{
     enum_dispatch, EncodeDecodeBase64, PublicKey, Signature, SignatureScheme, SuiKeyPair,
 };
+use tracing::{info};
 
 #[derive(Serialize, Deserialize)]
 #[enum_dispatch(AccountKeystore)]
@@ -129,6 +130,7 @@ impl<'de> Deserialize<'de> for FileBasedKeystore {
 
 impl AccountKeystore for FileBasedKeystore {
     fn sign_hashed(&self, address: &SuiAddress, msg: &[u8]) -> Result<Signature, signature::Error> {
+        info!("XXX1111");
         Ok(Signature::new_hashed(
             msg,
             self.keys.get(address).ok_or_else(|| {
@@ -145,6 +147,7 @@ impl AccountKeystore for FileBasedKeystore {
     where
         T: Serialize,
     {
+        info!("XXX22222");
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
             self.keys.get(address).ok_or_else(|| {
@@ -165,6 +168,7 @@ impl AccountKeystore for FileBasedKeystore {
     }
 
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error> {
+        info!("XXX3333");
         match self.keys.get(address) {
             Some(key) => Ok(key),
             None => Err(anyhow!("Cannot find key for address: [{address}]")),
@@ -230,6 +234,7 @@ pub struct InMemKeystore {
 
 impl AccountKeystore for InMemKeystore {
     fn sign_hashed(&self, address: &SuiAddress, msg: &[u8]) -> Result<Signature, signature::Error> {
+        info!("XXX4444");
         Ok(Signature::new_hashed(
             msg,
             self.keys.get(address).ok_or_else(|| {
@@ -246,6 +251,7 @@ impl AccountKeystore for InMemKeystore {
     where
         T: Serialize,
     {
+        info!("XXX5555");
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
             self.keys.get(address).ok_or_else(|| {
@@ -265,6 +271,7 @@ impl AccountKeystore for InMemKeystore {
     }
 
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error> {
+        info!("XXX6666");
         match self.keys.get(address) {
             Some(key) => Ok(key),
             None => Err(anyhow!("Cannot find key for address: [{address}]")),

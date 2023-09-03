@@ -258,7 +258,7 @@ pub(crate) fn try_construct_object(
         },
         (StoreData::Coin(balance), None) => unsafe {
             Data::Move(MoveObject::new_from_execution_with_limit(
-                MoveObjectType::gas_coin(),
+                MoveObjectType::default_gas_coin(),
                 true,
                 object_key.1,
                 bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),

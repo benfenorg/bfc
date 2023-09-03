@@ -2,6 +2,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use crate::authority::authority_store_types::{StoreObject, StoreObjectWrapper};
 use crate::verify_indexes::verify_indexes;
 use anyhow::anyhow;
@@ -104,17 +105,10 @@ pub use sui_types::temporary_store::TemporaryStore;
 use sui_types::temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
 };
-use sui_types::{
-    base_types::*,
-    committee::Committee,
-    crypto::AuthoritySignature,
-    error::{SuiError, SuiResult},
-    fp_ensure,
-    object::{Object, ObjectFormatOptions, ObjectRead},
-    transaction::*,
-    SUI_SYSTEM_ADDRESS,
-};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
+use sui_types::gas_coin::MIST_PER_SUI;
+use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -1233,9 +1227,16 @@ impl AuthorityState {
             }
         }
 
+        let mut is_stable_gas = false;
         // make a gas object if one was not provided
-        let mut gas_object_refs = transaction.gas().to_vec();
-        let ((gas_status, input_objects), mock_gas) = if transaction.gas().is_empty() {
+        let mut gas_object_refs = if !transaction.gas().is_empty() &&
+            !(transaction.gas_owner() == SuiAddress::from(SUI_FRAMEWORK_ADDRESS)) {
+            is_stable_gas = true;
+            vec![]
+        }else {
+            transaction.gas().to_vec()
+        };
+        let ((gas_status, input_objects), mock_gas) = if gas_object_refs.is_empty() {
             let sender = transaction.sender();
             // use a 1B sui coin
             const MIST_TO_SUI: u64 = 1_000_000_000;
@@ -1328,7 +1329,21 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
-
+        let mut response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
+        if is_stable_gas {
+            // let gas = transaction.gas()[0].0;
+            // //get exchange rate
+            // let rate = self.exchange_rates(gas).await?;
+            // if rate > 0 {
+            //     let mut gas_cost = response_effects.mut_gas_cost_summary();
+            //     let real_rate = rate / MIST_PER_SUI;
+            //     gas_cost.computation_cost = gas_cost.computation_cost * real_rate;
+            //     gas_cost.storage_cost = gas_cost.storage_cost * real_rate;
+            //     gas_cost.storage_rebate = gas_cost.storage_rebate * real_rate;
+            //     gas_cost.non_refundable_storage_fee = gas_cost.non_refundable_storage_fee * real_rate;
+            //     info!("stable gas coin exchange: {}", gas_cost);
+            // }
+        }
         Ok((
             DryRunTransactionBlockResponse {
                 input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
@@ -1338,7 +1353,7 @@ impl AuthorityState {
                             e
                         ),
                     })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
-                effects: effects.clone().try_into()?,
+                effects: response_effects,
                 events: SuiTransactionBlockEvents::try_from(
                     inner_temp_store.events.clone(),
                     tx_digest,
@@ -1354,6 +1369,17 @@ impl AuthorityState {
         ))
     }
 
+    async fn exchange_rates(&self, gas_coin: ObjectID) -> SuiResult<u64> {
+        let system_state = self.database.get_sui_system_state_object()?;
+        let system_state_summary: SuiSystemStateSummary = system_state.into_sui_system_state_summary();
+        let gas_coin_map = system_state_summary.gas_coin_map;
+        let coin_addr = SuiAddress::from(gas_coin);
+        let result = gas_coin_map.iter().find(|(address, _)| address == &coin_addr);
+        match result {
+            Some((_address, value)) => Ok(*value),
+            None =>  Err(SuiError::Unknown("not found gas coin.".to_string())),
+        }
+    }
     /// The object ID for gas can be any object ID, even for an uncreated object
     pub async fn dev_inspect_transaction_block(
         &self,
