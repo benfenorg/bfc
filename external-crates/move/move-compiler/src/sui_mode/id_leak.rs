@@ -23,6 +23,7 @@ use crate::{
     sui_mode::{OBJECT_NEW, TEST_SCENARIO_MODULE_NAME, TS_NEW_OBJECT},
 };
 use std::collections::BTreeMap;
+use crate::sui_mode::{OBC_SYSTEM_ADDR_NAME, OBC_SYSTEM_CREATE, OBC_SYSTEM_MODULE_NAME};
 
 use super::{
     CLOCK_MODULE_NAME, ID_LEAK_DIAG, OBJECT_MODULE_NAME, OBJECT_NEW_UID_FROM_HASH, SUI_ADDR_NAME,
@@ -42,6 +43,7 @@ pub const FUNCTIONS_TO_SKIP: &[(Symbol, Symbol, Symbol)] = &[
         SUI_SYSTEM_CREATE,
     ),
     (SUI_ADDR_NAME, CLOCK_MODULE_NAME, SUI_CLOCK_CREATE),
+    (OBC_SYSTEM_ADDR_NAME,OBC_SYSTEM_MODULE_NAME,OBC_SYSTEM_CREATE)
 ];
 
 //**************************************************************************************************

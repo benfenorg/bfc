@@ -4015,21 +4015,23 @@ impl AuthorityState {
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         checkpoint: CheckpointSequenceNumber,
-    ) -> anyhow::Result<()>{
-        let next_epoch = epoch_store.epoch() + 1;
+    ) -> anyhow::Result<TransactionEffects>{
+        let epoch = epoch_store.epoch();
 
         let tx = VerifiedTransaction::new_change_obc_round(
-            1,
+            epoch+1,
         );
 
         let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
             tx.clone(),
-            next_epoch,
-            1,
+            epoch,
+            epoch+1,
             checkpoint,
         );
 
         let tx_digest = executable_tx.digest();
+
+        info!("round txn digest is {:?}",tx_digest);
 
         if self
             .database
@@ -4046,6 +4048,11 @@ impl AuthorityState {
             .database
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
+
+        info!(
+            "Try to execute transaction: {:?}",tx_digest
+        );
+
         let (_, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
@@ -4053,6 +4060,7 @@ impl AuthorityState {
         // We must write tx and effects to the state sync tables so that state sync is able to
         // deliver to the transaction to CheckpointExecutor after it is included in a certified
         // checkpoint.
+
         self.database
             .insert_transaction_and_effects(&tx, &effects)
             .map_err(|err| {
@@ -4060,15 +4068,16 @@ impl AuthorityState {
                 err
             })?;
 
-        info!(
-            "Effects summary of the change epoch transaction: {:?}",
+        warn!(
+            "Effects summary of the change obc round transaction: {:?}",
             effects.summary_for_debug()
         );
+
         //epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
 
-        Ok(())
+        Ok(effects)
     }
 
         /// This function is called at the very end of the epoch.

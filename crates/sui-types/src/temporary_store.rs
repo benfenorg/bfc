@@ -8,6 +8,9 @@ use crate::storage::{DeleteKindWithOldVersion, ObjectStore};
 use crate::sui_system_state::{
     get_sui_system_state, get_sui_system_state_wrapper, AdvanceEpochParams, SuiSystemState,
 };
+use crate::obc_system_state::{
+    get_obc_system_state,get_obc_system_state_wrapper  
+};
 use crate::type_resolver::LayoutResolver;
 use crate::{
     base_types::{
@@ -878,6 +881,18 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.advance_epoch_safe_mode(params, self.store.as_object_store(), protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
+
+    pub fn advance_obc_round_mode(
+        &mut self,
+        protocol_config: &ProtocolConfig,
+    ) {
+        let wrapper = get_obc_system_state_wrapper(self.store.as_object_store())
+            .expect("System state wrapper object must exist");
+        let new_object =
+            wrapper.obc_round_safe_mode(self.store.as_object_store(),protocol_config);
+        self.write_object(new_object, WriteKind::Mutate);
+    }
+
 }
 
 impl<'backing> TemporaryStore<'backing> {

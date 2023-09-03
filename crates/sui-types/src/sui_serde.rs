@@ -114,7 +114,6 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
     where
         S: Serializer,
     {
-        // info!("serializing HexOBCAddress to hex: ");
         if serializer.is_human_readable() {
             let mut s = String::new();
             for i in 0..value.len() {
@@ -124,10 +123,6 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
             let check_sum = result.get(0..4).unwrap();
 
             let obc_address = String::from("OBC") + &s + check_sum;
-            // info!(
-            //     "is_human_readable serializing address to hex: {}",
-            //     obc_address
-            // );
 
             return obc_address.serialize(serializer);
         }
@@ -143,7 +138,6 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
     {
         let mut s = String::deserialize(deserializer)?;
         if s.starts_with("obc") || s.starts_with("OBC") {
-            // info!("HexOBCAddress converting obcAddress: {}", s);
             let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0 {
                 s = String::from(sui);
@@ -155,7 +149,6 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
                 return Err("invalid obc address").map_err(serde::de::Error::custom);
             }
         }
-        // info!("HexOBCAddress deserializing address from hex: {}", s);
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
         Ok(value)
     }

@@ -18,10 +18,7 @@ use crate::messages_consensus::ConsensusCommitPrologue;
 use crate::object::{MoveObject, Object, Owner};
 use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
-use crate::{
-    SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID,
-    SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-};
+use crate::{OBC_SYSTEM_PACKAGE_ID, OBC_SYSTEM_STATE_OBJECT_ID, OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
 use itertools::Either;
@@ -73,6 +70,8 @@ pub enum CallArg {
 
 impl CallArg {
     pub const SUI_SYSTEM_MUT: Self = Self::Object(ObjectArg::SUI_SYSTEM_MUT);
+    pub const OBC_SYSTEM_MUT: Self = Self::Object(ObjectArg::OBC_SYSTEM_MUT);
+
     pub const CLOCK_IMM: Self = Self::Object(ObjectArg::SharedObject {
         id: SUI_CLOCK_OBJECT_ID,
         initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
@@ -326,6 +325,12 @@ impl ObjectArg {
     pub const SUI_SYSTEM_MUT: Self = Self::SharedObject {
         id: SUI_SYSTEM_STATE_OBJECT_ID,
         initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+        mutable: true,
+    };
+
+    pub const OBC_SYSTEM_MUT: Self = Self::SharedObject {
+        id: OBC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
         mutable: true,
     };
 
@@ -806,6 +811,12 @@ impl SharedInputObject {
         mutable: true,
     };
 
+    pub const OBC_SYSTEM_OBJ: Self = Self {
+        id: OBC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+        mutable: true,
+    };
+
     pub fn id(&self) -> ObjectID {
         self.id
     }
@@ -828,6 +839,7 @@ impl TransactionKind {
             TransactionKind::ChangeEpoch(_)
                 | TransactionKind::Genesis(_)
                 | TransactionKind::ConsensusCommitPrologue(_)
+            | TransactionKind::ChangeObcRound(_)
         )
     }
 
@@ -853,6 +865,9 @@ impl TransactionKind {
         match &self {
             Self::ChangeEpoch(_) => {
                 Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
+            }
+            Self::ChangeObcRound(_) => {
+                Either::Left(Either::Left(iter::once(SharedInputObject::OBC_SYSTEM_OBJ)))
             }
 
             Self::ConsensusCommitPrologue(_) => {
@@ -900,7 +915,11 @@ impl TransactionKind {
                 }]
             }
             Self::ChangeObcRound(_)=>{
-                vec![]
+                vec![InputObjectKind::SharedMoveObject {
+                    id: OBC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                }]
             }
             Self::ProgrammableTransaction(p) => return p.input_objects(),
         };
@@ -1463,6 +1482,7 @@ pub trait TransactionDataAPI {
     fn is_system_tx(&self) -> bool;
     fn is_change_epoch_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
+    fn is_change_obc_round_tx(&self) -> bool;
 
     /// Check if the transaction is sponsored (namely gas owner != sender)
     fn is_sponsored_tx(&self) -> bool;
@@ -1600,6 +1620,10 @@ impl TransactionDataAPI for TransactionDataV1 {
 
     fn is_change_epoch_tx(&self) -> bool {
         matches!(self.kind, TransactionKind::ChangeEpoch(_))
+    }
+
+    fn is_change_obc_round_tx(&self) -> bool {
+        matches!(self.kind, TransactionKind::ChangeObcRound(_))
     }
 
     fn is_system_tx(&self) -> bool {

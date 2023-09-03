@@ -1,0 +1,17 @@
+---
+AccountAddress:
+  NEWTYPESTRUCT:
+    TUPLEARRAY:
+      CONTENT: U8
+      SIZE: 16
+Signer:
+  NEWTYPESTRUCT:
+    TUPLEARRAY:
+      CONTENT: U8
+      SIZE: 16
+phantoms__E__bool__u64__u128__:
+  STRUCT:
+    - v1:
+        SEQ: BOOL
+    - v2:
+        SEQ: U128
