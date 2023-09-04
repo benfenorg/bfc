@@ -100,6 +100,8 @@ diesel::table! {
         network_total_transactions -> Int8,
         timestamp_ms -> Int8,
         validator_signature -> Text,
+        total_transact_obc -> Int8,
+        system_tick -> Bool,
     }
 }
 
@@ -290,6 +292,7 @@ diesel::table! {
         raw_transaction -> Bytea,
         transaction_effects_content -> Text,
         confirmed_local_execution -> Nullable<Bool>,
+        transact_obc -> Int8,
     }
 }
 
