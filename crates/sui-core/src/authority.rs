@@ -2,7 +2,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use crate::authority::authority_store_types::{StoreObject, StoreObjectWrapper};
 use crate::verify_indexes::verify_indexes;
 use anyhow::anyhow;
@@ -107,7 +106,6 @@ use sui_types::temporary_store::{
 };
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
-use sui_types::gas_coin::MIST_PER_SUI;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use typed_store::Map;
 
@@ -1329,7 +1327,7 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
-        let mut response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
+        let response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
         if is_stable_gas {
             // let gas = transaction.gas()[0].0;
             // //get exchange rate

@@ -9,7 +9,7 @@ use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
 use anyhow::Result;
 use sui_protocol_config::ProtocolConfig;
-use crate::{id::UID, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_PACKAGE_ID, OBC_SYSTEM_STATE_OBJECT_ID};
+use crate::{id::UID, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_STATE_OBJECT_ID};
 use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
 use serde::de::DeserializeOwned;

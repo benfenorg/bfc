@@ -22,7 +22,7 @@ mod checked {
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{info, instrument, trace, warn,error};
+    use tracing::{info, instrument, trace, warn};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -49,7 +49,7 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::Object,
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        obc_system_state::{OBC_SYSTEM_MODULE_NAME,OBC_ROUND_FUNCTION_NAME,OBC_ROUND_SAFE_MODE_FUNCTION_NAME,ObcRoundParams},
+        obc_system_state::{OBC_SYSTEM_MODULE_NAME,OBC_ROUND_FUNCTION_NAME,ObcRoundParams},
         SUI_FRAMEWORK_ADDRESS,
     };
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};

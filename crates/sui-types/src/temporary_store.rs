@@ -9,7 +9,7 @@ use crate::sui_system_state::{
     get_sui_system_state, get_sui_system_state_wrapper, AdvanceEpochParams, SuiSystemState,
 };
 use crate::obc_system_state::{
-    get_obc_system_state,get_obc_system_state_wrapper  
+    get_obc_system_state_wrapper
 };
 use crate::type_resolver::LayoutResolver;
 use crate::{
