@@ -866,10 +866,6 @@ impl TransactionKind {
             Self::ChangeEpoch(_) => {
                 Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
             }
-            Self::ChangeObcRound(_) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject::OBC_SYSTEM_OBJ)))
-            }
-
             Self::ConsensusCommitPrologue(_) => {
                 Either::Left(Either::Right(iter::once(SharedInputObject {
                     id: SUI_CLOCK_OBJECT_ID,
@@ -880,7 +876,19 @@ impl TransactionKind {
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            _ => Either::Right(Either::Right(iter::empty())),
+            Self::ChangeObcRound(_) => {
+                let objs = vec![SharedInputObject{
+                    id: OBC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },SharedInputObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                }];
+                Either::Right(Either::Right(objs.into_iter()))
+            }
+            _ => Either::Right(Either::Right(vec![].into_iter())),
         }
     }
 
