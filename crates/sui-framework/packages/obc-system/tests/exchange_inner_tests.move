@@ -1,8 +1,8 @@
 #[test_only]
 
-module sui_system::exchange_inner_tests {
+module obc_system::exchange_inner_tests {
     use sui::test_scenario;
-    use sui_system::exchange_inner;
+    use obc_system::exchange_inner;
     use sui::obc::OBC;
     use sui::balance;
     use sui::coin;
@@ -19,12 +19,12 @@ module sui_system::exchange_inner_tests {
         let exchange_pool = exchange_inner::new_exchange_pool(ctx, 0);
         // init obc balance
         let obc = balance::create_for_testing<OBC>(10);
-        exchange_inner::add_obc(&mut exchange_pool, coin::from_balance(obc, ctx));
+        exchange_inner::add_obc_to_pool(&mut exchange_pool, coin::from_balance(obc, ctx));
         assert!(exchange_inner::get_obc_amount(&exchange_pool) == 10, 100);
         // exchange where rate = 10000
         let stable = balance::create_for_testing<STABLE>(50000);
         let stable_coin = coin::from_balance(stable, ctx);
-        let exchanged = exchange_inner::request_exchange_gas(10000, &mut exchange_pool, stable_coin, ctx);
+        let exchanged = exchange_inner::request_exchange_stable(10000, &mut exchange_pool, stable_coin, ctx);
         assert!(balance::value(&exchanged) == 5, 102);
         //check stable amout and obc amount
         assert!(exchange_inner::get_stable_amount(&exchange_pool) == 50000, 103);

@@ -1,7 +1,6 @@
 module obc_system::stable_coin {
 
     use sui::balance::{Self, Balance};
-    use sui::coin::{Self,Coin};
     use sui::object;
     use sui::object::UID;
     use sui::tx_context::{Self, TxContext};

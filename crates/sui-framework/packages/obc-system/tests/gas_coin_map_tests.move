@@ -1,9 +1,9 @@
 
 #[test_only]
 
-module sui_system::gas_coin_map_tests {
+module obc_system::gas_coin_map_tests {
     use sui::vec_map;
-    use sui_system::gas_coin_map::GasCoinEntity;
+    use obc_system::gas_coin_map::GasCoinEntity;
     use sui::test_scenario;
     use sui::balance;
     use sui::obc::OBC;
@@ -11,7 +11,7 @@ module sui_system::gas_coin_map_tests {
     use sui::coin;
     use sui::object;
     use std::option;
-    use sui_system::gas_coin_map;
+    use obc_system::gas_coin_map;
     use sui::test_utils;
     use sui::pay;
     use sui::transfer;
@@ -39,7 +39,7 @@ module sui_system::gas_coin_map_tests {
         let (treasury, metadata) = coin::create_currency(witness, 6, b"GAS_COIN_MAP_TESTS", b"my_coin_gas_name", b"description", option::some(url::new_unsafe_from_bytes(b"icon_url")), ctx);
         let balance = coin::mint_balance<GAS_COIN_MAP_TESTS>(&mut treasury, 1000);
         let coin1 = coin::from_balance(balance, ctx);
-        gas_coin_map::request_add_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1);
+        gas_coin_map::request_add_gas_coin<GAS_COIN_MAP_TESTS>(&mut gas_coin_map, &coin1, 1000000000);
         assert!(gas_coin_map::map_size(&gas_coin_map) == 2, 101);
 
         //update gas coin
