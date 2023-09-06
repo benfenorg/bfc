@@ -206,4 +206,21 @@ module obc_system::obc_system {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::init_exchange_pool(inner_state, coin)
     }
+
+    public(friend) fun obc_system_stat_parameter(
+        position_number: u32,
+        tick_spacing: u32,
+        initialize_price: u128,
+        chain_start_timestamp_ms: u64,
+    ) : ObcSystemParameters {
+        let treasury_parameters = TreasuryParameters {
+            position_number,
+            tick_spacing,
+            initialize_price,
+        };
+        ObcSystemParameters {
+            treasury_parameters,
+            chain_start_timestamp_ms,
+        }
+    }
 }

@@ -9,7 +9,7 @@ module obc_system::obc_system_tests {
 
     #[test]
     fun test_round() {
-        let obc_addr = @0xa00;
+        let obc_addr = @0x0;
         let scenario_val = test_scenario::begin(obc_addr);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
@@ -24,9 +24,19 @@ module obc_system::obc_system_tests {
     }
 
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext) {
+        let usd_supply = obc_system::usd::new(ctx);
+        let treasury_parameters = obc_system::obc_system_stat_parameter(
+            10,
+            443636,
+            4295048016,
+            2000,
+        );
         obc_system::create(
             object::new(ctx),
+            usd_supply,
+            treasury_parameters,
             ctx,
         );
     }
+
 }
