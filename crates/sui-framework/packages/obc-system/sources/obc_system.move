@@ -13,6 +13,9 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
+    #[test_only]
+    friend obc_system::obc_system_tests;
+
     struct ObcSystemState has key {
         id: UID,
         version:u64
@@ -20,8 +23,7 @@ module obc_system::obc_system {
 
     const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
 
-    #[allow(unused_function)]
-    fun create(
+    public fun create(
         id: UID,
         ctx: &mut TxContext,
     ){
@@ -35,13 +37,21 @@ module obc_system::obc_system {
         transfer::share_object(self);
     }
 
-    #[allow(unused_function)]
-    fun obc_round(
+    public fun obc_round(
         wrapper: &mut ObcSystemState,
-        round:u64
+        round:u64,
+        ctx: &mut TxContext,
     ){
         let inner_state = load_system_state_mut(wrapper);
         obc_system_state_inner::update_round(inner_state, round);
+        //exchange all stable to obc.
+        obc_system_state_inner::request_exchange_all(inner_state, ctx);
+        // //update inner exchange rate from stable-swap.
+        // let stable = coin::zero<STABLE>(ctx);
+        //todo read rate from stable-swap.
+        // let rate = 1000000000;
+        // obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
+        // balance::destroy_zero(coin::into_balance(stable));
     }
 
     fun load_system_state(
