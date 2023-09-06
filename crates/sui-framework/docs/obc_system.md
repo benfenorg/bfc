@@ -243,7 +243,7 @@
         &<b>mut</b> obcsystem.id,
         <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>
     );
-    // create <a href="obc.md#0xc8_obc">obc</a>-<a href="usd.md#0xc8_usd">usd</a> <a href="pool.md#0xc8_pool">pool</a>
+    // create <a href="obc.md#0xc8_obc">obc</a>-<a href="usd.md#0xc8_usd">usd</a> pool
     <a href="treasury.md#0xc8_treasury_create_vault">treasury::create_vault</a>&lt;OBC, USD, USD&gt;(
         mut_t,
         supply,
