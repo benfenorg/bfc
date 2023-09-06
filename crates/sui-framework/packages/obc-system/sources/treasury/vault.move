@@ -31,22 +31,14 @@ module obc_system::vault {
     const ERR_SQRT_PRICE_LIMIT_INVALID: u64 = 208;
     const ERR_TICK_INDEX_OPTION_IS_NONE: u64 = 209;
     const ERR_AMOUNT_MISMATCH: u64 = 210;
-
-    // === Structs ===
-
-    struct VaultSimpleInfo has store, copy, drop {
-        vault_id: ID,
-        vault_key: ID,
-        coin_type_a: TypeName,
-        coin_type_b: TypeName,
-        tick_spacing: u32,
-    }
+    const ERR_POSITIONS_IS_NOT_EMPTY: u64 = 211;
 
     struct Vault<phantom CoinTypeA, phantom CoinTypeB> has key, store {
         id: UID,
 
         position_number: u32,
-        state: u8, // 0 -- init, equal, 1 -- down, 2 -- up
+        /// 0 -- init, equal, 1 -- down, 2 -- up
+        state: u8,
         state_counter: u32,
 
         coin_a: Balance<CoinTypeA>,
@@ -107,24 +99,31 @@ module obc_system::vault {
         }
     }
 
-    public(friend) fun create_vault_simple_info(
-        _vault_id: ID,
-        _vault_key: ID,
-        _coin_type_a: TypeName,
-        _coin_type_b: TypeName,
-        _tick_spacing: u32
-    ): VaultSimpleInfo {
-        VaultSimpleInfo {
-            vault_id: _vault_id,
-            vault_key: _vault_key,
-            coin_type_a: _coin_type_a,
-            coin_type_b: _coin_type_b,
-            tick_spacing: _tick_spacing
-        }
+    /// open `position_number` positions
+    public(friend) fun init_positions<CoinTypeA, CoinTypeB>(
+        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
+        _ctx: &mut TxContext
+    ) {
+        assert!(position::get_total_positions(&_vault.position_manager) == 0, ERR_POSITIONS_IS_NOT_EMPTY);
+
+        let tick_lower = i32::from_u32(_tick_lower);
+        let tick_upper = i32::from_u32(_tick_upper);
+        let position_id = position::open_position<CoinTypeA, CoinTypeB>(
+            &mut _vault.position_manager,
+            _vault.index,
+            tick_lower,
+            tick_upper,
+            _ctx,
+        );
+        event::open_position(
+            vault_id(_vault),
+            position_id,
+            tick_lower,
+            tick_upper,
+        )
     }
 
-    // === Public Functions ===
-    public fun open_position<CoinTypeA, CoinTypeB>(
+    fun open_position<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
         _tick_lower: u32,
         _tick_upper: u32,
@@ -148,7 +147,8 @@ module obc_system::vault {
         )
     }
 
-    public fun close_position<CoinTypeA, CoinTypeB>(
+
+    public(friend) fun close_position<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
         _tick_lower: u32,
         _tick_upper: u32
@@ -276,7 +276,7 @@ module obc_system::vault {
         }
     }
 
-    public fun add_liquidity<CoinTypeA, CoinTypeB>(
+    public(friend) fun add_liquidity<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
         _tick_lower: u32,
         _tick_upper: u32,
@@ -294,7 +294,7 @@ module obc_system::vault {
         )
     }
 
-    public fun remove_liquidity<CoinTypeA, CoinTypeB>(
+    public(friend) fun remove_liquidity<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
         _tick_lower: u32,
         _tick_upper: u32,
@@ -351,7 +351,7 @@ module obc_system::vault {
         (balance_a, balance_b)
     }
 
-    public fun add_liquidity_fix_coin<CoinTypeA, CoinTypeB>(
+    public(friend) fun add_liquidity_fix_coin<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
         _tick_lower: u32,
         _tick_upper: u32,
@@ -370,7 +370,7 @@ module obc_system::vault {
         )
     }
 
-    public fun repay_add_liquidity<CoinTypeA, CoinTypeB>(
+    public(friend) fun repay_add_liquidity<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
         _balance_a: Balance<CoinTypeA>,
         _balance_b: Balance<CoinTypeB>,
@@ -724,7 +724,6 @@ module obc_system::vault {
     }
 
     /// Read Functions
-
     /// vault info
     public fun vault_id<CoinTypeA, CoinTypeB>(_vault: &Vault<CoinTypeA, CoinTypeB>): ID {
         object::id(_vault)

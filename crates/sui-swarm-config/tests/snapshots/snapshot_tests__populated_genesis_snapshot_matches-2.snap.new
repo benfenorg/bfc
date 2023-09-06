@@ -241,13 +241,13 @@ validators:
         next_epoch_worker_address: ~
         extra_fields:
           id:
-            id: OBC37a9c3c0ab5d2718ed6fcebc2bd90d6af494910e660ea5d1251a9a367ecea3ef3440
+            id: OBC54eee573a7a31d9208f722164e637253a96d04db094d9662b465963f848b8f468945
           size: 0
       voting_power: 10000
-      operation_cap_id: OBCe78d29b27ef905bb854a27c1b52398d921152023a844793bfc10961350599d31a4fa
+      operation_cap_id: OBCdf34e653ead988cbf8eaca7461a730e14486cbb76d6dff343ca9a79d019c9ec05643
       gas_price: 1000
       staking_pool:
-        id: OBCd4d804c349a5b3741351d1755446828cc010aadd736f96cea2e02370f3523da41b56
+        id: OBCf92b881a0d7aba73dabf4db9d051d9cdb8a0e30bf4636b8cb064dd3c5dae2e10a671
         activation_epoch: 0
         deactivation_epoch: ~
         sui_balance: 20000000000000000
@@ -255,14 +255,14 @@ validators:
           value: 0
         pool_token_balance: 20000000000000000
         exchange_rates:
-          id: OBC5799e09610c575655e0936a483b525c7daba4cbe57ff2910d2c157f55f03b1820368
+          id: OBC53a6d1701e89c876f19eb44e5bced644b2d60be9e181e6f22f6074ef31e0b71a580e
           size: 1
         pending_stake: 0
         pending_total_sui_withdraw: 0
         pending_pool_token_withdraw: 0
         extra_fields:
           id:
-            id: OBCef36283921821b9ea6fdbc9d0303c91c4b9ee51b979bccfb688dbe3d0c710fdc62cc
+            id: OBCd9afb9c1bf13089ea6062ece6c50749aecda05f7924f1d7f154bb4e5fe9797cec013
           size: 0
       commission_rate: 200
       next_epoch_stake: 20000000000000000
@@ -270,44 +270,28 @@ validators:
       next_epoch_commission_rate: 200
       extra_fields:
         id:
-          id: OBC4f98b763c0c4adcc8f9091b00c86cf5b9747854aebdddd7855b3d4dea098763e409d
+          id: OBC19381bb6e2ae2be8f11290582d23d77a83a8e4164c2c717f1c4f49dd02e8ba9d8dcd
         size: 0
   pending_active_validators:
     contents:
-      id: OBC8507ca8ce68c267d9d9afe5cccdbad339876551080ca4fb07ac79d7551a676f505f8
+      id: OBC89b64883f725034c204a1a45c9c4cc0025b559d80a7d3f26d05e22ad4c4f46617514
       size: 0
   pending_removals: []
   staking_pool_mappings:
-    id: OBCac168205acd63ef24143afead4ac225ab3cdfa003ad6def27a403f6391d5dfbb1364
+    id: OBC6db685464cf60f101396bc16adac575d85f1e6f86eac44b27940abda554a9485f31f
     size: 1
   inactive_validators:
-    id: OBCa45e055accdd13b71444d73292ef44c384de38b6f98e9c44e72d013164efd284693c
+    id: OBC2cb7350fb84a2ba0dc742949326fd6bb4f05977aaf7cbb30f0861095247d6c355410
     size: 0
   validator_candidates:
-    id: OBC093fdd6010953fb7523fa07634e089809e3cc40a2763057815834d151356a61aeff2
+    id: OBCd411b9732cf4c7c1181abec60755f3728ddf504dc3eff8f583afc0973924bbee17e2
     size: 0
   at_risk_validators:
     contents: []
   extra_fields:
     id:
-      id: OBCdcb3486365fdcd53ae7906e10b23b9b5013d299679b64fbbb9f84e881ff0fbde0777
+      id: OBC3e829657460711d50f8a7a8faf499ed3aee6bb1f6d569003322a7b840fe00b7f6806
     size: 0
-gas_coin_map:
-  active_gas_coins:
-    contents:
-      - key: OBC3659b8454ccafa099dbe41f31963b41384b380fee61ae1ca5d24eaa5ed21c6a8f9b8
-        value:
-          id_address: OBC3659b8454ccafa099dbe41f31963b41384b380fee61ae1ca5d24eaa5ed21c6a8f9b8
-          exchange_rate: 1000000000
-exchange_gas_coin_pool:
-  id: OBC5eb704c2f4039fa952a3bfe138086d245c38a26151829183d02c185198b2f3910a73
-  activation_epoch: 0
-  obc_balance: 0
-  obc_pool:
-    value: 0
-  stable_token_balance: 0
-  stable_pool:
-    value: 0
 storage_fund:
   total_object_storage_rebates:
     value: 0
@@ -323,7 +307,7 @@ parameters:
   validator_low_stake_grace_period: 7
   extra_fields:
     id:
-      id: OBC9afbd2eb952f7da9f80a2ab479ca27f4f88de0156e4612e46a550acc372ac599bd7e
+      id: OBCc3e39a985e5fd715e191c4de37ae14ec24c52ff5d130a3268c76fdc4bec765156760
     size: 0
 reference_gas_price: 1000
 validator_report_records:
@@ -337,7 +321,7 @@ stake_subsidy:
   stake_subsidy_decrease_rate: 1000
   extra_fields:
     id:
-      id: OBCe6d30d167f6d915a8d24f2e5d8295973e5ea9c373cf3233f1d0d2535873d78d7f8e4
+      id: OBCa82e0246c480bae562b6e43355c9dbcd264abbba79cb53bcdd82e06231813e782671
     size: 0
 safe_mode: false
 safe_mode_storage_rewards:
@@ -349,6 +333,6 @@ safe_mode_non_refundable_storage_fee: 0
 epoch_start_timestamp_ms: 10
 extra_fields:
   id:
-    id: OBC16acb371281835b316abe75c226c58eb4d570c89fff6e844988bfc6f1381d6967446
+    id: OBC342fba5620d402b3c8684191cb1b1207e7df2c0e33eaf664c34b32548b98db95f741
   size: 0
 

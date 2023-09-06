@@ -75,12 +75,16 @@ module obc_system::position {
         _position.liquidity == 0
     }
 
+    public fun get_liquidity(_position: &Position): u128 {
+        _position.liquidity
+    }
+
     public fun is_position_exist(_manager: &PositionManager, _position_id: ID): bool {
         linked_table::contains(&_manager.positions, _position_id)
     }
 
-    public fun get_liquidity(_position: &Position): u128 {
-        _position.liquidity
+    public fun get_total_positions(_manager: &PositionManager): u64 {
+        linked_table::length(&_manager.positions)
     }
 
     public fun fetch_positions(
