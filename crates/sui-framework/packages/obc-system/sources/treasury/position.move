@@ -132,8 +132,8 @@ module obc_system::position {
     /// check tick
     public fun check_position_tick_range(_lower: I32, _upper: I32, _tick_spacing: u32) {
         let tick_spacing = i32::from_u32(_tick_spacing);
-        assert!(i32::gt(tick_spacing, tick_math::max_tick()), ERR_TICK_SPACING_INVALID_RANGE);
-        assert!(i32::lt(tick_spacing, tick_math::min_tick()), ERR_TICK_SPACING_INVALID_RANGE);
+        assert!(i32::gt(tick_spacing, tick_math::min_tick()), ERR_TICK_SPACING_INVALID_RANGE);
+        assert!(i32::lt(tick_spacing, tick_math::max_tick()), ERR_TICK_SPACING_INVALID_RANGE);
         assert!(i32::lt(_lower, _upper), ERR_TICK_INVALID_RANGE);
         assert!(i32::gte(_lower, tick_math::min_tick()), ERR_TICK_LOWER_TOO_SMALL);
         assert!(i32::lte(_upper, tick_math::max_tick()), ERR_TICK_UPPER_TOO_LARGE);
