@@ -328,7 +328,7 @@ authentication purposes - only admin can create new accounts.
 Mint more Abc. Requires AbcTreasuryCap for authorization, so can only be done by admins.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_mint">mint</a>(treasury: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">usdx::AbcTreasuryCap</a>, owned: &<b>mut</b> <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">usdx::Usdx</a>&gt;, value: u64)
+<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_mint">mint</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">usdx::AbcTreasuryCap</a>, owned: &<b>mut</b> <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">usdx::Usdx</a>&gt;, value: u64)
 </code></pre>
 
 
@@ -337,8 +337,8 @@ Mint more Abc. Requires AbcTreasuryCap for authorization, so can only be done by
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_mint">mint</a>(treasury: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">AbcTreasuryCap</a>, owned: &<b>mut</b> DummyCoin&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">Usdx</a>&gt;, value: u64) {
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(<a href="stable_coin.md#0xc8_usdx_borrow_mut">borrow_mut</a>(owned), <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(&<b>mut</b> treasury.supply, value));
+<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_mint">mint</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">AbcTreasuryCap</a>, owned: &<b>mut</b> DummyCoin&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">Usdx</a>&gt;, value: u64) {
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(<a href="stable_coin.md#0xc8_usdx_borrow_mut">borrow_mut</a>(owned), <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supply, value));
 }
 </code></pre>
 
@@ -355,7 +355,7 @@ Burn <code>value</code> amount of <code>RCoin&lt;Abc&gt;</code>. Requires AbcTre
 TODO: Make AbcTreasuryCap a part of Balance module instead of Coin.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_burn">burn</a>(treasury: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">usdx::AbcTreasuryCap</a>, owned: &<b>mut</b> <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">usdx::Usdx</a>&gt;, value: u64)
+<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_burn">burn</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">usdx::AbcTreasuryCap</a>, owned: &<b>mut</b> <a href="stable_coin.md#0xc8_stable_coin_DummyCoin">stable_coin::DummyCoin</a>&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">usdx::Usdx</a>&gt;, value: u64)
 </code></pre>
 
 
@@ -364,9 +364,9 @@ TODO: Make AbcTreasuryCap a part of Balance module instead of Coin.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_burn">burn</a>(treasury: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">AbcTreasuryCap</a>, owned: &<b>mut</b> DummyCoin&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">Usdx</a>&gt;, value: u64) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="stable_coin.md#0xc8_usdx_burn">burn</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="stable_coin.md#0xc8_usdx_AbcTreasuryCap">AbcTreasuryCap</a>, owned: &<b>mut</b> DummyCoin&lt;<a href="stable_coin.md#0xc8_usdx_Usdx">Usdx</a>&gt;, value: u64) {
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(
-        &<b>mut</b> treasury.supply,
+        &<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supply,
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(<a href="stable_coin.md#0xc8_usdx_borrow_mut">borrow_mut</a>(owned), value)
     );
 }

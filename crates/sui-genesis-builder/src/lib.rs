@@ -14,7 +14,7 @@ use std::path::Path;
 use std::sync::Arc;
 use sui_config::genesis::{
     Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule,
-    UnsignedGenesis,
+    UnsignedGenesis,ObcSystemParameters
 };
 use sui_execution::{self, Executor};
 use sui_framework::BuiltInFramework;
@@ -686,6 +686,7 @@ fn build_unsigned_genesis_data(
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
+    let obc_system_parameters = parameters.to_obc_system_parameters();
     let genesis_validators = validators
         .iter()
         .cloned()
@@ -715,6 +716,7 @@ fn build_unsigned_genesis_data(
         objects,
         &genesis_validators,
         &genesis_chain_parameters,
+        &obc_system_parameters,
         token_distribution_schedule,
         metrics.clone(),
     );
@@ -865,6 +867,7 @@ fn create_genesis_objects(
     input_objects: &[Object],
     validators: &[GenesisValidatorMetadata],
     parameters: &GenesisChainParameters,
+    obc_system_parameters: &ObcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> Vec<Object> {
@@ -909,6 +912,7 @@ fn create_genesis_objects(
         validators,
         genesis_ctx,
         parameters,
+        obc_system_parameters,
         token_distribution_schedule,
         metrics,
     )
@@ -1005,6 +1009,7 @@ pub fn generate_genesis_system_object(
     genesis_validators: &[GenesisValidatorMetadata],
     genesis_ctx: &mut TxContext,
     genesis_chain_parameters: &GenesisChainParameters,
+    obc_system_parameters: &ObcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> anyhow::Result<()> {
@@ -1052,6 +1057,7 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
+
         // Step 4: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
@@ -1082,7 +1088,27 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
-        let arguments = vec![obc_system_state_uid];
+        // create the supply of USD.
+        let usd_supply = builder.programmable_move_call(
+            OBC_SYSTEM_ADDRESS.into(),
+            ident_str!("usd").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let mut arguments = vec![
+            obc_system_state_uid,
+            usd_supply,
+        ];
+        let mut obc_call_arg_arguments = vec![
+            CallArg::Pure(bcs::to_bytes(&obc_system_parameters).unwrap()),
+        ]
+        .into_iter()
+        .map(|b| builder.input(b))
+        .collect::<anyhow::Result<_, _>>()?;
+        arguments.append(&mut obc_call_arg_arguments);
+
         builder.programmable_move_call(
             OBC_SYSTEM_ADDRESS.into(),
             ident_str!("obc_system").to_owned(),

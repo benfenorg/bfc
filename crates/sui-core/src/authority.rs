@@ -106,6 +106,7 @@ use sui_types::temporary_store::{
 };
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
+use sui_types::obc_system_state::ObcSystemState;
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -2469,6 +2470,10 @@ impl AuthorityState {
     // This function is only used for testing.
     pub fn get_sui_system_state_object_for_testing(&self) -> SuiResult<SuiSystemState> {
         self.database.get_sui_system_state_object()
+    }
+
+    pub fn get_obc_system_state_object_for_testing(&self) -> SuiResult<ObcSystemState> {
+        self.database.get_obc_system_state_object()
     }
 
     pub fn get_transaction_checkpoint_sequence(

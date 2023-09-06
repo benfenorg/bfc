@@ -293,6 +293,56 @@ async fn test_passive_reconfig() {
         });
 }
 
+#[sim_test]
+async fn test_change_obc_round() {
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .build()
+        .await;
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let state = node
+                .state()
+                .get_obc_system_state_object_for_testing().unwrap();
+            assert_eq!(state.inner_state().round, 0);
+        });
+
+    test_cluster.wait_for_epoch(Some(target_epoch)).await;
+
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let state = node
+                .state()
+                .get_obc_system_state_object_for_testing().unwrap();
+            assert_eq!(state.inner_state().round, 1);
+        });
+
+}
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
 #[sim_test]

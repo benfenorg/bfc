@@ -6,8 +6,11 @@
 
 
 -  [Resource `ObcSystemState`](#0xc8_obc_system_ObcSystemState)
+-  [Struct `TreasuryParameters`](#0xc8_obc_system_TreasuryParameters)
+-  [Struct `ObcSystemParameters`](#0xc8_obc_system_ObcSystemParameters)
 -  [Constants](#@Constants_0)
 -  [Function `create`](#0xc8_obc_system_create)
+-  [Function `create_treasury`](#0xc8_obc_system_create_treasury)
 -  [Function `obc_round`](#0xc8_obc_system_obc_round)
 -  [Function `load_system_state`](#0xc8_obc_system_load_system_state)
 -  [Function `load_system_state_mut`](#0xc8_obc_system_load_system_state_mut)
@@ -26,12 +29,15 @@
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field">0x2::dynamic_object_field</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">0x2::stable</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner">0xc8::obc_system_state_inner</a>;
+<b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
+<b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
 </code></pre>
 
 
@@ -69,6 +75,78 @@
 
 </details>
 
+<a name="0xc8_obc_system_TreasuryParameters"></a>
+
+## Struct `TreasuryParameters`
+
+
+
+<pre><code><b>struct</b> <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">TreasuryParameters</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>position_number: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>tick_spacing: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>initialize_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_obc_system_ObcSystemParameters"></a>
+
+## Struct `ObcSystemParameters`
+
+
+
+<pre><code><b>struct</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>treasury_parameters: <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">obc_system::TreasuryParameters</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>chain_start_timestamp_ms: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
@@ -83,13 +161,22 @@
 
 
 
+<a name="0xc8_obc_system_OBC_SYSTEM_TREASURY_KEY"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>: u64 = 3;
+</code></pre>
+
+
+
 <a name="0xc8_obc_system_create"></a>
 
 ## Function `create`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -98,10 +185,11 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(
     id: UID,
-    ctx: &<b>mut</b> TxContext,
-){
+    usd_supply: Supply&lt;USD&gt;,
+    parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a>,
+    ctx: &<b>mut</b> TxContext,    ){
     <b>let</b> inner_state = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">obc_system_state_inner::create_inner_state</a>(ctx);
     <b>let</b> self = <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a> {
         id,
@@ -109,7 +197,62 @@
     };
 
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_STATE_VERSION_V1">OBC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
+
+    <a href="obc_system.md#0xc8_obc_system_create_treasury">create_treasury</a>(
+        &<b>mut</b> self,
+        usd_supply,
+        parameters.treasury_parameters,
+        parameters.chain_start_timestamp_ms,
+        ctx
+    );
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(self);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_create_treasury"></a>
+
+## Function `create_treasury`
+
+
+
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_treasury">create_treasury</a>(obcsystem: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, treasury_parameters: <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">obc_system::TreasuryParameters</a>, ts: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_treasury">create_treasury</a>(
+    obcsystem: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    supply: Supply&lt;USD&gt;,
+    treasury_parameters: <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">TreasuryParameters</a>,
+    ts: u64,
+    ctx: &<b>mut</b> TxContext
+)
+{
+    <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(ctx);
+    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_add">dynamic_object_field::add</a>(&<b>mut</b> obcsystem.id, <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>, t);
+
+    <b>let</b> mut_t = <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;u64, <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>&gt;(
+        &<b>mut</b> obcsystem.id,
+        <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>
+    );
+    // create <a href="obc.md#0xc8_obc">obc</a>-<a href="usd.md#0xc8_usd">usd</a> <a href="pool.md#0xc8_pool">pool</a>
+    <a href="treasury.md#0xc8_treasury_create_vault">treasury::create_vault</a>&lt;OBC, USD, USD&gt;(
+        mut_t,
+        supply,
+        treasury_parameters.position_number,
+        treasury_parameters.tick_spacing,
+        treasury_parameters.initialize_price,
+        ts,
+        ctx,
+    );
 }
 </code></pre>
 
@@ -123,7 +266,7 @@
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, round: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, round: u64)
 </code></pre>
 
 
@@ -132,21 +275,12 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    round:u64,
-    ctx: &<b>mut</b> TxContext,
+    round:u64
 ){
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_update_round">obc_system_state_inner::update_round</a>(inner_state, round);
-    //exchange all <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> <b>to</b> <a href="obc.md#0xc8_obc">obc</a>.
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_exchange_all">obc_system_state_inner::request_exchange_all</a>(inner_state, ctx);
-    // //<b>update</b> inner exchange rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-swap.
-    // <b>let</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;STABLE&gt;(ctx);
-    //todo read rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-swap.
-    // <b>let</b> rate = 1000000000;
-    // <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_update_gas_coin">obc_system_state_inner::request_update_gas_coin</a>(inner_state, &<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, rate);
-    // <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>));
 }
 </code></pre>
 
