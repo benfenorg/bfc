@@ -18,7 +18,7 @@ module obc_system::obc_system {
 
     struct ObcSystemState has key {
         id: UID,
-        version:u64
+        version: u64
     }
 
     struct TreasuryParameters has drop, copy {
@@ -41,7 +41,7 @@ module obc_system::obc_system {
         id: UID,
         usd_supply: Supply<USD>,
         parameters: ObcSystemParameters,
-        ctx: &mut TxContext,    ){
+        ctx: &mut TxContext, ) {
         let inner_state = obc_system_state_inner::create_inner_state(ctx);
         let self = ObcSystemState {
             id,
@@ -85,13 +85,15 @@ module obc_system::obc_system {
             ts,
             ctx,
         );
+        // init positions
+        treasury::init_positions<OBC, USD>(mut_t, treasury_parameters.tick_spacing, 10, ctx);
     }
 
     #[allow(unused_function)]
     fun obc_round(
         wrapper: &mut ObcSystemState,
-        round:u64
-    ){
+        round: u64
+    ) {
         let inner_state = load_system_state_mut(wrapper);
         obc_system_state_inner::update_round(inner_state, round);
     }
@@ -99,7 +101,7 @@ module obc_system::obc_system {
     fun load_system_state(
         self: &ObcSystemState
     ): &ObcSystemStateInner {
-       dynamic_field::borrow(&self.id, self.version)
+        dynamic_field::borrow(&self.id, self.version)
     }
 
     fun load_system_state_mut(

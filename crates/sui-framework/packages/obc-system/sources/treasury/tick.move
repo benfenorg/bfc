@@ -1,6 +1,7 @@
 module obc_system::tick {
     use std::option;
     use std::option::Option;
+    use std::vector;
 
     use sui::tx_context::TxContext;
 
@@ -13,6 +14,8 @@ module obc_system::tick {
 
     friend obc_system::treasury;
     friend obc_system::vault;
+    #[test_only]
+    friend obc_system::tick_test;
 
     const ERR_TICK_EXCEED_TWICE_MAXIMUM: u64 = 400;
     const ERR_TICK_EXCEED_U128_MAXIMUM: u64 = 401;
@@ -279,5 +282,28 @@ module obc_system::tick {
                 skip_list::find_next(&_tick_manager.ticks, score, false)
             }
         }
+    }
+
+    public(friend) fun get_ticks(
+        _tick_manager: &TickManager,
+        _tick_index: I32,
+        _spacing_times: u32,
+        _total_count: u32,
+    ): vector<vector<I32>> {
+        let half_ticks = _total_count / 2 * (_spacing_times * _tick_manager.tick_spacing);
+        let start_gap = i32::from_u32(
+            half_ticks + ((_spacing_times / 2) * _tick_manager.tick_spacing)
+        );
+        let tick_gap = i32::from_u32(_spacing_times * _tick_manager.tick_spacing);
+        let count = _total_count;
+        let start = i32::sub(_tick_index, start_gap);
+        let ticks = vector::empty<vector<I32>>();
+        while (count > 0) {
+            let new_start = i32::add(start, tick_gap);
+            vector::push_back(&mut ticks, vector<I32>[start, new_start]);
+            start = new_start;
+            count = count - 1
+        };
+        ticks
     }
 }

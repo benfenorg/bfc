@@ -189,7 +189,7 @@
     id: UID,
     usd_supply: Supply&lt;USD&gt;,
     parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a>,
-    ctx: &<b>mut</b> TxContext,    ){
+    ctx: &<b>mut</b> TxContext, ) {
     <b>let</b> inner_state = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">obc_system_state_inner::create_inner_state</a>(ctx);
     <b>let</b> self = <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a> {
         id,
@@ -253,6 +253,8 @@
         ts,
         ctx,
     );
+    // init positions
+    <a href="treasury.md#0xc8_treasury_init_positions">treasury::init_positions</a>&lt;OBC, USD&gt;(mut_t, treasury_parameters.tick_spacing, 10, ctx);
 }
 </code></pre>
 
@@ -277,8 +279,8 @@
 
 <pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    round:u64
-){
+    round: u64
+) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_update_round">obc_system_state_inner::update_round</a>(inner_state, round);
 }
@@ -306,7 +308,7 @@
 <pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(
     self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>
 ): &ObcSystemStateInner {
-   <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>(&self.id, self.version)
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>(&self.id, self.version)
 }
 </code></pre>
 

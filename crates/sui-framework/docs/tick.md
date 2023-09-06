@@ -23,6 +23,7 @@
 -  [Function `borrow_tick_for_swap`](#0xc8_tick_borrow_tick_for_swap)
 -  [Function `cross_by_swap`](#0xc8_tick_cross_by_swap)
 -  [Function `first_score_for_swap`](#0xc8_tick_first_score_for_swap)
+-  [Function `get_ticks`](#0xc8_tick_get_ticks)
 
 
 <pre><code><b>use</b> <a href="">0x1::option</a>;
@@ -699,6 +700,49 @@ add/remove liquidity
             <a href="skip_list.md#0xc8_skip_list_find_next">skip_list::find_next</a>(&_tick_manager.ticks, score, <b>false</b>)
         }
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_get_ticks"></a>
+
+## Function `get_ticks`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_get_ticks">get_ticks</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a>, _tick_index: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _spacing_times: u32, _total_count: u32): <a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_get_ticks">get_ticks</a>(
+    _tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>,
+    _tick_index: I32,
+    _spacing_times: u32,
+    _total_count: u32,
+): <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt; {
+    <b>let</b> half_ticks = _total_count / 2 * (_spacing_times * _tick_manager.tick_spacing);
+    <b>let</b> start_gap = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(
+        half_ticks + ((_spacing_times / 2) * _tick_manager.tick_spacing)
+    );
+    <b>let</b> tick_gap = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_spacing_times * _tick_manager.tick_spacing);
+    <b>let</b> count = _total_count;
+    <b>let</b> start = <a href="i32.md#0xc8_i32_sub">i32::sub</a>(_tick_index, start_gap);
+    <b>let</b> ticks = <a href="_empty">vector::empty</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;();
+    <b>while</b> (count &gt; 0) {
+        <b>let</b> new_start = <a href="i32.md#0xc8_i32_add">i32::add</a>(start, tick_gap);
+        <a href="_push_back">vector::push_back</a>(&<b>mut</b> ticks, <a href="">vector</a>&lt;I32&gt;[start, new_start]);
+        start = new_start;
+        count = count - 1
+    };
+    ticks
 }
 </code></pre>
 

@@ -13,6 +13,7 @@
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `create_vault`](#0xc8_treasury_create_vault)
+-  [Function `init_positions`](#0xc8_treasury_init_positions)
 -  [Function `create_vault_internal`](#0xc8_treasury_create_vault_internal)
 -  [Function `generate_vault_key`](#0xc8_treasury_generate_vault_key)
 
@@ -329,6 +330,50 @@
             _ctx,
         )
     };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_init_positions"></a>
+
+## Function `init_positions`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_init_positions">init_positions</a>&lt;CoinTypeA, CoinTypeB&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _tick_spacing: u32, _spacing_times: u32, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_init_positions">init_positions</a>&lt;CoinTypeA, CoinTypeB&gt;(
+    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _tick_spacing: u32,
+    _spacing_times: u32,
+    _ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_generate_vault_key">generate_vault_key</a>&lt;CoinTypeA, CoinTypeB&gt;(_tick_spacing);
+    <b>if</b> (<a href="utils.md#0xc8_utils_cmp">utils::cmp</a>&lt;CoinTypeA, CoinTypeB&gt;() &lt; 1) {
+        <b>let</b> <a href="vault.md#0xc8_vault">vault</a> = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;CoinTypeA, CoinTypeB&gt;(_treasury, vault_key);
+        <a href="vault.md#0xc8_vault_init_positions">vault::init_positions</a>&lt;CoinTypeA, CoinTypeB&gt;(
+            <a href="vault.md#0xc8_vault">vault</a>,
+            _spacing_times,
+            _ctx,
+        );
+    } <b>else</b> {
+        <b>let</b> <a href="vault.md#0xc8_vault">vault</a> = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;CoinTypeB, CoinTypeA&gt;(_treasury, vault_key);
+        <a href="vault.md#0xc8_vault_init_positions">vault::init_positions</a>&lt;CoinTypeB, CoinTypeA&gt;(
+            <a href="vault.md#0xc8_vault">vault</a>,
+            _spacing_times,
+            _ctx,
+        );
+    }
 }
 </code></pre>
 

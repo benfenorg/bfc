@@ -12,8 +12,9 @@
 -  [Function `get_vault_id`](#0xc8_position_get_vault_id)
 -  [Function `get_position_id`](#0xc8_position_get_position_id)
 -  [Function `is_empty`](#0xc8_position_is_empty)
--  [Function `is_position_exist`](#0xc8_position_is_position_exist)
 -  [Function `get_liquidity`](#0xc8_position_get_liquidity)
+-  [Function `is_position_exist`](#0xc8_position_is_position_exist)
+-  [Function `get_total_positions`](#0xc8_position_get_total_positions)
 -  [Function `fetch_positions`](#0xc8_position_fetch_positions)
 -  [Function `borrow_mut_position`](#0xc8_position_borrow_mut_position)
 -  [Function `borrow_position`](#0xc8_position_borrow_position)
@@ -374,6 +375,30 @@ position info
 
 </details>
 
+<a name="0xc8_position_get_liquidity"></a>
+
+## Function `get_liquidity`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_get_liquidity">get_liquidity</a>(_position: &<a href="position.md#0xc8_position_Position">position::Position</a>): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_get_liquidity">get_liquidity</a>(_position: &<a href="position.md#0xc8_position_Position">Position</a>): u128 {
+    _position.liquidity
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_position_is_position_exist"></a>
 
 ## Function `is_position_exist`
@@ -398,13 +423,13 @@ position info
 
 </details>
 
-<a name="0xc8_position_get_liquidity"></a>
+<a name="0xc8_position_get_total_positions"></a>
 
-## Function `get_liquidity`
+## Function `get_total_positions`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_get_liquidity">get_liquidity</a>(_position: &<a href="position.md#0xc8_position_Position">position::Position</a>): u128
+<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_get_total_positions">get_total_positions</a>(_manager: &<a href="position.md#0xc8_position_PositionManager">position::PositionManager</a>): u64
 </code></pre>
 
 
@@ -413,8 +438,8 @@ position info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_get_liquidity">get_liquidity</a>(_position: &<a href="position.md#0xc8_position_Position">Position</a>): u128 {
-    _position.liquidity
+<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_get_total_positions">get_total_positions</a>(_manager: &<a href="position.md#0xc8_position_PositionManager">PositionManager</a>): u64 {
+    <a href="linked_table.md#0xc8_linked_table_length">linked_table::length</a>(&_manager.positions)
 }
 </code></pre>
 

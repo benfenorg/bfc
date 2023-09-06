@@ -113,6 +113,30 @@ module obc_system::treasury {
         };
     }
 
+    public(friend) fun init_positions<CoinTypeA, CoinTypeB>(
+        _treasury: &mut Treasury,
+        _tick_spacing: u32,
+        _spacing_times: u32,
+        _ctx: &mut TxContext,
+    ) {
+        let vault_key = generate_vault_key<CoinTypeA, CoinTypeB>(_tick_spacing);
+        if (utils::cmp<CoinTypeA, CoinTypeB>() < 1) {
+            let vault = borrow_mut_vault<CoinTypeA, CoinTypeB>(_treasury, vault_key);
+            vault::init_positions<CoinTypeA, CoinTypeB>(
+                vault,
+                _spacing_times,
+                _ctx,
+            );
+        } else {
+            let vault = borrow_mut_vault<CoinTypeB, CoinTypeA>(_treasury, vault_key);
+            vault::init_positions<CoinTypeB, CoinTypeA>(
+                vault,
+                _spacing_times,
+                _ctx,
+            );
+        }
+    }
+
     /// creat vault for ordered A & B
     fun create_vault_internal<CoinTypeA, CoinTypeB, SupplyCoinType>(
         _treasury: &mut Treasury,

@@ -1,5 +1,4 @@
 module obc_system::vault {
-    use std::type_name::TypeName;
     use std::vector;
 
     use sui::balance::{Self, Balance};
@@ -102,48 +101,48 @@ module obc_system::vault {
     /// open `position_number` positions
     public(friend) fun init_positions<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
+        _spacing_times: u32,
         _ctx: &mut TxContext
     ) {
         assert!(position::get_total_positions(&_vault.position_manager) == 0, ERR_POSITIONS_IS_NOT_EMPTY);
-
-        let tick_lower = i32::from_u32(_tick_lower);
-        let tick_upper = i32::from_u32(_tick_upper);
-        let position_id = position::open_position<CoinTypeA, CoinTypeB>(
-            &mut _vault.position_manager,
-            _vault.index,
-            tick_lower,
-            tick_upper,
-            _ctx,
+        let ticks = tick::get_ticks(
+            &_vault.tick_manager,
+            _vault.current_tick_index,
+            _spacing_times,
+            _vault.position_number,
         );
-        event::open_position(
-            vault_id(_vault),
-            position_id,
-            tick_lower,
-            tick_upper,
-        )
+        let index = 0;
+        while (index < vector::length(&ticks)) {
+            let current = vector::borrow(&ticks, index);
+            open_position(
+                _vault,
+                *vector::borrow(current, 0),
+                *vector::borrow(current, 1),
+                _ctx,
+            );
+            index = index + 1;
+        };
     }
 
     fun open_position<CoinTypeA, CoinTypeB>(
         _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32,
+        _tick_lower: I32,
+        _tick_upper: I32,
         _ctx: &mut TxContext
     ) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
-        let tick_lower = i32::from_u32(_tick_lower);
-        let tick_upper = i32::from_u32(_tick_upper);
         let position_id = position::open_position<CoinTypeA, CoinTypeB>(
             &mut _vault.position_manager,
             _vault.index,
-            tick_lower,
-            tick_upper,
+            _tick_lower,
+            _tick_upper,
             _ctx,
         );
         event::open_position(
             vault_id(_vault),
             position_id,
-            tick_lower,
-            tick_upper,
+            _tick_lower,
+            _tick_upper,
         )
     }
 
