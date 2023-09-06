@@ -5,11 +5,11 @@ module obc_system::obc_system {
     use obc_system::obc_system_state_inner::ObcSystemStateInner;
     use obc_system::obc_system_state_inner;
     use obc_system::treasury;
+    use obc_system::usd::USD;
 
     use sui::dynamic_field;
     use sui::dynamic_object_field;
     use sui::obc::OBC;
-    use sui::usd::USD;
     use sui::object::UID;
     use sui::stable::STABLE;
     use sui::transfer;

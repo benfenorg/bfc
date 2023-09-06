@@ -1,4 +1,4 @@
-module sui::usd {
+module obc_system::usd {
     use std::option;
     use sui::transfer;
     use sui::coin;

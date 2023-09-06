@@ -1090,7 +1090,7 @@ pub fn generate_genesis_system_object(
 
         // create the supply of USD.
         let usd_supply = builder.programmable_move_call(
-            SUI_FRAMEWORK_ADDRESS.into(),
+            OBC_SYSTEM_ADDRESS.into(),
             ident_str!("usd").to_owned(),
             ident_str!("new").to_owned(),
             vec![],

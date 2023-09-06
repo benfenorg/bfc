@@ -35,9 +35,9 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">0x2::stable</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/usd.md#0x2_usd">0x2::usd</a>;
 <b>use</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner">0xc8::obc_system_state_inner</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
+<b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
 </code></pre>
 
 
@@ -176,7 +176,7 @@
 
 
 
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../../../.././build/Sui/docs/usd.md#0x2_usd_USD">usd::USD</a>&gt;, parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -219,7 +219,7 @@
 
 
 
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_treasury">create_treasury</a>(obcsystem: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../../../.././build/Sui/docs/usd.md#0x2_usd_USD">usd::USD</a>&gt;, treasury_parameters: <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">obc_system::TreasuryParameters</a>, ts: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_treasury">create_treasury</a>(obcsystem: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, treasury_parameters: <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">obc_system::TreasuryParameters</a>, ts: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -243,7 +243,7 @@
         &<b>mut</b> obcsystem.id,
         <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>
     );
-    // create <a href="obc.md#0xc8_obc">obc</a>-<a href="../../../.././build/Sui/docs/usd.md#0x2_usd">usd</a> <a href="pool.md#0xc8_pool">pool</a>
+    // create <a href="obc.md#0xc8_obc">obc</a>-<a href="usd.md#0xc8_usd">usd</a> <a href="pool.md#0xc8_pool">pool</a>
     <a href="treasury.md#0xc8_treasury_create_vault">treasury::create_vault</a>&lt;OBC, USD, USD&gt;(
         mut_t,
         supply,
