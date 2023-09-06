@@ -1,12 +1,15 @@
 module obc_system::obc_system {
-    use sui::balance::Balance;
+    use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
     use obc_system::obc_system_state_inner::ObcSystemStateInner;
     use obc_system::obc_system_state_inner;
+    use obc_system::treasury;
 
     use sui::dynamic_field;
+    use sui::dynamic_object_field;
     use sui::obc::OBC;
+    use sui::usd::USD;
     use sui::object::UID;
     use sui::stable::STABLE;
     use sui::transfer;
@@ -18,13 +21,27 @@ module obc_system::obc_system {
         version:u64
     }
 
+    struct TreasuryParameters has drop, copy {
+        position_number: u32,
+        tick_spacing: u32,
+        initialize_price: u128,
+    }
+
+    struct ObcSystemParameters has drop, copy {
+        treasury_parameters: TreasuryParameters,
+        chain_start_timestamp_ms: u64,
+    }
+
     const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
+    const OBC_SYSTEM_TREASURY_KEY: u64 = 3;
+
 
     #[allow(unused_function)]
     fun create(
         id: UID,
-        ctx: &mut TxContext,
-    ){
+        usd_supply: Supply<USD>,
+        parameters: ObcSystemParameters,
+        ctx: &mut TxContext,    ){
         let inner_state = obc_system_state_inner::create_inner_state(ctx);
         let self = ObcSystemState {
             id,
@@ -32,7 +49,42 @@ module obc_system::obc_system {
         };
 
         dynamic_field::add(&mut self.id, OBC_SYSTEM_STATE_VERSION_V1, inner_state);
+
+        create_treasury(
+            &mut self,
+            usd_supply,
+            parameters.treasury_parameters,
+            parameters.chain_start_timestamp_ms,
+            ctx
+        );
         transfer::share_object(self);
+    }
+
+    fun create_treasury(
+        obcsystem: &mut ObcSystemState,
+        supply: Supply<USD>,
+        treasury_parameters: TreasuryParameters,
+        ts: u64,
+        ctx: &mut TxContext
+    )
+    {
+        let t = treasury::create_treasury(ctx);
+        dynamic_object_field::add(&mut obcsystem.id, OBC_SYSTEM_TREASURY_KEY, t);
+
+        let mut_t = dynamic_object_field::borrow_mut<u64, treasury::Treasury>(
+            &mut obcsystem.id,
+            OBC_SYSTEM_TREASURY_KEY
+        );
+        // create obc-usd pool
+        treasury::create_vault<OBC, USD, USD>(
+            mut_t,
+            supply,
+            treasury_parameters.position_number,
+            treasury_parameters.tick_spacing,
+            treasury_parameters.initialize_price,
+            ts,
+            ctx,
+        );
     }
 
     #[allow(unused_function)]

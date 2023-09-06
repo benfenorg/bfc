@@ -47,7 +47,8 @@ pub fn verify_module(
     // framework code and thus deemed correct.
     let obc_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("obc").to_owned());
     let stable_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("stable").to_owned());
-    if obc_module == module.self_id() || stable_module == module.self_id() {
+    let usd_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("usd").to_owned());
+    if obc_module == module.self_id() || stable_module == module.self_id() || usd_module == module.self_id() {
         return Ok(());
     }
 

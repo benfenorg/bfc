@@ -1,49 +1,52 @@
 
-<a name="0x2_linked_table"></a>
+<a name="0xc8_linked_table"></a>
 
-# Module `0x2::linked_table`
-
-Similar to <code>sui::table</code> but the values are linked together, allowing for ordered insertion and
-removal
+# Module `0xc8::linked_table`
 
 
--  [Resource `LinkedTable`](#0x2_linked_table_LinkedTable)
--  [Struct `Node`](#0x2_linked_table_Node)
+
+-  [Resource `LinkedTable`](#0xc8_linked_table_LinkedTable)
+-  [Struct `Node`](#0xc8_linked_table_Node)
 -  [Constants](#@Constants_0)
--  [Function `new`](#0x2_linked_table_new)
--  [Function `front`](#0x2_linked_table_front)
--  [Function `back`](#0x2_linked_table_back)
--  [Function `push_front`](#0x2_linked_table_push_front)
--  [Function `push_back`](#0x2_linked_table_push_back)
--  [Function `borrow`](#0x2_linked_table_borrow)
--  [Function `borrow_mut`](#0x2_linked_table_borrow_mut)
--  [Function `prev`](#0x2_linked_table_prev)
--  [Function `next`](#0x2_linked_table_next)
--  [Function `remove`](#0x2_linked_table_remove)
--  [Function `pop_front`](#0x2_linked_table_pop_front)
--  [Function `pop_back`](#0x2_linked_table_pop_back)
--  [Function `contains`](#0x2_linked_table_contains)
--  [Function `length`](#0x2_linked_table_length)
--  [Function `is_empty`](#0x2_linked_table_is_empty)
--  [Function `destroy_empty`](#0x2_linked_table_destroy_empty)
--  [Function `drop`](#0x2_linked_table_drop)
+-  [Function `new`](#0xc8_linked_table_new)
+-  [Function `is_empty`](#0xc8_linked_table_is_empty)
+-  [Function `length`](#0xc8_linked_table_length)
+-  [Function `contains`](#0xc8_linked_table_contains)
+-  [Function `head`](#0xc8_linked_table_head)
+-  [Function `tail`](#0xc8_linked_table_tail)
+-  [Function `next`](#0xc8_linked_table_next)
+-  [Function `prev`](#0xc8_linked_table_prev)
+-  [Function `borrow`](#0xc8_linked_table_borrow)
+-  [Function `borrow_mut`](#0xc8_linked_table_borrow_mut)
+-  [Function `borrow_node`](#0xc8_linked_table_borrow_node)
+-  [Function `borrow_mut_node`](#0xc8_linked_table_borrow_mut_node)
+-  [Function `borrow_value`](#0xc8_linked_table_borrow_value)
+-  [Function `borrow_mut_value`](#0xc8_linked_table_borrow_mut_value)
+-  [Function `push_back`](#0xc8_linked_table_push_back)
+-  [Function `push_front`](#0xc8_linked_table_push_front)
+-  [Function `insert_before`](#0xc8_linked_table_insert_before)
+-  [Function `insert_after`](#0xc8_linked_table_insert_after)
+-  [Function `remove`](#0xc8_linked_table_remove)
+-  [Function `destroy_empty`](#0xc8_linked_table_destroy_empty)
+-  [Function `drop`](#0xc8_linked_table_drop)
+-  [Function `fetch`](#0xc8_linked_table_fetch)
 
 
 <pre><code><b>use</b> <a href="">0x1::option</a>;
-<b>use</b> <a href="dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
-<b>use</b> <a href="object.md#0x2_object">0x2::object</a>;
-<b>use</b> <a href="tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 </code></pre>
 
 
 
-<a name="0x2_linked_table_LinkedTable"></a>
+<a name="0xc8_linked_table_LinkedTable"></a>
 
 ## Resource `LinkedTable`
 
 
 
-<pre><code><b>struct</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store, key
+<pre><code><b>struct</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store, key
 </code></pre>
 
 
@@ -54,41 +57,41 @@ removal
 
 <dl>
 <dt>
-<code>id: <a href="object.md#0x2_object_UID">object::UID</a></code>
+<code>id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a></code>
 </dt>
 <dd>
- the ID of this table
-</dd>
-<dt>
-<code>size: u64</code>
-</dt>
-<dd>
- the number of key-value pairs in the table
+
 </dd>
 <dt>
 <code>head: <a href="_Option">option::Option</a>&lt;K&gt;</code>
 </dt>
 <dd>
- the front of the table, i.e. the key of the first entry
+
 </dd>
 <dt>
 <code>tail: <a href="_Option">option::Option</a>&lt;K&gt;</code>
 </dt>
 <dd>
- the back of the table, i.e. the key of the last entry
+
+</dd>
+<dt>
+<code>size: u64</code>
+</dt>
+<dd>
+
 </dd>
 </dl>
 
 
 </details>
 
-<a name="0x2_linked_table_Node"></a>
+<a name="0xc8_linked_table_Node"></a>
 
 ## Struct `Node`
 
 
 
-<pre><code><b>struct</b> <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store
+<pre><code><b>struct</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store
 </code></pre>
 
 
@@ -102,19 +105,19 @@ removal
 <code>prev: <a href="_Option">option::Option</a>&lt;K&gt;</code>
 </dt>
 <dd>
- the previous key
+
 </dd>
 <dt>
 <code>next: <a href="_Option">option::Option</a>&lt;K&gt;</code>
 </dt>
 <dd>
- the next key
+
 </dd>
 <dt>
 <code>value: V</code>
 </dt>
 <dd>
- the value being stored
+
 </dd>
 </dl>
 
@@ -126,32 +129,31 @@ removal
 ## Constants
 
 
-<a name="0x2_linked_table_ETableIsEmpty"></a>
+<a name="0xc8_linked_table_ELimitInvalid"></a>
 
 
 
-<pre><code><b>const</b> <a href="linked_table.md#0x2_linked_table_ETableIsEmpty">ETableIsEmpty</a>: u64 = 1;
+<pre><code><b>const</b> <a href="linked_table.md#0xc8_linked_table_ELimitInvalid">ELimitInvalid</a>: u64 = 1;
 </code></pre>
 
 
 
-<a name="0x2_linked_table_ETableNotEmpty"></a>
+<a name="0xc8_linked_table_EListNotEmpty"></a>
 
 
 
-<pre><code><b>const</b> <a href="linked_table.md#0x2_linked_table_ETableNotEmpty">ETableNotEmpty</a>: u64 = 0;
+<pre><code><b>const</b> <a href="linked_table.md#0xc8_linked_table_EListNotEmpty">EListNotEmpty</a>: u64 = 0;
 </code></pre>
 
 
 
-<a name="0x2_linked_table_new"></a>
+<a name="0xc8_linked_table_new"></a>
 
 ## Function `new`
 
-Creates a new, empty table
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_new">new</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_new">new</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;
 </code></pre>
 
 
@@ -160,12 +162,12 @@ Creates a new, empty table
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_new">new</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(ctx: &<b>mut</b> TxContext): <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
-    <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a> {
-        id: <a href="object.md#0x2_object_new">object::new</a>(ctx),
-        size: 0,
-        head: <a href="_none">option::none</a>(),
-        tail: <a href="_none">option::none</a>(),
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_new">new</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(ctx: &<b>mut</b> TxContext): <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
+    <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
+        id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
+        head: none&lt;K&gt;(),
+        tail: none&lt;K&gt;(),
+        size: 0
     }
 }
 </code></pre>
@@ -174,14 +176,13 @@ Creates a new, empty table
 
 </details>
 
-<a name="0x2_linked_table_front"></a>
+<a name="0xc8_linked_table_is_empty"></a>
 
-## Function `front`
-
-Returns the key for the first element in the table, or None if the table is empty
+## Function `is_empty`
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_front">front</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): &<a href="_Option">option::Option</a>&lt;K&gt;
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_is_empty">is_empty</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): bool
 </code></pre>
 
 
@@ -190,8 +191,8 @@ Returns the key for the first element in the table, or None if the table is empt
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_front">front</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): &Option&lt;K&gt; {
-    &<a href="table.md#0x2_table">table</a>.head
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_is_empty">is_empty</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): bool {
+    table.size == 0
 }
 </code></pre>
 
@@ -199,14 +200,13 @@ Returns the key for the first element in the table, or None if the table is empt
 
 </details>
 
-<a name="0x2_linked_table_back"></a>
+<a name="0xc8_linked_table_length"></a>
 
-## Function `back`
-
-Returns the key for the last element in the table, or None if the table is empty
+## Function `length`
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_back">back</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): &<a href="_Option">option::Option</a>&lt;K&gt;
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_length">length</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): u64
 </code></pre>
 
 
@@ -215,8 +215,8 @@ Returns the key for the last element in the table, or None if the table is empty
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_back">back</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): &Option&lt;K&gt; {
-    &<a href="table.md#0x2_table">table</a>.tail
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_length">length</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): u64 {
+    table.size
 }
 </code></pre>
 
@@ -224,17 +224,13 @@ Returns the key for the last element in the table, or None if the table is empty
 
 </details>
 
-<a name="0x2_linked_table_push_front"></a>
+<a name="0xc8_linked_table_contains"></a>
 
-## Function `push_front`
-
-Inserts a key-value pair at the front of the table, i.e. the newly inserted pair will be
-the first element in the table
-Aborts with <code>sui::dynamic_field::EFieldAlreadyExists</code> if the table already has an entry with
-that key <code>k: K</code>.
+## Function `contains`
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_push_front">push_front</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K, value: V)
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_contains">contains</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): bool
 </code></pre>
 
 
@@ -243,23 +239,8 @@ that key <code>k: K</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_push_front">push_front</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(
-    <a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
-    k: K,
-    value: V,
-) {
-    <b>let</b> old_head = <a href="_swap_or_fill">option::swap_or_fill</a>(&<b>mut</b> <a href="table.md#0x2_table">table</a>.head, k);
-    <b>if</b> (<a href="_is_none">option::is_none</a>(&<a href="table.md#0x2_table">table</a>.tail)) <a href="_fill">option::fill</a>(&<b>mut</b> <a href="table.md#0x2_table">table</a>.tail, k);
-    <b>let</b> prev = <a href="_none">option::none</a>();
-    <b>let</b> next = <b>if</b> (<a href="_is_some">option::is_some</a>(&old_head)) {
-        <b>let</b> old_head_k = <a href="_destroy_some">option::destroy_some</a>(old_head);
-        field::borrow_mut&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, old_head_k).prev = <a href="_some">option::some</a>(k);
-        <a href="_some">option::some</a>(old_head_k)
-    } <b>else</b> {
-        <a href="_none">option::none</a>()
-    };
-    field::add(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, k, <a href="linked_table.md#0x2_linked_table_Node">Node</a> { prev, next, value });
-    <a href="table.md#0x2_table">table</a>.size = <a href="table.md#0x2_table">table</a>.size + 1;
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_contains">contains</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): bool {
+    field::exists_with_type&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&table.id, key)
 }
 </code></pre>
 
@@ -267,17 +248,13 @@ that key <code>k: K</code>.
 
 </details>
 
-<a name="0x2_linked_table_push_back"></a>
+<a name="0xc8_linked_table_head"></a>
 
-## Function `push_back`
-
-Inserts a key-value pair at the back of the table, i.e. the newly inserted pair will be
-the last element in the table
-Aborts with <code>sui::dynamic_field::EFieldAlreadyExists</code> if the table already has an entry with
-that key <code>k: K</code>.
+## Function `head`
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_push_back">push_back</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K, value: V)
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_head">head</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -286,23 +263,8 @@ that key <code>k: K</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_push_back">push_back</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(
-    <a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
-    k: K,
-    value: V,
-) {
-    <b>if</b> (<a href="_is_none">option::is_none</a>(&<a href="table.md#0x2_table">table</a>.head)) <a href="_fill">option::fill</a>(&<b>mut</b> <a href="table.md#0x2_table">table</a>.head, k);
-    <b>let</b> old_tail = <a href="_swap_or_fill">option::swap_or_fill</a>(&<b>mut</b> <a href="table.md#0x2_table">table</a>.tail, k);
-    <b>let</b> prev = <b>if</b> (<a href="_is_some">option::is_some</a>(&old_tail)) {
-        <b>let</b> old_tail_k = <a href="_destroy_some">option::destroy_some</a>(old_tail);
-        field::borrow_mut&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, old_tail_k).next = <a href="_some">option::some</a>(k);
-        <a href="_some">option::some</a>(old_tail_k)
-    } <b>else</b> {
-        <a href="_none">option::none</a>()
-    };
-    <b>let</b> next = <a href="_none">option::none</a>();
-    field::add(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, k, <a href="linked_table.md#0x2_linked_table_Node">Node</a> { prev, next, value });
-    <a href="table.md#0x2_table">table</a>.size = <a href="table.md#0x2_table">table</a>.size + 1;
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_head">head</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="_Option">option::Option</a>&lt;K&gt; {
+    table.head
 }
 </code></pre>
 
@@ -310,16 +272,13 @@ that key <code>k: K</code>.
 
 </details>
 
-<a name="0x2_linked_table_borrow"></a>
+<a name="0xc8_linked_table_tail"></a>
 
-## Function `borrow`
-
-Immutable borrows the value associated with the key in the table <code><a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code>.
-Aborts with <code>sui::dynamic_field::EFieldDoesNotExist</code> if the table does not have an entry with
-that key <code>k: K</code>.
+## Function `tail`
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="borrow.md#0x2_borrow">borrow</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K): &V
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_tail">tail</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -328,8 +287,8 @@ that key <code>k: K</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="borrow.md#0x2_borrow">borrow</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, k: K): &V {
-    &field::borrow&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="table.md#0x2_table">table</a>.id, k).value
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_tail">tail</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="_Option">option::Option</a>&lt;K&gt; {
+    table.tail
 }
 </code></pre>
 
@@ -337,75 +296,13 @@ that key <code>k: K</code>.
 
 </details>
 
-<a name="0x2_linked_table_borrow_mut"></a>
-
-## Function `borrow_mut`
-
-Mutably borrows the value associated with the key in the table <code><a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code>.
-Aborts with <code>sui::dynamic_field::EFieldDoesNotExist</code> if the table does not have an entry with
-that key <code>k: K</code>.
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_borrow_mut">borrow_mut</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K): &<b>mut</b> V
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_borrow_mut">borrow_mut</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(
-    <a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
-    k: K,
-): &<b>mut</b> V {
-    &<b>mut</b> field::borrow_mut&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, k).value
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_prev"></a>
-
-## Function `prev`
-
-Borrows the key for the previous entry of the specified key <code>k: K</code> in the table
-<code><a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code>. Returns None if the entry does not have a predecessor.
-Aborts with <code>sui::dynamic_field::EFieldDoesNotExist</code> if the table does not have an entry with
-that key <code>k: K</code>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_prev">prev</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K): &<a href="_Option">option::Option</a>&lt;K&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_prev">prev</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, k: K): &Option&lt;K&gt; {
-    &field::borrow&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="table.md#0x2_table">table</a>.id, k).prev
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_next"></a>
+<a name="0xc8_linked_table_next"></a>
 
 ## Function `next`
 
-Borrows the key for the next entry of the specified key <code>k: K</code> in the table
-<code><a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code>. Returns None if the entry does not have a predecessor.
-Aborts with <code>sui::dynamic_field::EFieldDoesNotExist</code> if the table does not have an entry with
-that key <code>k: K</code>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_next">next</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K): &<a href="_Option">option::Option</a>&lt;K&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_next">next</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): <a href="_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -414,8 +311,8 @@ that key <code>k: K</code>
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_next">next</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, k: K): &Option&lt;K&gt; {
-    &field::borrow&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="table.md#0x2_table">table</a>.id, k).next
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_next">next</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): Option&lt;K&gt; {
+    node.next
 }
 </code></pre>
 
@@ -423,17 +320,13 @@ that key <code>k: K</code>
 
 </details>
 
-<a name="0x2_linked_table_remove"></a>
+<a name="0xc8_linked_table_prev"></a>
 
-## Function `remove`
-
-Removes the key-value pair in the table <code><a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code> and returns the value.
-This splices the element out of the ordering.
-Aborts with <code>sui::dynamic_field::EFieldDoesNotExist</code> if the table does not have an entry with
-that key <code>k: K</code>. Note: this is also what happens when the table is empty.
+## Function `prev`
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_remove">remove</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K): V
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_prev">prev</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): <a href="_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -442,17 +335,351 @@ that key <code>k: K</code>. Note: this is also what happens when the table is em
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_remove">remove</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, k: K): V {
-    <b>let</b> <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt; { prev, next, value } = field::remove(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, k);
-    <a href="table.md#0x2_table">table</a>.size = <a href="table.md#0x2_table">table</a>.size - 1;
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_prev">prev</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): Option&lt;K&gt; {
+    node.prev
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_borrow"></a>
+
+## Function `borrow`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow">borrow</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &V
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow">borrow</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &V {
+    &field::borrow&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&table.id, key).value
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_borrow_mut"></a>
+
+## Function `borrow_mut`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut">borrow_mut</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> V
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut">borrow_mut</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> V {
+    &<b>mut</b> field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> table.id, key).value
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_borrow_node"></a>
+
+## Function `borrow_node`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+    field::borrow&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&table.id, key)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_borrow_mut_node"></a>
+
+## Function `borrow_mut_node`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
+    table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+    key: K
+): &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+    field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> table.id, key)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_borrow_value"></a>
+
+## Function `borrow_value`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): &V
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): &V {
+    &node.value
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_borrow_mut_value"></a>
+
+## Function `borrow_mut_value`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_value">borrow_mut_value</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): &<b>mut</b> V
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_value">borrow_mut_value</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): &<b>mut</b> V {
+    &<b>mut</b> node.value
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_push_back"></a>
+
+## Function `push_back`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_back">push_back</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K, value: V)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_back">push_back</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K, value: V) {
+    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+        prev: table.tail,
+        next: none(),
+        value
+    };
+    swap_or_fill(&<b>mut</b> table.tail, key);
+    <b>if</b> (is_none(&table.head)) {
+        swap_or_fill(&<b>mut</b> table.head, key);
+    };
+    <b>if</b> (is_some(&node.prev)) {
+        <b>let</b> prev_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(table, *<a href="_borrow">option::borrow</a>(&node.prev));
+        swap_or_fill(&<b>mut</b> prev_node.next, key);
+    };
+    field::add(&<b>mut</b> table.id, key, node);
+    table.size = table.size + 1;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_push_front"></a>
+
+## Function `push_front`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_front">push_front</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K, value: V)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_front">push_front</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K, value: V) {
+    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+        prev: none(),
+        next: table.head,
+        value
+    };
+    swap_or_fill(&<b>mut</b> table.head, key);
+    <b>if</b> (is_none(&table.tail)) {
+        swap_or_fill(&<b>mut</b> table.tail, key);
+    };
+    <b>if</b> (is_some(&node.next)) {
+        <b>let</b> next_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(table, *<a href="_borrow">option::borrow</a>(&node.next));
+        swap_or_fill(&<b>mut</b> next_node.prev, key);
+    };
+    field::add(&<b>mut</b> table.id, key, node);
+    table.size = table.size + 1;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_insert_before"></a>
+
+## Function `insert_before`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_before">insert_before</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, current_key: K, key: K, value: V)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_before">insert_before</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
+    table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+    current_key: K,
+    key: K,
+    value: V
+) {
+    <b>let</b> current_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(table, current_key);
+    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+        prev: current_node.prev,
+        next: some(current_key),
+        value
+    };
+    swap_or_fill(&<b>mut</b> current_node.prev, key);
+    <b>if</b> (is_some(&node.prev)) {
+        <b>let</b> prev_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(table, *<a href="_borrow">option::borrow</a>(&node.prev));
+        swap_or_fill(&<b>mut</b> prev_node.next, key);
+    } <b>else</b> {
+        swap_or_fill(&<b>mut</b> table.head, key);
+    };
+    field::add(&<b>mut</b> table.id, key, node);
+    table.size = table.size + 1;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_insert_after"></a>
+
+## Function `insert_after`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_after">insert_after</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, current_key: K, key: K, value: V)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_after">insert_after</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
+    table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+    current_key: K,
+    key: K,
+    value: V
+) {
+    <b>let</b> current_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(table, current_key);
+    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+        prev: some(current_key),
+        next: current_node.next,
+        value
+    };
+    swap_or_fill(&<b>mut</b> current_node.next, key);
+
+    <b>if</b> (is_some(&node.next)) {
+        <b>let</b> next_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(table, *<a href="_borrow">option::borrow</a>(&node.next));
+        swap_or_fill(&<b>mut</b> next_node.prev, key);
+    } <b>else</b> {
+        swap_or_fill(&<b>mut</b> table.tail, key);
+    };
+    field::add(&<b>mut</b> table.id, key, node);
+    table.size = table.size + 1;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_remove"></a>
+
+## Function `remove`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_remove">remove</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): V
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_remove">remove</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(table: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): V {
+    <b>let</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; { prev, next, value } = field::remove(&<b>mut</b> table.id, key);
+    table.size = table.size - 1;
     <b>if</b> (<a href="_is_some">option::is_some</a>(&prev)) {
-        field::borrow_mut&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, *<a href="_borrow">option::borrow</a>(&prev)).next = next
+        field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> table.id, *<a href="_borrow">option::borrow</a>(&prev)).next = next
     };
     <b>if</b> (<a href="_is_some">option::is_some</a>(&next)) {
-        field::borrow_mut&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="table.md#0x2_table">table</a>.id, *<a href="_borrow">option::borrow</a>(&next)).prev = prev
+        field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> table.id, *<a href="_borrow">option::borrow</a>(&next)).prev = prev
     };
-    <b>if</b> (<a href="_borrow">option::borrow</a>(&<a href="table.md#0x2_table">table</a>.head) == &k) <a href="table.md#0x2_table">table</a>.head = next;
-    <b>if</b> (<a href="_borrow">option::borrow</a>(&<a href="table.md#0x2_table">table</a>.tail) == &k) <a href="table.md#0x2_table">table</a>.tail = prev;
+    <b>if</b> (<a href="_borrow">option::borrow</a>(&table.head) == &key) table.head = next;
+    <b>if</b> (<a href="_borrow">option::borrow</a>(&table.tail) == &key) table.tail = prev;
     value
 }
 </code></pre>
@@ -461,147 +688,13 @@ that key <code>k: K</code>. Note: this is also what happens when the table is em
 
 </details>
 
-<a name="0x2_linked_table_pop_front"></a>
-
-## Function `pop_front`
-
-Removes the front of the table <code><a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code> and returns the value.
-Aborts with <code><a href="linked_table.md#0x2_linked_table_ETableIsEmpty">ETableIsEmpty</a></code> if the table is empty
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_pop_front">pop_front</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): (K, V)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_pop_front">pop_front</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): (K, V) {
-    <b>assert</b>!(<a href="_is_some">option::is_some</a>(&<a href="table.md#0x2_table">table</a>.head), <a href="linked_table.md#0x2_linked_table_ETableIsEmpty">ETableIsEmpty</a>);
-    <b>let</b> head = *<a href="_borrow">option::borrow</a>(&<a href="table.md#0x2_table">table</a>.head);
-    (head, <a href="linked_table.md#0x2_linked_table_remove">remove</a>(<a href="table.md#0x2_table">table</a>, head))
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_pop_back"></a>
-
-## Function `pop_back`
-
-Removes the back of the table <code><a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code> and returns the value.
-Aborts with <code><a href="linked_table.md#0x2_linked_table_ETableIsEmpty">ETableIsEmpty</a></code> if the table is empty
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_pop_back">pop_back</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): (K, V)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_pop_back">pop_back</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): (K, V) {
-    <b>assert</b>!(<a href="_is_some">option::is_some</a>(&<a href="table.md#0x2_table">table</a>.tail), <a href="linked_table.md#0x2_linked_table_ETableIsEmpty">ETableIsEmpty</a>);
-    <b>let</b> tail = *<a href="_borrow">option::borrow</a>(&<a href="table.md#0x2_table">table</a>.tail);
-    (tail, <a href="linked_table.md#0x2_linked_table_remove">remove</a>(<a href="table.md#0x2_table">table</a>, tail))
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_contains"></a>
-
-## Function `contains`
-
-Returns true iff there is a value associated with the key <code>k: K</code> in table
-<code><a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;</code>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_contains">contains</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, k: K): bool
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_contains">contains</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, k: K): bool {
-    field::exists_with_type&lt;K, <a href="linked_table.md#0x2_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="table.md#0x2_table">table</a>.id, k)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_length"></a>
-
-## Function `length`
-
-Returns the size of the table, the number of key-value pairs
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_length">length</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_length">length</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): u64 {
-    <a href="table.md#0x2_table">table</a>.size
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_is_empty"></a>
-
-## Function `is_empty`
-
-Returns true iff the table is empty (if <code>length</code> returns <code>0</code>)
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_is_empty">is_empty</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): bool
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_is_empty">is_empty</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: &<a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): bool {
-    <a href="table.md#0x2_table">table</a>.size == 0
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_linked_table_destroy_empty"></a>
+<a name="0xc8_linked_table_destroy_empty"></a>
 
 ## Function `destroy_empty`
 
-Destroys an empty table
-Aborts with <code><a href="linked_table.md#0x2_linked_table_ETableNotEmpty">ETableNotEmpty</a></code> if the table still contains values
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_destroy_empty">destroy_empty</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="table.md#0x2_table">table</a>: <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_destroy_empty">destroy_empty</a>&lt;K: <b>copy</b>, drop, store, V: drop, store&gt;(table: <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
 </code></pre>
 
 
@@ -610,10 +703,10 @@ Aborts with <code><a href="linked_table.md#0x2_linked_table_ETableNotEmpty">ETab
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_destroy_empty">destroy_empty</a>&lt;K: <b>copy</b> + drop + store, V: store&gt;(<a href="table.md#0x2_table">table</a>: <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
-    <b>let</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a> { id, size, head: _, tail: _ } = <a href="table.md#0x2_table">table</a>;
-    <b>assert</b>!(size == 0, <a href="linked_table.md#0x2_linked_table_ETableNotEmpty">ETableNotEmpty</a>);
-    <a href="object.md#0x2_object_delete">object::delete</a>(id)
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_destroy_empty">destroy_empty</a>&lt;K: store + <b>copy</b> + drop, V: store + drop&gt;(table: <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
+    <b>let</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a> { id, size, head: _, tail: _ } = table;
+    <b>assert</b>!(size == 0, <a href="linked_table.md#0xc8_linked_table_EListNotEmpty">EListNotEmpty</a>);
+    <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id)
 }
 </code></pre>
 
@@ -621,15 +714,13 @@ Aborts with <code><a href="linked_table.md#0x2_linked_table_ETableNotEmpty">ETab
 
 </details>
 
-<a name="0x2_linked_table_drop"></a>
+<a name="0xc8_linked_table_drop"></a>
 
 ## Function `drop`
 
-Drop a possibly non-empty table.
-Usable only if the value type <code>V</code> has the <code>drop</code> ability
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_drop">drop</a>&lt;K: <b>copy</b>, drop, store, V: drop, store&gt;(<a href="table.md#0x2_table">table</a>: <a href="linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_drop">drop</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(table: <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
 </code></pre>
 
 
@@ -638,9 +729,50 @@ Usable only if the value type <code>V</code> has the <code>drop</code> ability
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0x2_linked_table_drop">drop</a>&lt;K: <b>copy</b> + drop + store, V: drop + store&gt;(<a href="table.md#0x2_table">table</a>: <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
-    <b>let</b> <a href="linked_table.md#0x2_linked_table_LinkedTable">LinkedTable</a> { id, size: _, head: _, tail: _ } = <a href="table.md#0x2_table">table</a>;
-    <a href="object.md#0x2_object_delete">object::delete</a>(id)
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_drop">drop</a>&lt;K: store + <b>copy</b> + drop, V: store&gt;(table: <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
+    <b>let</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a> { id, size: _, head: _, tail: _ } = table;
+    <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_linked_table_fetch"></a>
+
+## Function `fetch`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_fetch">fetch</a>&lt;K: <b>copy</b>, drop, store, V: <b>copy</b>, store&gt;(table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, start_key: K, limit: u64): <a href="">vector</a>&lt;V&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_fetch">fetch</a>&lt;K: store + <b>copy</b> + drop, V: <b>copy</b> + store&gt;(
+    table: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+    start_key: K,
+    limit: u64
+): <a href="">vector</a>&lt;V&gt; {
+    <b>assert</b>!(limit &gt; 0, <a href="linked_table.md#0xc8_linked_table_ELimitInvalid">ELimitInvalid</a>);
+    <b>let</b> values = <a href="_empty">vector::empty</a>&lt;V&gt;();
+    <b>let</b> start = <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K, V&gt;(table, start_key);
+    <a href="_push_back">vector::push_back</a>(&<b>mut</b> values, *<a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>(start));
+    <b>let</b> idx = 1;
+    <b>while</b> (idx &lt; limit) {
+        <b>let</b> next_key = <a href="linked_table.md#0xc8_linked_table_next">next</a>(start);
+        <b>if</b> (<a href="_is_some">option::is_some</a>(&next_key)) {
+            start = <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K, V&gt;(table, *<a href="_borrow">option::borrow</a>&lt;K&gt;(&next_key));
+            <a href="_push_back">vector::push_back</a>(&<b>mut</b> values, *<a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>(start));
+        };
+        idx = idx + 1;
+    };
+    values
 }
 </code></pre>
 
