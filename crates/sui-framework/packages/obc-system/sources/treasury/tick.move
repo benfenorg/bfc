@@ -62,10 +62,6 @@ module obc_system::tick {
         _tick_manager.tick_spacing
     }
 
-    public fun fetch_ticks(_tick_manager: &TickManager) {
-        abort 0
-    }
-
     /// private fun
     fun default(_tick_index: I32): Tick {
         let sqrt_price = tick_math::get_sqrt_price_at_tick(_tick_index);

@@ -135,10 +135,8 @@ module obc_system::position {
         assert!(i32::gt(tick_spacing, tick_math::min_tick()), ERR_TICK_SPACING_INVALID_RANGE);
         assert!(i32::lt(tick_spacing, tick_math::max_tick()), ERR_TICK_SPACING_INVALID_RANGE);
         assert!(i32::lt(_lower, _upper), ERR_TICK_INVALID_RANGE);
-        assert!(i32::gte(_lower, tick_math::min_tick()), ERR_TICK_LOWER_TOO_SMALL);
-        assert!(i32::lte(_upper, tick_math::max_tick()), ERR_TICK_UPPER_TOO_LARGE);
-        assert!(i32::eq(i32::zero(), i32::mod(_lower, tick_spacing)), ERR_TICK_INVALID_VALUE);
-        assert!(i32::eq(i32::zero(), i32::mod(_upper, tick_spacing)), ERR_TICK_INVALID_VALUE);
+        assert!(tick_math::is_valid_index(_lower, _tick_spacing), ERR_TICK_INVALID_VALUE);
+        assert!(tick_math::is_valid_index(_upper, _tick_spacing), ERR_TICK_INVALID_VALUE);
     }
 
     /// open / close position

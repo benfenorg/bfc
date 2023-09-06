@@ -19,11 +19,14 @@ module obc_system::tick_test {
     fun test_get_ticks() {
         let tick_spacing: u32 = 60;
         let start_index = tick_math::get_tick_at_sqrt_price(100000000000);
+        let adjusted_tick = tick_math::adjust_tick(start_index, tick_spacing);
         debug::print(&start_index);
-        let start_index_u32 = i32::as_u32(start_index);
+        debug::print(&i32::as_u32(start_index));
+        debug::print(&tick_math::get_sqrt_price_at_tick(adjusted_tick));
+        let index = i32::as_u32(adjusted_tick);
         let ctx = tx_context::dummy();
         let m = tick::create_tick_manager(tick_spacing, 123456, &mut ctx);
-        let ticks = tick::get_ticks(&m, start_index, 10, 9);
+        let ticks = tick::get_ticks(&m, adjusted_tick, 10, 9);
         transfer::public_transfer(TestM { id: object::new(&mut ctx), m }, tx_context::sender(&ctx));
 
         debug::print(&ticks);
@@ -34,7 +37,7 @@ module obc_system::tick_test {
         assert!(
             i32::eq(
                 *vector::borrow(first, 0),
-                i32::from_u32(start_index_u32 - tick_spacing * 10 * 5 + 300)
+                i32::from_u32(index - tick_spacing * 10 * 5 + 300)
             ),
             1,
         );
@@ -44,7 +47,7 @@ module obc_system::tick_test {
         assert!(
             i32::eq(
                 *vector::borrow(last, 1),
-                i32::from_u32(start_index_u32 + tick_spacing * 10 * 5 - 300)
+                i32::from_u32(index + tick_spacing * 10 * 5 - 300)
             ),
             2,
         );
