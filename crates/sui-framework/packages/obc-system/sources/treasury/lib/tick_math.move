@@ -245,4 +245,22 @@ module obc_system::tick_math {
 
         ratio >> 32
     }
+
+    fun get_valid_tick_index(index: I32, tick_spacing: u32, prev: bool): I32 {
+        let spacing = i32::from(tick_spacing);
+        let valid_index = i32::sub(index, i32::mod(index, spacing));
+        if (prev) {
+            i32::sub(valid_index, spacing)
+        } else {
+            i32::add(valid_index, spacing)
+        }
+    }
+
+    public fun get_next_valid_tick_index(index: I32, tick_spacing: u32): I32 {
+        get_valid_tick_index(index, tick_spacing, false)
+    }
+
+    public fun get_prev_valid_tick_index(index: I32, tick_spacing: u32): I32 {
+        get_valid_tick_index(index, tick_spacing, true)
+    }
 }
