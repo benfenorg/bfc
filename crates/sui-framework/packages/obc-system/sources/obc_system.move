@@ -96,6 +96,12 @@ module obc_system::obc_system {
         obc_system_state_inner::update_round(inner_state, round);
     }
 
+    public entry fun update_round(
+        wrapper: &mut ObcSystemState,
+    ){
+        obc_round(wrapper,200)
+    }
+
     fun load_system_state(
         self: &ObcSystemState
     ): &ObcSystemStateInner {

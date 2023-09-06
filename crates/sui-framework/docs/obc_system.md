@@ -12,6 +12,7 @@
 -  [Function `create`](#0xc8_obc_system_create)
 -  [Function `create_treasury`](#0xc8_obc_system_create_treasury)
 -  [Function `obc_round`](#0xc8_obc_system_obc_round)
+-  [Function `update_round`](#0xc8_obc_system_update_round)
 -  [Function `load_system_state`](#0xc8_obc_system_load_system_state)
 -  [Function `load_system_state_mut`](#0xc8_obc_system_load_system_state_mut)
 -  [Function `request_get_exchange_rate`](#0xc8_obc_system_request_get_exchange_rate)
@@ -281,6 +282,32 @@
 ){
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_update_round">obc_system_state_inner::update_round</a>(inner_state, round);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_update_round"></a>
+
+## Function `update_round`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_update_round">update_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_update_round">update_round</a>(
+    wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+){
+    <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper,200)
 }
 </code></pre>
 
