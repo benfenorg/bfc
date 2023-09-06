@@ -57,12 +57,38 @@ module obc_system::obc_system {
     }
 
     /// Getter of the gas coin exchange pool rate.
-    public entry fun request_exchange_rate(
+    public entry fun request_get_exchange_rate(
         self: &ObcSystemState,
         stable: &Coin<STABLE>
     ): u64 {
         let inner_state = load_system_state(self);
-        obc_system_state_inner::request_exchange_rate<STABLE>(inner_state, stable)
+        obc_system_state_inner::requst_get_exchange_rate<STABLE>(inner_state, stable)
+    }
+
+    public entry fun request_add_gas_coin(
+        self: &mut ObcSystemState,
+        gas_coin: &Coin<STABLE>,
+        rate: u64,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::request_add_gas_coin(inner_state, gas_coin, rate)
+    }
+
+    public entry fun request_update_gas_coin(
+        self: &mut ObcSystemState,
+        gas_coin: &Coin<STABLE>,
+        rate: u64,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::request_update_gas_coin(inner_state, gas_coin, rate)
+    }
+
+    public entry fun request_remove_gas_coin(
+        self: &mut ObcSystemState,
+        gas_coin: &Coin<STABLE>,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
     }
 
     /// Request exchange stable coin to obc.

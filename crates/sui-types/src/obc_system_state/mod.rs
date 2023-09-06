@@ -14,6 +14,9 @@ use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use crate::balance::Balance;
+use crate::base_types::ObjectID;
+use crate::gas_coin_strategy::GasCoinMap;
 
 const OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("OBCSystemState");
 
@@ -86,7 +89,7 @@ impl ObcSystemStateWrapper {
         let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
         move_object
             .update_contents(new_contents,protocol_config)
-            .expect("Update sui system object content cannot fail since it should be small");
+            .expect("Update obc system object content cannot fail since it should be small");
     }
 }
 
@@ -101,14 +104,33 @@ pub trait ObcSystemStateTrait {
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ObcSystemStateInnerV1 {
     pub round: u64,
+    pub gas_coin_map: GasCoinMap,
+    pub exchange_pool: ExchangePoolV1,
 }
 
+// Rust version of the Move obc_system::obc_system_state_inner::ExchangePool type
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct ExchangePoolV1 {
+    pub id: ObjectID,
+    pub activation_epoch: Option<u64>,
+    pub obc_balance: u64,
+    pub obc_pool: Balance,
+    pub stable_token_balance: u64,
+    pub stable_pool: Balance,
+}
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[enum_dispatch(ObcSystemStateTrait)]
 pub enum ObcSystemState {
     V1(ObcSystemStateInnerV1),
 }
 
+impl ObcSystemState {
+    pub fn inner_state(self) -> ObcSystemStateInnerV1 {
+        match self {
+            ObcSystemState::V1(inner) => inner,
+        }
+    }
+}
 impl ObcSystemStateTrait for ObcSystemStateInnerV1{
     fn round(&self) -> u64{
         return 0;
@@ -149,7 +171,7 @@ pub fn get_obc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(
-                            "Failed to load sui system state inner object with ID {:?} and version {:?}: {:?}",
+                            "Failed to load obc system state inner object with ID {:?} and version {:?}: {:?}",
                             id, wrapper.version, err
                         ))
                     },
@@ -157,7 +179,7 @@ pub fn get_obc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
             Ok(ObcSystemState::V1(result))
         }
         _ => Err(SuiError::SuiSystemStateReadError(format!(
-            "Unsupported SuiSystemState version: {}",
+            "Unsupported ObcSystemState version: {}",
             wrapper.version
         ))),
     }

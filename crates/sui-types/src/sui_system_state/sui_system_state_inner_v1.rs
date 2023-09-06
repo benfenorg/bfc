@@ -17,7 +17,6 @@ use fastcrypto::traits::ToFromBytes;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use crate::gas_coin_strategy::GasCoinMap;
 
 use super::epoch_start_sui_system_state::EpochStartValidatorInfoV1;
 use super::sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary};
@@ -450,17 +449,6 @@ pub struct ValidatorSetV1 {
     pub extra_fields: Bag,
 }
 
-// Rust version of the Move sui_system::sui_system_state_inner::ExchangePool type
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct ExchangePoolV1 {
-    pub id: ObjectID,
-    pub activation_epoch: Option<u64>,
-    pub obc_balance: u64,
-    pub obc_pool: Balance,
-    pub stable_token_balance: u64,
-    pub stable_pool: Balance,
-}
-
 /// Rust version of the Move sui_system::storage_fund::StorageFund type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct StorageFundV1 {
@@ -475,8 +463,6 @@ pub struct SuiSystemStateInnerV1 {
     pub protocol_version: u64,
     pub system_state_version: u64,
     pub validators: ValidatorSetV1,
-    pub gas_coin_map: GasCoinMap,
-    pub exchange_gas_coin_pool: ExchangePoolV1,
     pub storage_fund: StorageFundV1,
     pub parameters: SystemParametersV1,
     pub reference_gas_price: u64,
@@ -663,8 +649,6 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                         },
                     extra_fields: _,
                 },
-            gas_coin_map,
-            exchange_gas_coin_pool:_ ,
             storage_fund,
             parameters:
                 SystemParametersV1 {
@@ -740,9 +724,6 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
             validator_report_records: validator_report_records
                 .into_iter()
                 .map(|e| (e.key, e.value.contents))
-                .collect(),
-            gas_coin_map: gas_coin_map.active_gas_coins.contents.into_iter()
-                .map(|e| (e.key, e.value.exchange_rate))
                 .collect(),
             max_validator_count,
             min_validator_joining_stake,

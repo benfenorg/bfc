@@ -6,7 +6,7 @@ use anyhow::{format_err, Result};
 use std::fmt::{self};
 use core::str::FromStr;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
-use crate::base_types::SuiAddress;
+use crate::base_types::{ObjectID, SuiAddress};
 use crate::collection_types::VecMap;
 use serde::{Deserialize, Serialize};
 use crate::coin::Coin;
@@ -80,6 +80,19 @@ pub trait GasCoinExchange {
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct GasCoinMap {
     pub active_gas_coins: VecMap<SuiAddress, GasCoinEntity>,
+}
+
+impl GasCoinMap {
+    pub fn get_exchange_rate(&self, coin_id: ObjectID) -> u64 {
+        let coin_addr = SuiAddress::from(coin_id);
+        let rate_opt = self.active_gas_coins.contents.clone().into_iter()
+            .find(|e| e.key == coin_addr)
+            .map(|e| (e.value.exchange_rate));
+        match rate_opt {
+            Some(rate) => rate,
+            None=> 0,
+        }
+    }
 }
 
 /// Rust version of the Move sui_system::gas_coin_map::GasCoinEntity type

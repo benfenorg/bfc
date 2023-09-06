@@ -1298,9 +1298,6 @@ Update candidate validator's public key of network key.
 
 ## Function `pool_exchange_rates`
 
-Init gas exchange pool by add obc coin.
-Exchange gas coin from inner pool.
-Exchange gas coin from inner pool.
 Getter of the pool token exchange rate of a staking pool. Works for both active and inactive pools.
 
 

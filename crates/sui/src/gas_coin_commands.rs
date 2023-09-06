@@ -4,7 +4,7 @@ use clap::*;
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::base_types::ObjectID;
 use sui_types::transaction::{CallArg, ObjectArg};
-use crate::{call_0x5, get_object_ref};
+use crate::{call_0x200, get_object_ref};
 use serde::Serialize;
 
 #[path = "unit_tests/gas_coin_tests.rs"]
@@ -62,7 +62,7 @@ impl GasCoinCommand {
                     CallArg::Object(ObjectArg::ImmOrOwnedObject(coin_to_merge_ref))
                 ];
                 let _response =
-                    call_0x5(context, "request_add_gas_coin", args, gas_budget).await?;
+                    call_0x200(context, "request_add_gas_coin", args, gas_budget).await?;
                 GasCoinCommandResponse::AddGasCoin
             },
             GasCoinCommand::RemoveGasCoin { coin_address,gas_budget} => {
@@ -72,7 +72,7 @@ impl GasCoinCommand {
                     CallArg::Object(ObjectArg::ImmOrOwnedObject(coin_to_merge_ref))
                 ];
                 let _response =
-                    call_0x5(context, "request_remove_gas_coin", args, gas_budget).await?;
+                    call_0x200(context, "request_remove_gas_coin", args, gas_budget).await?;
                 GasCoinCommandResponse::RemoveGasCoin
             }
         });

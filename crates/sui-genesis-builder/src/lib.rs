@@ -1073,7 +1073,7 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
-        // Step 5: Create the SuiSystemState UID
+        // Step 5: Create the ObcSystemState UID
         let obc_system_state_uid = builder.programmable_move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
             ident_str!("object").to_owned(),

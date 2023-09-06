@@ -11,7 +11,10 @@
 -  [Function `obc_round`](#0xc8_obc_system_obc_round)
 -  [Function `load_system_state`](#0xc8_obc_system_load_system_state)
 -  [Function `load_system_state_mut`](#0xc8_obc_system_load_system_state_mut)
--  [Function `request_exchange_rate`](#0xc8_obc_system_request_exchange_rate)
+-  [Function `request_get_exchange_rate`](#0xc8_obc_system_request_get_exchange_rate)
+-  [Function `request_add_gas_coin`](#0xc8_obc_system_request_add_gas_coin)
+-  [Function `request_update_gas_coin`](#0xc8_obc_system_request_update_gas_coin)
+-  [Function `request_remove_gas_coin`](#0xc8_obc_system_request_remove_gas_coin)
 -  [Function `request_exchange_stable`](#0xc8_obc_system_request_exchange_stable)
 -  [Function `request_exchange_stable_no_entry`](#0xc8_obc_system_request_exchange_stable_no_entry)
 -  [Function `request_exchange_all`](#0xc8_obc_system_request_exchange_all)
@@ -194,14 +197,14 @@
 
 </details>
 
-<a name="0xc8_obc_system_request_exchange_rate"></a>
+<a name="0xc8_obc_system_request_get_exchange_rate"></a>
 
-## Function `request_exchange_rate`
+## Function `request_get_exchange_rate`
 
 Getter of the gas coin exchange pool rate.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_rate">request_exchange_rate</a>(self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;): u64
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_get_exchange_rate">request_get_exchange_rate</a>(self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;): u64
 </code></pre>
 
 
@@ -210,12 +213,98 @@ Getter of the gas coin exchange pool rate.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_rate">request_exchange_rate</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_get_exchange_rate">request_get_exchange_rate</a>(
     self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;STABLE&gt;
 ): u64 {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(self);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_exchange_rate">obc_system_state_inner::request_exchange_rate</a>&lt;STABLE&gt;(inner_state, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_requst_get_exchange_rate">obc_system_state_inner::requst_get_exchange_rate</a>&lt;STABLE&gt;(inner_state, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_request_add_gas_coin"></a>
+
+## Function `request_add_gas_coin`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_add_gas_coin">request_add_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;, rate: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_add_gas_coin">request_add_gas_coin</a>(
+    self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    gas_coin: &Coin&lt;STABLE&gt;,
+    rate: u64,
+) {
+    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_add_gas_coin">obc_system_state_inner::request_add_gas_coin</a>(inner_state, gas_coin, rate)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_request_update_gas_coin"></a>
+
+## Function `request_update_gas_coin`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_update_gas_coin">request_update_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;, rate: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_update_gas_coin">request_update_gas_coin</a>(
+    self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    gas_coin: &Coin&lt;STABLE&gt;,
+    rate: u64,
+) {
+    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_update_gas_coin">obc_system_state_inner::request_update_gas_coin</a>(inner_state, gas_coin, rate)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_request_remove_gas_coin"></a>
+
+## Function `request_remove_gas_coin`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_remove_gas_coin">request_remove_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/stable.md#0x2_stable_STABLE">stable::STABLE</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_remove_gas_coin">request_remove_gas_coin</a>(
+    self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    gas_coin: &Coin&lt;STABLE&gt;,
+) {
+    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_remove_gas_coin">obc_system_state_inner::request_remove_gas_coin</a>(inner_state, gas_coin)
 }
 </code></pre>
 

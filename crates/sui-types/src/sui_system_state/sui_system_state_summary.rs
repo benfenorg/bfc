@@ -184,8 +184,6 @@ pub struct SuiSystemStateSummary {
     pub at_risk_validators: Vec<(SuiAddress, u64)>,
     /// A map storing the records of validator reporting each other.
     pub validator_report_records: Vec<(SuiAddress, Vec<SuiAddress>)>,
-    /// A map storing the records of gas coins.
-    pub gas_coin_map: Vec<(SuiAddress, u64)>,
 }
 
 impl SuiSystemStateSummary {
@@ -359,7 +357,6 @@ impl Default for SuiSystemStateSummary {
             validator_candidates_size: 0,
             at_risk_validators: vec![],
             validator_report_records: vec![],
-            gas_coin_map: vec![],
         }
     }
 }

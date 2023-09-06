@@ -47,6 +47,7 @@ use sui_storage::key_value_store;
 use sui_storage::package_object_cache::PackageObjectCache;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
+use sui_types::obc_system_state::{get_obc_system_state, ObcSystemState};
 use typed_store::rocks::util::is_ref_count_value;
 
 const NUM_SHARDS: usize = 4096;
@@ -564,7 +565,6 @@ impl AuthorityStore {
                     self.get_object(id)?
                 }
                 InputObjectKind::ImmOrOwnedMoveObject(objref) => {
-                    println!("input: {:?}", objref);
                     self.get_object_by_key(&objref.0, objref.1)?
                 }
             }
@@ -1634,6 +1634,9 @@ impl AuthorityStore {
     // besides when we are reading fields for the current epoch
     pub fn get_sui_system_state_object(&self) -> SuiResult<SuiSystemState> {
         get_sui_system_state(self.perpetual_tables.as_ref())
+    }
+    pub fn get_obc_system_state_object(&self) ->SuiResult<ObcSystemState> {
+        get_obc_system_state(self.perpetual_tables.as_ref())
     }
 
     pub fn iter_live_object_set(

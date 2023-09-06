@@ -71,11 +71,32 @@ module obc_system::obc_system_state_inner {
     }
 
     /// Getter of the gas coin exchange pool rate.
-    public(friend) fun request_exchange_rate<CoinType>(
+    public(friend) fun requst_get_exchange_rate<CoinType>(
         self: &ObcSystemStateInner,
         stable: &Coin<CoinType>
     ): u64 {
         gas_coin_map::requst_get_exchange_rate<CoinType>(&self.gas_coin_map, stable)
+    }
+
+    public(friend) fun request_add_gas_coin<CoinType>(
+        self: &mut ObcSystemStateInner,
+        gas_coin: &Coin<CoinType>,
+        rate: u64,
+    ) {
+        gas_coin_map::request_add_gas_coin<CoinType>(&mut self.gas_coin_map, gas_coin, rate)
+    }
+    public(friend) fun request_update_gas_coin<CoinType>(
+        self: &mut ObcSystemStateInner,
+        gas_coin: &Coin<CoinType>,
+        rate: u64,
+    ) {
+        gas_coin_map::request_update_gas_coin(&mut self.gas_coin_map, gas_coin, rate)
+    }
+    public(friend) fun request_remove_gas_coin<CoinType>(
+        self: &mut ObcSystemStateInner,
+        gas_coin: &Coin<CoinType>,
+    ) {
+        gas_coin_map::request_remove_gas_coin<CoinType>(&mut self.gas_coin_map, gas_coin)
     }
 
     /// Init exchange pool by add obc coin.

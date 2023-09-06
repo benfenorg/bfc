@@ -57,21 +57,17 @@ pub async fn get_object_ref_with_type(
 }
 
 /// Common packaging of call system interface.
-pub async fn call_0x5(
+pub async fn call_system_txn(
     context: &mut WalletContext,
-    function: &'static str,
-    call_args: Vec<CallArg>,
-    gas_budget: u64,
+    txn_data: TransactionData,
 ) -> anyhow::Result<SuiTransactionBlockResponse> {
     let sender = context.active_address()?;
-    let tx_data =
-        construct_unsigned_0x5_txn(context, sender, function, call_args, gas_budget).await?;
     let signature =
         context
             .config
             .keystore
-            .sign_secure(&sender, &tx_data, Intent::sui_transaction())?;
-    let transaction = Transaction::from_data(tx_data, Intent::sui_transaction(), vec![signature]);
+            .sign_secure(&sender, &txn_data, Intent::sui_transaction())?;
+    let transaction = Transaction::from_data(txn_data, Intent::sui_transaction(), vec![signature]);
     let sui_client = context.get_client().await?;
     sui_client
         .quorum_driver_api()
@@ -86,6 +82,49 @@ pub async fn call_0x5(
         .map_err(|err| anyhow::anyhow!(err.to_string()))
 }
 
+/// Common packaging of call system interface.
+pub async fn call_0x5(
+    context: &mut WalletContext,
+    function: &'static str,
+    call_args: Vec<CallArg>,
+    gas_budget: u64,
+) -> anyhow::Result<SuiTransactionBlockResponse> {
+    let sender = context.active_address()?;
+    let tx_data =
+        construct_unsigned_0x5_txn(context, sender, function, call_args, gas_budget).await?;
+    call_system_txn(context, tx_data).await
+}
+
+pub async fn call_0x200(
+    context: &mut WalletContext,
+    function: &'static str,
+    call_args: Vec<CallArg>,
+    gas_budget: u64,
+) -> anyhow::Result<SuiTransactionBlockResponse> {
+    let sender = context.active_address()?;
+    let tx_data =
+        construct_unsigned_0x200_txn(context, sender, function, call_args, gas_budget).await?;
+    call_system_txn(context, tx_data).await
+}
+
+async fn construct_unsigned_0x200_txn(
+    context: &mut WalletContext,
+    sender: SuiAddress,
+    function: &'static str,
+    call_args: Vec<CallArg>,
+    gas_budget: u64,
+) -> anyhow::Result<TransactionData> {
+    let mut args = vec![CallArg::OBC_SYSTEM_MUT];
+    args.extend(call_args);
+    construct_unsigned_system_txn(
+        context,
+        sender,
+        "obc_system",
+        function,
+        args,
+        gas_budget
+    ).await
+}
 async fn construct_unsigned_0x5_txn(
     context: &mut WalletContext,
     sender: SuiAddress,
@@ -93,9 +132,26 @@ async fn construct_unsigned_0x5_txn(
     call_args: Vec<CallArg>,
     gas_budget: u64,
 ) -> anyhow::Result<TransactionData> {
-    let sui_client = context.get_client().await?;
     let mut args = vec![CallArg::SUI_SYSTEM_MUT];
     args.extend(call_args);
+    construct_unsigned_system_txn(
+        context,
+        sender,
+        "sui_system",
+        function,
+        args,
+        gas_budget
+    ).await
+}
+async fn construct_unsigned_system_txn(
+    context: &mut WalletContext,
+    sender: SuiAddress,
+    module: &'static str,
+    function: &'static str,
+    call_args: Vec<CallArg>,
+    gas_budget: u64,
+) -> anyhow::Result<TransactionData> {
+    let sui_client = context.get_client().await?;
     let rgp = sui_client
         .governance_api()
         .get_reference_gas_price()
@@ -105,11 +161,11 @@ async fn construct_unsigned_0x5_txn(
     TransactionData::new_move_call(
         sender,
         SUI_SYSTEM_PACKAGE_ID,
-        ident_str!("sui_system").to_owned(),
+        ident_str!(module).to_owned(),
         ident_str!(function).to_owned(),
         vec![],
         gas_obj_ref,
-        args,
+        call_args,
         gas_budget,
         rgp,
     )
