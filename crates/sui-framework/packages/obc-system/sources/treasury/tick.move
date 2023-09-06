@@ -286,18 +286,19 @@ module obc_system::tick {
         _spacing_times: u32,
         _total_count: u32,
     ): vector<vector<I32>> {
-        let half_ticks = _total_count / 2 * (_spacing_times * _tick_manager.tick_spacing);
-        let start_gap = i32::from_u32(
-            half_ticks + ((_spacing_times / 2) * _tick_manager.tick_spacing)
+        let gap = i32::from_u32(_spacing_times * _tick_manager.tick_spacing);
+        let middle = tick_math::get_prev_valid_tick_index(_tick_index, _tick_manager.tick_spacing);
+        let spacing_times = (_total_count - 1) / 2 * _spacing_times + (_spacing_times + 1) / 2;
+        let lower = i32::sub(
+            middle,
+            i32::from_u32(_tick_manager.tick_spacing * spacing_times),
         );
-        let tick_gap = i32::from_u32(_spacing_times * _tick_manager.tick_spacing);
         let count = _total_count;
-        let start = i32::sub(_tick_index, start_gap);
         let ticks = vector::empty<vector<I32>>();
         while (count > 0) {
-            let new_start = i32::add(start, tick_gap);
-            vector::push_back(&mut ticks, vector<I32>[start, new_start]);
-            start = new_start;
+            let upper = i32::add(lower, gap);
+            vector::push_back(&mut ticks, vector<I32>[lower, upper]);
+            lower = upper;
             count = count - 1
         };
         ticks
