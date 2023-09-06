@@ -47,6 +47,31 @@ pub struct UnsignedGenesis {
     pub objects: Vec<Object>,
 }
 
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
+pub struct TreasuryParameters {
+    /// The position_number is the quantity of positions in the Treasury.
+    /// Implement the adjustment of liquidity for a limited number of positions.
+    pub position_numbers: u32,
+
+    /// Tick spacing is to control the granularity of liquidity.
+    /// Setting the appropriate tick spacing helps to balance
+    /// between maintaining operating efficiency and price accuracy
+    pub tick_spacking: u32,
+
+    /// Initialize Price
+    pub initialize_price: u128,
+}
+
+impl Default for TreasuryParameters {
+    fn default() -> Self {
+        TreasuryParameters {
+            position_numbers: 9,
+            tick_spacking: 60,
+            initialize_price: 100000000000,
+        }
+    }
+}
+
 // Hand implement PartialEq in order to get around the fact that AuthSigs don't impl Eq
 impl PartialEq for Genesis {
     fn eq(&self, other: &Self) -> bool {
@@ -340,6 +365,15 @@ pub struct GenesisChainParameters {
     pub validator_low_stake_grace_period: u64,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct ObcSystemParameters {
+    #[serde(default)]
+    pub treasury_parameters: TreasuryParameters,
+
+    pub chain_start_timestamp_ms: u64,
+}
+
 /// Initial set of parameters for a chain.
 #[derive(Serialize, Deserialize)]
 pub struct GenesisCeremonyParameters {
@@ -443,6 +477,13 @@ impl GenesisCeremonyParameters {
                 sui_types::governance::VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST,
             validator_low_stake_grace_period:
                 sui_types::governance::VALIDATOR_LOW_STAKE_GRACE_PERIOD,
+        }
+    }
+
+    pub fn to_obc_system_parameters(&self) -> ObcSystemParameters {
+        ObcSystemParameters {
+            treasury_parameters: TreasuryParameters::default(),
+            chain_start_timestamp_ms: self.chain_start_timestamp_ms,
         }
     }
 }
