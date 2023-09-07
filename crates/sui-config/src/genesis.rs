@@ -65,6 +65,12 @@ pub struct TreasuryParameters {
 
     /// Initialize Price
     pub initialize_price: u128,
+
+    /// OBC requirement base point
+    pub base_point: u64,
+
+    /// rebalance time interval in seconds
+    pub time_interval: u32,
 }
 
 impl Default for TreasuryParameters {
@@ -74,6 +80,8 @@ impl Default for TreasuryParameters {
             tick_spacing: 60,
             spacing_times: 10,
             initialize_price: 2u128.pow(64),
+            base_point: 1000_000000000,
+            time_interval: 3600 * 4,
         }
     }
 }

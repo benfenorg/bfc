@@ -1,11 +1,12 @@
 #[test_only]
 module obc_system::obc_system_tests {
 
-    use obc_system::obc_system::ObcSystemState;
     use sui::object;
     use sui::test_scenario;
-    use obc_system::obc_system;
     use sui::tx_context::TxContext;
+
+    use obc_system::obc_system;
+    use obc_system::obc_system::ObcSystemState;
 
     #[test]
     fun test_round() {
@@ -30,6 +31,8 @@ module obc_system::obc_system_tests {
             60,
             10,
             18446744073709551616, // 2 ** 64
+            3600 * 4,
+            1000,
             2000,
         );
         obc_system::create(
@@ -39,5 +42,4 @@ module obc_system::obc_system_tests {
             ctx,
         );
     }
-
 }
