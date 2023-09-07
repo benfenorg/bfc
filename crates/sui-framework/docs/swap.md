@@ -57,7 +57,7 @@ Constants
 Mint swap obc to stablecoin
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="swap.md#0xc8_swap_mint">mint</a>&lt;StableCoinType&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="swap.md#0xc8_swap_mint">mint</a>&lt;StableCoinType&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 

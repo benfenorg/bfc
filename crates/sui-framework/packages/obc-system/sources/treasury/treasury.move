@@ -15,7 +15,7 @@ module obc_system::treasury {
     use obc_system::utils;
 
     friend obc_system::swap;
-    friend obc_system::obc_system;
+    friend obc_system::obc_system_state_inner;
 
     // === Errors ===
     const ERR_THE_SAME_COIN: u64 = 100;

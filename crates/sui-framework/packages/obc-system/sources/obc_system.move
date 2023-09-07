@@ -2,8 +2,8 @@ module obc_system::obc_system {
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
-    use sui::dynamic_field;
     use sui::dynamic_object_field;
+
     use sui::obc::OBC;
     use sui::object::UID;
     use sui::stable::STABLE;
@@ -11,10 +11,9 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use obc_system::obc_system_state_inner;
-    use obc_system::obc_system_state_inner::ObcSystemStateInner;
-    use obc_system::treasury;
     use obc_system::usd::USD;
+    use obc_system::obc_system_state_inner;
+    use obc_system::obc_system_state_inner::{ObcSystemStateInner, ObcSystemParameters};
 
     #[test_only]
     friend obc_system::obc_system_tests;
@@ -24,79 +23,27 @@ module obc_system::obc_system {
         version: u64
     }
 
-    struct TreasuryParameters has drop, copy {
-        position_number: u32,
-        tick_spacing: u32,
-        spacing_times: u32,
-        initialize_price: u128,
-        time_interval: u32,
-        base_point: u64,
-    }
-
-    struct ObcSystemParameters has drop, copy {
-        treasury_parameters: TreasuryParameters,
-        chain_start_timestamp_ms: u64,
-    }
-
     const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
-    const OBC_SYSTEM_TREASURY_KEY: u64 = 3;
-
 
     public fun create(
         id: UID,
         usd_supply: Supply<USD>,
         parameters: ObcSystemParameters,
-        ctx: &mut TxContext, ) {
-        let inner_state = obc_system_state_inner::create_inner_state(ctx);
+        ctx: &mut TxContext
+    ) {
+        let inner_state = obc_system_state_inner::create_inner_state(
+            usd_supply,
+            parameters,
+            ctx,
+        );
         let self = ObcSystemState {
             id,
             version: OBC_SYSTEM_STATE_VERSION_V1
         };
 
-        dynamic_field::add(&mut self.id, OBC_SYSTEM_STATE_VERSION_V1, inner_state);
+        dynamic_object_field::add(&mut self.id, OBC_SYSTEM_STATE_VERSION_V1, inner_state);
 
-        create_treasury(
-            &mut self,
-            usd_supply,
-            parameters.treasury_parameters,
-            parameters.chain_start_timestamp_ms,
-            ctx
-        );
         transfer::share_object(self);
-    }
-
-    fun create_treasury(
-        obcsystem: &mut ObcSystemState,
-        supply: Supply<USD>,
-        treasury_parameters: TreasuryParameters,
-        ts: u64,
-        ctx: &mut TxContext
-    )
-    {
-        let t = treasury::create_treasury(ctx);
-        dynamic_object_field::add(&mut obcsystem.id, OBC_SYSTEM_TREASURY_KEY, t);
-
-        let mut_t = dynamic_object_field::borrow_mut<u64, treasury::Treasury>(
-            &mut obcsystem.id,
-            OBC_SYSTEM_TREASURY_KEY
-        );
-        // create obc-usd pool
-        treasury::create_vault<OBC, USD, USD>(
-            mut_t,
-            supply,
-            treasury_parameters.position_number,
-            treasury_parameters.tick_spacing,
-            treasury_parameters.initialize_price,
-            ts,
-            ctx,
-        );
-        // init positions
-        treasury::init_positions<OBC, USD>(
-            mut_t,
-            treasury_parameters.tick_spacing,
-            treasury_parameters.spacing_times,
-            ctx
-        );
     }
 
     public fun obc_round(
@@ -126,13 +73,13 @@ module obc_system::obc_system {
     fun load_system_state(
         self: &ObcSystemState
     ): &ObcSystemStateInner {
-        dynamic_field::borrow(&self.id, self.version)
+        dynamic_object_field::borrow(&self.id, self.version)
     }
 
     fun load_system_state_mut(
         self: &mut ObcSystemState
     ): &mut ObcSystemStateInner {
-        dynamic_field::borrow_mut(&mut self.id, self.version)
+        dynamic_object_field::borrow_mut(&mut self.id, self.version)
     }
 
     /// Getter of the gas coin exchange pool rate.
@@ -232,17 +179,14 @@ module obc_system::obc_system {
         base_point: u64,
         chain_start_timestamp_ms: u64,
     ): ObcSystemParameters {
-        let treasury_parameters = TreasuryParameters {
+        obc_system_state_inner::obc_system_stat_parameter(
             position_number,
             tick_spacing,
             spacing_times,
             initialize_price,
             time_interval,
             base_point,
-        };
-        ObcSystemParameters {
-            treasury_parameters,
             chain_start_timestamp_ms,
-        }
+        )
     }
 }
