@@ -310,7 +310,7 @@ async fn test_change_obc_round() {
     let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
         .ok()
         .map(|v| v.parse().unwrap())
-        .unwrap_or(2);
+        .unwrap_or(1);
 
     test_cluster
         .swarm

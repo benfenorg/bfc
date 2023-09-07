@@ -109,12 +109,13 @@ module obc_system::obc_system {
 
     public entry fun update_round(
         wrapper: &mut ObcSystemState,
+        ctx: &mut TxContext,
     ){
-        obc_round(wrapper,200)
+        obc_round(wrapper,200,ctx)
     }
 
     fun load_system_state(
-        self: &ObcSystemState
+        self: &ObcSystemState,
     ): &ObcSystemStateInner {
        dynamic_field::borrow(&self.id, self.version)
     }
