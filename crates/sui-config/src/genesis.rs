@@ -67,7 +67,7 @@ impl Default for TreasuryParameters {
         TreasuryParameters {
             position_numbers: 9,
             tick_spacking: 60,
-            initialize_price: 100000000000,
+            initialize_price: 2u128.pow(64),
         }
     }
 }

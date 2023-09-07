@@ -10,6 +10,5 @@ module obc_system::treasury_test {
     fun test_generate_vault_key() {
         let key = treasury::generate_vault_key<TestCoinA, TestCoinB>(60);
         debug::print(&key);
-
     }
 }
