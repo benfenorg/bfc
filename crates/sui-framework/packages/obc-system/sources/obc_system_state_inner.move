@@ -13,11 +13,10 @@ module obc_system::obc_system_state_inner {
     use obc_system::exchange_inner::ExchangePool;
     use obc_system::gas_coin_map;
     use obc_system::gas_coin_map::{GasCoinMap, GasCoinEntity};
-    use obc_system::exchange_inner;
-    use obc_system::exchange_inner::ExchangePool;
     use obc_system::treasury;
     use obc_system::usd::USD;
-    use obc_system::obc_dao::{Dao, OBCDaoAction, Proposal, Self};
+    use obc_system::obc_dao_manager::{OBCDaoManageKey};
+    use obc_system::obc_dao::{Dao, Proposal, Self};
 
     friend obc_system::obc_system;
 
@@ -72,6 +71,7 @@ module obc_system::obc_system_state_inner {
             round: OBC_SYSTEM_STATE_START_ROUND,
             gas_coin_map,
             exchange_pool,
+            dao,
         };
 
         create_treasury(

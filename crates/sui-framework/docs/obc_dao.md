@@ -1406,7 +1406,7 @@ propose a proposal.
 <code>action_delay</code>: the delay to execute after the proposal is agreed
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2719,7 +2719,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 

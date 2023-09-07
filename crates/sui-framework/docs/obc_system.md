@@ -33,7 +33,7 @@
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field">0x2::dynamic_object_field</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">0x2::stable</a>;
@@ -112,7 +112,6 @@
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(
     id: UID,
     usd_supply: Supply&lt;USD&gt;,
-<<<<<<< HEAD
     parameters: ObcSystemParameters,
     ctx: &<b>mut</b> TxContext
 ) {
@@ -121,18 +120,12 @@
         parameters,
         ctx,
     );
-=======
-    parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <b>let</b> inner_state = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">obc_system_state_inner::create_inner_state</a>(ctx);
->>>>>>> feature/any_coin_gas
     <b>let</b> self = <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a> {
         id,
         version: <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_STATE_VERSION_V1">OBC_SYSTEM_STATE_VERSION_V1</a>
     };
 
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_add">dynamic_object_field::add</a>(&<b>mut</b> self.id, <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_STATE_VERSION_V1">OBC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_STATE_VERSION_V1">OBC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
 
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(self);
 }
@@ -160,10 +153,7 @@
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     round: u64,
-<<<<<<< HEAD
-=======
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
->>>>>>> feature/any_coin_gas
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
@@ -189,11 +179,7 @@
 
 
 
-<<<<<<< HEAD
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_update_round">update_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-=======
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_update_round">update_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
->>>>>>> feature/any_coin_gas
 </code></pre>
 
 
@@ -203,16 +189,9 @@
 
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_update_round">update_round</a>(
-<<<<<<< HEAD
-    wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper, 200, ctx)
-=======
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock, ctx: &<b>mut</b> TxContext,
 ) {
     <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper, 200, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
->>>>>>> feature/any_coin_gas
 }
 </code></pre>
 
@@ -238,11 +217,7 @@
 <pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(
     self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>
 ): &ObcSystemStateInner {
-<<<<<<< HEAD
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow">dynamic_object_field::borrow</a>(&self.id, self.version)
-=======
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>(&self.id, self.version)
->>>>>>> feature/any_coin_gas
 }
 </code></pre>
 
@@ -268,7 +243,7 @@
 <pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(
     self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>
 ): &<b>mut</b> ObcSystemStateInner {
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>(&<b>mut</b> self.id, self.version)
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> self.id, self.version)
 }
 </code></pre>
 
@@ -587,13 +562,8 @@ Init exchange pool by add obc coin.
     time_interval: u32,
     base_point: u64,
     chain_start_timestamp_ms: u64,
-<<<<<<< HEAD
 ): ObcSystemParameters {
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_state_inner::obc_system_stat_parameter</a>(
-=======
-): <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> {
-    <b>let</b> treasury_parameters = <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">TreasuryParameters</a> {
->>>>>>> feature/any_coin_gas
         position_number,
         tick_spacing,
         spacing_times,
@@ -645,7 +615,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_propose">propose</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_propose">propose</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 

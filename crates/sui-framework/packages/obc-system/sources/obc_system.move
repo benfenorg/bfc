@@ -2,9 +2,7 @@ module obc_system::obc_system {
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
-    use sui::clock::{Self, Clock};
-
-    use sui::dynamic_field;
+    use sui::clock::{Clock};
     use sui::dynamic_object_field;
 
     use sui::obc::OBC;
@@ -16,7 +14,7 @@ module obc_system::obc_system {
 
     use obc_system::usd::USD;
     use obc_system::obc_dao_manager::{OBCDaoManageKey};
-    use obc_system::obc_dao::{Dao, OBCDaoAction, Proposal, Self};
+    use obc_system::obc_dao::{Proposal};
     use obc_system::obc_system_state_inner;
     use obc_system::obc_system_state_inner::{ObcSystemStateInner, ObcSystemParameters};
 

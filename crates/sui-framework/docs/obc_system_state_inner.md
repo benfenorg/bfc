@@ -19,16 +19,13 @@
 -  [Function `request_update_gas_coin`](#0xc8_obc_system_state_inner_request_update_gas_coin)
 -  [Function `request_remove_gas_coin`](#0xc8_obc_system_state_inner_request_remove_gas_coin)
 -  [Function `init_exchange_pool`](#0xc8_obc_system_state_inner_init_exchange_pool)
-<<<<<<< HEAD
 -  [Function `create_treasury`](#0xc8_obc_system_state_inner_create_treasury)
 -  [Function `obc_system_stat_parameter`](#0xc8_obc_system_state_inner_obc_system_stat_parameter)
-=======
 -  [Function `create_obcdao_action`](#0xc8_obc_system_state_inner_create_obcdao_action)
 -  [Function `propose`](#0xc8_obc_system_state_inner_propose)
 -  [Function `destroy_terminated_proposal`](#0xc8_obc_system_state_inner_destroy_terminated_proposal)
 -  [Function `judge_proposal_state`](#0xc8_obc_system_state_inner_judge_proposal_state)
 -  [Function `modify_proposal`](#0xc8_obc_system_state_inner_modify_proposal)
->>>>>>> feature/any_coin_gas
 -  [Module Specification](#@Module_Specification_1)
 
 
@@ -43,13 +40,10 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="exchange_inner.md#0xc8_exchange_inner">0xc8::exchange_inner</a>;
 <b>use</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">0xc8::gas_coin_map</a>;
-<<<<<<< HEAD
-<b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
-<b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
-=======
 <b>use</b> <a href="obc_dao.md#0xc8_obc_dao">0xc8::obc_dao</a>;
 <b>use</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager">0xc8::obc_dao_manager</a>;
->>>>>>> feature/any_coin_gas
+<b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
+<b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
 </code></pre>
 
 
@@ -251,13 +245,14 @@
     <b>let</b> init_gas_coins_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<b>address</b>, GasCoinEntity&gt;();
     <b>let</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0xc8_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;STABLE&gt;(ctx, 0);
-<<<<<<< HEAD
+    <b>let</b> dao = <a href="obc_dao.md#0xc8_obc_dao_create_dao">obc_dao::create_dao</a>(<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
 
     <b>let</b> inner = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         round: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_STATE_START_ROUND">OBC_SYSTEM_STATE_START_ROUND</a>,
         <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>,
         exchange_pool,
+        dao,
     };
 
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(
@@ -269,16 +264,6 @@
     );
 
     inner
-=======
-    <b>let</b> dao = <a href="obc_dao.md#0xc8_obc_dao_create_dao">obc_dao::create_dao</a>(<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
-
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
-        round: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_STATE_START_ROUND">OBC_SYSTEM_STATE_START_ROUND</a>,
-        <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>,
-        exchange_pool,
-        dao,
-    }
->>>>>>> feature/any_coin_gas
 }
 </code></pre>
 
@@ -536,7 +521,6 @@ Init exchange pool by add obc coin.
 
 </details>
 
-<<<<<<< HEAD
 <a name="0xc8_obc_system_state_inner_create_treasury"></a>
 
 ## Function `create_treasury`
@@ -544,15 +528,6 @@ Init exchange pool by add obc coin.
 
 
 <pre><code><b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(inner: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, treasury_parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_TreasuryParameters">obc_system_state_inner::TreasuryParameters</a>, ts: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-=======
-<a name="0xc8_obc_system_state_inner_create_obcdao_action"></a>
-
-## Function `create_obcdao_action`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
->>>>>>> feature/any_coin_gas
 </code></pre>
 
 
@@ -561,7 +536,6 @@ Init exchange pool by add obc coin.
 <summary>Implementation</summary>
 
 
-<<<<<<< HEAD
 <pre><code><b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(
     inner: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     supply: Supply&lt;USD&gt;,
@@ -578,7 +552,7 @@ Init exchange pool by add obc coin.
     );
 
     // create <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a>-<a href="usd.md#0xc8_usd">usd</a> pool
-    <a href="treasury.md#0xc8_treasury_create_vault">treasury::create_vault</a>&lt;OBC, USD, USD&gt;(
+    <a href="treasury.md#0xc8_treasury_create_vault">treasury::create_vault</a>&lt;USD&gt;(
         mut_t,
         supply,
         treasury_parameters.position_number,
@@ -588,18 +562,12 @@ Init exchange pool by add obc coin.
         ctx,
     );
     // init positions
-    <a href="treasury.md#0xc8_treasury_init_positions">treasury::init_positions</a>&lt;OBC, USD&gt;(
+    <a href="treasury.md#0xc8_treasury_init_positions">treasury::init_positions</a>&lt;USD&gt;(
         mut_t,
         treasury_parameters.tick_spacing,
         treasury_parameters.spacing_times,
         ctx
     );
-=======
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(
-    self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, _: &OBCDaoManageKey,
-    actionName: <a href="">vector</a>&lt;u8&gt;,
-    ctx: &<b>mut</b> TxContext) {
-    <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">obc_dao::create_obcdao_action</a>(&<b>mut</b> self.dao, _, actionName, ctx);
 }
 </code></pre>
 
@@ -607,40 +575,6 @@ Init exchange pool by add obc coin.
 
 </details>
 
-<a name="0xc8_obc_system_state_inner_propose"></a>
-
-## Function `propose`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;obc::OBC&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(
-    self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
-    manager_key: &OBCDaoManageKey,
-    payment: Coin&lt;OBC&gt;,
-    action_id: u64,
-    action_delay: u64,
-    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
-    ctx: &<b>mut</b> TxContext,
-) {
-    obc_dao:: propose(&<b>mut</b> self.dao, manager_key, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
->>>>>>> feature/any_coin_gas
-}
-</code></pre>
-
-
-
-</details>
-
-<<<<<<< HEAD
 <a name="0xc8_obc_system_state_inner_obc_system_stat_parameter"></a>
 
 ## Function `obc_system_stat_parameter`
@@ -648,15 +582,6 @@ Init exchange pool by add obc coin.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, chain_start_timestamp_ms: u64): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
-=======
-<a name="0xc8_obc_system_state_inner_destroy_terminated_proposal"></a>
-
-## Function `destroy_terminated_proposal`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
->>>>>>> feature/any_coin_gas
 </code></pre>
 
 
@@ -665,7 +590,6 @@ Init exchange pool by add obc coin.
 <summary>Implementation</summary>
 
 
-<<<<<<< HEAD
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_stat_parameter</a>(
     position_number: u32,
     tick_spacing: u32,
@@ -687,7 +611,87 @@ Init exchange pool by add obc coin.
         treasury_parameters,
         chain_start_timestamp_ms,
     }
-=======
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_create_obcdao_action"></a>
+
+## Function `create_obcdao_action`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(
+    self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, _: &OBCDaoManageKey,
+    actionName: <a href="">vector</a>&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext) {
+    <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">obc_dao::create_obcdao_action</a>(&<b>mut</b> self.dao, _, actionName, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_propose"></a>
+
+## Function `propose`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(
+    self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    manager_key: &OBCDaoManageKey,
+    payment: Coin&lt;OBC&gt;,
+    action_id: u64,
+    action_delay: u64,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
+    ctx: &<b>mut</b> TxContext,
+) {
+    obc_dao:: propose(&<b>mut</b> self.dao, manager_key, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_destroy_terminated_proposal"></a>
+
+## Function `destroy_terminated_proposal`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
@@ -762,7 +766,6 @@ Init exchange pool by add obc coin.
     <a href="obc_dao.md#0xc8_obc_dao_modify_proposal">obc_dao::modify_proposal</a>( proposalInfo, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
 
     <a href="obc_dao.md#0xc8_obc_dao_setProposalRecord">obc_dao::setProposalRecord</a>(&<b>mut</b> system_state.dao, proposal_record);
->>>>>>> feature/any_coin_gas
 }
 </code></pre>
 
