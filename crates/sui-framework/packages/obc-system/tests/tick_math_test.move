@@ -3,8 +3,9 @@ module obc_system::tick_math_test {
     use obc_system::i32;
     use obc_system::tick_math::{
         get_sqrt_price_at_tick, get_tick_at_sqrt_price,
-        max_tick, min_tick
-        };
+        max_tick, min_tick, get_prev_valid_tick_index, get_next_valid_tick_index,
+        is_valid_index
+    };
 
     // The maximum tick that may be passed to #getSqrtRatioAtTick computed from log base 1.0001 of 2**64
     const MAX_TICK: u32 = 443636;
@@ -64,5 +65,18 @@ module obc_system::tick_math_test {
     #[expected_failure]
     fun test_get_tick_at_invalid_upper_sqrt_price() {
         get_tick_at_sqrt_price(MIN_SQRT_PRICE_X64 - 1);
+    }
+
+    #[test]
+    fun test_get_valid_tick_index() {
+        let index = i32::from_u32(4294586617);
+        let spacing: u32 = 60;
+        assert!(!is_valid_index(index, spacing), 0);
+
+        let prev = get_prev_valid_tick_index(index, spacing);
+        assert!(is_valid_index(prev, spacing), 1);
+
+        let next = get_next_valid_tick_index(index, spacing);
+        assert!(is_valid_index(next, spacing), 2);
     }
 }
