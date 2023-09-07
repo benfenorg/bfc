@@ -26,9 +26,9 @@ module obc_system::obc_system_tests {
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext) {
         let usd_supply = obc_system::usd::new(ctx);
         let treasury_parameters = obc_system::obc_system_stat_parameter(
-            10,
-            443636,
-            4295048016,
+            9,
+            60,
+            18446744073709551616, // 2 ** 64
             2000,
         );
         obc_system::create(

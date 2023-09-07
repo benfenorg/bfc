@@ -93,7 +93,8 @@ module obc_system::obc_system {
 
     public fun obc_round(
         wrapper: &mut ObcSystemState,
-        round:u64
+        round:u64,
+        ctx: &mut TxContext,
     ){
         let inner_state = load_system_state_mut(wrapper);
         obc_system_state_inner::update_round(inner_state, round);
@@ -109,8 +110,9 @@ module obc_system::obc_system {
 
     public entry fun update_round(
         wrapper: &mut ObcSystemState,
+        ctx: &mut TxContext,
     ){
-        obc_round(wrapper,200)
+        obc_round(wrapper,200, ctx)
     }
 
     fun load_system_state(
