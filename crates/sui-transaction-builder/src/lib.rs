@@ -31,8 +31,9 @@ use sui_types::sui_system_state::SUI_SYSTEM_MODULE_NAME;
 use sui_types::transaction::{
     Argument, CallArg, Command, InputObjectKind, ObjectArg, TransactionData, TransactionKind,
 };
-use sui_types::{coin, fp_ensure, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{coin, fp_ensure, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 use tracing::info;
+use sui_types::obc_system_state::OBC_SYSTEM_MODULE_NAME;
 
 #[async_trait]
 pub trait DataReader {
@@ -801,7 +802,7 @@ impl TransactionBuilder {
         gas_budget: u64,
     ) -> anyhow::Result<TransactionData> {
         let gas_price = self.0.get_reference_gas_price().await?;
-        let payer = SuiAddress::from(SUI_SYSTEM_ADDRESS); //todo modify to obc_system pay address
+        let payer = SuiAddress::from(OBC_SYSTEM_ADDRESS);
         let gas = self
             .select_gas(payer, None, gas_budget, vec![], gas_price)
             .await?;
@@ -817,14 +818,14 @@ impl TransactionBuilder {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
             let arguments = vec![
-                builder.input(CallArg::SUI_SYSTEM_MUT).unwrap(),
+                builder.input(CallArg::OBC_SYSTEM_MUT).unwrap(),
                 builder
                     .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref)))
                     .unwrap(),
             ];
             builder.command(Command::move_call(
-                SUI_SYSTEM_PACKAGE_ID,
-                SUI_SYSTEM_MODULE_NAME.to_owned(),
+                OBC_SYSTEM_PACKAGE_ID,
+                OBC_SYSTEM_MODULE_NAME.to_owned(),
                 EXCHANGE_GAS_FUN_NAME.to_owned(),
                 vec![],
                 arguments,
@@ -837,7 +838,7 @@ impl TransactionBuilder {
             pt,
             gas_budget,
             gas_price,
-            payer,
+            signer, //todo modify to may public sign address
         ))
     }
 

@@ -48,7 +48,7 @@ pub const STAKED_SUI_STRUCT_NAME: &IdentStr = ident_str!("StakedObc");
 pub const ADD_STAKE_MUL_COIN_FUN_NAME: &IdentStr = ident_str!("request_add_stake_mul_coin");
 pub const ADD_STAKE_FUN_NAME: &IdentStr = ident_str!("request_add_stake");
 pub const WITHDRAW_STAKE_FUN_NAME: &IdentStr = ident_str!("request_withdraw_stake");
-pub const EXCHANGE_GAS_FUN_NAME: &IdentStr = ident_str!("request_exchange_gas");
+pub const EXCHANGE_GAS_FUN_NAME: &IdentStr = ident_str!("request_exchange_stable");
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]

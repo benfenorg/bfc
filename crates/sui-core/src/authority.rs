@@ -4042,6 +4042,7 @@ impl AuthorityState {
         let tx_digest = executable_tx.digest();
 
         info!("round txn digest is {:?}",tx_digest);
+        let _tx_lock = epoch_store.acquire_tx_lock(tx_digest).await;
 
         if self
             .database
@@ -4078,7 +4079,7 @@ impl AuthorityState {
                 err
             })?;
 
-        warn!(
+        info!(
             "Effects summary of the change obc round transaction: {:?}",
             effects.summary_for_debug()
         );
