@@ -503,6 +503,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
     _ctx: &<b>mut</b> TxContext,
 ): <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt; {
     <b>let</b> current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(_initialize_price);
+    <b>let</b> valid_index = <a href="tick_math.md#0xc8_tick_math_get_next_valid_tick_index">tick_math::get_next_valid_tick_index</a>(current_tick_index, _tick_spacing);
     <b>let</b> uid = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(_ctx);
     <b>let</b> pid = <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_inner">object::uid_to_inner</a>(&uid);
     <a href="vault.md#0xc8_vault_Vault">Vault</a> {
@@ -514,8 +515,8 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeB&gt;(),
         tick_spacing: _tick_spacing,
         liquidity: 0,
-        current_sqrt_price: _initialize_price,
-        current_tick_index,
+        current_sqrt_price: <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(valid_index),
+        current_tick_index: valid_index,
         tick_manager: <a href="tick.md#0xc8_tick_create_tick_manager">tick::create_tick_manager</a>(_tick_spacing, _ts, _ctx),
         position_manager: <a href="position.md#0xc8_position_create_position_manager">position::create_position_manager</a>(pid, _tick_spacing, _ctx),
         is_pause: <b>false</b>,

@@ -571,12 +571,16 @@ Errors
 
 
 <pre><code><b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_valid_tick_index">get_valid_tick_index</a>(index: I32, tick_spacing: u32, prev: bool): I32 {
-    <b>let</b> spacing = <a href="i32.md#0xc8_i32_from">i32::from</a>(tick_spacing);
-    <b>let</b> valid_index = <a href="i32.md#0xc8_i32_sub">i32::sub</a>(index, <a href="i32.md#0xc8_i32_mod">i32::mod</a>(index, spacing));
-    <b>if</b> (prev) {
-        <a href="i32.md#0xc8_i32_sub">i32::sub</a>(valid_index, spacing)
+    <b>if</b> (<a href="tick_math.md#0xc8_tick_math_is_valid_index">is_valid_index</a>(index, tick_spacing)) {
+        index
     } <b>else</b> {
-        <a href="i32.md#0xc8_i32_add">i32::add</a>(valid_index, spacing)
+        <b>let</b> spacing = <a href="i32.md#0xc8_i32_from">i32::from</a>(tick_spacing);
+        <b>let</b> valid_index = <a href="i32.md#0xc8_i32_sub">i32::sub</a>(index, <a href="i32.md#0xc8_i32_mod">i32::mod</a>(index, spacing));
+        <b>if</b> (prev) {
+            <a href="i32.md#0xc8_i32_sub">i32::sub</a>(valid_index, spacing)
+        } <b>else</b> {
+            <a href="i32.md#0xc8_i32_add">i32::add</a>(valid_index, spacing)
+        }
     }
 }
 </code></pre>
