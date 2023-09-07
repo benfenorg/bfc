@@ -2,11 +2,6 @@ module obc_system::obc_system {
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
-    use obc_system::obc_system_state_inner::ObcSystemStateInner;
-    use obc_system::obc_system_state_inner;
-    use obc_system::treasury;
-    use obc_system::usd::USD;
-
     use sui::dynamic_field;
     use sui::dynamic_object_field;
     use sui::obc::OBC;
@@ -16,8 +11,10 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    #[test_only]
-    friend obc_system::obc_system_tests;
+    use obc_system::obc_system_state_inner;
+    use obc_system::obc_system_state_inner::ObcSystemStateInner;
+    use obc_system::treasury;
+    use obc_system::usd::USD;
 
     struct ObcSystemState has key {
         id: UID,
@@ -27,6 +24,7 @@ module obc_system::obc_system {
     struct TreasuryParameters has drop, copy {
         position_number: u32,
         tick_spacing: u32,
+        spacing_times: u32,
         initialize_price: u128,
     }
 
@@ -88,7 +86,12 @@ module obc_system::obc_system {
             ctx,
         );
         // init positions
-        treasury::init_positions<OBC, USD>(mut_t, treasury_parameters.tick_spacing, 10, ctx);
+        treasury::init_positions<OBC, USD>(
+            mut_t,
+            treasury_parameters.tick_spacing,
+            treasury_parameters.spacing_times,
+            ctx
+        );
     }
 
     public fun obc_round(
