@@ -16,6 +16,9 @@ module obc_system::obc_system {
     use obc_system::treasury;
     use obc_system::usd::USD;
 
+    #[test_only]
+    friend obc_system::obc_system_tests;
+
     struct ObcSystemState has key {
         id: UID,
         version: u64
@@ -221,12 +224,14 @@ module obc_system::obc_system {
     public(friend) fun obc_system_stat_parameter(
         position_number: u32,
         tick_spacing: u32,
+        spacing_times: u32,
         initialize_price: u128,
         chain_start_timestamp_ms: u64,
     ) : ObcSystemParameters {
         let treasury_parameters = TreasuryParameters {
             position_number,
             tick_spacing,
+            spacing_times,
             initialize_price,
         };
         ObcSystemParameters {
