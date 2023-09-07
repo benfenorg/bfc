@@ -204,12 +204,12 @@ module obc_system::vault {
         _fix_amount_a: bool
     ): AddLiquidityReceipt<StableCoinType> {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
+        let expect_vault_id = vault_id(_vault);
         let mut_position = position::borrow_mut_position(
             &mut _vault.position_manager,
             _index
         );
         let (tick_lower, tick_upper) = position::get_tick_range(mut_position);
-        let expect_vault_id = vault_id(_vault);
         let _vault_id = position::get_vault_id(mut_position);
         assert!(_vault_id == expect_vault_id, ERR_POOL_INVALID);
         let liquidity_delta: u128;
@@ -291,12 +291,12 @@ module obc_system::vault {
         _delta_liquidity: u128
     ): (Balance<StableCoinType>, Balance<OBC>) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
+        let expect_vault_id = vault_id(_vault);
         let mut_position = position::borrow_mut_position(
             &mut _vault.position_manager,
             _index
         );
         let (tick_lower, tick_upper) = position::get_tick_range(mut_position);
-        let expect_vault_id = vault_id(_vault);
         let _vault_id = position::get_vault_id(mut_position);
         assert!(_vault_id == expect_vault_id, ERR_POOL_INVALID);
         let liquidity = position::decrease_liquidity(mut_position, _delta_liquidity);
