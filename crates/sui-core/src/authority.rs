@@ -4012,17 +4012,17 @@ impl AuthorityState {
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         checkpoint: CheckpointSequenceNumber,
-    ) -> anyhow::Result<TransactionEffects>{
+    ) -> anyhow::Result<(InnerTemporaryStore,TransactionEffects)>{
         let epoch = epoch_store.epoch();
 
         let tx = VerifiedTransaction::new_change_obc_round(
-            epoch+1,
+            epoch,
         );
 
         let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
             tx.clone(),
             epoch,
-            epoch+1,
+            epoch,
             checkpoint,
         );
 
@@ -4050,7 +4050,7 @@ impl AuthorityState {
             "Try to execute transaction: {:?}",tx_digest
         );
 
-        let (_, effects, _execution_error_opt) = self
+        let (store, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
@@ -4074,7 +4074,7 @@ impl AuthorityState {
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
 
-        Ok(effects)
+        Ok((store,effects))
     }
 
         /// This function is called at the very end of the epoch.

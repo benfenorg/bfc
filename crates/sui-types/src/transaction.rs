@@ -885,7 +885,7 @@ impl TransactionKind {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
-                }];
+                },SharedInputObject::SUI_SYSTEM_OBJ];
                 Either::Right(Either::Right(objs.into_iter()))
             }
             _ => Either::Right(Either::Right(vec![].into_iter())),
@@ -926,6 +926,10 @@ impl TransactionKind {
                 vec![InputObjectKind::SharedMoveObject {
                     id: OBC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }

@@ -113,7 +113,7 @@ mod checked {
             epoch_timestamp_ms,
         );
 
-        let is_epoch_change = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
+        let is_epoch_change: bool = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
 
         let deny_cert = is_certificate_denied(&transaction_digest, certificate_deny_set);
         let (gas_cost_summary, execution_result) = execute_transaction::<Mode>(
