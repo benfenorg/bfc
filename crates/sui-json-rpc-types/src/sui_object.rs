@@ -20,6 +20,7 @@ use serde::Serialize;
 use serde_json::Value;
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
+use tracing::info;
 
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::{
@@ -31,6 +32,7 @@ use sui_types::gas_coin::GasCoin;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::move_package::{MovePackage, TypeOrigin, UpgradeInfo};
 use sui_types::object::{Data, MoveObject, Object, ObjectFormatOptions, ObjectRead, Owner};
+use sui_types::stable_coin::StableCoin;
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_serde::SequenceNumber as AsSequenceNumber;
 use sui_types::sui_serde::SuiStructTag;
@@ -228,6 +230,14 @@ impl SuiObjectData {
             None => false,
         }
     }
+
+    pub fn is_stable_coin(&self) -> bool {
+        match self.type_.as_ref() {
+            Some(ObjectType::Struct(ty)) if ty.is_stable_gas_coin() => true,
+            Some(_) => false,
+            None => false,
+        }
+    }
 }
 
 impl Display for SuiObjectData {
@@ -302,6 +312,30 @@ impl TryFrom<&SuiObjectData> for GasCoin {
     }
 }
 
+impl TryFrom<&SuiObjectData> for StableCoin {
+    type Error = anyhow::Error;
+    fn try_from(object: &SuiObjectData) -> Result<Self, Self::Error> {
+        match &object
+            .content
+            .as_ref()
+            .ok_or_else(|| anyhow!("Expect object content to not be empty"))?
+        {
+            SuiParsedData::MoveObject(o) => {
+                if StableCoin::type_() == o.type_ {
+                    return StableCoin::try_from(&o.fields);
+                }
+            }
+            SuiParsedData::Package(_) => {}
+        }
+
+        Err(anyhow!(
+            "Gas object type is not a stable gas coin: {:?}",
+            object.type_
+        ))
+    }
+}
+
+
 impl TryFrom<&SuiMoveStruct> for GasCoin {
     type Error = anyhow::Error;
     fn try_from(move_struct: &SuiMoveStruct) -> Result<Self, Self::Error> {
@@ -318,6 +352,26 @@ impl TryFrom<&SuiMoveStruct> for GasCoin {
             _ => {}
         }
         Err(anyhow!("Struct is not a gas coin: {move_struct:?}"))
+    }
+}
+
+impl TryFrom<&SuiMoveStruct> for StableCoin {
+    type Error = anyhow::Error;
+    fn try_from(move_struct: &SuiMoveStruct) -> Result<Self, Self::Error> {
+        info!("move struct: {}", move_struct);
+        match move_struct {
+            SuiMoveStruct::WithFields(fields) | SuiMoveStruct::WithTypes { type_: _, fields } => {
+                if let Some(SuiMoveValue::String(balance)) = fields.get("balance") {
+                    if let Ok(balance) = balance.parse::<u64>() {
+                        if let Some(SuiMoveValue::UID { id }) = fields.get("id") {
+                            return Ok(StableCoin::new(*id, balance));
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+        Err(anyhow!("Struct is not a stable gas coin: {move_struct:?}"))
     }
 }
 

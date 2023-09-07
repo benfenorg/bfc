@@ -165,6 +165,9 @@ impl MoveObjectType {
     pub fn default_gas_coin() -> Self {
         Self(MoveObjectType_::GasCoin(GAS::type_tag()))
     }
+    pub fn stable_gas_coin() -> Self {
+        Self(MoveObjectType_::GasCoin(STABLE::type_tag()))
+    }
 
     pub fn gas_coin(tag: TypeTag) -> Self {
         Self(MoveObjectType_::GasCoin(tag))
@@ -269,7 +272,15 @@ impl MoveObjectType {
     /// Return true if `self` is 0x2::coin::Coin<0x2::sui::SUI>
     pub fn is_gas_coin(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin(_) => true,
+            MoveObjectType_::GasCoin(tag) => GAS::is_gas_type(tag),
+            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+                false
+            }
+        }
+    }
+    pub fn is_stable_gas_coin(&self) -> bool {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
             MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
             }
@@ -360,7 +371,7 @@ impl From<MoveObjectType> for StructTag {
             MoveObjectType_::GasCoin(inner) => if inner == GAS::type_tag() {
                 GasCoin::type_()
             }else {
-                STABLE::type_()
+                StableCoin::type_()
             },
             MoveObjectType_::StakedSui => StakedSui::type_(),
             MoveObjectType_::Coin(inner) => Coin::type_(inner),
