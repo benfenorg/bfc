@@ -50,6 +50,7 @@ use tokio::{
     time::timeout,
 };
 use tracing::{debug, error, info, trace, warn};
+use sui_types::temporary_store::InnerTemporaryStore;
 use typed_store::rocks::{DBMap, MetricConf, TypedStoreError};
 use typed_store::traits::{TableSummary, TypedStoreDebug};
 use typed_store::Map;
@@ -945,11 +946,17 @@ impl CheckpointBuilder {
             let epoch_rolling_gas_cost_summary =
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
-            let end_of_epoch_data = if last_checkpoint_of_epoch {
-                self.augment_obc_round(sequence_number,
+            if  first_checkpoint_of_epoch{
+                let _store=self.augment_obc_round(sequence_number,
                                        &mut effects,
                                        &mut signatures,
                 ).await?;
+            }
+            let end_of_epoch_data = if last_checkpoint_of_epoch {
+                // let store=self.augment_obc_round(sequence_number,
+                //                        &mut effects,
+                //                        &mut signatures,
+                // ).await?;
 
                 let system_state_obj = self
                     .augment_epoch_last_checkpoint(
@@ -1076,14 +1083,14 @@ impl CheckpointBuilder {
         checkpoint: CheckpointSequenceNumber,
         checkpoint_effects: &mut Vec<TransactionEffects>,
         signatures: &mut Vec<Vec<GenericSignature>>,
-    )-> anyhow::Result<()>{
-        let effects = self
+    )-> anyhow::Result<InnerTemporaryStore>{
+        let (store,effects) = self
             .state
             .create_and_execute_obc_round_tx(&self.epoch_store ,checkpoint)
             .await?;
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
-        Ok(())
+        Ok(store)
     }
 
     async fn augment_epoch_last_checkpoint(
