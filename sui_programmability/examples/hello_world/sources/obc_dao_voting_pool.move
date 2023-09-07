@@ -5,9 +5,15 @@ module hello_world::voting_pool {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::object::{Self, ID, UID};
-    friend hello_world::voting_obc;
+    //use sui::coin;
+    //use sui::coin::Coin;
+    //use hello_world::obc_dao_manager::OBCDaoManageKey;
+    //use hello_world::obc_dao_manager;
+    //use sui::event;
+    //use hello_world::obc_dao::send_obc_dao_event;
 
 
+    friend hello_world::obc_dao;
     /// votingObc objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 obc
 
@@ -221,12 +227,8 @@ module hello_world::voting_pool {
         PoolTokenExchangeRate { obc_amount: 0, pool_token_amount: 0 }
     }
 
-    fun check_balance_invariants(pool: &VotingPool) {
-        let exchange_rate = pool_token_exchange_rate_at_epoch();
-        // check that the pool token balance and obc balance ratio matches the exchange rate stored.
-        let expected = get_token_amount(&exchange_rate, pool.obc_balance);
-        let actual = pool.pool_token_balance;
-        assert!(expected == actual, ETokenBalancesDoNotMatchExchangeRate)
-    }
+
+
+
 
 }

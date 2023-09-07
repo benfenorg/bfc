@@ -8,9 +8,7 @@ use crate::storage::{DeleteKindWithOldVersion, ObjectStore};
 use crate::sui_system_state::{
     get_sui_system_state, get_sui_system_state_wrapper, AdvanceEpochParams, SuiSystemState,
 };
-use crate::obc_system_state::{
-    get_obc_system_state_wrapper
-};
+use crate::obc_system_state::{get_obc_system_proposal_state_map, get_obc_system_state_wrapper};
 use crate::type_resolver::LayoutResolver;
 use crate::{
     base_types::{
@@ -40,6 +38,7 @@ use serde_with::serde_as;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
 use sui_protocol_config::ProtocolConfig;
+use crate::collection_types::VecMap;
 
 pub type WrittenObjects = BTreeMap<ObjectID, (ObjectRef, Object, WriteKind)>;
 pub type ObjectMap = BTreeMap<ObjectID, Object>;
@@ -893,6 +892,11 @@ impl<'backing> TemporaryStore<'backing> {
         self.write_object(new_object, WriteKind::Mutate);
     }
 
+    pub fn get_obc_system_state_temporary(& self) -> VecMap<u64, u8> {
+        let wrapper = get_obc_system_proposal_state_map(self.store.as_object_store())
+            .expect("System state wrapper object must exist");
+        return wrapper;
+    }
 }
 
 impl<'backing> TemporaryStore<'backing> {

@@ -945,12 +945,14 @@ impl CheckpointBuilder {
             let epoch_rolling_gas_cost_summary =
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
-            let end_of_epoch_data = if last_checkpoint_of_epoch {
-                self.augment_obc_round(sequence_number,
-                                       &mut effects,
-                                       &mut signatures,
-                ).await?;
+            // if  first_checkpoint_of_epoch{
+            //     self.augment_obc_round(sequence_number,
+            //                                       &mut effects,
+            //                                       &mut signatures,
+            //     ).await?;
+            // }
 
+            let end_of_epoch_data = if last_checkpoint_of_epoch {
                 let system_state_obj = self
                     .augment_epoch_last_checkpoint(
                         &epoch_rolling_gas_cost_summary,
@@ -1077,10 +1079,11 @@ impl CheckpointBuilder {
         checkpoint_effects: &mut Vec<TransactionEffects>,
         signatures: &mut Vec<Vec<GenericSignature>>,
     )-> anyhow::Result<()>{
-        let effects = self
+        let (_,effects) = self
             .state
             .create_and_execute_obc_round_tx(&self.epoch_store ,checkpoint)
             .await?;
+        error!("obc round effects is {:?}",effects);
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(())

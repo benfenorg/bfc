@@ -68,13 +68,19 @@ export function ModuleFunction({
 				typeArguments: types ?? [],
 				arguments:
 					params?.map((param, i) => {
-						let value: string | boolean | number = param;
+						let value: string | boolean | number | string[] = param;
 						const type = functionDetails.parameters[i];
 						if (typeof type === 'string') {
 							if (['U8', 'U16', 'U32', 'U64', 'U128', 'U256'].includes(type)) {
 								value = Number.parseInt(value);
 							} else if (type === 'Bool') {
 								value = value.toLowerCase() === 'true';
+							}
+						} else if ('Vector' in type) {
+							if (typeof value === 'string' && type.Vector === 'U8') {
+								// do nothing;
+							} else {
+								value = value.split(',').filter(Boolean);
 							}
 						}
 						return getPureSerializationType(functionDetails.parameters[i], value)
