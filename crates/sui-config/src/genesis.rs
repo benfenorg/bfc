@@ -58,7 +58,7 @@ pub struct TreasuryParameters {
     /// Tick spacing is to control the granularity of liquidity.
     /// Setting the appropriate tick spacing helps to balance
     /// between maintaining operating efficiency and price accuracy
-    pub tick_spacking: u32,
+    pub tick_spacing: u32,
 
     /// Ticks numbers according to spacing_times
     pub spacing_times: u32,
@@ -71,7 +71,7 @@ impl Default for TreasuryParameters {
     fn default() -> Self {
         TreasuryParameters {
             position_numbers: 9,
-            tick_spacking: 60,
+            tick_spacing: 60,
             spacing_times: 10,
             initialize_price: 2u128.pow(64),
         }

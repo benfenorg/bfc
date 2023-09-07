@@ -20,6 +20,12 @@ module obc_system::tick {
     use sui::transfer;
     #[test_only]
     use sui::tx_context;
+    #[test_only]
+    use std::debug;
+    #[test_only]
+    use std::ascii::string;
+    #[test_only]
+    use obc_system::tick_math::get_sqrt_price_at_tick;
 
     friend obc_system::treasury;
     friend obc_system::vault;
@@ -362,5 +368,39 @@ module obc_system::tick {
             ),
             2,
         );
+    }
+
+    #[test]
+    fun test_fetch_ticks() {
+        let is_debug = false;
+        let ctx = tx_context::dummy();
+        let tick_spacing: u32 = 30;
+        let times = 10;
+        let pnumber = 9;
+        let current_index = tick_math::get_tick_at_sqrt_price(18446744073709551616);
+
+        let m = create_tick_manager(tick_spacing, 123456, &mut ctx);
+        let ticks = get_ticks(&m, current_index, times, pnumber);
+        transfer::public_transfer(TestM { id: object::new(&mut ctx), m }, tx_context::sender(&ctx));
+        if (is_debug) {
+            debug::print(&ticks);
+        };
+        let i = 0;
+        while (i < vector::length(&ticks)) {
+            let current = vector::borrow(&ticks, i);
+
+            let lower = vector::borrow(current, 0);
+            let upper = vector::borrow(current, 1);
+            if (is_debug) {
+                debug::print(&string(b"\n ====== current index"));
+                debug::print(current);
+
+                debug::print(&string(b"\tlower price:"));
+                debug::print(&get_sqrt_price_at_tick(*lower));
+                debug::print(&string(b"\tuppper price:"));
+                debug::print(&get_sqrt_price_at_tick(*upper));
+            };
+            i = i + 1
+        };
     }
 }

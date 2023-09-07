@@ -685,7 +685,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, initialize_price: u128, chain_start_timestamp_ms: u64): <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, chain_start_timestamp_ms: u64): <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>
 </code></pre>
 
 
@@ -697,12 +697,14 @@ Init exchange pool by add obc coin.
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(
     position_number: u32,
     tick_spacing: u32,
+    spacing_times: u32,
     initialize_price: u128,
     chain_start_timestamp_ms: u64,
 ) : <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> {
     <b>let</b> treasury_parameters = <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">TreasuryParameters</a> {
         position_number,
         tick_spacing,
+        spacing_times,
         initialize_price,
     };
     <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> {

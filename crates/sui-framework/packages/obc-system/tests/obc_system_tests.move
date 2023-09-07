@@ -28,6 +28,7 @@ module obc_system::obc_system_tests {
         let treasury_parameters = obc_system::obc_system_stat_parameter(
             9,
             60,
+            10,
             18446744073709551616, // 2 ** 64
             2000,
         );
