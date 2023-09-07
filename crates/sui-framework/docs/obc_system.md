@@ -104,6 +104,12 @@
 
 </dd>
 <dt>
+<code>spacing_times: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>initialize_price: u128</code>
 </dt>
 <dd>
@@ -254,7 +260,12 @@
         ctx,
     );
     // init positions
-    <a href="treasury.md#0xc8_treasury_init_positions">treasury::init_positions</a>&lt;OBC, USD&gt;(mut_t, treasury_parameters.tick_spacing, 10, ctx);
+    <a href="treasury.md#0xc8_treasury_init_positions">treasury::init_positions</a>&lt;OBC, USD&gt;(
+        mut_t,
+        treasury_parameters.tick_spacing,
+        treasury_parameters.spacing_times,
+        ctx
+    );
 }
 </code></pre>
 

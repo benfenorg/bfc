@@ -1,11 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::{fs, path::Path};
+
 use anyhow::{Context, Result};
 use fastcrypto::encoding::{Base64, Encoding};
 use fastcrypto::hash::HashFunction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::{fs, path::Path};
+use tracing::trace;
+
+use sui_types::{
+    committee::{Committee, EpochId, ProtocolVersion},
+    error::SuiResult,
+    object::Object,
+};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::clock::Clock;
 use sui_types::committee::CommitteeWithNetworkMetadata;
@@ -20,12 +28,6 @@ use sui_types::sui_system_state::{
     SuiSystemStateWrapper, SuiValidatorGenesis,
 };
 use sui_types::transaction::Transaction;
-use sui_types::{
-    committee::{Committee, EpochId, ProtocolVersion},
-    error::SuiResult,
-    object::Object,
-};
-use tracing::trace;
 
 #[derive(Clone, Debug)]
 pub struct Genesis {
@@ -58,6 +60,9 @@ pub struct TreasuryParameters {
     /// between maintaining operating efficiency and price accuracy
     pub tick_spacking: u32,
 
+    /// Ticks numbers according to spacing_times
+    pub spacing_times: u32,
+
     /// Initialize Price
     pub initialize_price: u128,
 }
@@ -67,6 +72,7 @@ impl Default for TreasuryParameters {
         TreasuryParameters {
             position_numbers: 9,
             tick_spacking: 60,
+            spacing_times: 10,
             initialize_price: 2u128.pow(64),
         }
     }
@@ -77,13 +83,13 @@ impl PartialEq for Genesis {
     fn eq(&self, other: &Self) -> bool {
         self.checkpoint.data() == other.checkpoint.data()
             && {
-                let this = self.checkpoint.auth_sig();
-                let other = other.checkpoint.auth_sig();
+            let this = self.checkpoint.auth_sig();
+            let other = other.checkpoint.auth_sig();
 
-                this.epoch == other.epoch
-                    && this.signature.as_ref() == other.signature.as_ref()
-                    && this.signers_map == other.signers_map
-            }
+            this.epoch == other.epoch
+                && this.signature.as_ref() == other.signature.as_ref()
+                && this.signers_map == other.signers_map
+        }
             && self.checkpoint_contents == other.checkpoint_contents
             && self.transaction == other.transaction
             && self.effects == other.effects
@@ -222,8 +228,8 @@ impl Genesis {
 
 impl Serialize for Genesis {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         use serde::ser::Error;
 
@@ -259,8 +265,8 @@ impl Serialize for Genesis {
 
 impl<'de> Deserialize<'de> for Genesis {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         use serde::de::Error;
 
@@ -398,7 +404,7 @@ pub struct GenesisCeremonyParameters {
     /// The amount of stake subsidy to be drawn down per distribution.
     /// This amount decays and decreases over time.
     #[serde(
-        default = "GenesisCeremonyParameters::default_initial_stake_subsidy_distribution_amount"
+    default = "GenesisCeremonyParameters::default_initial_stake_subsidy_distribution_amount"
     )]
     pub stake_subsidy_initial_distribution_amount: u64,
 
@@ -422,7 +428,7 @@ impl GenesisCeremonyParameters {
             stake_subsidy_start_epoch: 0,
             epoch_duration_ms: Self::default_epoch_duration_ms(),
             stake_subsidy_initial_distribution_amount:
-                Self::default_initial_stake_subsidy_distribution_amount(),
+            Self::default_initial_stake_subsidy_distribution_amount(),
             stake_subsidy_period_length: Self::default_stake_subsidy_period_length(),
             stake_subsidy_decrease_rate: Self::default_stake_subsidy_decrease_rate(),
         }
@@ -472,11 +478,11 @@ impl GenesisCeremonyParameters {
             max_validator_count: sui_types::governance::MAX_VALIDATOR_COUNT,
             min_validator_joining_stake: sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST,
             validator_low_stake_threshold:
-                sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
+            sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
             validator_very_low_stake_threshold:
-                sui_types::governance::VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST,
+            sui_types::governance::VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST,
             validator_low_stake_grace_period:
-                sui_types::governance::VALIDATOR_LOW_STAKE_GRACE_PERIOD,
+            sui_types::governance::VALIDATOR_LOW_STAKE_GRACE_PERIOD,
         }
     }
 
@@ -515,7 +521,7 @@ impl TokenDistributionSchedule {
     }
 
     pub fn check_all_stake_operations_are_for_valid_validators<
-        I: IntoIterator<Item = SuiAddress>,
+        I: IntoIterator<Item=SuiAddress>,
     >(
         &self,
         validators: I,
@@ -546,7 +552,7 @@ impl TokenDistributionSchedule {
         }
     }
 
-    pub fn new_for_validators_with_default_allocation<I: IntoIterator<Item = SuiAddress>>(
+    pub fn new_for_validators_with_default_allocation<I: IntoIterator<Item=SuiAddress>>(
         validators: I,
     ) -> Self {
         let mut supply = TOTAL_SUPPLY_MIST;
@@ -653,7 +659,7 @@ impl TokenDistributionScheduleBuilder {
         }
     }
 
-    pub fn default_allocation_for_validators<I: IntoIterator<Item = SuiAddress>>(
+    pub fn default_allocation_for_validators<I: IntoIterator<Item=SuiAddress>>(
         &mut self,
         validators: I,
     ) {
