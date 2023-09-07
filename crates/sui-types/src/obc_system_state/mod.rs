@@ -133,6 +133,20 @@ pub struct Dao  {
     pub curProposalStatus:  VecMap<u64, u8>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct Bag {
+    /// the ID of this bag
+    id: UID,
+    /// the number of key-value pairs in the bag
+    size: u64,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct Treasury {
+    pub id: UID,
+    pub obc_balance: Balance,
+    supplies: Bag,
+    index: u64,
+}
 
 #[derive(Debug)]
 pub struct ObcRoundParams {
@@ -217,7 +231,7 @@ pub struct ObcSystemStateInnerV1 {
     pub gas_coin_map: GasCoinMap,
     pub exchange_pool: ExchangePoolV1,
     pub dao: Dao,
-
+    pub treasury: Treasury,
 }
 
 // Rust version of the Move obc_system::obc_system_state_inner::ExchangePool type

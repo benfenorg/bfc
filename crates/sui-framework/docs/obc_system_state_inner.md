@@ -5,7 +5,7 @@
 
 
 
--  [Resource `ObcSystemStateInner`](#0xc8_obc_system_state_inner_ObcSystemStateInner)
+-  [Struct `ObcSystemStateInner`](#0xc8_obc_system_state_inner_ObcSystemStateInner)
 -  [Struct `TreasuryParameters`](#0xc8_obc_system_state_inner_TreasuryParameters)
 -  [Struct `ObcSystemParameters`](#0xc8_obc_system_state_inner_ObcSystemParameters)
 -  [Constants](#@Constants_0)
@@ -32,9 +32,7 @@
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field">0x2::dynamic_object_field</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">0x2::stable</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
@@ -50,11 +48,11 @@
 
 <a name="0xc8_obc_system_state_inner_ObcSystemStateInner"></a>
 
-## Resource `ObcSystemStateInner`
+## Struct `ObcSystemStateInner`
 
 
 
-<pre><code><b>struct</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> <b>has</b> store, key
+<pre><code><b>struct</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> <b>has</b> store
 </code></pre>
 
 
@@ -64,12 +62,6 @@
 
 
 <dl>
-<dt>
-<code>id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a></code>
-</dt>
-<dd>
-
-</dd>
 <dt>
 <code>round: u64</code>
 </dt>
@@ -90,6 +82,12 @@
 </dd>
 <dt>
 <code>dao: <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><a href="treasury.md#0xc8_treasury">treasury</a>: <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a></code>
 </dt>
 <dd>
 
@@ -246,24 +244,14 @@
     <b>let</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0xc8_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;STABLE&gt;(ctx, 0);
     <b>let</b> dao = <a href="obc_dao.md#0xc8_obc_dao_create_dao">obc_dao::create_dao</a>(<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
-
-    <b>let</b> inner = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
-        id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
+    <b>let</b> t = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, parameters, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
         round: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_STATE_START_ROUND">OBC_SYSTEM_STATE_START_ROUND</a>,
         <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>,
         exchange_pool,
         dao,
-    };
-
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(
-        &<b>mut</b> inner,
-        usd_supply,
-        parameters.treasury_parameters,
-        parameters.chain_start_timestamp_ms,
-        ctx
-    );
-
-    inner
+        <a href="treasury.md#0xc8_treasury">treasury</a>: t,
+    }
 }
 </code></pre>
 
@@ -527,7 +515,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(inner: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, treasury_parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_TreasuryParameters">obc_system_state_inner::TreasuryParameters</a>, ts: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>
 </code></pre>
 
 
@@ -536,38 +524,25 @@ Init exchange pool by add obc coin.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(
-    inner: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(
     supply: Supply&lt;USD&gt;,
-    treasury_parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_TreasuryParameters">TreasuryParameters</a>,
-    ts: u64,
+    parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">ObcSystemParameters</a>,
     ctx: &<b>mut</b> TxContext
-) {
+): Treasury {
+    <b>let</b> treasury_parameters = parameters.treasury_parameters;
     <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(ctx);
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_add">dynamic_object_field::add</a>(&<b>mut</b> inner.id, <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>, t);
-
-    <b>let</b> mut_t = <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;u64, <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>&gt;(
-        &<b>mut</b> inner.id,
-        <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_TREASURY_KEY">OBC_SYSTEM_TREASURY_KEY</a>
-    );
-
-    // create <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a>-<a href="usd.md#0xc8_usd">usd</a> pool
-    <a href="treasury.md#0xc8_treasury_create_vault">treasury::create_vault</a>&lt;USD&gt;(
-        mut_t,
+    <a href="treasury.md#0xc8_treasury_init_vault_with_positions">treasury::init_vault_with_positions</a>&lt;USD&gt;(
+        &<b>mut</b> t,
         supply,
+        treasury_parameters.initialize_price,
+        treasury_parameters.base_point,
         treasury_parameters.position_number,
         treasury_parameters.tick_spacing,
-        treasury_parameters.initialize_price,
-        ts,
+        treasury_parameters.spacing_times,
+        parameters.chain_start_timestamp_ms,
         ctx,
     );
-    // init positions
-    <a href="treasury.md#0xc8_treasury_init_positions">treasury::init_positions</a>&lt;USD&gt;(
-        mut_t,
-        treasury_parameters.tick_spacing,
-        treasury_parameters.spacing_times,
-        ctx
-    );
+    t
 }
 </code></pre>
 
@@ -756,14 +731,14 @@ Init exchange pool by add obc coin.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, index : u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
     <b>let</b> proposal_record = <a href="obc_dao.md#0xc8_obc_dao_getProposalRecord">obc_dao::getProposalRecord</a>(&<b>mut</b> system_state.dao);
-    <b>let</b> size : u64 =  <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(& proposal_record);
+    <b>let</b> size: u64 = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&proposal_record);
     <b>if</b> (size == 0) {
         <b>return</b>;
     };
-    <b>let</b> (_, proposalInfo) =  <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx_mut">vec_map::get_entry_by_idx_mut</a>(&<b>mut</b> proposal_record, size - 1);
-    <a href="obc_dao.md#0xc8_obc_dao_modify_proposal">obc_dao::modify_proposal</a>( proposalInfo, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
+    <b>let</b> (_, proposalInfo) = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx_mut">vec_map::get_entry_by_idx_mut</a>(&<b>mut</b> proposal_record, size - 1);
+    <a href="obc_dao.md#0xc8_obc_dao_modify_proposal">obc_dao::modify_proposal</a>(proposalInfo, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
 
     <a href="obc_dao.md#0xc8_obc_dao_setProposalRecord">obc_dao::setProposalRecord</a>(&<b>mut</b> system_state.dao, proposal_record);
 }

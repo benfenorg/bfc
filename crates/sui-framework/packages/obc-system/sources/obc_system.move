@@ -3,7 +3,7 @@ module obc_system::obc_system {
     use sui::coin;
     use sui::coin::Coin;
     use sui::clock::{Clock};
-    use sui::dynamic_object_field;
+    use sui::dynamic_field;
 
     use sui::obc::OBC;
     use sui::object::UID;
@@ -44,7 +44,7 @@ module obc_system::obc_system {
             version: OBC_SYSTEM_STATE_VERSION_V1
         };
 
-        dynamic_object_field::add(&mut self.id, OBC_SYSTEM_STATE_VERSION_V1, inner_state);
+        dynamic_field::add(&mut self.id, OBC_SYSTEM_STATE_VERSION_V1, inner_state);
 
         transfer::share_object(self);
     }
@@ -76,13 +76,13 @@ module obc_system::obc_system {
     fun load_system_state(
         self: &ObcSystemState
     ): &ObcSystemStateInner {
-        dynamic_object_field::borrow(&self.id, self.version)
+        dynamic_field::borrow(&self.id, self.version)
     }
 
     fun load_system_state_mut(
         self: &mut ObcSystemState
     ): &mut ObcSystemStateInner {
-        dynamic_object_field::borrow_mut(&mut self.id, self.version)
+        dynamic_field::borrow_mut(&mut self.id, self.version)
     }
 
     /// Getter of the gas coin exchange pool rate.
