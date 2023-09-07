@@ -16,7 +16,7 @@ module obc_system::event {
     // Pool added event
     struct CreatePoolEvent has copy, drop {
         vault_id: ID,
-        vault_key: ID,
+        vault_key: String,
         coin_type_a: String,
         coin_type_b: String,
         tick_spacing: u32,
@@ -26,7 +26,7 @@ module obc_system::event {
     // Position opened event
     struct OpenPositionEvent has copy, drop {
         vault: ID,
-        position: ID,
+        position: u64,
         tick_lower: I32,
         tick_upper: I32
     }
@@ -34,13 +34,13 @@ module obc_system::event {
     // Position closed event
     struct ClosePositionEvent has copy, drop {
         vault: ID,
-        position: ID
+        position: u64
     }
 
     // Liquidity event
     struct LiquidityEvent has copy, drop {
         vault: ID,
-        position: ID,
+        position: u64,
         tick_lower: I32,
         tick_upper: I32,
         liquidity: u128,
@@ -69,7 +69,7 @@ module obc_system::event {
 
     public(friend) fun create_vault(
         vault_id: ID,
-        vault_key: ID,
+        vault_key: String,
         coin_type_a: String,
         coin_type_b: String,
         tick_spacing: u32,
@@ -87,7 +87,7 @@ module obc_system::event {
 
     public(friend) fun open_position(
         vault_id: ID,
-        position_id: ID,
+        position_id: u64,
         tick_lower: I32,
         tick_upper: I32
     ) {
@@ -103,7 +103,7 @@ module obc_system::event {
 
     public(friend) fun close_position(
         vault_id: ID,
-        position_id: ID
+        position_id: u64
     ) {
         emit(
             ClosePositionEvent {
@@ -115,7 +115,7 @@ module obc_system::event {
 
     public(friend) fun add_liquidity(
         vault_id: ID,
-        position_id: ID,
+        position_id: u64,
         tick_lower: I32,
         tick_upper: I32,
         liquidity: u128,
@@ -140,7 +140,7 @@ module obc_system::event {
 
     public(friend) fun remove_liquidity(
         vault_id: ID,
-        position_id: ID,
+        position_id: u64,
         tick_lower: I32,
         tick_upper: I32,
         liquidity: u128,
