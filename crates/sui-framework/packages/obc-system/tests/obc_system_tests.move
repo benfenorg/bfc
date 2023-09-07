@@ -6,6 +6,7 @@ module obc_system::obc_system_tests {
     use sui::test_scenario;
     use obc_system::obc_system;
     use sui::tx_context::TxContext;
+    use sui::clock::{Self, Clock};
 
     #[test]
     fun test_round() {
@@ -17,9 +18,12 @@ module obc_system::obc_system_tests {
         create_sui_system_state_for_testing(ctx);
         test_scenario::next_tx(scenario, obc_addr);
         let system_state = test_scenario::take_shared<ObcSystemState>(scenario);
-        obc_system::obc_round(&mut system_state, 0, test_scenario::ctx(scenario));
+
+        let clock = clock::create_for_testing(test_scenario::ctx(scenario));
+        obc_system::obc_round(&mut system_state, 0, &clock, test_scenario::ctx(scenario));
 
         test_scenario::return_shared(system_state);
+        clock::destroy_for_testing(clock);
         test_scenario::end(scenario_val);
     }
 
