@@ -13,10 +13,14 @@
 -  [Function `tick_bound`](#0xc8_tick_math_tick_bound)
 -  [Function `get_sqrt_price_at_tick`](#0xc8_tick_math_get_sqrt_price_at_tick)
 -  [Function `is_valid_index`](#0xc8_tick_math_is_valid_index)
+-  [Function `adjust_tick`](#0xc8_tick_math_adjust_tick)
 -  [Function `get_tick_at_sqrt_price`](#0xc8_tick_math_get_tick_at_sqrt_price)
 -  [Function `as_u8`](#0xc8_tick_math_as_u8)
 -  [Function `get_sqrt_price_at_negative_tick`](#0xc8_tick_math_get_sqrt_price_at_negative_tick)
 -  [Function `get_sqrt_price_at_positive_tick`](#0xc8_tick_math_get_sqrt_price_at_positive_tick)
+-  [Function `get_valid_tick_index`](#0xc8_tick_math_get_valid_tick_index)
+-  [Function `get_next_valid_tick_index`](#0xc8_tick_math_get_next_valid_tick_index)
+-  [Function `get_prev_valid_tick_index`](#0xc8_tick_math_get_prev_valid_tick_index)
 
 
 <pre><code><b>use</b> <a href="full_math_u128.md#0xc8_full_math_u128">0xc8::full_math_u128</a>;
@@ -244,6 +248,30 @@ Errors
 <pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_is_valid_index">is_valid_index</a>(index: I32, tick_spacing: u32): bool {
     <b>let</b> in_range = <a href="i32.md#0xc8_i32_gte">i32::gte</a>(index, <a href="tick_math.md#0xc8_tick_math_min_tick">min_tick</a>()) && <a href="i32.md#0xc8_i32_lte">i32::lte</a>(index, <a href="tick_math.md#0xc8_tick_math_max_tick">max_tick</a>());
     in_range && (<a href="i32.md#0xc8_i32_mod">i32::mod</a>(index, <a href="i32.md#0xc8_i32_from">i32::from</a>(tick_spacing)) == <a href="i32.md#0xc8_i32_from">i32::from</a>(0))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_math_adjust_tick"></a>
+
+## Function `adjust_tick`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_adjust_tick">adjust_tick</a>(index: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_spacing: u32): <a href="i32.md#0xc8_i32_I32">i32::I32</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_adjust_tick">adjust_tick</a>(index: I32, tick_spacing: u32): I32 {
+    <a href="i32.md#0xc8_i32_mul">i32::mul</a>(<a href="i32.md#0xc8_i32_div">i32::div</a>(index, <a href="i32.md#0xc8_i32_from">i32::from</a>(tick_spacing)), <a href="i32.md#0xc8_i32_from">i32::from</a>(tick_spacing))
 }
 </code></pre>
 
@@ -520,6 +548,84 @@ Errors
     };
 
     ratio &gt;&gt; 32
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_math_get_valid_tick_index"></a>
+
+## Function `get_valid_tick_index`
+
+
+
+<pre><code><b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_valid_tick_index">get_valid_tick_index</a>(index: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_spacing: u32, prev: bool): <a href="i32.md#0xc8_i32_I32">i32::I32</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_valid_tick_index">get_valid_tick_index</a>(index: I32, tick_spacing: u32, prev: bool): I32 {
+    <b>let</b> spacing = <a href="i32.md#0xc8_i32_from">i32::from</a>(tick_spacing);
+    <b>let</b> valid_index = <a href="i32.md#0xc8_i32_sub">i32::sub</a>(index, <a href="i32.md#0xc8_i32_mod">i32::mod</a>(index, spacing));
+    <b>if</b> (prev) {
+        <a href="i32.md#0xc8_i32_sub">i32::sub</a>(valid_index, spacing)
+    } <b>else</b> {
+        <a href="i32.md#0xc8_i32_add">i32::add</a>(valid_index, spacing)
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_math_get_next_valid_tick_index"></a>
+
+## Function `get_next_valid_tick_index`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_next_valid_tick_index">get_next_valid_tick_index</a>(index: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_spacing: u32): <a href="i32.md#0xc8_i32_I32">i32::I32</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_next_valid_tick_index">get_next_valid_tick_index</a>(index: I32, tick_spacing: u32): I32 {
+    <a href="tick_math.md#0xc8_tick_math_get_valid_tick_index">get_valid_tick_index</a>(index, tick_spacing, <b>false</b>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_math_get_prev_valid_tick_index"></a>
+
+## Function `get_prev_valid_tick_index`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_prev_valid_tick_index">get_prev_valid_tick_index</a>(index: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_spacing: u32): <a href="i32.md#0xc8_i32_I32">i32::I32</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_prev_valid_tick_index">get_prev_valid_tick_index</a>(index: I32, tick_spacing: u32): I32 {
+    <a href="tick_math.md#0xc8_tick_math_get_valid_tick_index">get_valid_tick_index</a>(index, tick_spacing, <b>true</b>)
 }
 </code></pre>
 

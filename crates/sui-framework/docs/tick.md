@@ -13,7 +13,6 @@
 -  [Function `liquidity_net`](#0xc8_tick_liquidity_net)
 -  [Function `tick_index`](#0xc8_tick_tick_index)
 -  [Function `tick_spacing`](#0xc8_tick_tick_spacing)
--  [Function `fetch_ticks`](#0xc8_tick_fetch_ticks)
 -  [Function `default`](#0xc8_tick_default)
 -  [Function `tick_score`](#0xc8_tick_tick_score)
 -  [Function `update_by_liquidity`](#0xc8_tick_update_by_liquidity)
@@ -278,30 +277,6 @@ tick info
 
 <pre><code><b>public</b> <b>fun</b> <a href="tick.md#0xc8_tick_tick_spacing">tick_spacing</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>): u32 {
     _tick_manager.tick_spacing
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_tick_fetch_ticks"></a>
-
-## Function `fetch_ticks`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="tick.md#0xc8_tick_fetch_ticks">fetch_ticks</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="tick.md#0xc8_tick_fetch_ticks">fetch_ticks</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>) {
-    <b>abort</b> 0
 }
 </code></pre>
 
@@ -728,18 +703,19 @@ add/remove liquidity
     _spacing_times: u32,
     _total_count: u32,
 ): <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt; {
-    <b>let</b> half_ticks = _total_count / 2 * (_spacing_times * _tick_manager.tick_spacing);
-    <b>let</b> start_gap = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(
-        half_ticks + ((_spacing_times / 2) * _tick_manager.tick_spacing)
+    <b>let</b> gap = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_spacing_times * _tick_manager.tick_spacing);
+    <b>let</b> middle = <a href="tick_math.md#0xc8_tick_math_get_prev_valid_tick_index">tick_math::get_prev_valid_tick_index</a>(_tick_index, _tick_manager.tick_spacing);
+    <b>let</b> spacing_times = (_total_count - 1) / 2 * _spacing_times + (_spacing_times + 1) / 2;
+    <b>let</b> lower = <a href="i32.md#0xc8_i32_sub">i32::sub</a>(
+        middle,
+        <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_manager.tick_spacing * spacing_times),
     );
-    <b>let</b> tick_gap = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_spacing_times * _tick_manager.tick_spacing);
     <b>let</b> count = _total_count;
-    <b>let</b> start = <a href="i32.md#0xc8_i32_sub">i32::sub</a>(_tick_index, start_gap);
     <b>let</b> ticks = <a href="_empty">vector::empty</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;();
     <b>while</b> (count &gt; 0) {
-        <b>let</b> new_start = <a href="i32.md#0xc8_i32_add">i32::add</a>(start, tick_gap);
-        <a href="_push_back">vector::push_back</a>(&<b>mut</b> ticks, <a href="">vector</a>&lt;I32&gt;[start, new_start]);
-        start = new_start;
+        <b>let</b> upper = <a href="i32.md#0xc8_i32_add">i32::add</a>(lower, gap);
+        <a href="_push_back">vector::push_back</a>(&<b>mut</b> ticks, <a href="">vector</a>&lt;I32&gt;[lower, upper]);
+        lower = upper;
         count = count - 1
     };
     ticks
