@@ -567,13 +567,11 @@ check tick
 
 <pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_check_position_tick_range">check_position_tick_range</a>(_lower: I32, _upper: I32, _tick_spacing: u32) {
     <b>let</b> tick_spacing = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_spacing);
-    <b>assert</b>!(<a href="i32.md#0xc8_i32_gt">i32::gt</a>(tick_spacing, <a href="tick_math.md#0xc8_tick_math_max_tick">tick_math::max_tick</a>()), <a href="position.md#0xc8_position_ERR_TICK_SPACING_INVALID_RANGE">ERR_TICK_SPACING_INVALID_RANGE</a>);
-    <b>assert</b>!(<a href="i32.md#0xc8_i32_lt">i32::lt</a>(tick_spacing, <a href="tick_math.md#0xc8_tick_math_min_tick">tick_math::min_tick</a>()), <a href="position.md#0xc8_position_ERR_TICK_SPACING_INVALID_RANGE">ERR_TICK_SPACING_INVALID_RANGE</a>);
+    <b>assert</b>!(<a href="i32.md#0xc8_i32_gt">i32::gt</a>(tick_spacing, <a href="tick_math.md#0xc8_tick_math_min_tick">tick_math::min_tick</a>()), <a href="position.md#0xc8_position_ERR_TICK_SPACING_INVALID_RANGE">ERR_TICK_SPACING_INVALID_RANGE</a>);
+    <b>assert</b>!(<a href="i32.md#0xc8_i32_lt">i32::lt</a>(tick_spacing, <a href="tick_math.md#0xc8_tick_math_max_tick">tick_math::max_tick</a>()), <a href="position.md#0xc8_position_ERR_TICK_SPACING_INVALID_RANGE">ERR_TICK_SPACING_INVALID_RANGE</a>);
     <b>assert</b>!(<a href="i32.md#0xc8_i32_lt">i32::lt</a>(_lower, _upper), <a href="position.md#0xc8_position_ERR_TICK_INVALID_RANGE">ERR_TICK_INVALID_RANGE</a>);
-    <b>assert</b>!(<a href="i32.md#0xc8_i32_gte">i32::gte</a>(_lower, <a href="tick_math.md#0xc8_tick_math_min_tick">tick_math::min_tick</a>()), <a href="position.md#0xc8_position_ERR_TICK_LOWER_TOO_SMALL">ERR_TICK_LOWER_TOO_SMALL</a>);
-    <b>assert</b>!(<a href="i32.md#0xc8_i32_lte">i32::lte</a>(_upper, <a href="tick_math.md#0xc8_tick_math_max_tick">tick_math::max_tick</a>()), <a href="position.md#0xc8_position_ERR_TICK_UPPER_TOO_LARGE">ERR_TICK_UPPER_TOO_LARGE</a>);
-    <b>assert</b>!(<a href="i32.md#0xc8_i32_eq">i32::eq</a>(<a href="i32.md#0xc8_i32_zero">i32::zero</a>(), <a href="i32.md#0xc8_i32_mod">i32::mod</a>(_lower, tick_spacing)), <a href="position.md#0xc8_position_ERR_TICK_INVALID_VALUE">ERR_TICK_INVALID_VALUE</a>);
-    <b>assert</b>!(<a href="i32.md#0xc8_i32_eq">i32::eq</a>(<a href="i32.md#0xc8_i32_zero">i32::zero</a>(), <a href="i32.md#0xc8_i32_mod">i32::mod</a>(_upper, tick_spacing)), <a href="position.md#0xc8_position_ERR_TICK_INVALID_VALUE">ERR_TICK_INVALID_VALUE</a>);
+    <b>assert</b>!(<a href="tick_math.md#0xc8_tick_math_is_valid_index">tick_math::is_valid_index</a>(_lower, _tick_spacing), <a href="position.md#0xc8_position_ERR_TICK_INVALID_VALUE">ERR_TICK_INVALID_VALUE</a>);
+    <b>assert</b>!(<a href="tick_math.md#0xc8_tick_math_is_valid_index">tick_math::is_valid_index</a>(_upper, _tick_spacing), <a href="position.md#0xc8_position_ERR_TICK_INVALID_VALUE">ERR_TICK_INVALID_VALUE</a>);
 }
 </code></pre>
 

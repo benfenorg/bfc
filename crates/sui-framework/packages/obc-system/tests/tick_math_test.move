@@ -1,5 +1,7 @@
 #[test_only]
 module obc_system::tick_math_test {
+    use std::debug;
+    use std::ascii::string;
     use obc_system::i32;
     use obc_system::tick_math::{
         get_sqrt_price_at_tick, get_tick_at_sqrt_price,
@@ -78,5 +80,22 @@ module obc_system::tick_math_test {
 
         let next = get_next_valid_tick_index(index, spacing);
         assert!(is_valid_index(next, spacing), 2);
+    }
+
+    #[test]
+    fun test_get_price() {
+        // 18446744073709551616 = 1 * 2**64
+        debug::print(&string(b"input price: 18446744073709551616"));
+        let index = get_tick_at_sqrt_price(18446744073709551616u128);
+        debug::print(&string(b"got index:"));
+        debug::print(&index);
+        let valid_index = get_next_valid_tick_index(index, 60);
+        debug::print(&string(b"got valid index:"));
+        debug::print(&valid_index);
+        let p = get_sqrt_price_at_tick(valid_index);
+        debug::print(&string(b"valid price:"));
+        debug::print(&p);
+        let cindex = get_tick_at_sqrt_price(p);
+        debug::print(&cindex);
     }
 }

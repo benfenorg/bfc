@@ -78,6 +78,7 @@ module obc_system::vault {
         _ctx: &mut TxContext,
     ): Vault<CoinTypeA, CoinTypeB> {
         let current_tick_index = tick_math::get_tick_at_sqrt_price(_initialize_price);
+        let valid_index = tick_math::get_next_valid_tick_index(current_tick_index, _tick_spacing);
         let uid = object::new(_ctx);
         let pid = object::uid_to_inner(&uid);
         Vault {
@@ -89,8 +90,8 @@ module obc_system::vault {
             coin_b: balance::zero<CoinTypeB>(),
             tick_spacing: _tick_spacing,
             liquidity: 0,
-            current_sqrt_price: _initialize_price,
-            current_tick_index,
+            current_sqrt_price: tick_math::get_sqrt_price_at_tick(valid_index),
+            current_tick_index: valid_index,
             tick_manager: tick::create_tick_manager(_tick_spacing, _ts, _ctx),
             position_manager: position::create_position_manager(pid, _tick_spacing, _ctx),
             is_pause: false,

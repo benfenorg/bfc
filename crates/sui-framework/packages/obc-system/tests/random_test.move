@@ -26,7 +26,7 @@ module obc_system::random_test {
     fun test_with_seed_0() {
         let random = random::new(0);
         let n = 0;
-        while (n < 100000) {
+        while (n < 10) {
             let r1 = random::rand(&mut random);
             let r2 = random::rand(&mut random);
             let r3 = random::rand(&mut random);

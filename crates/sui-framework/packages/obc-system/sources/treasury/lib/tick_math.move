@@ -247,12 +247,16 @@ module obc_system::tick_math {
     }
 
     fun get_valid_tick_index(index: I32, tick_spacing: u32, prev: bool): I32 {
-        let spacing = i32::from(tick_spacing);
-        let valid_index = i32::sub(index, i32::mod(index, spacing));
-        if (prev) {
-            i32::sub(valid_index, spacing)
+        if (is_valid_index(index, tick_spacing)) {
+            index
         } else {
-            i32::add(valid_index, spacing)
+            let spacing = i32::from(tick_spacing);
+            let valid_index = i32::sub(index, i32::mod(index, spacing));
+            if (prev) {
+                i32::sub(valid_index, spacing)
+            } else {
+                i32::add(valid_index, spacing)
+            }
         }
     }
 
