@@ -530,7 +530,7 @@ Init exchange pool by add obc coin.
     ctx: &<b>mut</b> TxContext
 ): Treasury {
     <b>let</b> treasury_parameters = parameters.treasury_parameters;
-    <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(ctx);
+    <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(treasury_parameters.time_interval, ctx);
     <a href="treasury.md#0xc8_treasury_init_vault_with_positions">treasury::init_vault_with_positions</a>&lt;USD&gt;(
         &<b>mut</b> t,
         supply,

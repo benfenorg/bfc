@@ -157,6 +157,12 @@
 <dd>
  The vault index
 </dd>
+<dt>
+<code>base_point: u64</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -486,7 +492,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(_index: u64, _tick_spacing: u32, _position_number: u32, _initialize_price: u128, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(_index: u64, _tick_spacing: u32, _position_number: u32, _initialize_price: u128, _base_point: u64, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -500,6 +506,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
     _tick_spacing: u32,
     _position_number: u32,
     _initialize_price: u128,
+    _base_point: u64,
     _ts: u64,
     _ctx: &<b>mut</b> TxContext,
 ): <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; {
@@ -522,6 +529,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         position_manager: <a href="position.md#0xc8_position_create_position_manager">position::create_position_manager</a>(pid, _tick_spacing, _ctx),
         is_pause: <b>false</b>,
         index: _index,
+        base_point: _base_point,
     }
 }
 </code></pre>

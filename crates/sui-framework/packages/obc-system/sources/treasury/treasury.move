@@ -31,15 +31,17 @@ module obc_system::treasury {
         supplies: Bag,
         /// Vault index
         index: u64,
+        time_interval: u32,
     }
 
     // call in obc_system
-    public(friend) fun create_treasury(ctx: &mut TxContext): Treasury {
+    public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {
             id: object::new(ctx),
             obc_balance: balance::zero<OBC>(),
             supplies: bag::new(ctx),
             index: 0,
+            time_interval: time_interval,
         };
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
@@ -82,6 +84,7 @@ module obc_system::treasury {
         _position_number: u32,
         _tick_spacing: u32,
         _initialize_price: u128,
+        _base_point: u64,
         _ts: u64,
         _ctx: &mut TxContext
     ) {
@@ -91,6 +94,7 @@ module obc_system::treasury {
             _tick_spacing,
             _position_number,
             _initialize_price,
+            _base_point,
             _ts,
             _ctx,
         );
@@ -113,6 +117,7 @@ module obc_system::treasury {
             _tick_spacing,
             _position_number,
             _initialize_price,
+            _base_point,
             _ts,
             _ctx,
         );
@@ -130,6 +135,7 @@ module obc_system::treasury {
         _tick_spacing: u32,
         _position_number: u32,
         _initialize_price: u128,
+        _base_point: u64,
         _ts: u64,
         _ctx: &mut TxContext
     ): String {
@@ -143,6 +149,7 @@ module obc_system::treasury {
             _tick_spacing,
             _position_number,
             _initialize_price,
+            _base_point,
             _ts,
             _ctx,
         );

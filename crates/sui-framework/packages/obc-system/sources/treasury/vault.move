@@ -67,6 +67,8 @@ module obc_system::vault {
 
         /// The vault index
         index: u64,
+
+        base_point: u64,
     }
 
     // === Create vault ====
@@ -75,6 +77,7 @@ module obc_system::vault {
         _tick_spacing: u32,
         _position_number: u32,
         _initialize_price: u128,
+        _base_point: u64,
         _ts: u64,
         _ctx: &mut TxContext,
     ): Vault<StableCoinType> {
@@ -97,6 +100,7 @@ module obc_system::vault {
             position_manager: position::create_position_manager(pid, _tick_spacing, _ctx),
             is_pause: false,
             index: _index,
+            base_point: _base_point,
         }
     }
 

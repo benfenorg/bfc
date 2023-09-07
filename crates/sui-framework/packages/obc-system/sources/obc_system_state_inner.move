@@ -148,7 +148,7 @@ module obc_system::obc_system_state_inner {
         ctx: &mut TxContext
     ): Treasury {
         let treasury_parameters = parameters.treasury_parameters;
-        let t = treasury::create_treasury(ctx);
+        let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
         treasury::init_vault_with_positions<USD>(
             &mut t,
             supply,

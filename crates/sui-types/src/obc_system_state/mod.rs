@@ -146,6 +146,7 @@ pub struct Treasury {
     pub obc_balance: Balance,
     supplies: Bag,
     index: u64,
+    time_interval: u32,
 }
 
 #[derive(Debug)]
