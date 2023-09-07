@@ -77,7 +77,7 @@ Sender is not @0x0 the system address.
 
 
 
-<pre><code><b>fun</b> <a href="usd.md#0xc8_usd_new">new</a>(ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="usd.md#0xc8_usd_new">new</a>(ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;
 </code></pre>
 
 
@@ -86,7 +86,7 @@ Sender is not @0x0 the system address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="usd.md#0xc8_usd_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="usd.md#0xc8_usd_USD">USD</a>&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="usd.md#0xc8_usd_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="usd.md#0xc8_usd_USD">USD</a>&gt; {
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="usd.md#0xc8_usd_ENotSystemAddress">ENotSystemAddress</a>);
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="usd.md#0xc8_usd_EAlreadyMinted">EAlreadyMinted</a>);
     <b>let</b> (cap, metadata) = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_create_currency">coin::create_currency</a>(

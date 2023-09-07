@@ -12,7 +12,7 @@ module obc_system::usd {
     const ENotSystemAddress: u64 = 1;
 
     #[allow(unused_function)]
-    fun new(ctx: &mut TxContext): Supply<USD> {
+    public fun new(ctx: &mut TxContext): Supply<USD> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
         let (cap, metadata) = coin::create_currency(
