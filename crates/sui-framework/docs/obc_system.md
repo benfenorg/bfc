@@ -117,6 +117,18 @@
 <dd>
 
 </dd>
+<dt>
+<code>time_interval: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>base_point: u64</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -197,7 +209,7 @@
     id: UID,
     usd_supply: Supply&lt;USD&gt;,
     parameters: <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a>,
-    ctx: &<b>mut</b> TxContext,    ){
+    ctx: &<b>mut</b> TxContext, ) {
     <b>let</b> inner_state = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">obc_system_state_inner::create_inner_state</a>(ctx);
     <b>let</b> self = <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a> {
         id,
@@ -292,9 +304,9 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    round:u64,
+    round: u64,
     ctx: &<b>mut</b> TxContext,
-){
+) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_update_round">obc_system_state_inner::update_round</a>(inner_state, round);
     //exchange all <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> <b>to</b> <a href="obc.md#0xc8_obc">obc</a>.
@@ -330,8 +342,8 @@
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_update_round">update_round</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     ctx: &<b>mut</b> TxContext,
-){
-    <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper,200, ctx)
+) {
+    <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper, 200, ctx)
 }
 </code></pre>
 
@@ -685,7 +697,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, chain_start_timestamp_ms: u64): <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, chain_start_timestamp_ms: u64): <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">obc_system::ObcSystemParameters</a>
 </code></pre>
 
 
@@ -699,13 +711,17 @@ Init exchange pool by add obc coin.
     tick_spacing: u32,
     spacing_times: u32,
     initialize_price: u128,
+    time_interval: u32,
+    base_point: u64,
     chain_start_timestamp_ms: u64,
-) : <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> {
+): <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> {
     <b>let</b> treasury_parameters = <a href="obc_system.md#0xc8_obc_system_TreasuryParameters">TreasuryParameters</a> {
         position_number,
         tick_spacing,
         spacing_times,
         initialize_price,
+        time_interval,
+        base_point,
     };
     <a href="obc_system.md#0xc8_obc_system_ObcSystemParameters">ObcSystemParameters</a> {
         treasury_parameters,

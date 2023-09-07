@@ -29,6 +29,8 @@ module obc_system::obc_system {
         tick_spacing: u32,
         spacing_times: u32,
         initialize_price: u128,
+        time_interval: u32,
+        base_point: u64,
     }
 
     struct ObcSystemParameters has drop, copy {
@@ -44,7 +46,7 @@ module obc_system::obc_system {
         id: UID,
         usd_supply: Supply<USD>,
         parameters: ObcSystemParameters,
-        ctx: &mut TxContext,    ){
+        ctx: &mut TxContext, ) {
         let inner_state = obc_system_state_inner::create_inner_state(ctx);
         let self = ObcSystemState {
             id,
@@ -99,9 +101,9 @@ module obc_system::obc_system {
 
     public fun obc_round(
         wrapper: &mut ObcSystemState,
-        round:u64,
+        round: u64,
         ctx: &mut TxContext,
-    ){
+    ) {
         let inner_state = load_system_state_mut(wrapper);
         obc_system_state_inner::update_round(inner_state, round);
         //exchange all stable to obc.
@@ -117,8 +119,8 @@ module obc_system::obc_system {
     public entry fun update_round(
         wrapper: &mut ObcSystemState,
         ctx: &mut TxContext,
-    ){
-        obc_round(wrapper,200, ctx)
+    ) {
+        obc_round(wrapper, 200, ctx)
     }
 
     fun load_system_state(
@@ -226,13 +228,17 @@ module obc_system::obc_system {
         tick_spacing: u32,
         spacing_times: u32,
         initialize_price: u128,
+        time_interval: u32,
+        base_point: u64,
         chain_start_timestamp_ms: u64,
-    ) : ObcSystemParameters {
+    ): ObcSystemParameters {
         let treasury_parameters = TreasuryParameters {
             position_number,
             tick_spacing,
             spacing_times,
             initialize_price,
+            time_interval,
+            base_point,
         };
         ObcSystemParameters {
             treasury_parameters,
