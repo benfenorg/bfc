@@ -1,5 +1,4 @@
-
-module hello_world::voting_pool {
+module obc_system::voting_pool {
     use sui::balance::{Self, Balance};
     use sui::obc::OBC;
     use sui::tx_context::{Self, TxContext};
@@ -13,7 +12,7 @@ module hello_world::voting_pool {
     //use hello_world::obc_dao::send_obc_dao_event;
 
 
-    friend hello_world::obc_dao;
+    friend obc_system::obc_dao;
     /// votingObc objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 obc
 
@@ -226,9 +225,4 @@ module hello_world::voting_pool {
     fun initial_exchange_rate(): PoolTokenExchangeRate {
         PoolTokenExchangeRate { obc_amount: 0, pool_token_amount: 0 }
     }
-
-
-
-
-
 }

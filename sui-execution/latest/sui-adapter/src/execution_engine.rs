@@ -664,6 +664,7 @@ mod checked {
         let args = vec![
             CallArg::OBC_SYSTEM_MUT,
             //CallArg::SUI_SYSTEM_MUT,
+            CallArg::CLOCK_IMM,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
         ] .into_iter()
         .map(|a| builder.input(a))
