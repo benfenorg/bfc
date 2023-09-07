@@ -1,6 +1,7 @@
 module obc_system::obc_system_state_inner {
     use sui::object::{Self, UID};
     use sui::balance::{Balance, Supply};
+    use sui::clock::Clock;
     use sui::coin::Coin;
     use sui::obc::OBC;
     use sui::stable::STABLE;
@@ -12,12 +13,19 @@ module obc_system::obc_system_state_inner {
     use obc_system::exchange_inner::ExchangePool;
     use obc_system::gas_coin_map;
     use obc_system::gas_coin_map::{GasCoinMap, GasCoinEntity};
+    use obc_system::exchange_inner;
+    use obc_system::exchange_inner::ExchangePool;
     use obc_system::treasury;
     use obc_system::usd::USD;
+    use obc_system::obc_dao::{Dao, OBCDaoAction, Proposal, Self};
 
     friend obc_system::obc_system;
 
     const OBC_SYSTEM_STATE_START_ROUND: u64 = 0;
+    const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[
+        @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
+        @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+    ];
 
     spec module { pragma verify = false; }
 
@@ -29,6 +37,7 @@ module obc_system::obc_system_state_inner {
         gas_coin_map: GasCoinMap,
         /// Exchange gas coin pool
         exchange_pool: ExchangePool<STABLE>,
+        dao: Dao,
     }
 
     struct TreasuryParameters has drop, copy {
@@ -56,6 +65,7 @@ module obc_system::obc_system_state_inner {
         let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<STABLE>(ctx, 0);
+        let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
 
         let inner = ObcSystemStateInner {
             id: object::new(ctx),
@@ -200,5 +210,60 @@ module obc_system::obc_system_state_inner {
             treasury_parameters,
             chain_start_timestamp_ms,
         }
+    }
+
+    public fun create_obcdao_action(
+        self: &mut ObcSystemStateInner, _: &OBCDaoManageKey,
+        actionName: vector<u8>,
+        ctx: &mut TxContext) {
+        obc_dao::create_obcdao_action(&mut self.dao, _, actionName, ctx);
+    }
+
+    public fun propose(
+        self: &mut ObcSystemStateInner,
+        manager_key: &OBCDaoManageKey,
+        payment: Coin<OBC>,
+        action_id: u64,
+        action_delay: u64,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        obc_dao:: propose(&mut self.dao, manager_key, payment, action_id, action_delay, clock, ctx);
+    }
+
+    public fun destroy_terminated_proposal(
+        self: &mut ObcSystemStateInner,
+        manager_key: &OBCDaoManageKey,
+        proposal: &mut Proposal,
+        clock: & Clock
+    ) {
+        obc_dao::destroy_terminated_proposal(&mut self.dao, manager_key, proposal, clock);
+    }
+
+    public fun judge_proposal_state(wrapper: &mut ObcSystemStateInner, current_time: u64) {
+        let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
+        let size: u64 = vec_map::size(&proposal_record);
+        if (size == 0) {
+            return;
+        };
+
+        let i = 0;
+        while (i < size) {
+            let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
+            let cur_status = obc_dao::judge_proposal_state(proposalInfo, current_time);
+            obc_dao::set_current_status_into_dao(&mut wrapper.dao, i, cur_status);
+        };
+    }
+
+    public fun modify_proposal(system_state: &mut ObcSystemStateInner, index : u8, clock: &Clock) {
+        let proposal_record = obc_dao::getProposalRecord(&mut system_state.dao);
+        let size : u64 =  vec_map::size(& proposal_record);
+        if (size == 0) {
+            return;
+        };
+        let (_, proposalInfo) =  vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
+        obc_dao::modify_proposal( proposalInfo, index, clock);
+
+        obc_dao::setProposalRecord(&mut system_state.dao, proposal_record);
     }
 }
