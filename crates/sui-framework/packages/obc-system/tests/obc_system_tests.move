@@ -18,12 +18,12 @@ module obc_system::obc_system_tests {
         create_sui_system_state_for_testing(ctx);
         test_scenario::next_tx(scenario, obc_addr);
         let system_state = test_scenario::take_shared<ObcSystemState>(scenario);
-        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
-        clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
+        let clock = clock::create_for_testing(test_scenario::ctx(scenario));
         obc_system::obc_round(&mut system_state, 0, &clock, test_scenario::ctx(scenario));
 
         test_scenario::return_shared(system_state);
+        clock::destroy_for_testing(clock);
         test_scenario::end(scenario_val);
     }
 
