@@ -3,6 +3,7 @@ module obc_system::vault {
 
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
+    use sui::obc::OBC;
     use sui::object;
     use sui::object::{ID, UID};
     use sui::tx_context::TxContext;
@@ -32,7 +33,7 @@ module obc_system::vault {
     const ERR_AMOUNT_MISMATCH: u64 = 210;
     const ERR_POSITIONS_IS_NOT_EMPTY: u64 = 211;
 
-    struct Vault<phantom CoinTypeA, phantom CoinTypeB> has key, store {
+    struct Vault<phantom StableCoinType> has key, store {
         id: UID,
 
         position_number: u32,
@@ -40,8 +41,8 @@ module obc_system::vault {
         state: u8,
         state_counter: u32,
 
-        coin_a: Balance<CoinTypeA>,
-        coin_b: Balance<CoinTypeB>,
+        coin_a: Balance<StableCoinType>,
+        coin_b: Balance<OBC>,
 
         /// The tick spacing
         tick_spacing: u32,
@@ -69,14 +70,14 @@ module obc_system::vault {
     }
 
     // === Create vault ====
-    public(friend) fun create_vault<CoinTypeA, CoinTypeB>(
+    public(friend) fun create_vault<StableCoinType>(
         _index: u64,
         _tick_spacing: u32,
         _position_number: u32,
         _initialize_price: u128,
         _ts: u64,
         _ctx: &mut TxContext,
-    ): Vault<CoinTypeA, CoinTypeB> {
+    ): Vault<StableCoinType> {
         let current_tick_index = tick_math::get_tick_at_sqrt_price(_initialize_price);
         let valid_index = tick_math::get_next_valid_tick_index(current_tick_index, _tick_spacing);
         let uid = object::new(_ctx);
@@ -86,8 +87,8 @@ module obc_system::vault {
             position_number: _position_number,
             state: 0,
             state_counter: 0,
-            coin_a: balance::zero<CoinTypeA>(),
-            coin_b: balance::zero<CoinTypeB>(),
+            coin_a: balance::zero<StableCoinType>(),
+            coin_b: balance::zero<OBC>(),
             tick_spacing: _tick_spacing,
             liquidity: 0,
             current_sqrt_price: tick_math::get_sqrt_price_at_tick(valid_index),
@@ -100,8 +101,8 @@ module obc_system::vault {
     }
 
     /// open `position_number` positions
-    public(friend) fun init_positions<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
+    public(friend) fun init_positions<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
         _spacing_times: u32,
         _ctx: &mut TxContext
     ) {
@@ -125,14 +126,14 @@ module obc_system::vault {
         };
     }
 
-    fun open_position<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
+    fun open_position<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
         _tick_lower: I32,
         _tick_upper: I32,
         _ctx: &mut TxContext
     ) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
-        let position_id = position::open_position<CoinTypeA, CoinTypeB>(
+        let position_id = position::open_position<StableCoinType>(
             &mut _vault.position_manager,
             _vault.index,
             _tick_lower,
@@ -148,19 +149,17 @@ module obc_system::vault {
     }
 
 
-    public(friend) fun close_position<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32
+    public(friend) fun close_position<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _index: u64
     )
     {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
-        let position_id = position::close_position(
+        position::close_position(
             &mut _vault.position_manager,
-            i32::from_u32(_tick_lower),
-            i32::from_u32(_tick_upper)
+            _index
         );
-        event::close_position(vault_id(_vault), position_id)
+        event::close_position(vault_id(_vault), _index)
     }
 
     /// Calculate the position's amount_a/amount_b
@@ -168,20 +167,17 @@ module obc_system::vault {
     ///     - `vault` The clmm vault object.
     ///     - `position_id` The object id of position's NFT.
     /// Returns
-    ///     - `amount_a` The amount of `CoinTypeA`
-    ///     - `amount_b` The amount of `CoinTypeB`
-    public fun get_position_amounts<CoinTypeA, CoinTypeB>(
-        _vault: &Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32
+    ///     - `amount_a` The amount of `StableCoinType`
+    ///     - `amount_b` The amount of `OBC`
+    public fun get_position_amounts<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
+        _index: u64
     ): (u64, u64) {
-        let tick_lower = i32::from_u32(_tick_lower);
-        let tick_upper = i32::from_u32(_tick_upper);
         let position = position::borrow_position(
             &_vault.position_manager,
-            tick_lower,
-            tick_upper
+            _index
         );
+        let (tick_lower, tick_upper) = position::get_tick_range(position);
         clmm_math::get_amount_by_liquidity(
             tick_lower,
             tick_upper,
@@ -193,30 +189,27 @@ module obc_system::vault {
     }
 
     /// Flash loan resource for add_liquidity
-    struct AddLiquidityReceipt<phantom CoinTypeA, phantom CoinTypeB> {
+    struct AddLiquidityReceipt<phantom StableCoinType> {
         vault_id: ID,
         amount_a: u64,
         amount_b: u64
     }
 
-    fun add_liquidity_internal<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32,
+    fun add_liquidity_internal<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _index: u64,
         _use_amount: bool,
         _liquidity_delta: u128,
         _amount: u64,
         _fix_amount_a: bool
-    ): AddLiquidityReceipt<CoinTypeA, CoinTypeB> {
+    ): AddLiquidityReceipt<StableCoinType> {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
-        let tick_lower = i32::from_u32(_tick_lower);
-        let tick_upper = i32::from_u32(_tick_upper);
         let expect_vault_id = vault_id(_vault);
         let mut_position = position::borrow_mut_position(
             &mut _vault.position_manager,
-            tick_lower,
-            tick_upper,
+            _index
         );
+        let (tick_lower, tick_upper) = position::get_tick_range(mut_position);
         let _vault_id = position::get_vault_id(mut_position);
         assert!(_vault_id == expect_vault_id, ERR_POOL_INVALID);
         let liquidity_delta: u128;
@@ -261,7 +254,7 @@ module obc_system::vault {
         };
         event::add_liquidity(
             _vault_id,
-            position::get_position_id(mut_position),
+            _index,
             tick_lower,
             tick_upper,
             liquidity_delta,
@@ -269,24 +262,22 @@ module obc_system::vault {
             amount_a,
             amount_b
         );
-        AddLiquidityReceipt<CoinTypeA, CoinTypeB> {
+        AddLiquidityReceipt<StableCoinType> {
             vault_id: _vault_id,
             amount_a,
             amount_b,
         }
     }
 
-    public(friend) fun add_liquidity<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32,
+    public(friend) fun add_liquidity<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _index: u64,
         _delta_liquidity: u128
-    ): AddLiquidityReceipt<CoinTypeA, CoinTypeB> {
+    ): AddLiquidityReceipt<StableCoinType> {
         assert!(_delta_liquidity > 0, ERR_LIQUIDITY_DELTA_IS_ZERO);
         add_liquidity_internal(
             _vault,
-            _tick_lower,
-            _tick_upper,
+            _index,
             false,
             _delta_liquidity,
             0u64,
@@ -294,21 +285,18 @@ module obc_system::vault {
         )
     }
 
-    public(friend) fun remove_liquidity<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32,
+    public(friend) fun remove_liquidity<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _index: u64,
         _delta_liquidity: u128
-    ): (Balance<CoinTypeA>, Balance<CoinTypeB>) {
+    ): (Balance<StableCoinType>, Balance<OBC>) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
-        let tick_lower = i32::from_u32(_tick_lower);
-        let tick_upper = i32::from_u32(_tick_upper);
         let expect_vault_id = vault_id(_vault);
         let mut_position = position::borrow_mut_position(
             &mut _vault.position_manager,
-            tick_lower,
-            tick_upper,
+            _index
         );
+        let (tick_lower, tick_upper) = position::get_tick_range(mut_position);
         let _vault_id = position::get_vault_id(mut_position);
         assert!(_vault_id == expect_vault_id, ERR_POOL_INVALID);
         let liquidity = position::decrease_liquidity(mut_position, _delta_liquidity);
@@ -340,7 +328,7 @@ module obc_system::vault {
         let balance_b = balance::split(&mut _vault.coin_b, amount_b);
         event::remove_liquidity(
             _vault_id,
-            position::get_position_id(mut_position),
+            _index,
             tick_lower,
             tick_upper,
             _delta_liquidity,
@@ -351,18 +339,16 @@ module obc_system::vault {
         (balance_a, balance_b)
     }
 
-    public(friend) fun add_liquidity_fix_coin<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _tick_lower: u32,
-        _tick_upper: u32,
+    public(friend) fun add_liquidity_fix_coin<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _index: u64,
         _amount: u64,
         _fix_amount_a: bool
-    ): AddLiquidityReceipt<CoinTypeA, CoinTypeB> {
+    ): AddLiquidityReceipt<StableCoinType> {
         assert!(_amount > 0, ERR_AMOUNT_IS_ZERO);
         add_liquidity_internal(
             _vault,
-            _tick_lower,
-            _tick_upper,
+            _index,
             true,
             0u128,
             _amount,
@@ -370,11 +356,11 @@ module obc_system::vault {
         )
     }
 
-    public(friend) fun repay_add_liquidity<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _balance_a: Balance<CoinTypeA>,
-        _balance_b: Balance<CoinTypeB>,
-        _receipt: AddLiquidityReceipt<CoinTypeA, CoinTypeB>
+    public(friend) fun repay_add_liquidity<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _balance_a: Balance<StableCoinType>,
+        _balance_b: Balance<OBC>,
+        _receipt: AddLiquidityReceipt<StableCoinType>
     )
     {
         let AddLiquidityReceipt { vault_id, amount_a, amount_b } = _receipt;
@@ -452,8 +438,8 @@ module obc_system::vault {
     }
 
     // Calculate Swap Result
-    public fun calculate_swap_result<CoinTypeA, CoinTypeB>(
-        _vault: &Vault<CoinTypeA, CoinTypeB>,
+    public fun calculate_swap_result<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
         _a2b: bool,
         _by_amount_in: bool,
         _amount: u64,
@@ -523,29 +509,29 @@ module obc_system::vault {
     /// There is no way in Move to pass calldata and make dynamic calls, but a resource can be used for this purpose.
     /// To make the execution into a single transaction, the flash loan function must return a resource
     /// that cannot be copied, cannot be saved, cannot be dropped, or cloned.
-    struct FlashSwapReceipt<phantom CoinTypeA, phantom CoinTypeB> {
+    struct FlashSwapReceipt<phantom StableCoinType> {
         vault_id: ID,
         a2b: bool,
         pay_amount: u64,
     }
 
-    public fun swap<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        _coin_a: Coin<CoinTypeA>,
-        _coin_b: Coin<CoinTypeB>,
+    public fun swap<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _coin_a: Coin<StableCoinType>,
+        _coin_b: Coin<OBC>,
         _a2b: bool,
         _by_amount_in: bool,
         _amount: u64,
         _amount_limit: u64,
         _sqrt_price_limit: u128,
         _ctx: &mut TxContext
-    ): (Balance<CoinTypeA>, Balance<CoinTypeB>) {
+    ): (Balance<StableCoinType>, Balance<OBC>) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
         let (
             receive_a,
             receive_b,
             flash_receipt
-        ) = flash_swap_internal<CoinTypeA, CoinTypeB>(
+        ) = flash_swap_internal<StableCoinType>(
             _vault,
             _a2b,
             _by_amount_in,
@@ -559,16 +545,16 @@ module obc_system::vault {
 
         if (_a2b) {
             pay_coin_a = coin::into_balance(coin::split(&mut _coin_a, pay_amount, _ctx));
-            pay_coin_b = balance::zero<CoinTypeB>();
+            pay_coin_b = balance::zero<OBC>();
         } else {
-            pay_coin_a = balance::zero<CoinTypeA>();
+            pay_coin_a = balance::zero<StableCoinType>();
             pay_coin_b = coin::into_balance(coin::split(&mut _coin_b, pay_amount, _ctx));
         };
 
         coin::join(&mut _coin_a, coin::from_balance(receive_a, _ctx));
         coin::join(&mut _coin_b, coin::from_balance(receive_b, _ctx));
 
-        repay_flash_swap<CoinTypeA, CoinTypeB>(
+        repay_flash_swap<StableCoinType>(
             _vault,
             pay_coin_a,
             pay_coin_b,
@@ -578,13 +564,13 @@ module obc_system::vault {
         (coin::into_balance(_coin_a), coin::into_balance(_coin_b))
     }
 
-    fun repay_flash_swap<CoinTypeA, CoinTypeB>(
-        vault: &mut Vault<CoinTypeA, CoinTypeB>,
-        balance_a: Balance<CoinTypeA>,
-        balance_b: Balance<CoinTypeB>,
-        receipt: FlashSwapReceipt<CoinTypeA, CoinTypeB>
+    fun repay_flash_swap<StableCoinType>(
+        vault: &mut Vault<StableCoinType>,
+        balance_a: Balance<StableCoinType>,
+        balance_b: Balance<OBC>,
+        receipt: FlashSwapReceipt<StableCoinType>
     ) {
-        let FlashSwapReceipt<CoinTypeA, CoinTypeB> {
+        let FlashSwapReceipt<StableCoinType> {
             vault_id: _vault_id,
             a2b,
             pay_amount
@@ -604,13 +590,13 @@ module obc_system::vault {
         };
     }
 
-    fun flash_swap_internal<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
+    fun flash_swap_internal<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
         _a2b: bool,
         _by_amount_in: bool,
         _amount: u64,
         _sqrt_price_limit: u128
-    ): (Balance<CoinTypeA>, Balance<CoinTypeB>, FlashSwapReceipt<CoinTypeA, CoinTypeB>)
+    ): (Balance<StableCoinType>, Balance<OBC>, FlashSwapReceipt<StableCoinType>)
     {
         let min_price = tick_math::min_sqrt_price();
         let max_price = tick_math::max_sqrt_price();
@@ -630,11 +616,11 @@ module obc_system::vault {
         let balance_a_ret;
         let balance_b_ret;
         if (_a2b) {
-            balance_b_ret = balance::split<CoinTypeB>(&mut _vault.coin_b, swap_res.amount_out);
-            balance_a_ret = balance::zero<CoinTypeA>();
+            balance_b_ret = balance::split<OBC>(&mut _vault.coin_b, swap_res.amount_out);
+            balance_a_ret = balance::zero<StableCoinType>();
         } else {
-            balance_a_ret = balance::split<CoinTypeA>(&mut _vault.coin_a, swap_res.amount_out);
-            balance_b_ret = balance::zero<CoinTypeB>();
+            balance_a_ret = balance::split<StableCoinType>(&mut _vault.coin_a, swap_res.amount_out);
+            balance_b_ret = balance::zero<OBC>();
         };
         event::swap(
             vault_id(_vault),
@@ -647,15 +633,15 @@ module obc_system::vault {
             _vault.current_sqrt_price,
             swap_res.steps
         );
-        (balance_a_ret, balance_b_ret, FlashSwapReceipt<CoinTypeA, CoinTypeB> {
+        (balance_a_ret, balance_b_ret, FlashSwapReceipt<StableCoinType> {
             vault_id: vault_id(_vault),
             a2b: _a2b,
             pay_amount: swap_res.amount_out + swap_res.amount_in
         })
     }
 
-    fun swap_in_vault<CoinTypeA, CoinTypeB>(
-        _vault: &mut Vault<CoinTypeA, CoinTypeB>,
+    fun swap_in_vault<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
         _a2b: bool,
         _by_amount_in: bool,
         _sqrt_price_limit: u128,
@@ -725,18 +711,18 @@ module obc_system::vault {
 
     /// Read Functions
     /// vault info
-    public fun vault_id<CoinTypeA, CoinTypeB>(_vault: &Vault<CoinTypeA, CoinTypeB>): ID {
+    public fun vault_id<StableCoinType>(_vault: &Vault<StableCoinType>): ID {
         object::id(_vault)
     }
 
-    public fun vault_current_sqrt_price<CoinTypeA, CoinTypeB>(_vault: &Vault<CoinTypeA, CoinTypeB>): u128 {
+    public fun vault_current_sqrt_price<StableCoinType>(_vault: &Vault<StableCoinType>): u128 {
         _vault.current_sqrt_price
     }
 
-    public fun balances<CoinTypeA, CoinTypeB>(_vault: &Vault<CoinTypeA, CoinTypeB>): (u64, u64) {
+    public fun balances<StableCoinType>(_vault: &Vault<StableCoinType>): (u64, u64) {
         (
-            balance::value<CoinTypeA>(&_vault.coin_a),
-            balance::value<CoinTypeB>(&_vault.coin_b)
+            balance::value<StableCoinType>(&_vault.coin_a),
+            balance::value<OBC>(&_vault.coin_b)
         )
     }
 }

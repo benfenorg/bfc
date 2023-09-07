@@ -1,18 +1,17 @@
 module obc_system::treasury {
-    use std::ascii::into_bytes;
+    use std::ascii::String;
+    use std::type_name;
     use std::type_name::{ get, into_string};
-    use std::vector;
 
-    use sui::obc::OBC;
-    use sui::balance::{Self, Balance, Supply};
-    use sui::object::{Self, ID, UID};
-    use sui::tx_context::TxContext;
-    use sui::dynamic_object_field;
     use sui::bag::{Self, Bag};
+    use sui::balance::{Self, Balance, Supply};
+    use sui::dynamic_object_field;
+    use sui::obc::OBC;
+    use sui::object::{Self, UID};
+    use sui::tx_context::TxContext;
 
     use obc_system::event;
     use obc_system::vault::{Self, Vault};
-    use obc_system::utils;
 
     friend obc_system::swap;
     friend obc_system::obc_system_state_inner;
@@ -51,11 +50,7 @@ module obc_system::treasury {
         _treasury.index
     }
 
-    fun check_vault<CoinTypeA, CoinTypeB>(_treasury: &Treasury, _vault_key: ID) {
-        assert!(
-            utils::cmp<CoinTypeA, CoinTypeB>() < 1,
-            ERR_MUST_BE_ORDER
-        );
+    fun check_vault<StableCoinType>(_treasury: &Treasury, _vault_key: String) {
         assert!(
             dynamic_object_field::exists_(
                 &_treasury.id,
@@ -65,94 +60,73 @@ module obc_system::treasury {
         );
     }
 
-    public fun borrow_vault<CoinTypeA, CoinTypeB>(
+    public fun borrow_vault<StableCoinType>(
         _treasury: &Treasury,
-        _vault_key: ID
-    ): &Vault<CoinTypeA, CoinTypeB> {
-        check_vault<CoinTypeA, CoinTypeB>(_treasury, _vault_key);
-        dynamic_object_field::borrow<ID, Vault<CoinTypeA, CoinTypeB>>(&_treasury.id, _vault_key)
+        _vault_key: String
+    ): &Vault<StableCoinType> {
+        check_vault<StableCoinType>(_treasury, _vault_key);
+        dynamic_object_field::borrow<String, Vault<StableCoinType>>(&_treasury.id, _vault_key)
     }
 
-    public fun borrow_mut_vault<CoinTypeA, CoinTypeB>(
+    public fun borrow_mut_vault<StableCoinType>(
         _treasury: &mut Treasury,
-        _vault_key: ID
-    ): &mut Vault<CoinTypeA, CoinTypeB> {
-        check_vault<CoinTypeA, CoinTypeB>(_treasury, _vault_key);
-        dynamic_object_field::borrow_mut<ID, Vault<CoinTypeA, CoinTypeB>>(&mut _treasury.id, _vault_key)
+        _vault_key: String
+    ): &mut Vault<StableCoinType> {
+        check_vault<StableCoinType>(_treasury, _vault_key);
+        dynamic_object_field::borrow_mut<String, Vault<StableCoinType>>(&mut _treasury.id, _vault_key)
     }
 
-    public(friend) fun create_vault<CoinTypeA, CoinTypeB, SupplyCoinType>(
+    public(friend) fun create_vault<StableCoinType>(
         _treasury: &mut Treasury,
-        _supply: Supply<SupplyCoinType>,
+        _supply: Supply<StableCoinType>,
         _position_number: u32,
         _tick_spacing: u32,
         _initialize_price: u128,
         _ts: u64,
         _ctx: &mut TxContext
     ) {
-        if (utils::cmp<CoinTypeA, CoinTypeB>() < 1) {
-            create_vault_internal<CoinTypeA, CoinTypeB, SupplyCoinType>(
-                _treasury,
-                _supply,
-                _tick_spacing,
-                _position_number,
-                _initialize_price,
-                _ts,
-                _ctx,
-            );
-        } else {
-            create_vault_internal<CoinTypeB, CoinTypeA, SupplyCoinType>(
-                _treasury,
-                _supply,
-                _tick_spacing,
-                _position_number,
-                _initialize_price,
-                _ts,
-                _ctx,
-            )
-        };
+        create_vault_internal<StableCoinType>(
+            _treasury,
+            _supply,
+            _tick_spacing,
+            _position_number,
+            _initialize_price,
+            _ts,
+            _ctx,
+        );
     }
 
-    public(friend) fun init_positions<CoinTypeA, CoinTypeB>(
+    public(friend) fun init_positions<StableCoinType>(
         _treasury: &mut Treasury,
         _tick_spacing: u32,
         _spacing_times: u32,
         _ctx: &mut TxContext,
     ) {
-        let vault_key = generate_vault_key<CoinTypeA, CoinTypeB>(_tick_spacing);
-        if (utils::cmp<CoinTypeA, CoinTypeB>() < 1) {
-            let vault = borrow_mut_vault<CoinTypeA, CoinTypeB>(_treasury, vault_key);
-            vault::init_positions<CoinTypeA, CoinTypeB>(
-                vault,
-                _spacing_times,
-                _ctx,
-            );
-        } else {
-            let vault = borrow_mut_vault<CoinTypeB, CoinTypeA>(_treasury, vault_key);
-            vault::init_positions<CoinTypeB, CoinTypeA>(
-                vault,
-                _spacing_times,
-                _ctx,
-            );
-        }
+        let vault_key = type_name::into_string(type_name::get<StableCoinType>());
+        let vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
+        vault::init_positions<StableCoinType>(
+            vault,
+            _spacing_times,
+            _ctx,
+        );
     }
 
     /// creat vault for ordered A & B
-    fun create_vault_internal<CoinTypeA, CoinTypeB, SupplyCoinType>(
+    fun create_vault_internal<StableCoinType>(
         _treasury: &mut Treasury,
-        _supply: Supply<SupplyCoinType>,
+        _supply: Supply<StableCoinType>,
         _tick_spacing: u32,
         _position_number: u32,
         _initialize_price: u128,
         _ts: u64,
         _ctx: &mut TxContext
     ) {
-        let vault_key = generate_vault_key<CoinTypeA, CoinTypeB>(_tick_spacing);
-        assert!(!dynamic_object_field::exists_<ID>(&_treasury.id, vault_key), ERR_POOL_HAS_REGISTERED);
+        let vault_key = type_name::into_string(type_name::get<StableCoinType>());
+        assert!(!dynamic_object_field::exists_<String>(&_treasury.id, vault_key), ERR_POOL_HAS_REGISTERED);
 
         // index increased
         _treasury.index = _treasury.index + 1;
-        let new_vault = vault::create_vault<CoinTypeA, CoinTypeB>(
+        let new_vault = vault::create_vault<StableCoinType>(
             _treasury.index,
             _tick_spacing,
             _position_number,
@@ -167,34 +141,15 @@ module obc_system::treasury {
             vault_key,
             new_vault,
         );
-        bag::add<ID, Supply<SupplyCoinType>>(&mut _treasury.supplies, vault_key, _supply);
+        bag::add<String, Supply<StableCoinType>>(&mut _treasury.supplies, vault_key, _supply);
 
         event::create_vault(
             vault_id,
             vault_key,
-            into_string(get<CoinTypeA>()),
-            into_string(get<CoinTypeB>()),
+            into_string(get<StableCoinType>()),
+            into_string(get<OBC>()),
             _tick_spacing,
             _treasury.index,
         );
-    }
-
-    public fun generate_vault_key<CoinTypeA, CoinTypeB>(_tick_spacing: u32): ID {
-        let comp = utils::cmp<CoinTypeA, CoinTypeB>();
-        assert!(comp != 1, ERR_THE_SAME_COIN);
-        let bytes = vector::empty<u8>();
-        if (comp < 1) {
-            // a_typename < b_typename
-            vector::append(&mut bytes, into_bytes(into_string(get<CoinTypeA>())));
-            vector::append(&mut bytes, b"-");
-            vector::append(&mut bytes, into_bytes(into_string(get<CoinTypeB>())));
-        } else {
-            vector::append(&mut bytes, into_bytes(into_string(get<CoinTypeB>())));
-            vector::append(&mut bytes, b"-");
-            vector::append(&mut bytes, into_bytes(into_string(get<CoinTypeA>())));
-        };
-        vector::append(&mut bytes, b"-");
-        vector::append(&mut bytes, into_bytes(utils::to_string((_tick_spacing as u128))));
-        object::id_from_bytes(sui::hash::blake2b256(&bytes))
     }
 }

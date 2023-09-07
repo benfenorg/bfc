@@ -161,7 +161,7 @@ module obc_system::obc_system_state_inner {
         );
 
         // create obc-usd pool
-        treasury::create_vault<OBC, USD, USD>(
+        treasury::create_vault<USD>(
             mut_t,
             supply,
             treasury_parameters.position_number,
@@ -171,7 +171,7 @@ module obc_system::obc_system_state_inner {
             ctx,
         );
         // init positions
-        treasury::init_positions<OBC, USD>(
+        treasury::init_positions<USD>(
             mut_t,
             treasury_parameters.tick_spacing,
             treasury_parameters.spacing_times,
