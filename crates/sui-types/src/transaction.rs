@@ -915,6 +915,10 @@ impl TransactionKind {
                     id: OBC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
                 }]
             }
             Self::Genesis(_) => {
