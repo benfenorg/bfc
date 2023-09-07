@@ -18,6 +18,7 @@ module obc_system::obc_system_state_inner {
 
     const OBC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[
+        @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
         @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
         @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
     ];
