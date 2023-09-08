@@ -729,4 +729,8 @@ module obc_system::vault {
             balance::value<OBC>(&_vault.coin_b)
         )
     }
+
+    public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u128 {
+        ((_vault.position_number as u128) + 1) / 2 * (_vault.base_point as u128)
+    }
 }

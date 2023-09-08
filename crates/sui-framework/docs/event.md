@@ -566,7 +566,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, atob: bool, amount_in: u64, amount_out: u64, vault_a_amount: u64, vault_b_amount: u64, before_sqrt_price: u128, after_sqrt_price: u128, steps: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_swap">swap</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, atob: bool, amount_in: u64, amount_out: u64, vault_a_amount: u64, vault_b_amount: u64, before_sqrt_price: u128, after_sqrt_price: u128, steps: u64)
 </code></pre>
 
 
@@ -575,7 +575,7 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_swap">swap</a>(
     vault_id: ID,
     atob: bool, // <b>true</b> a-&gt;b <b>false</b> b-&gt;a
     amount_in: u64,

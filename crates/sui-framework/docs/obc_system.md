@@ -28,6 +28,9 @@
 -  [Function `create_obcdao_action`](#0xc8_obc_system_create_obcdao_action)
 -  [Function `judge_proposal_state`](#0xc8_obc_system_judge_proposal_state)
 -  [Function `modify_proposal`](#0xc8_obc_system_modify_proposal)
+-  [Function `mint`](#0xc8_obc_system_mint)
+-  [Function `redeem`](#0xc8_obc_system_redeem)
+-  [Function `next_epoch_obc_required`](#0xc8_obc_system_next_epoch_obc_required)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -160,9 +163,9 @@
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_update_round">obc_system_state_inner::update_round</a>(inner_state, round);
     //exchange all <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> <b>to</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a>.
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_exchange_all">obc_system_state_inner::request_exchange_all</a>(inner_state, ctx);
-    // //<b>update</b> inner exchange rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-<a href="swap.md#0xc8_swap">swap</a>.
+    // //<b>update</b> inner exchange rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-swap.
     // <b>let</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;STABLE&gt;(ctx);
-    //todo read rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-<a href="swap.md#0xc8_swap">swap</a>.
+    //todo read rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-swap.
     // <b>let</b> rate = 1000000000;
     // <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_update_gas_coin">obc_system_state_inner::request_update_gas_coin</a>(inner_state, &<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, rate);
     // <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>));
@@ -716,6 +719,93 @@ Init exchange pool by add obc coin.
 <pre><code>entry <b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_modify_proposal">modify_proposal</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">obc_system_state_inner::modify_proposal</a>(system_state, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_mint"></a>
+
+## Function `mint`
+
+X treasury  swap obc to stablecoin
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_mint">mint</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_mint">mint</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    coin_obc: Coin&lt;OBC&gt;,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_mint">obc_system_state_inner::mint</a>&lt;StableCoinType&gt;(system_state, coin_obc, amount, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_redeem"></a>
+
+## Function `redeem`
+
+X treasury  swap stablecoin to obc
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_redeem">redeem</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_redeem">redeem</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    coin_sc: Coin&lt;StableCoinType&gt;,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_redeem">obc_system_state_inner::redeem</a>&lt;StableCoinType&gt;(system_state, coin_sc, amount, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_next_epoch_obc_required"></a>
+
+## Function `next_epoch_obc_required`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): u128 {
+   <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_next_epoch_obc_required">obc_system_state_inner::next_epoch_obc_required</a>(system_state)
 }
 </code></pre>
 

@@ -377,7 +377,7 @@ Exchange all stable gas coins to default coins
 ) {
     <b>assert</b>!(<a href="exchange_inner.md#0xc8_exchange_inner_is_active">is_active</a>(pool), <a href="exchange_inner.md#0xc8_exchange_inner_ENotActivePool">ENotActivePool</a>);
     <b>if</b>(pool.stable_token_balance &gt; 0) {
-        // call <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> <a href="swap.md#0xc8_swap">swap</a> interface
+        // call <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> swap interface
         // <b>let</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> = stable_coin::request_swap_obc&lt;CoinType&gt;(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>&lt;CoinType&gt;(pool.stable_pool, ctx), ctx);
         <b>let</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;OBC&gt;(ctx);//pool::swap_token&lt;P,T&gt;(stable_coin::new_dummy&lt;T&gt;(ctx), ctx);
         // store <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> <b>to</b> exchange pool

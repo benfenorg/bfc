@@ -12,6 +12,7 @@ module obc_system::treasury {
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
 
+    use obc_system::usd::USD;
     use obc_system::event;
     use obc_system::vault::{Self, Vault};
 
@@ -248,5 +249,21 @@ module obc_system::treasury {
         );
         transfer_or_delete(balance_a, ctx);
         transfer_or_delete(balance_b, ctx);
+    }
+
+    /// Rebalance
+    public(friend) fun next_epoch_obc_required(treasury: &Treasury): u128 {
+        let total = 0;
+        let times_per_day = (3600 * 24 / treasury.time_interval as u128);
+
+        // USD obc required
+        let usd_v = borrow_vault<USD>(
+            treasury,
+            type_name::into_string(type_name::get<USD>()),
+        );
+        let obc_required_per_time = vault::obc_required(usd_v);
+        total = total + obc_required_per_time * times_per_day;
+
+        total
     }
 }

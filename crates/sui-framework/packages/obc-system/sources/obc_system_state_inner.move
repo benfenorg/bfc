@@ -184,6 +184,11 @@ module obc_system::obc_system_state_inner {
         treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
     }
 
+    /// X-treasury
+    public fun next_epoch_obc_required(self: &ObcSystemStateInner): u128 {
+        treasury::next_epoch_obc_required(&self.treasury)
+    }
+
     public(friend) fun obc_system_stat_parameter(
         position_number: u32,
         tick_spacing: u32,

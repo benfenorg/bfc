@@ -258,4 +258,9 @@ module obc_system::obc_system {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::redeem<StableCoinType>(system_state, coin_sc, amount, ctx);
     }
+
+    public fun next_epoch_obc_required(wrapper: &ObcSystemState): u128 {
+       let system_state = load_system_state(wrapper);
+        obc_system_state_inner::next_epoch_obc_required(system_state)
+    }
 }

@@ -46,4 +46,23 @@ module obc_system::obc_system_tests {
             ctx,
         );
     }
+
+    #[test]
+    fun test_next_epoch_obc_required() {
+        let obc_addr = @0x0;
+        let scenario_val = test_scenario::begin(obc_addr);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+
+        create_sui_system_state_for_testing(ctx);
+        test_scenario::next_tx(scenario, obc_addr);
+        let system_state = test_scenario::take_shared<ObcSystemState>(scenario);
+
+        let amount = obc_system::next_epoch_obc_required(&system_state);
+        // basepoint = 1000 /  position = 9 / timeinterval=4h
+        assert!(amount == 1000*5*6, 100);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
+    }
 }
