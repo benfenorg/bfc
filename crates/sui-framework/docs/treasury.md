@@ -664,8 +664,10 @@ Rebalance
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_deposit">deposit</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _coin_obc: Coin&lt;OBC&gt;) {
     <b>let</b> min_amount = <a href="treasury.md#0xc8_treasury_next_epoch_obc_required">next_epoch_obc_required</a>(_treasury);
     <b>let</b> input = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_obc);
-    <b>assert</b>!(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&input) &gt;= min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <b>let</b> input_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&input);
+    <b>assert</b>!(input_amount &gt;= min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _treasury.obc_balance, input);
+    event::deposit(input_amount);
 }
 </code></pre>
 

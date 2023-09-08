@@ -271,7 +271,9 @@ module obc_system::treasury {
     public(friend) fun deposit(_treasury: &mut Treasury, _coin_obc: Coin<OBC>) {
         let min_amount = next_epoch_obc_required(_treasury);
         let input = coin::into_balance(_coin_obc);
-        assert!(balance::value(&input) >= min_amount, ERR_INSUFFICIENT);
+        let input_amount = balance::value(&input);
+        assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
         balance::join(&mut _treasury.obc_balance, input);
+        event::deposit(input_amount);
     }
 }

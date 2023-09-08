@@ -11,6 +11,7 @@
 -  [Struct `ClosePositionEvent`](#0xc8_event_ClosePositionEvent)
 -  [Struct `LiquidityEvent`](#0xc8_event_LiquidityEvent)
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
+-  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
 -  [Function `init_treasury`](#0xc8_event_init_treasury)
 -  [Function `create_vault`](#0xc8_event_create_vault)
 -  [Function `open_position`](#0xc8_event_open_position)
@@ -18,6 +19,7 @@
 -  [Function `add_liquidity`](#0xc8_event_add_liquidity)
 -  [Function `remove_liquidity`](#0xc8_event_remove_liquidity)
 -  [Function `swap`](#0xc8_event_swap)
+-  [Function `deposit`](#0xc8_event_deposit)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -340,6 +342,33 @@
 
 </details>
 
+<a name="0xc8_event_DepositEvent"></a>
+
+## Struct `DepositEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>amount: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="0xc8_event_init_treasury"></a>
 
 ## Function `init_treasury`
@@ -597,6 +626,34 @@
             before_sqrt_price,
             after_sqrt_price,
             steps
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_deposit"></a>
+
+## Function `deposit`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_deposit">deposit</a>(amount: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_deposit">deposit</a>(amount: u64) {
+    emit(
+        <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> {
+            amount
         }
     )
 }

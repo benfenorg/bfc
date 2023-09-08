@@ -63,6 +63,11 @@ module obc_system::event {
         steps: u64
     }
 
+    // Deposit
+    struct DepositEvent has copy, drop {
+        amount: u64,
+    }
+
     public(friend) fun init_treasury(vaults_id: ID) {
         emit(InitTreasuryEvent { vaults_id })
     }
@@ -185,6 +190,14 @@ module obc_system::event {
                 before_sqrt_price,
                 after_sqrt_price,
                 steps
+            }
+        )
+    }
+
+    public(friend) fun deposit(amount: u64) {
+        emit(
+            DepositEvent {
+                amount
             }
         )
     }
