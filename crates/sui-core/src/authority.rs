@@ -32,6 +32,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
+use std::cell::Cell;
 use sui_config::node::StateDebugDumpConfig;
 use sui_config::NodeConfig;
 use tap::{TapFallible, TapOptional};
@@ -107,7 +108,7 @@ use sui_types::temporary_store::{
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
-use sui_types::obc_system_state::ObcSystemState;
+use sui_types::obc_system_state::{get_obc_system_state, ObcSystemState};
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -249,6 +250,8 @@ pub struct AuthorityMetrics {
 const POSITIVE_INT_BUCKETS: &[f64] = &[
     1., 2., 5., 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000.,
 ];
+
+const PROPOSAL_AGREE_STATE: u8 = 4;
 
 const LATENCY_SEC_BUCKETS: &[f64] = &[
     0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 20.,
@@ -3883,6 +3886,16 @@ impl AuthorityState {
         (next_protocol_version, system_packages)
     }
 
+    async fn get_proposal_state(&self, version_id: u64) -> bool{
+        let mut proposal_result = false;
+        for proposal in self.proposal_state_map.lock().contents.to_vec() {
+            if proposal.key == version_id && proposal.value > 0 {
+                proposal_result = true;
+            }
+        }
+        return proposal_result;
+    }
+
     /// Creates and execute the advance epoch transaction to effects without committing it to the database.
     /// The effects of the change epoch tx are only written to the database after a certified checkpoint has been
     /// formed and executed by CheckpointExecutor.
@@ -3919,14 +3932,14 @@ impl AuthorityState {
         //if proposal fail , empty and next_epoch_system_packages,
         // and if the next_protocol_version is update + 1, roll back next
         // next_epoch_protocol_version
-        let proposal_result = false;
-        if proposal_result {
+        let version = epoch_store.protocol_version().as_u64();
+        let proposal_result = self.get_proposal_state(version + 1).await;
+        if proposal_result == false {
             next_epoch_system_packages.clear();
-            next_epoch_protocol_version = epoch_store.protocol_version()
-        }else{
+            next_epoch_protocol_version = epoch_store.protocol_version();
+        } else{
 
         };
-
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version

@@ -228,7 +228,7 @@ module obc_system::obc_system_state_inner {
         while (i < size) {
             let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
             let cur_status = obc_dao::judge_proposal_state(proposalInfo, current_time);
-            obc_dao::set_current_status_into_dao(&mut wrapper.dao, i, cur_status);
+            obc_dao::set_current_status_into_dao(&mut wrapper.dao, proposalInfo, cur_status);
             i = i + 1;
         };
     }

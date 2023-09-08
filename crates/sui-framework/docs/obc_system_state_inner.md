@@ -707,7 +707,7 @@ Init exchange pool by add obc coin.
     <b>while</b> (i &lt; size) {
         <b>let</b> (_, proposalInfo) = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx">vec_map::get_entry_by_idx</a>(&proposal_record, size - 1);
         <b>let</b> cur_status = <a href="obc_dao.md#0xc8_obc_dao_judge_proposal_state">obc_dao::judge_proposal_state</a>(proposalInfo, current_time);
-        <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">obc_dao::set_current_status_into_dao</a>(&<b>mut</b> wrapper.dao, i, cur_status);
+        <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">obc_dao::set_current_status_into_dao</a>(&<b>mut</b> wrapper.dao, proposalInfo, cur_status);
         i = i + 1;
     };
 }

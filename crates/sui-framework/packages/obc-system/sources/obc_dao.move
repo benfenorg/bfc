@@ -25,6 +25,7 @@ module obc_system::obc_dao {
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_VOTE_QUORUM_RATE: u8 = 50; // 50% default quorum rate
+    const DEFAULT_START_PROPOSAL_VERSION_ID : u64 = 19;
 
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
 
@@ -146,6 +147,7 @@ module obc_system::obc_dao {
         curProposalStatus:  VecMap<u64, u8>,
     }
 
+
     struct OBCDaoAction has copy, drop, store{
         actionId: u64,
         /// Name for the action
@@ -157,12 +159,6 @@ module obc_system::obc_dao {
     }
     public fun setProposalRecord(dao : &mut Dao, record : VecMap<u64, ProposalInfo>){
         dao.proposalRecord = record;
-    }
-
-    public fun insertMap(dao : &mut Dao) {
-        let a : u64 = 0;
-        let b : u8 = 1;
-        vec_map::insert( &mut dao.curProposalStatus, a, b)
     }
 
     public fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
@@ -257,14 +253,14 @@ module obc_system::obc_dao {
 
         let daoInfo = DaoGlobalInfo{
             id: object::new(ctx),
-            next_proposal_id: 0,
+            next_proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
             next_action_id: 0,
             proposal_create_event: ProposalCreatedEvent{
-                proposal_id: 0,
+                proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
                 proposer: DEFAULT_TOKEN_ADDRESS,
             },
             vote_changed_event: VoteChangedEvent{
-                proposal_id: 0,
+                proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
                 voter: DEFAULT_TOKEN_ADDRESS,
                 proposer: DEFAULT_TOKEN_ADDRESS,
                 agree: false,
@@ -1164,12 +1160,12 @@ module obc_system::obc_dao {
 
     }
 
-    public fun set_current_status_into_dao(dao: &mut Dao, index : u64, curProposalStatus: u8) {
-        let flag = vec_map::contains(&dao.curProposalStatus, &index);
+    public fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
+        let flag = vec_map::contains(&dao.curProposalStatus, &proposalInfo.pid);
         if (flag) {
-            vec_map::remove_entry_by_idx(&mut dao.curProposalStatus, index);
+            vec_map::remove_entry_by_idx(&mut dao.curProposalStatus, proposalInfo.pid);
         };
 
-        vec_map::insert(&mut (dao.curProposalStatus), index, curProposalStatus);
+        vec_map::insert(&mut (dao.curProposalStatus), proposalInfo.pid, curProposalStatus);
     }
 }
