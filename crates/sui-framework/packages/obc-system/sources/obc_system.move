@@ -4,6 +4,7 @@ module obc_system::obc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
+    use sui::clock::{Self};
 
     use sui::obc::OBC;
     use sui::object::UID;
@@ -65,6 +66,8 @@ module obc_system::obc_system {
         // let rate = 1000000000;
         // obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
         // balance::destroy_zero(coin::into_balance(stable));
+
+        judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
     public entry fun update_round(
