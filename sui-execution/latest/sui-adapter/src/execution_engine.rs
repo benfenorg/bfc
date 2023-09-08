@@ -655,7 +655,7 @@ mod checked {
     }
     
     pub fn construct_obc_round_pt(
-        params: &ObcRoundParams,
+        round_id: u64,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -663,15 +663,16 @@ mod checked {
 
         let args = vec![
             CallArg::OBC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&params.round_id).unwrap()),
+            //CallArg::SUI_SYSTEM_MUT,
             CallArg::CLOCK_IMM,
+            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
         ] .into_iter()
         .map(|a| builder.input(a))
         .collect::<Result<_, _>>();
 
         arguments.append(&mut args.unwrap());
 
-        info!("Call arguments to obc round transaction: {:?}",params);
+        info!("Call arguments to obc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
             OBC_SYSTEM_PACKAGE_ID,
@@ -696,7 +697,7 @@ mod checked {
         let params = ObcRoundParams {
             round_id:change_round.obc_round
         };
-        let advance_epoch_pt = construct_obc_round_pt(&params)?;
+        let advance_epoch_pt = construct_obc_round_pt(change_round.obc_round)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -710,18 +711,18 @@ mod checked {
         #[cfg(msim)]
         let result = maybe_modify_result(result, change_round.obc_round);
 
-        if result.is_err() {
-            tracing::error!(
-            "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-            result.as_ref().err(),
-            temporary_store.objects(),
-        );
-            temporary_store.drop_writes();
-            // Must reset the storage rebate since we are re-executing.
-            gas_charger.reset_storage_cost_and_rebate();
-
-            temporary_store.advance_obc_round_mode(protocol_config);
-        }
+        // if result.is_err() {
+        //     tracing::error!(
+        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
+        //     result.as_ref().err(),
+        //     temporary_store.objects(),
+        // );
+        //     temporary_store.drop_writes();
+        //     // Must reset the storage rebate since we are re-executing.
+        //     gas_charger.reset_storage_cost_and_rebate();
+        //
+        //     temporary_store.advance_obc_round_mode(protocol_config);
+        // }
         Ok(())
     }
 
@@ -745,6 +746,7 @@ mod checked {
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
+
         let advance_epoch_pt = construct_advance_epoch_pt(&params)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
@@ -847,6 +849,17 @@ mod checked {
                 temporary_store.write_object(new_package, WriteKind::Mutate);
             }
         }
+
+        let advance_epoch_pt = construct_obc_round_pt(change_epoch.epoch)?;
+        let _result = programmable_transactions::execution::execute::<execution_mode::System>(
+            protocol_config,
+            metrics.clone(),
+            move_vm,
+            temporary_store,
+            tx_ctx,
+            gas_charger,
+            advance_epoch_pt,
+        );
 
         Ok(())
     }

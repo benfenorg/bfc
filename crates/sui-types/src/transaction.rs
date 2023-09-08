@@ -864,7 +864,16 @@ impl TransactionKind {
     pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
+                let objs = vec![SharedInputObject{
+                    id: OBC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },SharedInputObject::SUI_SYSTEM_OBJ,SharedInputObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                }];
+                Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
                 Either::Left(Either::Right(iter::once(SharedInputObject {
@@ -880,10 +889,6 @@ impl TransactionKind {
                 let objs = vec![SharedInputObject{
                     id: OBC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },SharedInputObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },SharedInputObject::SUI_SYSTEM_OBJ];
                 Either::Right(Either::Right(objs.into_iter()))
@@ -909,6 +914,14 @@ impl TransactionKind {
                 vec![InputObjectKind::SharedMoveObject {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: OBC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }

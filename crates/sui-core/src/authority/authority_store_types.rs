@@ -107,6 +107,7 @@ pub enum StoreData {
     Package(MovePackage),
     IndirectObject(IndirectObjectMetadata),
     Coin(u64),
+    StableCoin(u64),
 }
 
 /// Metadata of stored moved object
@@ -221,6 +222,13 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                         .balance
                         .value(),
                 )
+            }else if move_obj.type_().is_stable_gas_coin() {
+                StoreData::StableCoin(
+                    Coin::from_bcs_bytes(move_obj.contents())
+                        .expect("failed to deserialize coin")
+                        .balance
+                        .value(),
+                )
             } else {
                 StoreData::Move(move_obj)
             }
@@ -259,6 +267,15 @@ pub(crate) fn try_construct_object(
         (StoreData::Coin(balance), None) => unsafe {
             Data::Move(MoveObject::new_from_execution_with_limit(
                 MoveObjectType::default_gas_coin(),
+                true,
+                object_key.1,
+                bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),
+                u64::MAX,
+            )?)
+        },
+        (StoreData::StableCoin(balance), None) => unsafe {
+            Data::Move(MoveObject::new_from_execution_with_limit(
+                MoveObjectType::stable_gas_coin(),
                 true,
                 object_key.1,
                 bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),

@@ -1,6 +1,7 @@
 module obc_system::tick {
     use std::option;
     use std::option::Option;
+    use std::vector;
 
     use sui::tx_context::TxContext;
 
@@ -10,6 +11,21 @@ module obc_system::tick {
     use obc_system::option_u64::OptionU64;
     use obc_system::skip_list::{Self, SkipList};
     use obc_system::tick_math;
+
+    #[test_only]
+    use obc_system::position;
+    #[test_only]
+    use sui::object::{Self, UID};
+    #[test_only]
+    use sui::transfer;
+    #[test_only]
+    use sui::tx_context;
+    #[test_only]
+    use std::debug;
+    #[test_only]
+    use std::ascii::string;
+    #[test_only]
+    use obc_system::tick_math::get_sqrt_price_at_tick;
 
     friend obc_system::treasury;
     friend obc_system::vault;
@@ -57,10 +73,6 @@ module obc_system::tick {
 
     public fun tick_spacing(_tick_manager: &TickManager): u32 {
         _tick_manager.tick_spacing
-    }
-
-    public fun fetch_ticks(_tick_manager: &TickManager) {
-        abort 0
     }
 
     /// private fun
@@ -279,5 +291,116 @@ module obc_system::tick {
                 skip_list::find_next(&_tick_manager.ticks, score, false)
             }
         }
+    }
+
+    public(friend) fun get_ticks(
+        _tick_manager: &TickManager,
+        _tick_index: I32,
+        _spacing_times: u32,
+        _total_count: u32,
+    ): vector<vector<I32>> {
+        let gap = i32::from_u32(_spacing_times * _tick_manager.tick_spacing);
+        let middle = tick_math::get_prev_valid_tick_index(_tick_index, _tick_manager.tick_spacing);
+        let spacing_times = (_total_count - 1) / 2 * _spacing_times + (_spacing_times + 1) / 2;
+        let lower = i32::sub(
+            middle,
+            i32::from_u32(_tick_manager.tick_spacing * spacing_times),
+        );
+        let count = _total_count;
+        let ticks = vector::empty<vector<I32>>();
+        while (count > 0) {
+            let upper = i32::add(lower, gap);
+            vector::push_back(&mut ticks, vector<I32>[lower, upper]);
+            lower = upper;
+            count = count - 1
+        };
+        ticks
+    }
+
+    #[test_only]
+    struct TestM has key, store {
+        id: UID,
+        m: TickManager,
+    }
+
+    #[test]
+    fun test_get_ticks() {
+        let ctx = tx_context::dummy();
+        let tick_spacing: u32 = 60;
+        let current_index = tick_math::get_tick_at_sqrt_price(100000000000);
+
+        let m = create_tick_manager(tick_spacing, 123456, &mut ctx);
+        let ticks = get_ticks(&m, current_index, 10, 9);
+        transfer::public_transfer(TestM { id: object::new(&mut ctx), m }, tx_context::sender(&ctx));
+
+        // check length
+        assert!(vector::length(&ticks) == 9, 0);
+
+        let middle_index = tick_math::get_prev_valid_tick_index(current_index, tick_spacing);
+        let middle = i32::as_u32(middle_index);
+
+        // check first
+        let first = vector::borrow(&ticks, 0);
+        position::check_position_tick_range(
+            *vector::borrow(first, 0),
+            *vector::borrow(first, 1),
+            tick_spacing,
+        );
+        assert!(
+            i32::eq(
+                *vector::borrow(first, 0),
+                i32::from_u32(middle - tick_spacing * 10 * 5 + 300)
+            ),
+            1,
+        );
+
+        // check last
+        let last = vector::borrow(&ticks, 8);
+        position::check_position_tick_range(
+            *vector::borrow(last, 0),
+            *vector::borrow(last, 1),
+            tick_spacing,
+        );
+        assert!(
+            i32::eq(
+                *vector::borrow(last, 1),
+                i32::from_u32(middle + tick_spacing * 10 * 5 - 300)
+            ),
+            2,
+        );
+    }
+
+    #[test]
+    fun test_fetch_ticks() {
+        let is_debug = false;
+        let ctx = tx_context::dummy();
+        let tick_spacing: u32 = 30;
+        let times = 10;
+        let pnumber = 9;
+        let current_index = tick_math::get_tick_at_sqrt_price(18446744073709551616);
+
+        let m = create_tick_manager(tick_spacing, 123456, &mut ctx);
+        let ticks = get_ticks(&m, current_index, times, pnumber);
+        transfer::public_transfer(TestM { id: object::new(&mut ctx), m }, tx_context::sender(&ctx));
+        if (is_debug) {
+            debug::print(&ticks);
+        };
+        let i = 0;
+        while (i < vector::length(&ticks)) {
+            let current = vector::borrow(&ticks, i);
+
+            let lower = vector::borrow(current, 0);
+            let upper = vector::borrow(current, 1);
+            if (is_debug) {
+                debug::print(&string(b"\n ====== current index"));
+                debug::print(current);
+
+                debug::print(&string(b"\tlower price:"));
+                debug::print(&get_sqrt_price_at_tick(*lower));
+                debug::print(&string(b"\tuppper price:"));
+                debug::print(&get_sqrt_price_at_tick(*upper));
+            };
+            i = i + 1
+        };
     }
 }

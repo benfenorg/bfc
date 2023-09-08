@@ -7,12 +7,11 @@
 
 -  [Resource `SkipList`](#0xc8_skip_list_SkipList)
 -  [Struct `Node`](#0xc8_skip_list_Node)
+-  [Struct `Item`](#0xc8_skip_list_Item)
 -  [Constants](#@Constants_0)
 -  [Function `new`](#0xc8_skip_list_new)
--  [Function `level`](#0xc8_skip_list_level)
 -  [Function `length`](#0xc8_skip_list_length)
 -  [Function `is_empty`](#0xc8_skip_list_is_empty)
--  [Function `head_level`](#0xc8_skip_list_head_level)
 -  [Function `head`](#0xc8_skip_list_head)
 -  [Function `tail`](#0xc8_skip_list_tail)
 -  [Function `destroy_empty`](#0xc8_skip_list_destroy_empty)
@@ -34,10 +33,6 @@
 -  [Function `rand_level`](#0xc8_skip_list_rand_level)
 -  [Function `create_node`](#0xc8_skip_list_create_node)
 -  [Function `drop_node`](#0xc8_skip_list_drop_node)
--  [Function `get_node_score`](#0xc8_skip_list_get_node_score)
--  [Function `get_node_nexts`](#0xc8_skip_list_get_node_nexts)
--  [Function `get_node_prev`](#0xc8_skip_list_get_node_prev)
--  [Function `get_node_value`](#0xc8_skip_list_get_node_value)
 
 
 <pre><code><b>use</b> <a href="">0x1::vector</a>;
@@ -166,6 +161,45 @@ The node of skip list.
 
 </details>
 
+<a name="0xc8_skip_list_Item"></a>
+
+## Struct `Item`
+
+
+
+<pre><code><b>struct</b> <a href="skip_list.md#0xc8_skip_list_Item">Item</a> <b>has</b> drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>n: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>score: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>finded: <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
@@ -242,30 +276,6 @@ Create a new empty skip list.
 
 </details>
 
-<a name="0xc8_skip_list_level"></a>
-
-## Function `level`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_level">level</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">skip_list::SkipList</a>&lt;V&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_level">level</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;): u64 {
-    <b>return</b> list.level
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_skip_list_length"></a>
 
 ## Function `length`
@@ -309,37 +319,6 @@ Returns true if the skip list is empty (if <code>length</code> returns <code>0</
 
 <pre><code><b>public</b> <b>fun</b> <a href="skip_list.md#0xc8_skip_list_is_empty">is_empty</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;): bool {
     list.size == 0
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_skip_list_head_level"></a>
-
-## Function `head_level`
-
-Return the <code>level</code> element head of the skip list
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_head_level">head_level</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">skip_list::SkipList</a>&lt;V&gt;, level: u64): <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_head_level">head_level</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;, level: u64): OptionU64 {
-    <b>if</b> (<a href="skip_list.md#0xc8_skip_list_is_empty">is_empty</a>(list)) {
-        <b>return</b> none()
-    };
-    <b>if</b> (<a href="_length">vector::length</a>(&list.head) &lt; level) {
-        <b>return</b> none()
-    };
-    <b>return</b> *<a href="_borrow">vector::borrow</a>(&list.head, level)
 }
 </code></pre>
 
@@ -886,7 +865,7 @@ Return the prev socre.
 Find the nearest score. 1. score, 2. prev, 3. next
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_find">find</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">skip_list::SkipList</a>&lt;V&gt;, score: u64): <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
+<pre><code><b>fun</b> <a href="skip_list.md#0xc8_skip_list_find">find</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">skip_list::SkipList</a>&lt;V&gt;, score: u64): <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
 </code></pre>
 
 
@@ -895,7 +874,7 @@ Find the nearest score. 1. score, 2. prev, 3. next
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_find">find</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;, score: u64): OptionU64 {
+<pre><code><b>fun</b> <a href="skip_list.md#0xc8_skip_list_find">find</a>&lt;V: store&gt;(list: &<a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;, score: u64): OptionU64 {
     <b>if</b> (list.size == 0) {
         <b>return</b> none()
     };
@@ -972,7 +951,7 @@ Find the nearest score. 1. score, 2. prev, 3. next
 Create a new skip list node
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_create_node">create_node</a>&lt;V: store&gt;(list: &<b>mut</b> <a href="skip_list.md#0xc8_skip_list_SkipList">skip_list::SkipList</a>&lt;V&gt;, score: u64, value: V): (u64, <a href="skip_list.md#0xc8_skip_list_Node">skip_list::Node</a>&lt;V&gt;)
+<pre><code><b>fun</b> <a href="skip_list.md#0xc8_skip_list_create_node">create_node</a>&lt;V: store&gt;(list: &<b>mut</b> <a href="skip_list.md#0xc8_skip_list_SkipList">skip_list::SkipList</a>&lt;V&gt;, score: u64, value: V): (u64, <a href="skip_list.md#0xc8_skip_list_Node">skip_list::Node</a>&lt;V&gt;)
 </code></pre>
 
 
@@ -981,7 +960,7 @@ Create a new skip list node
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_create_node">create_node</a>&lt;V: store&gt;(list: &<b>mut</b> <a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;, score: u64, value: V): (u64, <a href="skip_list.md#0xc8_skip_list_Node">Node</a>&lt;V&gt;) {
+<pre><code><b>fun</b> <a href="skip_list.md#0xc8_skip_list_create_node">create_node</a>&lt;V: store&gt;(list: &<b>mut</b> <a href="skip_list.md#0xc8_skip_list_SkipList">SkipList</a>&lt;V&gt;, score: u64, value: V): (u64, <a href="skip_list.md#0xc8_skip_list_Node">Node</a>&lt;V&gt;) {
     <b>let</b> rand = <a href="random.md#0xc8_random_rand">random::rand</a>(&<b>mut</b> list.<a href="random.md#0xc8_random">random</a>);
     <b>let</b> level = <a href="skip_list.md#0xc8_skip_list_rand_level">rand_level</a>(rand, list);
 
@@ -1030,102 +1009,6 @@ Create a new skip list node
         value,
     } = node;
     value
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_skip_list_get_node_score"></a>
-
-## Function `get_node_score`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_score">get_node_score</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">skip_list::Node</a>&lt;V&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_score">get_node_score</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">Node</a>&lt;V&gt;): u64 {
-    <b>return</b> node.score
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_skip_list_get_node_nexts"></a>
-
-## Function `get_node_nexts`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_nexts">get_node_nexts</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">skip_list::Node</a>&lt;V&gt;): <a href="">vector</a>&lt;<a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_nexts">get_node_nexts</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">Node</a>&lt;V&gt;): <a href="">vector</a>&lt;OptionU64&gt; {
-    <b>return</b> node.nexts
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_skip_list_get_node_prev"></a>
-
-## Function `get_node_prev`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_prev">get_node_prev</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">skip_list::Node</a>&lt;V&gt;): <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_prev">get_node_prev</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">Node</a>&lt;V&gt;): OptionU64 {
-    <b>return</b> node.prev
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_skip_list_get_node_value"></a>
-
-## Function `get_node_value`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_value">get_node_value</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">skip_list::Node</a>&lt;V&gt;): &V
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="skip_list.md#0xc8_skip_list_get_node_value">get_node_value</a>&lt;V: store&gt;(node: &<a href="skip_list.md#0xc8_skip_list_Node">Node</a>&lt;V&gt;): &V {
-    <b>return</b> &node.value
 }
 </code></pre>
 
