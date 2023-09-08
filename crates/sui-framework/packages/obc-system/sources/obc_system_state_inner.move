@@ -142,6 +142,7 @@ module obc_system::obc_system_state_inner {
         exchange_inner::add_obc_to_pool(&mut self.exchange_pool, coin)
     }
 
+    /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<USD>,
         parameters: ObcSystemParameters,
@@ -161,6 +162,26 @@ module obc_system::obc_system_state_inner {
             ctx,
         );
         t
+    }
+
+    /// swap obc to stablecoin
+    public(friend) fun mint<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        coin_obc: Coin<OBC>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::mint<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx);
+    }
+
+    /// swap stablecoin to obc
+    public(friend) fun redeem<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        coin_sc: Coin<StableCoinType>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
     }
 
     public(friend) fun obc_system_stat_parameter(

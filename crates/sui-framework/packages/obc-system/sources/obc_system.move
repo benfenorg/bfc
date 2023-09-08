@@ -236,4 +236,26 @@ module obc_system::obc_system {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::modify_proposal(system_state, index, clock);
     }
+
+    /// X treasury  swap obc to stablecoin
+    public entry fun mint<StableCoinType>(
+        wrapper: &mut ObcSystemState,
+        coin_obc: Coin<OBC>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let system_state = load_system_state_mut(wrapper);
+        obc_system_state_inner::mint<StableCoinType>(system_state, coin_obc, amount, ctx);
+    }
+
+    /// X treasury  swap stablecoin to obc
+    public entry fun redeem<StableCoinType>(
+        wrapper: &mut ObcSystemState,
+        coin_sc: Coin<StableCoinType>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let system_state = load_system_state_mut(wrapper);
+        obc_system_state_inner::redeem<StableCoinType>(system_state, coin_sc, amount, ctx);
+    }
 }
