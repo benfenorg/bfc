@@ -37,6 +37,7 @@
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `balances`](#0xc8_vault_balances)
+-  [Function `obc_required`](#0xc8_vault_obc_required)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -1279,7 +1280,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
 </code></pre>
 
 
@@ -1288,7 +1289,7 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _coin_a: Coin&lt;StableCoinType&gt;,
     _coin_b: Coin&lt;OBC&gt;,
@@ -1617,6 +1618,30 @@ vault info
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;StableCoinType&gt;(&_vault.coin_a),
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&_vault.coin_b)
     )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_obc_required"></a>
+
+## Function `obc_required`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+    ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
 }
 </code></pre>
 
