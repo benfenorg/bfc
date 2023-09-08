@@ -31,15 +31,17 @@ module obc_system::treasury {
         supplies: Bag,
         /// Vault index
         index: u64,
+        time_interval: u32,
     }
 
     // call in obc_system
-    public(friend) fun create_treasury(ctx: &mut TxContext): Treasury {
+    public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {
             id: object::new(ctx),
             obc_balance: balance::zero<OBC>(),
             supplies: bag::new(ctx),
             index: 0,
+            time_interval: time_interval,
         };
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
@@ -82,6 +84,7 @@ module obc_system::treasury {
         _position_number: u32,
         _tick_spacing: u32,
         _initialize_price: u128,
+        _base_point: u64,
         _ts: u64,
         _ctx: &mut TxContext
     ) {
@@ -91,21 +94,35 @@ module obc_system::treasury {
             _tick_spacing,
             _position_number,
             _initialize_price,
+            _base_point,
             _ts,
             _ctx,
         );
     }
 
-    public(friend) fun init_positions<StableCoinType>(
+    public(friend) fun init_vault_with_positions<StableCoinType>(
         _treasury: &mut Treasury,
+        _supply: Supply<StableCoinType>,
+        _initialize_price: u128,
+        _base_point: u64,
+        _position_number: u32,
         _tick_spacing: u32,
         _spacing_times: u32,
+        _ts: u64,
         _ctx: &mut TxContext,
     ) {
-        let vault_key = type_name::into_string(type_name::get<StableCoinType>());
-        let vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
+        let vault_key = create_vault_internal<StableCoinType>(
+            _treasury,
+            _supply,
+            _tick_spacing,
+            _position_number,
+            _initialize_price,
+            _base_point,
+            _ts,
+            _ctx,
+        );
         vault::init_positions<StableCoinType>(
-            vault,
+            borrow_mut_vault<StableCoinType>(_treasury, vault_key),
             _spacing_times,
             _ctx,
         );
@@ -118,9 +135,10 @@ module obc_system::treasury {
         _tick_spacing: u32,
         _position_number: u32,
         _initialize_price: u128,
+        _base_point: u64,
         _ts: u64,
         _ctx: &mut TxContext
-    ) {
+    ): String {
         let vault_key = type_name::into_string(type_name::get<StableCoinType>());
         assert!(!dynamic_object_field::exists_<String>(&_treasury.id, vault_key), ERR_POOL_HAS_REGISTERED);
 
@@ -131,6 +149,7 @@ module obc_system::treasury {
             _tick_spacing,
             _position_number,
             _initialize_price,
+            _base_point,
             _ts,
             _ctx,
         );
@@ -151,5 +170,6 @@ module obc_system::treasury {
             _tick_spacing,
             _treasury.index,
         );
+        vault_key
     }
 }

@@ -106,6 +106,7 @@ use sui_types::temporary_store::{
 };
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
+use sui_types::collection_types::VecMap;
 use sui_types::obc_system_state::ObcSystemState;
 use typed_store::Map;
 
@@ -608,6 +609,8 @@ pub struct AuthorityState {
 
     /// Config for state dumping on forks
     debug_dump_config: StateDebugDumpConfig,
+
+    pub proposal_state_map: Mutex<VecMap<u64, u8>>
 }
 
 /// The authority state encapsulates all state, drives execution, and ensures safety.
@@ -992,7 +995,7 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, effects, execution_error_opt) = match self
+        let (inner_temporary_store, _, effects, execution_error_opt) = match self
             .prepare_certificate(&execution_guard, certificate, epoch_store)
             .await
         {
@@ -1142,6 +1145,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
         InnerTemporaryStore,
+        VecMap<u64, u8>,
         TransactionEffects,
         Option<ExecutionError>,
     )> {
@@ -1168,6 +1172,8 @@ impl AuthorityState {
             tx_digest,
             protocol_config,
         );
+        let prposal_map = temporary_store.get_obc_system_state_temporary();
+
         let transaction_data = &certificate.data().intent_message().value;
         let (kind, signer, gas) = transaction_data.execution_parts();
         let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
@@ -1194,7 +1200,7 @@ impl AuthorityState {
                 transaction_dependencies,
             );
 
-        Ok((inner_temp_store, effects, execution_error_opt.err()))
+        Ok((inner_temp_store, prposal_map, effects, execution_error_opt.err()))
     }
 
     pub async fn dry_exec_transaction(
@@ -2026,6 +2032,9 @@ impl AuthorityState {
             transaction_deny_config,
             certificate_deny_config,
             debug_dump_config,
+            proposal_state_map: Mutex::new(VecMap{
+                contents: vec![],
+            }),
         });
 
         // Start a task to execute ready certificates.
@@ -3981,9 +3990,13 @@ impl AuthorityState {
             .database
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
-        let (temporary_store, effects, _execution_error_opt) = self
+        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
+
+        let mut tmp = self.proposal_state_map.lock();
+        tmp.contents = proposal_map.contents;
+
         let system_obj = temporary_store
             .get_sui_system_state_object()
             .expect("change epoch tx must write to system object");
@@ -4029,6 +4042,7 @@ impl AuthorityState {
         let tx_digest = executable_tx.digest();
 
         info!("round txn digest is {:?}",tx_digest);
+        let _tx_lock = epoch_store.acquire_tx_lock(tx_digest).await;
 
         if self
             .database
@@ -4050,7 +4064,7 @@ impl AuthorityState {
             "Try to execute transaction: {:?}",tx_digest
         );
 
-        let (store, effects, _execution_error_opt) = self
+        let (store, _, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
@@ -4065,7 +4079,7 @@ impl AuthorityState {
                 err
             })?;
 
-        warn!(
+        info!(
             "Effects summary of the change obc round transaction: {:?}",
             effects.summary_for_debug()
         );
