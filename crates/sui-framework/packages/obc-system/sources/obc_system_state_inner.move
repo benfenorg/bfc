@@ -220,7 +220,7 @@ module obc_system::obc_system_state_inner {
         let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
         if (size == 0) {
-            return;
+            return
         };
 
         let i = 0;
@@ -236,7 +236,7 @@ module obc_system::obc_system_state_inner {
         let proposal_record = obc_dao::getProposalRecord(&mut system_state.dao);
         let size: u64 = vec_map::size(&proposal_record);
         if (size == 0) {
-            return;
+            return
         };
         let (_, proposalInfo) = vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
         obc_dao::modify_proposal(proposalInfo, index, clock);

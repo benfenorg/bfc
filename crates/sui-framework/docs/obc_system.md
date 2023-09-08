@@ -195,6 +195,7 @@
 	<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ){
+    //round should be using the epoch value...
     <a href="obc_system.md#0xc8_obc_system_obc_round">obc_round</a>(wrapper, 200, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
