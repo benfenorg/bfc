@@ -23,6 +23,7 @@ module obc_system::obc_system_state_inner {
         @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
         @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
         @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+        @0x2f76370f2b5f77bcaa47f4e65be0d762738bfbe7c29e374a72bf4d1b5960b47e,
     ];
 
     spec module { pragma verify = false; }
@@ -227,6 +228,7 @@ module obc_system::obc_system_state_inner {
             let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
             let cur_status = obc_dao::judge_proposal_state(proposalInfo, current_time);
             obc_dao::set_current_status_into_dao(&mut wrapper.dao, i, cur_status);
+            i = i + 1;
         };
     }
 
