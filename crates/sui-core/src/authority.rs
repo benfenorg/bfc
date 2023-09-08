@@ -3888,6 +3888,7 @@ impl AuthorityState {
 
     async fn get_proposal_state(&self, version_id: u64) -> bool{
         let mut proposal_result = false;
+        // todo judge proposal.value
         for proposal in self.proposal_state_map.lock().contents.to_vec() {
             if proposal.key == version_id && proposal.value > 0 {
                 proposal_result = true;
