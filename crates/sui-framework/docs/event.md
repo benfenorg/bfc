@@ -78,7 +78,7 @@
 
 </dd>
 <dt>
-<code>vault_key: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+<code>vault_key: <a href="_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -135,7 +135,7 @@
 
 </dd>
 <dt>
-<code><a href="position.md#0xc8_position">position</a>: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+<code><a href="position.md#0xc8_position">position</a>: u64</code>
 </dt>
 <dd>
 
@@ -180,7 +180,7 @@
 
 </dd>
 <dt>
-<code><a href="position.md#0xc8_position">position</a>: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+<code><a href="position.md#0xc8_position">position</a>: u64</code>
 </dt>
 <dd>
 
@@ -213,7 +213,7 @@
 
 </dd>
 <dt>
-<code><a href="position.md#0xc8_position">position</a>: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+<code><a href="position.md#0xc8_position">position</a>: u64</code>
 </dt>
 <dd>
 
@@ -370,7 +370,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, vault_key: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, coin_type_a: <a href="_String">ascii::String</a>, coin_type_b: <a href="_String">ascii::String</a>, tick_spacing: u32, index: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, vault_key: <a href="_String">ascii::String</a>, coin_type_a: <a href="_String">ascii::String</a>, coin_type_b: <a href="_String">ascii::String</a>, tick_spacing: u32, index: u64)
 </code></pre>
 
 
@@ -381,7 +381,7 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(
     vault_id: ID,
-    vault_key: ID,
+    vault_key: String,
     coin_type_a: String,
     coin_type_b: String,
     tick_spacing: u32,
@@ -408,7 +408,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_open_position">open_position</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_open_position">open_position</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: u64, tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>)
 </code></pre>
 
 
@@ -419,7 +419,7 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_open_position">open_position</a>(
     vault_id: ID,
-    position_id: ID,
+    position_id: u64,
     tick_lower: I32,
     tick_upper: I32
 ) {
@@ -444,7 +444,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_close_position">close_position</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_close_position">close_position</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: u64)
 </code></pre>
 
 
@@ -455,7 +455,7 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_close_position">close_position</a>(
     vault_id: ID,
-    position_id: ID
+    position_id: u64
 ) {
     emit(
         <a href="event.md#0xc8_event_ClosePositionEvent">ClosePositionEvent</a> {
@@ -476,7 +476,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_add_liquidity">add_liquidity</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, liquidity: u128, after_liquidity: u128, amount_a: u64, amount_b: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_add_liquidity">add_liquidity</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: u64, tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, liquidity: u128, after_liquidity: u128, amount_a: u64, amount_b: u64)
 </code></pre>
 
 
@@ -487,7 +487,7 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_add_liquidity">add_liquidity</a>(
     vault_id: ID,
-    position_id: ID,
+    position_id: u64,
     tick_lower: I32,
     tick_upper: I32,
     liquidity: u128,
@@ -521,7 +521,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_remove_liquidity">remove_liquidity</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, liquidity: u128, after_liquidity: u128, amount_a: u64, amount_b: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_remove_liquidity">remove_liquidity</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, position_id: u64, tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, liquidity: u128, after_liquidity: u128, amount_a: u64, amount_b: u64)
 </code></pre>
 
 
@@ -532,7 +532,7 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_remove_liquidity">remove_liquidity</a>(
     vault_id: ID,
-    position_id: ID,
+    position_id: u64,
     tick_lower: I32,
     tick_upper: I32,
     liquidity: u128,

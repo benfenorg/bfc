@@ -9,7 +9,11 @@ module obc_system::skip_list {
     use obc_system::random::{Self, Random};
 
     #[test_only]
-    friend obc_system::skip_list_test;
+    use std::debug;
+    #[test_only]
+    use sui::transfer;
+    #[test_only]
+    use sui::tx_context;
 
     const ENodeAlreadyExist: u64 = 0;
     const ENodeDoesNotExist: u64 = 1;
@@ -65,10 +69,6 @@ module obc_system::skip_list {
         list
     }
 
-    public(friend) fun level<V: store>(list: &SkipList<V>): u64 {
-        return list.level
-    }
-
     /// Return the length of the skip list.
     public fun length<V: store>(list: &SkipList<V>): u64 {
         list.size
@@ -77,17 +77,6 @@ module obc_system::skip_list {
     /// Returns true if the skip list is empty (if `length` returns `0`)
     public fun is_empty<V: store>(list: &SkipList<V>): bool {
         list.size == 0
-    }
-
-    /// Return the `level` element head of the skip list
-    public(friend) fun head_level<V: store>(list: &SkipList<V>, level: u64): OptionU64 {
-        if (is_empty(list)) {
-            return none()
-        };
-        if (vector::length(&list.head) < level) {
-            return none()
-        };
-        return *vector::borrow(&list.head, level)
     }
 
     /// Return the head of the skip list.
@@ -283,7 +272,7 @@ module obc_system::skip_list {
     }
 
     /// Find the nearest score. 1. score, 2. prev, 3. next
-    public(friend) fun find<V: store>(list: &SkipList<V>, score: u64): OptionU64 {
+    fun find<V: store>(list: &SkipList<V>, score: u64): OptionU64 {
         if (list.size == 0) {
             return none()
         };
@@ -329,7 +318,7 @@ module obc_system::skip_list {
     }
 
     /// Create a new skip list node
-    public(friend) fun create_node<V: store>(list: &mut SkipList<V>, score: u64, value: V): (u64, Node<V>) {
+    fun create_node<V: store>(list: &mut SkipList<V>, score: u64, value: V): (u64, Node<V>) {
         let rand = random::rand(&mut list.random);
         let level = rand_level(rand, list);
 
@@ -360,19 +349,310 @@ module obc_system::skip_list {
         value
     }
 
-    public(friend) fun get_node_score<V: store>(node: &Node<V>): u64 {
-        return node.score
+    // tests
+    // ============================================================================================
+    #[test_only]
+    #[allow(unused_function)]
+    fun print_skip_list<V: store>(list: &SkipList<V>) {
+        debug::print(list);
+        if (length(list) == 0) {
+            return
+        };
+        let next_score = vector::borrow(&list.head, 0);
+        while (is_some(next_score)) {
+            let node = borrow_node(list, option_u64::borrow(next_score));
+            next_score = vector::borrow(&node.nexts, 0);
+            debug::print(node);
+        }
     }
 
-    public(friend) fun get_node_nexts<V: store>(node: &Node<V>): vector<OptionU64> {
-        return node.nexts
+    #[test_only]
+    fun check_skip_list<V: store>(list: &SkipList<V>) {
+        if (list.level == 0) {
+            assert!(length(list) == 0, 0);
+            return
+        };
+
+        // Check level 0
+        let (
+            size,
+            opt_next_score,
+            tail,
+            prev,
+            current_score,
+        ) = (
+            0,
+            vector::borrow(&list.head, 0),
+            none(),
+            none(),
+            none()
+        );
+        while (is_some(opt_next_score)) {
+            let next_score = option_u64::borrow(opt_next_score);
+            let next_node = borrow_node(list, next_score);
+            if (is_some(&current_score)) {
+                assert!(next_score > option_u64::borrow(&current_score), 0);
+            };
+            assert!(next_node.score == next_score, 0);
+            if (is_none(&prev)) {
+                assert!(is_none(&next_node.prev), 0)
+            } else {
+                assert!(option_u64::borrow(&next_node.prev) == option_u64::borrow(&prev), 0);
+            };
+            prev = some(next_node.score);
+            tail = some(next_node.score);
+            //current_score = next_node.score;
+            swap_or_fill(&mut current_score, next_node.score);
+            size = size + 1;
+            opt_next_score = vector::borrow(&next_node.nexts, 0);
+        };
+        if (is_none(&tail)) {
+            assert!(is_none(&list.tail), 0);
+        } else {
+            assert!(option_u64::borrow(&list.tail) == option_u64::borrow(&tail), 0);
+        };
+        assert!(size == length(list), 0);
+
+        // Check indexer levels
+        let l = list.level - 1;
+        while (l > 0) {
+            let opt_next_l_score = vector::borrow(&list.head, l);
+            let opt_next_0_score = vector::borrow(&list.head, 0);
+            while (is_some(opt_next_0_score)) {
+                let next_0_score = option_u64::borrow(opt_next_0_score);
+                let node = borrow_node(list, next_0_score);
+                if (is_none(opt_next_l_score) || option_u64::borrow(opt_next_l_score) > node.score) {
+                    assert!(vector::length(&node.nexts) <= l, 0);
+                } else {
+                    if (vector::length(&node.nexts) > l) {
+                        assert!(option_u64::borrow(opt_next_l_score) == node.score, 0);
+                        opt_next_l_score = vector::borrow(&node.nexts, l);
+                    }
+                };
+                opt_next_0_score = vector::borrow(&node.nexts, 0);
+            };
+            l = l - 1;
+        };
     }
 
-    public(friend) fun get_node_prev<V: store>(node: &Node<V>): OptionU64 {
-        return node.prev
+    #[test_only]
+    fun get_all_socres<V: store>(list: &SkipList<V>): vector<u64> {
+        let (opt_next_score, scores) = (vector::borrow(&list.head, 0), vector::empty<u64>());
+        while (is_some(opt_next_score)) {
+            let next_score = option_u64::borrow(opt_next_score);
+            let next_node = borrow_node(list, next_score);
+            vector::push_back(&mut scores, next_node.score);
+            opt_next_score = vector::borrow(&next_node.nexts, 0);
+        };
+        scores
     }
 
-    public(friend) fun get_node_value<V: store>(node: &Node<V>): &V {
-        return &node.value
+    #[test]
+    fun test_new() {
+        let ctx = &mut tx_context::dummy();
+        let skip_list = new<u256>(16, 2, 12345, ctx);
+        check_skip_list(&skip_list);
+        transfer::transfer(skip_list, tx_context::sender(ctx));
+    }
+
+    #[test]
+    fun test_create_node() {
+        let ctx = &mut tx_context::dummy();
+        let skip_list = new<u256>(16, 2, 12345, ctx);
+        let n = 0;
+        while (n < 10) {
+            let (_, node) = create_node(&mut skip_list, n, 0);
+            let Node { score: _, value: _, nexts: _, prev: _ } = node;
+            n = n + 1;
+        };
+        check_skip_list(&skip_list);
+        transfer::transfer(skip_list, tx_context::sender(ctx));
+    }
+
+    #[test_only]
+    fun add_node_for_test<V: store + copy + drop>(list: &mut SkipList<V>, size: u64, seed: u64, value: V) {
+        let random = random::new(seed);
+        let n = 0;
+        while (n < size) {
+            let score = random::rand_n(&mut random, 1000000);
+            if (contains(list, score)) {
+                continue
+            };
+            insert(list, score, value);
+            n = n + 1;
+        };
+        check_skip_list(list);
+    }
+
+    #[test_only]
+    fun new_list_for_test<V: store + copy + drop>(
+        max_leveL: u64, list_p: u64, size: u64, seed: u64, value: V, ctx: &mut TxContext
+    ): SkipList<V> {
+        let list = new<V>(max_leveL, list_p, seed, ctx);
+        add_node_for_test(&mut list, size, seed, value);
+        list
+    }
+
+    #[test]
+    fun test_insert() {
+        let ctx = &mut tx_context::dummy();
+        let list = new_list_for_test<u256>(16, 2, 30, 1234, 0, ctx);
+        transfer::transfer(list, tx_context::sender(ctx));
+    }
+
+    #[test]
+    fun test_insert_bench() {
+        let ctx = &mut tx_context::dummy();
+        let list = new<u256>(16, 2, 10, ctx);
+        let n = 0;
+        while (n < 5) {
+            insert(&mut list, 0 + n, 0);
+            insert(&mut list, 100 - n, 0);
+            insert(&mut list, 10 - n, 0);
+            n = n + 1;
+        };
+        debug::print(&list.level);
+        transfer::transfer(list, tx_context::sender(ctx));
+    }
+
+    struct Item has drop, store {
+        n: u64,
+        score: u64,
+        finded: OptionU64
+    }
+
+    #[test]
+    fun test_find() {
+        let ctx = &mut tx_context::dummy();
+        let list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
+        let scores = get_all_socres(&list);
+
+        let length = vector::length(&scores);
+        let n = length;
+        while (n > 0) {
+            let score = *vector::borrow(&scores, n - 1);
+            let finded = find_prev(&list, score, true);
+            assert!((is_some(&finded) && (option_u64::borrow(&finded) == score)), 0);
+            let finded = find_prev(&list, score + 1, true);
+            assert!(
+                (is_some(&finded) && (option_u64::borrow(&finded) == score)) ||
+                    (is_some(&finded) && (option_u64::borrow(&finded) == score + 1)),
+                0
+            );
+
+            let finded = find_prev(&list, score, false);
+            if (n >= 2) {
+                assert!((is_some(&finded) && (option_u64::borrow(&finded) == *vector::borrow(&scores, n - 2))), 0);
+            } else {
+                assert!(is_none(&finded), 0);
+            };
+
+            let finded = find_next(&list, score, true);
+            assert!((is_some(&finded) && (option_u64::borrow(&finded) == score)), 0);
+
+            let finded = find_next(&list, score - 1, true);
+            assert!(
+                (is_some(&finded) && (option_u64::borrow(&finded) == score)) ||
+                    (is_some(&finded) && (option_u64::borrow(&finded) == (score - 1))),
+                0
+            );
+
+            let finded = find_next(&list, score, false);
+            if (n < length) {
+                assert!((is_some(&finded) && (option_u64::borrow(&finded) == *vector::borrow(&scores, n))), 0);
+            } else {
+                assert!(is_none(&finded), 0);
+            };
+            n = n - 1;
+        };
+        transfer::transfer(list, tx_context::sender(ctx));
+    }
+
+    #[test]
+    fun test_find_bench() {
+        let ctx = &mut tx_context::dummy();
+        let list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
+        let random = random::new(12345);
+        let n = 0;
+        while (n < 10) {
+            let score = random::rand_n(&mut random, 1000000);
+            if ((n % 3) == 0) {
+                score = score + 1;
+            };
+            find(&list, score);
+            _ = score;
+            n = n + 1;
+        };
+        transfer::transfer(list, tx_context::sender(ctx));
+    }
+
+    #[test]
+    fun test_find_next_bench() {
+        let ctx = &mut tx_context::dummy();
+        let list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
+        let n = 0;
+        let finded = find_next(&list, 9, true);
+        while (n < 1 && is_some(&finded)) {
+            let node = borrow_node(&list, option_u64::borrow(&finded));
+            finded = next_score(node);
+            n = n + 1;
+        };
+        transfer::transfer(list, tx_context::sender(ctx));
+    }
+
+    #[test]
+    fun test_remove() {
+        let ctx = &mut tx_context::dummy();
+        let list = new_list_for_test<u256>(16, 2, 10, 5678, 0, ctx);
+        let scores = get_all_socres(&list);
+        let (n, length) = (0, vector::length(&scores));
+        let start = length / 2;
+        while (n <= start) {
+            let s1 = start - n;
+            let s2 = start + n;
+            if (s1 >= 0) {
+                remove(&mut list, *vector::borrow(&scores, s1));
+            };
+            if (s2 != s1 && s2 < length) {
+                remove(&mut list, *vector::borrow(&scores, s2));
+            };
+            n = n + 1;
+        };
+        check_skip_list(&list);
+
+        add_node_for_test(&mut list, 20, 7890, 0);
+        let scores = get_all_socres(&list);
+        let (n, length) = (0, vector::length(&scores));
+        let skip = 0;
+        while (n < length) {
+            remove(&mut list, *vector::borrow(&scores, n));
+            skip = skip + 1;
+            n = n + skip;
+        };
+        check_skip_list(&list);
+
+        transfer::transfer(list, tx_context::sender(ctx));
+    }
+
+    #[test]
+    fun test_find_in_empty_list() {
+        let ctx = &mut tx_context::dummy();
+        let list = new<u256>(16, 2, 1234, ctx);
+        let opt_score = find(&list, 1000);
+        assert!(is_none(&opt_score), 0);
+
+        let opt_score = find_prev(&list, 1000, true);
+        assert!(is_none(&opt_score), 0);
+
+        let opt_score = find_prev(&list, 1000, false);
+        assert!(is_none(&opt_score), 0);
+
+        let opt_score = find_next(&list, 1000, true);
+        assert!(is_none(&opt_score), 0);
+
+        let opt_score = find_next(&list, 1000, false);
+        assert!(is_none(&opt_score), 0);
+
+        transfer::transfer(list, tx_context::sender(ctx));
     }
 }

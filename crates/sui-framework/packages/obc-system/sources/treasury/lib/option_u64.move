@@ -51,4 +51,24 @@ module obc_system::option_u64 {
     public fun is_some_and_lte(opt: &OptionU64, v: u64): bool {
         (!opt.is_none) && (opt.v <= v)
     }
+
+    #[test]
+    fun test_opt() {
+        let a = some(10000u64);
+        let n = 0;
+        while (n < 10000) {
+            _ = borrow(&a);
+            n = n + 1;
+        };
+    }
+
+    #[test]
+    fun test_option_contains() {
+        let a = some(100000);
+        let n = 0;
+        while (n < 10000) {
+            contains(&a, 100000);
+            n = n + 1;
+        }
+    }
 }
