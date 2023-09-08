@@ -68,6 +68,13 @@ module obc_system::event {
         amount: u64,
     }
 
+    struct UpdateStateEvent has copy, drop {
+        current_sqrt_price: u128,
+        last_sqrt_price: u128,
+        state: u8,
+        state_counter: u32,
+    }
+
     public(friend) fun init_treasury(vaults_id: ID) {
         emit(InitTreasuryEvent { vaults_id })
     }
@@ -198,6 +205,22 @@ module obc_system::event {
         emit(
             DepositEvent {
                 amount
+            }
+        )
+    }
+
+    public(friend) fun update_state(
+        current_sqrt_price: u128,
+        last_sqrt_price: u128,
+        state: u8,
+        state_counter: u32,
+    ) {
+        emit(
+            UpdateStateEvent {
+                current_sqrt_price,
+                last_sqrt_price,
+                state,
+                state_counter,
             }
         )
     }

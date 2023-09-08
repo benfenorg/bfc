@@ -38,6 +38,7 @@
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `obc_required`](#0xc8_vault_obc_required)
+-  [Function `check_state`](#0xc8_vault_check_state)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -94,6 +95,12 @@
 </dd>
 <dt>
 <code>state_counter: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>last_sqrt_price: u128</code>
 </dt>
 <dd>
 
@@ -515,16 +522,18 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
     <b>let</b> valid_index = <a href="tick_math.md#0xc8_tick_math_get_next_valid_tick_index">tick_math::get_next_valid_tick_index</a>(current_tick_index, _tick_spacing);
     <b>let</b> uid = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(_ctx);
     <b>let</b> pid = <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_inner">object::uid_to_inner</a>(&uid);
+    <b>let</b> current_sqrt_price = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(valid_index);
     <a href="vault.md#0xc8_vault_Vault">Vault</a> {
         id: uid,
         position_number: _position_number,
         state: 0,
         state_counter: 0,
+        last_sqrt_price: current_sqrt_price,
         coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;(),
         coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;(),
         tick_spacing: _tick_spacing,
         liquidity: 0,
-        current_sqrt_price: <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(valid_index),
+        current_sqrt_price,
         current_tick_index: valid_index,
         tick_manager: <a href="tick.md#0xc8_tick_create_tick_manager">tick::create_tick_manager</a>(_tick_spacing, _ts, _ctx),
         position_manager: <a href="position.md#0xc8_position_create_position_manager">position::create_position_manager</a>(pid, _tick_spacing, _ctx),
@@ -1642,6 +1651,64 @@ vault info
 
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
     ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_check_state"></a>
+
+## Function `check_state`
+
+State checker
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_check_state">check_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u32
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_check_state">check_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u32 {
+    <b>let</b> price = _vault.current_sqrt_price;
+    <b>let</b> last_price = _vault.last_sqrt_price;
+    <b>if</b> (price &lt; last_price) {
+        // down
+        <b>if</b> (_vault.state == 1) {
+            _vault.state_counter = _vault.state_counter + 1;
+        } <b>else</b> {
+            // reset counter = 0  & set state = down
+            _vault.state_counter = 0;
+            _vault.state = 1;
+        }
+    } <b>else</b> <b>if</b> (price &gt; last_price) {
+        // up
+        <b>if</b> (_vault.state == 2) {
+            _vault.state_counter = _vault.state_counter + 1;
+        } <b>else</b> {
+            // reset counter = 0  & set state = up
+            _vault.state_counter = 0;
+            _vault.state = 2;
+        }
+    } <b>else</b> {
+        // equal
+        _vault.state = 0;
+        _vault.state_counter = 0;
+    };
+
+    _vault.last_sqrt_price = price;
+    event::update_state(
+        price,
+        last_price,
+        _vault.state,
+        _vault.state_counter,
+    );
+    _vault.state_counter
 }
 </code></pre>
 

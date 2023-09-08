@@ -33,6 +33,8 @@ module obc_system::treasury {
         /// Vault index
         index: u64,
         time_interval: u32,
+        updated_at: u64,
+        init: bool,
     }
 
     // call in obc_system
@@ -43,6 +45,8 @@ module obc_system::treasury {
             supplies: bag::new(ctx),
             index: 0,
             time_interval: time_interval,
+            updated_at: 0,
+            init: false,
         };
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
@@ -65,6 +69,10 @@ module obc_system::treasury {
             ),
             ERR_POOL_NOT_EXISTS
         );
+    }
+
+    fun get_vault_key<StableCoinType>(): String {
+        type_name::into_string(type_name::get<StableCoinType>())
     }
 
     public fun borrow_vault<StableCoinType>(
@@ -144,7 +152,7 @@ module obc_system::treasury {
         _ts: u64,
         _ctx: &mut TxContext
     ): String {
-        let vault_key = type_name::into_string(type_name::get<StableCoinType>());
+        let vault_key = get_vault_key<StableCoinType>();
         assert!(!dynamic_object_field::exists_<String>(&_treasury.id, vault_key), ERR_POOL_HAS_REGISTERED);
 
         // index increased
@@ -235,7 +243,7 @@ module obc_system::treasury {
         _amount: u64,
         _ctx: &mut TxContext,
     ) {
-        let vault_key = type_name::into_string(type_name::get<StableCoinType>());
+        let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
         let current_sqrt_price = vault::vault_current_sqrt_price(mut_vault);
         let (balance_a, balance_b) = vault::swap<StableCoinType>(
@@ -261,7 +269,7 @@ module obc_system::treasury {
         // USD obc required
         let usd_v = borrow_vault<USD>(
             _treasury,
-            type_name::into_string(type_name::get<USD>()),
+            get_vault_key<USD>(),
         );
         let obc_required_per_time = vault::obc_required(usd_v);
         total = total + obc_required_per_time * times_per_day;
@@ -276,13 +284,38 @@ module obc_system::treasury {
         assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
         balance::join(&mut _treasury.obc_balance, input);
         event::deposit(input_amount);
+
+        if (!_treasury.init) {
+            _treasury.init = true
+        }
     }
 
     public(friend) fun rebalance(
         _treasury: &mut Treasury,
         clock: &Clock,
-        ctx: &mut TxContext,
+        _ctx: &mut TxContext,
     ) {
-        /// TODO vault rebalance
+        // check init
+        if (!_treasury.init) {
+            return
+        };
+
+        // check time_interval
+        let current_ts = clock::timestamp_ms(clock) / 1000;
+        if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
+            return
+        };
+
+        // update updated_at
+        _treasury.updated_at = current_ts;
+
+        // check USD vault stat
+        let usd_mut_v = borrow_mut_vault<USD>(
+            _treasury,
+            get_vault_key<USD>(),
+        );
+        let _state_counter = vault::check_state(usd_mut_v);
+
+        // TODO vault rebalance
     }
 }

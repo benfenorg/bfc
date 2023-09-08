@@ -147,6 +147,8 @@ pub struct Treasury {
     supplies: Bag,
     index: u64,
     time_interval: u32,
+    updated_at: u64,
+    init: bool,
 }
 
 #[derive(Debug)]
