@@ -4,6 +4,7 @@ module obc_system::obc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
+    use sui::clock::{Self};
 
     use sui::obc::OBC;
     use sui::object::UID;
@@ -51,8 +52,8 @@ module obc_system::obc_system {
 
     public fun obc_round(
         wrapper: &mut ObcSystemState,
-        round: u64,
         clock: &Clock,
+        round: u64,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
@@ -68,6 +69,8 @@ module obc_system::obc_system {
 
         // X-treasury rebalance
         obc_system_state_inner::rebalance(inner_state, clock, ctx);
+
+        judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
     public entry fun update_round(
@@ -75,7 +78,7 @@ module obc_system::obc_system {
 	clock: &Clock, 
         ctx: &mut TxContext,
     ){
-        obc_round(wrapper, 200, clock, ctx);
+        obc_round(wrapper,  clock,200, ctx);
     }
 
     fun load_system_state(

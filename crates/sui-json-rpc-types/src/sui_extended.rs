@@ -119,6 +119,26 @@ pub struct NetworkMetrics {
 }
 
 #[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkOverview {
+    /// Total Volume in last 24 hours
+    #[schemars(with = "String")]
+    #[serde_as(as = "DisplayFromStr")]
+    pub volume_24h: String,
+
+    /// Total active addresses in last 24 hours
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_addresses_24h: u64,
+
+    /// Avgerage gas cost in the last checkpoint.
+    #[schemars(with = "String")]
+    #[serde_as(as = "DisplayFromStr")]
+    pub current_gas: String,
+}
+
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveCallMetrics {

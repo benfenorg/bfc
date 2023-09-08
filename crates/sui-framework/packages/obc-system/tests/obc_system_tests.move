@@ -25,7 +25,7 @@ module obc_system::obc_system_tests {
         let system_state = test_scenario::take_shared<ObcSystemState>(scenario);
 
         let clock = clock::create_for_testing(test_scenario::ctx(scenario));
-        obc_system::obc_round(&mut system_state, 0, &clock, test_scenario::ctx(scenario));
+        obc_system::obc_round(&mut system_state, &clock, 0,test_scenario::ctx(scenario));
 
         test_scenario::return_shared(system_state);
         clock::destroy_for_testing(clock);

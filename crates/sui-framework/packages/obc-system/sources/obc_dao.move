@@ -298,7 +298,7 @@ module obc_system::obc_dao {
         *data
     }
 
-    entry public fun create_dao_without_obcSystemState(        admins: vector<address>,
+    entry public fun create_dao_and_share(        admins: vector<address>,
                                                                ctx: &mut TxContext ) {
         // sender address
         //let sender = tx_context::sender(ctx);
@@ -343,8 +343,6 @@ module obc_system::obc_dao {
         transfer::share_object(dao_obj);
 
         set_admins(admins, ctx);
-
-        //dao_obj
     }
 
     // create a dao config
@@ -991,7 +989,7 @@ module obc_system::obc_dao {
         let proposal_record = dao.proposalRecord;
         let size : u64 =  vec_map::size(& proposal_record);
         if (size == 0) {
-            return;
+            return
         };
         let (_, proposalInfo) =  vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
         modify_proposal( proposalInfo, index, clock);
@@ -1048,6 +1046,56 @@ module obc_system::obc_dao {
         };
     }
 
+    public fun modify_proposal_obj(proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
+
+        //let proposal = proposal_obj.proposal;
+        if (index == 1) {
+            // Pending
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  + 1000000000;
+        }else if (index == 2) {
+            // active
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 1000000000;
+            proposal_obj.proposal.end_time = clock::timestamp_ms(clock) + 1000000000;
+        } else if (index == 3){
+            //afer voting  Defeated...
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
+            proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
+            proposal_obj.proposal.for_votes = 1;
+            proposal_obj.proposal.against_votes = 2;
+        } else if (index == 4) {
+            //afer voting AGREED
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
+            proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
+            proposal_obj.proposal.for_votes = 3;
+            proposal_obj.proposal.against_votes = 2;
+            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.eta = 0;
+        } else if (index == 5) {
+            // Queued, waiting to execute
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
+            proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
+            proposal_obj.proposal.for_votes = 3;
+            proposal_obj.proposal.against_votes = 2;
+            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.eta = clock::timestamp_ms(clock)  + 100000000;
+        } else if (index == 6) {
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
+            proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
+            proposal_obj.proposal.for_votes = 3;
+            proposal_obj.proposal.against_votes = 2;
+            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
+            proposal_obj.proposal.action.actionId = 1;
+        } else if (index == 7) {
+            proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
+            proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
+            proposal_obj.proposal.for_votes = 3;
+            proposal_obj.proposal.against_votes = 2;
+            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
+            proposal_obj.proposal.action.actionId = 0;
+        };
+    }
 
 
 

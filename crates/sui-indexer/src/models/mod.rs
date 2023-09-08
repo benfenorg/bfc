@@ -7,6 +7,7 @@ pub mod checkpoints;
 pub mod epoch;
 pub mod events;
 pub mod network_metrics;
+pub mod network_overview;
 pub mod objects;
 pub mod owners;
 pub mod packages;

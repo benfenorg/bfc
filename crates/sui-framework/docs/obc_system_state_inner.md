@@ -202,7 +202,7 @@
 
 
 
-<pre><code><b>const</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>: <a href="">vector</a>&lt;<b>address</b>&gt; = [24534971471998884076320588073588140533011227823836498849038009586284449996719, 51146047687078908496806713158095522211891725112102928692628967303014320690576];
+<pre><code><b>const</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>: <a href="">vector</a>&lt;<b>address</b>&gt; = [65291099566713687366712577645016528323844253956509590706950403481947121946472, 24534971471998884076320588073588140533011227823836498849038009586284449996719, 51146047687078908496806713158095522211891725112102928692628967303014320690576, 21467571842073344777586981157680533501982638629804211914469802462091489096830];
 </code></pre>
 
 
@@ -876,6 +876,7 @@ X-treasury
         <b>let</b> (_, proposalInfo) = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx">vec_map::get_entry_by_idx</a>(&proposal_record, size - 1);
         <b>let</b> cur_status = <a href="obc_dao.md#0xc8_obc_dao_judge_proposal_state">obc_dao::judge_proposal_state</a>(proposalInfo, current_time);
         <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">obc_dao::set_current_status_into_dao</a>(&<b>mut</b> wrapper.dao, i, cur_status);
+        i = i + 1;
     };
 }
 </code></pre>
