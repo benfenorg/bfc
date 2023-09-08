@@ -40,6 +40,7 @@ module obc_system::vault {
         /// 0 -- init, equal, 1 -- down, 2 -- up
         state: u8,
         state_counter: u32,
+        last_sqrt_price: u128,
 
         coin_a: Balance<StableCoinType>,
         coin_b: Balance<OBC>,
@@ -85,16 +86,18 @@ module obc_system::vault {
         let valid_index = tick_math::get_next_valid_tick_index(current_tick_index, _tick_spacing);
         let uid = object::new(_ctx);
         let pid = object::uid_to_inner(&uid);
+        let current_sqrt_price = tick_math::get_sqrt_price_at_tick(valid_index);
         Vault {
             id: uid,
             position_number: _position_number,
             state: 0,
             state_counter: 0,
+            last_sqrt_price: current_sqrt_price,
             coin_a: balance::zero<StableCoinType>(),
             coin_b: balance::zero<OBC>(),
             tick_spacing: _tick_spacing,
             liquidity: 0,
-            current_sqrt_price: tick_math::get_sqrt_price_at_tick(valid_index),
+            current_sqrt_price,
             current_tick_index: valid_index,
             tick_manager: tick::create_tick_manager(_tick_spacing, _ts, _ctx),
             position_manager: position::create_position_manager(pid, _tick_spacing, _ctx),
@@ -732,5 +735,10 @@ module obc_system::vault {
 
     public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
         ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
+    }
+
+    /// State checker
+    public(friend) fun check_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
+        abort 0
     }
 }

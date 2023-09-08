@@ -197,6 +197,14 @@ module obc_system::obc_system_state_inner {
         treasury::deposit(&mut self.treasury, coin_obc);
     }
 
+    public(friend) fun rebalance(
+        self: &mut ObcSystemStateInner,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        treasury::rebalance(&mut self.treasury, clock, ctx);
+    }
+
     public(friend) fun obc_system_stat_parameter(
         position_number: u32,
         tick_spacing: u32,
