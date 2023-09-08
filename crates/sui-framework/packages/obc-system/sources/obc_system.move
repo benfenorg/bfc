@@ -75,6 +75,7 @@ module obc_system::obc_system {
 	clock: &Clock, 
         ctx: &mut TxContext,
     ){
+        //round should be using the epoch value...
         obc_round(wrapper, 200, clock, ctx);
     }
 

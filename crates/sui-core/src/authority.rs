@@ -3904,7 +3904,7 @@ impl AuthorityState {
 
         let buffer_stake_bps = epoch_store.get_effective_buffer_stake_bps();
 
-        let (next_epoch_protocol_version, next_epoch_system_packages) =
+        let (mut next_epoch_protocol_version, mut next_epoch_system_packages) =
             Self::choose_protocol_version_and_system_packages(
                 epoch_store.protocol_version(),
                 epoch_store.protocol_config(),
@@ -3914,6 +3914,19 @@ impl AuthorityState {
                     .expect("read capabilities from db cannot fail"),
                 buffer_stake_bps,
             );
+
+
+        //if proposal fail , empty and next_epoch_system_packages,
+        // and if the next_protocol_version is update + 1, roll back next
+        // next_epoch_protocol_version
+        let proposal_result = false;
+        if proposal_result {
+            next_epoch_system_packages.clear();
+            next_epoch_protocol_version = epoch_store.protocol_version()
+        }else{
+
+        };
+
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version

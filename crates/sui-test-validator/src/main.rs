@@ -51,7 +51,7 @@ struct Args {
     pg_host: String,
 
     /// The duration for epochs (defaults to one minute)
-    #[clap(long, default_value = "60000")]
+    #[clap(long, default_value = "30000")]
     epoch_duration_ms: u64,
 
     /// if we should run indexer
