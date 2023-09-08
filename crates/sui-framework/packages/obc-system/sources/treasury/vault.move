@@ -738,7 +738,40 @@ module obc_system::vault {
     }
 
     /// State checker
-    public(friend) fun check_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
-        abort 0
+    public(friend) fun check_state<StableCoinType>(_vault: &mut Vault<StableCoinType>): u32 {
+        let price = _vault.current_sqrt_price;
+        let last_price = _vault.last_sqrt_price;
+        if (price < last_price) {
+            // down
+            if (_vault.state == 1) {
+                _vault.state_counter = _vault.state_counter + 1;
+            } else {
+                // reset counter = 0  & set state = down
+                _vault.state_counter = 0;
+                _vault.state = 1;
+            }
+        } else if (price > last_price) {
+            // up
+            if (_vault.state == 2) {
+                _vault.state_counter = _vault.state_counter + 1;
+            } else {
+                // reset counter = 0  & set state = up
+                _vault.state_counter = 0;
+                _vault.state = 2;
+            }
+        } else {
+            // equal
+            _vault.state = 0;
+            _vault.state_counter = 0;
+        };
+
+        _vault.last_sqrt_price = price;
+        event::update_state(
+            price,
+            last_price,
+            _vault.state,
+            _vault.state_counter,
+        );
+        _vault.state_counter
     }
 }

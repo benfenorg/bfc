@@ -12,6 +12,7 @@
 -  [Struct `LiquidityEvent`](#0xc8_event_LiquidityEvent)
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
 -  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
+-  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
 -  [Function `init_treasury`](#0xc8_event_init_treasury)
 -  [Function `create_vault`](#0xc8_event_create_vault)
 -  [Function `open_position`](#0xc8_event_open_position)
@@ -20,6 +21,7 @@
 -  [Function `remove_liquidity`](#0xc8_event_remove_liquidity)
 -  [Function `swap`](#0xc8_event_swap)
 -  [Function `deposit`](#0xc8_event_deposit)
+-  [Function `update_state`](#0xc8_event_update_state)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -369,6 +371,51 @@
 
 </details>
 
+<a name="0xc8_event_UpdateStateEvent"></a>
+
+## Struct `UpdateStateEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>current_sqrt_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>last_sqrt_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>state: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>state_counter: u32</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="0xc8_event_init_treasury"></a>
 
 ## Function `init_treasury`
@@ -654,6 +701,42 @@
     emit(
         <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> {
             amount
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_update_state"></a>
+
+## Function `update_state`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(
+    current_sqrt_price: u128,
+    last_sqrt_price: u128,
+    state: u8,
+    state_counter: u32,
+) {
+    emit(
+        <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> {
+            current_sqrt_price,
+            last_sqrt_price,
+            state,
+            state_counter,
         }
     )
 }
