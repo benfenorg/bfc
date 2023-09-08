@@ -868,7 +868,11 @@ impl TransactionKind {
                     id: OBC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },SharedInputObject::SUI_SYSTEM_OBJ];
+                },SharedInputObject::SUI_SYSTEM_OBJ,SharedInputObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                }];
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
