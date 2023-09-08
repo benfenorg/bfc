@@ -65,6 +65,9 @@ module obc_system::obc_system {
         // let rate = 1000000000;
         // obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
         // balance::destroy_zero(coin::into_balance(stable));
+
+        /// X-treasury rebalance
+        obc_system_state_inner::rebalance(inner_state, clock, ctx);
     }
 
     public entry fun update_round(

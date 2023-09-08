@@ -9,6 +9,7 @@ module obc_system::treasury {
     use sui::balance::{Self, Balance, Supply};
     use sui::dynamic_object_field;
     use sui::obc::OBC;
+    use sui::clock::{Self, Clock};
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
 
@@ -275,5 +276,13 @@ module obc_system::treasury {
         assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
         balance::join(&mut _treasury.obc_balance, input);
         event::deposit(input_amount);
+    }
+
+    public(friend) fun rebalance(
+        _treasury: &mut Treasury,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        /// TODO vault rebalance
     }
 }
