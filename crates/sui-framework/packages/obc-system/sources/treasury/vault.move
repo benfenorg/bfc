@@ -1,7 +1,8 @@
 module obc_system::vault {
     use std::vector;
 
-    use sui::balance::{Self, Balance};
+    use sui::balance::{Self, Balance, Supply};
+    use sui::bcs::peel_vec_u8;
     use sui::coin::{Self, Coin};
     use sui::obc::OBC;
     use sui::object;
@@ -37,6 +38,7 @@ module obc_system::vault {
         id: UID,
 
         position_number: u32,
+
         /// 0 -- init, equal, 1 -- down, 2 -- up
         state: u8,
         state_counter: u32,
@@ -47,6 +49,8 @@ module obc_system::vault {
 
         /// The tick spacing
         tick_spacing: u32,
+        /// The tick spacing times
+        spacing_times: u32,
 
         /// The liquidity of current tick index
         liquidity: u128,
@@ -76,6 +80,7 @@ module obc_system::vault {
     public(friend) fun create_vault<StableCoinType>(
         _index: u64,
         _tick_spacing: u32,
+        _spacing_times: u32,
         _position_number: u32,
         _initialize_price: u128,
         _base_point: u64,
@@ -96,6 +101,7 @@ module obc_system::vault {
             coin_a: balance::zero<StableCoinType>(),
             coin_b: balance::zero<OBC>(),
             tick_spacing: _tick_spacing,
+            spacing_times: _spacing_times,
             liquidity: 0,
             current_sqrt_price,
             current_tick_index: valid_index,
@@ -168,6 +174,7 @@ module obc_system::vault {
         );
         event::close_position(vault_id(_vault), _index)
     }
+
 
     /// Calculate the position's amount_a/amount_b
     /// Params
@@ -307,7 +314,7 @@ module obc_system::vault {
         let _vault_id = position::get_vault_id(mut_position);
         assert!(_vault_id == expect_vault_id, ERR_POOL_INVALID);
         let liquidity = position::decrease_liquidity(mut_position, _delta_liquidity);
-        tick::increase_liquidity(
+        tick::decrease_liquidity(
             &mut _vault.tick_manager,
             _vault.current_tick_index,
             tick_lower,
@@ -733,6 +740,18 @@ module obc_system::vault {
         )
     }
 
+    public fun min_liquidity_rate(): u128 {
+        6
+    }
+
+    public fun max_liquidity_rate(): u128 {
+        14
+    }
+
+    public fun base_liquidity_rate(): u128 {
+        10
+    }
+
     public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
         ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
     }
@@ -773,5 +792,102 @@ module obc_system::vault {
             _vault.state_counter,
         );
         _vault.state_counter
+    }
+
+    public(friend) fun rebalance<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _obc_balance: &mut Balance<OBC>,
+        _supply: &mut Supply<StableCoinType>,
+        _ctx: &mut TxContext
+    ) {
+        /// check state
+        let state = true;
+
+        /// first remove all liquidities
+        /// second close all position;
+        /// third remove all ticks
+        let position_index = 0u64;
+        let position_number = (_vault.position_number as u64);
+        let balance0 = balance::zero<StableCoinType>();
+        let balance1 = balance::zero<OBC>();
+        while (position_index < position_number) {
+            let position = position::borrow_mut_position(&mut _vault.position_manager, position_index);
+            let liquidity_delta = position::get_liquidity(position);
+            let (_balance0, _balance1) = remove_liquidity(_vault, position_index, liquidity_delta);
+            balance::join(&mut balance0, _balance0);
+            balance::join(&mut balance1, _balance1);
+            position::close_position(&mut _vault.position_manager, position_index);
+        };
+
+        init_positions(_vault, _vault.spacing_times, _ctx);
+        /// calculate and increase liquidity
+
+        let ticks = tick::get_ticks(
+            &_vault.tick_manager,
+            _vault.current_tick_index,
+            _vault.spacing_times,
+            _vault.position_number
+        );
+        let middle_tick = vector::borrow(&ticks, (_vault.position_number / 2 as u64));
+        let (tick_lower_index, tick_upper_index) = (vector::borrow(middle_tick, 0), vector::borrow(middle_tick, 1));
+        let (liquidity, _, _) = clmm_math::get_liquidity_by_amount(
+            *tick_lower_index,
+            *tick_upper_index,
+            _vault.current_tick_index,
+            _vault.current_sqrt_price,
+            _vault.base_point,
+            false
+        );
+        let liquidities = vector::empty<u128>();
+        if (state) {
+            let rate_index = min_liquidity_rate();
+            while (rate_index <= max_liquidity_rate()) {
+                vector::push_back(&mut liquidities, liquidity * rate_index / base_liquidity_rate());
+                rate_index = rate_index + 1;
+            };
+        } else {
+            let rate_index = max_liquidity_rate();
+            while (rate_index >= min_liquidity_rate()) {
+                vector::push_back(&mut liquidities, liquidity * rate_index / base_liquidity_rate());
+                rate_index = rate_index - 1;
+            };
+        };
+        let index = 0;
+        let length = vector::length(&liquidities);
+        let (total_a, total_b) = (0, 0);
+        while (index < length) {
+            let receipt = add_liquidity(_vault, index, *vector::borrow(&liquidities, index));
+            let AddLiquidityReceipt {
+                vault_id: ID,
+                amount_a,
+                amount_b
+            } = receipt;
+            total_a = amount_a + total_a;
+            total_b = amount_b + total_b;
+            index = index + 1;
+        };
+
+        /// after open position and add all liquidity
+        /// check obc balance and stablecoin balance
+        let balance0_value = balance::value(&balance0);
+        let balance1_value = balance::value(&balance1);
+        if (balance0_value < total_a) {
+            let _balance0 = balance::increase_supply(_supply, total_a - balance0_value);
+            balance::join(&mut balance0, _balance0);
+        }  else if (balance0_value > total_a) {
+            let _balance0 = balance::split(&mut balance0, balance0_value - total_a);
+            balance::decrease_supply(_supply, _balance0);
+        };
+
+        if (balance1_value < total_b) {
+            let _balance1 = balance::split(_obc_balance, total_b - balance1_value);
+            balance::join(&mut balance1, _balance1);
+        } else if (balance1_value > total_a) {
+            let _balance1 = balance::split(&mut balance1, balance1_value - total_b);
+            balance::join(_obc_balance, _balance1);
+        };
+
+        balance::join(&mut _vault.coin_a, balance0);
+        balance::join(&mut _vault.coin_b, balance1);
     }
 }

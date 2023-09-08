@@ -53,6 +53,17 @@ module obc_system::treasury {
         treasury
     }
 
+    public(friend) fun rebalance(_treasury: &mut Treasury) {
+        /// USD rebalance
+        let usd_vault_key = type_name::into_string(type_name::get<USD>());
+        let usd_vault = borrow_mut_vault<USD>(_treasury, usd_vault_key);
+        vault::rebalance<USD>(
+            usd_vault,
+            &mut _treasury.obc_balance,
+            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, usd_vault_key)
+        );
+    }
+
     public fun index(_treasury: &Treasury): u64 {
         _treasury.index
     }
@@ -146,6 +157,7 @@ module obc_system::treasury {
         _treasury: &mut Treasury,
         _supply: Supply<StableCoinType>,
         _tick_spacing: u32,
+        _spacing_times: u32,
         _position_number: u32,
         _initialize_price: u128,
         _base_point: u64,
@@ -160,6 +172,7 @@ module obc_system::treasury {
         let new_vault = vault::create_vault<StableCoinType>(
             _treasury.index,
             _tick_spacing,
+            _spacing_times,
             _position_number,
             _initialize_price,
             _base_point,
@@ -181,6 +194,7 @@ module obc_system::treasury {
             into_string(get<StableCoinType>()),
             into_string(get<OBC>()),
             _tick_spacing,
+            _spacing_times,
             _treasury.index,
         );
         vault_key
@@ -317,5 +331,6 @@ module obc_system::treasury {
         let _state_counter = vault::check_state(usd_mut_v);
 
         // TODO vault rebalance
+
     }
 }
