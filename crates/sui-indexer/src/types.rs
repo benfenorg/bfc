@@ -111,6 +111,7 @@ pub struct CheckpointTransactionBlockResponse {
     pub timestamp_ms: u64,
     pub confirmed_local_execution: Option<bool>,
     pub checkpoint: CheckpointSequenceNumber,
+    pub balance_changes: Option<Vec<BalanceChange>>,
 }
 
 impl TryFrom<SuiTransactionBlockResponse> for CheckpointTransactionBlockResponse {
@@ -124,7 +125,7 @@ impl TryFrom<SuiTransactionBlockResponse> for CheckpointTransactionBlockResponse
             effects,
             events,
             object_changes: _,
-            balance_changes: _,
+            balance_changes,
             timestamp_ms,
             confirmed_local_execution,
             checkpoint,
@@ -184,6 +185,7 @@ impl TryFrom<SuiTransactionBlockResponse> for CheckpointTransactionBlockResponse
             timestamp_ms,
             confirmed_local_execution,
             checkpoint,
+            balance_changes,
         })
     }
 }
@@ -395,6 +397,7 @@ impl From<CheckpointTransactionBlockResponse> for TemporaryTransactionBlockRespo
             timestamp_ms,
             confirmed_local_execution,
             checkpoint,
+            balance_changes,
         } = value;
 
         TemporaryTransactionBlockResponseStore {
@@ -404,7 +407,7 @@ impl From<CheckpointTransactionBlockResponse> for TemporaryTransactionBlockRespo
             effects,
             events,
             object_changes: None,
-            balance_changes: None,
+            balance_changes,
             timestamp_ms: Some(timestamp_ms),
             confirmed_local_execution,
             checkpoint: Some(checkpoint),
