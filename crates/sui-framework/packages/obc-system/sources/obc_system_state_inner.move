@@ -185,8 +185,16 @@ module obc_system::obc_system_state_inner {
     }
 
     /// X-treasury
-    public fun next_epoch_obc_required(self: &ObcSystemStateInner): u128 {
+    public fun next_epoch_obc_required(self: &ObcSystemStateInner): u64 {
         treasury::next_epoch_obc_required(&self.treasury)
+    }
+
+    public fun treasury_balance(self: &ObcSystemStateInner): u64 {
+        treasury::get_balance(&self.treasury)
+    }
+
+    public(friend) fun deposit_to_treasury(self: &mut ObcSystemStateInner, coin_obc: Coin<OBC>) {
+        treasury::deposit(&mut self.treasury, coin_obc);
     }
 
     public(friend) fun obc_system_stat_parameter(

@@ -1631,7 +1631,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
 </code></pre>
 
 
@@ -1640,8 +1640,8 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
-    ((_vault.position_number <b>as</b> u128) + 1) / 2 * (_vault.base_point <b>as</b> u128)
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+    ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
 }
 </code></pre>
 

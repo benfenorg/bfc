@@ -19,13 +19,10 @@ module obc_system::treasury {
     friend obc_system::obc_system_state_inner;
 
     // === Errors ===
-    const ERR_THE_SAME_COIN: u64 = 100;
-    const ERR_POOL_HAS_REGISTERED: u64 = 101;
-    const ERR_INVALID_LIMIT: u64 = 102;
-    const ERR_INVALID_VECTOR_LENGTH: u64 = 103;
-    const ERR_MUST_BE_ORDER: u64 = 104;
-    const ERR_POOL_NOT_EXISTS: u64 = 105;
-    const ERR_ZERO_AMOUNT: u64 = 106;
+    const ERR_POOL_HAS_REGISTERED: u64 = 100;
+    const ERR_POOL_NOT_EXISTS: u64 = 101;
+    const ERR_ZERO_AMOUNT: u64 = 102;
+    const ERR_INSUFFICIENT: u64 = 103;
 
     struct Treasury has key, store {
         id: UID,
@@ -53,6 +50,10 @@ module obc_system::treasury {
 
     public fun index(_treasury: &Treasury): u64 {
         _treasury.index
+    }
+
+    public fun get_balance(_treasury: &Treasury): u64 {
+        balance::value(&_treasury.obc_balance)
     }
 
     fun check_vault<StableCoinType>(_treasury: &Treasury, _vault_key: String) {
@@ -179,91 +180,98 @@ module obc_system::treasury {
     ///  ======= Swap
     /// Mint swap obc to stablecoin
     public(friend) entry fun mint<StableCoinType>(
-        treasury: &mut Treasury,
-        coin_obc: Coin<OBC>,
-        amount: u64,
-        ctx: &mut TxContext,
+        _treasury: &mut Treasury,
+        _coin_obc: Coin<OBC>,
+        _amount: u64,
+        _ctx: &mut TxContext,
     ) {
-        assert!(coin::value<OBC>(&coin_obc) > 0, ERR_ZERO_AMOUNT);
+        assert!(coin::value<OBC>(&_coin_obc) > 0, ERR_ZERO_AMOUNT);
         swap_internal<StableCoinType>(
-            treasury,
+            _treasury,
             false,
-            coin::zero<StableCoinType>(ctx),
-            coin_obc,
-            amount,
-            ctx,
+            coin::zero<StableCoinType>(_ctx),
+            _coin_obc,
+            _amount,
+            _ctx,
         );
     }
 
     /// Burn swap stablecoin to obc
     public(friend) entry fun redeem<StableCoinType>(
-        treasury: &mut Treasury,
-        coin_sc: Coin<StableCoinType>,
-        amount: u64,
-        ctx: &mut TxContext,
+        _treasury: &mut Treasury,
+        _coin_sc: Coin<StableCoinType>,
+        _amount: u64,
+        _ctx: &mut TxContext,
     ) {
-        assert!(coin::value<StableCoinType>(&coin_sc) > 0, ERR_ZERO_AMOUNT);
+        assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
         swap_internal<StableCoinType>(
-            treasury,
+            _treasury,
             true,
-            coin_sc,
-            coin::zero<OBC>(ctx),
-            amount,
-            ctx,
+            _coin_sc,
+            coin::zero<OBC>(_ctx),
+            _amount,
+            _ctx,
         );
     }
 
     fun transfer_or_delete<CoinType>(
-        balance: Balance<CoinType>,
-        ctx: &mut TxContext
+        _balance: Balance<CoinType>,
+        _ctx: &mut TxContext
     ) {
-        if (balance::value(&balance) > 0) {
-            transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
+        if (balance::value(&_balance) > 0) {
+            transfer::public_transfer(coin::from_balance(_balance, _ctx), tx_context::sender(_ctx));
         } else {
-            balance::destroy_zero(balance);
+            balance::destroy_zero(_balance);
         }
     }
 
     /// Internal swap
     fun swap_internal<StableCoinType>(
-        treasury: &mut Treasury,
-        a2b: bool, // true a->b , false b->a
-        coin_a: Coin<StableCoinType>,
-        coin_b: Coin<OBC>,
-        amount: u64,
-        ctx: &mut TxContext,
+        _treasury: &mut Treasury,
+        _a2b: bool, // true a->b , false b->a
+        _coin_a: Coin<StableCoinType>,
+        _coin_b: Coin<OBC>,
+        _amount: u64,
+        _ctx: &mut TxContext,
     ) {
         let vault_key = type_name::into_string(type_name::get<StableCoinType>());
-        let mut_vault = borrow_mut_vault<StableCoinType>(treasury, vault_key);
+        let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
         let current_sqrt_price = vault::vault_current_sqrt_price(mut_vault);
         let (balance_a, balance_b) = vault::swap<StableCoinType>(
             mut_vault,
-            coin_a,
-            coin_b,
-            a2b,
+            _coin_a,
+            _coin_b,
+            _a2b,
             true,
-            amount,
+            _amount,
             0, // ? unuse
             current_sqrt_price,
-            ctx
+            _ctx
         );
-        transfer_or_delete(balance_a, ctx);
-        transfer_or_delete(balance_b, ctx);
+        transfer_or_delete(balance_a, _ctx);
+        transfer_or_delete(balance_b, _ctx);
     }
 
     /// Rebalance
-    public(friend) fun next_epoch_obc_required(treasury: &Treasury): u128 {
+    public(friend) fun next_epoch_obc_required(_treasury: &Treasury): u64 {
         let total = 0;
-        let times_per_day = (3600 * 24 / treasury.time_interval as u128);
+        let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
 
         // USD obc required
         let usd_v = borrow_vault<USD>(
-            treasury,
+            _treasury,
             type_name::into_string(type_name::get<USD>()),
         );
         let obc_required_per_time = vault::obc_required(usd_v);
         total = total + obc_required_per_time * times_per_day;
 
-        total
+        total - get_balance(_treasury)
+    }
+
+    public(friend) fun deposit(_treasury: &mut Treasury, _coin_obc: Coin<OBC>) {
+        let min_amount = next_epoch_obc_required(_treasury);
+        let input = coin::into_balance(_coin_obc);
+        assert!(balance::value(&input) >= min_amount, ERR_INSUFFICIENT);
+        balance::join(&mut _treasury.obc_balance, input);
     }
 }

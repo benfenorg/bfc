@@ -259,8 +259,18 @@ module obc_system::obc_system {
         obc_system_state_inner::redeem<StableCoinType>(system_state, coin_sc, amount, ctx);
     }
 
-    public fun next_epoch_obc_required(wrapper: &ObcSystemState): u128 {
-       let system_state = load_system_state(wrapper);
+    public fun next_epoch_obc_required(wrapper: &ObcSystemState): u64 {
+        let system_state = load_system_state(wrapper);
         obc_system_state_inner::next_epoch_obc_required(system_state)
+    }
+
+    public fun treasury_balance(wrapper: &ObcSystemState): u64 {
+        let system_state = load_system_state(wrapper);
+        obc_system_state_inner::treasury_balance(system_state)
+    }
+
+    public entry fun deposit_to_treasury(self: &mut ObcSystemState, coin: Coin<OBC>) {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::deposit_to_treasury(inner_state, coin)
     }
 }

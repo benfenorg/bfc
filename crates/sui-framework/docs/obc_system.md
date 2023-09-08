@@ -31,6 +31,8 @@
 -  [Function `mint`](#0xc8_obc_system_mint)
 -  [Function `redeem`](#0xc8_obc_system_redeem)
 -  [Function `next_epoch_obc_required`](#0xc8_obc_system_next_epoch_obc_required)
+-  [Function `treasury_balance`](#0xc8_obc_system_treasury_balance)
+-  [Function `deposit_to_treasury`](#0xc8_obc_system_deposit_to_treasury)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -794,7 +796,7 @@ X treasury  swap stablecoin to obc
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): u128
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): u64
 </code></pre>
 
 
@@ -803,9 +805,59 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): u128 {
-   <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): u64 {
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_next_epoch_obc_required">obc_system_state_inner::next_epoch_obc_required</a>(system_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_treasury_balance"></a>
+
+## Function `treasury_balance`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_treasury_balance">treasury_balance</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_treasury_balance">treasury_balance</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): u64 {
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_treasury_balance">obc_system_state_inner::treasury_balance</a>(system_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_deposit_to_treasury"></a>
+
+## Function `deposit_to_treasury`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;) {
+    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_deposit_to_treasury">obc_system_state_inner::deposit_to_treasury</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
 }
 </code></pre>
 

@@ -730,7 +730,7 @@ module obc_system::vault {
         )
     }
 
-    public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u128 {
-        ((_vault.position_number as u128) + 1) / 2 * (_vault.base_point as u128)
+    public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
+        ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
     }
 }
