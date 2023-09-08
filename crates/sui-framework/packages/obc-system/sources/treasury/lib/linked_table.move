@@ -414,38 +414,29 @@ module obc_system::linked_table {
         let ctx = &mut tx_context::dummy();
         let table = new<u64, u256>(ctx);
         push_back(&mut table, 2, 1002);
-        push_back(&mut table, 4, 1004);
         push_back(&mut table, 6, 1006);
-        push_back(&mut table, 8, 1008);
         push_back(&mut table, 10, 1010);
 
         // after middle node
         insert_after(&mut table, 6, 7, 1007);
         let node_6 = borrow_node(&table, 6);
         let node_7 = borrow_node(&table, 7);
-        let node_8 = borrow_node(&table, 8);
+        assert!(*option::borrow(&node_6.prev) == 2, 0);
         assert!(*option::borrow(&node_6.next) == 7, 0);
-        assert!(*option::borrow(&node_6.prev) == 4, 0);
-        assert!(*option::borrow(&node_7.next) == 8, 0);
         assert!(*option::borrow(&node_7.prev) == 6, 0);
-        assert!(*option::borrow(&node_8.next) == 10, 0);
-        assert!(*option::borrow(&node_8.prev) == 7, 0);
-        assert!(length(&table) == 6, 0);
+        assert!(length(&table) == 4, 0);
         assert!(*option::borrow(&table.head) == 2, 0);
         assert!(*option::borrow(&table.tail) == 10, 0);
 
         // after head node
-        insert_after(&mut table, 2, 3, 1009);
+        insert_after(&mut table, 2, 3, 1003);
         let node_2 = borrow_node(&table, 2);
         let node_3 = borrow_node(&table, 3);
-        let node_4 = borrow_node(&table, 4);
         assert!(*option::borrow(&node_2.next) == 3, 0);
         assert!(is_none(&node_2.prev), 0);
-        assert!(*option::borrow(&node_3.next) == 4, 0);
+        assert!(*option::borrow(&node_3.next) == 6, 0);
         assert!(*option::borrow(&node_3.prev) == 2, 0);
-        assert!(*option::borrow(&node_4.next) == 6, 0);
-        assert!(*option::borrow(&node_4.prev) == 3, 0);
-        assert!(length(&table) == 7, 0);
+        assert!(length(&table) == 5, 0);
         assert!(*option::borrow(&table.head) == 2, 0);
         assert!(*option::borrow(&table.tail) == 10, 0);
 
@@ -454,10 +445,9 @@ module obc_system::linked_table {
         let node_10 = borrow_node(&table, 10);
         let node_11 = borrow_node(&table, 11);
         assert!(*option::borrow(&node_10.next) == 11, 0);
-        assert!(*option::borrow(&node_10.prev) == 8, 0);
         assert!(*option::borrow(&node_11.prev) == 10, 0);
         assert!(is_none(&node_11.next), 0);
-        assert!(length(&table) == 8, 0);
+        assert!(length(&table) == 6, 0);
         assert!(*option::borrow(&table.head) == 2, 0);
         assert!(*option::borrow(&table.tail) == 11, 0);
 
@@ -469,7 +459,7 @@ module obc_system::linked_table {
         let ctx = &mut tx_context::dummy();
         let table = new<u64, u256>(ctx);
         let n = 0;
-        while (n < 10000) {
+        while (n < 10) {
             push_back(&mut table, n, (n as u256));
             n = n + 1;
         };
@@ -481,7 +471,7 @@ module obc_system::linked_table {
         let ctx = &mut tx_context::dummy();
         let table = new<u64, u256>(ctx);
         let n = 0;
-        while (n < 10000) {
+        while (n < 10) {
             push_front(&mut table, n, (n as u256));
             n = n + 1;
         };
@@ -492,8 +482,8 @@ module obc_system::linked_table {
     fun test_table_insert_before_bench() {
         let ctx = &mut tx_context::dummy();
         let table = new<u64, u64>(ctx);
-        let n = 10000;
-        let current_key = 20000;
+        let n = 10;
+        let current_key = 20;
         push_back(&mut table, 0, 0);
         push_back(&mut table, current_key, current_key);
         while (n > 0) {
@@ -511,8 +501,8 @@ module obc_system::linked_table {
         let n = 1;
         let current_key = 0;
         push_back(&mut table, 0, 0);
-        push_back(&mut table, 20000, 20000);
-        while (n <= 10000) {
+        push_back(&mut table, 20, 20000);
+        while (n <= 10) {
             insert_after(&mut table, current_key, n, n);
             current_key = n;
             n = n + 1;

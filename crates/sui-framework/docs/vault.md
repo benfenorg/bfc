@@ -5,7 +5,6 @@
 
 
 
--  [Struct `VaultSimpleInfo`](#0xc8_vault_VaultSimpleInfo)
 -  [Resource `Vault`](#0xc8_vault_Vault)
 -  [Struct `AddLiquidityReceipt`](#0xc8_vault_AddLiquidityReceipt)
 -  [Struct `SwapStepResult`](#0xc8_vault_SwapStepResult)
@@ -13,7 +12,7 @@
 -  [Struct `FlashSwapReceipt`](#0xc8_vault_FlashSwapReceipt)
 -  [Constants](#@Constants_0)
 -  [Function `create_vault`](#0xc8_vault_create_vault)
--  [Function `create_vault_simple_info`](#0xc8_vault_create_vault_simple_info)
+-  [Function `init_positions`](#0xc8_vault_init_positions)
 -  [Function `open_position`](#0xc8_vault_open_position)
 -  [Function `close_position`](#0xc8_vault_close_position)
 -  [Function `get_position_amounts`](#0xc8_vault_get_position_amounts)
@@ -40,9 +39,9 @@
 -  [Function `balances`](#0xc8_vault_balances)
 
 
-<pre><code><b>use</b> <a href="">0x1::type_name</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="clmm_math.md#0xc8_clmm_math">0xc8::clmm_math</a>;
@@ -58,64 +57,13 @@
 
 
 
-<a name="0xc8_vault_VaultSimpleInfo"></a>
-
-## Struct `VaultSimpleInfo`
-
-
-
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_VaultSimpleInfo">VaultSimpleInfo</a> <b>has</b> <b>copy</b>, drop, store
-</code></pre>
-
-
-
-<details>
-<summary>Fields</summary>
-
-
-<dl>
-<dt>
-<code>vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>vault_key: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>coin_type_a: <a href="_TypeName">type_name::TypeName</a></code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>coin_type_b: <a href="_TypeName">type_name::TypeName</a></code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>tick_spacing: u32</code>
-</dt>
-<dd>
-
-</dd>
-</dl>
-
-
-</details>
-
 <a name="0xc8_vault_Vault"></a>
 
 ## Resource `Vault`
 
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt; <b>has</b> store, key
+<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; <b>has</b> store, key
 </code></pre>
 
 
@@ -141,7 +89,7 @@
 <code>state: u8</code>
 </dt>
 <dd>
-
+ 0 -- init, equal, 1 -- down, 2 -- up
 </dd>
 <dt>
 <code>state_counter: u32</code>
@@ -150,13 +98,13 @@
 
 </dd>
 <dt>
-<code>coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeA&gt;</code>
+<code>coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeB&gt;</code>
+<code>coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -209,6 +157,12 @@
 <dd>
  The vault index
 </dd>
+<dt>
+<code>base_point: u64</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -221,7 +175,7 @@
 Flash loan resource for add_liquidity
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -386,7 +340,7 @@ To make the execution into a single transaction, the flash loan function must re
 that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -505,6 +459,15 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
+<a name="0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY"></a>
+
+
+
+<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>: u64 = 211;
+</code></pre>
+
+
+
 <a name="0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID"></a>
 
 
@@ -529,7 +492,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;CoinTypeA, CoinTypeB&gt;(_index: u64, _tick_spacing: u32, _position_number: u32, _initialize_price: u128, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(_index: u64, _tick_spacing: u32, _position_number: u32, _initialize_price: u128, _base_point: u64, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -538,15 +501,17 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;CoinTypeA, CoinTypeB&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(
     _index: u64,
     _tick_spacing: u32,
     _position_number: u32,
     _initialize_price: u128,
+    _base_point: u64,
     _ts: u64,
     _ctx: &<b>mut</b> TxContext,
-): <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt; {
+): <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; {
     <b>let</b> current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(_initialize_price);
+    <b>let</b> valid_index = <a href="tick_math.md#0xc8_tick_math_get_next_valid_tick_index">tick_math::get_next_valid_tick_index</a>(current_tick_index, _tick_spacing);
     <b>let</b> uid = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(_ctx);
     <b>let</b> pid = <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_inner">object::uid_to_inner</a>(&uid);
     <a href="vault.md#0xc8_vault_Vault">Vault</a> {
@@ -554,16 +519,17 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         position_number: _position_number,
         state: 0,
         state_counter: 0,
-        coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeA&gt;(),
-        coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeB&gt;(),
+        coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;(),
+        coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;(),
         tick_spacing: _tick_spacing,
         liquidity: 0,
-        current_sqrt_price: _initialize_price,
-        current_tick_index,
+        current_sqrt_price: <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(valid_index),
+        current_tick_index: valid_index,
         tick_manager: <a href="tick.md#0xc8_tick_create_tick_manager">tick::create_tick_manager</a>(_tick_spacing, _ts, _ctx),
         position_manager: <a href="position.md#0xc8_position_create_position_manager">position::create_position_manager</a>(pid, _tick_spacing, _ctx),
         is_pause: <b>false</b>,
         index: _index,
+        base_point: _base_point,
     }
 }
 </code></pre>
@@ -572,13 +538,14 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 </details>
 
-<a name="0xc8_vault_create_vault_simple_info"></a>
+<a name="0xc8_vault_init_positions"></a>
 
-## Function `create_vault_simple_info`
+## Function `init_positions`
+
+open <code>position_number</code> positions
 
 
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault_simple_info">create_vault_simple_info</a>(_vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, _vault_key: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, _coin_type_a: <a href="_TypeName">type_name::TypeName</a>, _coin_type_b: <a href="_TypeName">type_name::TypeName</a>, _tick_spacing: u32): <a href="vault.md#0xc8_vault_VaultSimpleInfo">vault::VaultSimpleInfo</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _spacing_times: u32, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -587,20 +554,29 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault_simple_info">create_vault_simple_info</a>(
-    _vault_id: ID,
-    _vault_key: ID,
-    _coin_type_a: TypeName,
-    _coin_type_b: TypeName,
-    _tick_spacing: u32
-): <a href="vault.md#0xc8_vault_VaultSimpleInfo">VaultSimpleInfo</a> {
-    <a href="vault.md#0xc8_vault_VaultSimpleInfo">VaultSimpleInfo</a> {
-        vault_id: _vault_id,
-        vault_key: _vault_key,
-        coin_type_a: _coin_type_a,
-        coin_type_b: _coin_type_b,
-        tick_spacing: _tick_spacing
-    }
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _spacing_times: u32,
+    _ctx: &<b>mut</b> TxContext
+) {
+    <b>assert</b>!(<a href="position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager) == 0, <a href="vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>);
+    <b>let</b> ticks = <a href="tick.md#0xc8_tick_get_ticks">tick::get_ticks</a>(
+        &_vault.tick_manager,
+        _vault.current_tick_index,
+        _spacing_times,
+        _vault.position_number,
+    );
+    <b>let</b> index = 0;
+    <b>while</b> (index &lt; <a href="_length">vector::length</a>(&ticks)) {
+        <b>let</b> current = <a href="_borrow">vector::borrow</a>(&ticks, index);
+        <a href="vault.md#0xc8_vault_open_position">open_position</a>(
+            _vault,
+            *<a href="_borrow">vector::borrow</a>(current, 0),
+            *<a href="_borrow">vector::borrow</a>(current, 1),
+            _ctx,
+        );
+        index = index + 1;
+    };
 }
 </code></pre>
 
@@ -614,7 +590,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -623,27 +599,25 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32,
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _tick_lower: I32,
+    _tick_upper: I32,
     _ctx: &<b>mut</b> TxContext
 ) {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> tick_lower = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_lower);
-    <b>let</b> tick_upper = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_upper);
-    <b>let</b> position_id = <a href="position.md#0xc8_position_open_position">position::open_position</a>&lt;CoinTypeA, CoinTypeB&gt;(
+    <b>let</b> position_id = <a href="position.md#0xc8_position_open_position">position::open_position</a>&lt;StableCoinType&gt;(
         &<b>mut</b> _vault.position_manager,
         _vault.index,
-        tick_lower,
-        tick_upper,
+        _tick_lower,
+        _tick_upper,
         _ctx,
     );
     event::open_position(
         <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         position_id,
-        tick_lower,
-        tick_upper,
+        _tick_lower,
+        _tick_upper,
     )
 }
 </code></pre>
@@ -658,7 +632,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_close_position">close_position</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_close_position">close_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64)
 </code></pre>
 
 
@@ -667,19 +641,17 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_close_position">close_position</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_close_position">close_position</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64
 )
 {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> position_id = <a href="position.md#0xc8_position_close_position">position::close_position</a>(
+    <a href="position.md#0xc8_position_close_position">position::close_position</a>(
         &<b>mut</b> _vault.position_manager,
-        <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_lower),
-        <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_upper)
+        _index
     );
-    event::close_position(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), position_id)
+    event::close_position(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _index)
 }
 </code></pre>
 
@@ -696,11 +668,11 @@ Params
 - <code><a href="vault.md#0xc8_vault">vault</a></code> The clmm vault object.
 - <code>position_id</code> The object id of position's NFT.
 Returns
-- <code>amount_a</code> The amount of <code>CoinTypeA</code>
-- <code>amount_b</code> The amount of <code>CoinTypeB</code>
+- <code>amount_a</code> The amount of <code>StableCoinType</code>
+- <code>amount_b</code> The amount of <code>OBC</code>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32): (u64, u64)
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): (u64, u64)
 </code></pre>
 
 
@@ -709,18 +681,15 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64
 ): (u64, u64) {
-    <b>let</b> tick_lower = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_lower);
-    <b>let</b> tick_upper = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_upper);
     <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
         &_vault.position_manager,
-        tick_lower,
-        tick_upper
+        _index
     );
+    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
     <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
         tick_lower,
         tick_upper,
@@ -742,7 +711,7 @@ Returns
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32, _use_amount: bool, _liquidity_delta: u128, _amount: u64, _fix_amount_a: bool): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _use_amount: bool, _liquidity_delta: u128, _amount: u64, _fix_amount_a: bool): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -751,24 +720,21 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32,
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64,
     _use_amount: bool,
     _liquidity_delta: u128,
     _amount: u64,
     _fix_amount_a: bool
-): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt; {
+): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> tick_lower = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_lower);
-    <b>let</b> tick_upper = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_upper);
     <b>let</b> expect_vault_id = <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
     <b>let</b> mut_position = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
         &<b>mut</b> _vault.position_manager,
-        tick_lower,
-        tick_upper,
+        _index
     );
+    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
     <b>let</b> _vault_id = <a href="position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
     <b>assert</b>!(_vault_id == expect_vault_id, <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
     <b>let</b> liquidity_delta: u128;
@@ -813,7 +779,7 @@ Returns
     };
     event::add_liquidity(
         _vault_id,
-        <a href="position.md#0xc8_position_get_position_id">position::get_position_id</a>(mut_position),
+        _index,
         tick_lower,
         tick_upper,
         liquidity_delta,
@@ -821,7 +787,7 @@ Returns
         amount_a,
         amount_b
     );
-    <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt; {
+    <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
         vault_id: _vault_id,
         amount_a,
         amount_b,
@@ -839,7 +805,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32, _delta_liquidity: u128): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _delta_liquidity: u128): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -848,17 +814,15 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64,
     _delta_liquidity: u128
-): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt; {
+): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
     <b>assert</b>!(_delta_liquidity &gt; 0, <a href="vault.md#0xc8_vault_ERR_LIQUIDITY_DELTA_IS_ZERO">ERR_LIQUIDITY_DELTA_IS_ZERO</a>);
     <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>(
         _vault,
-        _tick_lower,
-        _tick_upper,
+        _index,
         <b>false</b>,
         _delta_liquidity,
         0u64,
@@ -877,7 +841,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32, _delta_liquidity: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeA&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeB&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _delta_liquidity: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
 </code></pre>
 
 
@@ -886,21 +850,18 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64,
     _delta_liquidity: u128
-): (Balance&lt;CoinTypeA&gt;, Balance&lt;CoinTypeB&gt;) {
+): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;) {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> tick_lower = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_lower);
-    <b>let</b> tick_upper = <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(_tick_upper);
     <b>let</b> expect_vault_id = <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
     <b>let</b> mut_position = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
         &<b>mut</b> _vault.position_manager,
-        tick_lower,
-        tick_upper,
+        _index
     );
+    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
     <b>let</b> _vault_id = <a href="position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
     <b>assert</b>!(_vault_id == expect_vault_id, <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
     <b>let</b> liquidity = <a href="position.md#0xc8_position_decrease_liquidity">position::decrease_liquidity</a>(mut_position, _delta_liquidity);
@@ -932,7 +893,7 @@ Returns
     <b>let</b> balance_b = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _vault.coin_b, amount_b);
     event::remove_liquidity(
         _vault_id,
-        <a href="position.md#0xc8_position_get_position_id">position::get_position_id</a>(mut_position),
+        _index,
         tick_lower,
         tick_upper,
         _delta_liquidity,
@@ -954,7 +915,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _tick_lower: u32, _tick_upper: u32, _amount: u64, _fix_amount_a: bool): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _amount: u64, _fix_amount_a: bool): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -963,18 +924,16 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _tick_lower: u32,
-    _tick_upper: u32,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64,
     _amount: u64,
     _fix_amount_a: bool
-): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt; {
+): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
     <b>assert</b>!(_amount &gt; 0, <a href="vault.md#0xc8_vault_ERR_AMOUNT_IS_ZERO">ERR_AMOUNT_IS_ZERO</a>);
     <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>(
         _vault,
-        _tick_lower,
-        _tick_upper,
+        _index,
         <b>true</b>,
         0u128,
         _amount,
@@ -993,7 +952,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeA&gt;, _balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeB&gt;, _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1002,11 +961,11 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _balance_a: Balance&lt;CoinTypeA&gt;,
-    _balance_b: Balance&lt;CoinTypeB&gt;,
-    _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _balance_a: Balance&lt;StableCoinType&gt;,
+    _balance_b: Balance&lt;OBC&gt;,
+    _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 )
 {
     <b>let</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> { vault_id, amount_a, amount_b } = _receipt;
@@ -1233,7 +1192,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1242,8 +1201,8 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _a2b: bool,
     _by_amount_in: bool,
     _amount: u64,
@@ -1320,7 +1279,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinTypeA&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;CoinTypeB&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeA&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeB&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
 </code></pre>
 
 
@@ -1329,23 +1288,23 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    _coin_a: Coin&lt;CoinTypeA&gt;,
-    _coin_b: Coin&lt;CoinTypeB&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _coin_a: Coin&lt;StableCoinType&gt;,
+    _coin_b: Coin&lt;OBC&gt;,
     _a2b: bool,
     _by_amount_in: bool,
     _amount: u64,
     _amount_limit: u64,
     _sqrt_price_limit: u128,
     _ctx: &<b>mut</b> TxContext
-): (Balance&lt;CoinTypeA&gt;, Balance&lt;CoinTypeB&gt;) {
+): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;) {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
     <b>let</b> (
         receive_a,
         receive_b,
         flash_receipt
-    ) = <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;CoinTypeA, CoinTypeB&gt;(
+    ) = <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(
         _vault,
         _a2b,
         _by_amount_in,
@@ -1359,16 +1318,16 @@ Returns
 
     <b>if</b> (_a2b) {
         pay_coin_a = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> _coin_a, pay_amount, _ctx));
-        pay_coin_b = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeB&gt;();
+        pay_coin_b = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;();
     } <b>else</b> {
-        pay_coin_a = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeA&gt;();
+        pay_coin_a = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
         pay_coin_b = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> _coin_b, pay_amount, _ctx));
     };
 
     <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_join">coin::join</a>(&<b>mut</b> _coin_a, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(receive_a, _ctx));
     <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_join">coin::join</a>(&<b>mut</b> _coin_b, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(receive_b, _ctx));
 
-    <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;CoinTypeA, CoinTypeB&gt;(
+    <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
         _vault,
         pay_coin_a,
         pay_coin_b,
@@ -1389,7 +1348,7 @@ Returns
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;CoinTypeA, CoinTypeB&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeA&gt;, balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeB&gt;, receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1398,13 +1357,13 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    <a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
-    balance_a: Balance&lt;CoinTypeA&gt;,
-    balance_b: Balance&lt;CoinTypeB&gt;,
-    receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
+    <a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    balance_a: Balance&lt;StableCoinType&gt;,
+    balance_b: Balance&lt;OBC&gt;,
+    receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
 ) {
-    <b>let</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt; {
+    <b>let</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
         vault_id: _vault_id,
         a2b,
         pay_amount
@@ -1435,7 +1394,7 @@ Returns
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _sqrt_price_limit: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeA&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;CoinTypeB&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _sqrt_price_limit: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1444,13 +1403,13 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _a2b: bool,
     _by_amount_in: bool,
     _amount: u64,
     _sqrt_price_limit: u128
-): (Balance&lt;CoinTypeA&gt;, Balance&lt;CoinTypeB&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt;)
+): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 {
     <b>let</b> min_price = <a href="tick_math.md#0xc8_tick_math_min_sqrt_price">tick_math::min_sqrt_price</a>();
     <b>let</b> max_price = <a href="tick_math.md#0xc8_tick_math_max_sqrt_price">tick_math::max_sqrt_price</a>();
@@ -1470,11 +1429,11 @@ Returns
     <b>let</b> balance_a_ret;
     <b>let</b> balance_b_ret;
     <b>if</b> (_a2b) {
-        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;CoinTypeB&gt;(&<b>mut</b> _vault.coin_b, swap_res.amount_out);
-        balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeA&gt;();
+        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;OBC&gt;(&<b>mut</b> _vault.coin_b, swap_res.amount_out);
+        balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
     } <b>else</b> {
-        balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;CoinTypeA&gt;(&<b>mut</b> _vault.coin_a, swap_res.amount_out);
-        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;CoinTypeB&gt;();
+        balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;StableCoinType&gt;(&<b>mut</b> _vault.coin_a, swap_res.amount_out);
+        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;();
     };
     event::swap(
         <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
@@ -1487,7 +1446,7 @@ Returns
         _vault.current_sqrt_price,
         swap_res.steps
     );
-    (balance_a_ret, balance_b_ret, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;CoinTypeA, CoinTypeB&gt; {
+    (balance_a_ret, balance_b_ret, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
         vault_id: <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         a2b: _a2b,
         pay_amount: swap_res.amount_out + swap_res.amount_in
@@ -1505,7 +1464,7 @@ Returns
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;, _a2b: bool, _by_amount_in: bool, _sqrt_price_limit: u128, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _sqrt_price_limit: u128, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1514,8 +1473,8 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;CoinTypeA, CoinTypeB&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;,
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _a2b: bool,
     _by_amount_in: bool,
     _sqrt_price_limit: u128,
@@ -1596,7 +1555,7 @@ Read Functions
 vault info
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
 </code></pre>
 
 
@@ -1605,7 +1564,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;): ID {
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): ID {
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(_vault)
 }
 </code></pre>
@@ -1620,7 +1579,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;): u128
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
 </code></pre>
 
 
@@ -1629,7 +1588,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
     _vault.current_sqrt_price
 }
 </code></pre>
@@ -1644,7 +1603,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;CoinTypeA, CoinTypeB&gt;): (u64, u64)
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): (u64, u64)
 </code></pre>
 
 
@@ -1653,10 +1612,10 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;CoinTypeA, CoinTypeB&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;CoinTypeA, CoinTypeB&gt;): (u64, u64) {
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): (u64, u64) {
     (
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;CoinTypeA&gt;(&_vault.coin_a),
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;CoinTypeB&gt;(&_vault.coin_b)
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;StableCoinType&gt;(&_vault.coin_a),
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&_vault.coin_b)
     )
 }
 </code></pre>
