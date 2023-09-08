@@ -93,6 +93,7 @@ pub async fn multi_get_full_transactions(
                     .with_input()
                     .with_effects()
                     .with_events()
+                    .with_balance_changes()
                     .with_raw_input(),
             ),
         )

@@ -6,7 +6,7 @@ use jsonrpsee_proc_macros::rpc;
 
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, EpochInfo, EpochPage, MoveCallMetrics, NetworkMetrics,
-    QueryObjectsPage, SuiObjectResponseQuery,
+    NetworkOverview, QueryObjectsPage, SuiObjectResponseQuery,
 };
 use sui_open_rpc_macros::open_rpc;
 use sui_types::sui_serde::BigInt;
@@ -45,6 +45,10 @@ pub trait ExtendedApi {
     /// Return Network metrics
     #[method(name = "getNetworkMetrics")]
     async fn get_network_metrics(&self) -> RpcResult<NetworkMetrics>;
+
+    /// Return Network overview
+    #[method(name = "getNetworkOverview")]
+    async fn get_network_overview(&self) -> RpcResult<NetworkOverview>;
 
     /// Return Network metrics
     #[method(name = "getMoveCallMetrics")]

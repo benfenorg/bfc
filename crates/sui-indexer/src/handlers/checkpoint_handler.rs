@@ -8,7 +8,7 @@ use fastcrypto::traits::ToFromBytes;
 use futures::future::join_all;
 use futures::FutureExt;
 use jsonrpsee::http_client::HttpClient;
-use move_core_types::ident_str;
+use move_core_types::{account_address::AccountAddress, ident_str};
 use tokio::sync::{
     mpsc::{self, Receiver, Sender},
     Mutex,
@@ -31,7 +31,6 @@ use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemStateTrait};
 use sui_types::SUI_SYSTEM_ADDRESS;
 
-use crate::errors::IndexerError;
 use crate::metrics::IndexerMetrics;
 use crate::models::checkpoints::Checkpoint;
 use crate::models::epoch::{DBEpochInfo, SystemEpochInfoEvent};
@@ -45,6 +44,7 @@ use crate::store::{
 use crate::types::{CheckpointTransactionBlockResponse, TemporaryTransactionBlockResponseStore};
 use crate::utils::multi_get_full_transactions;
 use crate::IndexerConfig;
+use crate::{errors::IndexerError, models::transaction_index::ChangedObject};
 
 const MAX_PARALLEL_DOWNLOADS: usize = 24;
 const DOWNLOAD_RETRY_INTERVAL_IN_SECS: u64 = 10;
@@ -833,7 +833,7 @@ where
             .into_iter()
             .flatten()
             .collect::<Vec<_>>();
-        let changed_objects = transactions
+        let changed_objects: Vec<ChangedObject> = transactions
             .iter()
             .flat_map(|tx| tx.get_changed_objects(checkpoint.epoch))
             .collect();
@@ -967,6 +967,17 @@ where
             .filter(|t| t.execution_success)
             .map(|t| t.transaction_count)
             .sum();
+        let total_transact_obc = db_transactions
+            .iter()
+            .filter(|t| t.execution_success)
+            .map(|t| t.transact_obc)
+            .sum();
+
+        let system_tick = db_transactions
+            .iter()
+            .filter(|t| t.sender == format!("0x{}", AccountAddress::ZERO.to_hex()))
+            .count()
+            == db_transactions.len();
 
         Ok((
             TemporaryCheckpointStore {
@@ -975,6 +986,8 @@ where
                     total_transactions,
                     total_successful_transactions,
                     total_successful_transaction_blocks as i64,
+                    total_transact_obc,
+                    system_tick,
                 )?,
                 transactions: db_transactions,
                 events,
