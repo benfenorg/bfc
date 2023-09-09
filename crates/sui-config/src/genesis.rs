@@ -71,6 +71,9 @@ pub struct TreasuryParameters {
 
     /// rebalance time interval in seconds
     pub time_interval: u32,
+
+    /// maximum state counter value
+    pub max_counter_times: u32
 }
 
 impl Default for TreasuryParameters {
@@ -82,6 +85,7 @@ impl Default for TreasuryParameters {
             initialize_price: 2u128.pow(64),
             base_point: 1000_000000000,
             time_interval: 3600 * 4,
+            max_counter_times: 5,
         }
     }
 }

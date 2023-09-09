@@ -42,6 +42,7 @@ module obc_system::obc_system_tests {
             18446744073709551616, // 2 ** 64
             3600 * 4,
             1000,
+            4,
             2000,
         );
         obc_system::create(

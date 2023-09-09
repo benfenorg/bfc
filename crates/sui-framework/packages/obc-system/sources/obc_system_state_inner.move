@@ -46,6 +46,7 @@ module obc_system::obc_system_state_inner {
         initialize_price: u128,
         time_interval: u32,
         base_point: u64,
+        max_counter_times: u32,
     }
 
     struct ObcSystemParameters has drop, copy {
@@ -161,6 +162,7 @@ module obc_system::obc_system_state_inner {
             treasury_parameters.position_number,
             treasury_parameters.tick_spacing,
             treasury_parameters.spacing_times,
+            treasury_parameters.max_counter_times,
             parameters.chain_start_timestamp_ms,
             ctx,
         );
@@ -215,6 +217,7 @@ module obc_system::obc_system_state_inner {
         initialize_price: u128,
         time_interval: u32,
         base_point: u64,
+        max_counter_times: u32,
         chain_start_timestamp_ms: u64,
     ): ObcSystemParameters {
         let treasury_parameters = TreasuryParameters {
@@ -223,6 +226,7 @@ module obc_system::obc_system_state_inner {
             spacing_times,
             initialize_price,
             time_interval,
+            max_counter_times,
             base_point,
         };
         ObcSystemParameters {

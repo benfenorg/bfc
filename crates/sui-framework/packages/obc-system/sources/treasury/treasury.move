@@ -44,24 +44,13 @@ module obc_system::treasury {
             obc_balance: balance::zero<OBC>(),
             supplies: bag::new(ctx),
             index: 0,
-            time_interval: time_interval,
+            time_interval,
             updated_at: 0,
             init: false,
         };
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
         treasury
-    }
-
-    public(friend) fun rebalance(_treasury: &mut Treasury) {
-        /// USD rebalance
-        let usd_vault_key = type_name::into_string(type_name::get<USD>());
-        let usd_vault = borrow_mut_vault<USD>(_treasury, usd_vault_key);
-        vault::rebalance<USD>(
-            usd_vault,
-            &mut _treasury.obc_balance,
-            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, usd_vault_key)
-        );
     }
 
     public fun index(_treasury: &Treasury): u64 {
@@ -107,8 +96,10 @@ module obc_system::treasury {
         _supply: Supply<StableCoinType>,
         _position_number: u32,
         _tick_spacing: u32,
+        _spacing_times: u32,
         _initialize_price: u128,
         _base_point: u64,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext
     ) {
@@ -116,9 +107,11 @@ module obc_system::treasury {
             _treasury,
             _supply,
             _tick_spacing,
+            _spacing_times,
             _position_number,
             _initialize_price,
             _base_point,
+            _max_counter_times,
             _ts,
             _ctx,
         );
@@ -132,6 +125,7 @@ module obc_system::treasury {
         _position_number: u32,
         _tick_spacing: u32,
         _spacing_times: u32,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext,
     ) {
@@ -139,9 +133,11 @@ module obc_system::treasury {
             _treasury,
             _supply,
             _tick_spacing,
+            _spacing_times,
             _position_number,
             _initialize_price,
             _base_point,
+            _max_counter_times,
             _ts,
             _ctx,
         );
@@ -161,6 +157,7 @@ module obc_system::treasury {
         _position_number: u32,
         _initialize_price: u128,
         _base_point: u64,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext
     ): String {
@@ -176,6 +173,7 @@ module obc_system::treasury {
             _position_number,
             _initialize_price,
             _base_point,
+            _max_counter_times,
             _ts,
             _ctx,
         );
@@ -322,15 +320,17 @@ module obc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
-
-        // check USD vault stat
-        let usd_mut_v = borrow_mut_vault<USD>(
-            _treasury,
-            get_vault_key<USD>(),
-        );
+        let obc_balance = &mut _treasury.obc_balance;
+        let supplies = &mut _treasury.supplies;
+        let usd_mut_v = dynamic_object_field::borrow_mut<String, Vault<USD>>(&mut _treasury.id, get_vault_key<USD>());
         let _state_counter = vault::check_state(usd_mut_v);
 
         // TODO vault rebalance
-
+        vault::rebalance(
+            usd_mut_v,
+            obc_balance,
+            bag::borrow_mut<String, Supply<USD>>(supplies, get_vault_key<USD>()),
+            _ctx
+        );
     }
 }

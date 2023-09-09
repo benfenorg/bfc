@@ -33,6 +33,11 @@ module obc_system::vault {
     const ERR_TICK_INDEX_OPTION_IS_NONE: u64 = 209;
     const ERR_AMOUNT_MISMATCH: u64 = 210;
     const ERR_POSITIONS_IS_NOT_EMPTY: u64 = 211;
+    const ERR_INVALID_SHAPE_KINDS: u64 = 212;
+
+    const SHAPE_EQUAL_SIZE: u8 = 0;
+    const SHAPE_DECREMENT_SIZE: u8 = 1;
+    const SHAPE_INCREMENT_SIZE: u8 = 2;
 
     struct Vault<phantom StableCoinType> has key, store {
         id: UID,
@@ -42,6 +47,7 @@ module obc_system::vault {
         /// 0 -- init, equal, 1 -- down, 2 -- up
         state: u8,
         state_counter: u32,
+        max_counter_times: u32,
         last_sqrt_price: u128,
 
         coin_a: Balance<StableCoinType>,
@@ -84,6 +90,7 @@ module obc_system::vault {
         _position_number: u32,
         _initialize_price: u128,
         _base_point: u64,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext,
     ): Vault<StableCoinType> {
@@ -110,6 +117,7 @@ module obc_system::vault {
             is_pause: false,
             index: _index,
             base_point: _base_point,
+            max_counter_times: _max_counter_times,
         }
     }
 
@@ -794,22 +802,16 @@ module obc_system::vault {
         _vault.state_counter
     }
 
-    public(friend) fun rebalance<StableCoinType>(
+    fun rebuild_positions_after_clean_liquidities<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
-        _obc_balance: &mut Balance<OBC>,
-        _supply: &mut Supply<StableCoinType>,
         _ctx: &mut TxContext
-    ) {
-        /// check state
-        let state = true;
-
-        /// first remove all liquidities
-        /// second close all position;
-        /// third remove all ticks
+    ): (Balance<StableCoinType>, Balance<OBC>, vector<vector<I32>>)
+    {
         let position_index = 0u64;
         let position_number = (_vault.position_number as u64);
         let balance0 = balance::zero<StableCoinType>();
         let balance1 = balance::zero<OBC>();
+        let spacing_times = _vault.spacing_times;
         while (position_index < position_number) {
             let position = position::borrow_mut_position(&mut _vault.position_manager, position_index);
             let liquidity_delta = position::get_liquidity(position);
@@ -818,17 +820,22 @@ module obc_system::vault {
             balance::join(&mut balance1, _balance1);
             position::close_position(&mut _vault.position_manager, position_index);
         };
-
-        init_positions(_vault, _vault.spacing_times, _ctx);
-        /// calculate and increase liquidity
-
+        init_positions(_vault, spacing_times, _ctx);
         let ticks = tick::get_ticks(
             &_vault.tick_manager,
             _vault.current_tick_index,
             _vault.spacing_times,
             _vault.position_number
         );
-        let middle_tick = vector::borrow(&ticks, (_vault.position_number / 2 as u64));
+        (balance0, balance1, ticks)
+    }
+
+    fun get_liquidity_from_base_point<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _ticks: &vector<vector<I32>>
+    ): u128
+    {
+        let middle_tick = vector::borrow(_ticks, (_vault.position_number / 2 as u64));
         let (tick_lower_index, tick_upper_index) = (vector::borrow(middle_tick, 0), vector::borrow(middle_tick, 1));
         let (liquidity, _, _) = clmm_math::get_liquidity_by_amount(
             *tick_lower_index,
@@ -838,27 +845,61 @@ module obc_system::vault {
             _vault.base_point,
             false
         );
+        liquidity
+    }
+
+    fun positions_liquidity_size_balance<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _ticks: &vector<vector<I32>>,
+        _shape: u8
+    ): vector<u128> {
+        /// base point position liquidity
+        let liquidity = get_liquidity_from_base_point(_vault, _ticks);
         let liquidities = vector::empty<u128>();
-        if (state) {
-            let rate_index = min_liquidity_rate();
-            while (rate_index <= max_liquidity_rate()) {
-                vector::push_back(&mut liquidities, liquidity * rate_index / base_liquidity_rate());
-                rate_index = rate_index + 1;
+        let index: u128 ;
+        let length: u128;
+        if (_shape == SHAPE_EQUAL_SIZE) {
+            index = 0;
+            length = (_vault.position_number as u128);
+            while (index < length) {
+                vector::push_back(&mut liquidities, liquidity);
+                index = index + 1;
+            };
+        } else if (_shape == SHAPE_INCREMENT_SIZE) {
+            index = min_liquidity_rate();
+            length = max_liquidity_rate();
+            while (index <= length) {
+                vector::push_back(&mut liquidities, liquidity * index / base_liquidity_rate());
+                index = index + 1;
             };
         } else {
-            let rate_index = max_liquidity_rate();
-            while (rate_index >= min_liquidity_rate()) {
-                vector::push_back(&mut liquidities, liquidity * rate_index / base_liquidity_rate());
-                rate_index = rate_index - 1;
+            assert!(_shape == SHAPE_DECREMENT_SIZE, ERR_INVALID_SHAPE_KINDS);
+            index = max_liquidity_rate();
+            length = min_liquidity_rate();
+            while (index >= length) {
+                vector::push_back(&mut liquidities, liquidity * index / base_liquidity_rate());
+                index = index - 1;
             };
         };
+        liquidities
+    }
+
+    fun rebalance_internal<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _obc_balance: &mut Balance<OBC>,
+        _supply: &mut Supply<StableCoinType>,
+        _balance0: Balance<StableCoinType>,
+        _balance1: Balance<OBC>,
+        _liquidities: vector<u128>
+    )
+    {
         let index = 0;
-        let length = vector::length(&liquidities);
+        let length = vector::length(&_liquidities);
         let (total_a, total_b) = (0, 0);
         while (index < length) {
-            let receipt = add_liquidity(_vault, index, *vector::borrow(&liquidities, index));
+            let receipt = add_liquidity(_vault, index, *vector::borrow(&_liquidities, index));
             let AddLiquidityReceipt {
-                vault_id: ID,
+                vault_id: _,
                 amount_a,
                 amount_b
             } = receipt;
@@ -867,27 +908,49 @@ module obc_system::vault {
             index = index + 1;
         };
 
-        /// after open position and add all liquidity
-        /// check obc balance and stablecoin balance
-        let balance0_value = balance::value(&balance0);
-        let balance1_value = balance::value(&balance1);
+        let balance0_value = balance::value(&_balance0);
+        let balance1_value = balance::value(&_balance1);
         if (balance0_value < total_a) {
-            let _balance0 = balance::increase_supply(_supply, total_a - balance0_value);
-            balance::join(&mut balance0, _balance0);
+            balance::join(&mut _balance0, balance::increase_supply(_supply, total_a - balance0_value));
         }  else if (balance0_value > total_a) {
-            let _balance0 = balance::split(&mut balance0, balance0_value - total_a);
-            balance::decrease_supply(_supply, _balance0);
+            balance::decrease_supply(_supply, balance::split(&mut _balance0, balance0_value - total_a));
         };
 
         if (balance1_value < total_b) {
-            let _balance1 = balance::split(_obc_balance, total_b - balance1_value);
-            balance::join(&mut balance1, _balance1);
+            balance::join(&mut _balance1, balance::split(_obc_balance, total_b - balance1_value));
         } else if (balance1_value > total_a) {
-            let _balance1 = balance::split(&mut balance1, balance1_value - total_b);
-            balance::join(_obc_balance, _balance1);
+            balance::join(_obc_balance, balance::split(&mut _balance1, balance1_value - total_b));
         };
 
-        balance::join(&mut _vault.coin_a, balance0);
-        balance::join(&mut _vault.coin_b, balance1);
+        balance::join(&mut _vault.coin_a, _balance0);
+        balance::join(&mut _vault.coin_b, _balance1);
+    }
+
+    public(friend) fun rebalance<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _obc_balance: &mut Balance<OBC>,
+        _supply: &mut Supply<StableCoinType>,
+        _ctx: &mut TxContext
+    ) {
+        let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
+        let shape = SHAPE_EQUAL_SIZE;
+        if (_vault.state_counter >= _vault.max_counter_times) {
+            if (_vault.state == 1) {
+                shape = SHAPE_DECREMENT_SIZE;
+            } else {
+                shape = SHAPE_INCREMENT_SIZE;
+            };
+            /// reset state counter
+            _vault.state_counter = 0;
+        };
+        let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape);
+        rebalance_internal(
+            _vault,
+            _obc_balance,
+            _supply,
+            balance0,
+            balance1,
+            liquidities
+        );
     }
 }
