@@ -807,7 +807,7 @@ module obc_system::vault {
         _ctx: &mut TxContext
     ): (Balance<StableCoinType>, Balance<OBC>, vector<vector<I32>>)
     {
-        let position_index = 0u64;
+        let position_index = 1u64;
         let position_number = (_vault.position_number as u64);
         let balance0 = balance::zero<StableCoinType>();
         let balance1 = balance::zero<OBC>();
@@ -819,6 +819,7 @@ module obc_system::vault {
             balance::join(&mut balance0, _balance0);
             balance::join(&mut balance1, _balance1);
             position::close_position(&mut _vault.position_manager, position_index);
+            position_index = position_index + 1;
         };
         init_positions(_vault, spacing_times, _ctx);
         let ticks = tick::get_ticks(
