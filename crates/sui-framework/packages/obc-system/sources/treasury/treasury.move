@@ -18,6 +18,8 @@ module obc_system::treasury {
     use obc_system::vault::{Self, Vault};
 
     friend obc_system::obc_system_state_inner;
+    #[test_only]
+    friend obc_system::treasury_test;
 
     // === Errors ===
     const ERR_POOL_HAS_REGISTERED: u64 = 100;
@@ -141,7 +143,7 @@ module obc_system::treasury {
             _ts,
             _ctx,
         );
-        vault::init_positions<StableCoinType>(
+        _ = vault::init_positions<StableCoinType>(
             borrow_mut_vault<StableCoinType>(_treasury, vault_key),
             _spacing_times,
             _ctx,
@@ -200,7 +202,7 @@ module obc_system::treasury {
 
     ///  ======= Swap
     /// Mint swap obc to stablecoin
-    public(friend) entry fun mint<StableCoinType>(
+    public entry fun mint<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_obc: Coin<OBC>,
         _amount: u64,
@@ -218,7 +220,7 @@ module obc_system::treasury {
     }
 
     /// Burn swap stablecoin to obc
-    public(friend) entry fun redeem<StableCoinType>(
+    public entry fun redeem<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_sc: Coin<StableCoinType>,
         _amount: u64,
@@ -324,9 +326,8 @@ module obc_system::treasury {
             &mut _treasury.id,
             get_vault_key<USD>()
         );
-        let _state_counter = vault::check_state(usd_mut_v);
+        vault::check_state(usd_mut_v);
 
-        // TODO vault rebalance
         vault::rebalance(
             usd_mut_v,
             &mut _treasury.obc_balance,
