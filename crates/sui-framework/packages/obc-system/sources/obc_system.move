@@ -1,4 +1,5 @@
 module obc_system::obc_system {
+    use sui::address::max;
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
@@ -188,6 +189,7 @@ module obc_system::obc_system {
         initialize_price: u128,
         time_interval: u32,
         base_point: u64,
+        max_counter_times: u32,
         chain_start_timestamp_ms: u64,
     ): ObcSystemParameters {
         obc_system_state_inner::obc_system_stat_parameter(
@@ -197,6 +199,7 @@ module obc_system::obc_system {
             initialize_price,
             time_interval,
             base_point,
+            max_counter_times,
             chain_start_timestamp_ms,
         )
     }
