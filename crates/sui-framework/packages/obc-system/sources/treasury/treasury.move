@@ -320,16 +320,17 @@ module obc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        let obc_balance = &mut _treasury.obc_balance;
-        let supplies = &mut _treasury.supplies;
-        let usd_mut_v = dynamic_object_field::borrow_mut<String, Vault<USD>>(&mut _treasury.id, get_vault_key<USD>());
+        let usd_mut_v = dynamic_object_field::borrow_mut<String, Vault<USD>>(
+            &mut _treasury.id,
+            get_vault_key<USD>()
+        );
         let _state_counter = vault::check_state(usd_mut_v);
 
         // TODO vault rebalance
         vault::rebalance(
             usd_mut_v,
-            obc_balance,
-            bag::borrow_mut<String, Supply<USD>>(supplies, get_vault_key<USD>()),
+            &mut _treasury.obc_balance,
+            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, get_vault_key<USD>()),
             _ctx
         );
     }
