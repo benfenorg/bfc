@@ -888,8 +888,8 @@ impl SuiClientCommands {
                                );
                            info!("exchange gas coin result: {}", result);
                            new_gas = None;
-                       } else {
-                           return Err(anyhow!("Provided type [{type_}] is not stable coin."))
+                       } else if ! type_.is_gas_coin()  {
+                           return Err(anyhow!("Provided type [{type_}] is not gas coin."))
                        }
                    }
                     let tx_data =

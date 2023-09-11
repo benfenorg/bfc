@@ -14,7 +14,11 @@ use sui_types::transaction::{
     TEST_ONLY_GAS_UNIT_FOR_PUBLISH, TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN,
     TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
 };
+use sui_types::governance::{ADD_GAS_COIN_FUN_NAME, INIT_EXCHANGE_FUN_NAME};
 use tokio::time::sleep;
+use tracing::info;
+use sui_types::{OBC_SYSTEM_PACKAGE_ID, OBC_SYSTEM_STATE_OBJECT_ID};
+use sui_types::obc_system_state::OBC_SYSTEM_MODULE_NAME;
 
 use sui::client_commands::SwitchResponse;
 use sui::{
@@ -38,9 +42,9 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_swarm_config::genesis_config::{AccountConfig, GenesisConfig};
 use sui_swarm_config::network_config::NetworkConfig;
 use sui_types::base_types::{SequenceNumber, SuiAddress};
-use sui_types::crypto::{Ed25519SuiSignature, Secp256k1SuiSignature, SignatureScheme, SuiKeyPair, SuiSignatureInner};
+use sui_types::crypto::{AccountKeyPair, deterministic_random_account_key, Ed25519SuiSignature, Secp256k1SuiSignature, SignatureScheme, SuiKeyPair, SuiSignatureInner};
 use sui_types::error::SuiObjectResponseError;
-use sui_types::{base_types::ObjectID, crypto::get_key_pair, gas_coin::GasCoin, OBC_SYSTEM_ADDRESS};
+use sui_types::{base_types::ObjectID, crypto::get_key_pair, gas_coin::GasCoin};
 use test_cluster::TestClusterBuilder;
 
 const TEST_DATA_DIR: &str = "tests/data/";
@@ -506,6 +510,7 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
     assert!(resp.is_err());
 
     let err_string = format!("{} ", resp.err().unwrap());
+    info!("create err: {}", err_string);
     assert!(err_string.contains("Expected 2 args, found 1"));
 
     // Try a transfer
@@ -563,24 +568,70 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 #[sim_test]
 async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     let obj_id = ObjectID::random();
-    let address = SuiAddress::random_for_testing_only();
-    let mut gas_object = Object::with_stable_id_owner_version_for_testing(
+    let (address, keypair): (SuiAddress, AccountKeyPair) =
+        deterministic_random_account_key();
+    let gas_object = Object::with_stable_id_owner_version_for_testing(
         obj_id,
         SequenceNumber::from_u64(1),
         address,
     );
-    let obc_gas = Object::with_owner_for_testing(OBC_SYSTEM_ADDRESS.into());
+    let obc_object = Object::with_id_owner_gas_for_testing(ObjectID::random(), address, 100000000000);
+    let exchange_id = ObjectID::random();
+    let obc_exchange = Object::with_id_owner_gas_for_testing(exchange_id, address, 200000000000);
 
     let mut test_cluster = TestClusterBuilder::new()
+        .with_accounts(vec![AccountConfig {
+            gas_amounts: vec![30_000_000_000_000_000],
+            address: Some(address),
+        }])
         .with_objects([
-            gas_object.clone(), obc_gas
+            gas_object.clone(), obc_object, obc_exchange
         ])
         .build()
         .await;
-    let sender = test_cluster.get_address_0();
-    gas_object.transfer(sender);
+
     let rgp = test_cluster.get_reference_gas_price().await;
     let context = &mut test_cluster.wallet;
+    context
+        .config
+        .keystore
+        .add_key(SuiKeyPair::Ed25519(keypair))?;
+    // add stable gas coin to config map
+    let args = vec![
+        SuiJsonValue::new(json!(OBC_SYSTEM_STATE_OBJECT_ID))?,
+        SuiJsonValue::new(json!(obj_id))?,
+        SuiJsonValue::new(json!(1000000000))?,
+    ];
+    let resp = SuiClientCommands::Call {
+        package: OBC_SYSTEM_PACKAGE_ID,
+        module: OBC_SYSTEM_MODULE_NAME.to_string(),
+        function: ADD_GAS_COIN_FUN_NAME.to_string(),
+        type_args: vec![],
+        args,
+        gas: None,
+        gas_budget: TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        serialize_unsigned_transaction: false,
+        serialize_signed_transaction: false,
+    }.execute(context).await?;
+    resp.print(true);
+    //add obc to exchange pool
+    let args = vec![
+        SuiJsonValue::new(json!(OBC_SYSTEM_STATE_OBJECT_ID))?,
+        SuiJsonValue::new(json!(exchange_id))?,
+    ];
+    let resp = SuiClientCommands::Call {
+        package: OBC_SYSTEM_PACKAGE_ID,
+        module: OBC_SYSTEM_MODULE_NAME.to_string(),
+        function: INIT_EXCHANGE_FUN_NAME.to_string(),
+        type_args: vec![],
+        args,
+        gas: None,
+        gas_budget: TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        serialize_unsigned_transaction: false,
+        serialize_signed_transaction: false,
+    }.execute(context).await?;
+    resp.print(true);
+
     let mut package_path = PathBuf::from(TEST_DATA_DIR);
     package_path.push("move_call_args_linter");
     let build_config = BuildConfig::new_for_testing().config;
@@ -625,7 +676,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     // Create the args
     let args = vec![
         SuiJsonValue::new(json!("888888"))?,
-        SuiJsonValue::new(json!(sender))?,
+        SuiJsonValue::new(json!(address))?,
     ];
 
     // Test case with no gas specified
@@ -645,7 +696,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     resp.print(true);
 
     // Get the created object
-    let _created_obj: ObjectID = if let SuiClientCommandResult::Call(resp) = resp {
+    let created_obj: ObjectID = if let SuiClientCommandResult::Call(resp) = resp {
         resp.effects
             .unwrap()
             .created()
@@ -657,25 +708,24 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         panic!();
     };
     //
-    // let args = vec![
-    //     SuiJsonValue::new(json!(created_obj))?,
-    //     SuiJsonValue::new(json!(sender))?,
-    // ];
-    //
-    // let resp = SuiClientCommands::Call {
-    //     package,
-    //     module: "object_basics".to_string(),
-    //     function: "transfer".to_string(),
-    //     type_args: vec![],
-    //     args: args.to_vec(),
-    //     gas: Some(gas_object.id()),
-    //     gas_budget: rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
-    //     serialize_unsigned_transaction: false,
-    //     serialize_signed_transaction: false,
-    // }
-    //     .execute(context)
-    //     .await?;
-    // info!("resp: {}", resp);
+    let args = vec![
+        SuiJsonValue::new(json!(created_obj))?,
+        SuiJsonValue::new(json!(address))?,
+    ];
+
+    let _resp = SuiClientCommands::Call {
+        package,
+        module: "object_basics".to_string(),
+        function: "transfer".to_string(),
+        type_args: vec![],
+        args: args.to_vec(),
+        gas: Some(gas_object.id()),
+        gas_budget: rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        serialize_unsigned_transaction: false,
+        serialize_signed_transaction: false,
+    }
+        .execute(context)
+        .await?;
     Ok(())
 }
 

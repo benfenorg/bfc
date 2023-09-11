@@ -23,7 +23,7 @@ use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::{ObjectID, ObjectInfo, ObjectRef, ObjectType, SuiAddress};
 use sui_types::error::UserInputError;
 use sui_types::gas_coin::GasCoin;
-use sui_types::governance::{ADD_STAKE_MUL_COIN_FUN_NAME, EXCHANGE_GAS_FUN_NAME, WITHDRAW_STAKE_FUN_NAME};
+use sui_types::governance::{ADD_GAS_COIN_FUN_NAME, ADD_STAKE_MUL_COIN_FUN_NAME, EXCHANGE_GAS_FUN_NAME, WITHDRAW_STAKE_FUN_NAME};
 use sui_types::move_package::MovePackage;
 use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
@@ -31,7 +31,7 @@ use sui_types::sui_system_state::SUI_SYSTEM_MODULE_NAME;
 use sui_types::transaction::{
     Argument, CallArg, Command, InputObjectKind, ObjectArg, TransactionData, TransactionKind,
 };
-use sui_types::{coin, fp_ensure, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{coin, fp_ensure, OBC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 use tracing::info;
 use sui_types::obc_system_state::OBC_SYSTEM_MODULE_NAME;
 
@@ -802,9 +802,8 @@ impl TransactionBuilder {
         gas_budget: u64,
     ) -> anyhow::Result<TransactionData> {
         let gas_price = self.0.get_reference_gas_price().await?;
-        let payer = SuiAddress::from(OBC_SYSTEM_ADDRESS);
         let gas = self
-            .select_gas(payer, None, gas_budget, vec![], gas_price)
+            .select_gas(signer, None, gas_budget, vec![], gas_price)
             .await?;
         let (stable_ref, coin_type) = self.get_object_ref_and_type(stable).await?;
         let ObjectType::Struct(type_) = &coin_type else{
@@ -832,13 +831,58 @@ impl TransactionBuilder {
             ));
             builder.finish()
         };
-        Ok(TransactionData::new_programmable_allow_sponsor(
+        Ok(TransactionData::new_programmable(
             signer,
             vec![gas],
             pt,
             gas_budget,
             gas_price,
-            signer, //todo modify to may public sign address
+        ))
+    }
+
+    pub async fn request_add_gas_coin(
+        &self,
+        signer: SuiAddress,
+        stable: ObjectID,
+        rate: u64,
+        gas_budget: u64,
+    ) -> anyhow::Result<TransactionData> {
+        let gas_price = self.0.get_reference_gas_price().await?;
+        let gas = self
+            .select_gas(signer, None, gas_budget, vec![], gas_price)
+            .await?;
+        let (stable_ref, coin_type) = self.get_object_ref_and_type(stable).await?;
+        let ObjectType::Struct(type_) = &coin_type else{
+            return Err(anyhow!("Provided object [{stable}] is not a move object."))
+        };
+        ensure!(
+            type_.is_coin(),
+            "Expecting either Coin<T> input coin objects. Received [{type_}]"
+        );
+
+        let pt = {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            let arguments = vec![
+                builder.input(CallArg::OBC_SYSTEM_MUT).unwrap(),
+                builder
+                    .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref))).unwrap(),
+                builder.pure(rate).unwrap(),
+            ];
+            builder.command(Command::move_call(
+                OBC_SYSTEM_PACKAGE_ID,
+                OBC_SYSTEM_MODULE_NAME.to_owned(),
+                ADD_GAS_COIN_FUN_NAME.to_owned(),
+                vec![],
+                arguments,
+            ));
+            builder.finish()
+        };
+        Ok(TransactionData::new_programmable(
+            signer,
+            vec![gas],
+            pt,
+            gas_budget,
+            gas_price,
         ))
     }
 
