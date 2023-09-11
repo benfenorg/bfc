@@ -1163,7 +1163,7 @@ module obc_system::obc_dao {
     public fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
         let flag = vec_map::contains(&dao.curProposalStatus, &proposalInfo.pid);
         if (flag) {
-            vec_map::remove_entry_by_idx(&mut dao.curProposalStatus, proposalInfo.pid);
+            vec_map::remove(&mut dao.curProposalStatus, &proposalInfo.pid);
         };
 
         vec_map::insert(&mut (dao.curProposalStatus), proposalInfo.pid, curProposalStatus);

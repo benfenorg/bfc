@@ -251,7 +251,7 @@ const POSITIVE_INT_BUCKETS: &[f64] = &[
     1., 2., 5., 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000.,
 ];
 
-const PROPOSAL_AGREE_STATE: u8 = 4;
+const PROPOSAL_EXECUTABLE_STATE: u8 = 6;
 
 const LATENCY_SEC_BUCKETS: &[f64] = &[
     0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 20.,
@@ -3890,7 +3890,7 @@ impl AuthorityState {
         let mut proposal_result = false;
         // todo judge proposal.value
         for proposal in self.proposal_state_map.lock().contents.to_vec() {
-            if proposal.key == version_id && proposal.value > 0 {
+            if proposal.key == version_id && proposal.value == PROPOSAL_EXECUTABLE_STATE {
                 proposal_result = true;
             }
         }
