@@ -145,6 +145,7 @@ module obc_system::obc_system_state_inner {
         exchange_inner::add_obc_to_pool(&mut self.exchange_pool, coin)
     }
 
+    /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<USD>,
         parameters: ObcSystemParameters,
@@ -164,6 +165,47 @@ module obc_system::obc_system_state_inner {
             ctx,
         );
         t
+    }
+
+    /// swap obc to stablecoin
+    public(friend) fun mint<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        coin_obc: Coin<OBC>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::mint<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx);
+    }
+
+    /// swap stablecoin to obc
+    public(friend) fun redeem<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        coin_sc: Coin<StableCoinType>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
+    }
+
+    /// X-treasury
+    public fun next_epoch_obc_required(self: &ObcSystemStateInner): u64 {
+        treasury::next_epoch_obc_required(&self.treasury)
+    }
+
+    public fun treasury_balance(self: &ObcSystemStateInner): u64 {
+        treasury::get_balance(&self.treasury)
+    }
+
+    public(friend) fun deposit_to_treasury(self: &mut ObcSystemStateInner, coin_obc: Coin<OBC>) {
+        treasury::deposit(&mut self.treasury, coin_obc);
+    }
+
+    public(friend) fun rebalance(
+        self: &mut ObcSystemStateInner,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        treasury::rebalance(&mut self.treasury, clock, ctx);
     }
 
     public(friend) fun obc_system_stat_parameter(
