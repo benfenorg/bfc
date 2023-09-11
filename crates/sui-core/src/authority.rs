@@ -104,7 +104,7 @@ pub use sui_types::temporary_store::TemporaryStore;
 use sui_types::temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
 };
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, OBC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::obc_system_state::ObcSystemState;
@@ -2469,6 +2469,16 @@ impl AuthorityState {
             .compute_object_reference())
     }
 
+
+    pub async fn get_obc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
+        Ok(self
+            .get_object(&OBC_SYSTEM_ADDRESS.into())
+            .await?
+            .expect("obc framework object should always exist")
+            .compute_object_reference())
+    }
+
+
     /// This function should be called once and exactly once during reconfiguration.
     /// Instead of this function use AuthorityEpochStore::epoch_start_configuration() to access this object everywhere
     /// besides when we are reading fields for the current epoch
@@ -3921,10 +3931,11 @@ impl AuthorityState {
         // next_epoch_protocol_version
         let proposal_result = false;
         if proposal_result {
+            info!("=======skip system package update, proposal fail=======");
             next_epoch_system_packages.clear();
             next_epoch_protocol_version = epoch_store.protocol_version()
         }else{
-
+            info!("=======shou system package update, proposal success=======");
         };
 
 
