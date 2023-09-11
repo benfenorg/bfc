@@ -2,7 +2,6 @@ module obc_system::vault {
     use std::vector;
 
     use sui::balance::{Self, Balance, Supply};
-    use sui::bcs::peel_vec_u8;
     use sui::coin::{Self, Coin};
     use sui::obc::OBC;
     use sui::object;
@@ -126,7 +125,7 @@ module obc_system::vault {
         _vault: &mut Vault<StableCoinType>,
         _spacing_times: u32,
         _ctx: &mut TxContext
-    ) {
+    ): vector<vector<I32>> {
         assert!(position::get_total_positions(&_vault.position_manager) == 0, ERR_POSITIONS_IS_NOT_EMPTY);
         let ticks = tick::get_ticks(
             &_vault.tick_manager,
@@ -145,6 +144,7 @@ module obc_system::vault {
             );
             index = index + 1;
         };
+        ticks
     }
 
     fun open_position<StableCoinType>(
@@ -509,7 +509,7 @@ module obc_system::vault {
                 update_swap_result(&mut swap_result, amount_in, amount_out);
             };
             vector::push_back(&mut swap_result.step_results, SwapStepResult {
-                current_sqrt_price: current_sqrt_price,
+                current_sqrt_price,
                 target_sqrt_price: target_sqrt_price,
                 current_liquidity: liquidity,
                 amount_in: amount_in,
@@ -765,30 +765,30 @@ module obc_system::vault {
     }
 
     /// State checker
-    public(friend) fun check_state<StableCoinType>(_vault: &mut Vault<StableCoinType>): u32 {
+    public(friend) fun check_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
         let price = _vault.current_sqrt_price;
         let last_price = _vault.last_sqrt_price;
         if (price < last_price) {
             // down
-            if (_vault.state == 1) {
+            if (_vault.state == SHAPE_DECREMENT_SIZE) {
                 _vault.state_counter = _vault.state_counter + 1;
             } else {
                 // reset counter = 0  & set state = down
                 _vault.state_counter = 0;
-                _vault.state = 1;
+                _vault.state = SHAPE_DECREMENT_SIZE;
             }
         } else if (price > last_price) {
             // up
-            if (_vault.state == 2) {
+            if (_vault.state == SHAPE_INCREMENT_SIZE) {
                 _vault.state_counter = _vault.state_counter + 1;
             } else {
                 // reset counter = 0  & set state = up
                 _vault.state_counter = 0;
-                _vault.state = 2;
+                _vault.state = SHAPE_INCREMENT_SIZE;
             }
         } else {
             // equal
-            _vault.state = 0;
+            _vault.state = SHAPE_EQUAL_SIZE;
             _vault.state_counter = 0;
         };
 
@@ -799,7 +799,6 @@ module obc_system::vault {
             _vault.state,
             _vault.state_counter,
         );
-        _vault.state_counter
     }
 
     fun rebuild_positions_after_clean_liquidities<StableCoinType>(
@@ -821,13 +820,7 @@ module obc_system::vault {
             position::close_position(&mut _vault.position_manager, position_index);
             position_index = position_index + 1;
         };
-        init_positions(_vault, spacing_times, _ctx);
-        let ticks = tick::get_ticks(
-            &_vault.tick_manager,
-            _vault.current_tick_index,
-            _vault.spacing_times,
-            _vault.position_number
-        );
+        let ticks = init_positions(_vault, spacing_times, _ctx);
         (balance0, balance1, ticks)
     }
 
@@ -854,7 +847,7 @@ module obc_system::vault {
         _ticks: &vector<vector<I32>>,
         _shape: u8
     ): vector<u128> {
-        /// base point position liquidity
+        // base point position liquidity
         let liquidity = get_liquidity_from_base_point(_vault, _ticks);
         let liquidities = vector::empty<u128>();
         let index: u128 ;
@@ -941,7 +934,7 @@ module obc_system::vault {
             } else {
                 shape = SHAPE_INCREMENT_SIZE;
             };
-            /// reset state counter
+            // reset state counter
             _vault.state_counter = 0;
         };
         let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape);

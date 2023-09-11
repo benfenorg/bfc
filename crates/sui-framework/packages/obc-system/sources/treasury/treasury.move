@@ -141,7 +141,7 @@ module obc_system::treasury {
             _ts,
             _ctx,
         );
-        vault::init_positions<StableCoinType>(
+        _ = vault::init_positions<StableCoinType>(
             borrow_mut_vault<StableCoinType>(_treasury, vault_key),
             _spacing_times,
             _ctx,
@@ -324,9 +324,8 @@ module obc_system::treasury {
             &mut _treasury.id,
             get_vault_key<USD>()
         );
-        let _state_counter = vault::check_state(usd_mut_v);
+        vault::check_state(usd_mut_v);
 
-        // TODO vault rebalance
         vault::rebalance(
             usd_mut_v,
             &mut _treasury.obc_balance,
