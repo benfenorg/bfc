@@ -20,6 +20,8 @@ module obc_system::treasury {
     friend obc_system::obc_system_state_inner;
     #[test_only]
     friend obc_system::treasury_test;
+    #[test_only]
+    friend obc_system::vault_test;
 
     // === Errors ===
     const ERR_POOL_HAS_REGISTERED: u64 = 100;

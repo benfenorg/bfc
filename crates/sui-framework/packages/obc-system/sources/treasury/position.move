@@ -167,13 +167,13 @@ module obc_system::position {
     )
     {
         let position = linked_table::remove(&mut _manager.positions, _index);
-        assert!(!is_empty(&position), ERR_POSITION_INFO_NOT_EMPTY);
+        assert!(is_empty(&position), ERR_POSITION_INFO_NOT_EMPTY);
         destory(position);
+        _manager.position_index = _manager.position_index - 1;
     }
 
     /// add/remove liquidity
     public(friend) fun increase_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
-        assert!(!is_empty(position), ERR_POSITION_INFO_EMPTY);
         assert!(math_u128::add_check(_liquidity_delta, position.liquidity), ERR_U128_ADD_CHECK_FAILED);
         position.liquidity = position.liquidity + _liquidity_delta;
         position.liquidity
