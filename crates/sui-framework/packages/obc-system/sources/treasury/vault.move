@@ -20,6 +20,9 @@ module obc_system::vault {
 
     friend obc_system::treasury;
 
+    #[test_only]
+    friend obc_system::vault_test;
+
     const ERR_AMOUNT_INSUFFICIENT: u64 = 200;
     const ERR_MAX_AMOUNT: u64 = 201;
     const ERR_MAX_LIQUIDITY: u64 = 202;
@@ -193,7 +196,8 @@ module obc_system::vault {
     ///     - `amount_b` The amount of `OBC`
     public fun get_position_amounts<StableCoinType>(
         _vault: &Vault<StableCoinType>,
-        _index: u64
+        _index: u64,
+        _round_up: bool
     ): (u64, u64) {
         let position = position::borrow_position(
             &_vault.position_manager,
@@ -206,7 +210,7 @@ module obc_system::vault {
             _vault.current_tick_index,
             _vault.current_sqrt_price,
             position::get_liquidity(position),
-            false
+            _round_up
         )
     }
 
@@ -811,12 +815,14 @@ module obc_system::vault {
         let balance0 = balance::zero<StableCoinType>();
         let balance1 = balance::zero<OBC>();
         let spacing_times = _vault.spacing_times;
-        while (position_index < position_number) {
+        while (position_index <= position_number) {
             let position = position::borrow_mut_position(&mut _vault.position_manager, position_index);
             let liquidity_delta = position::get_liquidity(position);
-            let (_balance0, _balance1) = remove_liquidity(_vault, position_index, liquidity_delta);
-            balance::join(&mut balance0, _balance0);
-            balance::join(&mut balance1, _balance1);
+            if (liquidity_delta != 0) {
+                let (_balance0, _balance1) = remove_liquidity(_vault, position_index, liquidity_delta);
+                balance::join(&mut balance0, _balance0);
+                balance::join(&mut balance1, _balance1);
+            };
             position::close_position(&mut _vault.position_manager, position_index);
             position_index = position_index + 1;
         };
@@ -825,7 +831,7 @@ module obc_system::vault {
     }
 
     fun get_liquidity_from_base_point<StableCoinType>(
-        _vault: &mut Vault<StableCoinType>,
+        _vault: &Vault<StableCoinType>,
         _ticks: &vector<vector<I32>>
     ): u128
     {
@@ -842,8 +848,8 @@ module obc_system::vault {
         liquidity
     }
 
-    fun positions_liquidity_size_balance<StableCoinType>(
-        _vault: &mut Vault<StableCoinType>,
+    public(friend) fun positions_liquidity_size_balance<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
         _ticks: &vector<vector<I32>>,
         _shape: u8
     ): vector<u128> {
@@ -887,11 +893,17 @@ module obc_system::vault {
         _liquidities: vector<u128>
     )
     {
-        let index = 0;
+        let index = 0u64;
         let length = vector::length(&_liquidities);
+        let position_length = position::get_total_positions(&_vault.position_manager);
+        assert!(length == position_length, 1008611);
         let (total_a, total_b) = (0, 0);
         while (index < length) {
-            let receipt = add_liquidity(_vault, index, *vector::borrow(&_liquidities, index));
+            let receipt = add_liquidity(
+                _vault,
+                index + 1, // position index
+                *vector::borrow(&_liquidities, index)
+            );
             let AddLiquidityReceipt {
                 vault_id: _,
                 amount_a,
