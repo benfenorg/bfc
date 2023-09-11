@@ -19,6 +19,8 @@ module obc_system::vault {
     use obc_system::tick_math;
 
     friend obc_system::treasury;
+    #[test_only]
+    friend obc_system::treasury_test;
 
     #[test_only]
     friend obc_system::vault_test;
@@ -628,12 +630,12 @@ module obc_system::vault {
         let max_price = tick_math::max_sqrt_price();
         if (_a2b) {
             assert!(
-                _sqrt_price_limit >= _vault.current_sqrt_price && _sqrt_price_limit >= min_price,
+                min_price <= _sqrt_price_limit && _sqrt_price_limit > _vault.current_sqrt_price,
                 ERR_SQRT_PRICE_LIMIT_INVALID
             );
         } else {
             assert!(
-                _sqrt_price_limit <= _vault.current_sqrt_price && _sqrt_price_limit <= max_price,
+                _vault.current_sqrt_price < _sqrt_price_limit && _sqrt_price_limit <= max_price,
                 ERR_SQRT_PRICE_LIMIT_INVALID
             );
         };
@@ -680,7 +682,7 @@ module obc_system::vault {
         let current_sqrt_price = _vault.current_sqrt_price;
         while (remaining_amount > 0) {
             if (current_sqrt_price != _sqrt_price_limit) {
-                assert!(option_u64::is_none(&next_score), ERR_TICK_INDEX_OPTION_IS_NONE);
+                assert!(!option_u64::is_none(&next_score), ERR_TICK_INDEX_OPTION_IS_NONE);
                 let (tick, tick_score) = tick::borrow_tick_for_swap(
                     &_vault.tick_manager,
                     option_u64::borrow(&next_score),
@@ -743,6 +745,10 @@ module obc_system::vault {
 
     public fun vault_current_sqrt_price<StableCoinType>(_vault: &Vault<StableCoinType>): u128 {
         _vault.current_sqrt_price
+    }
+
+    public fun vault_current_tick_index<StableCoinType>(_vault: &Vault<StableCoinType>): I32 {
+        _vault.current_tick_index
     }
 
     public fun balances<StableCoinType>(_vault: &Vault<StableCoinType>): (u64, u64) {

@@ -16,6 +16,7 @@ module obc_system::treasury {
     use obc_system::usd::USD;
     use obc_system::event;
     use obc_system::vault::{Self, Vault};
+    use obc_system::tick_math;
 
     friend obc_system::obc_system_state_inner;
     #[test_only]
@@ -75,7 +76,7 @@ module obc_system::treasury {
         );
     }
 
-    fun get_vault_key<StableCoinType>(): String {
+    public fun get_vault_key<StableCoinType>(): String {
         type_name::into_string(type_name::get<StableCoinType>())
     }
 
@@ -261,7 +262,7 @@ module obc_system::treasury {
     ) {
         let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
-        let current_sqrt_price = vault::vault_current_sqrt_price(mut_vault);
+        let sqrt_price_limit= tick_math::get_default_sqrt_price_limit(_a2b);
         let (balance_a, balance_b) = vault::swap<StableCoinType>(
             mut_vault,
             _coin_a,
@@ -270,7 +271,7 @@ module obc_system::treasury {
             true,
             _amount,
             0, // ? unuse
-            current_sqrt_price,
+            sqrt_price_limit,
             _ctx
         );
         transfer_or_delete(balance_a, _ctx);
