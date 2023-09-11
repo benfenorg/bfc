@@ -11,6 +11,8 @@
 -  [Struct `ClosePositionEvent`](#0xc8_event_ClosePositionEvent)
 -  [Struct `LiquidityEvent`](#0xc8_event_LiquidityEvent)
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
+-  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
+-  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
 -  [Function `init_treasury`](#0xc8_event_init_treasury)
 -  [Function `create_vault`](#0xc8_event_create_vault)
 -  [Function `open_position`](#0xc8_event_open_position)
@@ -18,6 +20,8 @@
 -  [Function `add_liquidity`](#0xc8_event_add_liquidity)
 -  [Function `remove_liquidity`](#0xc8_event_remove_liquidity)
 -  [Function `swap`](#0xc8_event_swap)
+-  [Function `deposit`](#0xc8_event_deposit)
+-  [Function `update_state`](#0xc8_event_update_state)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -340,6 +344,78 @@
 
 </details>
 
+<a name="0xc8_event_DepositEvent"></a>
+
+## Struct `DepositEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>amount: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_UpdateStateEvent"></a>
+
+## Struct `UpdateStateEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>current_sqrt_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>last_sqrt_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>state: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>state_counter: u32</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="0xc8_event_init_treasury"></a>
 
 ## Function `init_treasury`
@@ -566,7 +642,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, atob: bool, amount_in: u64, amount_out: u64, vault_a_amount: u64, vault_b_amount: u64, before_sqrt_price: u128, after_sqrt_price: u128, steps: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_swap">swap</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, atob: bool, amount_in: u64, amount_out: u64, vault_a_amount: u64, vault_b_amount: u64, before_sqrt_price: u128, after_sqrt_price: u128, steps: u64)
 </code></pre>
 
 
@@ -575,7 +651,7 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="swap.md#0xc8_swap">swap</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_swap">swap</a>(
     vault_id: ID,
     atob: bool, // <b>true</b> a-&gt;b <b>false</b> b-&gt;a
     amount_in: u64,
@@ -597,6 +673,70 @@
             before_sqrt_price,
             after_sqrt_price,
             steps
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_deposit"></a>
+
+## Function `deposit`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_deposit">deposit</a>(amount: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_deposit">deposit</a>(amount: u64) {
+    emit(
+        <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> {
+            amount
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_update_state"></a>
+
+## Function `update_state`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(
+    current_sqrt_price: u128,
+    last_sqrt_price: u128,
+    state: u8,
+    state_counter: u32,
+) {
+    emit(
+        <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> {
+            current_sqrt_price,
+            last_sqrt_price,
+            state,
+            state_counter,
         }
     )
 }

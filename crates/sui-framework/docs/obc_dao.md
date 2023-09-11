@@ -24,7 +24,6 @@
 -  [Constants](#@Constants_0)
 -  [Function `getProposalRecord`](#0xc8_obc_dao_getProposalRecord)
 -  [Function `setProposalRecord`](#0xc8_obc_dao_setProposalRecord)
--  [Function `insertMap`](#0xc8_obc_dao_insertMap)
 -  [Function `getOBCDaoActionId`](#0xc8_obc_dao_getOBCDaoActionId)
 -  [Function `create_obcdao_action`](#0xc8_obc_dao_create_obcdao_action)
 -  [Function `create_dao`](#0xc8_obc_dao_create_dao)
@@ -906,6 +905,15 @@ Proposal state
 
 
 
+<a name="0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>: u64 = 19;
+</code></pre>
+
+
+
 <a name="0xc8_obc_dao_DEFAULT_TOKEN_ADDRESS"></a>
 
 
@@ -1108,32 +1116,6 @@ Error codes
 
 </details>
 
-<a name="0xc8_obc_dao_insertMap"></a>
-
-## Function `insertMap`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_insertMap">insertMap</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_insertMap">insertMap</a>(dao : &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>) {
-    <b>let</b> a : u64 = 0;
-    <b>let</b> b : u8 = 1;
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>( &<b>mut</b> dao.curProposalStatus, a, b)
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_obc_dao_getOBCDaoActionId"></a>
 
 ## Function `getOBCDaoActionId`
@@ -1234,14 +1216,14 @@ Error codes
 
     <b>let</b> daoInfo = <a href="obc_dao.md#0xc8_obc_dao_DaoGlobalInfo">DaoGlobalInfo</a>{
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
-        next_proposal_id: 0,
+        next_proposal_id: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
         next_action_id: 0,
         proposal_create_event: <a href="obc_dao.md#0xc8_obc_dao_ProposalCreatedEvent">ProposalCreatedEvent</a>{
-            proposal_id: 0,
+            proposal_id: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
             proposer: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
         },
         vote_changed_event: <a href="obc_dao.md#0xc8_obc_dao_VoteChangedEvent">VoteChangedEvent</a>{
-            proposal_id: 0,
+            proposal_id: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
             voter: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
             proposer: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
             agree: <b>false</b>,
@@ -2913,7 +2895,7 @@ remove terminated proposal from proposer
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">set_current_status_into_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, index: u64, curProposalStatus: u8)
+<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">set_current_status_into_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, proposalInfo: &<a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">obc_dao::ProposalInfo</a>, curProposalStatus: u8)
 </code></pre>
 
 
@@ -2922,13 +2904,13 @@ remove terminated proposal from proposer
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">set_current_status_into_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, index : u64, curProposalStatus: u8) {
-    <b>let</b> flag = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&dao.curProposalStatus, &index);
+<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">set_current_status_into_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, proposalInfo : &<a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">ProposalInfo</a>, curProposalStatus: u8) {
+    <b>let</b> flag = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&dao.curProposalStatus, &proposalInfo.pid);
     <b>if</b> (flag) {
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove_entry_by_idx">vec_map::remove_entry_by_idx</a>(&<b>mut</b> dao.curProposalStatus, index);
+        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> dao.curProposalStatus, &proposalInfo.pid);
     };
 
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.curProposalStatus), index, curProposalStatus);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.curProposalStatus), proposalInfo.pid, curProposalStatus);
 }
 </code></pre>
 
