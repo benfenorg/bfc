@@ -510,11 +510,11 @@ module obc_system::vault {
             };
             vector::push_back(&mut swap_result.step_results, SwapStepResult {
                 current_sqrt_price,
-                target_sqrt_price: target_sqrt_price,
+                target_sqrt_price,
                 current_liquidity: liquidity,
-                amount_in: amount_in,
-                amount_out: amount_out,
-                remainer_amount: remainer_amount,
+                amount_in,
+                amount_out,
+                remainer_amount,
                 current_tick_index: tick_index,
             });
             if (target_sqrt_price == next_sqrt_price) {
@@ -537,7 +537,7 @@ module obc_system::vault {
         pay_amount: u64,
     }
 
-    public fun swap<StableCoinType>(
+    public(friend) fun swap<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _coin_a: Coin<StableCoinType>,
         _coin_b: Coin<OBC>,
