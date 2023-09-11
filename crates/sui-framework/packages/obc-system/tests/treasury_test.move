@@ -8,22 +8,36 @@ module obc_system::treasury_test {
     use obc_system::treasury::{Self, Treasury};
 
     #[test]
-    public fun test_create_treasury() {
+    public fun test_treasury() {
         let owner = @0x0;
         let scenario_val = test_scenario::begin(owner);
 
         //create treasury
         test_scenario::next_tx(&mut scenario_val, owner);
-        let t = treasury::create_treasury(
-            3600 * 4,
-            test_scenario::ctx(&mut scenario_val),
-        );
+        {
+            let t = treasury::create_treasury(
+                3600 * 4,
+                test_scenario::ctx(&mut scenario_val),
+            );
+            transfer::public_share_object(t);
+        };
 
         // check info
-        assert!(treasury::index(&t) == 0, 0);
-        assert!(treasury::get_balance(&t) == 0, 1);
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            assert!(treasury::index(&t) == 0, 0);
+            assert!(treasury::get_balance(&t) == 0, 1);
+            test_scenario::return_shared(t);
+        };
 
-        transfer::public_share_object(t);
+        // create vault
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            test_scenario::return_shared(t);
+        };
+
         test_scenario::end(scenario_val);
     }
 }

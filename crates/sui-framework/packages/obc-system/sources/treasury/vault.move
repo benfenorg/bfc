@@ -147,7 +147,7 @@ module obc_system::vault {
         ticks
     }
 
-    fun open_position<StableCoinType>(
+    public(friend) fun open_position<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _tick_lower: I32,
         _tick_upper: I32,

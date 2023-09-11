@@ -494,7 +494,6 @@ module obc_system::clmm_math {
 
     #[test]
     fun test_compute_swap_step() {
-        use std::debug;
 
         let (current_sqrt_price, target_sqrt_price, liquidity, amount) = (
             1u128 << 64,
