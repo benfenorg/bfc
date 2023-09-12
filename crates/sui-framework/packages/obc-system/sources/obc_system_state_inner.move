@@ -241,13 +241,14 @@ module obc_system::obc_system_state_inner {
     public fun propose(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
+        version_id: u64,
         payment: Coin<OBC>,
         action_id: u64,
         action_delay: u64,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        obc_dao:: propose(&mut self.dao, manager_key, payment, action_id, action_delay, clock, ctx);
+        obc_dao:: propose(&mut self.dao, manager_key, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
     public fun destroy_terminated_proposal(

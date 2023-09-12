@@ -144,9 +144,13 @@ module obc_system::obc_dao {
         votes_record: VecMap<u64, u64>,  //pid -> vote count
         voting_pool: voting_pool::VotingPool,
 
-        current_proposal_status:  VecMap<u64, u8>,
+        current_proposal_status:  VecMap<u64, ProposalStatus>,
     }
 
+    struct ProposalStatus has copy, drop, store {
+        version_id : u64,
+        status : u8,
+    }
 
     struct OBCDaoAction has copy, drop, store{
         action_id: u64,
@@ -185,6 +189,8 @@ module obc_system::obc_dao {
         quorum_votes: u64,
         /// proposal action.
         action: OBCDaoAction,
+        /// version id.
+        version_id: u64,
     }
 
     /// Proposal data struct.
@@ -359,6 +365,7 @@ module obc_system::obc_dao {
     entry public fun propose (
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
+        version_id: u64,
         payment: Coin<OBC>,
         action_id: u64,
         action_delay: u64,
@@ -401,6 +408,7 @@ module obc_system::obc_dao {
             action_delay,
             quorum_votes,
             action,
+            version_id,
         };
 
         let proposal = Proposal{
@@ -1166,6 +1174,10 @@ module obc_system::obc_dao {
             vec_map::remove(&mut dao.current_proposal_status, &proposalInfo.pid);
         };
 
-        vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, curProposalStatus);
+        let proposal_status = ProposalStatus {
+            version_id : proposalInfo.version_id,
+            status: curProposalStatus,
+        };
+        vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, proposal_status);
     }
 }

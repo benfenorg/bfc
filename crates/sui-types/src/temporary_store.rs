@@ -39,6 +39,7 @@ use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
 use sui_protocol_config::ProtocolConfig;
 use crate::collection_types::VecMap;
+use crate::proposal::ProposalStatus;
 
 pub type WrittenObjects = BTreeMap<ObjectID, (ObjectRef, Object, WriteKind)>;
 pub type ObjectMap = BTreeMap<ObjectID, Object>;
@@ -892,7 +893,7 @@ impl<'backing> TemporaryStore<'backing> {
         self.write_object(new_object, WriteKind::Mutate);
     }
 
-    pub fn get_obc_system_state_temporary(& self) -> VecMap<u64, u8> {
+    pub fn get_obc_system_state_temporary(& self) -> VecMap<u64, ProposalStatus> {
         let wrapper = get_obc_system_proposal_state_map(self.store.as_object_store())
             .expect("System state wrapper object must exist");
         return wrapper;

@@ -794,7 +794,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -806,13 +806,14 @@ X-treasury
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
+    version_id: u64,
     payment: Coin&lt;OBC&gt;,
     action_id: u64,
     action_delay: u64,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
-    obc_dao:: propose(&<b>mut</b> self.dao, manager_key, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+    obc_dao:: propose(&<b>mut</b> self.dao, manager_key, version_id, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
