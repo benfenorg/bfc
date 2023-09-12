@@ -812,21 +812,21 @@ module obc_system::vault {
         let last_price = _vault.last_sqrt_price;
         if (price < last_price) {
             // down
-            if (_vault.state == SHAPE_DECREMENT_SIZE) {
+            if (_vault.state == SHAPE_INCREMENT_SIZE) {
                 _vault.state_counter = _vault.state_counter + 1;
             } else {
                 // reset counter = 0  & set state = down
                 _vault.state_counter = 0;
-                _vault.state = SHAPE_DECREMENT_SIZE;
+                _vault.state = SHAPE_INCREMENT_SIZE;
             }
         } else if (price > last_price) {
             // up
-            if (_vault.state == SHAPE_INCREMENT_SIZE) {
+            if (_vault.state == SHAPE_DECREMENT_SIZE) {
                 _vault.state_counter = _vault.state_counter + 1;
             } else {
                 // reset counter = 0  & set state = up
                 _vault.state_counter = 0;
-                _vault.state = SHAPE_INCREMENT_SIZE;
+                _vault.state = SHAPE_DECREMENT_SIZE;
             }
         } else {
             // equal
@@ -979,11 +979,7 @@ module obc_system::vault {
         let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
         let shape = SHAPE_EQUAL_SIZE;
         if (_vault.state_counter >= _vault.max_counter_times) {
-            if (_vault.state == 1) {
-                shape = SHAPE_DECREMENT_SIZE;
-            } else {
-                shape = SHAPE_INCREMENT_SIZE;
-            };
+            shape = _vault.state;
             // reset state counter
             _vault.state_counter = 0;
         };

@@ -143,7 +143,7 @@ module obc_system::vault_test {
             9,
             60,
             10,
-            1,
+            0,
             1008611
         );
         let c = clock::create_for_testing(test_scenario::ctx(&mut scenario));
