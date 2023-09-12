@@ -216,7 +216,7 @@ module obc_system::vault {
         )
     }
 
-    public(friend) fun get_position_liquidity<StableCoinType>(
+    public fun get_position_liquidity<StableCoinType>(
         _vault: &Vault<StableCoinType>,
         _index: u64
     ): u128
@@ -736,27 +736,26 @@ module obc_system::vault {
                         remaining_amount = check_remainer_amount_sub(remaining_amount, amount_out);
                     };
                     update_swap_result(&mut swap_result, amount_in, amount_out);
-                } else {
-                    if (next_sqrt_price == tick::sqrt_price(tick)) {
-                        _vault.current_sqrt_price = tick_sqrt_price;
-                        let next_tick = if (_a2b) {
-                            i32::sub(tick_index, i32::from_u32(1))
-                        } else {
-                            tick_index
-                        };
-                        _vault.current_tick_index = next_tick;
-                        _vault.liquidity = tick::cross_by_swap(
-                            &mut _vault.tick_manager,
-                            _vault.current_tick_index,
-                            _a2b,
-                            _vault.liquidity
-                        );
+                };
+                if (next_sqrt_price == tick::sqrt_price(tick)) {
+                    _vault.current_sqrt_price = tick_sqrt_price;
+                    let next_tick = if (_a2b) {
+                        i32::sub(tick_index, i32::from_u32(1))
                     } else {
-                        if (_vault.current_sqrt_price != tick::sqrt_price(tick)) {
-                            _vault.current_sqrt_price = next_sqrt_price;
-                            _vault.current_tick_index = tick_math::get_tick_at_sqrt_price(next_sqrt_price);
-                        }
+                        tick_index
                     };
+                    _vault.current_tick_index = next_tick;
+                    _vault.liquidity = tick::cross_by_swap(
+                        &mut _vault.tick_manager,
+                        _vault.current_tick_index,
+                        _a2b,
+                        _vault.liquidity
+                    );
+                } else {
+                    if (_vault.current_sqrt_price != tick::sqrt_price(tick)) {
+                        _vault.current_sqrt_price = next_sqrt_price;
+                        _vault.current_tick_index = tick_math::get_tick_at_sqrt_price(next_sqrt_price);
+                    }
                 };
             }
         };
@@ -782,6 +781,10 @@ module obc_system::vault {
             balance::value<StableCoinType>(&_vault.coin_a),
             balance::value<OBC>(&_vault.coin_b)
         )
+    }
+
+    public fun get_liquidity<StableCoinType>(_vault: &Vault<StableCoinType>): u128 {
+        _vault.liquidity
     }
 
     public fun min_liquidity_rate(): u128 {
