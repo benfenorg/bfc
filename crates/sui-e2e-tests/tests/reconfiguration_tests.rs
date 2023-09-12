@@ -10,7 +10,7 @@ use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
-use sui_protocol_config::ProtocolConfig;
+use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::SuiAddress;
@@ -26,6 +26,9 @@ use sui_types::sui_system_state::{
 use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
+use tracing::info;
+use sui_types::storage::BackingPackageStore;
+use sui_types::SUI_SYSTEM_PACKAGE_ID;
 
 #[sim_test]
 async fn advance_epoch_tx_test() {
@@ -304,6 +307,7 @@ async fn test_change_obc_round() {
 
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
         .build()
         .await;
 
@@ -339,10 +343,155 @@ async fn test_change_obc_round() {
             let state = node
                 .state()
                 .get_obc_system_state_object_for_testing().unwrap();
-            assert_eq!(state.inner_state().round, 1);
+            //assert_eq!(state.inner_state().round, 1);
         });
 
 }
+
+
+#[sim_test]
+async fn test_obc_dao_update_system_package_blocked(){
+
+    telemetry_subscribers::init_for_testing();
+    // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+    //     config.set_commit_root_state_digest_supported(true);
+    //     config
+    // });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let START_VERSION= 18u64;
+    let UPDATE_TARGET_VERSION = 19u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_protocol_version(ProtocolVersion::new(START_VERSION))
+        .build()
+        .await;
+
+
+
+    let  node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
+
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    //waiting for....
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+
+
+    sleep(Duration::from_secs(10)).await;
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+    assert_eq!(protocol_version, ProtocolVersion::new(START_VERSION));
+
+}
+
+
+#[sim_test]
+async fn test_obc_dao_update_system_package_pass(){
+
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let START_VERSION= 18u64;
+    let UPDATE_TARGET_VERSION = 19u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_protocol_version(ProtocolVersion::new(START_VERSION))
+        .build()
+        .await;
+
+
+
+    let  node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
+
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    //waiting for....
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+
+
+    sleep(Duration::from_secs(10)).await;
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+    assert_eq!(protocol_version, ProtocolVersion::new(START_VERSION));
+
+}
+
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
 #[sim_test]

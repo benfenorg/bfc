@@ -139,30 +139,30 @@ module obc_system::obc_dao {
         config: DaoConfig,
         info: DaoGlobalInfo,
 
-        proposalRecord: VecMap<u64, ProposalInfo>,  //pid -> proposal address
-        actionRecord: VecMap<u64, OBCDaoAction>,    //actionId -> action address
-        votesRecord: VecMap<u64, u64>,  //pid -> vote count
-        votingPool: voting_pool::VotingPool,
+        proposal_record: VecMap<u64, ProposalInfo>,  //pid -> proposal address
+        action_record: VecMap<u64, OBCDaoAction>,    //actionId -> action address
+        votes_record: VecMap<u64, u64>,  //pid -> vote count
+        voting_pool: voting_pool::VotingPool,
 
-        curProposalStatus:  VecMap<u64, u8>,
+        current_proposal_status:  VecMap<u64, u8>,
     }
 
 
     struct OBCDaoAction has copy, drop, store{
-        actionId: u64,
+        action_id: u64,
         /// Name for the action
         name: string::String,
     }
 
     public fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
-        dao.proposalRecord
+        dao.proposal_record
     }
     public fun setProposalRecord(dao : &mut Dao, record : VecMap<u64, ProposalInfo>){
-        dao.proposalRecord = record;
+        dao.proposal_record = record;
     }
 
     public fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
-        obcDaoAction.actionId
+        obcDaoAction.action_id
     }
 
     struct ProposalInfo has store, copy, drop{
@@ -223,7 +223,7 @@ module obc_system::obc_dao {
         let action_id = generate_next_action_id(dao);
 
         let action = OBCDaoAction{
-            actionId: action_id,
+            action_id: action_id,
             name: string::utf8(actionName),
             //description: string::utf8(actionName),
         };
@@ -235,7 +235,7 @@ module obc_system::obc_dao {
                 creator: sender,
             }
         );
-        vec_map::insert(&mut dao.actionRecord, action_id, copy action);
+        vec_map::insert(&mut dao.action_record, action_id, copy action);
         action
     }
 
@@ -275,11 +275,11 @@ module obc_system::obc_dao {
             admin: *rootAdmin,  //using the first of the admins as the admin of the dao
             config: daoConfig,
             info: daoInfo,
-            proposalRecord: vec_map::empty(),
-            actionRecord: vec_map::empty(),
-            votesRecord: vec_map::empty(),
-            votingPool,
-            curProposalStatus: vec_map::empty(),
+            proposal_record: vec_map::empty(),
+            action_record: vec_map::empty(),
+            votes_record: vec_map::empty(),
+            voting_pool: votingPool,
+            current_proposal_status: vec_map::empty(),
         };
 
         // transfer::share_object(dao_obj);
@@ -290,7 +290,7 @@ module obc_system::obc_dao {
     }
 
     fun getDaoActionByActionId(dao:&mut Dao, actionId: u64) : OBCDaoAction {
-        let data = vec_map::get(&dao.actionRecord, &actionId);
+        let data = vec_map::get(&dao.action_record, &actionId);
         *data
     }
 
@@ -329,11 +329,11 @@ module obc_system::obc_dao {
             admin: *rootAdmin,  //using the first of the admins as the admin of the dao
             config: daoConfig,
             info: daoInfo,
-            proposalRecord: vec_map::empty(),
-            actionRecord: vec_map::empty(),
-            votesRecord: vec_map::empty(),
-            votingPool,
-            curProposalStatus: vec_map::empty(),
+            proposal_record: vec_map::empty(),
+            action_record: vec_map::empty(),
+            votes_record: vec_map::empty(),
+            voting_pool: votingPool,
+            current_proposal_status: vec_map::empty(),
         };
 
         transfer::share_object(dao_obj);
@@ -373,7 +373,7 @@ module obc_system::obc_dao {
         // ensure the user pays enough
         assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
 
-        let voting_obc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
+        let voting_obc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
         transfer::public_transfer(voting_obc, sender);
 
 
@@ -407,7 +407,7 @@ module obc_system::obc_dao {
             id: object_id,
             proposal: copy proposalInfo,
         };
-        vec_map::insert(&mut dao.proposalRecord, proposal_id, proposalInfo);
+        vec_map::insert(&mut dao.proposal_record, proposal_id, proposalInfo);
 
 
         transfer::share_object(proposal);
@@ -730,7 +730,7 @@ module obc_system::obc_dao {
         dao : &mut Dao,
         proposal: &Proposal,
     ): bool {
-        let result = vec_map::contains(&dao.proposalRecord, &proposal.proposal.pid);
+        let result = vec_map::contains(&dao.proposal_record, &proposal.proposal.pid);
         result
     }
 
@@ -772,7 +772,7 @@ module obc_system::obc_dao {
         } else if (current_time < proposal.eta) {
             // Queued, waiting to execute
             QUEUED
-        } else if (proposal.action.actionId != 0 ) {
+        } else if (proposal.action.action_id != 0 ) {
             EXECUTABLE
         } else {
             EXTRACTED
@@ -982,14 +982,14 @@ module obc_system::obc_dao {
     }
 
     entry public fun modify_lastest_proposal_in_dao(dao: &mut Dao, index : u8, clock: &Clock) {
-        let proposal_record = dao.proposalRecord;
+        let proposal_record = dao.proposal_record;
         let size : u64 =  vec_map::size(& proposal_record);
         if (size == 0) {
             return
         };
         let (_, proposalInfo) =  vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
         modify_proposal( proposalInfo, index, clock);
-        dao.proposalRecord = proposal_record;
+        dao.proposal_record = proposal_record;
     }
 
 
@@ -1030,7 +1030,7 @@ module obc_system::obc_dao {
             proposal.against_votes = 2;
             proposal.quorum_votes = 2;
             proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal.action.actionId = 1;
+            proposal.action.action_id = 1;
         } else if (index == 7) {
             proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
@@ -1038,7 +1038,7 @@ module obc_system::obc_dao {
             proposal.against_votes = 2;
             proposal.quorum_votes = 2;
             proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal.action.actionId = 0;
+            proposal.action.action_id = 0;
         };
     }
 
@@ -1081,7 +1081,7 @@ module obc_system::obc_dao {
             proposal_obj.proposal.against_votes = 2;
             proposal_obj.proposal.quorum_votes = 2;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal_obj.proposal.action.actionId = 1;
+            proposal_obj.proposal.action.action_id = 1;
         } else if (index == 7) {
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
@@ -1089,7 +1089,7 @@ module obc_system::obc_dao {
             proposal_obj.proposal.against_votes = 2;
             proposal_obj.proposal.quorum_votes = 2;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal_obj.proposal.action.actionId = 0;
+            proposal_obj.proposal.action.action_id = 0;
         };
     }
 
@@ -1102,7 +1102,7 @@ module obc_system::obc_dao {
         // sender address
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(coin);
-        let voting_obc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
+        let voting_obc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
 
         transfer::public_transfer(voting_obc, sender);
     }
@@ -1112,7 +1112,7 @@ module obc_system::obc_dao {
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
-        let voting_obc = voting_pool::request_withdraw_voting(&mut dao.votingPool, voting_obc);
+        let voting_obc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_obc);
         let coin = coin::from_balance(voting_obc, ctx);
         transfer::public_transfer(coin, sender);
 
@@ -1134,7 +1134,7 @@ module obc_system::obc_dao {
         );
 
 
-        vec_map::remove(&mut dao.proposalRecord, &proposal.proposal.pid);
+        vec_map::remove(&mut dao.proposal_record, &proposal.proposal.pid);
         if (proposal_state == DEFEATED) {
             let _ =  proposal.proposal.action;
         };
@@ -1161,11 +1161,11 @@ module obc_system::obc_dao {
     }
 
     public fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
-        let flag = vec_map::contains(&dao.curProposalStatus, &proposalInfo.pid);
+        let flag = vec_map::contains(&dao.current_proposal_status, &proposalInfo.pid);
         if (flag) {
-            vec_map::remove_entry_by_idx(&mut dao.curProposalStatus, proposalInfo.pid);
+            vec_map::remove(&mut dao.current_proposal_status, &proposalInfo.pid);
         };
 
-        vec_map::insert(&mut (dao.curProposalStatus), proposalInfo.pid, curProposalStatus);
+        vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, curProposalStatus);
     }
 }

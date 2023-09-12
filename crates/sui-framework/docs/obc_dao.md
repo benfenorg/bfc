@@ -488,31 +488,31 @@ Configuration of the <code>Token</code>'s DAO.
 
 </dd>
 <dt>
-<code>proposalRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">obc_dao::ProposalInfo</a>&gt;</code>
+<code>proposal_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">obc_dao::ProposalInfo</a>&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>actionRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">obc_dao::OBCDaoAction</a>&gt;</code>
+<code>action_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">obc_dao::OBCDaoAction</a>&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>votesRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, u64&gt;</code>
+<code>votes_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, u64&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>votingPool: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a></code>
+<code><a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>curProposalStatus: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, u8&gt;</code>
+<code>current_proposal_status: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, u8&gt;</code>
 </dt>
 <dd>
 
@@ -539,7 +539,7 @@ Configuration of the <code>Token</code>'s DAO.
 
 <dl>
 <dt>
-<code>actionId: u64</code>
+<code>action_id: u64</code>
 </dt>
 <dd>
 
@@ -1063,7 +1063,7 @@ Error codes
 
 
 
-<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 1000000000;
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 200000000000;
 </code></pre>
 
 
@@ -1084,7 +1084,7 @@ Error codes
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_getProposalRecord">getProposalRecord</a>(dao : &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>) :VecMap&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">ProposalInfo</a>&gt;{
-    dao.proposalRecord
+    dao.proposal_record
 }
 </code></pre>
 
@@ -1108,7 +1108,7 @@ Error codes
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_setProposalRecord">setProposalRecord</a>(dao : &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, record : VecMap&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">ProposalInfo</a>&gt;){
-    dao.proposalRecord = record;
+    dao.proposal_record = record;
 }
 </code></pre>
 
@@ -1132,7 +1132,7 @@ Error codes
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_getOBCDaoActionId">getOBCDaoActionId</a>(obcDaoAction: <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">OBCDaoAction</a>): u64 {
-    obcDaoAction.actionId
+    obcDaoAction.action_id
 }
 </code></pre>
 
@@ -1167,7 +1167,7 @@ Error codes
     <b>let</b> action_id = <a href="obc_dao.md#0xc8_obc_dao_generate_next_action_id">generate_next_action_id</a>(dao);
 
     <b>let</b> action = <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">OBCDaoAction</a>{
-        actionId: action_id,
+        action_id: action_id,
         name: <a href="_utf8">string::utf8</a>(actionName),
         //description: <a href="_utf8">string::utf8</a>(actionName),
     };
@@ -1179,7 +1179,7 @@ Error codes
             creator: sender,
         }
     );
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> dao.actionRecord, action_id, <b>copy</b> action);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> dao.action_record, action_id, <b>copy</b> action);
     action
 }
 </code></pre>
@@ -1238,11 +1238,11 @@ Error codes
         admin: *rootAdmin,  //using the first of the admins <b>as</b> the admin of the dao
         config: daoConfig,
         info: daoInfo,
-        proposalRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        actionRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        votesRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        votingPool,
-        curProposalStatus: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        proposal_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        action_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        votes_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        <a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>: votingPool,
+        current_proposal_status: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
     };
 
     // <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(dao_obj);
@@ -1273,7 +1273,7 @@ Error codes
 
 
 <pre><code><b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_getDaoActionByActionId">getDaoActionByActionId</a>(dao:&<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, actionId: u64) : <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">OBCDaoAction</a> {
-    <b>let</b> data = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&dao.actionRecord, &actionId);
+    <b>let</b> data = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&dao.action_record, &actionId);
     *data
 }
 </code></pre>
@@ -1332,11 +1332,11 @@ Error codes
         admin: *rootAdmin,  //using the first of the admins <b>as</b> the admin of the dao
         config: daoConfig,
         info: daoInfo,
-        proposalRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        actionRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        votesRecord: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        votingPool,
-        curProposalStatus: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        proposal_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        action_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        votes_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        <a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>: votingPool,
+        current_proposal_status: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
     };
 
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(dao_obj);
@@ -1413,7 +1413,7 @@ propose a proposal.
     // ensure the user pays enough
     <b>assert</b>!(value &gt;= <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>, <a href="obc_dao.md#0xc8_obc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
 
-    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.votingPool, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_obc, sender);
 
 
@@ -1447,7 +1447,7 @@ propose a proposal.
         id: object_id,
         proposal: <b>copy</b> proposalInfo,
     };
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> dao.proposalRecord, proposal_id, proposalInfo);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> dao.proposal_record, proposal_id, proposalInfo);
 
 
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(proposal);
@@ -1977,7 +1977,7 @@ check whether a proposal exists in <code>proposer_address</code> with id <code>p
     dao : &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     proposal: &<a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
 ): bool {
-    <b>let</b> result = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&dao.proposalRecord, &proposal.proposal.pid);
+    <b>let</b> result = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&dao.proposal_record, &proposal.proposal.pid);
     result
 }
 </code></pre>
@@ -2059,7 +2059,7 @@ Get the proposal state.
     } <b>else</b> <b>if</b> (current_time &lt; proposal.eta) {
         // Queued, waiting <b>to</b> execute
         <a href="obc_dao.md#0xc8_obc_dao_QUEUED">QUEUED</a>
-    } <b>else</b> <b>if</b> (proposal.action.actionId != 0 ) {
+    } <b>else</b> <b>if</b> (proposal.action.action_id != 0 ) {
         <a href="obc_dao.md#0xc8_obc_dao_EXECUTABLE">EXECUTABLE</a>
     } <b>else</b> {
         <a href="obc_dao.md#0xc8_obc_dao_EXTRACTED">EXTRACTED</a>
@@ -2610,14 +2610,14 @@ set min action delay
 
 
 <pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_modify_lastest_proposal_in_dao">modify_lastest_proposal_in_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, index : u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
-    <b>let</b> proposal_record = dao.proposalRecord;
+    <b>let</b> proposal_record = dao.proposal_record;
     <b>let</b> size : u64 =  <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(& proposal_record);
     <b>if</b> (size == 0) {
         <b>return</b>
     };
     <b>let</b> (_, proposalInfo) =  <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx_mut">vec_map::get_entry_by_idx_mut</a>(&<b>mut</b> proposal_record, size - 1);
     <a href="obc_dao.md#0xc8_obc_dao_modify_proposal">modify_proposal</a>( proposalInfo, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
-    dao.proposalRecord = proposal_record;
+    dao.proposal_record = proposal_record;
 }
 </code></pre>
 
@@ -2677,7 +2677,7 @@ set min action delay
         proposal.against_votes = 2;
         proposal.quorum_votes = 2;
         proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal.action.actionId = 1;
+        proposal.action.action_id = 1;
     } <b>else</b> <b>if</b> (index == 7) {
         proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
@@ -2685,7 +2685,7 @@ set min action delay
         proposal.against_votes = 2;
         proposal.quorum_votes = 2;
         proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal.action.actionId = 0;
+        proposal.action.action_id = 0;
     };
 }
 </code></pre>
@@ -2748,7 +2748,7 @@ set min action delay
         proposal_obj.proposal.against_votes = 2;
         proposal_obj.proposal.quorum_votes = 2;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.actionId = 1;
+        proposal_obj.proposal.action.action_id = 1;
     } <b>else</b> <b>if</b> (index == 7) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
@@ -2756,7 +2756,7 @@ set min action delay
         proposal_obj.proposal.against_votes = 2;
         proposal_obj.proposal.quorum_votes = 2;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.actionId = 0;
+        proposal_obj.proposal.action.action_id = 0;
     };
 }
 </code></pre>
@@ -2786,7 +2786,7 @@ set min action delay
     // sender <b>address</b>
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
     <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>);
-    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.votingPool, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
 
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_obc, sender);
 }
@@ -2816,7 +2816,7 @@ set min action delay
                                    ctx: &<b>mut</b> TxContext ,) {
     // sender <b>address</b>
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
-    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">voting_pool::request_withdraw_voting</a>(&<b>mut</b> dao.votingPool, voting_obc);
+    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">voting_pool::request_withdraw_voting</a>(&<b>mut</b> dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, voting_obc);
     <b>let</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(voting_obc, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, sender);
 
@@ -2858,7 +2858,7 @@ remove terminated proposal from proposer
     );
 
 
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> dao.proposalRecord, &proposal.proposal.pid);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> dao.proposal_record, &proposal.proposal.pid);
     <b>if</b> (proposal_state == <a href="obc_dao.md#0xc8_obc_dao_DEFEATED">DEFEATED</a>) {
         <b>let</b> _ =  proposal.proposal.action;
     };
@@ -2905,12 +2905,12 @@ remove terminated proposal from proposer
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_current_status_into_dao">set_current_status_into_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, proposalInfo : &<a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">ProposalInfo</a>, curProposalStatus: u8) {
-    <b>let</b> flag = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&dao.curProposalStatus, &proposalInfo.pid);
+    <b>let</b> flag = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&dao.current_proposal_status, &proposalInfo.pid);
     <b>if</b> (flag) {
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove_entry_by_idx">vec_map::remove_entry_by_idx</a>(&<b>mut</b> dao.curProposalStatus, proposalInfo.pid);
+        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> dao.current_proposal_status, &proposalInfo.pid);
     };
 
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.curProposalStatus), proposalInfo.pid, curProposalStatus);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.current_proposal_status), proposalInfo.pid, curProposalStatus);
 }
 </code></pre>
 

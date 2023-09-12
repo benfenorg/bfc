@@ -47,6 +47,8 @@ pub mod gas_coin;
 pub mod gas_coin_strategy;
 pub mod gas_model;
 pub mod governance;
+pub mod proposal;
+pub mod dao;
 pub mod id;
 pub mod in_memory_storage;
 pub mod message_envelope;

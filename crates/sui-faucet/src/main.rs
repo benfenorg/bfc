@@ -36,7 +36,9 @@ struct AppState<F = Arc<SimpleFaucet>> {
     config: FaucetConfig,
 }
 
-const PROM_PORT_ADDR: &str = "0.0.0.0:9184";
+//const PROM_PORT_ADDR: &str = "0.0.0.0:9184";
+
+const PROM_PORT_ADDR: &str = "0.0.0.0:91841";
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
