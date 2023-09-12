@@ -32,6 +32,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
+use std::cell::Cell;
 use sui_config::node::StateDebugDumpConfig;
 use sui_config::NodeConfig;
 use tap::{TapFallible, TapOptional};
@@ -104,10 +105,10 @@ pub use sui_types::temporary_store::TemporaryStore;
 use sui_types::temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
 };
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, OBC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
-use sui_types::obc_system_state::ObcSystemState;
+use sui_types::obc_system_state::{get_obc_system_state, ObcSystemState};
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -249,6 +250,8 @@ pub struct AuthorityMetrics {
 const POSITIVE_INT_BUCKETS: &[f64] = &[
     1., 2., 5., 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000.,
 ];
+
+const PROPOSAL_EXECUTABLE_STATE: u8 = 6;
 
 const LATENCY_SEC_BUCKETS: &[f64] = &[
     0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 20.,
@@ -2469,6 +2472,16 @@ impl AuthorityState {
             .compute_object_reference())
     }
 
+
+    pub async fn get_obc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
+        Ok(self
+            .get_object(&OBC_SYSTEM_ADDRESS.into())
+            .await?
+            .expect("obc framework object should always exist")
+            .compute_object_reference())
+    }
+
+
     /// This function should be called once and exactly once during reconfiguration.
     /// Instead of this function use AuthorityEpochStore::epoch_start_configuration() to access this object everywhere
     /// besides when we are reading fields for the current epoch
@@ -3883,6 +3896,17 @@ impl AuthorityState {
         (next_protocol_version, system_packages)
     }
 
+    async fn get_proposal_state(&self, version_id: u64) -> bool{
+        let mut proposal_result = false;
+        // todo judge proposal.value
+        for proposal in self.proposal_state_map.lock().contents.to_vec() {
+            if proposal.key == version_id && proposal.value == PROPOSAL_EXECUTABLE_STATE {
+                proposal_result = true;
+            }
+        }
+        return proposal_result;
+    }
+
     /// Creates and execute the advance epoch transaction to effects without committing it to the database.
     /// The effects of the change epoch tx are only written to the database after a certified checkpoint has been
     /// formed and executed by CheckpointExecutor.
@@ -3904,7 +3928,7 @@ impl AuthorityState {
 
         let buffer_stake_bps = epoch_store.get_effective_buffer_stake_bps();
 
-        let (next_epoch_protocol_version, next_epoch_system_packages) =
+        let (mut next_epoch_protocol_version, mut next_epoch_system_packages) =
             Self::choose_protocol_version_and_system_packages(
                 epoch_store.protocol_version(),
                 epoch_store.protocol_config(),
@@ -3914,6 +3938,22 @@ impl AuthorityState {
                     .expect("read capabilities from db cannot fail"),
                 buffer_stake_bps,
             );
+
+
+        //if proposal fail , empty and next_epoch_system_packages,
+        // and if the next_protocol_version is update + 1, roll back next
+        // next_epoch_protocol_version
+
+        let version = epoch_store.protocol_version().as_u64();
+        let proposal_result = self.get_proposal_state(version + 1).await;
+        if proposal_result == false {
+            info!("=======skip system package update, proposal fail=======");
+            next_epoch_system_packages.clear();
+            next_epoch_protocol_version = epoch_store.protocol_version();
+        } else{
+            info!("======= system package update, proposal success=======");
+
+        };
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version

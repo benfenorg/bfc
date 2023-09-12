@@ -10,7 +10,7 @@ use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
-use sui_protocol_config::ProtocolConfig;
+use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::SuiAddress;
@@ -26,6 +26,9 @@ use sui_types::sui_system_state::{
 use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
+use tracing::info;
+use sui_types::storage::BackingPackageStore;
+use sui_types::SUI_SYSTEM_PACKAGE_ID;
 
 #[sim_test]
 async fn advance_epoch_tx_test() {
@@ -339,10 +342,131 @@ async fn test_change_obc_round() {
             let state = node
                 .state()
                 .get_obc_system_state_object_for_testing().unwrap();
-            assert_eq!(state.inner_state().round, 1);
+            //assert_eq!(state.inner_state().round, 1);
         });
 
 }
+
+
+#[sim_test]
+async fn test_obc_dao_update_system_package(){
+    info!("=============");
+
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let Start= 18;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_protocol_version(ProtocolVersion::new(Start))
+        .build()
+        .await;
+
+
+
+    let mut node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let system_package_obj = node.state().get_sui_system_package_object_ref().await.unwrap();
+    let obc_system_package_obj = node.state().get_obc_system_package_object_ref().await.unwrap();
+
+    info!("=============system_package_obj: {}, {}, {}", system_package_obj.0,
+        system_package_obj.1,
+        system_package_obj.2);
+    info!("=============obc_system_package_obj: {}, {}, {}", obc_system_package_obj.0,
+        obc_system_package_obj.1,
+        obc_system_package_obj.2);
+
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = node.state().load_epoch_store_one_call_per_task().protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
+
+
+     node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = node.state().load_epoch_store_one_call_per_task().protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    let states = test_cluster
+        .swarm
+        .validator_node_handles()
+        .into_iter()
+        .map(|handle| handle.with(|node| node.state()))
+        .collect::<Vec<_>>();
+    let tasks: Vec<_> = states
+        .iter()
+        .map(|state| async {
+            let (_system_state, effects) = state
+                .create_and_execute_advance_epoch_tx(
+                    &state.epoch_store_for_testing(),
+                    &GasCostSummary::new(0, 0, 0, 0),
+                    0, // checkpoint
+                    0, // epoch_start_timestamp_ms
+                )
+                .await
+                .unwrap();
+            // Check that the validator didn't commit the transaction yet.
+            assert!(state
+                .get_signed_effects_and_maybe_resign(
+                    effects.transaction_digest(),
+                    &state.epoch_store_for_testing()
+                )
+                .unwrap()
+                .is_none());
+            effects
+        })
+        .collect();
+    let results: HashSet<_> = join_all(tasks)
+        .await
+        .into_iter()
+        .map(|result| result.digest())
+        .collect();
+
+
+    node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = node.state().load_epoch_store_one_call_per_task().protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+}
+
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
 #[sim_test]

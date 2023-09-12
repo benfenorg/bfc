@@ -24,7 +24,6 @@
 -  [Function `pool_token_exchange_rate_at_epoch`](#0xc8_voting_pool_pool_token_exchange_rate_at_epoch)
 -  [Function `obc_amount`](#0xc8_voting_pool_obc_amount)
 -  [Function `pool_token_amount`](#0xc8_voting_pool_pool_token_amount)
--  [Function `get_obc_amount`](#0xc8_voting_pool_get_obc_amount)
 -  [Function `get_token_amount`](#0xc8_voting_pool_get_token_amount)
 -  [Function `initial_exchange_rate`](#0xc8_voting_pool_initial_exchange_rate)
 
@@ -666,38 +665,6 @@ Returns true if all the staking parameters of the voting obc except the principa
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_pool_token_amount">pool_token_amount</a>(exchange_rate: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>): u64 {
     exchange_rate.pool_token_amount
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_voting_pool_get_obc_amount"></a>
-
-## Function `get_obc_amount`
-
-
-
-<pre><code><b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_get_obc_amount">get_obc_amount</a>(exchange_rate: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>, token_amount: u64): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_get_obc_amount">get_obc_amount</a>(exchange_rate: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>, token_amount: u64): u64 {
-    // When either amount is 0, that means we have no voting <b>with</b> this pool.
-    // The other amount might be non-zero when there's dust left in the pool.
-    <b>if</b> (exchange_rate.obc_amount == 0 || exchange_rate.pool_token_amount == 0) {
-        <b>return</b> token_amount
-    };
-    <b>let</b> res = (exchange_rate.obc_amount <b>as</b> u128)
-        * (token_amount <b>as</b> u128)
-        / (exchange_rate.pool_token_amount <b>as</b> u128);
-    (res <b>as</b> u64)
 }
 </code></pre>
 

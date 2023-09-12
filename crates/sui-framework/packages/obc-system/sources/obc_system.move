@@ -4,6 +4,7 @@ module obc_system::obc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
+    use sui::clock::{Self};
 
     use sui::obc::OBC;
     use sui::object::UID;
@@ -51,8 +52,8 @@ module obc_system::obc_system {
 
     public fun obc_round(
         wrapper: &mut ObcSystemState,
-        round: u64,
         clock: &Clock,
+        round: u64,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
@@ -65,6 +66,11 @@ module obc_system::obc_system {
         // let rate = 1000000000;
         // obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
         // balance::destroy_zero(coin::into_balance(stable));
+
+        // X-treasury rebalance
+        obc_system_state_inner::rebalance(inner_state, clock, ctx);
+
+        judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
     public entry fun update_round(
@@ -72,7 +78,7 @@ module obc_system::obc_system {
 	clock: &Clock, 
         ctx: &mut TxContext,
     ){
-        obc_round(wrapper, 200, clock, ctx);
+        obc_round(wrapper,  clock,200, ctx);
     }
 
     fun load_system_state(
@@ -235,5 +241,42 @@ module obc_system::obc_system {
     entry public fun modify_proposal(wrapper: &mut ObcSystemState, index: u8, clock: &Clock) {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::modify_proposal(system_state, index, clock);
+    }
+
+    /// X treasury  swap obc to stablecoin
+    public entry fun mint<StableCoinType>(
+        wrapper: &mut ObcSystemState,
+        coin_obc: Coin<OBC>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let system_state = load_system_state_mut(wrapper);
+        obc_system_state_inner::mint<StableCoinType>(system_state, coin_obc, amount, ctx);
+    }
+
+    /// X treasury  swap stablecoin to obc
+    public entry fun redeem<StableCoinType>(
+        wrapper: &mut ObcSystemState,
+        coin_sc: Coin<StableCoinType>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let system_state = load_system_state_mut(wrapper);
+        obc_system_state_inner::redeem<StableCoinType>(system_state, coin_sc, amount, ctx);
+    }
+
+    public fun next_epoch_obc_required(wrapper: &ObcSystemState): u64 {
+        let system_state = load_system_state(wrapper);
+        obc_system_state_inner::next_epoch_obc_required(system_state)
+    }
+
+    public fun treasury_balance(wrapper: &ObcSystemState): u64 {
+        let system_state = load_system_state(wrapper);
+        obc_system_state_inner::treasury_balance(system_state)
+    }
+
+    public entry fun deposit_to_treasury(self: &mut ObcSystemState, coin: Coin<OBC>) {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::deposit_to_treasury(inner_state, coin)
     }
 }

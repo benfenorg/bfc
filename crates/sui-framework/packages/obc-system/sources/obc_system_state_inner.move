@@ -20,8 +20,11 @@ module obc_system::obc_system_state_inner {
 
     const OBC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[
+        @0x23027681c7d461e3db271aeed97b5da2b6e157350fa2ff659a7ff9cccb28cc00,
+        @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
         @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
         @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+        @0x2f76370f2b5f77bcaa47f4e65be0d762738bfbe7c29e374a72bf4d1b5960b47e,
     ];
 
     spec module { pragma verify = false; }
@@ -142,6 +145,7 @@ module obc_system::obc_system_state_inner {
         exchange_inner::add_obc_to_pool(&mut self.exchange_pool, coin)
     }
 
+    /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<USD>,
         parameters: ObcSystemParameters,
@@ -161,6 +165,47 @@ module obc_system::obc_system_state_inner {
             ctx,
         );
         t
+    }
+
+    /// swap obc to stablecoin
+    public(friend) fun mint<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        coin_obc: Coin<OBC>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::mint<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx);
+    }
+
+    /// swap stablecoin to obc
+    public(friend) fun redeem<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        coin_sc: Coin<StableCoinType>,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
+    }
+
+    /// X-treasury
+    public fun next_epoch_obc_required(self: &ObcSystemStateInner): u64 {
+        treasury::next_epoch_obc_required(&self.treasury)
+    }
+
+    public fun treasury_balance(self: &ObcSystemStateInner): u64 {
+        treasury::get_balance(&self.treasury)
+    }
+
+    public(friend) fun deposit_to_treasury(self: &mut ObcSystemStateInner, coin_obc: Coin<OBC>) {
+        treasury::deposit(&mut self.treasury, coin_obc);
+    }
+
+    public(friend) fun rebalance(
+        self: &mut ObcSystemStateInner,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        treasury::rebalance(&mut self.treasury, clock, ctx);
     }
 
     public(friend) fun obc_system_stat_parameter(
@@ -218,14 +263,15 @@ module obc_system::obc_system_state_inner {
         let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
         if (size == 0) {
-            return;
+            return
         };
 
         let i = 0;
         while (i < size) {
             let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
             let cur_status = obc_dao::judge_proposal_state(proposalInfo, current_time);
-            obc_dao::set_current_status_into_dao(&mut wrapper.dao, i, cur_status);
+            obc_dao::set_current_status_into_dao(&mut wrapper.dao, proposalInfo, cur_status);
+            i = i + 1;
         };
     }
 
@@ -233,7 +279,7 @@ module obc_system::obc_system_state_inner {
         let proposal_record = obc_dao::getProposalRecord(&mut system_state.dao);
         let size: u64 = vec_map::size(&proposal_record);
         if (size == 0) {
-            return;
+            return
         };
         let (_, proposalInfo) = vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
         obc_dao::modify_proposal(proposalInfo, index, clock);
