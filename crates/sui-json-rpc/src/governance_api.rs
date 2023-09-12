@@ -29,6 +29,7 @@ use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary
 use sui_types::sui_system_state::PoolTokenExchangeRate;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 use sui_types::sui_system_state::{get_validator_from_table, SuiSystemState};
+use sui_types::proposal::Proposal;
 
 use crate::api::{GovernanceReadApiServer, JsonRpcMetrics};
 use crate::error::{Error, SuiRpcInputError};
@@ -61,6 +62,12 @@ impl GovernanceReadApi {
             .get_stake_sui_result_size_total
             .inc_by(result.len() as u64);
         Ok(result)
+    }
+
+    async fn get_proposal(&self, owner: SuiAddress) -> Result<Proposal, Error> {
+        let obj_id = ObjectID::from(owner);
+        let obj = self.state.get_object_read(&obj_id)?.into_object()?;
+        Ok(Proposal::try_from(&obj)?)
     }
 
     async fn get_stakes_by_ids(
@@ -257,6 +264,11 @@ impl GovernanceReadApiServer for GovernanceReadApi {
             let epoch_store = self.state.load_epoch_store_one_call_per_task();
             Ok(epoch_store.reference_gas_price().into())
         })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal> {
+        with_tracing!(async move { self.get_proposal(owner).await })
     }
 
     #[instrument(skip(self))]

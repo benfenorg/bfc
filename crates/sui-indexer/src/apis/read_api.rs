@@ -23,6 +23,7 @@ use crate::errors::IndexerError;
 use crate::store::IndexerStore;
 use crate::types::SuiTransactionBlockResponseWithOptions;
 use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
+use sui_types::dao::DaoRPC;
 
 pub(crate) struct ReadApi<S> {
     fullnode: HttpClient,
@@ -378,6 +379,9 @@ where
     }
 
     async fn get_inner_exchange_rate(&self, _gas_coin: ObjectID) -> RpcResult<BigInt<u64>> {
+        todo!()
+    }
+    async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         todo!()
     }
 }
