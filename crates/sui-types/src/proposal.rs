@@ -18,39 +18,39 @@ pub const PROPOSAL_STRUCT_NAME: &IdentStr = ident_str!("Proposal");
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
 pub struct OBCDaoAction{
-    action_id: u64,
+    pub action_id: u64,
     /// Name for the action
-    name: String,
+    pub name: String,
 }
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
 pub struct ProposalInfo{
-    pid: u64,
+    pub pid: u64,
     /// creator of the proposal
-    proposer: ID,
+    pub proposer: ID,
     /// when voting begins.
-    start_time: u64,
+    pub start_time: u64,
     /// when voting ends.
-    end_time: u64,
+    pub end_time: u64,
     /// count of voters who agree with the proposal
-    for_votes: u64,
+    pub for_votes: u64,
     /// count of voters who're against the proposal
-    against_votes: u64,
+    pub against_votes: u64,
     /// executable after this time.
-    eta: u64,
+    pub eta: u64,
     /// after how long, the agreed proposal can be executed.
-    action_delay: u64,
+    pub action_delay: u64,
     /// how many votes to reach to make the proposal pass.
-    quorum_votes: u64,
+    pub quorum_votes: u64,
     /// proposal action.
-    action: OBCDaoAction,
+    pub action: OBCDaoAction,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
 pub struct Proposal{
     /// id of the proposal
-    id: UID,
-    proposal: ProposalInfo,
+    pub id: UID,
+    pub proposal: ProposalInfo,
 }
 
 impl Proposal {
