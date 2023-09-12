@@ -32,6 +32,7 @@ use sui_types::{parse_sui_struct_tag, SUI_FRAMEWORK_ADDRESS};
 use test_cluster::TestClusterBuilder;
 use tokio::time::sleep;
 use tracing::info;
+use sui_simulator::telemetry_subscribers;
 use sui_types::dao::DaoRPC;
 use sui_types::proposal::Proposal;
 
@@ -959,6 +960,8 @@ async fn test_staking_multiple_coins() -> Result<(), anyhow::Error> {
 }
 #[sim_test]
 async fn test_dao_publish() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    info!("=================");
     let cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(2000)
         .build()
@@ -1092,6 +1095,8 @@ async fn test_dao_publish() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_get_proposal() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    info!("=================");
     let cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(2000)
         .build()
@@ -1237,6 +1242,8 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_get_dao() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    info!("=================");
     let cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(3000)
         .build()
