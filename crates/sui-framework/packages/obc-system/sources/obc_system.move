@@ -1,5 +1,4 @@
 module obc_system::obc_system {
-    use sui::address::max;
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;

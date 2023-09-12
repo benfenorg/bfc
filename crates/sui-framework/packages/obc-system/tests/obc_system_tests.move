@@ -4,7 +4,7 @@ module obc_system::obc_system_tests {
     use sui::object;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
-    use sui::clock::{Self, Clock};
+    use sui::clock::{Self};
     use sui::balance::{Self};
     use sui::coin::{Self};
     use sui::obc::OBC;
