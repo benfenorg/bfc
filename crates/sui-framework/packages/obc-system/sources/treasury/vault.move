@@ -216,6 +216,33 @@ module obc_system::vault {
         )
     }
 
+    public(friend) fun get_position_liquidity<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
+        _index: u64
+    ): u128
+    {
+        let position = position::borrow_position(
+            &_vault.position_manager,
+            _index
+        );
+        position::get_liquidity(position)
+    }
+
+    public(friend) fun get_position_tick_range_and_price<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
+        _index: u64
+    ): (I32, I32, u128, u128)
+    {
+        let position = position::borrow_position(
+            &_vault.position_manager,
+            _index
+        );
+        let (tick_lower_index, tick_upper_index) = position::get_tick_range(position);
+        let price_lower = tick_math::get_sqrt_price_at_tick(tick_lower_index);
+        let price_upper = tick_math::get_sqrt_price_at_tick(tick_upper_index);
+        (tick_lower_index, tick_upper_index, price_lower, price_upper)
+    }
+
     /// Flash loan resource for add_liquidity
     struct AddLiquidityReceipt<phantom StableCoinType> {
         vault_id: ID,
@@ -588,7 +615,6 @@ module obc_system::vault {
             pay_coin_b,
             flash_receipt
         );
-
         (coin::into_balance(_coin_a), coin::into_balance(_coin_b))
     }
 
@@ -630,7 +656,7 @@ module obc_system::vault {
         let max_price = tick_math::max_sqrt_price();
         if (_a2b) {
             assert!(
-                min_price <= _sqrt_price_limit && _sqrt_price_limit > _vault.current_sqrt_price,
+                min_price <= _sqrt_price_limit && _sqrt_price_limit < _vault.current_sqrt_price,
                 ERR_SQRT_PRICE_LIMIT_INVALID
             );
         } else {
@@ -664,7 +690,7 @@ module obc_system::vault {
         (balance_a_ret, balance_b_ret, FlashSwapReceipt<StableCoinType> {
             vault_id: vault_id(_vault),
             a2b: _a2b,
-            pay_amount: swap_res.amount_out + swap_res.amount_in
+            pay_amount: swap_res.amount_in
         })
     }
 
