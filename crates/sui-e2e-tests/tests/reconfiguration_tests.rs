@@ -307,6 +307,7 @@ async fn test_change_obc_round() {
 
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
         .build()
         .await;
 
@@ -350,45 +351,36 @@ async fn test_change_obc_round() {
 
 #[sim_test]
 async fn test_obc_dao_update_system_package(){
-    info!("=============");
 
     telemetry_subscribers::init_for_testing();
-    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_commit_root_state_digest_supported(true);
-        config
-    });
+    // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+    //     config.set_commit_root_state_digest_supported(true);
+    //     config
+    // });
     ProtocolConfig::poison_get_for_min_version();
 
-    let Start= 18;
+    let START_VERSION= 18u64;
+    let UPDATE_TARGET_VERSION = 19u64;
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
-        .with_protocol_version(ProtocolVersion::new(Start))
+        .with_protocol_version(ProtocolVersion::new(START_VERSION))
         .build()
         .await;
 
 
 
-    let mut node = test_cluster
+    let  node = test_cluster
         .swarm
         .validator_nodes()
         .next()
         .unwrap()
         .get_node_handle()
         .unwrap();
-    let system_package_obj = node.state().get_sui_system_package_object_ref().await.unwrap();
-    let obc_system_package_obj = node.state().get_obc_system_package_object_ref().await.unwrap();
-
-    info!("=============system_package_obj: {}, {}, {}", system_package_obj.0,
-        system_package_obj.1,
-        system_package_obj.2);
-    info!("=============obc_system_package_obj: {}, {}, {}", obc_system_package_obj.0,
-        obc_system_package_obj.1,
-        obc_system_package_obj.2);
-
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
 
 
     let mut epochid =  node.state().current_epoch_for_testing();
-    let mut protocol_version = node.state().load_epoch_store_one_call_per_task().protocol_version();
+    let mut protocol_version = epoch_store.protocol_version();
     info!("=============epochid: {}", epochid);
     info!("=============protocol_version:{:?} ", protocol_version);
 
@@ -402,18 +394,18 @@ async fn test_obc_dao_update_system_package(){
     test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
 
 
-     node = test_cluster
-        .swarm
-        .validator_nodes()
-        .next()
-        .unwrap()
-        .get_node_handle()
-        .unwrap();
+
     epochid =  node.state().current_epoch_for_testing();
-    protocol_version = node.state().load_epoch_store_one_call_per_task().protocol_version();
+    protocol_version = epoch_store.protocol_version();
     info!("=============epochid: {}", epochid);
     info!("=============protocol_version:{:?} ", protocol_version);
 
+
+
+    //waiting for....
+    sleep(Duration::from_secs(5)).await;
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
 
 
     let states = test_cluster
@@ -425,9 +417,10 @@ async fn test_obc_dao_update_system_package(){
     let tasks: Vec<_> = states
         .iter()
         .map(|state| async {
+            let epoch_store = state.epoch_store_for_testing();
             let (_system_state, effects) = state
                 .create_and_execute_advance_epoch_tx(
-                    &state.epoch_store_for_testing(),
+                    &epoch_store,
                     &GasCostSummary::new(0, 0, 0, 0),
                     0, // checkpoint
                     0, // epoch_start_timestamp_ms
@@ -438,7 +431,7 @@ async fn test_obc_dao_update_system_package(){
             assert!(state
                 .get_signed_effects_and_maybe_resign(
                     effects.transaction_digest(),
-                    &state.epoch_store_for_testing()
+                    &state.epoch_store_for_testing(),
                 )
                 .unwrap()
                 .is_none());
@@ -452,17 +445,16 @@ async fn test_obc_dao_update_system_package(){
         .collect();
 
 
-    node = test_cluster
-        .swarm
-        .validator_nodes()
-        .next()
-        .unwrap()
-        .get_node_handle()
-        .unwrap();
+
+    sleep(Duration::from_secs(5)).await;
+
+
     epochid =  node.state().current_epoch_for_testing();
-    protocol_version = node.state().load_epoch_store_one_call_per_task().protocol_version();
+    protocol_version = epoch_store.protocol_version();
+
     info!("=============epochid: {}", epochid);
     info!("=============protocol_version:{:?} ", protocol_version);
+
 
 
 }

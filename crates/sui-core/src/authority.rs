@@ -3945,9 +3945,11 @@ impl AuthorityState {
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let proposal_result = self.get_proposal_state(version + 1).await;
+        let mut proposal_result = self.get_proposal_state(version + 1).await;
+        info!("===========protocol: {:?}", version);
+        info!("===========system package size {:?}", next_epoch_system_packages.len());
         if proposal_result == false {
-            info!("=======skip system package update, proposal fail=======");
+            info!("=========skip system package update, proposal fail=======",);
             next_epoch_system_packages.clear();
             next_epoch_protocol_version = epoch_store.protocol_version();
         } else{
