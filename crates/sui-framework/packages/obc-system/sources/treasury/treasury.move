@@ -237,7 +237,7 @@ module obc_system::treasury {
             _coin_sc,
             coin::zero<OBC>(_ctx),
             _amount,
-            false,
+            true,
             _ctx,
         );
     }

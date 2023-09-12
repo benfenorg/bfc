@@ -216,7 +216,7 @@ module obc_system::vault {
         )
     }
 
-    public(friend) fun get_position_liquidity<StableCoinType>(
+    public fun get_position_liquidity<StableCoinType>(
         _vault: &Vault<StableCoinType>,
         _index: u64
     ): u128
@@ -782,6 +782,10 @@ module obc_system::vault {
             balance::value<StableCoinType>(&_vault.coin_a),
             balance::value<OBC>(&_vault.coin_b)
         )
+    }
+
+    public fun get_liquidity<StableCoinType>(_vault: &Vault<StableCoinType>): u128 {
+        _vault.liquidity
     }
 
     public fun min_liquidity_rate(): u128 {
