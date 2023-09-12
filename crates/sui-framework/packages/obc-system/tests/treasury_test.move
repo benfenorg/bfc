@@ -15,7 +15,7 @@ module obc_system::treasury_test {
 
     #[test]
     public fun test_treasury() {
-        let is_debug = true;
+        let is_debug = false;
         let owner = @0x0;
         let scenario_val = test_scenario::begin(owner);
 
@@ -168,6 +168,10 @@ module obc_system::treasury_test {
                 input_obc,
                 test_scenario::ctx(&mut scenario_val),
             );
+            if (is_debug) {
+                debug::print(&string(b"Alice balances before mint ..."));
+                debug::print(&coin_obc);
+            };
             treasury::mint<USD>(
                 &mut t,
                 coin_obc,
@@ -181,12 +185,51 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
+            let coin_obc = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
             if (is_debug) {
-                debug::print(&string(b"Alice got usd after mint"));
+                debug::print(&string(b"Alice balances after mint ..."));
                 debug::print(&coin_usd);
+                debug::print(&coin_obc);
             };
             assert!(coin::value(&coin_usd) > 0, 301);
             test_scenario::return_to_sender(&scenario_val, coin_usd);
+            test_scenario::return_to_sender(&scenario_val, coin_obc);
+        };
+
+        // alice swap osd-obc
+        test_scenario::next_tx(&mut scenario_val, alice);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
+            let amount = coin::value(&coin_usd) / 2;
+            if (is_debug) {
+                debug::print(&string(b"Alice balances redeem obc ..."));
+                debug::print(&amount);
+            };
+            treasury::redeem<USD>(
+                &mut t,
+                coin_usd,
+                amount,
+                test_scenario::ctx(&mut scenario_val),
+            );
+            test_scenario::return_shared(t);
+        };
+
+        // alice check balance
+        test_scenario::next_tx(&mut scenario_val, alice);
+        {
+            let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
+            let coin_obc = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
+            let coin_obc_1 = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
+            if (is_debug) {
+                debug::print(&string(b"Alice balances after redeem ..."));
+                debug::print(&coin_usd);
+                debug::print(&coin_obc);
+                debug::print(&coin_obc_1);
+            };
+            test_scenario::return_to_sender(&scenario_val, coin_usd);
+            test_scenario::return_to_sender(&scenario_val, coin_obc);
+            test_scenario::return_to_sender(&scenario_val, coin_obc_1);
         };
 
         test_scenario::end(scenario_val);
