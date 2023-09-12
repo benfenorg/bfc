@@ -4,26 +4,21 @@
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
 use move_core_types::language_storage::StructTag;
-use move_core_types::account_address::AccountAddress;
-
-use crate::balance::Balance;
 use crate::base_types::ObjectID;
-use crate::committee::EpochId;
 use crate::error::SuiError;
-use crate::gas_coin::MIST_PER_SUI;
 use crate::id::{ID, UID};
 use crate::object::{Data, Object};
 use serde::Deserialize;
 use crate::SUI_SYSTEM_ADDRESS;
 use serde::Serialize;
-use schemars::{schema_for, JsonSchema};
+use schemars::JsonSchema;
 
 pub const PROPOSAL_MODULE_NAME: &IdentStr = ident_str!("Proposal");
 pub const PROPOSAL_STRUCT_NAME: &IdentStr = ident_str!("Proposal");
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
 pub struct OBCDaoAction{
-    actionId: u64,
+    action_id: u64,
     /// Name for the action
     name: String,
 }
@@ -66,10 +61,6 @@ impl Proposal {
             name: PROPOSAL_STRUCT_NAME.to_owned(),
             type_params: vec![],
         }
-    }
-
-    pub fn is_proposal(s: &StructTag) -> bool {
-        true
     }
 
     pub fn id(&self) -> ObjectID {

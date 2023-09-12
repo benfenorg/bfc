@@ -694,11 +694,11 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     )-> Result<(), ExecutionError>{
-        let params = ObcRoundParams {
+        let _ = ObcRoundParams {
             round_id:change_round.obc_round
         };
         let advance_epoch_pt = construct_obc_round_pt(change_round.obc_round)?;
-        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+        let _ = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
             move_vm,

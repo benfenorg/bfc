@@ -18,7 +18,6 @@ use crate::balance::Balance;
 use crate::base_types::ObjectID;
 use crate::collection_types::VecMap;
 use crate::gas_coin_strategy::GasCoinMap;
-use crate::id::ID;
 use crate::dao::Dao;
 
 const OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("OBCSystemState");
@@ -223,7 +222,7 @@ pub fn get_obc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
                     },
                 )?;
 
-            Ok(result.dao.curProposalStatus)
+            Ok(result.dao.current_proposal_status)
         }
         _ => Err(SuiError::SuiSystemStateReadError(format!(
             "Unsupported SuiSystemState version: {}",

@@ -32,7 +32,6 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
-use std::cell::Cell;
 use sui_config::node::StateDebugDumpConfig;
 use sui_config::NodeConfig;
 use tap::{TapFallible, TapOptional};
@@ -108,7 +107,7 @@ use sui_types::temporary_store::{
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, OBC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
-use sui_types::obc_system_state::{get_obc_system_state, ObcSystemState};
+use sui_types::obc_system_state::ObcSystemState;
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};

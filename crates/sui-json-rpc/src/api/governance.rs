@@ -10,7 +10,6 @@ use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_types::proposal::Proposal;
-use sui_types::dao::{Dao, DaoRPC};
 
 #[open_rpc(namespace = "suix", tag = "Governance Read API")]
 #[rpc(server, client, namespace = "suix")]

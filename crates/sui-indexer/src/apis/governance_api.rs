@@ -12,7 +12,6 @@ use sui_json_rpc_types::SuiCommittee;
 use sui_json_rpc_types::{DelegatedStake, ValidatorApys};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SuiAddress};
-use sui_types::dao::{Dao, DaoRPC};
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_types::proposal::Proposal;

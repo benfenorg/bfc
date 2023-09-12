@@ -31,14 +31,13 @@ use sui_open_rpc::Module;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_types::base_types::{ObjectID, SequenceNumber, TransactionDigest};
 use sui_types::collection_types::VecMap;
-use sui_types::dao::{Dao, DaoRPC};
+use sui_types::dao::DaoRPC;
 use sui_types::digests::TransactionEventsDigest;
 use sui_types::display::DisplayVersionUpdatedEvent;
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
 use sui_types::error::{SuiError, SuiObjectResponseError};
 use sui_types::messages_checkpoint::{CheckpointSequenceNumber, CheckpointTimestamp};
 use sui_types::object::{Object, ObjectRead, PastObjectRead};
-use sui_types::proposal::OBCDaoAction;
 use sui_types::sui_serde::BigInt;
 use sui_types::transaction::TransactionDataAPI;
 use sui_types::transaction::VerifiedTransaction;
@@ -926,22 +925,22 @@ impl ReadApiServer for ReadApi {
         let inner_system_state = self.state.database.get_obc_system_state_object()
             .expect("Reading obc system state object cannot fail").inner_state();
         let dao = inner_system_state.dao;
-        let mut proposalRecord = Vec::new();
-        for proposal in dao.proposalRecord.contents {
-            proposalRecord.push(proposal.value);
+        let mut proposal_record = Vec::new();
+        for proposal in dao.proposal_record.contents {
+            proposal_record.push(proposal.value);
         }
 
-        let mut actionRecord = BTreeMap::new();
-        for action in dao.actionRecord.contents {
-            actionRecord.insert(action.key, action.value);
+        let mut action_record = BTreeMap::new();
+        for action in dao.action_record.contents {
+            action_record.insert(action.key, action.value);
         }
-        let mut votesRecord = BTreeMap::new();
-        for vote in dao.votesRecord.contents {
-            votesRecord.insert(vote.key, vote.value);
+        let mut votes_record = BTreeMap::new();
+        for vote in dao.votes_record.contents {
+            votes_record.insert(vote.key, vote.value);
         }
-        let mut curProposalStatus = BTreeMap::new();
-        for status in dao.curProposalStatus.contents {
-            curProposalStatus.insert(status.key, status.value);
+        let mut current_proposal_status = BTreeMap::new();
+        for status in dao.current_proposal_status.contents {
+            current_proposal_status.insert(status.key, status.value);
         }
 
         let result = DaoRPC{
@@ -949,11 +948,11 @@ impl ReadApiServer for ReadApi {
             admin: dao.admin,
             config: dao.config,
             info: dao.info,
-            proposalRecord,
-            actionRecord,
-            votingPool: dao.votingPool,
-            votesRecord,
-            curProposalStatus,
+            proposal_record,
+            action_record,
+            voting_pool: dao.voting_pool,
+            votes_record,
+            current_proposal_status,
         };
         Ok(result)
     }

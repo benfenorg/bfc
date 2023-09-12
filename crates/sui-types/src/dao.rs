@@ -4,20 +4,15 @@
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
 use move_core_types::language_storage::StructTag;
-use move_core_types::account_address::AccountAddress;
 use crate::collection_types::VecMap;
-
-use crate::balance::Balance;
 use crate::base_types::ObjectID;
-use crate::committee::EpochId;
 use crate::error::SuiError;
-use crate::gas_coin::MIST_PER_SUI;
 use crate::id::{ID, UID};
 use crate::object::{Data, Object};
 use serde::Deserialize;
 use crate::SUI_SYSTEM_ADDRESS;
 use serde::Serialize;
-use schemars::{schema_for, JsonSchema};
+use schemars::JsonSchema;
 use crate::proposal::{OBCDaoAction, ProposalInfo};
 use std::collections::BTreeMap;
 
@@ -40,11 +35,11 @@ pub struct Dao  {
     pub config: DaoConfig,
     pub info: DaoGlobalInfo,
 
-    pub proposalRecord: VecMap<u64, ProposalInfo>,  //pid -> proposal address
-    pub actionRecord: VecMap<u64, OBCDaoAction>,    //actionId -> action address
-    pub votesRecord: VecMap<u64, u64>,  //pid -> vote count
-    pub votingPool: VotingPool,
-    pub curProposalStatus:  VecMap<u64, u8>,
+    pub proposal_record: VecMap<u64, ProposalInfo>,  //pid -> proposal address
+    pub action_record: VecMap<u64, OBCDaoAction>,    //actionId -> action address
+    pub votes_record: VecMap<u64, u64>,  //pid -> vote count
+    pub voting_pool: VotingPool,
+    pub current_proposal_status:  VecMap<u64, u8>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
@@ -53,11 +48,11 @@ pub struct DaoRPC  {
     pub admin: ID,
     pub config: DaoConfig,
     pub info: DaoGlobalInfo,
-    pub proposalRecord: Vec<ProposalInfo>,
-    pub actionRecord: BTreeMap<u64, OBCDaoAction>,
-    pub votesRecord: BTreeMap<u64, u64>,  //pid -> vote count
-    pub votingPool: VotingPool,
-    pub curProposalStatus:  BTreeMap<u64, u8>,
+    pub proposal_record: Vec<ProposalInfo>,
+    pub action_record: BTreeMap<u64, OBCDaoAction>,
+    pub votes_record: BTreeMap<u64, u64>,  //pid -> vote count
+    pub voting_pool: VotingPool,
+    pub current_proposal_status:  BTreeMap<u64, u8>,
 }
 
 impl DaoRPC {
@@ -68,10 +63,6 @@ impl DaoRPC {
             name: DAO_STRUCT_NAME.to_owned(),
             type_params: vec![],
         }
-    }
-
-    pub fn is_dao(s: &StructTag) -> bool {
-        true
     }
 
     pub fn id(&self) -> ObjectID {
