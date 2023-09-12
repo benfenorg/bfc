@@ -184,7 +184,7 @@ module obc_system::position {
         if (_liquidity_delta == 0) {
             return position.liquidity
         };
-        assert!(position.liquidity < _liquidity_delta, ERR_POSITION_INSUFFICIENT_LIQUIDITY);
+        assert!(position.liquidity >= _liquidity_delta, ERR_POSITION_INSUFFICIENT_LIQUIDITY);
         position.liquidity = position.liquidity - _liquidity_delta;
         position.liquidity
     }

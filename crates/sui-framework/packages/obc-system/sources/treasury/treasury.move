@@ -332,7 +332,7 @@ module obc_system::treasury {
             &mut _treasury.id,
             get_vault_key<USD>()
         );
-        vault::check_state(usd_mut_v);
+        vault::update_state(usd_mut_v);
 
         vault::rebalance(
             usd_mut_v,
