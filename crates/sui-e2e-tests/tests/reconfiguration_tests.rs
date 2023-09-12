@@ -350,7 +350,7 @@ async fn test_change_obc_round() {
 
 
 #[sim_test]
-async fn test_obc_dao_update_system_package(){
+async fn test_obc_dao_update_system_package_blocked(){
 
     telemetry_subscribers::init_for_testing();
     // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
@@ -403,50 +403,11 @@ async fn test_obc_dao_update_system_package(){
 
 
     //waiting for....
-    sleep(Duration::from_secs(5)).await;
 
     //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
 
 
-    let states = test_cluster
-        .swarm
-        .validator_node_handles()
-        .into_iter()
-        .map(|handle| handle.with(|node| node.state()))
-        .collect::<Vec<_>>();
-    let tasks: Vec<_> = states
-        .iter()
-        .map(|state| async {
-            let epoch_store = state.epoch_store_for_testing();
-            let (_system_state, effects) = state
-                .create_and_execute_advance_epoch_tx(
-                    &epoch_store,
-                    &GasCostSummary::new(0, 0, 0, 0),
-                    0, // checkpoint
-                    0, // epoch_start_timestamp_ms
-                )
-                .await
-                .unwrap();
-            // Check that the validator didn't commit the transaction yet.
-            assert!(state
-                .get_signed_effects_and_maybe_resign(
-                    effects.transaction_digest(),
-                    &state.epoch_store_for_testing(),
-                )
-                .unwrap()
-                .is_none());
-            effects
-        })
-        .collect();
-    let results: HashSet<_> = join_all(tasks)
-        .await
-        .into_iter()
-        .map(|result| result.digest())
-        .collect();
-
-
-
-    sleep(Duration::from_secs(5)).await;
+    sleep(Duration::from_secs(10)).await;
 
 
     epochid =  node.state().current_epoch_for_testing();
@@ -455,7 +416,79 @@ async fn test_obc_dao_update_system_package(){
     info!("=============epochid: {}", epochid);
     info!("=============protocol_version:{:?} ", protocol_version);
 
+    assert_eq!(protocol_version, ProtocolVersion::new(START_VERSION));
 
+}
+
+
+#[sim_test]
+async fn test_obc_dao_update_system_package_pass(){
+
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let START_VERSION= 18u64;
+    let UPDATE_TARGET_VERSION = 19u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_protocol_version(ProtocolVersion::new(START_VERSION))
+        .build()
+        .await;
+
+
+
+    let  node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
+
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    //waiting for....
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+
+
+    sleep(Duration::from_secs(10)).await;
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+    assert_eq!(protocol_version, ProtocolVersion::new(START_VERSION));
 
 }
 
