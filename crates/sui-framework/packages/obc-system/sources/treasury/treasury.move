@@ -218,6 +218,7 @@ module obc_system::treasury {
             coin::zero<StableCoinType>(_ctx),
             _coin_obc,
             _amount,
+            true,
             _ctx,
         );
     }
@@ -236,6 +237,7 @@ module obc_system::treasury {
             _coin_sc,
             coin::zero<OBC>(_ctx),
             _amount,
+            false,
             _ctx,
         );
     }
@@ -258,6 +260,7 @@ module obc_system::treasury {
         _coin_a: Coin<StableCoinType>,
         _coin_b: Coin<OBC>,
         _amount: u64,
+        _by_amount_in: bool,
         _ctx: &mut TxContext,
     ) {
         let vault_key = get_vault_key<StableCoinType>();
@@ -268,7 +271,7 @@ module obc_system::treasury {
             _coin_a,
             _coin_b,
             _a2b,
-            true,
+            _by_amount_in,
             _amount,
             0, // ? unuse
             sqrt_price_limit,
