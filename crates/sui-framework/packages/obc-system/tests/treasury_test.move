@@ -13,9 +13,10 @@ module obc_system::treasury_test {
     use obc_system::vault;
     use obc_system::usd::{Self, USD};
 
+    const IS_DEBUG: bool = true;
+
     #[test]
     public fun test_treasury() {
-        let is_debug = false;
         let owner = @0x0;
         let scenario_val = test_scenario::begin(owner);
 
@@ -79,7 +80,7 @@ module obc_system::treasury_test {
                 spacing_times,
                 test_scenario::ctx(&mut scenario_val),
             );
-            if (is_debug) {
+            if (IS_DEBUG) {
                 debug::print(&string(b"get ticks"));
                 debug::print(&ticks);
             };
@@ -137,7 +138,7 @@ module obc_system::treasury_test {
 
             let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
             let (amount_a, amount_b) = vault::balances<USD>(usd_vault);
-            if (is_debug) {
+            if (IS_DEBUG) {
                 debug::print(&string(b"get balance after add-l"));
                 debug::print(&amount_a);
                 debug::print(&amount_b);
@@ -156,6 +157,25 @@ module obc_system::treasury_test {
             test_scenario::return_shared(t);
         };
 
+        // check price before swap
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let position_index = 2;
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let usd_vault_key = treasury::get_vault_key<USD>();
+
+            let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
+            let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
+            let l = vault::get_position_liquidity(usd_vault, position_index);
+            if (IS_DEBUG) {
+                debug::print(&string(b"current_sqrt_price before..."));
+                debug::print(&current_sqrt_price);
+                debug::print(&l);
+            };
+
+            test_scenario::return_shared(t);
+        };
+
         // alice swap obc-usd
         let alice = @0xA1;
         let amount_obc = 1_000_000_000u64;
@@ -168,7 +188,7 @@ module obc_system::treasury_test {
                 input_obc,
                 test_scenario::ctx(&mut scenario_val),
             );
-            if (is_debug) {
+            if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances before mint ..."));
                 debug::print(&coin_obc);
             };
@@ -186,7 +206,7 @@ module obc_system::treasury_test {
         {
             let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
             let coin_obc = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
-            if (is_debug) {
+            if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after mint ..."));
                 debug::print(&coin_usd);
                 debug::print(&coin_obc);
@@ -196,13 +216,32 @@ module obc_system::treasury_test {
             test_scenario::return_to_sender(&scenario_val, coin_obc);
         };
 
+        // check price after swap
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let position_index = 2;
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let usd_vault_key = treasury::get_vault_key<USD>();
+
+            let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
+            let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
+            let l = vault::get_position_liquidity(usd_vault, position_index);
+            if (IS_DEBUG) {
+                debug::print(&string(b"current_sqrt_price after..."));
+                debug::print(&current_sqrt_price);
+                debug::print(&l);
+            };
+
+            test_scenario::return_shared(t);
+        };
+
         // alice swap osd-obc
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
-            if (is_debug) {
+            if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances redeem obc ..."));
                 debug::print(&amount);
             };
@@ -221,7 +260,7 @@ module obc_system::treasury_test {
             let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
             let coin_obc = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
             let coin_obc_1 = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
-            if (is_debug) {
+            if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after redeem ..."));
                 debug::print(&coin_usd);
                 debug::print(&coin_obc);
