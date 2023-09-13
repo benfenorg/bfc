@@ -211,6 +211,22 @@ module obc_system::treasury {
         _amount: u64,
         _ctx: &mut TxContext,
     ) {
+        let (balance_a, balance_b) = mint_internal<StableCoinType>(
+            _treasury,
+            _coin_obc,
+            _amount,
+            _ctx,
+        );
+        transfer_or_delete(balance_a, _ctx);
+        transfer_or_delete(balance_b, _ctx);
+    }
+
+    public(friend) fun mint_internal<StableCoinType>(
+        _treasury: &mut Treasury,
+        _coin_obc: Coin<OBC>,
+        _amount: u64,
+        _ctx: &mut TxContext,
+    ): (Balance<StableCoinType>, Balance<OBC>) {
         assert!(coin::value<OBC>(&_coin_obc) > 0, ERR_ZERO_AMOUNT);
         swap_internal<StableCoinType>(
             _treasury,
@@ -220,7 +236,7 @@ module obc_system::treasury {
             _amount,
             true,
             _ctx,
-        );
+        )
     }
 
     /// Burn swap stablecoin to obc
@@ -231,6 +247,23 @@ module obc_system::treasury {
         _ctx: &mut TxContext,
     ) {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
+        let (balance_a, balance_b) = redeem_internal<StableCoinType>(
+            _treasury,
+            _coin_sc,
+            _amount,
+            _ctx,
+        );
+        transfer_or_delete(balance_a, _ctx);
+        transfer_or_delete(balance_b, _ctx);
+    }
+
+    public(friend) fun redeem_internal<StableCoinType>(
+        _treasury: &mut Treasury,
+        _coin_sc: Coin<StableCoinType>,
+        _amount: u64,
+        _ctx: &mut TxContext,
+    ): (Balance<StableCoinType>, Balance<OBC>) {
+        assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
         swap_internal<StableCoinType>(
             _treasury,
             true,
@@ -239,7 +272,7 @@ module obc_system::treasury {
             _amount,
             true,
             _ctx,
-        );
+        )
     }
 
     /// Burn swap stablecoin to obc
@@ -273,11 +306,11 @@ module obc_system::treasury {
         _amount: u64,
         _by_amount_in: bool,
         _ctx: &mut TxContext,
-    ) {
+    ): (Balance<StableCoinType>, Balance<OBC>) {
         let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
-        let sqrt_price_limit= tick_math::get_default_sqrt_price_limit(_a2b);
-        let (balance_a, balance_b) = vault::swap<StableCoinType>(
+        let sqrt_price_limit = tick_math::get_default_sqrt_price_limit(_a2b);
+        vault::swap<StableCoinType>(
             mut_vault,
             _coin_a,
             _coin_b,
@@ -287,9 +320,7 @@ module obc_system::treasury {
             0, // ? unuse
             sqrt_price_limit,
             _ctx
-        );
-        transfer_or_delete(balance_a, _ctx);
-        transfer_or_delete(balance_b, _ctx);
+        )
     }
 
     /// Rebalance
