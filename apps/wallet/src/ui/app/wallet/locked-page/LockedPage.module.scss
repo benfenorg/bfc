@@ -24,10 +24,10 @@
 }
 
 .forgot-link {
-	margin-top: 15px;
+	margin-top: 10px;
 	align-self: center;
 	text-decoration: none;
-	color: colors.$sui-dark-blue;
+	color: colors.$obc-text1;
 
 	@include utils.typography('Primary/BodySmall-M');
 }

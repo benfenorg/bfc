@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin } from '@mysten/core';
+import cl from 'classnames';
 import { type ReactNode } from 'react';
 
 import { Text } from '_app/shared/text';
@@ -19,15 +20,22 @@ export function CoinItem({ coinType, balance, isActive, usd, centerAction }: Coi
 	const [formatted, symbol, { data: coinMeta }] = useFormatCoin(balance, coinType);
 
 	return (
-		<div className="flex gap-2.5 w-full py-3 pl-1.5 pr-2 justify-center items-center rounded hover:bg-sui/10">
+		<div
+			className={cl(
+				'flex gap-2.5 w-full p-2.5 justify-center items-center rounded-lg hover:bg-obc-card',
+				{
+					'bg-obc-card': isActive,
+				},
+			)}
+		>
 			<CoinIcon coinType={coinType} size={isActive ? 'sm' : 'md'} />
 			<div className="flex flex-1 gap-1.5 justify-between items-center">
-				<div className="flex flex-col gap-1.5">
-					<Text variant="body" color="gray-90" weight="semibold" truncate>
+				<div className="flex flex-col">
+					<Text variant="body" color="obc-text1" weight="medium" truncate>
 						{coinMeta?.name || symbol} {isActive ? 'available' : ''}
 					</Text>
 					{!isActive ? (
-						<Text variant="subtitle" color="steel-dark" weight="medium">
+						<Text variant="body" color="obc-text3" weight="normal">
 							{symbol}
 						</Text>
 					) : null}
@@ -37,16 +45,16 @@ export function CoinItem({ coinType, balance, isActive, usd, centerAction }: Coi
 
 				<div className="flex flex-row justify-center items-center">
 					{isActive ? (
-						<Text variant="body" color="steel-darker" weight="medium">
+						<Text variant="body" color="obc-text1" weight="normal">
 							{formatted}
 						</Text>
 					) : (
-						<div data-testid={coinType} className="flex flex-col justify-end items-end gap-1.5">
-							<Text variant="body" color="gray-90" weight="medium">
+						<div data-testid={coinType} className="flex flex-col justify-end items-end">
+							<Text variant="body" color="obc-text1" weight="normal">
 								{formatted} {symbol}
 							</Text>
 							{usd && (
-								<Text variant="caption" color="steel-dark" weight="medium">
+								<Text variant="body" color="obc-text3" weight="normal">
 									${usd.toLocaleString('en-US')}
 								</Text>
 							)}

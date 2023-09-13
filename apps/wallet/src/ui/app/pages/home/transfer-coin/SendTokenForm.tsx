@@ -12,6 +12,7 @@ import {
 import { ArrowRight16 } from '@mysten/icons';
 import { SUI_TYPE_ARG, Coin as CoinAPI, type CoinStruct } from '@mysten/sui.js';
 import { useQuery } from '@tanstack/react-query';
+import cl from 'classnames';
 import { Field, Form, useFormikContext, Formik } from 'formik';
 import { useMemo, useEffect } from 'react';
 
@@ -117,13 +118,13 @@ function GasBudgetEstimation({
 	}, [formattedGas, setFieldValue, values.amount]);
 
 	return (
-		<div className="px-2 my-2 flex w-full gap-2 justify-between">
-			<div className="flex gap-1">
-				<Text variant="body" color="gray-80" weight="medium">
+		<div className="mt-1.25 flex w-full gap-2 justify-between">
+			<div className="grow">
+				<Text variant="body" color="obc-text1" weight="normal">
 					Estimated Gas Fees
 				</Text>
 			</div>
-			<Text variant="body" color="gray-90" weight="medium">
+			<Text variant="body" color="obc-text1" weight="normal">
 				{formattedGas ? formattedGas + ' ' + GAS_SYMBOL : '--'}
 			</Text>
 		</div>
@@ -226,17 +227,19 @@ export function SendTokenForm({
 						suiBalance >
 							parseAmount(values.gasBudgetEst, coinDecimals) +
 								parseAmount(coinType === SUI_TYPE_ARG ? values.amount : '0', coinDecimals);
+					const actionDisabled =
+						parseAmount(values?.amount, coinDecimals) === coinBalance ||
+						queryResult.isLoading ||
+						!coinBalance;
 
 					return (
 						<BottomMenuLayout>
 							<Content>
 								<Form autoComplete="off" noValidate>
-									<div className="w-full flex flex-col flex-grow">
-										<div className="px-2 mb-2.5">
-											<Text variant="caption" color="steel" weight="semibold">
-												Select Coin Amount to Send
-											</Text>
-										</div>
+									<div className="w-full flex flex-col flex-grow gap-1.25">
+										<Text variant="body" color="obc-text2" weight="normal">
+											Select Coin Amount to Send
+										</Text>
 
 										<InputWithAction
 											data-testid="coin-amount-input"
@@ -245,6 +248,10 @@ export function SendTokenForm({
 											placeholder="0.00"
 											prefix={values.isPayAllSui ? '~ ' : ''}
 											actionText="Max"
+											actionClass={cl('border border-solid rounded-[30px]', {
+												'border-obc-text1': !actionDisabled,
+												'border-obc-text3': actionDisabled,
+											})}
 											suffix={` ${symbol}`}
 											actionType="button"
 											allowNegative={false}
@@ -256,27 +263,21 @@ export function SendTokenForm({
 												await setFieldValue('amount', formattedTokenBalance);
 												validateField('amount');
 											}}
-											actionDisabled={
-												parseAmount(values?.amount, coinDecimals) === coinBalance ||
-												queryResult.isLoading ||
-												!coinBalance
-											}
+											actionDisabled={actionDisabled}
 										/>
 									</div>
 									{!hasEnoughBalance && isValid ? (
-										<div className="mt-3">
-											<Alert>Insufficient SUI to cover transaction</Alert>
+										<div>
+											<Alert>Insufficient OBC to cover transaction</Alert>
 										</div>
 									) : null}
 
 									{coins ? <GasBudgetEstimation coinDecimals={coinDecimals} coins={coins} /> : null}
 
 									<div className="w-full flex gap-2.5 flex-col mt-7.5">
-										<div className="px-2 tracking-wider">
-											<Text variant="caption" color="steel" weight="semibold">
-												Enter Recipient Address
-											</Text>
-										</div>
+										<Text variant="body" color="obc-text2" weight="normal">
+											Enter Recipient Address
+										</Text>
 										<div className="w-full flex relative items-center flex-col">
 											<Field component={AddressInput} name="to" placeholder="Enter Address" />
 										</div>

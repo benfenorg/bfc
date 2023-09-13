@@ -5,7 +5,6 @@ import { ArrowUpRight12 } from '@mysten/icons';
 import { cx } from 'class-variance-authority';
 
 import { AccountAddress } from './AccountAddress';
-import { SummaryCard } from './SummaryCard';
 import { Link } from '../shared/Link';
 import { Heading } from '../shared/heading';
 import { Text } from '../shared/text';
@@ -23,48 +22,44 @@ export function DAppInfoCard({ name, url, iconUrl, connectedAddress }: DAppInfoC
 	const appHostname = validDAppUrl?.hostname ?? url;
 
 	return (
-		<SummaryCard
-			minimalPadding
-			noBorder
-			showDivider
-			body={
-				<>
-					<div className="flex flex-row flex-nowrap items-center gap-3.75 py-3">
-						<div className="flex items-stretch h-15 w-15 rounded-full overflow-hidden bg-steel/20 shrink-0 grow-0">
-							{iconUrl ? <img className="flex-1" src={iconUrl} alt={name} /> : null}
-						</div>
-						<div className="flex flex-col flex-nowrap gap-1">
-							<Heading variant="heading4" weight="semibold" color="gray-100">
-								{name}
-							</Heading>
-							<Text variant="body" weight="medium" color="steel-dark">
-								{appHostname}
-							</Text>
-						</div>
-					</div>
-					<div className={cx('flex justify-start pt-3', connectedAddress ? 'pb-3' : '')}>
-						<div>
-							<Link
-								href={validDAppUrl?.toString() ?? url}
-								title={name}
-								text="View Website"
-								after={<ArrowUpRight12 />}
-								color="suiDark"
-								weight="medium"
-							/>
-						</div>
-					</div>
-					{connectedAddress ? (
-						<div className="flex flex-nowrap flex-row items-center pt-3 gap-3">
-							<Text variant="bodySmall" weight="medium" color="steel-darker" truncate>
-								Connected account
-							</Text>
-							<div className="flex-1" />
-							<AccountAddress copyable address={connectedAddress} />
-						</div>
-					) : null}
-				</>
-			}
-		/>
+		<div className="flex flex-col items-stretch p-2.5 pt-5 rounded-lg border border-solid border-obc-border">
+			<div className="flex flex-row flex-nowrap items-center gap-2.5 mb-2.5">
+				<div className="flex items-stretch h-12 w-12 rounded-full overflow-hidden bg-[#d9d9d9] shrink-0 grow-0">
+					{iconUrl ? <img className="flex-1" src={iconUrl} alt={name} /> : null}
+				</div>
+				<div className="flex flex-col flex-nowrap gap-1.5">
+					<Heading variant="heading4" weight="semibold" color="obc-text1">
+						{name}
+					</Heading>
+					<Text variant="body" weight="normal" color="obc-text3">
+						{appHostname}
+					</Text>
+				</div>
+			</div>
+			{connectedAddress ? (
+				<div className="p-2.5 flex flex-nowrap flex-row items-center gap-1.25">
+					<Text variant="body" weight="medium" color="obc-text1" truncate>
+						Connected account
+					</Text>
+					<div className="flex-1" />
+					<AccountAddress copyable address={connectedAddress} />
+				</div>
+			) : null}
+			<div
+				className={cx(
+					'p-2.5 pb-0 flex justify-start border-0 border-t border-solid border-obc-border',
+				)}
+			>
+				<Link
+					href={validDAppUrl?.toString() ?? url}
+					title={name}
+					size="body"
+					text="View Website"
+					after={<ArrowUpRight12 />}
+					color="obc-link"
+					weight="medium"
+				/>
+			</div>
+		</div>
 	);
 }

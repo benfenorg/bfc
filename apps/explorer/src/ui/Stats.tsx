@@ -4,7 +4,7 @@
 import { Heading, Text } from '@mysten/ui';
 import clsx from 'clsx';
 
-import { ReactComponent as InfoSvg } from './icons/info_10x10.svg';
+import { ReactComponent as InfoSvg } from './icons/info_14x14.svg';
 import { Tooltip } from '~/ui/Tooltip';
 import { ampli } from '~/utils/analytics/ampli';
 
@@ -17,8 +17,9 @@ export type StatsProps = {
 	tooltip?: string;
 	unavailable?: boolean;
 	postfix?: ReactNode;
+	darker?:boolean;
 	orientation?: 'horizontal' | 'vertical';
-	color?: 'steel-darker' | 'hero';
+	color?: 'steel-darker' | 'hero' | 'steel-dark';
 };
 
 export function Stats({
@@ -27,9 +28,10 @@ export function Stats({
 	tooltip,
 	unavailable,
 	postfix,
+	darker,
 	size = 'md',
 	orientation = 'vertical',
-	color = 'steel-darker',
+	color = 'steel-dark',
 }: StatsProps) {
 	return (
 		<div
@@ -39,7 +41,7 @@ export function Stats({
 			)}
 		>
 			<div className="flex items-center justify-start gap-1 overflow-hidden text-caption">
-				<Text variant="caption/semibold" color={color} truncate>
+				<Text variant="pBody/normal" color={color} truncate>
 					{label}
 				</Text>
 				{tooltip && (
@@ -55,19 +57,21 @@ export function Stats({
 			</div>
 			<div className="flex items-baseline gap-0.5">
 				<Heading
-					variant={size === 'md' ? 'heading3/semibold' : 'heading6/semibold'}
-					color={unavailable ? 'steel-darker' : color}
+					variant={size === 'md' ? 'heading4/semibold' : 'heading6/semibold'}
+					color={unavailable || darker ? 'steel-darker' : color}
 				>
 					{unavailable || children == null ? '--' : children}
 				</Heading>
 
 				{postfix && (
-					<Heading
-						variant={size === 'md' ? 'heading3/semibold' : 'heading6/semibold'}
-						color={unavailable ? 'steel-darker' : color}
+					<Text
+						// variant={size === 'md' ? 'heading3/semibold' : 'heading6/semibold'}
+						// color={unavailable ? 'steel-darker' : color}
+						variant="body/normal"
+						color="steel-dark"
 					>
 						{postfix}
-					</Heading>
+					</Text>
 				)}
 			</div>
 		</div>

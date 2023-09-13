@@ -68,7 +68,7 @@ export function ImportPage({ mode = 'import' }: ImportPageProps) {
 			title={mode === 'import' ? 'Import an Existing Wallet' : 'Reset Password for This Wallet'}
 		>
 			{StepForm ? (
-				<div className="mt-7.5 flex flex-col flex-nowrap items-stretch flex-1 flex-grow w-full">
+				<div className="mt-10 flex flex-col flex-nowrap items-stretch flex-1 flex-grow w-full">
 					<StepForm
 						next={async (data, stepIncrement) => {
 							const nextStep = step + stepIncrement;

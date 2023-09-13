@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getTransactionSender } from '@mysten/sui.js';
-import { LoadingIndicator, RadioGroup, RadioGroupItem } from '@mysten/ui';
+import { LoadingIndicator, RadioGroup, RadioGroupItem,Text } from '@mysten/ui';
 import { useState } from 'react';
 import { type Direction } from 'react-resizable-panels';
 
@@ -17,6 +17,7 @@ import TransactionBlocksForAddress, {
 } from '~/components/TransactionBlocksForAddress/TransactionBlocksForAddress';
 import { AddressLink, ObjectLink } from '~/ui/InternalLink';
 import { TabHeader, Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
+import { DescriptionFlexList, DescriptionItem } from '~/ui/DescriptionList';
 
 import styles from './ObjectView.module.css';
 
@@ -55,36 +56,27 @@ function PkgView({ data }: { data: DataType }) {
 	return (
 		<div>
 			<div>
-				<TabHeader title="Details">
-					<table className={styles.description} id="descriptionResults">
-						<tbody>
-							<tr>
-								<td>Object ID</td>
-								<td id="objectID" className={styles.objectid}>
-									<ObjectLink objectId={viewedData.id} noTruncate />
-								</td>
-							</tr>
-
-							<tr>
-								<td>Version</td>
-								<td>{viewedData.version}</td>
-							</tr>
-
-							{viewedData?.publisherAddress && (
-								<tr>
-									<td>Publisher</td>
-									<td id="lasttxID">
-										<AddressLink address={viewedData.publisherAddress} noTruncate />
-									</td>
-								</tr>
-							)}
-						</tbody>
-					</table>
+				<TabHeader size="lineMdOne" title="Details">
+					<DescriptionFlexList>
+						<DescriptionItem title="Object ID" align="start" direction='cloumn'>
+							<ObjectLink objectId={viewedData.id}/>
+						</DescriptionItem>
+						<DescriptionItem title="Version" align="start" direction='cloumn'>
+							<Text  variant="pBody/medium" color="steel-darker">
+								{viewedData.version}
+							</Text>
+						</DescriptionItem>
+						{viewedData?.publisherAddress && (
+							<DescriptionItem title="Publisher" align="start" direction='cloumn'>
+								<AddressLink address={viewedData.publisherAddress}/>
+							</DescriptionItem>
+						)}
+					</DescriptionFlexList>
 				</TabHeader>
 
-				<Tabs defaultValue="modules">
+				<Tabs size="lineMdOne" defaultValue="modules">
 					<TabsList>
-						<div className="mt-16 flex w-full justify-between">
+						<div className="mt-6 flex w-full justify-between">
 							<TabsTrigger value="modules">Modules</TabsTrigger>
 							<div className="hidden md:block">
 								<RadioGroup

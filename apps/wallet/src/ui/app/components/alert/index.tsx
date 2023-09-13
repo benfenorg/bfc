@@ -9,11 +9,11 @@ import LoadingIndicator from '_components/loading/LoadingIndicator';
 import type { ReactNode } from 'react';
 
 const alertStyles = cva(
-	'rounded-2xl text-pBodySmall font-medium flex flex-row flex-nowrap justify-start items-center py-2 px-2.5 gap-2',
+	'rounded-lg text-body/[18px] font-normal flex flex-row flex-nowrap justify-start items-center p-2.5 gap-1.25',
 	{
 		variants: {
 			mode: {
-				warning: 'border-solid border bg-warning-light border-warning-dark/20 text-warning-dark',
+				warning: 'border-solid border bg-obc-red_10p border-obc-red text-obc-red',
 				success: 'border-solid border bg-success-light border-success-dark/20 text-success-dark',
 				loading: 'bg-steel text-white border-warning-dark/20',
 				issue: 'border-solid border bg-issue-light border-issue-dark/20 text-issue-dark',

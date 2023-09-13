@@ -31,7 +31,7 @@ function getAccount(account: ReadonlyWalletAccount, useWrongAccount: boolean) {
 }
 
 function findSuiWallet(wallets: readonly Wallet[]) {
-	return (wallets.find((aWallet) => aWallet.name.includes('Sui Wallet')) ||
+	return (wallets.find((aWallet) => aWallet.name.includes('OBC Wallet')) ||
 		null) as SuiWallet | null;
 }
 
@@ -71,7 +71,7 @@ function App() {
 	}
 	return (
 		<>
-			<h1>Sui Wallet is installed. ({suiWallet.name})</h1>
+			<h1>OBC Wallet is installed. ({suiWallet.name})</h1>
 			{accounts.length ? (
 				<ul data-testid="accounts-list">
 					{accounts.map((anAccount) => (

@@ -30,8 +30,8 @@ export function TopPackagesCard() {
 	const filteredData = data ? data[FILTER_TO_API_FILTER[selectedFilter]] : [];
 
 	return (
-		<div className="relative">
-			<div className="absolute right-0 mt-1">
+		<div>
+			<div className="">
 				<FilterList
 					lessSpacing
 					options={['3D', '7D', '30D']}
@@ -39,14 +39,11 @@ export function TopPackagesCard() {
 					onChange={(val) => setSelectedFilter(val)}
 				/>
 			</div>
-			<TabHeader
-				title="Popular Packages"
-				tooltip="Popular packages is recomputed on epoch changes."
-			>
+			<div className="obc-table-container mt-5">
 				<ErrorBoundary>
 					<TopPackagesTable data={filteredData} isLoading={isLoading} />
 				</ErrorBoundary>
-			</TabHeader>
+			</div>
 		</div>
 	);
 }

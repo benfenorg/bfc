@@ -51,7 +51,7 @@ function ResizeHandle({
 		>
 			<div
 				className={clsx(
-					'relative border border-gray-45 group-hover/container:border-hero',
+					'relative border border-obc-link group-hover/container:border-obc-link',
 					isHorizontal ? 'h-full w-px' : 'h-px',
 					noHoverHidden && !isCollapsed && 'border-transparent',
 				)}
@@ -64,8 +64,8 @@ function ResizeHandle({
 						className={clsx([
 							'group/button',
 							'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full',
-							'border-2 border-gray-45 bg-white text-gray-70 group-hover/container:border-hero-dark',
-							'hover:bg-hero-dark hover:text-white',
+							'border-2 border-obc-link bg-white text-gray-70 group-hover/container:border-obc-link',
+							// 'hover:bg-hero-dark hover:text-white',
 							isHorizontal
 								? 'absolute left-1/2 top-10 -translate-x-2/4'
 								: 'absolute left-10 top-1/2 -translate-y-2/4',
@@ -74,7 +74,7 @@ function ResizeHandle({
 					>
 						<ChevronButton
 							className={clsx(
-								'h-4 w-4 text-gray-45 group-hover/button:!text-white group-hover/container:text-hero',
+								'h-4 w-4 text-obc-link  group-hover/container:border-obc-link',
 								isCollapsed && 'rotate-180',
 							)}
 						/>

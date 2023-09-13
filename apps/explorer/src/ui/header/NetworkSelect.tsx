@@ -34,6 +34,7 @@ export interface NetworkSelectProps {
 	value: string;
 	version?: number | string;
 	binaryVersion?: string;
+	isDarker?:boolean;
 	onChange(networkId: string): void;
 }
 
@@ -203,6 +204,7 @@ export function NetworkSelect({
 	version,
 	binaryVersion,
 	onChange,
+	isDarker,
 }: NetworkSelectProps) {
 	const { x, y, refs, strategy } = useFloating({
 		placement: 'bottom-end',
@@ -216,7 +218,7 @@ export function NetworkSelect({
 		<Popover>
 			{({ open, close }) => (
 				<>
-					<Popover.Button ref={refs.setReference} as={NavItem} afterIcon={<ResponsiveIcon />}>
+					<Popover.Button ref={refs.setReference} as={NavItem} isDarker={isDarker} afterIcon={<ResponsiveIcon />}>
 						<span className="hidden md:block">{selected?.label || 'Custom'}</span>
 					</Popover.Button>
 					<FloatingPortal>

@@ -48,10 +48,10 @@ function BullsharkQuestsNotification({ onClose }: { onClose: () => void }) {
 						<div className="flex flex-col items-center">
 							<InterstitialHeading text="Join Bullshark Quests!" />
 							<div className="bg-[url('https://quests.mystenlabs.com/_next/static/media/logo.81b4eb8f.svg')] h-40 w-40 bg-cover" />
-							<InterstitialHeading text="5 Million SUI prize pool!" />
+							<InterstitialHeading text="5 Million OBC prize pool!" />
 							<div className="flex flex-col items-center gap-2 mt-2">
-								<InterstitialBanner lines={['2.5M SUI', 'Top 10,000 players!']} />
-								<InterstitialBanner lines={['2.5M SUI', 'all eligible players!']} />
+								<InterstitialBanner lines={['2.5M OBC', 'Top 10,000 players!']} />
+								<InterstitialBanner lines={['2.5M OBC', 'all eligible players!']} />
 							</div>
 						</div>
 

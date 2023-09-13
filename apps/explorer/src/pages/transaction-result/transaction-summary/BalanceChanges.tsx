@@ -37,7 +37,7 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 						Amount
 					</Text>
 					<div className="flex">
-						<Text variant="pBody/medium" color={isPositive ? 'success-dark' : 'issue-dark'}>
+						<Text variant="pBody/medium" color={isPositive ? 'obc-green' : 'obc-red'}>
 							{isPositive ? '+' : ''}
 							{formatted} {symbol}
 						</Text>
@@ -58,7 +58,7 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 }
 
 function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner: string }) {
-	const coinTypesSet = new Set(changes.map((change) => change.coinType));
+	// const coinTypesSet = new Set(changes.map((change) => change.coinType));
 	const { data: suinsDomainName } = useResolveSuiNSName(owner);
 
 	return (
@@ -69,10 +69,9 @@ function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner
 						Balance Changes
 					</Heading>
 
-					<CoinsStack coinTypes={Array.from(coinTypesSet)} />
+					{/* <CoinsStack coinTypes={Array.from(coinTypesSet)} /> */}
 				</div>
 			}
-			shadow
 			size="sm"
 			footer={
 				owner ? (

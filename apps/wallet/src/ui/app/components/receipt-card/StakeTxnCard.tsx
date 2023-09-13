@@ -6,11 +6,9 @@ import {
 	useGetValidatorsApy,
 	useGetTimeBeforeEpochNumber,
 } from '@mysten/core';
-import { SUI_TYPE_ARG } from '@mysten/sui.js';
 
-import { Card } from '../../shared/transaction-summary/Card';
+import { StakeAmount } from '_app/staking/home/StakeAmount';
 import { ValidatorLogo } from '_app/staking/validators/ValidatorLogo';
-import { TxnAmount } from '_components/receipt-card/TxnAmount';
 import {
 	NUM_OF_EPOCH_BEFORE_STAKING_REWARDS_REDEEMABLE,
 	NUM_OF_EPOCH_BEFORE_STAKING_REWARDS_STARTS,
@@ -51,83 +49,86 @@ export function StakeTxnCard({ event }: StakeTxnCardProps) {
 		useGetTimeBeforeEpochNumber(redeemableRewardsEpoch);
 
 	return (
-		<Card>
-			<div className="flex flex-col divide-y divide-solid divide-gray-40 divide-x-0">
-				{validatorAddress && (
-					<div className="mb-3.5 w-full divide-y divide-gray-40 divide-solid">
-						<ValidatorLogo
-							validatorAddress={validatorAddress}
-							showAddress
-							iconSize="md"
-							size="body"
-							activeEpoch={event.parsedJson?.epoch}
-						/>
-					</div>
-				)}
-				{stakedAmount && <TxnAmount amount={stakedAmount} coinType={SUI_TYPE_ARG} label="Stake" />}
-				<div className="flex flex-col">
-					<div className="flex justify-between w-full py-3.5">
-						<div className="flex gap-1 items-baseline justify-center text-steel">
-							<Text variant="body" weight="medium" color="steel-darker">
-								APY
-							</Text>
-							<IconTooltip tip="This is the Annualized Percentage Yield of the a specific validator’s past operations. Note there is no guarantee this APY will be true in the future." />
-						</div>
+		<div className="flex flex-col divide-y divide-solid divide-obc-border divide-x-0 border border-solid border-obc-border rounded-lg p-2.5">
+			{validatorAddress && (
+				<div className="mb-2.5 w-full">
+					<ValidatorLogo
+						validatorAddress={validatorAddress}
+						showAddress
+						iconSize="md"
+						size="body"
+						activeEpoch={event.parsedJson?.epoch}
+					/>
+				</div>
+			)}
+			{stakedAmount && (
+				<div className="h-10 flex justify-between w-full items-center">
+					<Text variant="body" weight="normal" color="obc-text1">
+						Stake
+					</Text>
+					<StakeAmount balance={stakedAmount} variant="body" />
+				</div>
+			)}
+			<div className="flex justify-between w-full py-2.5">
+				<div className="flex gap-1 justify-center items-center text-obc-text2">
+					<Text variant="body" weight="normal" color="obc-text2">
+						APY
+					</Text>
+					<IconTooltip tip="This is the Annualized Percentage Yield of the a specific validator’s past operations. Note there is no guarantee this APY will be true in the future." />
+				</div>
+				<Text variant="body" weight="medium" color="obc-text1">
+					{formatPercentageDisplay(apy, '--', isApyApproxZero)}
+				</Text>
+			</div>
+			<div className="flex flex-col">
+				<div className="flex justify-between w-full py-2.5">
+					<div className="flex gap-1 items-center text-steel">
 						<Text variant="body" weight="medium" color="steel-darker">
-							{formatPercentageDisplay(apy, '--', isApyApproxZero)}
+							{timeBeforeStakeRewardsStarts > 0
+								? 'Staking Rewards Start'
+								: 'Staking Rewards Started'}
 						</Text>
 					</div>
-				</div>
-				<div className="flex flex-col">
-					<div className="flex justify-between w-full py-3.5">
-						<div className="flex gap-1 items-baseline text-steel">
-							<Text variant="body" weight="medium" color="steel-darker">
-								{timeBeforeStakeRewardsStarts > 0
-									? 'Staking Rewards Start'
-									: 'Staking Rewards Started'}
-							</Text>
-						</div>
 
-						{timeBeforeStakeRewardsStarts > 0 ? (
+					{timeBeforeStakeRewardsStarts > 0 ? (
+						<CountDownTimer
+							timestamp={timeBeforeStakeRewardsStarts}
+							variant="body"
+							color="obc-text1"
+							weight="normal"
+							label="in"
+							endLabel="--"
+						/>
+					) : (
+						<Text variant="body" weight="normal" color="obc-text1">
+							Epoch #{startEarningRewardsEpoch}
+						</Text>
+					)}
+				</div>
+				<div className="py-2.5 flex justify-between w-full">
+					<div className="flex gap-1 flex-1 items-center text-obc">
+						<Text variant="body" weight="medium" color="obc-text1">
+							Staking Rewards Redeemable
+						</Text>
+					</div>
+					<div className="flex-1 flex justify-end gap-1 items-center">
+						{timeBeforeStakeRewardsRedeemable > 0 ? (
 							<CountDownTimer
-								timestamp={timeBeforeStakeRewardsStarts}
+								timestamp={timeBeforeStakeRewardsRedeemable}
 								variant="body"
-								color="steel-darker"
-								weight="medium"
+								color="obc-text1"
+								weight="normal"
 								label="in"
 								endLabel="--"
 							/>
 						) : (
-							<Text variant="body" weight="medium" color="steel-darker">
-								Epoch #{startEarningRewardsEpoch}
+							<Text variant="body" weight="normal" color="obc-text1">
+								Epoch #{redeemableRewardsEpoch}
 							</Text>
 						)}
 					</div>
-					<div className="flex justify-between w-full">
-						<div className="flex gap-1 flex-1 items-baseline text-steel">
-							<Text variant="pBody" weight="medium" color="steel-darker">
-								Staking Rewards Redeemable
-							</Text>
-						</div>
-						<div className="flex-1 flex justify-end gap-1 items-center">
-							{timeBeforeStakeRewardsRedeemable > 0 ? (
-								<CountDownTimer
-									timestamp={timeBeforeStakeRewardsRedeemable}
-									variant="body"
-									color="steel-darker"
-									weight="medium"
-									label="in"
-									endLabel="--"
-								/>
-							) : (
-								<Text variant="body" weight="medium" color="steel-darker">
-									Epoch #{redeemableRewardsEpoch}
-								</Text>
-							)}
-						</div>
-					</div>
 				</div>
 			</div>
-		</Card>
+		</div>
 	);
 }

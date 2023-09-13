@@ -55,8 +55,8 @@ function MenuList() {
 	return (
 		<>
 			<MenuLayout title="Wallet Settings">
-				<div className="flex flex-col divide-y divide-x-0 divide-solid divide-gray-45">
-					<div className="flex flex-col mb-3">
+				<div className="flex flex-col divide-y divide-x-0 divide-solid divide-gray-45 border-b border-obc-border">
+					<div className="flex flex-col gap-2.5 mt-5 pt-5 px-2.5 pb-2.5 border-b border-obc-border">
 						<MenuListItem
 							to={accountUrl}
 							icon={<Account24 />}
@@ -69,45 +69,50 @@ function MenuList() {
 								size="narrow"
 								href={explorerAddress}
 								text={
-									<Text variant="bodySmall" weight="medium" color="steel-darker">
-										View account on Sui Explorer
+									<Text variant="bodySmall" weight="medium" color="obc-text2">
+										View account on OBC Explorer
 									</Text>
 								}
-								after={<ArrowUpRight16 className="text-steel w-4 h-4" />}
+								after={<ArrowUpRight16 className="text-obc-text2 w-3.5 h-3.5" />}
 							/>
 						)}
 					</div>
-					<MenuListItem
-						to={networkUrl}
-						icon={<Domain24 />}
-						title="Network"
-						subtitle={networkName}
-					/>
-					<MenuListItem
-						to={autoLockUrl}
-						icon={<Version24 />}
-						title="Auto-lock"
-						subtitle={autoLockInterval ? `${autoLockInterval} min` : <LoadingIndicator />}
-					/>
-					<MenuListItem
-						icon={<CopyArchiveDoNotUse24 />}
-						title={
-							<div className="flex gap-1.5 items-center">
-								FAQ
-								<ArrowUpRight12 className="text-steel w-3 h-3" />
-							</div>
-						}
-						href={FAQ_LINK}
-					/>
+					<div className="py-5 px-2.5 border-b border-obc-border">
+						<MenuListItem
+							to={networkUrl}
+							icon={<Domain24 />}
+							title="Network"
+							subtitle={networkName}
+						/>
+					</div>
+					<div className="py-5 px-2.5 border-b border-obc-border">
+						<MenuListItem
+							to={autoLockUrl}
+							icon={<Version24 />}
+							title="Auto-lock"
+							subtitle={autoLockInterval ? `${autoLockInterval} min` : <LoadingIndicator />}
+						/>
+					</div>
+					<div className="py-5 px-2.5 border-b border-obc-border">
+						<MenuListItem
+							icon={<CopyArchiveDoNotUse24 />}
+							title={
+								<div className="flex gap-1.5 items-center">
+									FAQ
+									<ArrowUpRight12 className="text-steel w-3 h-3" />
+								</div>
+							}
+							href={FAQ_LINK}
+						/>
+					</div>
 				</div>
 				<div className="flex flex-col items-stretch mt-2.5">
-					<FaucetRequestButton variant="outline" />
+					<FaucetRequestButton variant="secondary" />
 				</div>
 				<div className="flex-1" />
 				<div className="flex flex-nowrap flex-row items-stretch gap-3 mt-2.5">
-					<Button
-						variant="outline"
-						size="narrow"
+					<div
+						className="flex justify-center items-center h-10 w-full rounded-lg border border-solid border-obc-border text-bodySmall font-medium text-obc-text2 cursor-pointer"
 						onClick={async () => {
 							try {
 								await dispatch(lockWallet()).unwrap();
@@ -116,28 +121,50 @@ function MenuList() {
 								// Do nothing
 							}
 						}}
-						text="Lock Wallet"
-					/>
-					<Button
-						variant="outline"
-						text="Logout"
-						size="narrow"
-						loading={logoutInProgress}
-						disabled={isLogoutDialogOpen}
+					>
+						Lock Wallet
+					</div>
+					<div
+						className="flex justify-center items-center h-10 w-full rounded-lg border border-solid border-obc-border text-bodySmall font-medium text-obc-text2 cursor-pointer"
 						onClick={async () => {
+							if (logoutInProgress || isLogoutDialogOpen) {
+								return;
+							}
 							setIsLogoutDialogOpen(true);
 						}}
-					/>
+					>
+						Logout
+					</div>
 				</div>
 				<div className="px-2.5 flex flex-col items-center justify-center no-underline gap-3.75 mt-3.75">
 					<Link
 						href={ToS_LINK}
 						text="Terms of service"
-						after={<ArrowUpRight12 />}
-						color="steelDark"
-						weight="semibold"
+						after={
+							<svg
+								width="15"
+								height="14"
+								viewBox="0 0 15 14"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<g clipPath="url(#clip0_15_4490)">
+									<path
+										d="M9.01084 4.66418L3.9895 9.68493L4.81434 10.5098L9.83508 5.4896V9.91418H11.0018V3.49752H4.58509V4.66418H9.01084Z"
+										fill="#5A6070"
+									/>
+								</g>
+								<defs>
+									<clipPath id="clip0_15_4490">
+										<rect width="14" height="14" fill="white" transform="matrix(1 0 0 -1 0.5 14)" />
+									</clipPath>
+								</defs>
+							</svg>
+						}
+						color="obc-text2"
+						weight="normal"
 					/>
-					<Text variant="bodySmall" weight="medium" color="steel">
+					<Text variant="bodySmall" weight="normal" color="obc-text3">
 						Wallet Version v{version}
 					</Text>
 				</div>

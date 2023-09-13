@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 
 import { Card } from '~/ui/Card';
 import { RingChart, RingChartLegend } from '~/ui/RingChart';
+import { Divider } from '~/ui/Divider';
 
 export function ValidatorStatus() {
 	const { data } = useGetSystemState();
@@ -44,7 +45,7 @@ export function ValidatorStatus() {
 	];
 
 	return (
-		<Card spacing="lg" bg="white" border="steel" rounded="2xl">
+		<Card spacing="lg" bg="white" border="obcBorder" rounded="2xl">
 			<div className="flex items-center gap-5">
 				<div className="min-h-[96px] min-w-[96px]">
 					<RingChart data={chartData} />
@@ -54,23 +55,22 @@ export function ValidatorStatus() {
 					<RingChartLegend data={chartData} title={`Validators in Epoch ${nextEpoch}`} />
 				</div>
 			</div>
-
-			<div className="mt-8 flex items-center justify-between rounded-lg border border-solid border-steel px-3 py-2">
+			<div className="mt-5"><Divider/></div>
+			<div className="mt-5">
 				<div>
-					<Text variant="pSubtitle/semibold" color="steel-darker">
-						Estimated Next Epoch
-					</Text>
-					<Text variant="pSubtitle/semibold" color="steel-darker">
-						Reference Gas Price
+					<Text variant="pSubtitle/normal" color="steel-dark">
+						Estimated Next Epoch Reference Gas Price
 					</Text>
 				</div>
-				<div className="text-right">
+				<div className="flex gap-1 items-baseline">
 					<Heading variant="heading4/semibold" color="steel-darker">
 						{nextRefGasPrice.toString()}
 					</Heading>
-					<Text variant="pBody/medium" color="steel-darker">
-						MIST
-					</Text>
+					<div>
+						<Text variant="pBody/normal" color="steel">
+							MIST
+						</Text>
+					</div>
 				</div>
 			</div>
 		</Card>

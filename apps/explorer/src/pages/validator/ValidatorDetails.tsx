@@ -3,8 +3,8 @@
 
 import { useGetValidatorsApy, useGetValidatorsEvents, useGetSystemState } from '@mysten/core';
 import { type SuiSystemStateSummary, sui2ObcAddress } from '@mysten/sui.js';
-import { LoadingIndicator, Text } from '@mysten/ui';
-import React, { useMemo } from 'react';
+import { LoadingIndicator } from '@mysten/ui';
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { PageLayout } from '~/components/Layout/PageLayout';
@@ -86,11 +86,11 @@ function ValidatorDetails() {
 	return (
 		<PageLayout
 			content={
-				<div className="mb-10">
-					<div className="flex flex-col flex-nowrap gap-5 md:flex-row md:gap-0">
+				<div className="mb-10 grid grid-cols-2 gap-8">
+					<div className="flex flex-col gap-1 md:gap-0">
 						<ValidatorMeta validatorData={validatorData} />
 					</div>
-					<div className="mt-5 md:mt-8">
+					<div className="mt-5 md:mt-0">
 						<ValidatorStats
 							validatorData={validatorData}
 							epoch={data.epoch}
@@ -99,7 +99,7 @@ function ValidatorDetails() {
 							tallyingScore={tallyingScore}
 						/>
 					</div>
-					{atRiskRemainingEpochs !== null && (
+					{/* {atRiskRemainingEpochs !== null && (
 						<div className="mt-5">
 							<Banner
 								fullWidth
@@ -117,7 +117,7 @@ function ValidatorDetails() {
 								</Text>
 							</Banner>
 						</div>
-					)}
+					)} */}
 				</div>
 			}
 		/>

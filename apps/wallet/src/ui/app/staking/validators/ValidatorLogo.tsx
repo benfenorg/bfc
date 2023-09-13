@@ -63,9 +63,8 @@ export function ValidatorLogo({
 	return (
 		<div
 			className={cl(
-				'w-full flex justify-start font-semibold',
+				'w-full flex justify-start font-body gap-1.25',
 				stacked ? 'flex-col items-start' : 'flex-row items-center',
-				isTitle ? 'gap-2.5' : 'gap-2',
 			)}
 		>
 			<ImageIcon
@@ -75,15 +74,15 @@ export function ValidatorLogo({
 				size={iconSize}
 				circle
 			/>
-			<div className="flex flex-col gap-1.5 overflow-hidden">
+			<div className="flex flex-col overflow-hidden">
 				<div className="flex">
 					{isTitle ? (
-						<Heading as="h4" variant="heading4" color="steel-darker" truncate>
+						<Heading as="h4" variant="heading4" color="obc-text1" weight="semibold" truncate>
 							{validatorName}
 						</Heading>
 					) : (
 						<div className="line-clamp-2 break-all">
-							<Text color="gray-90" variant={size} weight="semibold">
+							<Text color="obc-text1" variant="body" weight="medium">
 								{validatorName}
 							</Text>
 						</div>
@@ -97,7 +96,7 @@ export function ValidatorLogo({
 					)}
 				</div>
 				{showAddress && (
-					<Text variant="body" color="steel-dark" mono>
+					<Text variant="body" color="obc-text3" mono>
 						{formatAddress(validatorAddress)}
 					</Text>
 				)}

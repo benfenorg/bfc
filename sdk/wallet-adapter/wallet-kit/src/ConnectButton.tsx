@@ -8,7 +8,7 @@ import { useWalletKit } from './WalletKitContext';
 import { Menu } from '@headlessui/react';
 import { formatAddress } from '@mysten/sui.js';
 import { styled } from '@stitches/react';
-import { CheckIcon, ChevronIcon } from './utils/icons';
+import { CheckIcon, WhiteChevronIcon } from './utils/icons';
 
 interface ConnectButtonProps extends ComponentProps<typeof Button> {
 	connectText?: ReactNode;
@@ -78,16 +78,19 @@ export function ConnectButton({
 						color="connected"
 						size="lg"
 						css={{
-							fontFamily: '$mono',
 							display: 'inline-flex',
 							justifyContent: 'space-between',
 							alignItems: 'center',
 							gap: '$2',
+							backgroundColor: '#171719',
+							color: '#ffffff',
+							height: '36px',
+							borderRadius: '0.375rem'
 						}}
 						type="button"
 					>
 						{connectedText ?? formatAddress(currentAccount.address)}
-						<ChevronIcon />
+						<WhiteChevronIcon />
 					</Menu.Button>
 
 					<MenuItems>

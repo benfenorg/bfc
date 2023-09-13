@@ -41,7 +41,7 @@ function PageTitle({ title = '', back, after }: PageTitleProps) {
 				</div>
 			) : null}
 			<div className="flex items-center justify-center flex-1 overflow-hidden">
-				<Heading as="h6" variant="heading6" color="gray-90" truncate>
+				<Heading as="h6" variant="heading6" color="obc-text1" truncate>
 					{title}
 				</Heading>
 			</div>

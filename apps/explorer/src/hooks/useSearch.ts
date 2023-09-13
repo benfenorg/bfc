@@ -10,6 +10,7 @@ import {
 	is,
 	SuiObjectData,
 	getTransactionDigest,
+	formatAddress,
 	type SuiSystemStateSummary,
 } from '@mysten/sui.js';
 import { type SuiClient } from '@mysten/sui.js/client';
@@ -130,7 +131,7 @@ export function useSearch(query: string) {
 	const rpc = useRpcClient();
 	const { data: systemStateSummery } = useGetSystemState();
 	const suiNSEnabled = useSuiNSEnabled();
-
+	
 	return useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: ['search', query],
@@ -145,7 +146,11 @@ export function useSearch(query: string) {
 				])
 			).filter((r) => r.status === 'fulfilled' && r.value) as PromiseFulfilledResult<Results>[];
 
-			return results.map(({ value }) => value).flat();
+			const resultsEnd =  results.map(({ value }) => value).flat();
+			return resultsEnd.map((item)=>{
+				item.label = formatAddress(item.label) || ''
+				return item
+			})
 		},
 		enabled: !!query,
 		cacheTime: 10000,

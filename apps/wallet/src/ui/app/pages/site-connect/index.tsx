@@ -97,16 +97,17 @@ function SiteConnectPage() {
 						blended
 					>
 						<PageMainLayoutTitle title="Insecure Website" />
-						<div className={st.warningWrapper}>
-							<h1 className={st.warningTitle}>Your Connection is Not Secure</h1>
-						</div>
-
-						<div className={st.warningMessage}>
-							If you connect your wallet to this site your data could be exposed to attackers. Click
-							**Reject** if you don't trust this site.
-							<br />
-							<br />
-							Continue at your own risk.
+						<div>
+							<div className={st.warningWrapper}>
+								<span className={st.warningTitle}>Your Connection is Not Secure</span>
+							</div>
+							<div className={st.warningMessage}>
+								If you connect your wallet to this site your data could be exposed to attackers.
+								Click **Reject** if you don't trust this site.
+								<br />
+								<br />
+								Continue at your own risk.
+							</div>
 						</div>
 					</UserApproveContainer>
 				) : (
@@ -123,13 +124,12 @@ function SiteConnectPage() {
 						<SummaryCard
 							header="Permissions requested"
 							body={<DAppPermissionsList permissions={permissionRequest.permissions} />}
-							boxShadow
 						/>
+						<div className="w-full h-5"></div>
 						<WalletListSelect
 							title="Connect Accounts"
 							values={accountsToConnect}
 							onChange={setAccountsToConnect}
-							boxShadow
 						/>
 					</UserApproveContainer>
 				))}

@@ -7,11 +7,12 @@ import { LoadingIndicator } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import clsx from 'clsx';
 
 import { EpochProgress } from './stats/EpochProgress';
 import { EpochStats } from './stats/EpochStats';
 import { ValidatorStatus } from './stats/ValidatorStatus';
-import { validatorsTableData } from '../validators/Validators';
+import { validatorsTableData } from '../validators/utils';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { CheckpointsTable } from '~/components/checkpoints/CheckpointsTable';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
@@ -20,6 +21,7 @@ import { Stats, type StatsProps } from '~/ui/Stats';
 import { TableCard } from '~/ui/TableCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
 import { getEpochStorageFundFlow } from '~/utils/getStorageFundFlow';
+import { PageBackHeader } from '~/ui/PageBackHeader';
 
 function SuiStats({
 	amount,
@@ -30,7 +32,7 @@ function SuiStats({
 	const [formattedAmount, symbol] = useFormatCoin(amount, SUI_TYPE_ARG);
 
 	return (
-		<Stats postfix={formattedAmount && symbol} {...props}>
+		<Stats postfix={formattedAmount && symbol} {...props} darker>
 			{formattedAmount || '--'}
 		</Stats>
 	);
@@ -91,16 +93,18 @@ export default function EpochDetail() {
 	return (
 		<PageLayout
 			content={
-				<div className="flex flex-col space-y-16">
-					<div className="grid grid-flow-row gap-4 sm:gap-2 md:flex md:gap-6">
-						<div className="flex min-w-[136px] max-w-[240px]">
-							<EpochProgress
-								epoch={epochData.epoch}
-								inProgress={isCurrentEpoch}
-								start={Number(epochData.epochStartTimestamp)}
-								end={Number(epochData.endOfEpochInfo?.epochEndTimestamp ?? 0)}
-							/>
-						</div>
+				<div className="flex flex-col">
+					<div><PageBackHeader title="Epochs Details"/></div>
+					<div className={clsx(
+						'grid gap-4 sm:gap-2 md:gap-5 max-sm:grid-cols-1',
+						isCurrentEpoch ? 'grid-cols-4' : 'grid-cols-3',
+					)}>
+						<EpochProgress
+							epoch={epochData.epoch}
+							inProgress={isCurrentEpoch}
+							start={Number(epochData.epochStartTimestamp)}
+							end={Number(epochData.endOfEpochInfo?.epochEndTimestamp ?? 0)}
+						/>
 
 						<EpochStats label="Rewards">
 							<SuiStats
@@ -129,8 +133,8 @@ export default function EpochDetail() {
 						{isCurrentEpoch ? <ValidatorStatus /> : null}
 					</div>
 
-					<Tabs size="lg" defaultValue="checkpoints">
-						<TabsList>
+					<Tabs size="md" defaultValue="checkpoints" className='mt-5 '>
+						<TabsList disableBottomBorder>
 							<TabsTrigger value="checkpoints">Checkpoints</TabsTrigger>
 							<TabsTrigger value="validators">Participating Validators</TabsTrigger>
 						</TabsList>
@@ -143,11 +147,12 @@ export default function EpochDetail() {
 						</TabsContent>
 						<TabsContent value="validators">
 							{validatorsTable ? (
-								<TableCard
-									data={validatorsTable.data}
-									columns={validatorsTable.columns}
-									sortTable
-								/>
+								<div className="obc-table-container">
+									<TableCard
+										data={validatorsTable.data}
+										columns={validatorsTable.columns}
+									/>
+								</div>
 							) : null}
 						</TabsContent>
 					</Tabs>

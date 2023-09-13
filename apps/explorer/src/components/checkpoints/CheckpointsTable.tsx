@@ -59,9 +59,9 @@ export function CheckpointsTable({
 	const cardData = data ? genTableDataFromCheckpointsData(data) : undefined;
 
 	return (
-		<div className="flex flex-col space-y-3 text-left xl:pr-10">
+		<div className="flex flex-col space-y-3 text-left obc-table-container">
 			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark">
+				<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">
 					Failed to load Checkpoints
 				</div>
 			)}
@@ -78,7 +78,7 @@ export function CheckpointsTable({
 				</div>
 			)}
 
-			<div className="flex justify-between">
+			<div className="flex justify-between bg-obc-card p-3.5">
 				{!disablePagination ? (
 					<Pagination
 						{...pagination}
@@ -96,7 +96,7 @@ export function CheckpointsTable({
 				)}
 
 				<div className="flex items-center space-x-3">
-					<Text variant="body/medium" color="steel-dark">
+					<Text variant="body/normal" color="steel-darker">
 						{count ? numberSuffix(Number(count)) : '-'}
 						{` Total`}
 					</Text>

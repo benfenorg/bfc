@@ -102,57 +102,61 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 		<div className="w-full">
 			{validatorData && (
 				<Card
-					titleDivider
 					header={
-						<div className="flex py-2.5 px-3.75 gap-2 items-center">
-							<ValidatorLogo validatorAddress={validatorAddress} iconSize="sm" size="body" />
+						<div className="h-10 flex gap-1.25 items-center justify-center">
+							<ValidatorLogo
+								validatorAddress={validatorAddress}
+								iconSize="sm"
+								size="body"
+								isTitle
+							/>
 						</div>
 					}
 					footer={
 						!unstake && (
-							<>
-								<Text variant="body" weight="medium" color="steel-darker">
-									Your Staked SUI
+							<div className="pb-2.5 px-2.5 w-full flex items-center justify-between">
+								<Text variant="body" weight="normal" color="obc-text2">
+									Your Staked OBC
 								</Text>
 
 								<StakeAmount balance={totalStake} variant="body" />
-							</>
+							</div>
 						)
 					}
 				>
-					<div className="divide-x flex divide-solid divide-gray-45 divide-y-0 flex-col gap-3.5">
-						<div className="flex gap-2 items-center justify-between">
-							<div className="flex gap-1 items-baseline text-steel">
-								<Text variant="body" weight="medium" color="steel-darker">
+					<div className="divide-x flex divide-solid divide-obc-border divide-y-0 flex-col gap-2.5 mx-2.5 py-2.5">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-1.25 grow">
+								<Text variant="body" weight="normal" color="obc-text2">
 									Staking APY
 								</Text>
 								<IconTooltip tip="This is the Annualized Percentage Yield of the a specific validator’s past operations. Note there is no guarantee this APY will be true in the future." />
 							</div>
 
-							<Text variant="body" weight="semibold" color="gray-90">
+							<Text variant="body" weight="medium" color="obc-text1">
 								{formatPercentageDisplay(apy, '--', isApyApproxZero)}
 							</Text>
 						</div>
-						<div className="flex gap-2 items-center justify-between">
-							<div className="flex gap-1 items-baseline text-steel">
-								<Text variant="body" weight="medium" color="steel-darker">
+						<div className="flex items-center justify-between">
+							<div className="flex gap-1.25 items-center">
+								<Text variant="body" weight="normal" color="obc-text2">
 									Stake Share
 								</Text>
 								<IconTooltip tip="The percentage of total stake managed by this validator" />
 							</div>
 
-							<Text variant="body" weight="semibold" color="gray-90">
+							<Text variant="body" weight="medium" color="obc-text1">
 								{formatPercentageDisplay(totalStakePercentage)}
 							</Text>
 						</div>
 
 						{!unstake && (
-							<div className="flex gap-2 items-center justify-between mb-3.5">
-								<div className="flex gap-1 items-baseline text-steel">
-									<Text variant="body" weight="medium" color="steel-darker">
+							<div className="flex items-center justify-between">
+								<div className="flex gap-1.25 items-center">
+									<Text variant="body" weight="normal" color="obc-text2">
 										Total Staked
 									</Text>
-									<IconTooltip tip="The total SUI staked on the network by this validator and its delegators, to validate the network and earn rewards." />
+									<IconTooltip tip="The total OBC staked on the network by this validator and its delegators, to validate the network and earn rewards." />
 								</div>
 								<StakeAmount balance={totalValidatorStake} variant="body" />
 							</div>

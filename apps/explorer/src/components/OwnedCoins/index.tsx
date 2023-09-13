@@ -24,7 +24,7 @@ export function OwnedCoins({ id }: { id: string }) {
 				<LoadingIndicator />
 			) : (
 				<div className="flex flex-col gap-4 pt-5 text-left">
-					<Heading color="steel-darker" variant="heading4/semibold">
+					<Heading color="steel-darker" variant="heading6/medium">
 						Coins
 					</Heading>
 					<div className="flex max-h-80 flex-col overflow-auto">

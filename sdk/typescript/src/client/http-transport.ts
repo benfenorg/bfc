@@ -43,6 +43,7 @@ export interface SuiTransport {
 
 export class SuiHTTPTransport implements SuiTransport {
 	private rpcClient: Client;
+	private rpcIndexerClient: Client;
 	private websocketClient: WebsocketClient;
 
 	constructor({
@@ -59,13 +60,33 @@ export class SuiHTTPTransport implements SuiTransport {
 				...rpc?.headers,
 			},
 		});
+		const indexerTransport = new HTTPTransport('https://obcindex.openblock.vip', {
+			headers: {
+				'Content-Type': 'application/json',
+				'Client-Sdk-Type': 'typescript',
+				'Client-Sdk-Version': PACKAGE_VERSION,
+				'Client-Target-Api-Version': TARGETED_RPC_VERSION,
+				...rpc?.headers,
+			},
+		});
 
 		this.rpcClient = new Client(new RequestManager([transport]));
+		this.rpcIndexerClient = new Client(new RequestManager([indexerTransport]));
 		this.websocketClient = new WebsocketClient(websocketUrl ?? url, websocketOptions);
 	}
 
 	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
-		return this.rpcClient.request(input);
+		console.warn('test server')
+		const indexServer = [
+			'suix_getNetworkMetrics',
+			'suix_getEpochs',
+			'suix_getCurrentEpoch',
+			'suix_getMoveCallMetrics',
+			'suix_getNetworkOverview',
+			'suix_getDaoProposals',
+		]
+		const useIndexer = input?.method && indexServer.includes(input?.method) ? true : false
+		return useIndexer ? this.rpcIndexerClient.request(input) : this.rpcClient.request(input);
 	}
 
 	async subscribe<T>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {

@@ -2,43 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin } from '@mysten/core';
-import cl from 'classnames';
-import { memo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-import { CoinItem } from '_components/active-coins-card/CoinItem';
-
-import st from './CoinBalance.module.scss';
+import { memo } from 'react';
 
 export type CoinProps = {
 	type: string;
 	balance: bigint;
-	hideStake?: boolean;
-	mode?: 'row-item' | 'standalone';
 };
 
-function CoinBalance({ type, balance, mode = 'row-item' }: CoinProps) {
+function CoinBalance({ type, balance }: CoinProps) {
 	const [formatted, symbol] = useFormatCoin(balance, type);
-	const navigate = useNavigate();
-
-	// TODO: use a different logic to differentiate between view types
-	const coinDetail = useCallback(() => {
-		if (mode !== 'row-item') return;
-
-		navigate(`/send?type=${encodeURIComponent(type)}`);
-	}, [mode, navigate, type]);
 
 	return (
-		<div
-			className={cl(st.container, st[mode], mode === 'row-item' && st.coinBalanceBtn)}
-			onClick={coinDetail}
-			role="button"
-		>
-			{mode === 'row-item' ? <CoinItem coinType={type} balance={balance} /> : null}
-			<div className={cl(st.valueContainer, st[mode])}>
-				<span className={cl(st.value, st[mode])}>{formatted}</span>
-				<span className={cl(st.symbol, st[mode])}>{symbol}</span>
-			</div>
+		<div className="flex items-end gap-1.25" role="button">
+			<span className="text-[32px] text-obc font-bold">{formatted}</span>
+			<span className="text-[20px]/[32px] text-obc-text3 font-bold">{symbol}</span>
 		</div>
 	);
 }

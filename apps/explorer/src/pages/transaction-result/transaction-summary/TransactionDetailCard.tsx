@@ -11,9 +11,9 @@ import { TransactionBlockCard, TransactionBlockCardSection } from '~/ui/Transact
 export function TransactionDetail({ label, value }: { label: string; value: ReactNode | string }) {
 	return (
 		<div className="flex basis-1/3 flex-col gap-2 pl-3 first:pl-0 md:pl-5">
-			<Heading variant="heading4/semibold" color="steel-darker">
+			<Text variant="pBody/normal" color="steel-dark">
 				{label}
-			</Heading>
+			</Text>
 			<Text variant="pBody/normal" color="steel-dark">
 				{value}
 			</Text>
@@ -42,7 +42,7 @@ export function TransactionDetailCard({
 			<TransactionBlockCardSection>
 				<div className="flex flex-col gap-6">
 					{timestamp && (
-						<Text variant="pBody/medium" color="steel-dark">
+						<Text variant="pHeading4/semibold" color="steel-darker">
 							{formatDate(Number(timestamp))}
 						</Text>
 					)}
@@ -50,7 +50,7 @@ export function TransactionDetailCard({
 						{sender && (
 							<TransactionDetail
 								label="Sender"
-								value={<AddressLink address={domainName ?? sender} />}
+								value={<AddressLink address={domainName ?? sender} variant="large"/>}
 							/>
 						)}
 						{checkpoint && (
@@ -60,12 +60,13 @@ export function TransactionDetailCard({
 									<CheckpointSequenceLink
 										sequence={checkpoint}
 										label={Number(checkpoint).toLocaleString()}
+										variant="large"
 									/>
 								}
 							/>
 						)}
 						{executedEpoch && (
-							<TransactionDetail label="Epoch" value={<EpochLink epoch={executedEpoch} />} />
+							<TransactionDetail label="Epoch" value={<EpochLink epoch={executedEpoch}  variant="large"/>} />
 						)}
 					</div>
 				</div>

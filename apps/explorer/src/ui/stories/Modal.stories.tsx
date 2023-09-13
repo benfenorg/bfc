@@ -82,11 +82,11 @@ export const Video: StoryObj<ObjectModalProps> = {
 		return (
 			<div>
 				<ObjectModal
-					title="Sui"
+					title="OBC"
 					open={open}
 					src="https://images.unsplash.com/photo-1562016600-ece13e8ba570?auto=format&fit=crop&w=738&q=80"
 					video="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
-					alt="Sui"
+					alt="OBC"
 					onClose={() => setOpen(false)}
 					subtitle="Still water runs deep."
 				/>

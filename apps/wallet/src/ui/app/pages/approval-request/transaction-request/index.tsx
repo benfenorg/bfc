@@ -92,7 +92,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 			>
 				<PageMainLayoutTitle title="Approve Transaction" />
 
-				<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-5">
 					<TransactionSummary
 						isDryRun
 						isLoading={isDryRunLoading}
@@ -101,7 +101,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 						summary={summary}
 					/>
 				</div>
-				<section className="flex flex-col gap-4">
+				<section className="flex flex-col gap-5">
 					<GasFees sender={addressForTransaction} transaction={transaction} />
 					<TransactionDetails sender={addressForTransaction} transaction={transaction} />
 				</section>

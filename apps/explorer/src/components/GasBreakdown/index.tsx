@@ -54,23 +54,33 @@ function TotalGasAmount({ amount }: GasProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-2">
-			<div className="flex items-center gap-0.5">
-				<Heading variant="heading3/semibold" color="steel-darker">
-					{formattedAmount}
-				</Heading>
+		<div className="flex flex-full flex-1 mt-3">
+			<div className="flex w-1/2 gap-1 flex-col">
 				<Text variant="body/medium" color="steel-dark">
-					{symbol}
+					Gas
 				</Text>
+				<div className="flex items-baseline gap-0.5">
+					<Heading variant="heading4/semibold" color="steel-darker">
+						{formattedAmount}
+					</Heading>
+					<Text variant="body/medium" color="steel-dark">
+						{symbol}
+					</Text>
+				</div>
 			</div>
 
-			<div className="flex items-center gap-0.5">
-				<Heading variant="heading6/medium" color="steel">
-					{BigInt(amount)?.toLocaleString()}
-				</Heading>
-				<Text variant="body/medium" color="steel">
-					MIST
+			<div className="flex w-1/2 gap-1 flex-col">
+				<Text variant="body/medium" color="steel-dark">
+					Storage Fee
 				</Text>
+				<div className="flex items-baseline gap-0.5">
+					<Heading variant="heading4/semibold" color="steel-darker">
+						{BigInt(amount)?.toLocaleString()}
+					</Heading>
+					<Text variant="body/medium" color="steel-dark">
+						MIST
+					</Text>
+				</div>
 			</div>
 		</div>
 	);
@@ -113,7 +123,7 @@ export function GasBreakdown({ summary }: GasBreakdownProps) {
 		<TransactionBlockCard
 			collapsible
 			title={
-				<div className="flex flex-col gap-2">
+				<div className="flex w-full flex-col gap-2">
 					<Heading variant="heading4/semibold" color="steel-darker">
 						Gas & Storage Fee
 					</Heading>

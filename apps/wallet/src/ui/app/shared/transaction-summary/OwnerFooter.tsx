@@ -25,12 +25,12 @@ export function OwnerFooter({ owner, ownerType }: { owner?: string; ownerType?: 
 
 	return (
 		<SummaryCardFooter>
-			<Text variant="pBody" weight="medium" color="steel-dark">
+			<Text variant="body" weight="normal" color="obc-text2">
 				Owner
 			</Text>
 			<div className="flex justify-end">
 				{isOwner ? (
-					<Text variant="body" weight="medium" color="hero-dark">
+					<Text variant="body" weight="medium" color="obc-text1">
 						{display}
 					</Text>
 				) : (
@@ -38,7 +38,7 @@ export function OwnerFooter({ owner, ownerType }: { owner?: string; ownerType?: 
 						type={ExplorerLinkType.address}
 						title={owner}
 						address={owner}
-						className="text-hero-dark text-body font-medium no-underline font-mono"
+						className="text-obc text-body font-medium no-underline"
 					>
 						{display}
 					</ExplorerLink>

@@ -47,6 +47,19 @@ body,
 			'accounts';
 	}
 
+	 .obc-table-container {
+		@apply border border-gray-45 rounded-md overflow-hidden
+	 }
+
+	 .black-bg {
+		background-image: url(./assets/blackBg.svg);
+		background-size: 100% auto;
+		background-repeat: no-repeat;
+		background-position: center bottom;
+	 }
+	 .obc-form-select {
+		background-image: url(./assets/ObcDown.svg) !important;
+	 }
 	@screen sm {
 		.home-page-grid-container-top {
 			@apply grid-cols-2;

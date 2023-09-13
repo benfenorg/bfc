@@ -63,17 +63,10 @@ export function UserApproveContainer({
 					iconUrl={originFavIcon}
 					connectedAddress={!addressHidden && address ? address : undefined}
 				/>
-				<div className={cl(st.children, { [st.scrollable]: scrollable, [st.blended]: blended })}>
-					{children}
-				</div>
+				<div className={cl(st.children, { [st.scrollable]: scrollable })}>{children}</div>
 			</div>
 			<div className={st.actionsContainer}>
-				<div
-					className={cl(st.actions, isWarning && st.flipActions, {
-						[st.blended]: blended,
-						[st.blurBorder]: blended,
-					})}
-				>
+				<div className={cl(st.actions, isWarning && st.flipActions)}>
 					<Button
 						size="tall"
 						variant="warning"
@@ -82,6 +75,20 @@ export function UserApproveContainer({
 						}}
 						disabled={submitting}
 						text={rejectTitle}
+						before={
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="15"
+								height="14"
+								viewBox="0 0 15 14"
+								fill="none"
+							>
+								<path
+									d="M7.49993 6.17461L10.3874 3.28711L11.2123 4.11194L8.32476 6.99944L11.2123 9.88694L10.3874 10.7118L7.49993 7.82428L4.61243 10.7118L3.7876 9.88694L6.6751 6.99944L3.7876 4.11194L4.61243 3.28711L7.49993 6.17461Z"
+									fill="#EB362A"
+								/>
+							</svg>
+						}
 					/>
 					<Button
 						// recreate the button when changing the variant to avoid animating to the new styles

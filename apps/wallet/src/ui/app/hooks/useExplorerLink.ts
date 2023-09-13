@@ -24,7 +24,7 @@ export type ExplorerLinkConfig =
 			useActiveAddress: true;
 	  }
 	| { type: ExplorerLinkType.object; objectID: string; moduleName?: string }
-	| { type: ExplorerLinkType.transaction; transactionID: string }
+	| { type: ExplorerLinkType.transaction; transactionID?: string }
 	| { type: ExplorerLinkType.validator; validator: string };
 
 function useAddress(linkConfig: ExplorerLinkConfig) {

@@ -13,16 +13,22 @@ const dividerStyles = cva('', {
 			gray45: 'border-gray-45',
 			gray40: 'border-gray-40',
 			'hero/10': 'border-hero/10',
+			obcBorder: 'border-obc-border',
 		},
+		style: {
+			solid:'border-solid',
+			dashed: 'border-dashed',
+		}
 	},
 	defaultVariants: {
 		vertical: false,
-		color: 'gray45',
+		color: 'obcBorder',
+		style:'solid'
 	},
 });
 
 export type DividerProps = VariantProps<typeof dividerStyles>;
 
-export function Divider({ vertical, color }: DividerProps) {
-	return <div className={dividerStyles({ vertical, color })} />;
+export function Divider({ vertical, color, style }: DividerProps) {
+	return <div className={dividerStyles({ vertical, color, style })} />;
 }

@@ -31,6 +31,7 @@ const cardStyles = cva('overflow-hidden', {
 		border: {
 			gray45: 'border border-gray-45',
 			steel: 'border border-steel',
+			obcBorder: 'border border-obc-border',
 		},
 		shadow: {
 			true: 'shadow',

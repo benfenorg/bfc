@@ -43,10 +43,29 @@ export default {
 				dark: '#1F6493',
 			},
 
+			obc: {
+				DEFAULT: '#171719',
+				white: '#ffffff',
+				orange: '#E18416',
+				orange_10p: '#E184161A',
+				green: '#32BA89',
+				green_10p: '#32BA891A',
+				red: '#EB362A',
+				red_10p: '#EB362A1A',
+				link: '#22367B',
+				hover: '#FFFFFF14',
+				text1: '#171719',
+				text2: '#5A6070',
+				text3: '#A3A8B5',
+				border: '#E1E1E9',
+				card: '#F8F8FA',
+				press: '#FFFFFF24',
+			},
+
 			steel: {
-				DEFAULT: '#A0B6C3',
-				dark: '#758F9E',
-				darker: '#566873',
+				DEFAULT: '#A3A8B5',
+				dark: '#5A6070',
+				darker: '#171719',
 			},
 
 			issue: {
@@ -108,8 +127,9 @@ export default {
 			},
 			fontSize: {
 				// Text sizes:
-				body: ['14px', MIN_LINE_HEIGHT],
+				body: ['12px', MIN_LINE_HEIGHT],
 				bodySmall: ['13px', MIN_LINE_HEIGHT],
+				bodyLarge: ['14px', MIN_LINE_HEIGHT],
 				subtitle: ['12px', MIN_LINE_HEIGHT],
 				subtitleSmall: ['11px', MIN_LINE_HEIGHT],
 				subtitleSmallExtra: ['10px', MIN_LINE_HEIGHT],
@@ -122,13 +142,14 @@ export default {
 				heading1: ['28px', MIN_LINE_HEIGHT],
 				heading2: ['24px', MIN_LINE_HEIGHT],
 				heading3: ['20px', MIN_LINE_HEIGHT],
-				heading4: ['18px', MIN_LINE_HEIGHT],
-				heading5: ['17px', MIN_LINE_HEIGHT],
-				heading6: ['16px', MIN_LINE_HEIGHT],
+				heading4: ['16px', MIN_LINE_HEIGHT],
+				heading5: ['15px', MIN_LINE_HEIGHT],
+				heading6: ['14px', MIN_LINE_HEIGHT],
 
 				// Paragraph sizes:
-				pHeading6: ['16px', '1.4'],
-				pBody: ['14px', '1.4'],
+				pHeading4: ['16px', '1.4'],
+				pHeading6: ['14px', '1.4'],
+				pBody: ['12px', '1.4'],
 				pBodySmall: ['13px', '1.4'],
 				pSubtitle: ['12px', '1.4'],
 				pSubtitleSmall: ['11px', '1.4'],

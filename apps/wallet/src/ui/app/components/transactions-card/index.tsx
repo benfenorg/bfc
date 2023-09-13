@@ -65,56 +65,54 @@ export function TransactionCard({
 			to={`/receipt?${new URLSearchParams({
 				txdigest: getTransactionDigest(txn),
 			}).toString()}`}
-			className="flex items-center w-full flex-col gap-2 py-4 no-underline"
+			className="flex items-center w-full gap-1.25 p-2.5 no-underline"
 		>
-			<div className="flex items-start w-full justify-between gap-3">
-				<div className="w-7.5">
-					<TxnIcon
-						txnFailed={executionStatus !== 'success' || !!error}
-						// TODO: Support programmable transactions variable icons here:
-						variant={getLabel(txn, address)}
-					/>
-				</div>
-				<div className="flex flex-col w-full gap-1.5">
-					{error ? (
-						<div className="flex w-full justify-between">
-							<div className="flex flex-col w-full gap-1.5">
-								<Text color="gray-90" weight="medium">
-									Transaction Failed
-								</Text>
+			<div className="w-6 h-6">
+				<TxnIcon
+					txnFailed={executionStatus !== 'success' || !!error}
+					// TODO: Support programmable transactions variable icons here:
+					variant={getLabel(txn, address)}
+				/>
+			</div>
+			<div className="flex flex-col w-full">
+				{error ? (
+					<div className="flex w-full justify-between">
+						<div className="flex flex-col w-full gap-1.5">
+							<Text color="obc-text1" weight="medium">
+								Transaction Failed
+							</Text>
 
-								<div className="flex break-all">
-									<Text variant="pSubtitle" weight="normal" color="issue-dark">
-										{error}
+							<div className="flex break-all">
+								<Text variant="body" weight="medium" color="obc-text1">
+									{error}
+								</Text>
+							</div>
+						</div>
+						{/* {transferAmountComponent} */}
+					</div>
+				) : (
+					<>
+						<div className="flex w-full justify-between">
+							<div className="flex gap-1 align-middle items-baseline">
+								<Text color="obc-text1" weight="medium" variant="body">
+									{summary?.label}
+								</Text>
+								{showSuiSymbol && (
+									<Text color="obc-text1" weight="medium" variant="body">
+										OBC
 									</Text>
-								</div>
+								)}
 							</div>
 							{/* {transferAmountComponent} */}
 						</div>
-					) : (
-						<>
-							<div className="flex w-full justify-between">
-								<div className="flex gap-1 align-middle items-baseline">
-									<Text color="gray-90" weight="semibold">
-										{summary?.label}
-									</Text>
-									{showSuiSymbol && (
-										<Text color="gray-90" weight="normal" variant="subtitleSmall">
-											SUI
-										</Text>
-									)}
-								</div>
-								{/* {transferAmountComponent} */}
-							</div>
 
-							{/* TODO: Support programmable tx: */}
-							<TxnTypeLabel address={recipientAddress!} isSender={isSender} isTransfer={false} />
-							{/* {objectId && <TxnImage id={objectId} />} */}
-						</>
-					)}
+						{/* TODO: Support programmable tx: */}
+						<TxnTypeLabel address={recipientAddress!} isSender={isSender} isTransfer={false} />
+						{/* {objectId && <TxnImage id={objectId} />} */}
+					</>
+				)}
 
-					{timestamp && <DateCard timestamp={Number(timestamp)} size="sm" />}
-				</div>
+				{timestamp && <DateCard timestamp={Number(timestamp)} size="sm" />}
 			</div>
 		</Link>
 	);

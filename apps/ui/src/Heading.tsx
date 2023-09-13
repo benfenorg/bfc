@@ -39,6 +39,7 @@ const headingStyles = cva([], {
 			'hero-dark': 'text-hero-dark',
 			success: 'text-success',
 			'success-dark': 'text-success-dark',
+			'obc-text1': 'text-obc-text1',
 		},
 		weight: {
 			medium: 'font-medium',

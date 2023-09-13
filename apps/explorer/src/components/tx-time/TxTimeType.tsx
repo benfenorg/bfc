@@ -15,7 +15,7 @@ export function TxTimeType({ timestamp }: Prop) {
 
 	return (
 		<section>
-			<div className="w-20 text-caption">{timeAgo}</div>
+			<div className="w-20 text-steel-darker">{timeAgo}</div>
 		</section>
 	);
 }

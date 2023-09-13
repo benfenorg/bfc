@@ -34,6 +34,7 @@ import HomePage, {
 	AppsPage,
 	NftTransferPage,
 	OnrampPage,
+	ReceivePage,
 } from '_pages/home';
 import InitializePage from '_pages/initialize';
 import BackupPage from '_pages/initialize/backup';
@@ -80,6 +81,7 @@ const App = () => {
 				<Route path="transactions/:status?" element={<TransactionBlocksPage />} />
 				<Route path="send" element={<TransferCoinPage />} />
 				<Route path="send/select" element={<CoinsSelectorPage />} />
+				<Route path="receive" element={<ReceivePage />} />
 				<Route path="stake/*" element={<Staking />} />
 				<Route path="receipt" element={<ReceiptPage />} />
 				<Route path="onramp" element={<OnrampPage />} />

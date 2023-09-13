@@ -29,17 +29,17 @@ function MenuListItem({
 
 	const MenuItemContent = (
 		<>
-			<div className="flex flex-nowrap flex-1 gap-2 items-center overflow-hidden basis-3/5">
-				<div className="flex text-steel text-2xl flex-none">{icon}</div>
-				<div className="flex-1 text-gray-90 text-body font-semibold truncate">{title}</div>
+			<div className="flex flex-nowrap flex-1 items-center overflow-hidden basis-3/5">
+				<div className="w-6 h-6 flex text-obc flex-none">{icon}</div>
+				<div className="ml-1.25 flex-1 text-obc text-bodySmall font-medium truncate">{title}</div>
 			</div>
 			<div className="flex flex-nowrap flex-1 justify-end gap-1 items-center overflow-hidden basis-2/5">
 				{subtitle ? (
-					<div className="transition truncate text-steel-dark text-bodySmall font-medium group-hover:text-steel-darker">
+					<div className="transition truncate text-obc-text2 text-bodySmall font-medium group-hover:text-steel-darker">
 						{subtitle}
 					</div>
 				) : null}
-				<div className="transition flex text-steel flex-none text-base group-hover:text-steel-darker">
+				<div className="transition flex text-obc-text2 flex-none text-base">
 					{iconAfter || (to && <ChevronRight16 />) || null}
 				</div>
 			</div>
@@ -52,7 +52,7 @@ function MenuListItem({
 				href={href}
 				target="_blank"
 				rel="noreferrer noopener"
-				className="flex flex-nowrap items-center px-1 py-4.5 first:pt-3 first:pb-3 last:pb-3 gap-5 no-underline overflow-hidden group cursor-pointer"
+				className="flex flex-nowrap items-center no-underline overflow-hidden group cursor-pointer"
 			>
 				{MenuItemContent}
 			</a>
@@ -61,7 +61,7 @@ function MenuListItem({
 	return (
 		<Component
 			data-testid={title}
-			className="flex flex-nowrap items-center px-1 py-5 first:pt-3 first:pb-3 last:pb-3 gap-5 no-underline overflow-hidden group cursor-pointer"
+			className="flex flex-nowrap items-center no-underline overflow-hidden group cursor-pointer"
 			to={to}
 			onClick={onClick}
 		>

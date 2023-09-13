@@ -101,7 +101,7 @@ function DappStatus() {
 		<>
 			<ButtonConnectedTo
 				truncate
-				iconBefore={<Dot12 className="text-success" />}
+				iconBefore={<Dot12 className="text-obc-green" />}
 				text={activeOrigin || ''}
 				iconAfter={<ChevronDown12 />}
 				ref={reference}

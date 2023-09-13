@@ -22,24 +22,18 @@ export const genTableDataFromTxData = (results: SuiTransactionBlockResponse[]) =
 		const sender = getTransactionSender(transaction);
 
 		return {
-			date: (
-				<HighlightedTableCol>
-					<TxTimeType timestamp={Number(transaction.timestampMs || 0)} />
-				</HighlightedTableCol>
-			),
+			date: <TxTimeType timestamp={Number(transaction.timestampMs || 0)} />,
 			digest: (
-				<HighlightedTableCol first>
-					<TransactionLink
-						digest={transaction.digest}
-						before={
-							status === 'success' ? (
-								<Dot12 className="text-success" />
-							) : (
-								<X12 className="text-issue-dark" />
-							)
-						}
-					/>
-				</HighlightedTableCol>
+				<TransactionLink
+					digest={transaction.digest}
+					before={
+						status === 'success' ? (
+							<Dot12 className="text-success" />
+						) : (
+							<X12 className="text-issue-dark" />
+						)
+					}
+				/>
 			),
 			txns: (
 				<div>
@@ -49,9 +43,7 @@ export const genTableDataFromTxData = (results: SuiTransactionBlockResponse[]) =
 				</div>
 			),
 			gas: <SuiAmount amount={getTotalGasUsed(transaction)} />,
-			sender: (
-				<HighlightedTableCol>{sender ? <AddressLink address={sender} /> : '-'}</HighlightedTableCol>
-			),
+			sender: sender ? <AddressLink address={sender} /> : '-',
 		};
 	}),
 	columns: [

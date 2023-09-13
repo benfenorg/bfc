@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Disclosure } from '@headlessui/react';
-import { ChevronRight12 } from '@mysten/icons';
-import cl from 'classnames';
 
-import { Text } from '_app/shared/text';
+import { Heading } from '../heading';
 
 import type { ReactNode } from 'react';
 
@@ -23,16 +21,17 @@ export function Collapse({ title, children, initialIsOpen = false }: CollapsePro
 					<>
 						<Disclosure.Button as="div" className="flex w-full flex-col gap-2 cursor-pointer">
 							<div className="flex items-center gap-1">
-								<Text nowrap variant="caption" weight="semibold" color="steel-darker">
-									{title}
-								</Text>
-								<div className="h-px bg-gray-45 w-full" />
-								<ChevronRight12 className={cl('h-3 w-3 text-gray-45', open && 'rotate-90')} />
+								<div className="w-full">
+									<Heading variant="heading4" weight="semibold" color="obc-text1">
+										{title}
+									</Heading>
+								</div>
+								<div className="h-px bg-obc-border w-full" />
 							</div>
 						</Disclosure.Button>
 
 						<Disclosure.Panel>
-							<div className="pt-3">{children}</div>
+							<div className="pt-2.5">{children}</div>
 						</Disclosure.Panel>
 					</>
 				)}

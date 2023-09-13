@@ -6,18 +6,13 @@ import { Text } from '@mysten/ui';
 
 import { SuiAmount } from '../Table/SuiAmount';
 import { TxTimeType } from '../tx-time/TxTimeType';
-import { HighlightedTableCol } from '~/components/Table/HighlightedTableCol';
 import { CheckpointSequenceLink, EpochLink } from '~/ui/InternalLink';
 import { getEpochStorageFundFlow } from '~/utils/getStorageFundFlow';
 
 // Generate table data from the epochs data
 export const genTableDataFromEpochsData = (results: EpochPage) => ({
 	data: results?.data.map((epoch) => ({
-		epoch: (
-			<HighlightedTableCol first>
-				<EpochLink epoch={epoch.epoch.toString()} />
-			</HighlightedTableCol>
-		),
+		epoch: <EpochLink epoch={epoch.epoch.toString()} />,
 		transactions: <Text variant="bodySmall/medium">{epoch.epochTotalTransactions}</Text>,
 		stakeRewards: <SuiAmount amount={epoch.endOfEpochInfo?.totalStakeRewardsDistributed} />,
 		checkpointSet: (

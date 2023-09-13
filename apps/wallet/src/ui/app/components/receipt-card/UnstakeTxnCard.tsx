@@ -41,7 +41,7 @@ export function UnStakeTxnCard({ event }: UnStakeTxnCardProps) {
 				<div className="flex justify-between w-full py-3.5">
 					<div className="flex gap-1 items-baseline text-steel">
 						<Text variant="body" weight="medium" color="steel-darker">
-							Your SUI Stake
+							Your OBC Stake
 						</Text>
 					</div>
 

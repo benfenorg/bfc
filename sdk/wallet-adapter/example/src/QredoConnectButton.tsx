@@ -30,7 +30,7 @@ export function QredoConnectButton() {
 				href="https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil"
 				target="_blank"
 			>
-				Install Sui Wallet to stake SUI
+				Install OBC Wallet to stake OBC
 			</a>
 		);
 	}

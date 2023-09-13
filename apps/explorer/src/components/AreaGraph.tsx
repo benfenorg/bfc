@@ -58,7 +58,7 @@ export type AreaGraphProps<D> = {
 	getY: (element: D) => number;
 	formatX?: (x: number) => string;
 	formatY?: (y: number) => string;
-	color: 'blue' | 'yellow';
+	color: 'blue' | 'yellow' | 'black';
 	tooltipContent?: (props: { data: D }) => ReactNode;
 };
 
@@ -163,24 +163,15 @@ export function AreaGraph<D>({
 							</>
 						) : (
 							<>
-								<stop stopColor="#00F9FB" />
-								<stop offset="40%" stopColor="#7CE7FF" stopOpacity="28%" />
-								<stop offset="100%" stopColor="#FBF1FD" stopOpacity="0%" />
+								<stop stopColor="#A3A8B5" />
+								<stop offset="40%" stopColor="#A3A8B5" stopOpacity="40%" />
+								<stop offset="100%" stopColor="#A3A8B5" stopOpacity="0%" />
 							</>
 						)}
 					</linearGradient>
 					<linearGradient id={lineGradientID}>
-						{color === 'yellow' ? (
-							<>
-								<stop stopColor="#8D6E15" />
-								<stop offset="100%" stopColor="#F2BD24" />
-							</>
-						) : (
-							<>
-								<stop stopColor="#008BE9" />
-								<stop offset="100%" stopColor="#00EEAC" />
-							</>
-						)}
+						<stop stopColor="#171719" />
+						{/* <stop offset="100%" stopColor="#00EEAC" /> */}
 					</linearGradient>
 				</defs>
 				<PatternCircles

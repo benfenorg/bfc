@@ -11,7 +11,7 @@ export type AccountListProps = {
 export function AccountList({ onAccountSelected }: AccountListProps) {
 	const allAccounts = useAccounts();
 	return (
-		<ul className="list-none m-0 px-0 py-1.25 flex flex-col items-stretch">
+		<ul className="list-none m-0 px-0 py-2 flex flex-col items-stretch">
 			{allAccounts.map((account) => (
 				<AccountListItem
 					account={account}

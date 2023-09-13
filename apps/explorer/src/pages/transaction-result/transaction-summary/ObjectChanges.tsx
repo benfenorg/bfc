@@ -272,7 +272,6 @@ export function ObjectChangeEntriesCards({ data, type }: ObjectChangeEntriesCard
 						key={ownerAddress}
 						title="Changes"
 						size="sm"
-						shadow
 						footer={
 							renderFooter && (
 								<ObjectChangeEntriesCardFooter

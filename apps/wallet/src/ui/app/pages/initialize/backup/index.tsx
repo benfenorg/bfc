@@ -147,7 +147,7 @@ const BackupPage = ({ mode = 'created' }: BackupPageProps) => {
 							variant="primary"
 							disabled={mode === 'created' && !passwordCopied && isOnboardingFlow}
 							to="/"
-							text="Open Sui Wallet"
+							text="Open OBC Wallet"
 							after={<ArrowLeft16 className="text-pBodySmall font-normal rotate-135" />}
 						/>
 					</div>

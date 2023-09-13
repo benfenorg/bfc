@@ -505,6 +505,28 @@ export class SuiClient {
 	}
 
 	/**
+	 * Getting the overview for the network
+	 */
+	async getNetworkOverview(): Promise<any> {
+		const resp = await this.transport.request<string>({
+			method: 'suix_getNetworkOverview',
+			params: [],
+		});
+		return resp;
+	}
+
+	/**
+	 * Getting the overview for the network
+	 */
+	async getDaoProposals(): Promise<any> {
+		const resp = await this.transport.request<string>({
+			method: 'suix_getDaoProposals',
+			params: [],
+		});
+		return resp;
+	}
+
+	/**
 	 * Get events for a given query criteria
 	 */
 	async queryEvents(

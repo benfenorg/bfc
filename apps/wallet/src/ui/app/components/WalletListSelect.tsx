@@ -87,7 +87,7 @@ export function WalletListSelect({
 						<div>
 							{filteredAccounts.length > 1 ? (
 								<Link
-									color="heroDark"
+									color="obc-text2"
 									weight="medium"
 									text="Select all"
 									disabled={disabled}
@@ -97,7 +97,7 @@ export function WalletListSelect({
 						</div>
 						<div>
 							<Link
-								color="heroDark"
+								color="obc-text2"
 								weight="medium"
 								text="New account"
 								disabled={disabled}
@@ -115,7 +115,6 @@ export function WalletListSelect({
 				) : null
 			}
 			minimalPadding
-			boxShadow={boxShadow}
 		/>
 	);
 }

@@ -51,13 +51,13 @@ export function TransactionsActivityTable({
 		goToFirstPageRef.current();
 	}, [transactionKindFilter]);
 	return (
-		<div data-testid="tx">
+		<div data-testid="tx" className='obc-table-container'>
 			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark">
+				<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">
 					Failed to load Transactions
 				</div>
 			)}
-			<div className="flex flex-col space-y-3 text-left xl:pr-10">
+			<div className="flex flex-col space-y-3 text-left">
 				{isLoading || isFetching || !cardData ? (
 					<PlaceholderTable
 						rowCount={limit}
@@ -71,7 +71,7 @@ export function TransactionsActivityTable({
 					</div>
 				)}
 
-				<div className="flex justify-between">
+				<div className="flex justify-between bg-obc-card p-3.5">
 					{!disablePagination ? (
 						<Pagination {...pagination} />
 					) : (
@@ -81,13 +81,13 @@ export function TransactionsActivityTable({
 					)}
 
 					<div className="flex items-center space-x-3">
-						<Text variant="body/medium" color="steel-dark">
+						<Text variant="body/normal" color="steel-darker">
 							{count ? numberSuffix(Number(count)) : '-'}
 							{` Total`}
 						</Text>
 						{!disablePagination && (
 							<select
-								className="form-select rounded-md border border-gray-45 px-3 py-2 pr-8 text-bodySmall font-medium leading-[1.2] text-steel-dark shadow-button"
+								className="form-select obc-form-select rounded-md border border-obc-border px-3 py-2 pr-8 text-bodySmall font-normal leading-[1.2] text-steel-darker shadow-button"
 								value={limit}
 								onChange={(e) => {
 									setLimit(Number(e.target.value));

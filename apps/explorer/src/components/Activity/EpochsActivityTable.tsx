@@ -42,9 +42,9 @@ export function EpochsActivityTable({
 	const cardData = data ? genTableDataFromEpochsData(data) : undefined;
 
 	return (
-		<div className="flex flex-col space-y-3 text-left xl:pr-10">
+		<div className="flex flex-col space-y-3 text-left obc-table-container">
 			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark">Failed to load Epochs</div>
+				<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">Failed to load Epochs</div>
 			)}
 			{isLoading || isFetching || !cardData ? (
 				<PlaceholderTable
@@ -66,7 +66,7 @@ export function EpochsActivityTable({
 				</div>
 			)}
 
-			<div className="flex justify-between">
+			<div className="flex justify-between bg-obc-card p-3.5">
 				{!disablePagination ? (
 					<Pagination {...pagination} />
 				) : (
@@ -76,7 +76,7 @@ export function EpochsActivityTable({
 				)}
 
 				<div className="flex items-center space-x-3">
-					<Text variant="body/medium" color="steel-dark">
+					<Text variant="body/normal" color="steel-darker">
 						{count ? numberSuffix(Number(count)) : '-'}
 						{` Total`}
 					</Text>

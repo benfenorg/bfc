@@ -7,9 +7,9 @@ import {
 	type BalanceChange,
 } from '@mysten/core';
 
-import { CoinsStack } from './CoinStack';
 import { Card } from '../Card';
 import { OwnerFooter } from '../OwnerFooter';
+import { CoinIcon } from '_src/ui/app/components/coin-icon';
 import { Text } from '_src/ui/app/shared/text';
 
 interface BalanceChangesProps {
@@ -23,23 +23,18 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 	const [formatted, symbol] = useFormatCoin(amount, coinType, CoinFormat.FULL);
 
 	return (
-		<div className="flex flex-col gap-2">
-			<div className="flex flex-col gap-2">
-				<div className="flex justify-between">
-					<Text variant="pBody" weight="medium" color="steel-dark">
-						Amount
-					</Text>
-					<div className="flex">
-						<Text
-							variant="pBody"
-							weight="medium"
-							color={isPositive ? 'success-dark' : 'issue-dark'}
-						>
-							{isPositive ? '+' : ''}
-							{formatted} {symbol}
-						</Text>
-					</div>
-				</div>
+		<div className="h-15 px-2.5 flex justify-between items-center">
+			<div className="flex items-center gap-1.25">
+				<CoinIcon coinType={coinType} size="sm" />
+				<Text variant="body" weight="medium" color="obc-text1">
+					{symbol}
+				</Text>
+			</div>
+			<div className="flex">
+				<Text variant="body" weight="medium" color={isPositive ? 'obc-text1' : 'obc-red'}>
+					{isPositive ? '+' : ''}
+					{formatted} {symbol}
+				</Text>
 			</div>
 		</div>
 	);
@@ -50,13 +45,8 @@ export function BalanceChanges({ changes }: BalanceChangesProps) {
 	return (
 		<>
 			{Object.entries(changes).map(([owner, changes]) => (
-				<Card
-					heading="Balance Changes"
-					key={owner}
-					after={<CoinsStack coinTypes={Array.from(new Set(changes.map((c) => c.coinType)))} />}
-					footer={<OwnerFooter owner={owner} />}
-				>
-					<div className="flex flex-col gap-4 pb-3">
+				<Card heading="Balance Changes" key={owner} footer={<OwnerFooter owner={owner} />}>
+					<div className="flex flex-col">
 						{changes.map((change) => (
 							<BalanceChangeEntry change={change} key={change.coinType + change.amount} />
 						))}

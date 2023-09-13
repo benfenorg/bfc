@@ -16,7 +16,7 @@ export function TxnAddressLink({ address }: TxnAddressLinkProps) {
 		<ExplorerLink
 			type={ExplorerLinkType.address}
 			address={address}
-			title="View on Sui Explorer"
+			title="View on OBC Explorer"
 			showIcon={false}
 		>
 			{isSuiNSName(address) ? address : formatAddress(address)}

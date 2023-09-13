@@ -117,7 +117,7 @@ function TransferCoinPage() {
 			title={showTransactionPreview ? 'Review & Send' : 'Send Coins'}
 			closeOverlay={() => navigate('/')}
 		>
-			<div className="flex flex-col w-full mt-2.5">
+			<div className="flex flex-col w-full">
 				{showTransactionPreview && formData ? (
 					<BottomMenuLayout>
 						<Content>
@@ -151,12 +151,10 @@ function TransferCoinPage() {
 					</BottomMenuLayout>
 				) : (
 					<>
-						<div className="mb-7 flex flex-col gap-2.5">
-							<div className="pl-1.5">
-								<Text variant="caption" color="steel" weight="semibold">
-									Select all Coins
-								</Text>
-							</div>
+						<div className="mb-7.5 flex flex-col gap-1.25">
+							<Text variant="body" color="obc-text2" weight="normal">
+								Select all Coins
+							</Text>
 							<ActiveCoinsCard activeCoinType={coinType} />
 						</div>
 

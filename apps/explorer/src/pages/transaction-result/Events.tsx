@@ -25,7 +25,7 @@ function Event({ event, divider }: { event: SuiEvent; divider: boolean }) {
 	const objectLinkLabel = [formatAddress(address), module, name].join('::');
 
 	return (
-		<div>
+		<div className="px-2 py-5 border border-obc-border rounded-md mb-5">
 			<div className="flex flex-col gap-3">
 				<DescriptionItem title="Type" align="start" labelWidth="sm">
 					<Text variant="pBody/medium" color="steel-darker">
@@ -78,7 +78,7 @@ export function Events({ events }: EventsProps) {
 	return (
 		<div>
 			{events.map((event, index) => (
-				<Event key={event.type} event={event} divider={index !== events.length - 1} />
+				<Event key={event.type} event={event} divider={false} />
 			))}
 		</div>
 	);

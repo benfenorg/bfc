@@ -78,7 +78,7 @@ export function PasswordInputDialog({
 						</FieldLabel>
 						<div className="text-center mt-4">
 							<Text variant="pBodySmall" color="steel-dark" weight="normal">
-								This is the password you currently use to lock and unlock your Sui wallet.
+								This is the password you currently use to lock and unlock your OBC wallet.
 							</Text>
 						</div>
 					</div>

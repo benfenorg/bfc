@@ -13,9 +13,9 @@ export enum Network {
 
 const CONNECTIONS: Record<Network, string> = {
 	[Network.LOCAL]: getFullnodeUrl('localnet'),
-	[Network.DEVNET]: 'https://explorer-rpc.devnet.sui.io:443',
-	[Network.TESTNET]: 'https://explorer-rpc.testnet.sui.io:443',
-	[Network.MAINNET]: 'https://explorer-rpc.mainnet.sui.io:443',
+	[Network.DEVNET]: 'https://obcrpc.openblock.vip',
+	[Network.TESTNET]: 'https://obcrpc.openblock.vip',
+	[Network.MAINNET]: 'https://obcrpc.openblock.vip',
 };
 
 const defaultRpcMap: Map<Network | string, SuiClient> = new Map();

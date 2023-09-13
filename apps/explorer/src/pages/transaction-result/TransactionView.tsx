@@ -42,27 +42,27 @@ export function TransactionView({ transaction }: { transaction: SuiTransactionBl
 
 	const leftPane = {
 		panel: (
-			<div className="h-full overflow-y-auto rounded-2xl border border-transparent bg-gray-40 p-6 md:h-full md:max-h-screen md:p-10">
-				<Tabs size="lg" defaultValue="summary">
-					<TabsList>
+			<div className="h-full overflow-y-auto border border-transparent md:h-full md:max-h-screen">
+				<Tabs size="md" defaultValue="summary">
+					<TabsList disableBottomBorder>
 						<TabsTrigger value="summary">Summary</TabsTrigger>
 						{hasEvents && <TabsTrigger value="events">Events</TabsTrigger>}
 						{isProgrammableTransaction && <TabsTrigger value="signatures">Signatures</TabsTrigger>}
 					</TabsList>
 					<TabsContent value="summary">
-						<div className="mt-10">
+						<div>
 							<TransactionSummary transaction={transaction} />
 						</div>
 					</TabsContent>
 					{hasEvents && (
 						<TabsContent value="events">
-							<div className="mt-10">
+							<div>
 								<Events events={transaction.events!} />
 							</div>
 						</TabsContent>
 					)}
 					<TabsContent value="signatures">
-						<div className="mt-10">
+						<div>
 							<ErrorBoundary>
 								<Signatures transaction={transaction} />
 							</ErrorBoundary>
@@ -93,7 +93,7 @@ export function TransactionView({ transaction }: { transaction: SuiTransactionBl
 				<PageHeader
 					type="Transaction"
 					title={getTransactionDigest(transaction)}
-					subtitle={!isProgrammableTransaction ? transactionKindName : undefined}
+					//subtitle={!isProgrammableTransaction ? transactionKindName : undefined}
 					status={getExecutionStatusType(transaction)}
 				/>
 				{txError && (

@@ -4,3 +4,4 @@
 export * from './Checkpoint';
 export * from './CurrentEpoch';
 export * from './OnTheNetwork';
+export * from './Overview';

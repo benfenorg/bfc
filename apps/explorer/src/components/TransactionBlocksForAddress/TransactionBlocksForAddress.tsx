@@ -110,7 +110,7 @@ function TransactionBlocksForAddress({
 				)}
 			</div>
 
-			<div className="flex flex-col space-y-5 pt-5 text-left xl:pr-10">
+			<div className="flex flex-col space-y-5 text-left obc-table-container mt-5">
 				{isLoading || isFetching || isFetchingNextPage || !cardData ? (
 					<PlaceholderTable
 						rowCount={DEFAULT_TRANSACTIONS_LIMIT}
@@ -124,48 +124,50 @@ function TransactionBlocksForAddress({
 					</div>
 				)}
 
-				{(hasNextPage || (data && data?.pages.length > 1)) && (
-					<Pagination
-						onNext={() => {
-							if (isLoading || isFetching) {
-								return;
+				<div className="flex justify-between bg-obc-card p-3.5">
+					{(hasNextPage || (data && data?.pages.length > 1)) && (
+						<Pagination
+							onNext={() => {
+								if (isLoading || isFetching) {
+									return;
+								}
+
+								// Make sure we are at the end before fetching another page
+								if (
+									data &&
+									currentPageState[filterValue] === data?.pages.length - 1 &&
+									!isLoading &&
+									!isFetching
+								) {
+									fetchNextPage();
+								}
+								dispatch({
+									type: PAGE_ACTIONS.NEXT,
+
+									filterValue,
+								});
+							}}
+							hasNext={
+								(Boolean(hasNextPage) && Boolean(data?.pages[currentPage])) ||
+								currentPage < (data?.pages.length ?? 0) - 1
 							}
+							hasPrev={currentPageState[filterValue] !== 0}
+							onPrev={() =>
+								dispatch({
+									type: PAGE_ACTIONS.PREV,
 
-							// Make sure we are at the end before fetching another page
-							if (
-								data &&
-								currentPageState[filterValue] === data?.pages.length - 1 &&
-								!isLoading &&
-								!isFetching
-							) {
-								fetchNextPage();
+									filterValue,
+								})
 							}
-							dispatch({
-								type: PAGE_ACTIONS.NEXT,
-
-								filterValue,
-							});
-						}}
-						hasNext={
-							(Boolean(hasNextPage) && Boolean(data?.pages[currentPage])) ||
-							currentPage < (data?.pages.length ?? 0) - 1
-						}
-						hasPrev={currentPageState[filterValue] !== 0}
-						onPrev={() =>
-							dispatch({
-								type: PAGE_ACTIONS.PREV,
-
-								filterValue,
-							})
-						}
-						onFirst={() =>
-							dispatch({
-								type: PAGE_ACTIONS.FIRST,
-								filterValue,
-							})
-						}
-					/>
-				)}
+							onFirst={() =>
+								dispatch({
+									type: PAGE_ACTIONS.FIRST,
+									filterValue,
+								})
+							}
+						/>
+					)}
+				</div>
 			</div>
 		</div>
 	);

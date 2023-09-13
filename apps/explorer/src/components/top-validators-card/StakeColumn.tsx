@@ -16,11 +16,11 @@ export function StakeColumn({ stake, hideCoinSymbol, inMIST = false }: StakeColu
 	const [amount, symbol] = useFormatCoin(stake, SUI_TYPE_ARG, coinFormat);
 	return (
 		<div className="flex items-end gap-0.5">
-			<Text variant="bodySmall/medium" color="steel-darker">
+			<Text variant="pBody/normal" color="steel-darker">
 				{inMIST ? formatBalance(stake, 0, coinFormat) : amount}
 			</Text>
 			{!hideCoinSymbol && (
-				<Text variant="captionSmall/medium" color="steel-dark">
+				<Text variant="pBody/normal" color="steel-dark">
 					{inMIST ? 'MIST' : symbol}
 				</Text>
 			)}

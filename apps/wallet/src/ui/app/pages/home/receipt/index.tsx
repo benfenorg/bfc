@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useRpcClient } from '@mysten/core';
-import { Check32 } from '@mysten/icons';
+import { Check24 } from '@mysten/icons';
 import { getExecutionStatusType } from '@mysten/sui.js';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
@@ -74,7 +74,7 @@ function ReceiptPage() {
 				setShowModal={setShowModal}
 				title={pageTitle}
 				closeOverlay={closeReceipt}
-				closeIcon={<Check32 fill="currentColor" className="text-sui-light w-8 h-8" />}
+				closeIcon={<Check24 className="text-white w-6 h-6" />}
 			>
 				{isError ? (
 					<div className="mb-2 h-fit">

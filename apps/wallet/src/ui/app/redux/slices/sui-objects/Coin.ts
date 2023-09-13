@@ -24,7 +24,7 @@ export class Coin {
 
 	public static isSUI(obj: SuiMoveObject) {
 		const arg = Coin.getCoinTypeArg(obj);
-		return arg ? Coin.getCoinSymbol(arg) === 'SUI' : false;
+		return arg ? Coin.getCoinSymbol(arg) === 'OBC' : false;
 	}
 
 	public static getCoinSymbol(coinTypeArg: string) {

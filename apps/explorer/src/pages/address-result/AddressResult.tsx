@@ -19,18 +19,18 @@ function AddressResult({ address }: { address: string }) {
 		<div className="space-y-12">
 			<PageHeader type="Address" title={address} subtitle={domainName} />
 			<div>
-				<div className="border-b border-gray-45 pb-5 md:mt-12">
-					<Heading color="gray-90" variant="heading4/semibold">
+				<div className="border-b border-obc-border pb-4 md:mt-12">
+					<Heading color="steel-darker" variant="heading6/medium">
 						Owned Objects
 					</Heading>
 				</div>
 				<ErrorBoundary>
-					<div className="flex flex-col gap-10 md:flex-row">
-						<div className="flex-1 overflow-hidden">
+					<div className="border-b border-obc-border flex flex-col gap-10 md:flex-row">
+						<div className="flex-1  pb-3 overflow-hidden">
 							<OwnedCoins id={address} />
 						</div>
-						<div className="hidden w-px bg-gray-45 md:block" />
-						<div className="flex-1 overflow-hidden">
+						<div className="hidden w-px bg-obc-border md:block" />
+						<div className="flex-1  pb-3 overflow-hidden">
 							<OwnedObjects id={address} />
 						</div>
 					</div>

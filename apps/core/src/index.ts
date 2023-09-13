@@ -41,3 +41,5 @@ export * from './hooks/useCookieConsentBanner';
 export * from './hooks/useGetKioskContents';
 export * from './utils/kiosk';
 export * from './hooks/useSuiCoinData';
+export * from './hooks/useGetNetworkOverview';
+export * from './hooks/useGetDaoProposals';

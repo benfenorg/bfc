@@ -13,6 +13,7 @@ import { CheckpointsTable } from '../checkpoints/CheckpointsTable';
 // import { DropdownMenu, DropdownMenuCheckboxItem } from '~/ui/DropdownMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
 // import { Network } from '~/utils/api/DefaultRpcClient';
+import { TopValidatorsCard } from '../../components/top-validators-card/TopValidatorsCard';
 
 const VALID_TABS = ['transactions', 'epochs', 'checkpoints'];
 
@@ -60,12 +61,13 @@ export function Activity({ initialTab, initialLimit, disablePagination }: Props)
 
 	return (
 		<div>
-			<Tabs size="lg" value={activeTab} onValueChange={setActiveTab}>
+			<Tabs size="md" value={activeTab} onValueChange={setActiveTab}>
 				<div className="relative">
-					<TabsList>
+					<TabsList disableBottomBorder={true}>
 						<TabsTrigger value="transactions">Transaction Blocks</TabsTrigger>
 						<TabsTrigger value="epochs">Epochs</TabsTrigger>
 						<TabsTrigger value="checkpoints">Checkpoints</TabsTrigger>
+						<TabsTrigger value="validators">Validators</TabsTrigger>
 					</TabsList>
 					<div className="absolute inset-y-0 -top-1 right-0 flex items-center gap-3 text-2xl">
 						{/* TODO re-enable this when index is stable */}
@@ -116,6 +118,9 @@ export function Activity({ initialTab, initialLimit, disablePagination }: Props)
 						initialLimit={initialLimit}
 						disablePagination={disablePagination}
 					/>
+				</TabsContent>
+				<TabsContent value="validators">
+					<TopValidatorsCard limit={initialLimit} showIcon />
 				</TabsContent>
 			</Tabs>
 		</div>

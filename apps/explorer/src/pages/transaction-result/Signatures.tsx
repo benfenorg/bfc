@@ -19,7 +19,8 @@ import { TabHeader } from '~/ui/Tabs';
 
 function SignaturePanel({ title, signature }: { title: string; signature: SignaturePubkeyPair }) {
 	return (
-		<TabHeader title={title}>
+		<div className="px-2 py-5 border border-obc-border rounded-md">
+			<div className="text-heading6 font-semibold">{title}</div>
 			<DescriptionList>
 				<DescriptionItem title="Scheme" align="start" labelWidth="sm">
 					<Text variant="pBody/medium" color="steel-darker">
@@ -29,7 +30,7 @@ function SignaturePanel({ title, signature }: { title: string; signature: Signat
 				<DescriptionItem title="Address" align="start" labelWidth="sm">
 					<AddressLink noTruncate address={signature.pubKey.toSuiAddress()} />
 				</DescriptionItem>
-				<DescriptionItem title="Sui Public Key" align="start" labelWidth="sm">
+				<DescriptionItem title="OBC Public Key" align="start" labelWidth="sm">
 					<Text variant="pBody/medium" color="steel-darker">
 						{signature.pubKey.toSuiPublicKey()}
 					</Text>
@@ -40,7 +41,7 @@ function SignaturePanel({ title, signature }: { title: string; signature: Signat
 					</Text>
 				</DescriptionItem>
 			</DescriptionList>
-		</TabHeader>
+		</div>
 	);
 }
 

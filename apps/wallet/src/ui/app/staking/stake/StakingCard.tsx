@@ -280,7 +280,7 @@ function StakingCard() {
 					{({ isSubmitting, isValid, submitForm, errors, touched }) => (
 						<BottomMenuLayout>
 							<Content>
-								<div className="mb-4">
+								<div className="mb-5">
 									<ValidatorFormDetail validatorAddress={validatorAddress} unstake={unstake} />
 								</div>
 
@@ -302,16 +302,16 @@ function StakingCard() {
 								)}
 
 								{(unstake || touched.amount) && errors.amount ? (
-									<div className="mt-2 flex flex-col flex-nowrap">
+									<div className="mt-2.5 flex flex-col flex-nowrap">
 										<Alert>{errors.amount}</Alert>
 									</div>
 								) : null}
 
 								{!unstake && (
-									<div className="flex-1 mt-7.5">
+									<div className="flex-1 mt-5">
 										<Collapse title="Staking Rewards" initialIsOpen>
-											<Text variant="pSubtitle" color="steel-dark" weight="normal">
-												Staked SUI starts counting as validator’s stake at the end of the Epoch in
+											<Text variant="body" color="obc-text2" weight="normal">
+												Staked OBC starts counting as validator’s stake at the end of the Epoch in
 												which it was staked. Rewards are earned separately for each Epoch and become
 												available at the end of each Epoch.
 											</Text>

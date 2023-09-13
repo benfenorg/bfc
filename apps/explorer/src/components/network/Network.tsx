@@ -9,7 +9,7 @@ import { Network } from '../../utils/api/DefaultRpcClient';
 import { NetworkSelect, type NetworkOption } from '~/ui/header/NetworkSelect';
 import { ampli } from '~/utils/analytics/ampli';
 
-export default function WrappedNetworkSelect() {
+export default function WrappedNetworkSelect({isDarker=false}:any) {
 	const [network, setNetwork] = useContext(NetworkContext);
 	const { data } = useGetSystemState();
 	const { data: binaryVersion } = useGetBinaryVersion();
@@ -31,6 +31,7 @@ export default function WrappedNetworkSelect() {
 			networks={networks}
 			version={data?.protocolVersion}
 			binaryVersion={binaryVersion}
+			isDarker={isDarker}
 		/>
 	);
 }

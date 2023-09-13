@@ -31,7 +31,7 @@ export default {
 				15: '3.75rem',
 				'popup-height': '600px',
 				'popup-height-v2': '680px',
-				'popup-width': '360px',
+				'popup-width': '340px',
 			},
 			boxShadow: {
 				'wallet-content': '0px -5px 20px 5px rgba(160, 182, 195, 0.15)',
@@ -56,7 +56,7 @@ export default {
 				'nav-height': '76px',
 			},
 			maxWidth: {
-				'popup-width': '360px',
+				'popup-width': '340px',
 			},
 			dropShadow: {
 				accountModal: ['0px 10px 30px rgba(0, 0, 0, 0.15)', '0px 10px 50px rgba(0, 0, 0, 0.15)'],

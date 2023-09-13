@@ -41,7 +41,7 @@ function Search() {
 				queryValue={query}
 				onChange={(value) => setQuery(value?.trim() ?? '')}
 				onSelectResult={handleSelectResult}
-				placeholder="Search"
+				placeholder="Search by Tx Hash / Address / Object / Checkpoint"
 				isLoading={isLoading || debouncedQuery !== query}
 				options={results}
 			/>
