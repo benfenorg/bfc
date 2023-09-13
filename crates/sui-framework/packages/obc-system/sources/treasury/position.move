@@ -3,7 +3,6 @@ module obc_system::position {
     use std::string::{Self, String};
     use std::type_name;
     use std::type_name::TypeName;
-    use std::vector;
 
     use sui::obc::OBC;
     use sui::object::ID;
@@ -89,26 +88,15 @@ module obc_system::position {
 
     public fun fetch_positions(
         _manager: &PositionManager,
-        _start: vector<u64>,
+        _start: u64,
         _limit: u64
     ): vector<Position> {
-        assert!(_limit > 0, ERR_INVALID_LIMIT);
-        let len = vector::length(&_start);
-        assert!(len > 0, ERR_INVALID_VECTOR_LENGTH);
-        let ret = vector::empty<Position>();
-        let idx = 0;
-        while (idx < len) {
-            let positions = linked_table::fetch(
-                &_manager.positions,
-                *vector::borrow<u64>(&_start, idx),
-                _limit
-            );
-            if (vector::length(&positions) > 0) {
-                vector::append(&mut ret, positions);
-            };
-            idx = idx + 1;
-        };
-        ret
+        assert!(_limit > 0 && _start > 0, ERR_INVALID_LIMIT);
+        linked_table::fetch(
+            &_manager.positions,
+            _start,
+            _limit
+        )
     }
 
     public(friend) fun borrow_mut_position(
