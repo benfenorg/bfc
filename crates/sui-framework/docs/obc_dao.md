@@ -1195,7 +1195,7 @@ Error codes
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     _: &OBCDaoManageKey,
     actionName:<a href="">vector</a>&lt;u8&gt;,
@@ -1337,7 +1337,7 @@ Error codes
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_dao_and_share">create_dao_and_share</a>(        admins: <a href="">vector</a>&lt;<b>address</b>&gt;,
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_dao_and_share">create_dao_and_share</a>(        admins: <a href="">vector</a>&lt;<b>address</b>&gt;,
                                                            ctx: &<b>mut</b> TxContext ) {
     // sender <b>address</b>
     //<b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
@@ -1436,7 +1436,7 @@ propose a proposal.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a> (
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a> (
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     manager_key: &OBCDaoManageKey,
     version_id: u64,
@@ -1528,7 +1528,7 @@ So think twice before casting vote.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_cast_vote">cast_vote</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_cast_vote">cast_vote</a>(
     proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
     <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: VotingObc,
     agreeInt: u8,
@@ -1610,7 +1610,7 @@ Let user change their vote during the voting time.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_change_vote">change_vote</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_change_vote">change_vote</a>(
     my_vote: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Vote">Vote</a>,
     proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
     agree: bool,
@@ -1702,7 +1702,7 @@ Revoke some voting powers from vote on <code>proposal_id</code> of <code>propose
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_revoke_vote">revoke_vote</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_revoke_vote">revoke_vote</a>(
     proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
     my_vote:  <a href="obc_dao.md#0xc8_obc_dao_Vote">Vote</a>,
     voting_power: u64,
@@ -1822,7 +1822,7 @@ Retrieve back my voted token voted for a proposal.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_unvote_votes">unvote_votes</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_unvote_votes">unvote_votes</a>(
     proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
     vote: <a href="obc_dao.md#0xc8_obc_dao_Vote">Vote</a>,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
@@ -1871,7 +1871,7 @@ Retrieve back my voted token voted for a proposal.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_vote_of">vote_of</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_vote_of">vote_of</a>(
     vote: &<a href="obc_dao.md#0xc8_obc_dao_Vote">Vote</a>,
     proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
     ctx: &<b>mut</b> TxContext,
@@ -1911,7 +1911,7 @@ Check whether voter has voted on proposal with <code>proposal_id</code> of <code
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_has_vote">has_vote</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_has_vote">has_vote</a>(
     vote: &<a href="obc_dao.md#0xc8_obc_dao_Vote">Vote</a>,
     proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
 ): bool  {
@@ -2044,7 +2044,7 @@ Get the proposal state.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_proposal_state">proposal_state</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_proposal_state">proposal_state</a>(
     proposal: &<a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
 ): u8  {
@@ -2128,7 +2128,7 @@ Get the proposal state.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_proposal_info">proposal_info</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_proposal_info">proposal_info</a>(
     proposal: &<a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>,
 ) : (u64, u64) {
     <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
@@ -2427,7 +2427,7 @@ set voting delay
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_delay">set_voting_delay</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_delay">set_voting_delay</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     manager_key: &OBCDaoManageKey,
     value: u64,
@@ -2461,7 +2461,7 @@ set voting period
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_period">set_voting_period</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_period">set_voting_period</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     manager_key: &OBCDaoManageKey,
     value: u64,
@@ -2495,7 +2495,7 @@ set voting quorum rate
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_quorum_rate">set_voting_quorum_rate</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_quorum_rate">set_voting_quorum_rate</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     manager_key: &OBCDaoManageKey,
     value: u8,
@@ -2528,7 +2528,7 @@ set min action delay
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_min_action_delay">set_min_action_delay</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_min_action_delay">set_min_action_delay</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     manager_key: &OBCDaoManageKey,
     value: u64,
@@ -2651,7 +2651,7 @@ set min action delay
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_modify_lastest_proposal_in_dao">modify_lastest_proposal_in_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, index : u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_modify_lastest_proposal_in_dao">modify_lastest_proposal_in_dao</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>, index : u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
     <b>let</b> proposal_record = dao.proposal_record;
     <b>let</b> size : u64 =  <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(& proposal_record);
     <b>if</b> (size == 0) {
@@ -2822,7 +2822,7 @@ set min action delay
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
                                    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;,
                                    ctx: &<b>mut</b> TxContext ,) {
     // sender <b>address</b>
@@ -2853,7 +2853,7 @@ set min action delay
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_withdraw_voting">withdraw_voting</a>(  dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_withdraw_voting">withdraw_voting</a>(  dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
                                    voting_obc: VotingObc,
                                    ctx: &<b>mut</b> TxContext ,) {
     // sender <b>address</b>
