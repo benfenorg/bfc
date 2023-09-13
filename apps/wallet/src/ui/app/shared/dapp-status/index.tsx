@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { appDisconnect } from './actions';
+import { useAccounts } from '../../hooks/useAccounts';
 import { useActiveAddress } from '../../hooks/useActiveAddress';
 import { ButtonConnectedTo } from '../ButtonConnectedTo';
 import Loading from '_components/loading';
@@ -39,6 +40,7 @@ function DappStatus() {
 		[activeOriginUrl],
 	);
 	const isConnected = useAppSelector(dappStatusSelector);
+	const allAccounts = useAccounts();
 	const activeAddress = useActiveAddress();
 	const [disconnecting, setDisconnecting] = useState(false);
 	const [visible, setVisible] = useState(false);
@@ -78,7 +80,7 @@ function DappStatus() {
 				await dispatch(
 					appDisconnect({
 						origin: activeOriginUrl,
-						accounts: [activeAddress],
+						accounts: allAccounts.map((i) => i.address),
 					}),
 				).unwrap();
 				ampli.disconnectedApplication({
@@ -93,7 +95,7 @@ function DappStatus() {
 				setDisconnecting(false);
 			}
 		}
-	}, [disconnecting, isConnected, activeOriginUrl, activeAddress, dispatch]);
+	}, [disconnecting, isConnected, activeOriginUrl, activeAddress, dispatch, allAccounts]);
 	if (!isConnected) {
 		return null;
 	}

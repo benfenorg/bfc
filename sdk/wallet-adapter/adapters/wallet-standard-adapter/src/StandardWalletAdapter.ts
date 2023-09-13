@@ -98,30 +98,30 @@ export class StandardWalletAdapter implements WalletAdapter {
 	}
 
 	signMessage: WalletAdapter['signMessage'] = (messageInput) => {
-		return this.#wallet.features['sui:signMessage'].signMessage(messageInput);
+		return this.#wallet.features['obc:signMessage'].signMessage(messageInput);
 	};
 
 	signTransactionBlock: WalletAdapter['signTransactionBlock'] = (transactionInput) => {
-		const version = this.#wallet.features['sui:signTransactionBlock'].version;
+		const version = this.#wallet.features['obc:signTransactionBlock'].version;
 		if (!isFeatureCompatible(version, suiSignTransactionBlockLatestVersion)) {
 			throw new Error(
 				`Version mismatch, signTransaction feature version ${version} is not compatible with version ${suiSignTransactionBlockLatestVersion}`,
 			);
 		}
-		return this.#wallet.features['sui:signTransactionBlock'].signTransactionBlock(transactionInput);
+		return this.#wallet.features['obc:signTransactionBlock'].signTransactionBlock(transactionInput);
 	};
 
 	signAndExecuteTransactionBlock: WalletAdapter['signAndExecuteTransactionBlock'] = (
 		transactionInput,
 	) => {
-		const version = this.#wallet.features['sui:signAndExecuteTransactionBlock'].version;
+		const version = this.#wallet.features['obc:signAndExecuteTransactionBlock'].version;
 		if (!isFeatureCompatible(version, suiSignAndExecuteTransactionBlockLatestVersion)) {
 			throw new Error(
 				`Version mismatch, signAndExecuteTransactionBlock feature version ${version} is not compatible with version ${suiSignAndExecuteTransactionBlockLatestVersion}`,
 			);
 		}
 		return this.#wallet.features[
-			'sui:signAndExecuteTransactionBlock'
+			'obc:signAndExecuteTransactionBlock'
 		].signAndExecuteTransactionBlock(transactionInput);
 	};
 

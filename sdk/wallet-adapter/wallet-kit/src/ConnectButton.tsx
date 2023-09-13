@@ -85,7 +85,7 @@ export function ConnectButton({
 							backgroundColor: '#171719',
 							color: '#ffffff',
 							height: '36px',
-							borderRadius: '0.375rem'
+							borderRadius: '0.375rem',
 						}}
 						type="button"
 					>

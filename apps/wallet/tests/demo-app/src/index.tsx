@@ -97,7 +97,7 @@ function App() {
 					const txb = getDemoTransaction(accounts[0]?.address);
 					try {
 						await suiWallet.features[
-							'sui:signAndExecuteTransactionBlock'
+							'obc:signAndExecuteTransactionBlock'
 						].signAndExecuteTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
@@ -115,7 +115,7 @@ function App() {
 					setError(null);
 					const txb = getDemoTransaction(accounts[0]?.address);
 					try {
-						await suiWallet.features['sui:signTransactionBlock'].signTransactionBlock({
+						await suiWallet.features['obc:signTransactionBlock'].signTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
 							chain: 'sui:unknown',
@@ -131,7 +131,7 @@ function App() {
 				onClick={async () => {
 					setError(null);
 					try {
-						await suiWallet.features['sui:signMessage'].signMessage({
+						await suiWallet.features['obc:signMessage'].signMessage({
 							account: getAccount(accounts[0], useWrongAccounts),
 							message: new TextEncoder().encode('Test message'),
 						});

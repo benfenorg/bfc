@@ -14,7 +14,7 @@ export type SuiSignTransactionBlockVersion = '1.0.0';
  */
 export type SuiSignTransactionBlockFeature = {
 	/** Namespace for the feature. */
-	'sui:signTransactionBlock': {
+	'obc:signTransactionBlock': {
 		/** Version of the feature API. */
 		version: SuiSignTransactionBlockVersion;
 		signTransactionBlock: SuiSignTransactionBlockMethod;

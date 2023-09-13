@@ -73,7 +73,7 @@ export interface WalletKitCore {
 export type SubscribeHandler = (state: WalletKitCoreState) => void;
 export type Unsubscribe = () => void;
 
-const SUI_WALLET_NAME = 'Sui Wallet';
+const SUI_WALLET_NAME = 'OBC Wallet';
 
 const RECENT_WALLET_STORAGE = 'wallet-kit:last-wallet';
 

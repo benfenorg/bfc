@@ -38,8 +38,7 @@ export function Layout() {
 		<Fragment key={network}>
 			<ScrollRestoration />
 			<WalletKitProvider
-				/*autoConnect={false}*/
-				enableUnsafeBurner={import.meta.env.DEV}
+			/*autoConnect={false}*/
 			>
 				<RpcClientContext.Provider value={jsonRpcProvider}>
 					<NetworkContext.Provider value={[network, setNetwork]}>
