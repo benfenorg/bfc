@@ -18,8 +18,9 @@ module obc_system::obc_dao_voting_pool_test{
     #[test_only]
     use sui::test_utils;
 
-    use sui::transfer;
-
+    //use sui::transfer;
+    #[test_only]
+    use std::ascii::string;
 
 
     #[test]
@@ -35,6 +36,7 @@ module obc_system::obc_dao_voting_pool_test{
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            debug::print(&string(b"create dao"));
             let admins = vector[owner];
             obc_dao::create_dao_and_share(admins, test_scenario::ctx(&mut scenario_val));
             //transfer::share_object(dao);
@@ -45,6 +47,7 @@ module obc_system::obc_dao_voting_pool_test{
         //create voting obc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            debug::print(&string(b"create voting obc"));
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<OBC>(10000000000, test_scenario::ctx(&mut scenario_val));
@@ -62,6 +65,8 @@ module obc_system::obc_dao_voting_pool_test{
         //split obc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            debug::print(&string(b"split voting obc"));
+
             let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
             let splitObc =  voting_pool::split(&mut vObc, 3000000000, test_scenario::ctx(&mut scenario_val));
             let balance =  voting_pool::unwrap_voting_obc(splitObc);
@@ -76,6 +81,8 @@ module obc_system::obc_dao_voting_pool_test{
         //unwrap voting obc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            debug::print(&string(b"unwrap voting obc"));
+
             let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
             let balance =  voting_pool::unwrap_voting_obc(vObc);
             //assert!(balance::value(&balance) == 10, 0);
@@ -88,7 +95,7 @@ module obc_system::obc_dao_voting_pool_test{
 
 
         let data: vector<u8> = b"hello world";
-        debug::print(&data);
+        debug::print(&string(data));
 
 
         test_scenario::end(scenario_val);
