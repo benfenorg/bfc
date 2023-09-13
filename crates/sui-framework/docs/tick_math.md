@@ -21,6 +21,7 @@
 -  [Function `get_valid_tick_index`](#0xc8_tick_math_get_valid_tick_index)
 -  [Function `get_next_valid_tick_index`](#0xc8_tick_math_get_next_valid_tick_index)
 -  [Function `get_prev_valid_tick_index`](#0xc8_tick_math_get_prev_valid_tick_index)
+-  [Function `get_default_sqrt_price_limit`](#0xc8_tick_math_get_default_sqrt_price_limit)
 
 
 <pre><code><b>use</b> <a href="full_math_u128.md#0xc8_full_math_u128">0xc8::full_math_u128</a>;
@@ -630,6 +631,34 @@ Errors
 
 <pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_prev_valid_tick_index">get_prev_valid_tick_index</a>(index: I32, tick_spacing: u32): I32 {
     <a href="tick_math.md#0xc8_tick_math_get_valid_tick_index">get_valid_tick_index</a>(index, tick_spacing, <b>true</b>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_math_get_default_sqrt_price_limit"></a>
+
+## Function `get_default_sqrt_price_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_default_sqrt_price_limit">get_default_sqrt_price_limit</a>(_a2b: bool): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_default_sqrt_price_limit">get_default_sqrt_price_limit</a>(_a2b: bool): u128 {
+    <b>if</b> (_a2b) {
+        <a href="tick_math.md#0xc8_tick_math_min_sqrt_price">min_sqrt_price</a>()
+    } <b>else</b> {
+        <a href="tick_math.md#0xc8_tick_math_max_sqrt_price">max_sqrt_price</a>()
+    }
 }
 </code></pre>
 

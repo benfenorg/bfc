@@ -327,7 +327,7 @@ module obc_system::tick {
 
     #[test]
     fun test_get_ticks() {
-        let is_debug = true;
+        let is_debug = false;
         let ctx = tx_context::dummy();
         let tick_spacing: u32 = 60;
         let current_index = tick_math::get_tick_at_sqrt_price(100000000000);

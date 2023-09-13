@@ -75,8 +75,15 @@ module obc_system::gas_coin_map {
         gas_coin: &Coin<CoinType>,
         exchange_rate: u64) {
         let id_address = object::id_address<Coin<CoinType>>(gas_coin);
-        let entity = vec_map::get_mut(&mut self.active_gas_coins, &id_address);
-        entity.exchange_rate = exchange_rate
+        if (vec_map::contains(&self.active_gas_coins, &id_address)) {
+            let entity = vec_map::get_mut(&mut self.active_gas_coins, &id_address);
+            entity.exchange_rate = exchange_rate
+        }else {
+            vec_map::insert(&mut self.active_gas_coins, id_address, GasCoinEntity {
+                id_address,
+                exchange_rate,
+            });
+        }
     }
 
     public(friend) fun requst_get_exchange_rate<CoinType>(

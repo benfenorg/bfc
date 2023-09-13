@@ -174,7 +174,6 @@ module obc_system::vault {
         )
     }
 
-
     public(friend) fun close_position<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64
@@ -186,61 +185,6 @@ module obc_system::vault {
             _index
         );
         event::close_position(vault_id(_vault), _index)
-    }
-
-
-    /// Calculate the position's amount_a/amount_b
-    /// Params
-    ///     - `vault` The clmm vault object.
-    ///     - `position_id` The object id of position's NFT.
-    /// Returns
-    ///     - `amount_a` The amount of `StableCoinType`
-    ///     - `amount_b` The amount of `OBC`
-    public fun get_position_amounts<StableCoinType>(
-        _vault: &Vault<StableCoinType>,
-        _index: u64,
-        _round_up: bool
-    ): (u64, u64) {
-        let position = position::borrow_position(
-            &_vault.position_manager,
-            _index
-        );
-        let (tick_lower, tick_upper) = position::get_tick_range(position);
-        clmm_math::get_amount_by_liquidity(
-            tick_lower,
-            tick_upper,
-            _vault.current_tick_index,
-            _vault.current_sqrt_price,
-            position::get_liquidity(position),
-            _round_up
-        )
-    }
-
-    public fun get_position_liquidity<StableCoinType>(
-        _vault: &Vault<StableCoinType>,
-        _index: u64
-    ): u128
-    {
-        let position = position::borrow_position(
-            &_vault.position_manager,
-            _index
-        );
-        position::get_liquidity(position)
-    }
-
-    public(friend) fun get_position_tick_range_and_price<StableCoinType>(
-        _vault: &Vault<StableCoinType>,
-        _index: u64
-    ): (I32, I32, u128, u128)
-    {
-        let position = position::borrow_position(
-            &_vault.position_manager,
-            _index
-        );
-        let (tick_lower_index, tick_upper_index) = position::get_tick_range(position);
-        let price_lower = tick_math::get_sqrt_price_at_tick(tick_lower_index);
-        let price_upper = tick_math::get_sqrt_price_at_tick(tick_upper_index);
-        (tick_lower_index, tick_upper_index, price_lower, price_upper)
     }
 
     /// Flash loan resource for add_liquidity
@@ -761,6 +705,61 @@ module obc_system::vault {
     }
 
     /// Read Functions
+
+    /// Calculate the position's amount_a/amount_b
+    /// Params
+    ///     - `vault` The clmm vault object.
+    ///     - `_index` The index of position.
+    /// Returns
+    ///     - `amount_a` The amount of `StableCoinType`
+    ///     - `amount_b` The amount of `OBC`
+    public fun get_position_amounts<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
+        _index: u64,
+        _round_up: bool
+    ): (u64, u64) {
+        let position = position::borrow_position(
+            &_vault.position_manager,
+            _index
+        );
+        let (tick_lower, tick_upper) = position::get_tick_range(position);
+        clmm_math::get_amount_by_liquidity(
+            tick_lower,
+            tick_upper,
+            _vault.current_tick_index,
+            _vault.current_sqrt_price,
+            position::get_liquidity(position),
+            _round_up
+        )
+    }
+
+    public fun get_position_liquidity<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
+        _index: u64
+    ): u128
+    {
+        let position = position::borrow_position(
+            &_vault.position_manager,
+            _index
+        );
+        position::get_liquidity(position)
+    }
+
+    public fun get_position_tick_range_and_price<StableCoinType>(
+        _vault: &Vault<StableCoinType>,
+        _index: u64
+    ): (I32, I32, u128, u128)
+    {
+        let position = position::borrow_position(
+            &_vault.position_manager,
+            _index
+        );
+        let (tick_lower_index, tick_upper_index) = position::get_tick_range(position);
+        let price_lower = tick_math::get_sqrt_price_at_tick(tick_lower_index);
+        let price_upper = tick_math::get_sqrt_price_at_tick(tick_upper_index);
+        (tick_lower_index, tick_upper_index, price_lower, price_upper)
+    }
+
     /// vault info
     public fun vault_id<StableCoinType>(_vault: &Vault<StableCoinType>): ID {
         object::id(_vault)
@@ -785,6 +784,15 @@ module obc_system::vault {
         _vault.liquidity
     }
 
+    public fun get_vault_state<StableCoinType>(_vault: &Vault<StableCoinType>): u8
+    {
+        _vault.state
+    }
+
+    public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
+        ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
+    }
+
     public fun min_liquidity_rate(): u128 {
         6
     }
@@ -797,15 +805,7 @@ module obc_system::vault {
         10
     }
 
-    public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
-        ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
-    }
-
-    public(friend) fun get_vault_state<StableCoinType>(_vault: &Vault<StableCoinType>): u8
-    {
-        _vault.state
-    }
-
+    /// Rebalance
     /// State checker
     public(friend) fun update_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
         let price = _vault.current_sqrt_price;

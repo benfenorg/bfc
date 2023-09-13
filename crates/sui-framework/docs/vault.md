@@ -15,7 +15,6 @@
 -  [Function `init_positions`](#0xc8_vault_init_positions)
 -  [Function `open_position`](#0xc8_vault_open_position)
 -  [Function `close_position`](#0xc8_vault_close_position)
--  [Function `get_position_amounts`](#0xc8_vault_get_position_amounts)
 -  [Function `add_liquidity_internal`](#0xc8_vault_add_liquidity_internal)
 -  [Function `add_liquidity`](#0xc8_vault_add_liquidity)
 -  [Function `remove_liquidity`](#0xc8_vault_remove_liquidity)
@@ -34,14 +33,20 @@
 -  [Function `repay_flash_swap`](#0xc8_vault_repay_flash_swap)
 -  [Function `flash_swap_internal`](#0xc8_vault_flash_swap_internal)
 -  [Function `swap_in_vault`](#0xc8_vault_swap_in_vault)
+-  [Function `get_position_amounts`](#0xc8_vault_get_position_amounts)
+-  [Function `get_position_liquidity`](#0xc8_vault_get_position_liquidity)
+-  [Function `get_position_tick_range_and_price`](#0xc8_vault_get_position_tick_range_and_price)
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
+-  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
 -  [Function `balances`](#0xc8_vault_balances)
+-  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
+-  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
+-  [Function `obc_required`](#0xc8_vault_obc_required)
 -  [Function `min_liquidity_rate`](#0xc8_vault_min_liquidity_rate)
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
 -  [Function `base_liquidity_rate`](#0xc8_vault_base_liquidity_rate)
--  [Function `obc_required`](#0xc8_vault_obc_required)
--  [Function `check_state`](#0xc8_vault_check_state)
+-  [Function `update_state`](#0xc8_vault_update_state)
 -  [Function `rebuild_positions_after_clean_liquidities`](#0xc8_vault_rebuild_positions_after_clean_liquidities)
 -  [Function `get_liquidity_from_base_point`](#0xc8_vault_get_liquidity_from_base_point)
 -  [Function `positions_liquidity_size_balance`](#0xc8_vault_positions_liquidity_size_balance)
@@ -615,7 +620,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 open <code>position_number</code> positions
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _spacing_times: u32, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _spacing_times: u32, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;
 </code></pre>
 
 
@@ -628,7 +633,7 @@ open <code>position_number</code> positions
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _spacing_times: u32,
     _ctx: &<b>mut</b> TxContext
-) {
+): <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt; {
     <b>assert</b>!(<a href="position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager) == 0, <a href="vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>);
     <b>let</b> ticks = <a href="tick.md#0xc8_tick_get_ticks">tick::get_ticks</a>(
         &_vault.tick_manager,
@@ -647,6 +652,7 @@ open <code>position_number</code> positions
         );
         index = index + 1;
     };
+    ticks
 }
 </code></pre>
 
@@ -660,7 +666,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -669,7 +675,7 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _tick_lower: I32,
     _tick_upper: I32,
@@ -722,52 +728,6 @@ open <code>position_number</code> positions
         _index
     );
     event::close_position(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _index)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_get_position_amounts"></a>
-
-## Function `get_position_amounts`
-
-Calculate the position's amount_a/amount_b
-Params
-- <code><a href="vault.md#0xc8_vault">vault</a></code> The clmm vault object.
-- <code>position_id</code> The object id of position's NFT.
-Returns
-- <code>amount_a</code> The amount of <code>StableCoinType</code>
-- <code>amount_b</code> The amount of <code>OBC</code>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): (u64, u64)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64
-): (u64, u64) {
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
-        &_vault.position_manager,
-        _index
-    );
-    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
-    <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
-        tick_lower,
-        tick_upper,
-        _vault.current_tick_index,
-        _vault.current_sqrt_price,
-        <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>),
-        <b>false</b>
-    )
 }
 </code></pre>
 
@@ -1320,12 +1280,12 @@ Returns
             <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
         };
         <a href="_push_back">vector::push_back</a>(&<b>mut</b> swap_result.step_results, <a href="vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a> {
-            current_sqrt_price: current_sqrt_price,
-            target_sqrt_price: target_sqrt_price,
+            current_sqrt_price,
+            target_sqrt_price,
             current_liquidity: liquidity,
-            amount_in: amount_in,
-            amount_out: amount_out,
-            remainer_amount: remainer_amount,
+            amount_in,
+            amount_out,
+            remainer_amount,
             current_tick_index: tick_index,
         });
         <b>if</b> (target_sqrt_price == next_sqrt_price) {
@@ -1349,7 +1309,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
 </code></pre>
 
 
@@ -1358,7 +1318,7 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _coin_a: Coin&lt;StableCoinType&gt;,
     _coin_b: Coin&lt;OBC&gt;,
@@ -1403,7 +1363,6 @@ Returns
         pay_coin_b,
         flash_receipt
     );
-
     (<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_a), <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_b))
 }
 </code></pre>
@@ -1485,12 +1444,12 @@ Returns
     <b>let</b> max_price = <a href="tick_math.md#0xc8_tick_math_max_sqrt_price">tick_math::max_sqrt_price</a>();
     <b>if</b> (_a2b) {
         <b>assert</b>!(
-            _sqrt_price_limit &gt;= _vault.current_sqrt_price && _sqrt_price_limit &gt;= min_price,
+            min_price &lt;= _sqrt_price_limit && _sqrt_price_limit &lt; _vault.current_sqrt_price,
             <a href="vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>
         );
     } <b>else</b> {
         <b>assert</b>!(
-            _sqrt_price_limit &lt;= _vault.current_sqrt_price && _sqrt_price_limit &lt;= max_price,
+            _vault.current_sqrt_price &lt; _sqrt_price_limit && _sqrt_price_limit &lt;= max_price,
             <a href="vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>
         );
     };
@@ -1519,7 +1478,7 @@ Returns
     (balance_a_ret, balance_b_ret, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
         vault_id: <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         a2b: _a2b,
-        pay_amount: swap_res.amount_out + swap_res.amount_in
+        pay_amount: swap_res.amount_in
     })
 }
 </code></pre>
@@ -1555,61 +1514,173 @@ Returns
     <b>let</b> next_score = <a href="tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(&_vault.tick_manager, _vault.current_tick_index, _a2b);
     <b>let</b> remaining_amount = _amount;
     <b>let</b> current_sqrt_price = _vault.current_sqrt_price;
-    <b>while</b> (remaining_amount &gt; 0) {
-        <b>if</b> (current_sqrt_price != _sqrt_price_limit) {
-            <b>assert</b>!(<a href="option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
-            <b>let</b> (<a href="tick.md#0xc8_tick">tick</a>, tick_score) = <a href="tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
-                &_vault.tick_manager,
-                <a href="option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(&next_score),
-                _a2b
-            );
-            next_score = tick_score;
-            <b>let</b> tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(<a href="tick.md#0xc8_tick">tick</a>);
-            <b>let</b> tick_sqrt_price = <b>if</b> (_a2b) {
-                <a href="math_u128.md#0xc8_math_u128_max">math_u128::max</a>(_sqrt_price_limit, <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>))
+    <b>while</b> (remaining_amount &gt; 0 && current_sqrt_price != _sqrt_price_limit) {
+        <b>assert</b>!(!<a href="option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
+        <b>let</b> (<a href="tick.md#0xc8_tick">tick</a>, tick_score) = <a href="tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
+            &_vault.tick_manager,
+            <a href="option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(&next_score),
+            _a2b
+        );
+        next_score = tick_score;
+        <b>let</b> tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(<a href="tick.md#0xc8_tick">tick</a>);
+        <b>let</b> tick_sqrt_price = <b>if</b> (_a2b) {
+            <a href="math_u128.md#0xc8_math_u128_max">math_u128::max</a>(_sqrt_price_limit, <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>))
+        } <b>else</b> {
+            <a href="math_u128.md#0xc8_math_u128_min">math_u128::min</a>(_sqrt_price_limit, <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>))
+        };
+        <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
+            _vault.current_sqrt_price,
+            tick_sqrt_price,
+            _vault.liquidity,
+            remaining_amount,
+            _a2b,
+            _by_amount_in
+        );
+        <b>if</b> (amount_in != 0 || amount_out != 0) {
+            <b>if</b> (_by_amount_in) {
+                remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_in);
             } <b>else</b> {
-                <a href="math_u128.md#0xc8_math_u128_min">math_u128::min</a>(_sqrt_price_limit, <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>))
+                remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_out);
             };
-            <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
-                _vault.current_sqrt_price,
-                tick_sqrt_price,
-                _vault.liquidity,
-                remaining_amount,
+            <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
+        };
+        <b>if</b> (next_sqrt_price == <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>)) {
+            _vault.current_sqrt_price = tick_sqrt_price;
+            <b>let</b> next_tick = <b>if</b> (_a2b) {
+                <a href="i32.md#0xc8_i32_sub">i32::sub</a>(tick_index, <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(1))
+            } <b>else</b> {
+                tick_index
+            };
+            _vault.current_tick_index = next_tick;
+            _vault.liquidity = <a href="tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(
+                &<b>mut</b> _vault.tick_manager,
+                _vault.current_tick_index,
                 _a2b,
-                _by_amount_in
+                _vault.liquidity
             );
-            <b>if</b> (amount_in != 0 || amount_out != 0) {
-                <b>if</b> (_by_amount_in) {
-                    remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_in);
-                } <b>else</b> {
-                    remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_out);
-                };
-                <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
-            } <b>else</b> {
-                <b>if</b> (next_sqrt_price == <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>)) {
-                    _vault.current_sqrt_price = tick_sqrt_price;
-                    <b>let</b> next_tick = <b>if</b> (_a2b) {
-                        <a href="i32.md#0xc8_i32_sub">i32::sub</a>(tick_index, <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(1))
-                    } <b>else</b> {
-                        tick_index
-                    };
-                    _vault.current_tick_index = next_tick;
-                    _vault.liquidity = <a href="tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(
-                        &<b>mut</b> _vault.tick_manager,
-                        _vault.current_tick_index,
-                        _a2b,
-                        _vault.liquidity
-                    );
-                } <b>else</b> {
-                    <b>if</b> (_vault.current_sqrt_price != <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>)) {
-                        _vault.current_sqrt_price = next_sqrt_price;
-                        _vault.current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
-                    }
-                };
-            };
-        }
+        } <b>else</b> {
+            <b>if</b> (_vault.current_sqrt_price != <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>)) {
+                _vault.current_sqrt_price = next_sqrt_price;
+                _vault.current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
+            }
+        };
     };
     swap_result
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_position_amounts"></a>
+
+## Function `get_position_amounts`
+
+Read Functions
+Calculate the position's amount_a/amount_b
+Params
+- <code><a href="vault.md#0xc8_vault">vault</a></code> The clmm vault object.
+- <code>_index</code> The index of position.
+Returns
+- <code>amount_a</code> The amount of <code>StableCoinType</code>
+- <code>amount_b</code> The amount of <code>OBC</code>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _round_up: bool): (u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64,
+    _round_up: bool
+): (u64, u64) {
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+        &_vault.position_manager,
+        _index
+    );
+    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
+    <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
+        tick_lower,
+        tick_upper,
+        _vault.current_tick_index,
+        _vault.current_sqrt_price,
+        <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>),
+        _round_up
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_position_liquidity"></a>
+
+## Function `get_position_liquidity`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64
+): u128
+{
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+        &_vault.position_manager,
+        _index
+    );
+    <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_position_tick_range_and_price"></a>
+
+## Function `get_position_tick_range_and_price`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): (<a href="i32.md#0xc8_i32_I32">i32::I32</a>, <a href="i32.md#0xc8_i32_I32">i32::I32</a>, u128, u128)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64
+): (I32, I32, u128, u128)
+{
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+        &_vault.position_manager,
+        _index
+    );
+    <b>let</b> (tick_lower_index, tick_upper_index) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
+    <b>let</b> price_lower = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_lower_index);
+    <b>let</b> price_upper = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_upper_index);
+    (tick_lower_index, tick_upper_index, price_lower, price_upper)
 }
 </code></pre>
 
@@ -1621,7 +1692,6 @@ Returns
 
 ## Function `vault_id`
 
-Read Functions
 vault info
 
 
@@ -1667,6 +1737,30 @@ vault info
 
 </details>
 
+<a name="0xc8_vault_vault_current_tick_index"></a>
+
+## Function `vault_current_tick_index`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="i32.md#0xc8_i32_I32">i32::I32</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): I32 {
+    _vault.current_tick_index
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_balances"></a>
 
 ## Function `balances`
@@ -1687,6 +1781,79 @@ vault info
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;StableCoinType&gt;(&_vault.coin_a),
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&_vault.coin_b)
     )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_liquidity"></a>
+
+## Function `get_liquidity`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity">get_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity">get_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
+    _vault.liquidity
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_vault_state"></a>
+
+## Function `get_vault_state`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8
+{
+    _vault.state
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_obc_required"></a>
+
+## Function `obc_required`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+    ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
 }
 </code></pre>
 
@@ -1766,38 +1933,15 @@ vault info
 
 </details>
 
-<a name="0xc8_vault_obc_required"></a>
+<a name="0xc8_vault_update_state"></a>
 
-## Function `obc_required`
+## Function `update_state`
 
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
-    ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_check_state"></a>
-
-## Function `check_state`
-
+Rebalance
 State checker
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_check_state">check_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u32
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_update_state">update_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1806,30 +1950,30 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_check_state">check_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u32 {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_update_state">update_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;) {
     <b>let</b> price = _vault.current_sqrt_price;
     <b>let</b> last_price = _vault.last_sqrt_price;
     <b>if</b> (price &lt; last_price) {
         // down
-        <b>if</b> (_vault.state == 1) {
+        <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
             // reset counter = 0  & set state = down
             _vault.state_counter = 0;
-            _vault.state = 1;
+            _vault.state = <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
         }
     } <b>else</b> <b>if</b> (price &gt; last_price) {
         // up
-        <b>if</b> (_vault.state == 2) {
+        <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
             // reset counter = 0  & set state = up
             _vault.state_counter = 0;
-            _vault.state = 2;
+            _vault.state = <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
         }
     } <b>else</b> {
         // equal
-        _vault.state = 0;
+        _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
         _vault.state_counter = 0;
     };
 
@@ -1840,7 +1984,6 @@ State checker
         _vault.state,
         _vault.state_counter,
     );
-    _vault.state_counter
 }
 </code></pre>
 
@@ -1868,26 +2011,23 @@ State checker
     _ctx: &<b>mut</b> TxContext
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;, <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;)
 {
-    <b>let</b> position_index = 0u64;
+    <b>let</b> position_index = 1u64;
     <b>let</b> position_number = (_vault.position_number <b>as</b> u64);
     <b>let</b> balance0 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
     <b>let</b> balance1 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;();
     <b>let</b> spacing_times = _vault.spacing_times;
-    <b>while</b> (position_index &lt; position_number) {
+    <b>while</b> (position_index &lt;= position_number) {
         <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         <b>let</b> liquidity_delta = <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>);
-        <b>let</b> (_balance0, _balance1) = <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>(_vault, position_index, liquidity_delta);
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> balance0, _balance0);
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> balance1, _balance1);
+        <b>if</b> (liquidity_delta != 0) {
+            <b>let</b> (_balance0, _balance1) = <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>(_vault, position_index, liquidity_delta);
+            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> balance0, _balance0);
+            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> balance1, _balance1);
+        };
         <a href="position.md#0xc8_position_close_position">position::close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
+        position_index = position_index + 1;
     };
-    <a href="vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
-    <b>let</b> ticks = <a href="tick.md#0xc8_tick_get_ticks">tick::get_ticks</a>(
-        &_vault.tick_manager,
-        _vault.current_tick_index,
-        _vault.spacing_times,
-        _vault.position_number
-    );
+    <b>let</b> ticks = <a href="vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
     (balance0, balance1, ticks)
 }
 </code></pre>
@@ -1902,7 +2042,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;): u128
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;): u128
 </code></pre>
 
 
@@ -1912,7 +2052,7 @@ State checker
 
 
 <pre><code><b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ticks: &<a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;
 ): u128
 {
@@ -1940,7 +2080,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;, _shape: u8): <a href="">vector</a>&lt;u128&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;, _shape: u8): <a href="">vector</a>&lt;u128&gt;
 </code></pre>
 
 
@@ -1949,12 +2089,12 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ticks: &<a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;,
     _shape: u8
 ): <a href="">vector</a>&lt;u128&gt; {
-    /// base point <a href="position.md#0xc8_position">position</a> liquidity
+    // base point <a href="position.md#0xc8_position">position</a> liquidity
     <b>let</b> liquidity = <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>(_vault, _ticks);
     <b>let</b> liquidities = <a href="_empty">vector::empty</a>&lt;u128&gt;();
     <b>let</b> index: u128 ;
@@ -2014,11 +2154,17 @@ State checker
     _liquidities: <a href="">vector</a>&lt;u128&gt;
 )
 {
-    <b>let</b> index = 0;
+    <b>let</b> index = 0u64;
     <b>let</b> length = <a href="_length">vector::length</a>(&_liquidities);
+    <b>let</b> position_length = <a href="position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager);
+    <b>assert</b>!(length == position_length, 1008611);
     <b>let</b> (total_a, total_b) = (0, 0);
     <b>while</b> (index &lt; length) {
-        <b>let</b> receipt = <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>(_vault, index, *<a href="_borrow">vector::borrow</a>(&_liquidities, index));
+        <b>let</b> receipt = <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>(
+            _vault,
+            index + 1, // <a href="position.md#0xc8_position">position</a> index
+            *<a href="_borrow">vector::borrow</a>(&_liquidities, index)
+        );
         <b>let</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> {
             vault_id: _,
             amount_a,
@@ -2076,12 +2222,8 @@ State checker
     <b>let</b> (balance0, balance1, ticks) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
     <b>let</b> shape = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
     <b>if</b> (_vault.state_counter &gt;= _vault.max_counter_times) {
-        <b>if</b> (_vault.state == 1) {
-            shape = <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
-        } <b>else</b> {
-            shape = <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
-        };
-        /// reset state counter
+        shape = _vault.state;
+        // reset state counter
         _vault.state_counter = 0;
     };
     <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(_vault, &ticks, shape);
