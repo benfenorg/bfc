@@ -270,20 +270,20 @@ module obc_system::obc_system {
     }
 
     public fun get_stablecoin_by_obc<StableCoinType>(
-        wrapper: &mut ObcSystemState,
+        wrapper: &ObcSystemState,
         amount: u64,
     ): u64
     {
-        let system_state = load_system_state_mut(wrapper);
+        let system_state = load_system_state(wrapper);
         obc_system_state_inner::get_stablecoin_by_obc<StableCoinType>(system_state, amount)
     }
 
     public fun get_obc_by_stablecoin<StableCoinType>(
-        wrapper: &mut ObcSystemState,
+        wrapper: &ObcSystemState,
         amount: u64,
     ): u64
     {
-        let system_state = load_system_state_mut(wrapper);
+        let system_state = load_system_state(wrapper);
         obc_system_state_inner::get_obc_by_stablecoin<StableCoinType>(system_state, amount)
     }
 

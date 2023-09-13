@@ -190,7 +190,7 @@ module obc_system::obc_system_state_inner {
     }
 
     public(friend) fun get_stablecoin_by_obc<StableCoinType>(
-        self: &mut ObcSystemStateInner,
+        self: &ObcSystemStateInner,
         amount: u64
     ): u64
     {
@@ -198,7 +198,7 @@ module obc_system::obc_system_state_inner {
     }
 
     public(friend) fun get_obc_by_stablecoin<StableCoinType>(
-        self: &mut ObcSystemStateInner,
+        self: &ObcSystemStateInner,
         amount: u64
     ): u64
     {
