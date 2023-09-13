@@ -253,9 +253,9 @@ module obc_system::obc_system {
         obc_system_state_inner::set_voting_period(system_state, manager_key, value);
     }
 
-    public entry fun modify_proposal(wrapper: &mut ObcSystemState, index: u8, clock: &Clock) {
+    public entry fun modify_proposal(wrapper: &mut ObcSystemState, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::modify_proposal(system_state, index, clock);
+        obc_system_state_inner::modify_proposal(system_state, proposal_obj, index, clock);
     }
 
     public entry fun set_voting_quorum_rate(wrapper: &mut ObcSystemState, manager_key: &OBCDaoManageKey, value: u8,){
@@ -279,7 +279,7 @@ module obc_system::obc_system {
         obc_system_state_inner::withdraw_voting(system_state, voting_obc, ctx);
     }
 
-    public entry fun create_voting_obc( wrapper: &mut ObcSystemState,
+    public entry fun create_voting_obc(wrapper: &mut ObcSystemState,
                                  coin: Coin<OBC>,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
@@ -341,7 +341,7 @@ module obc_system::obc_system {
         obc_system_state_inner::deposit_to_treasury(inner_state, coin)
     }
 
-    public fun set_voting_delay(
+    public entry fun set_voting_delay(
         self: &mut ObcSystemState,
         manager_key: &OBCDaoManageKey,
         value: u64,
@@ -350,34 +350,50 @@ module obc_system::obc_system {
         obc_system_state_inner::set_voting_delay(inner_state, manager_key, value);
     }
 
-    entry public fun cast_vote(
+    public entry fun cast_vote(
+        self: &mut ObcSystemState,
         proposal: &mut Proposal,
         coin: VotingObc,
         agreeInt: u8,
         clock: & Clock,
         ctx: &mut TxContext,
-    ) {
-        obc_dao::cast_vote(proposal, coin, agreeInt, clock, ctx);
+    )  {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::cast_vote(inner_state, proposal, coin, agreeInt, clock, ctx);
     }
 
     public entry fun change_vote(
+        self: &mut ObcSystemState,
         my_vote: &mut Vote,
         proposal: &mut Proposal,
         agree: bool,
         clock: & Clock,
         ctx: &mut TxContext,
     ) {
-        obc_dao::change_vote(my_vote, proposal, agree, clock, ctx);
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::change_vote(inner_state, my_vote, proposal, agree, clock, ctx);
+    }
+
+    public entry fun queue_proposal_action(
+        self: &mut ObcSystemState,
+        manager_key: &OBCDaoManageKey,
+        proposal: &mut Proposal,
+        clock: & Clock,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::queue_proposal_action(inner_state, manager_key, proposal, clock);
     }
 
     public entry fun revoke_vote(
+        self: &mut ObcSystemState,
         proposal: &mut Proposal,
         my_vote:  Vote,
         voting_power: u64,
         clock: & Clock,
         ctx: &mut TxContext,
     ) {
-        obc_dao::revoke_vote(proposal, my_vote, voting_power, clock, ctx);
+        let inner_state = load_system_state_mut(self);
+        obc_system_state_inner::revoke_vote(inner_state, proposal, my_vote, voting_power, clock, ctx);
     }
 
     public entry fun unvote_votes(
@@ -391,7 +407,7 @@ module obc_system::obc_system {
 
     public entry fun vote_of(
         vote: &Vote,
-        proposal: &mut Proposal,
+        proposal: &Proposal,
         ctx: &mut TxContext,
     ) {
         obc_dao::vote_of(vote, proposal, ctx);
@@ -399,17 +415,9 @@ module obc_system::obc_system {
 
     public entry fun has_vote(
         vote: &Vote,
-        proposal: &mut Proposal,
+        proposal: &Proposal,
     ) {
         obc_dao::has_vote(vote, proposal);
-    }
-
-    public entry fun queue_proposal_action(
-        manager_key: &OBCDaoManageKey,
-        proposal: &mut Proposal,
-        clock: & Clock,
-    ) {
-        obc_dao::queue_proposal_action(manager_key, proposal, clock);
     }
 
 }
