@@ -180,12 +180,12 @@ module obc_system::obc_system_state_inner {
         treasury::mint<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx);
     }
 
-    public(friend) fun swap_obc_to_stablecoin_return_balance<StableCoinType>(
+    public(friend) fun swap_obc_to_stablecoin_balance<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_obc: Coin<OBC>,
         amount: u64,
         ctx: &mut TxContext,
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): Balance<StableCoinType> {
         treasury::mint_internal<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx)
     }
 
@@ -199,12 +199,12 @@ module obc_system::obc_system_state_inner {
         treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
     }
 
-    public(friend) fun swap_stablecoin_to_obc_return_balance<StableCoinType>(
+    public(friend) fun swap_stablecoin_to_obc_balance<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
         amount: u64,
         ctx: &mut TxContext,
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): Balance<OBC> {
         treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx)
     }
 

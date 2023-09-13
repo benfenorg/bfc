@@ -211,14 +211,13 @@ module obc_system::treasury {
         _amount: u64,
         _ctx: &mut TxContext,
     ) {
-        let (balance_a, balance_b) = mint_internal<StableCoinType>(
+        let balance_a = mint_internal<StableCoinType>(
             _treasury,
             _coin_obc,
             _amount,
             _ctx,
         );
         transfer_or_delete(balance_a, _ctx);
-        transfer_or_delete(balance_b, _ctx);
     }
 
     public(friend) fun mint_internal<StableCoinType>(
@@ -226,9 +225,9 @@ module obc_system::treasury {
         _coin_obc: Coin<OBC>,
         _amount: u64,
         _ctx: &mut TxContext,
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): Balance<StableCoinType> {
         assert!(coin::value<OBC>(&_coin_obc) > 0, ERR_ZERO_AMOUNT);
-        swap_internal<StableCoinType>(
+        let (balance_a, balance_b) = swap_internal<StableCoinType>(
             _treasury,
             false,
             coin::zero<StableCoinType>(_ctx),
@@ -236,7 +235,9 @@ module obc_system::treasury {
             _amount,
             true,
             _ctx,
-        )
+        );
+        transfer_or_delete(balance_b, _ctx);
+        balance_a
     }
 
     /// Burn swap stablecoin to obc
@@ -247,13 +248,12 @@ module obc_system::treasury {
         _ctx: &mut TxContext,
     ) {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
-        let (balance_a, balance_b) = redeem_internal<StableCoinType>(
+        let balance_b = redeem_internal<StableCoinType>(
             _treasury,
             _coin_sc,
             _amount,
             _ctx,
         );
-        transfer_or_delete(balance_a, _ctx);
         transfer_or_delete(balance_b, _ctx);
     }
 
@@ -262,9 +262,9 @@ module obc_system::treasury {
         _coin_sc: Coin<StableCoinType>,
         _amount: u64,
         _ctx: &mut TxContext,
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): Balance<OBC> {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
-        swap_internal<StableCoinType>(
+        let (balance_a, balance_b)  =swap_internal<StableCoinType>(
             _treasury,
             true,
             _coin_sc,
@@ -272,7 +272,9 @@ module obc_system::treasury {
             _amount,
             true,
             _ctx,
-        )
+        );
+        transfer_or_delete(balance_a, _ctx);
+        balance_b
     }
 
     /// Burn swap stablecoin to obc
