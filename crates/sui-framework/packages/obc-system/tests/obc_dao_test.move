@@ -1,7 +1,5 @@
 module obc_system::obc_dao_test {
     #[test_only]
-    use std::ascii::string;
-    #[test_only]
     use sui::clock;
     #[test_only]
     use obc_system::obc_dao::{Dao, getOBCDaoActionId, Proposal, Vote, modify_proposal_obj};
@@ -15,10 +13,6 @@ module obc_system::obc_dao_test {
     use sui::obc::OBC;
     #[test_only]
     use obc_system::voting_pool::VotingObc;
-
-    #[test_only]
-    //use sui::transfer;
-
 
 
     /// Proposal state
@@ -44,8 +38,6 @@ module obc_system::obc_dao_test {
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"create dao"));
-
             let admins = vector[owner];
             obc_dao::create_dao_and_share(admins, test_scenario::ctx( &mut scenario_val));
             //transfer::share_object(dao);
@@ -55,8 +47,6 @@ module obc_system::obc_dao_test {
         //set new delay, votingPeriod, quorum, min_action_delay
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"change dao config"));
-
 
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
@@ -98,6 +88,8 @@ module obc_system::obc_dao_test {
         };
 
 
+        let data: vector<u8> = b"hello world";
+        debug::print(&data);
 
 
         test_scenario::end(scenario_val);
@@ -117,7 +109,6 @@ module obc_system::obc_dao_test {
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"create dao"));
             let admins = vector[owner];
             obc_dao::create_dao_and_share(admins, test_scenario::ctx(&mut scenario_val));
             //transfer::share_object(dao);
@@ -125,8 +116,6 @@ module obc_system::obc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"create action, create propose"));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
@@ -139,7 +128,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19,  coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -152,8 +141,6 @@ module obc_system::obc_dao_test {
         //get propose info, get propose status
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"get propose status"));
-
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             obc_dao::proposal_info(&mut p);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -185,16 +172,12 @@ module obc_system::obc_dao_test {
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"create dao"));
-
             let admins = vector[owner,user2];
             obc_dao::create_dao_and_share(admins,test_scenario::ctx(&mut scenario_val));
         };
         //create voting obc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"create voting obc"));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<OBC>(10000000000, test_scenario::ctx(&mut scenario_val));
@@ -210,8 +193,6 @@ module obc_system::obc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"create action, create propose"));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
@@ -224,7 +205,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -236,8 +217,6 @@ module obc_system::obc_dao_test {
         //voting for
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            debug::print(&string(b"voting for"));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
@@ -267,8 +246,6 @@ module obc_system::obc_dao_test {
         //create votingobc agaist for user1
         test_scenario::next_tx(&mut scenario_val, user1);
         {
-            debug::print(&string(b"create voting obc "));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
@@ -279,8 +256,6 @@ module obc_system::obc_dao_test {
         //create votingobc agaist for user2
         test_scenario::next_tx(&mut scenario_val, user2);
         {
-            debug::print(&string(b"voting agaist "));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let coin =  coin::mint_for_testing<OBC>(110000000000, test_scenario::ctx(&mut scenario_val));
@@ -294,8 +269,6 @@ module obc_system::obc_dao_test {
         //voting against : user1
         test_scenario::next_tx(&mut scenario_val, user1);
         {
-            debug::print(&string(b"voting agaist "));
-
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
@@ -322,8 +295,6 @@ module obc_system::obc_dao_test {
         //has vote: true for user1
         test_scenario::next_tx(&mut scenario_val, user1);
         {
-            debug::print(&string(b"has vote  "));
-
             let vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let has = obc_dao::has_vote(&vote, &mut p);
@@ -349,7 +320,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -423,7 +394,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -554,7 +525,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -663,7 +634,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -771,7 +742,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 

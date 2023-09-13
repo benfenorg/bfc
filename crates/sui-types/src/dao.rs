@@ -13,7 +13,7 @@ use serde::Deserialize;
 use crate::SUI_SYSTEM_ADDRESS;
 use serde::Serialize;
 use schemars::JsonSchema;
-use crate::proposal::{OBCDaoAction, ProposalInfo};
+use crate::proposal::{OBCDaoAction, ProposalInfo, ProposalStatus};
 use std::collections::BTreeMap;
 
 pub const DAO_MODULE_NAME: &IdentStr = ident_str!("Dao");
@@ -39,7 +39,7 @@ pub struct Dao  {
     pub action_record: VecMap<u64, OBCDaoAction>,    //actionId -> action address
     pub votes_record: VecMap<u64, u64>,  //pid -> vote count
     pub voting_pool: VotingPool,
-    pub current_proposal_status:  VecMap<u64, u8>,
+    pub current_proposal_status:  VecMap<u64, ProposalStatus>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
@@ -52,7 +52,7 @@ pub struct DaoRPC  {
     pub action_record: BTreeMap<u64, OBCDaoAction>,
     pub votes_record: BTreeMap<u64, u64>,  //pid -> vote count
     pub voting_pool: VotingPool,
-    pub current_proposal_status:  BTreeMap<u64, u8>,
+    pub current_proposal_status:  BTreeMap<u64, ProposalStatus>,
 }
 
 impl DaoRPC {

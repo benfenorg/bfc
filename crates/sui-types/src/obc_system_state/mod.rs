@@ -19,6 +19,7 @@ use crate::base_types::ObjectID;
 use crate::collection_types::VecMap;
 use crate::gas_coin_strategy::GasCoinMap;
 use crate::dao::Dao;
+use crate::proposal::ProposalStatus;
 
 const OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("OBCSystemState");
 
@@ -207,7 +208,7 @@ pub fn get_obc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
     }
 }
 
-pub fn get_obc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, u8>, SuiError> {
+pub fn get_obc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
     let wrapper = get_obc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {

@@ -17,6 +17,12 @@ pub const PROPOSAL_MODULE_NAME: &IdentStr = ident_str!("Proposal");
 pub const PROPOSAL_STRUCT_NAME: &IdentStr = ident_str!("Proposal");
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
+pub struct ProposalStatus{
+    pub version_id : u64,
+    pub status : u8,
+}
+
+#[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
 pub struct OBCDaoAction{
     pub action_id: u64,
     /// Name for the action
@@ -44,6 +50,7 @@ pub struct ProposalInfo{
     pub quorum_votes: u64,
     /// proposal action.
     pub action: OBCDaoAction,
+    version_id: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
