@@ -4,6 +4,8 @@ module obc_system::treasury_test {
     use std::debug;
     use std::vector;
     use std::ascii::string;
+    use obc_system::clmm_math;
+    use obc_system::i32;
     use sui::coin::{Self, Coin};
     use sui::balance;
     use sui::obc::OBC;
@@ -40,8 +42,8 @@ module obc_system::treasury_test {
         };
 
         let position_number = 3;
-        let tick_spacing = 60;
-        let spacing_times = 10;
+        let tick_spacing = 1;
+        let spacing_times = 2;
         let initialize_price = 18446744073709551616; //2 ** 64
         let base_point = 1_000_000_000_000; // 1000 obc
         let max_counter_times = 5;
@@ -118,10 +120,18 @@ module obc_system::treasury_test {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let usd_vault_key = treasury::get_vault_key<USD>();
             let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, usd_vault_key);
-            // obc-amount = base-point ;  price = 1
-            let liquidity = 67171249877264u128;
-            let balance_a = balance::create_for_testing<USD>(base_point);
-            let balance_b = balance::create_for_testing<OBC>(base_point);
+            let upper =  i32::from(1);
+            let lower = i32::sub(upper, i32::from(2));
+            let (liquidity, amount_a, amount_b) = clmm_math::get_liquidity_by_amount(
+                lower,
+                upper,
+                vault::vault_current_tick_index(usd_mut_vault),
+                vault::vault_current_sqrt_price(usd_mut_vault),
+                base_point,
+                false,
+            );
+            let balance_a = balance::create_for_testing<USD>(amount_a);
+            let balance_b = balance::create_for_testing<OBC>(amount_b);
 
             let receipt = vault::add_liquidity<USD>(
                 usd_mut_vault,
