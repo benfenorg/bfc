@@ -610,7 +610,7 @@ module obc_system::obc_dao {
         ctx: &mut TxContext,
     ){
         spec {
-            assume vote.vote.value >= to_revoke;
+            assume vote.vote.principal.value >= to_revoke;
         };
 
         //todo: unlock vote coin or return...
@@ -623,7 +623,7 @@ module obc_system::obc_dao {
             proposal.proposal.against_votes = proposal.proposal.against_votes - to_revoke;
         };
         spec {
-            assert coin::value(reverted_vote) == to_revoke;
+            assert reverted_vote.principal.value == to_revoke;
         };
 
         //reverted_vote
@@ -646,11 +646,15 @@ module obc_system::obc_dao {
         };
 
         let sender = tx_context::sender(ctx);
+
+
         // delete vote.
         let Vote { proposer, id,vid, vote, agree: _ } = vote;
 
 
         object::delete(id);
+
+
 
         // these checks are still required.
         assert!(proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
