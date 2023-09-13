@@ -16,8 +16,13 @@ module obc_system::treasury {
     use obc_system::usd::USD;
     use obc_system::event;
     use obc_system::vault::{Self, Vault};
+    use obc_system::tick_math;
 
     friend obc_system::obc_system_state_inner;
+    #[test_only]
+    friend obc_system::treasury_test;
+    #[test_only]
+    friend obc_system::vault_test;
 
     // === Errors ===
     const ERR_POOL_HAS_REGISTERED: u64 = 100;
@@ -44,7 +49,7 @@ module obc_system::treasury {
             obc_balance: balance::zero<OBC>(),
             supplies: bag::new(ctx),
             index: 0,
-            time_interval: time_interval,
+            time_interval,
             updated_at: 0,
             init: false,
         };
@@ -71,7 +76,7 @@ module obc_system::treasury {
         );
     }
 
-    fun get_vault_key<StableCoinType>(): String {
+    public fun get_vault_key<StableCoinType>(): String {
         type_name::into_string(type_name::get<StableCoinType>())
     }
 
@@ -96,8 +101,10 @@ module obc_system::treasury {
         _supply: Supply<StableCoinType>,
         _position_number: u32,
         _tick_spacing: u32,
+        _spacing_times: u32,
         _initialize_price: u128,
         _base_point: u64,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext
     ) {
@@ -105,9 +112,11 @@ module obc_system::treasury {
             _treasury,
             _supply,
             _tick_spacing,
+            _spacing_times,
             _position_number,
             _initialize_price,
             _base_point,
+            _max_counter_times,
             _ts,
             _ctx,
         );
@@ -121,6 +130,7 @@ module obc_system::treasury {
         _position_number: u32,
         _tick_spacing: u32,
         _spacing_times: u32,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext,
     ) {
@@ -128,13 +138,15 @@ module obc_system::treasury {
             _treasury,
             _supply,
             _tick_spacing,
+            _spacing_times,
             _position_number,
             _initialize_price,
             _base_point,
+            _max_counter_times,
             _ts,
             _ctx,
         );
-        vault::init_positions<StableCoinType>(
+        _ = vault::init_positions<StableCoinType>(
             borrow_mut_vault<StableCoinType>(_treasury, vault_key),
             _spacing_times,
             _ctx,
@@ -146,9 +158,11 @@ module obc_system::treasury {
         _treasury: &mut Treasury,
         _supply: Supply<StableCoinType>,
         _tick_spacing: u32,
+        _spacing_times: u32,
         _position_number: u32,
         _initialize_price: u128,
         _base_point: u64,
+        _max_counter_times: u32,
         _ts: u64,
         _ctx: &mut TxContext
     ): String {
@@ -160,9 +174,11 @@ module obc_system::treasury {
         let new_vault = vault::create_vault<StableCoinType>(
             _treasury.index,
             _tick_spacing,
+            _spacing_times,
             _position_number,
             _initialize_price,
             _base_point,
+            _max_counter_times,
             _ts,
             _ctx,
         );
@@ -181,6 +197,7 @@ module obc_system::treasury {
             into_string(get<StableCoinType>()),
             into_string(get<OBC>()),
             _tick_spacing,
+            _spacing_times,
             _treasury.index,
         );
         vault_key
@@ -188,7 +205,7 @@ module obc_system::treasury {
 
     ///  ======= Swap
     /// Mint swap obc to stablecoin
-    public(friend) entry fun mint<StableCoinType>(
+    public entry fun mint<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_obc: Coin<OBC>,
         _amount: u64,
@@ -201,12 +218,13 @@ module obc_system::treasury {
             coin::zero<StableCoinType>(_ctx),
             _coin_obc,
             _amount,
+            true,
             _ctx,
         );
     }
 
     /// Burn swap stablecoin to obc
-    public(friend) entry fun redeem<StableCoinType>(
+    public entry fun redeem<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_sc: Coin<StableCoinType>,
         _amount: u64,
@@ -219,8 +237,20 @@ module obc_system::treasury {
             _coin_sc,
             coin::zero<OBC>(_ctx),
             _amount,
+            true,
             _ctx,
         );
+    }
+
+    /// Burn swap stablecoin to obc
+    public fun calculate_swap_result<StableCoinType>(
+        _treasury: &Treasury,
+        _a2b: bool,
+        _amount: u64
+    ): u64
+    {
+        let sc_vault = borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>());
+        vault::calculated_swap_result_amount_out(&vault::calculate_swap_result(sc_vault, _a2b, true, _amount))
     }
 
     fun transfer_or_delete<CoinType>(
@@ -241,20 +271,21 @@ module obc_system::treasury {
         _coin_a: Coin<StableCoinType>,
         _coin_b: Coin<OBC>,
         _amount: u64,
+        _by_amount_in: bool,
         _ctx: &mut TxContext,
     ) {
         let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
-        let current_sqrt_price = vault::vault_current_sqrt_price(mut_vault);
+        let sqrt_price_limit= tick_math::get_default_sqrt_price_limit(_a2b);
         let (balance_a, balance_b) = vault::swap<StableCoinType>(
             mut_vault,
             _coin_a,
             _coin_b,
             _a2b,
-            true,
+            _by_amount_in,
             _amount,
             0, // ? unuse
-            current_sqrt_price,
+            sqrt_price_limit,
             _ctx
         );
         transfer_or_delete(balance_a, _ctx);
@@ -308,14 +339,17 @@ module obc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
-
-        // check USD vault stat
-        let usd_mut_v = borrow_mut_vault<USD>(
-            _treasury,
-            get_vault_key<USD>(),
+        let usd_mut_v = dynamic_object_field::borrow_mut<String, Vault<USD>>(
+            &mut _treasury.id,
+            get_vault_key<USD>()
         );
-        let _state_counter = vault::check_state(usd_mut_v);
+        vault::update_state(usd_mut_v);
 
-        // TODO vault rebalance
+        vault::rebalance(
+            usd_mut_v,
+            &mut _treasury.obc_balance,
+            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, get_vault_key<USD>()),
+            _ctx
+        );
     }
 }

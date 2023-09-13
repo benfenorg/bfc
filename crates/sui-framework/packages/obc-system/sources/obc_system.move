@@ -191,6 +191,7 @@ module obc_system::obc_system {
         initialize_price: u128,
         time_interval: u32,
         base_point: u64,
+        max_counter_times: u32,
         chain_start_timestamp_ms: u64,
     ): ObcSystemParameters {
         obc_system_state_inner::obc_system_stat_parameter(
@@ -200,6 +201,7 @@ module obc_system::obc_system {
             initialize_price,
             time_interval,
             base_point,
+            max_counter_times,
             chain_start_timestamp_ms,
         )
     }
@@ -285,25 +287,43 @@ module obc_system::obc_system {
     }
 
     /// X treasury  swap obc to stablecoin
-    public entry fun mint<StableCoinType>(
+    public entry fun swap_obc_to_stablecoin<StableCoinType>(
         wrapper: &mut ObcSystemState,
         coin_obc: Coin<OBC>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::mint<StableCoinType>(system_state, coin_obc, amount, ctx);
+        obc_system_state_inner::swap_obc_to_stablecoin<StableCoinType>(system_state, coin_obc, amount, ctx);
     }
 
     /// X treasury  swap stablecoin to obc
-    public entry fun redeem<StableCoinType>(
+    public entry fun swap_stablecoin_to_obc<StableCoinType>(
         wrapper: &mut ObcSystemState,
         coin_sc: Coin<StableCoinType>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::redeem<StableCoinType>(system_state, coin_sc, amount, ctx);
+        obc_system_state_inner::swap_stablecoin_to_obc<StableCoinType>(system_state, coin_sc, amount, ctx);
+    }
+
+    public fun get_stablecoin_by_obc<StableCoinType>(
+        wrapper: &ObcSystemState,
+        amount: u64,
+    ): u64
+    {
+        let system_state = load_system_state(wrapper);
+        obc_system_state_inner::get_stablecoin_by_obc<StableCoinType>(system_state, amount)
+    }
+
+    public fun get_obc_by_stablecoin<StableCoinType>(
+        wrapper: &ObcSystemState,
+        amount: u64,
+    ): u64
+    {
+        let system_state = load_system_state(wrapper);
+        obc_system_state_inner::get_obc_by_stablecoin<StableCoinType>(system_state, amount)
     }
 
     public fun next_epoch_obc_required(wrapper: &ObcSystemState): u64 {

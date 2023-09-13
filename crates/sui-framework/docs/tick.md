@@ -332,8 +332,10 @@ private fun
 
 <pre><code><b>fun</b> <a href="tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_index: I32): u64 {
     <b>let</b> score = <a href="i32.md#0xc8_i32_as_u32">i32::as_u32</a>(<a href="i32.md#0xc8_i32_add">i32::add</a>(_tick_index, <a href="tick_math.md#0xc8_tick_math_max_tick">tick_math::max_tick</a>()));
-    <b>let</b> bound = <a href="i32.md#0xc8_i32_as_u32">i32::as_u32</a>(<a href="tick_math.md#0xc8_tick_math_max_tick">tick_math::max_tick</a>()) * 2;
-    <b>assert</b>!(score &lt;= bound, <a href="tick.md#0xc8_tick_ERR_TICK_EXCEED_TWICE_MAXIMUM">ERR_TICK_EXCEED_TWICE_MAXIMUM</a>);
+    <b>assert</b>!(
+        score &gt;= 0 && score &lt;= <a href="i32.md#0xc8_i32_as_u32">i32::as_u32</a>(<a href="i32.md#0xc8_i32_mul">i32::mul</a>(<a href="tick_math.md#0xc8_tick_math_max_tick">tick_math::max_tick</a>(), <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(2))),
+        <a href="tick.md#0xc8_tick_ERR_TICK_EXCEED_TWICE_MAXIMUM">ERR_TICK_EXCEED_TWICE_MAXIMUM</a>
+    );
     (score <b>as</b> u64)
 }
 </code></pre>
@@ -497,8 +499,8 @@ add/remove liquidity
     <b>let</b> tick_lower_score = <a href="tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_lower_index);
     <b>let</b> tick_upper_score = <a href="tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_upper_index);
     <b>assert</b>!(
-        !<a href="skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_lower_score) &&
-            !<a href="skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_upper_score),
+        <a href="skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_lower_score) &&
+            <a href="skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_upper_score),
         <a href="tick.md#0xc8_tick_ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY">ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY</a>
     );
     <b>let</b> lower_tick = <a href="skip_list.md#0xc8_skip_list_borrow_mut">skip_list::borrow_mut</a>(&<b>mut</b> _tick_manager.ticks, tick_lower_score);

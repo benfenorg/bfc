@@ -13,19 +13,19 @@ module obc_system::tick {
     use obc_system::tick_math;
 
     #[test_only]
+    use std::ascii::string;
+    #[test_only]
+    use std::debug;
+    #[test_only]
     use obc_system::position;
+    #[test_only]
+    use obc_system::tick_math::get_sqrt_price_at_tick;
     #[test_only]
     use sui::object::{Self, UID};
     #[test_only]
     use sui::transfer;
     #[test_only]
     use sui::tx_context;
-    #[test_only]
-    use std::debug;
-    #[test_only]
-    use std::ascii::string;
-    #[test_only]
-    use obc_system::tick_math::get_sqrt_price_at_tick;
 
     friend obc_system::treasury;
     friend obc_system::vault;
@@ -88,8 +88,10 @@ module obc_system::tick {
 
     fun tick_score(_tick_index: I32): u64 {
         let score = i32::as_u32(i32::add(_tick_index, tick_math::max_tick()));
-        let bound = i32::as_u32(tick_math::max_tick()) * 2;
-        assert!(score <= bound, ERR_TICK_EXCEED_TWICE_MAXIMUM);
+        assert!(
+            score >= 0 && score <= i32::as_u32(i32::mul(tick_math::max_tick(), i32::from_u32(2))),
+            ERR_TICK_EXCEED_TWICE_MAXIMUM
+        );
         (score as u64)
     }
 
@@ -193,8 +195,8 @@ module obc_system::tick {
         let tick_lower_score = tick_score(_tick_lower_index);
         let tick_upper_score = tick_score(_tick_upper_index);
         assert!(
-            !skip_list::contains(&_tick_manager.ticks, tick_lower_score) &&
-                !skip_list::contains(&_tick_manager.ticks, tick_upper_score),
+            skip_list::contains(&_tick_manager.ticks, tick_lower_score) &&
+                skip_list::contains(&_tick_manager.ticks, tick_upper_score),
             ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY
         );
         let lower_tick = skip_list::borrow_mut(&mut _tick_manager.ticks, tick_lower_score);
@@ -325,6 +327,7 @@ module obc_system::tick {
 
     #[test]
     fun test_get_ticks() {
+        let is_debug = false;
         let ctx = tx_context::dummy();
         let tick_spacing: u32 = 60;
         let current_index = tick_math::get_tick_at_sqrt_price(100000000000);
@@ -338,6 +341,12 @@ module obc_system::tick {
 
         let middle_index = tick_math::get_prev_valid_tick_index(current_index, tick_spacing);
         let middle = i32::as_u32(middle_index);
+
+
+        if (is_debug) {
+            debug::print(&ticks);
+            debug::print(&middle_index);
+        };
 
         // check first
         let first = vector::borrow(&ticks, 0);

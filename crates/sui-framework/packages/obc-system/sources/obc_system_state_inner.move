@@ -47,6 +47,7 @@ module obc_system::obc_system_state_inner {
         initialize_price: u128,
         time_interval: u32,
         base_point: u64,
+        max_counter_times: u32,
     }
 
     struct ObcSystemParameters has drop, copy {
@@ -162,6 +163,7 @@ module obc_system::obc_system_state_inner {
             treasury_parameters.position_number,
             treasury_parameters.tick_spacing,
             treasury_parameters.spacing_times,
+            treasury_parameters.max_counter_times,
             parameters.chain_start_timestamp_ms,
             ctx,
         );
@@ -169,7 +171,7 @@ module obc_system::obc_system_state_inner {
     }
 
     /// swap obc to stablecoin
-    public(friend) fun mint<StableCoinType>(
+    public(friend) fun swap_obc_to_stablecoin<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_obc: Coin<OBC>,
         amount: u64,
@@ -179,13 +181,29 @@ module obc_system::obc_system_state_inner {
     }
 
     /// swap stablecoin to obc
-    public(friend) fun redeem<StableCoinType>(
+    public(friend) fun swap_stablecoin_to_obc<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
         treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
+    }
+
+    public(friend) fun get_stablecoin_by_obc<StableCoinType>(
+        self: &ObcSystemStateInner,
+        amount: u64
+    ): u64
+    {
+        treasury::calculate_swap_result<StableCoinType>(&self.treasury, false, amount)
+    }
+
+    public(friend) fun get_obc_by_stablecoin<StableCoinType>(
+        self: &ObcSystemStateInner,
+        amount: u64
+    ): u64
+    {
+        treasury::calculate_swap_result<StableCoinType>(&self.treasury, true, amount)
     }
 
     /// X-treasury
@@ -216,6 +234,7 @@ module obc_system::obc_system_state_inner {
         initialize_price: u128,
         time_interval: u32,
         base_point: u64,
+        max_counter_times: u32,
         chain_start_timestamp_ms: u64,
     ): ObcSystemParameters {
         let treasury_parameters = TreasuryParameters {
@@ -224,6 +243,7 @@ module obc_system::obc_system_state_inner {
             spacing_times,
             initialize_price,
             time_interval,
+            max_counter_times,
             base_point,
         };
         ObcSystemParameters {

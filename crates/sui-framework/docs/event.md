@@ -6,7 +6,7 @@
 
 
 -  [Struct `InitTreasuryEvent`](#0xc8_event_InitTreasuryEvent)
--  [Struct `CreatePoolEvent`](#0xc8_event_CreatePoolEvent)
+-  [Struct `CreateVaultEvent`](#0xc8_event_CreateVaultEvent)
 -  [Struct `OpenPositionEvent`](#0xc8_event_OpenPositionEvent)
 -  [Struct `ClosePositionEvent`](#0xc8_event_ClosePositionEvent)
 -  [Struct `LiquidityEvent`](#0xc8_event_LiquidityEvent)
@@ -59,13 +59,13 @@
 
 </details>
 
-<a name="0xc8_event_CreatePoolEvent"></a>
+<a name="0xc8_event_CreateVaultEvent"></a>
 
-## Struct `CreatePoolEvent`
+## Struct `CreateVaultEvent`
 
 
 
-<pre><code><b>struct</b> <a href="event.md#0xc8_event_CreatePoolEvent">CreatePoolEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_CreateVaultEvent">CreateVaultEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -101,6 +101,12 @@
 </dd>
 <dt>
 <code>tick_spacing: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>spacing_times: u32</code>
 </dt>
 <dd>
 
@@ -446,7 +452,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, vault_key: <a href="_String">ascii::String</a>, coin_type_a: <a href="_String">ascii::String</a>, coin_type_b: <a href="_String">ascii::String</a>, tick_spacing: u32, index: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, vault_key: <a href="_String">ascii::String</a>, coin_type_a: <a href="_String">ascii::String</a>, coin_type_b: <a href="_String">ascii::String</a>, tick_spacing: u32, spacing_times: u32, index: u64)
 </code></pre>
 
 
@@ -461,14 +467,16 @@
     coin_type_a: String,
     coin_type_b: String,
     tick_spacing: u32,
+    spacing_times: u32,
     index: u64,
 ) {
-    emit(<a href="event.md#0xc8_event_CreatePoolEvent">CreatePoolEvent</a> {
+    emit(<a href="event.md#0xc8_event_CreateVaultEvent">CreateVaultEvent</a> {
         vault_id,
         vault_key,
         coin_type_a,
         coin_type_b,
         tick_spacing,
+        spacing_times,
         index,
     })
 }

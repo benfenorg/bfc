@@ -19,6 +19,7 @@
 -  [Function `create_vault_internal`](#0xc8_treasury_create_vault_internal)
 -  [Function `mint`](#0xc8_treasury_mint)
 -  [Function `redeem`](#0xc8_treasury_redeem)
+-  [Function `calculate_swap_result`](#0xc8_treasury_calculate_swap_result)
 -  [Function `transfer_or_delete`](#0xc8_treasury_transfer_or_delete)
 -  [Function `swap_internal`](#0xc8_treasury_swap_internal)
 -  [Function `next_epoch_obc_required`](#0xc8_treasury_next_epoch_obc_required)
@@ -38,6 +39,8 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
+<b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
+<b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
 <b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 </code></pre>
@@ -169,7 +172,7 @@
         obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;(),
         supplies: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_new">bag::new</a>(ctx),
         index: 0,
-        time_interval: time_interval,
+        time_interval,
         updated_at: 0,
         init: <b>false</b>,
     };
@@ -267,7 +270,7 @@
 
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;(): <a href="_String">ascii::String</a>
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;(): <a href="_String">ascii::String</a>
 </code></pre>
 
 
@@ -276,7 +279,7 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;(): String {
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;(): String {
     <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;())
 }
 </code></pre>
@@ -347,7 +350,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_vault">create_vault</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _position_number: u32, _tick_spacing: u32, _initialize_price: u128, _base_point: u64, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_vault">create_vault</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _position_number: u32, _tick_spacing: u32, _spacing_times: u32, _initialize_price: u128, _base_point: u64, _max_counter_times: u32, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -361,8 +364,10 @@
     _supply: Supply&lt;StableCoinType&gt;,
     _position_number: u32,
     _tick_spacing: u32,
+    _spacing_times: u32,
     _initialize_price: u128,
     _base_point: u64,
+    _max_counter_times: u32,
     _ts: u64,
     _ctx: &<b>mut</b> TxContext
 ) {
@@ -370,9 +375,11 @@
         _treasury,
         _supply,
         _tick_spacing,
+        _spacing_times,
         _position_number,
         _initialize_price,
         _base_point,
+        _max_counter_times,
         _ts,
         _ctx,
     );
@@ -389,7 +396,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_init_vault_with_positions">init_vault_with_positions</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _initialize_price: u128, _base_point: u64, _position_number: u32, _tick_spacing: u32, _spacing_times: u32, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_init_vault_with_positions">init_vault_with_positions</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _initialize_price: u128, _base_point: u64, _position_number: u32, _tick_spacing: u32, _spacing_times: u32, _max_counter_times: u32, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -406,6 +413,7 @@
     _position_number: u32,
     _tick_spacing: u32,
     _spacing_times: u32,
+    _max_counter_times: u32,
     _ts: u64,
     _ctx: &<b>mut</b> TxContext,
 ) {
@@ -413,13 +421,15 @@
         _treasury,
         _supply,
         _tick_spacing,
+        _spacing_times,
         _position_number,
         _initialize_price,
         _base_point,
+        _max_counter_times,
         _ts,
         _ctx,
     );
-    <a href="vault.md#0xc8_vault_init_positions">vault::init_positions</a>&lt;StableCoinType&gt;(
+    _ = <a href="vault.md#0xc8_vault_init_positions">vault::init_positions</a>&lt;StableCoinType&gt;(
         <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury, vault_key),
         _spacing_times,
         _ctx,
@@ -438,7 +448,7 @@
 creat vault for ordered A & B
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_create_vault_internal">create_vault_internal</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _tick_spacing: u32, _position_number: u32, _initialize_price: u128, _base_point: u64, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="_String">ascii::String</a>
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_create_vault_internal">create_vault_internal</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _tick_spacing: u32, _spacing_times: u32, _position_number: u32, _initialize_price: u128, _base_point: u64, _max_counter_times: u32, _ts: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="_String">ascii::String</a>
 </code></pre>
 
 
@@ -451,9 +461,11 @@ creat vault for ordered A & B
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _supply: Supply&lt;StableCoinType&gt;,
     _tick_spacing: u32,
+    _spacing_times: u32,
     _position_number: u32,
     _initialize_price: u128,
     _base_point: u64,
+    _max_counter_times: u32,
     _ts: u64,
     _ctx: &<b>mut</b> TxContext
 ): String {
@@ -465,9 +477,11 @@ creat vault for ordered A & B
     <b>let</b> new_vault = <a href="vault.md#0xc8_vault_create_vault">vault::create_vault</a>&lt;StableCoinType&gt;(
         _treasury.index,
         _tick_spacing,
+        _spacing_times,
         _position_number,
         _initialize_price,
         _base_point,
+        _max_counter_times,
         _ts,
         _ctx,
     );
@@ -486,6 +500,7 @@ creat vault for ordered A & B
         into_string(get&lt;StableCoinType&gt;()),
         into_string(get&lt;OBC&gt;()),
         _tick_spacing,
+        _spacing_times,
         _treasury.index,
     );
     vault_key
@@ -504,7 +519,7 @@ creat vault for ordered A & B
 Mint swap obc to stablecoin
 
 
-<pre><code><b>public</b>(<b>friend</b>) entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -513,7 +528,7 @@ Mint swap obc to stablecoin
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _coin_obc: Coin&lt;OBC&gt;,
     _amount: u64,
@@ -526,6 +541,7 @@ Mint swap obc to stablecoin
         <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;StableCoinType&gt;(_ctx),
         _coin_obc,
         _amount,
+        <b>true</b>,
         _ctx,
     );
 }
@@ -542,7 +558,7 @@ Mint swap obc to stablecoin
 Burn swap stablecoin to obc
 
 
-<pre><code><b>public</b>(<b>friend</b>) entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -551,7 +567,7 @@ Burn swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _coin_sc: Coin&lt;StableCoinType&gt;,
     _amount: u64,
@@ -564,8 +580,40 @@ Burn swap stablecoin to obc
         _coin_sc,
         <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;OBC&gt;(_ctx),
         _amount,
+        <b>true</b>,
         _ctx,
     );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_calculate_swap_result"></a>
+
+## Function `calculate_swap_result`
+
+Burn swap stablecoin to obc
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _a2b: bool, _amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(
+    _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _a2b: bool,
+    _amount: u64
+): u64
+{
+    <b>let</b> sc_vault = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;());
+    <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="vault.md#0xc8_vault_calculate_swap_result">vault::calculate_swap_result</a>(sc_vault, _a2b, <b>true</b>, _amount))
 }
 </code></pre>
 
@@ -611,7 +659,7 @@ Burn swap stablecoin to obc
 Internal swap
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_swap_internal">swap_internal</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _a2b: bool, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_swap_internal">swap_internal</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _a2b: bool, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _amount: u64, _by_amount_in: bool, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -626,20 +674,21 @@ Internal swap
     _coin_a: Coin&lt;StableCoinType&gt;,
     _coin_b: Coin&lt;OBC&gt;,
     _amount: u64,
+    _by_amount_in: bool,
     _ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
     <b>let</b> mut_vault = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury, vault_key);
-    <b>let</b> current_sqrt_price = <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault::vault_current_sqrt_price</a>(mut_vault);
+    <b>let</b> sqrt_price_limit= <a href="tick_math.md#0xc8_tick_math_get_default_sqrt_price_limit">tick_math::get_default_sqrt_price_limit</a>(_a2b);
     <b>let</b> (balance_a, balance_b) = <a href="vault.md#0xc8_vault_swap">vault::swap</a>&lt;StableCoinType&gt;(
         mut_vault,
         _coin_a,
         _coin_b,
         _a2b,
-        <b>true</b>,
+        _by_amount_in,
         _amount,
         0, // ? unuse
-        current_sqrt_price,
+        sqrt_price_limit,
         _ctx
     );
     <a href="treasury.md#0xc8_treasury_transfer_or_delete">transfer_or_delete</a>(balance_a, _ctx);
@@ -753,15 +802,18 @@ Rebalance
 
     // <b>update</b> updated_at
     _treasury.updated_at = current_ts;
-
-    // check USD <a href="vault.md#0xc8_vault">vault</a> stat
-    <b>let</b> usd_mut_v = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;USD&gt;(
-        _treasury,
-        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;(),
+    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
+        &<b>mut</b> _treasury.id,
+        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()
     );
-    <b>let</b> _state_counter = <a href="vault.md#0xc8_vault_check_state">vault::check_state</a>(usd_mut_v);
+    <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(usd_mut_v);
 
-    // TODO <a href="vault.md#0xc8_vault">vault</a> rebalance
+    <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
+        usd_mut_v,
+        &<b>mut</b> _treasury.obc_balance,
+        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;USD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()),
+        _ctx
+    );
 }
 </code></pre>
 

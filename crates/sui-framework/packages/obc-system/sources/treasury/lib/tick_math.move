@@ -273,6 +273,14 @@ module obc_system::tick_math {
         get_valid_tick_index(index, tick_spacing, true)
     }
 
+    public fun get_default_sqrt_price_limit(_a2b: bool): u128 {
+        if (_a2b) {
+            min_sqrt_price()
+        } else {
+            max_sqrt_price()
+        }
+    }
+
     #[test]
     fun test_get_sqrt_price_at_tick() {
         // min tick

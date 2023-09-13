@@ -13,13 +13,14 @@ module obc_system::event {
         vaults_id: ID
     }
 
-    // Pool added event
-    struct CreatePoolEvent has copy, drop {
+    // Vault added event
+    struct CreateVaultEvent has copy, drop {
         vault_id: ID,
         vault_key: String,
         coin_type_a: String,
         coin_type_b: String,
         tick_spacing: u32,
+        spacing_times: u32,
         index: u64
     }
 
@@ -85,14 +86,16 @@ module obc_system::event {
         coin_type_a: String,
         coin_type_b: String,
         tick_spacing: u32,
+        spacing_times: u32,
         index: u64,
     ) {
-        emit(CreatePoolEvent {
+        emit(CreateVaultEvent {
             vault_id,
             vault_key,
             coin_type_a,
             coin_type_b,
             tick_spacing,
+            spacing_times,
             index,
         })
     }

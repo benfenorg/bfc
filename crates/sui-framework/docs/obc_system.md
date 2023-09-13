@@ -33,8 +33,10 @@
 -  [Function `set_min_action_delay`](#0xc8_obc_system_set_min_action_delay)
 -  [Function `withdraw_voting`](#0xc8_obc_system_withdraw_voting)
 -  [Function `create_voting_obc`](#0xc8_obc_system_create_voting_obc)
--  [Function `mint`](#0xc8_obc_system_mint)
--  [Function `redeem`](#0xc8_obc_system_redeem)
+-  [Function `swap_obc_to_stablecoin`](#0xc8_obc_system_swap_obc_to_stablecoin)
+-  [Function `swap_stablecoin_to_obc`](#0xc8_obc_system_swap_stablecoin_to_obc)
+-  [Function `get_stablecoin_by_obc`](#0xc8_obc_system_get_stablecoin_by_obc)
+-  [Function `get_obc_by_stablecoin`](#0xc8_obc_system_get_obc_by_stablecoin)
 -  [Function `next_epoch_obc_required`](#0xc8_obc_system_next_epoch_obc_required)
 -  [Function `treasury_balance`](#0xc8_obc_system_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_obc_system_deposit_to_treasury)
@@ -571,7 +573,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, chain_start_timestamp_ms: u64): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, max_counter_times: u32, chain_start_timestamp_ms: u64): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
 </code></pre>
 
 
@@ -587,6 +589,7 @@ Init exchange pool by add obc coin.
     initialize_price: u128,
     time_interval: u32,
     base_point: u64,
+    max_counter_times: u32,
     chain_start_timestamp_ms: u64,
 ): ObcSystemParameters {
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_state_inner::obc_system_stat_parameter</a>(
@@ -596,6 +599,7 @@ Init exchange pool by add obc coin.
         initialize_price,
         time_interval,
         base_point,
+        max_counter_times,
         chain_start_timestamp_ms,
     )
 }
@@ -885,14 +889,14 @@ Init exchange pool by add obc coin.
 
 </details>
 
-<a name="0xc8_obc_system_mint"></a>
+<a name="0xc8_obc_system_swap_obc_to_stablecoin"></a>
 
-## Function `mint`
+## Function `swap_obc_to_stablecoin`
 
 X treasury  swap obc to stablecoin
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_mint">mint</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_obc_to_stablecoin">swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -901,14 +905,14 @@ X treasury  swap obc to stablecoin
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_mint">mint</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_obc_to_stablecoin">swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     coin_obc: Coin&lt;OBC&gt;,
     amount: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_mint">obc_system_state_inner::mint</a>&lt;StableCoinType&gt;(system_state, coin_obc, amount, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_obc_to_stablecoin">obc_system_state_inner::swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(system_state, coin_obc, amount, ctx);
 }
 </code></pre>
 
@@ -916,14 +920,14 @@ X treasury  swap obc to stablecoin
 
 </details>
 
-<a name="0xc8_obc_system_redeem"></a>
+<a name="0xc8_obc_system_swap_stablecoin_to_obc"></a>
 
-## Function `redeem`
+## Function `swap_stablecoin_to_obc`
 
 X treasury  swap stablecoin to obc
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_redeem">redeem</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_stablecoin_to_obc">swap_stablecoin_to_obc</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -932,14 +936,72 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_redeem">redeem</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_stablecoin_to_obc">swap_stablecoin_to_obc</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     coin_sc: Coin&lt;StableCoinType&gt;,
     amount: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_redeem">obc_system_state_inner::redeem</a>&lt;StableCoinType&gt;(system_state, coin_sc, amount, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_obc">obc_system_state_inner::swap_stablecoin_to_obc</a>&lt;StableCoinType&gt;(system_state, coin_sc, amount, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_get_stablecoin_by_obc"></a>
+
+## Function `get_stablecoin_by_obc`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_stablecoin_by_obc">get_stablecoin_by_obc</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_stablecoin_by_obc">get_stablecoin_by_obc</a>&lt;StableCoinType&gt;(
+    wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    amount: u64,
+): u64
+{
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_stablecoin_by_obc">obc_system_state_inner::get_stablecoin_by_obc</a>&lt;StableCoinType&gt;(system_state, amount)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_get_obc_by_stablecoin"></a>
+
+## Function `get_obc_by_stablecoin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_obc_by_stablecoin">get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_obc_by_stablecoin">get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(
+    wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
+    amount: u64,
+): u64
+{
+    <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_obc_by_stablecoin">obc_system_state_inner::get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(system_state, amount)
 }
 </code></pre>
 
