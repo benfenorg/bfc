@@ -430,11 +430,20 @@ module obc_system::obc_dao {
         send_obc_dao_event(manager_key,b"proposal_created");
     }
 
+    fun synchronize_proposal_into_dao(proposal: &Proposal, dao:  &mut Dao) {
+        let flag = vec_map::contains( &dao.proposal_record,&proposal.proposal.pid);
+        if (flag) {
+            vec_map::remove(&mut dao.proposal_record,& proposal.proposal.pid);
+            vec_map::insert(&mut dao.proposal_record,  proposal.proposal.pid, proposal.proposal);
+        }
+    }
+
     /// votes for a proposal.
     /// User can only vote once, then the vote is locked,
     /// which can only be un vote by user after the proposal is expired, or cancelled, or executed.
     /// So think twice before casting vote.
     public fun cast_vote(
+        dao:  &mut Dao,
         proposal: &mut Proposal,
         coin: VotingObc,
         agreeInt: u8,
@@ -483,7 +492,7 @@ module obc_system::obc_dao {
             vote_amount
         };
 
-
+        synchronize_proposal_into_dao(proposal, dao);
         // emit event
         event::emit(
             VoteChangedEvent{
@@ -499,6 +508,7 @@ module obc_system::obc_dao {
 
     /// Let user change their vote during the voting time.
     public fun change_vote(
+        dao:  &mut Dao,
         my_vote: &mut Vote,
         proposal: &mut Proposal,
         agree: bool,
@@ -523,6 +533,8 @@ module obc_system::obc_dao {
         // flip the vote
         if (my_vote.agree != agree) {
             let total_voted = do_flip_vote(my_vote, proposal);
+
+            synchronize_proposal_into_dao(proposal, dao);
             // emit event
             event::emit(
                 VoteChangedEvent{
@@ -551,6 +563,7 @@ module obc_system::obc_dao {
 
     /// Revoke some voting powers from vote on `proposal_id` of `proposer_address`.
     public fun revoke_vote(
+        dao:  &mut Dao,
         proposal: &mut Proposal,
         my_vote:  Vote,
         voting_power: u64,
@@ -572,6 +585,9 @@ module obc_system::obc_dao {
         };
         // revoke vote on proposal
         do_revoke_vote(proposal, &mut my_vote, voting_power,ctx);
+
+        synchronize_proposal_into_dao(proposal, dao);
+
         // emit vote changed event
         event::emit(
             VoteChangedEvent{
@@ -632,7 +648,7 @@ module obc_system::obc_dao {
 
     /// Retrieve back my voted token voted for a proposal.
     public fun unvote_votes(
-        proposal: &mut Proposal,
+        proposal: & Proposal,
         vote: Vote,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -673,7 +689,7 @@ module obc_system::obc_dao {
     }
     public fun vote_of(
         vote: &Vote,
-        proposal: &mut Proposal,
+        proposal: & Proposal,
         ctx: &mut TxContext,
     ){
         assert!(vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
@@ -695,17 +711,19 @@ module obc_system::obc_dao {
 
     public fun has_vote(
         vote: &Vote,
-        proposal: &mut Proposal,
+        proposal: &Proposal,
     ): bool  {
         event::emit(
             BooleanEvent{value:
             vote.proposer == proposal.proposal.proposer && vote.vid == proposal.proposal.pid});
+
         vote.proposer == proposal.proposal.proposer && vote.vid == proposal.proposal.pid
     }
 
 
     /// queue agreed proposal to execute.
     public fun queue_proposal_action(
+        dao:  &mut Dao,
         manager_key: &OBCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
@@ -720,6 +738,7 @@ module obc_system::obc_dao {
         );
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
 
+        synchronize_proposal_into_dao(proposal, dao);
         send_obc_dao_event(manager_key, b"proposal_queued");
     }
 
@@ -800,6 +819,7 @@ module obc_system::obc_dao {
         for_votes: u64,
         against_votes: u64,
     }
+
     public fun proposal_info(
         proposal: &Proposal,
     ) : (u64, u64) {
@@ -815,10 +835,6 @@ module obc_system::obc_dao {
 
         (proposal.proposal.for_votes, proposal.proposal.against_votes)
     }
-
-
-
-
 
     fun generate_next_proposal_id(dao: &mut Dao): u64 {
         let info = &mut dao.info;
@@ -992,69 +1008,7 @@ module obc_system::obc_dao {
         );
     }
 
-    public entry fun modify_lastest_proposal_in_dao(dao: &mut Dao, index : u8, clock: &Clock) {
-        let proposal_record = dao.proposal_record;
-        let size : u64 =  vec_map::size(& proposal_record);
-        if (size == 0) {
-            return
-        };
-        let (_, proposalInfo) =  vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
-        modify_proposal( proposalInfo, index, clock);
-        dao.proposal_record = proposal_record;
-    }
-
-
-    public fun modify_proposal(proposal: &mut ProposalInfo, index : u8, clock: &Clock) {
-        if (index == 1) {
-            // Pending
-            proposal.start_time = clock::timestamp_ms(clock)  + 1000000000;
-        }else if (index == 2) {
-            // active
-            proposal.start_time = clock::timestamp_ms(clock)  - 1000000000;
-            proposal.end_time = clock::timestamp_ms(clock) + 1000000000;
-        } else if (index == 3){
-            //afer voting  Defeated...
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 1;
-            proposal.against_votes = 2;
-        } else if (index == 4) {
-            //afer voting AGREED
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = 0;
-        } else if (index == 5) {
-            // Queued, waiting to execute
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = clock::timestamp_ms(clock)  + 100000000;
-        } else if (index == 6) {
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal.action.action_id = 1;
-        } else if (index == 7) {
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal.action.action_id = 0;
-        };
-    }
-
-    public fun modify_proposal_obj(proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
-
+    public entry fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
         if (index == 1) {
             // Pending
@@ -1102,9 +1056,8 @@ module obc_system::obc_dao {
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
             proposal_obj.proposal.action.action_id = 0;
         };
+        synchronize_proposal_into_dao(proposal_obj, dao);
     }
-
-
 
 
     public fun create_voting_obc(dao: &mut Dao,

@@ -225,12 +225,11 @@ module obc_system::obc_dao_test {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
-            obc_dao::modify_lastest_proposal_in_dao(&mut dao, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
 
             //let amount = voting_pool::voting_obc_amount(&mut vObc);
-            obc_dao::cast_vote(&mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
             //debug::print(&amount);
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
@@ -276,11 +275,10 @@ module obc_system::obc_dao_test {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
-            obc_dao::modify_lastest_proposal_in_dao(&mut dao, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
 
-            obc_dao::cast_vote(&mut p, vObc, 0, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::cast_vote(&mut dao, &mut p, vObc, 0, &clock, test_scenario::ctx(&mut scenario_val));
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -415,14 +413,11 @@ module obc_system::obc_dao_test {
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
             //change status
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
             //change status for dao inside proposal info.
-            obc_dao::modify_lastest_proposal_in_dao(&mut dao, ACTIVE, &clock);
-
-
 
             //let amount = voting_pool::voting_obc_amount(&mut vObc);
-            obc_dao::cast_vote(&mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
             //debug::print(&amount);
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
@@ -446,10 +441,8 @@ module obc_system::obc_dao_test {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status for proposal obj
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
             //change status for dao inside proposal info.
-            obc_dao::modify_lastest_proposal_in_dao(&mut dao, ACTIVE, &clock);
-
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -457,7 +450,7 @@ module obc_system::obc_dao_test {
             assert!(forvote == 200000000000, 0);
             assert!(agaistvote == 0, 0);
 
-            obc_dao::change_vote(&mut vote, &mut p, false, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::change_vote(&mut dao, &mut vote, &mut p, false, &clock, test_scenario::ctx(&mut scenario_val));
 
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
@@ -537,15 +530,17 @@ module obc_system::obc_dao_test {
         //voting for
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+
             let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao,&mut p, ACTIVE, &clock);
 
-            obc_dao::cast_vote(&mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -553,6 +548,7 @@ module obc_system::obc_dao_test {
 
 
             clock::destroy_for_testing(clock);
+            test_scenario::return_shared(dao);
             test_scenario::return_shared(p);
 
 
@@ -560,6 +556,8 @@ module obc_system::obc_dao_test {
         //revoke voting
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+
             let vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
 
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
@@ -567,12 +565,12 @@ module obc_system::obc_dao_test {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
 
             obc_dao::vote_of(&vote, &mut p,test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::revoke_vote(&mut p, vote, 1000000000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::revoke_vote(&mut dao, &mut p, vote, 1000000000, &clock, test_scenario::ctx(&mut scenario_val));
 
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
@@ -580,6 +578,7 @@ module obc_system::obc_dao_test {
             debug::print(&agaistvote);
 
             clock::destroy_for_testing(clock);
+            test_scenario::return_shared(dao);
             test_scenario::return_shared(p);
 
         };
@@ -654,10 +653,9 @@ module obc_system::obc_dao_test {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
-            modify_proposal_obj(&mut p, ACTIVE, &clock);
-            obc_dao::modify_lastest_proposal_in_dao(&mut dao, ACTIVE, &clock);
+            modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
-            obc_dao::cast_vote(&mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
 
             let (forvote, agaistvote) = obc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -681,9 +679,7 @@ module obc_system::obc_dao_test {
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
             //change status
-            modify_proposal_obj(&mut p, AGREED, &clock);
-            obc_dao::modify_lastest_proposal_in_dao(&mut dao, AGREED, &clock);
-
+            modify_proposal_obj(&mut dao, &mut p, AGREED, &clock);
 
             obc_dao::unvote_votes(&mut p, vote, &clock, test_scenario::ctx(&mut scenario_val));
 
@@ -754,14 +750,17 @@ module obc_system::obc_dao_test {
         //other proposal action::queue_proposal_action
         test_scenario::next_tx(&mut scenario_val, owner);
         {
+            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
 
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
-            modify_proposal_obj(&mut p, AGREED, &clock);
-            obc_dao::queue_proposal_action(&key, &mut p, &clock);
+            modify_proposal_obj(&mut dao, &mut p, AGREED, &clock);
+            obc_dao::queue_proposal_action(&mut dao, &key, &mut p, &clock);
+            test_scenario::return_shared(dao);
             test_scenario::return_shared(p);
             test_scenario::return_to_sender(&mut scenario_val, key);
             clock::destroy_for_testing(clock);
@@ -777,7 +776,7 @@ module obc_system::obc_dao_test {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
-            modify_proposal_obj(&mut p, EXTRACTED, &clock);
+            modify_proposal_obj(&mut dao, &mut p, EXTRACTED, &clock);
 
             //obc_dao::queue_proposal_action(&key, &mut p, &clock);
             obc_dao::destroy_terminated_proposal(&mut dao, &key, &mut p, &clock);

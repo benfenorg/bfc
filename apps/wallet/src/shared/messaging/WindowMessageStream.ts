@@ -6,7 +6,7 @@ import { filter, fromEvent, map, share } from 'rxjs';
 import type { Message } from '_messages';
 import type { Observable } from 'rxjs';
 
-export type ClientType = 'sui_in-page' | 'sui_content-script';
+export type ClientType = 'obc_in-page' | 'obc_content-script';
 
 type WindowMessage = {
 	target: ClientType;

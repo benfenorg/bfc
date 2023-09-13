@@ -64,7 +64,7 @@ const name = process.env.APP_NAME || 'OBC Wallet';
 
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
-	'suiWallet:stake': {
+	'obcWallet:stake': {
 		version: '0.0.1';
 		stake: (input: StakeInput) => Promise<void>;
 	};
@@ -128,19 +128,19 @@ export class SuiWallet implements Wallet {
 				version: '1.0.0',
 				on: this.#on,
 			},
-			'sui:signTransactionBlock': {
+			'obc:signTransactionBlock': {
 				version: '1.0.0',
 				signTransactionBlock: this.#signTransactionBlock,
 			},
-			'sui:signAndExecuteTransactionBlock': {
+			'obc:signAndExecuteTransactionBlock': {
 				version: '1.0.0',
 				signAndExecuteTransactionBlock: this.#signAndExecuteTransactionBlock,
 			},
-			'suiWallet:stake': {
+			'obcWallet:stake': {
 				version: '0.0.1',
 				stake: this.#stake,
 			},
-			'sui:signMessage': {
+			'obc:signMessage': {
 				version: '1.0.0',
 				signMessage: this.#signMessage,
 			},
@@ -162,7 +162,7 @@ export class SuiWallet implements Wallet {
 					address,
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
-					features: ['sui:signAndExecuteTransaction'],
+					features: ['obc:signAndExecuteTransaction'],
 				}),
 		);
 	}
@@ -170,7 +170,7 @@ export class SuiWallet implements Wallet {
 	constructor() {
 		this.#events = mitt();
 		this.#accounts = [];
-		this.#messagesStream = new WindowMessageStream('sui_in-page', 'sui_content-script');
+		this.#messagesStream = new WindowMessageStream('obc_in-page', 'obc_content-script');
 		this.#messagesStream.messages.subscribe(({ payload }) => {
 			if (isWalletStatusChangePayload(payload)) {
 				const { network, accounts } = payload;

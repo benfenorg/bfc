@@ -18,6 +18,7 @@ module obc_system::vault_test {
     use obc_system::treasury::Treasury;
     use obc_system::usd::{Self, USD};
     use obc_system::vault;
+    use obc_system::test_utils;
 
     fun setup(
         time_interval: u32,
@@ -101,7 +102,9 @@ module obc_system::vault_test {
 
     #[test]
     public fun test_init_and_rebalance() {
-        let scenario = setup(
+        let owner = @0x0;
+        let scenario_val = test_scenario::begin(owner);
+        test_utils::setup_with_parameters(
             3600 * 4,
             1 << 64,
             1000_000000000,
@@ -109,12 +112,14 @@ module obc_system::vault_test {
             60,
             10,
             5,
-            1008611
+            1008611,
+            &mut scenario_val,
+            owner
         );
-        let c = clock::create_for_testing(test_scenario::ctx(&mut scenario));
+        let c = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
-        let t = test_scenario::take_shared<Treasury>(&scenario);
-        treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
+        let t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario_val));
 
         let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, type_name::into_string(type_name::get<USD>()));
         let (balance0, balance1) = vault::balances<USD>(usd_mut_vault);
@@ -130,7 +135,7 @@ module obc_system::vault_test {
         assert!(amount_a == 1000_000000000, 101);
         test_scenario::return_shared(t);
         clock::destroy_for_testing(c);
-        tearDown(scenario);
+        tearDown(scenario_val);
     }
 
     #[test]

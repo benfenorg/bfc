@@ -28,7 +28,7 @@ export class UnsafeBurnerWalletAdapter implements WalletAdapter {
 		this.#account = new ReadonlyWalletAccount({
 			address: this.#keypair.getPublicKey().toSuiAddress(),
 			chains: ['sui:unknown'],
-			features: ['sui:signAndExecuteTransactionBlock', 'sui:signTransactionBlock'],
+			features: ['obc:signAndExecuteTransactionBlock', 'obc:signTransactionBlock'],
 			publicKey: this.#keypair.getPublicKey().toBytes(),
 		});
 		this.#signer = new RawSigner(this.#keypair, this.#client);

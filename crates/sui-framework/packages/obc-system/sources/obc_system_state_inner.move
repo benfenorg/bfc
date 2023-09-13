@@ -15,7 +15,7 @@ module obc_system::obc_system_state_inner {
     use obc_system::treasury::{Self, Treasury};
     use obc_system::usd::USD;
     use obc_system::obc_dao_manager::{OBCDaoManageKey};
-    use obc_system::obc_dao::{Dao, Proposal, Self};
+    use obc_system::obc_dao::{Dao, Proposal, Self, Vote};
 
     friend obc_system::obc_system;
 
@@ -270,14 +270,14 @@ module obc_system::obc_system_state_inner {
         }
     }
 
-    public fun create_obcdao_action(
+    public(friend) fun create_obcdao_action(
         self: &mut ObcSystemStateInner, _: &OBCDaoManageKey,
         actionName: vector<u8>,
         ctx: &mut TxContext) {
         obc_dao::create_obcdao_action(&mut self.dao, _, actionName, ctx);
     }
 
-    public fun propose(
+    public(friend) fun propose(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
         version_id: u64,
@@ -290,11 +290,11 @@ module obc_system::obc_system_state_inner {
         obc_dao:: propose(&mut self.dao, manager_key, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
-    public fun set_voting_delay(self: &mut ObcSystemStateInner, manager_key: &OBCDaoManageKey, value: u64) {
+    public(friend) fun set_voting_delay(self: &mut ObcSystemStateInner, manager_key: &OBCDaoManageKey, value: u64) {
         obc_dao::set_voting_delay(&mut self.dao, manager_key, value);
     }
 
-    public fun set_voting_period(
+    public(friend) fun set_voting_period(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
         value: u64,
@@ -302,7 +302,7 @@ module obc_system::obc_system_state_inner {
         obc_dao::set_voting_period(&mut self.dao, manager_key, value);
     }
 
-    public fun set_voting_quorum_rate(
+    public(friend) fun set_voting_quorum_rate(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
         value: u8,
@@ -310,7 +310,7 @@ module obc_system::obc_system_state_inner {
         obc_dao::set_voting_quorum_rate(&mut self.dao, manager_key, value);
     }
 
-    public fun set_min_action_delay(
+    public(friend) fun set_min_action_delay(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
         value: u64,
@@ -319,7 +319,7 @@ module obc_system::obc_system_state_inner {
     }
 
 
-    public fun destroy_terminated_proposal(
+    public(friend) fun destroy_terminated_proposal(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
         proposal: &mut Proposal,
@@ -328,7 +328,7 @@ module obc_system::obc_system_state_inner {
         obc_dao::destroy_terminated_proposal(&mut self.dao, manager_key, proposal, clock);
     }
 
-    public fun judge_proposal_state(wrapper: &mut ObcSystemStateInner, current_time: u64) {
+    public(friend) fun judge_proposal_state(wrapper: &mut ObcSystemStateInner, current_time: u64) {
         let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
         if (size == 0) {
@@ -344,16 +344,50 @@ module obc_system::obc_system_state_inner {
         };
     }
 
-    public fun modify_proposal(system_state: &mut ObcSystemStateInner, index: u8, clock: &Clock) {
-        let proposal_record = obc_dao::getProposalRecord(&mut system_state.dao);
-        let size: u64 = vec_map::size(&proposal_record);
-        if (size == 0) {
-            return
-        };
-        let (_, proposalInfo) = vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
-        obc_dao::modify_proposal(proposalInfo, index, clock);
+    public(friend) fun modify_proposal(system_state: &mut ObcSystemStateInner, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
+        obc_dao::modify_proposal_obj(&mut system_state.dao ,proposal_obj, index, clock);
+    }
 
-        obc_dao::setProposalRecord(&mut system_state.dao, proposal_record);
+    public(friend) fun cast_vote(
+        system_state: &mut ObcSystemStateInner,
+        proposal: &mut Proposal,
+        coin: VotingObc,
+        agreeInt: u8,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    ){
+        obc_dao::cast_vote(&mut system_state.dao, proposal, coin, agreeInt, clock, ctx);
+    }
+
+    public(friend) fun change_vote(
+        system_state: &mut ObcSystemStateInner,
+        my_vote: &mut Vote,
+        proposal: &mut Proposal,
+        agree: bool,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    ){
+        obc_dao::change_vote(&mut system_state.dao, my_vote, proposal, agree, clock, ctx);
+    }
+
+    public(friend) fun queue_proposal_action(
+        system_state: &mut ObcSystemStateInner,
+        manager_key: &OBCDaoManageKey,
+        proposal: &mut Proposal,
+        clock: & Clock,
+    ) {
+        obc_dao::queue_proposal_action(&mut system_state.dao, manager_key, proposal, clock);
+    }
+
+    public(friend) fun revoke_vote(
+        system_state: &mut ObcSystemStateInner,
+        proposal: &mut Proposal,
+        my_vote:  Vote,
+        voting_power: u64,
+        clock: & Clock,
+        ctx: &mut TxContext,
+    ) {
+        obc_dao::revoke_vote(&mut system_state.dao, proposal, my_vote, voting_power, clock, ctx);
     }
 
     public fun withdraw_voting(system_state: &mut ObcSystemStateInner,
@@ -362,7 +396,7 @@ module obc_system::obc_system_state_inner {
         obc_dao::withdraw_voting(&mut system_state.dao, voting_obc, ctx);
     }
 
-    public fun create_voting_obc(system_state: &mut ObcSystemStateInner,
+    public(friend) fun create_voting_obc(system_state: &mut ObcSystemStateInner,
                                        coin: Coin<OBC>,
                                        ctx: &mut TxContext) {
         obc_dao::create_voting_obc(&mut system_state.dao, coin, ctx);
