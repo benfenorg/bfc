@@ -11,7 +11,6 @@ module obc_system::obc_system {
 
     use sui::obc::OBC;
     use sui::object::UID;
-    use sui::stable::STABLE;
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
@@ -63,13 +62,10 @@ module obc_system::obc_system {
         obc_system_state_inner::update_round(inner_state, round);
         //exchange all stable to obc.
         obc_system_state_inner::request_exchange_all(inner_state, ctx);
-        // //update inner exchange rate from stable-swap.
-        let stable = coin::zero<STABLE>(ctx);
-        //todo read rate from stable-swap.
-        let rate = 1000000000;
-        obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
+        //update inner exchange rate from stable-swap.
+        let stable = coin::zero<USD>(ctx);
+        obc_system_state_inner::request_update_gas_coin(inner_state, &stable);
         balance::destroy_zero(coin::into_balance(stable));
-
         // X-treasury rebalance
         obc_system_state_inner::rebalance(inner_state, clock, ctx);
 
@@ -99,15 +95,15 @@ module obc_system::obc_system {
     /// Getter of the gas coin exchange pool rate.
     public entry fun request_get_exchange_rate(
         self: &ObcSystemState,
-        stable: &Coin<STABLE>
+        stable: &Coin<USD>
     ): u64 {
         let inner_state = load_system_state(self);
-        obc_system_state_inner::requst_get_exchange_rate<STABLE>(inner_state, stable)
+        obc_system_state_inner::requst_get_exchange_rate<USD>(inner_state, stable)
     }
 
     public entry fun request_add_gas_coin(
         self: &mut ObcSystemState,
-        gas_coin: &Coin<STABLE>,
+        gas_coin: &Coin<USD>,
         rate: u64,
     ) {
         let inner_state = load_system_state_mut(self);
@@ -116,16 +112,15 @@ module obc_system::obc_system {
 
     public entry fun request_update_gas_coin(
         self: &mut ObcSystemState,
-        gas_coin: &Coin<STABLE>,
-        rate: u64,
+        gas_coin: &Coin<USD>,
     ) {
         let inner_state = load_system_state_mut(self);
-        obc_system_state_inner::request_update_gas_coin(inner_state, gas_coin, rate)
+        obc_system_state_inner::request_update_gas_coin(inner_state, gas_coin)
     }
 
     public entry fun request_remove_gas_coin(
         self: &mut ObcSystemState,
-        gas_coin: &Coin<STABLE>,
+        gas_coin: &Coin<USD>,
     ) {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
@@ -134,7 +129,7 @@ module obc_system::obc_system {
     /// Request exchange stable coin to obc.
     public entry fun request_exchange_stable(
         self: &mut ObcSystemState,
-        stable: Coin<STABLE>,
+        stable: Coin<USD>,
         ctx: &mut TxContext,
     ) {
         let balance = request_exchange_stable_no_entry(self, stable, ctx);
@@ -143,7 +138,7 @@ module obc_system::obc_system {
 
     fun request_exchange_stable_no_entry(
         self: &mut ObcSystemState,
-        stable: Coin<STABLE>,
+        stable: Coin<USD>,
         ctx: &mut TxContext,
     ): Balance<OBC> {
         let inner_state = load_system_state_mut(self);
@@ -170,7 +165,7 @@ module obc_system::obc_system {
 
     fun request_withdraw_stable_no_entry(
         self: &mut ObcSystemState,
-    ): Balance<STABLE> {
+    ): Balance<USD> {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::request_withdraw_stable(inner_state)
     }

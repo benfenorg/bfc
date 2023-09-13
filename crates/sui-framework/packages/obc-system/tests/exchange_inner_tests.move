@@ -1,13 +1,13 @@
 #[test_only]
 
 module obc_system::exchange_inner_tests {
+    use obc_system::usd::USD;
     use sui::test_scenario;
     use obc_system::exchange_inner;
     use sui::obc::OBC;
     use sui::balance;
     use sui::coin;
     use sui::test_utils;
-    use sui::stable::STABLE;
     use sui::test_utils::assert_eq;
 
     #[test]
@@ -22,7 +22,7 @@ module obc_system::exchange_inner_tests {
         exchange_inner::add_obc_to_pool(&mut exchange_pool, coin::from_balance(obc, ctx));
         assert!(exchange_inner::get_obc_amount(&exchange_pool) == 10, 100);
         // exchange where rate = 10000
-        let stable = balance::create_for_testing<STABLE>(50000);
+        let stable = balance::create_for_testing<USD>(50000);
         let stable_coin = coin::from_balance(stable, ctx);
         let exchanged = exchange_inner::request_exchange_stable(10000, &mut exchange_pool, stable_coin, ctx);
         assert!(balance::value(&exchanged) == 5, 102);

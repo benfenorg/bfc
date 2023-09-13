@@ -1,6 +1,8 @@
 #[test_only]
 module obc_system::obc_system_tests {
 
+    use obc_system::treasury;
+    use obc_system::treasury::Treasury;
     use sui::object;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
@@ -12,22 +14,30 @@ module obc_system::obc_system_tests {
 
     use obc_system::obc_system;
     use obc_system::obc_system::ObcSystemState;
+    use obc_system::test_utils;
+
 
     #[test]
     fun test_round() {
         let obc_addr = @0x0;
         let scenario_val = test_scenario::begin(obc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, obc_addr);
+        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, &clock, test_scenario::ctx(&mut scenario_val));
+
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-
         create_sui_system_state_for_testing(ctx);
         test_scenario::next_tx(scenario, obc_addr);
         let system_state = test_scenario::take_shared<ObcSystemState>(scenario);
 
-        let clock = clock::create_for_testing(test_scenario::ctx(scenario));
+        // let clock = clock::create_for_testing(test_scenario::ctx(scenario));
         obc_system::obc_round(&mut system_state, &clock, 0,test_scenario::ctx(scenario));
 
         test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
         clock::destroy_for_testing(clock);
         test_scenario::end(scenario_val);
     }
