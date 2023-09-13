@@ -550,7 +550,7 @@ module hello_world::obc_dao {
         ctx: &mut TxContext,
     ){
         spec {
-            assume vote.vote.value >= to_revoke;
+            assume vote.vote.principal.value >= to_revoke;
         };
 
         //todo: unlock vote coin or return...
@@ -563,7 +563,7 @@ module hello_world::obc_dao {
             proposal.proposal.against_votes = proposal.proposal.against_votes - to_revoke;
         };
         spec {
-            assert coin::value(reverted_vote) == to_revoke;
+            assert reverted_vote.principal.value == to_revoke;
         };
 
         //reverted_vote
@@ -1124,6 +1124,10 @@ module hello_world::obc_dao {
 
 
     }
+    spec Dao{
+
+    }
 }
+
 
 
