@@ -15,9 +15,6 @@
 -  [Function `init_positions`](#0xc8_vault_init_positions)
 -  [Function `open_position`](#0xc8_vault_open_position)
 -  [Function `close_position`](#0xc8_vault_close_position)
--  [Function `get_position_amounts`](#0xc8_vault_get_position_amounts)
--  [Function `get_position_liquidity`](#0xc8_vault_get_position_liquidity)
--  [Function `get_position_tick_range_and_price`](#0xc8_vault_get_position_tick_range_and_price)
 -  [Function `add_liquidity_internal`](#0xc8_vault_add_liquidity_internal)
 -  [Function `add_liquidity`](#0xc8_vault_add_liquidity)
 -  [Function `remove_liquidity`](#0xc8_vault_remove_liquidity)
@@ -36,16 +33,19 @@
 -  [Function `repay_flash_swap`](#0xc8_vault_repay_flash_swap)
 -  [Function `flash_swap_internal`](#0xc8_vault_flash_swap_internal)
 -  [Function `swap_in_vault`](#0xc8_vault_swap_in_vault)
+-  [Function `get_position_amounts`](#0xc8_vault_get_position_amounts)
+-  [Function `get_position_liquidity`](#0xc8_vault_get_position_liquidity)
+-  [Function `get_position_tick_range_and_price`](#0xc8_vault_get_position_tick_range_and_price)
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
+-  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
+-  [Function `obc_required`](#0xc8_vault_obc_required)
 -  [Function `min_liquidity_rate`](#0xc8_vault_min_liquidity_rate)
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
 -  [Function `base_liquidity_rate`](#0xc8_vault_base_liquidity_rate)
--  [Function `obc_required`](#0xc8_vault_obc_required)
--  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
 -  [Function `update_state`](#0xc8_vault_update_state)
 -  [Function `rebuild_positions_after_clean_liquidities`](#0xc8_vault_rebuild_positions_after_clean_liquidities)
 -  [Function `get_liquidity_from_base_point`](#0xc8_vault_get_liquidity_from_base_point)
@@ -728,120 +728,6 @@ open <code>position_number</code> positions
         _index
     );
     event::close_position(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _index)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_get_position_amounts"></a>
-
-## Function `get_position_amounts`
-
-Calculate the position's amount_a/amount_b
-Params
-- <code><a href="vault.md#0xc8_vault">vault</a></code> The clmm vault object.
-- <code>position_id</code> The object id of position's NFT.
-Returns
-- <code>amount_a</code> The amount of <code>StableCoinType</code>
-- <code>amount_b</code> The amount of <code>OBC</code>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _round_up: bool): (u64, u64)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64,
-    _round_up: bool
-): (u64, u64) {
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
-        &_vault.position_manager,
-        _index
-    );
-    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
-    <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
-        tick_lower,
-        tick_upper,
-        _vault.current_tick_index,
-        _vault.current_sqrt_price,
-        <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>),
-        _round_up
-    )
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_get_position_liquidity"></a>
-
-## Function `get_position_liquidity`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): u128
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64
-): u128
-{
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
-        &_vault.position_manager,
-        _index
-    );
-    <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_get_position_tick_range_and_price"></a>
-
-## Function `get_position_tick_range_and_price`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): (<a href="i32.md#0xc8_i32_I32">i32::I32</a>, <a href="i32.md#0xc8_i32_I32">i32::I32</a>, u128, u128)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64
-): (I32, I32, u128, u128)
-{
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
-        &_vault.position_manager,
-        _index
-    );
-    <b>let</b> (tick_lower_index, tick_upper_index) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
-    <b>let</b> price_lower = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_lower_index);
-    <b>let</b> price_upper = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_upper_index);
-    (tick_lower_index, tick_upper_index, price_lower, price_upper)
 }
 </code></pre>
 
@@ -1687,11 +1573,125 @@ Returns
 
 </details>
 
+<a name="0xc8_vault_get_position_amounts"></a>
+
+## Function `get_position_amounts`
+
+Read Functions
+Calculate the position's amount_a/amount_b
+Params
+- <code><a href="vault.md#0xc8_vault">vault</a></code> The clmm vault object.
+- <code>_index</code> The index of position.
+Returns
+- <code>amount_a</code> The amount of <code>StableCoinType</code>
+- <code>amount_b</code> The amount of <code>OBC</code>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _round_up: bool): (u64, u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64,
+    _round_up: bool
+): (u64, u64) {
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+        &_vault.position_manager,
+        _index
+    );
+    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
+    <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
+        tick_lower,
+        tick_upper,
+        _vault.current_tick_index,
+        _vault.current_sqrt_price,
+        <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>),
+        _round_up
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_position_liquidity"></a>
+
+## Function `get_position_liquidity`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64
+): u128
+{
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+        &_vault.position_manager,
+        _index
+    );
+    <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_position_tick_range_and_price"></a>
+
+## Function `get_position_tick_range_and_price`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): (<a href="i32.md#0xc8_i32_I32">i32::I32</a>, <a href="i32.md#0xc8_i32_I32">i32::I32</a>, u128, u128)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: u64
+): (I32, I32, u128, u128)
+{
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+        &_vault.position_manager,
+        _index
+    );
+    <b>let</b> (tick_lower_index, tick_upper_index) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
+    <b>let</b> price_lower = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_lower_index);
+    <b>let</b> price_upper = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_upper_index);
+    (tick_lower_index, tick_upper_index, price_lower, price_upper)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_vault_id"></a>
 
 ## Function `vault_id`
 
-Read Functions
 vault info
 
 
@@ -1812,6 +1812,55 @@ vault info
 
 </details>
 
+<a name="0xc8_vault_get_vault_state"></a>
+
+## Function `get_vault_state`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8
+{
+    _vault.state
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_obc_required"></a>
+
+## Function `obc_required`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+    ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_min_liquidity_rate"></a>
 
 ## Function `min_liquidity_rate`
@@ -1884,59 +1933,11 @@ vault info
 
 </details>
 
-<a name="0xc8_vault_obc_required"></a>
-
-## Function `obc_required`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
-    ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_get_vault_state"></a>
-
-## Function `get_vault_state`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8
-{
-    _vault.state
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_vault_update_state"></a>
 
 ## Function `update_state`
 
+Rebalance
 State checker
 
 

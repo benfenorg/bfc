@@ -19,6 +19,7 @@
 -  [Function `create_vault_internal`](#0xc8_treasury_create_vault_internal)
 -  [Function `mint`](#0xc8_treasury_mint)
 -  [Function `redeem`](#0xc8_treasury_redeem)
+-  [Function `calculate_swap_result`](#0xc8_treasury_calculate_swap_result)
 -  [Function `transfer_or_delete`](#0xc8_treasury_transfer_or_delete)
 -  [Function `swap_internal`](#0xc8_treasury_swap_internal)
 -  [Function `next_epoch_obc_required`](#0xc8_treasury_next_epoch_obc_required)
@@ -582,6 +583,37 @@ Burn swap stablecoin to obc
         <b>true</b>,
         _ctx,
     );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_calculate_swap_result"></a>
+
+## Function `calculate_swap_result`
+
+Burn swap stablecoin to obc
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _a2b: bool, _amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(
+    _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _a2b: bool,
+    _amount: u64
+): u64
+{
+    <b>let</b> sc_vault = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;());
+    <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="vault.md#0xc8_vault_calculate_swap_result">vault::calculate_swap_result</a>(sc_vault, _a2b, <b>true</b>, _amount))
 }
 </code></pre>
 
