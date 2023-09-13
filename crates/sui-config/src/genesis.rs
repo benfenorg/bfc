@@ -80,8 +80,8 @@ impl Default for TreasuryParameters {
     fn default() -> Self {
         TreasuryParameters {
             position_numbers: 9,
-            tick_spacing: 60,
-            spacing_times: 10,
+            tick_spacing: 1,
+            spacing_times: 1,
             initialize_price: 2u128.pow(64),
             base_point: 1000_000000000,
             time_interval: 3600 * 4,
