@@ -1,4 +1,5 @@
 module obc_system::obc_system {
+    use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
@@ -61,11 +62,11 @@ module obc_system::obc_system {
         //exchange all stable to obc.
         obc_system_state_inner::request_exchange_all(inner_state, ctx);
         // //update inner exchange rate from stable-swap.
-        // let stable = coin::zero<STABLE>(ctx);
+        let stable = coin::zero<STABLE>(ctx);
         //todo read rate from stable-swap.
-        // let rate = 1000000000;
-        // obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
-        // balance::destroy_zero(coin::into_balance(stable));
+        let rate = 1000000000;
+        obc_system_state_inner::request_update_gas_coin(inner_state, &stable, rate);
+        balance::destroy_zero(coin::into_balance(stable));
 
         // X-treasury rebalance
         obc_system_state_inner::rebalance(inner_state, clock, ctx);

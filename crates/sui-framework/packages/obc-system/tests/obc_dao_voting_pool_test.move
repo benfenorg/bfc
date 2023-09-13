@@ -18,8 +18,6 @@ module obc_system::obc_dao_voting_pool_test{
     #[test_only]
     use sui::test_utils;
 
-    use sui::transfer;
-
 
 
     #[test]

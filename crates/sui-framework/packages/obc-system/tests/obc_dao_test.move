@@ -2,7 +2,7 @@ module obc_system::obc_dao_test {
     #[test_only]
     use sui::clock;
     #[test_only]
-    use obc_system::obc_dao::{Dao, getOBCDaoActionId, Proposal, modify_proposal, Vote, modify_proposal_obj};
+    use obc_system::obc_dao::{Dao, getOBCDaoActionId, Proposal, Vote, modify_proposal_obj};
     #[test_only]
     use std::debug;
     #[test_only]
@@ -13,10 +13,6 @@ module obc_system::obc_dao_test {
     use sui::obc::OBC;
     #[test_only]
     use obc_system::voting_pool::VotingObc;
-
-    #[test_only]
-    use sui::transfer;
-
 
 
     /// Proposal state
