@@ -14,8 +14,8 @@ module obc_system::vault {
     use obc_system::math_u128;
     use obc_system::math_u64;
     use obc_system::option_u64;
-    use obc_system::position::{Self, PositionManager};
-    use obc_system::tick::{Self, TickManager};
+    use obc_system::position::{Self, Position, PositionManager};
+    use obc_system::tick::{Self, Tick, TickManager};
     use obc_system::tick_math;
 
     friend obc_system::treasury;
@@ -758,6 +758,14 @@ module obc_system::vault {
         let price_lower = tick_math::get_sqrt_price_at_tick(tick_lower_index);
         let price_upper = tick_math::get_sqrt_price_at_tick(tick_upper_index);
         (tick_lower_index, tick_upper_index, price_lower, price_upper)
+    }
+
+    public fun fetch_ticks<StableCoinType>(_vault: &Vault<StableCoinType>): vector<Tick> {
+        tick::fetch_ticks(&_vault.tick_manager)
+    }
+
+    public fun fetch_positions<StableCoinType>(_vault: &Vault<StableCoinType>): vector<Position> {
+        position::fetch_positions(&_vault.position_manager, 1, (_vault.position_number as u64))
     }
 
     /// vault info

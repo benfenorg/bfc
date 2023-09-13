@@ -1,6 +1,4 @@
 module obc_system::tick {
-    use std::option;
-    use std::option::Option;
     use std::vector;
 
     use sui::tx_context::TxContext;
@@ -8,7 +6,7 @@ module obc_system::tick {
     use obc_system::i128::{Self, I128};
     use obc_system::i32::{Self, I32};
     use obc_system::math_u128;
-    use obc_system::option_u64::OptionU64;
+    use obc_system::option_u64::{Self, is_some, OptionU64};
     use obc_system::skip_list::{Self, SkipList};
     use obc_system::tick_math;
 
@@ -73,6 +71,38 @@ module obc_system::tick {
 
     public fun tick_spacing(_tick_manager: &TickManager): u32 {
         _tick_manager.tick_spacing
+    }
+
+    public fun fetch_ticks(_tick_manager: &TickManager): vector<Tick> {
+        let _ticks = &_tick_manager.ticks;
+        let ticks = vector::empty<Tick>();
+        if (skip_list::length(_ticks) != 0) {
+            let next_score = &skip_list::head(_ticks);
+            while (is_some(next_score)) {
+                let score = option_u64::borrow(next_score);
+                let node = skip_list::borrow_node(
+                    _ticks,
+                    score,
+                );
+                vector::push_back(&mut ticks, *skip_list::borrow<Tick>(_ticks, score));
+                next_score = &skip_list::next_score(node);
+            };
+        };
+        ticks
+    }
+
+    public(friend) fun borrow_tick_for_swap(
+        _tick_manager: &TickManager,
+        _score: u64,
+        _is_x2y: bool
+    ): (&Tick, OptionU64) {
+        let node = skip_list::borrow_node(&_tick_manager.ticks, _score);
+        let score = if (_is_x2y) {
+            skip_list::prev_score(node)
+        } else {
+            skip_list::next_score(node)
+        };
+        (skip_list::borrow_value(node), score)
     }
 
     /// private fun
@@ -223,29 +253,6 @@ module obc_system::tick {
         if (is_liquidity_changed && upper_tick.liquidity_gross == 0 && _current_tick_index != _tick_lower_index) {
             skip_list::remove(&mut _tick_manager.ticks, tick_upper_score);
         };
-    }
-
-    public(friend) fun try_borrow_tick(_tick_manager: &TickManager, _tick_index: I32): Option<Tick> {
-        let tick_score = tick_score(_tick_index);
-        if (!skip_list::contains(&_tick_manager.ticks, tick_score)) {
-            return option::none<Tick>()
-        };
-        let tick_borrow = skip_list::borrow(&_tick_manager.ticks, tick_score);
-        return option::some(*tick_borrow)
-    }
-
-    public(friend) fun borrow_tick_for_swap(
-        _tick_manager: &TickManager,
-        _score: u64,
-        _is_x2y: bool
-    ): (&Tick, OptionU64) {
-        let node = skip_list::borrow_node(&_tick_manager.ticks, _score);
-        let score = if (_is_x2y) {
-            skip_list::prev_score(node)
-        } else {
-            skip_list::next_score(node)
-        };
-        (skip_list::borrow_value(node), score)
     }
 
     public(friend) fun cross_by_swap(
