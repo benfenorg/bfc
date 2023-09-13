@@ -170,7 +170,7 @@ module obc_system::obc_system_state_inner {
     }
 
     /// swap obc to stablecoin
-    public(friend) fun mint<StableCoinType>(
+    public(friend) fun swap_obc_to_stablecoin<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_obc: Coin<OBC>,
         amount: u64,
@@ -180,13 +180,29 @@ module obc_system::obc_system_state_inner {
     }
 
     /// swap stablecoin to obc
-    public(friend) fun redeem<StableCoinType>(
+    public(friend) fun swap_stablecoin_to_obc<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
         treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
+    }
+
+    public(friend) fun get_stablecoin_by_obc<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        amount: u64
+    ): u64
+    {
+        treasury::calculate_swap_result<StableCoinType>(&self.treasury, false, amount)
+    }
+
+    public(friend) fun get_obc_by_stablecoin<StableCoinType>(
+        self: &mut ObcSystemStateInner,
+        amount: u64
+    ): u64
+    {
+        treasury::calculate_swap_result<StableCoinType>(&self.treasury, true, amount)
     }
 
     /// X-treasury
