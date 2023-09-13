@@ -15,6 +15,7 @@
 -  [Resource `DaoGlobalInfo`](#0xc8_obc_dao_DaoGlobalInfo)
 -  [Struct `DaoConfig`](#0xc8_obc_dao_DaoConfig)
 -  [Resource `Dao`](#0xc8_obc_dao_Dao)
+-  [Struct `ProposalStatus`](#0xc8_obc_dao_ProposalStatus)
 -  [Struct `OBCDaoAction`](#0xc8_obc_dao_OBCDaoAction)
 -  [Struct `ProposalInfo`](#0xc8_obc_dao_ProposalInfo)
 -  [Resource `Proposal`](#0xc8_obc_dao_Proposal)
@@ -512,7 +513,40 @@ Configuration of the <code>Token</code>'s DAO.
 
 </dd>
 <dt>
-<code>current_proposal_status: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, u8&gt;</code>
+<code>current_proposal_status: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;u64, <a href="obc_dao.md#0xc8_obc_dao_ProposalStatus">obc_dao::ProposalStatus</a>&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_obc_dao_ProposalStatus"></a>
+
+## Struct `ProposalStatus`
+
+
+
+<pre><code><b>struct</b> <a href="obc_dao.md#0xc8_obc_dao_ProposalStatus">ProposalStatus</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>version_id: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>status: u8</code>
 </dt>
 <dd>
 
@@ -630,6 +664,12 @@ Configuration of the <code>Token</code>'s DAO.
 </dt>
 <dd>
  proposal action.
+</dd>
+<dt>
+<code>version_id: u64</code>
+</dt>
+<dd>
+ version id.
 </dd>
 </dl>
 
@@ -1063,7 +1103,7 @@ Error codes
 
 
 
-<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 200000000000;
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 1000000000;
 </code></pre>
 
 
@@ -1387,7 +1427,7 @@ propose a proposal.
 <code>action_delay</code>: the delay to execute after the proposal is agreed
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1399,6 +1439,7 @@ propose a proposal.
 <pre><code>entry <b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a> (
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     manager_key: &OBCDaoManageKey,
+    version_id: u64,
     payment: Coin&lt;OBC&gt;,
     action_id: u64,
     action_delay: u64,
@@ -1441,6 +1482,7 @@ propose a proposal.
         action_delay,
         quorum_votes,
         action,
+        version_id,
     };
 
     <b>let</b> proposal = <a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>{
@@ -2910,7 +2952,11 @@ remove terminated proposal from proposer
         <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> dao.current_proposal_status, &proposalInfo.pid);
     };
 
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.current_proposal_status), proposalInfo.pid, curProposalStatus);
+    <b>let</b> proposal_status = <a href="obc_dao.md#0xc8_obc_dao_ProposalStatus">ProposalStatus</a> {
+        version_id : proposalInfo.version_id,
+        status: curProposalStatus,
+    };
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.current_proposal_status), proposalInfo.pid, proposal_status);
 }
 </code></pre>
 

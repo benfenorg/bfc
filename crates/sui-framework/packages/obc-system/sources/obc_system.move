@@ -216,6 +216,7 @@ module obc_system::obc_system {
     entry public fun propose(
         wrapper: &mut ObcSystemState,
         manager_key: &OBCDaoManageKey,
+        version_id : u64,
         payment: Coin<OBC>,
         action_id: u64,
         action_delay: u64,
@@ -223,7 +224,7 @@ module obc_system::obc_system {
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::propose(system_state, manager_key, payment, action_id, action_delay, clock, ctx);
+        obc_system_state_inner::propose(system_state, manager_key, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
     entry public fun create_obcdao_action(

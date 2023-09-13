@@ -108,6 +108,7 @@ use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature,
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::obc_system_state::ObcSystemState;
+use sui_types::proposal::ProposalStatus;
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -612,7 +613,7 @@ pub struct AuthorityState {
     /// Config for state dumping on forks
     debug_dump_config: StateDebugDumpConfig,
 
-    pub proposal_state_map: Mutex<VecMap<u64, u8>>
+    pub proposal_state_map: Mutex<VecMap<u64, ProposalStatus>>
 }
 
 /// The authority state encapsulates all state, drives execution, and ensures safety.
@@ -1147,7 +1148,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
         InnerTemporaryStore,
-        VecMap<u64, u8>,
+        VecMap<u64, ProposalStatus>,
         TransactionEffects,
         Option<ExecutionError>,
     )> {
@@ -3899,7 +3900,8 @@ impl AuthorityState {
         let mut proposal_result = false;
         // todo judge proposal.value
         for proposal in self.proposal_state_map.lock().contents.to_vec() {
-            if proposal.key == version_id && proposal.value == PROPOSAL_EXECUTABLE_STATE {
+
+            if proposal.value.version_id  == version_id && proposal.value.status == PROPOSAL_EXECUTABLE_STATE {
                 proposal_result = true;
             }
         }
@@ -3944,7 +3946,7 @@ impl AuthorityState {
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let mut proposal_result = self.get_proposal_state(version + 1).await;
+        let proposal_result = self.get_proposal_state(version + 1).await;
         info!("===========protocol: {:?} detecting next version:{:?}", version, version+1);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
         if proposal_result == false {
@@ -3953,7 +3955,6 @@ impl AuthorityState {
             next_epoch_protocol_version = epoch_store.protocol_version();
         } else{
             info!("======= system package update, proposal success=======");
-
         };
 
         // since system packages are created during the current epoch, they should abide by the
