@@ -1103,7 +1103,7 @@ Error codes
 
 
 
-<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 1000000000;
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 200000000000;
 </code></pre>
 
 

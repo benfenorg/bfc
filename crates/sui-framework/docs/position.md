@@ -635,8 +635,9 @@ open / close position
 )
 {
     <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="linked_table.md#0xc8_linked_table_remove">linked_table::remove</a>(&<b>mut</b> _manager.positions, _index);
-    <b>assert</b>!(!<a href="position.md#0xc8_position_is_empty">is_empty</a>(&<a href="position.md#0xc8_position">position</a>), <a href="position.md#0xc8_position_ERR_POSITION_INFO_NOT_EMPTY">ERR_POSITION_INFO_NOT_EMPTY</a>);
+    <b>assert</b>!(<a href="position.md#0xc8_position_is_empty">is_empty</a>(&<a href="position.md#0xc8_position">position</a>), <a href="position.md#0xc8_position_ERR_POSITION_INFO_NOT_EMPTY">ERR_POSITION_INFO_NOT_EMPTY</a>);
     <a href="position.md#0xc8_position_destory">destory</a>(<a href="position.md#0xc8_position">position</a>);
+    _manager.position_index = _manager.position_index - 1;
 }
 </code></pre>
 
@@ -661,7 +662,6 @@ add/remove liquidity
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="position.md#0xc8_position_increase_liquidity">increase_liquidity</a>(<a href="position.md#0xc8_position">position</a>: &<b>mut</b> <a href="position.md#0xc8_position_Position">Position</a>, _liquidity_delta: u128): u128 {
-    <b>assert</b>!(!<a href="position.md#0xc8_position_is_empty">is_empty</a>(<a href="position.md#0xc8_position">position</a>), <a href="position.md#0xc8_position_ERR_POSITION_INFO_EMPTY">ERR_POSITION_INFO_EMPTY</a>);
     <b>assert</b>!(<a href="math_u128.md#0xc8_math_u128_add_check">math_u128::add_check</a>(_liquidity_delta, <a href="position.md#0xc8_position">position</a>.liquidity), <a href="position.md#0xc8_position_ERR_U128_ADD_CHECK_FAILED">ERR_U128_ADD_CHECK_FAILED</a>);
     <a href="position.md#0xc8_position">position</a>.liquidity = <a href="position.md#0xc8_position">position</a>.liquidity + _liquidity_delta;
     <a href="position.md#0xc8_position">position</a>.liquidity
@@ -692,7 +692,7 @@ add/remove liquidity
     <b>if</b> (_liquidity_delta == 0) {
         <b>return</b> <a href="position.md#0xc8_position">position</a>.liquidity
     };
-    <b>assert</b>!(<a href="position.md#0xc8_position">position</a>.liquidity &lt; _liquidity_delta, <a href="position.md#0xc8_position_ERR_POSITION_INSUFFICIENT_LIQUIDITY">ERR_POSITION_INSUFFICIENT_LIQUIDITY</a>);
+    <b>assert</b>!(<a href="position.md#0xc8_position">position</a>.liquidity &gt;= _liquidity_delta, <a href="position.md#0xc8_position_ERR_POSITION_INSUFFICIENT_LIQUIDITY">ERR_POSITION_INSUFFICIENT_LIQUIDITY</a>);
     <a href="position.md#0xc8_position">position</a>.liquidity = <a href="position.md#0xc8_position">position</a>.liquidity - _liquidity_delta;
     <a href="position.md#0xc8_position">position</a>.liquidity
 }
