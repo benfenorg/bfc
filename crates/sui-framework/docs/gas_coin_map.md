@@ -267,8 +267,15 @@ Init gas coin map
     gas_coin: &Coin&lt;CoinType&gt;,
     exchange_rate: u64) {
     <b>let</b> id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>&lt;Coin&lt;CoinType&gt;&gt;(gas_coin);
-    <b>let</b> entity = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.active_gas_coins, &id_address);
-    entity.exchange_rate = exchange_rate
+    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.active_gas_coins, &id_address)) {
+        <b>let</b> entity = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.active_gas_coins, &id_address);
+        entity.exchange_rate = exchange_rate
+    }<b>else</b> {
+        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.active_gas_coins, id_address, <a href="gas_coin_map.md#0xc8_gas_coin_map_GasCoinEntity">GasCoinEntity</a> {
+            id_address,
+            exchange_rate,
+        });
+    }
 }
 </code></pre>
 

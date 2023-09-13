@@ -198,7 +198,7 @@ module hello_world::voting_pool {
     }
 
 
-
+    /*
     fun get_obc_amount(exchange_rate: &PoolTokenExchangeRate, token_amount: u64): u64 {
         // When either amount is 0, that means we have no voting with this pool.
         // The other amount might be non-zero when there's dust left in the pool.
@@ -209,7 +209,8 @@ module hello_world::voting_pool {
             * (token_amount as u128)
             / (exchange_rate.pool_token_amount as u128);
         (res as u64)
-    }
+    }*/
+
 
     fun get_token_amount(exchange_rate: &PoolTokenExchangeRate, obc_amount: u64): u64 {
         // When either amount is 0, that means we have no voting with this pool.

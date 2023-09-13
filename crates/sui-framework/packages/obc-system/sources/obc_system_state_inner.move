@@ -1,4 +1,5 @@
 module obc_system::obc_system_state_inner {
+    use obc_system::voting_pool::VotingObc;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
     use sui::coin::Coin;
@@ -271,6 +272,35 @@ module obc_system::obc_system_state_inner {
         obc_dao:: propose(&mut self.dao, manager_key, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
+    public fun set_voting_delay(self: &mut ObcSystemStateInner, manager_key: &OBCDaoManageKey, value: u64) {
+        obc_dao::set_voting_delay(&mut self.dao, manager_key, value);
+    }
+
+    public fun set_voting_period(
+        self: &mut ObcSystemStateInner,
+        manager_key: &OBCDaoManageKey,
+        value: u64,
+    ) {
+        obc_dao::set_voting_period(&mut self.dao, manager_key, value);
+    }
+
+    public fun set_voting_quorum_rate(
+        self: &mut ObcSystemStateInner,
+        manager_key: &OBCDaoManageKey,
+        value: u8,
+    ) {
+        obc_dao::set_voting_quorum_rate(&mut self.dao, manager_key, value);
+    }
+
+    public fun set_min_action_delay(
+        self: &mut ObcSystemStateInner,
+        manager_key: &OBCDaoManageKey,
+        value: u64,
+    ) {
+        obc_dao::set_min_action_delay(&mut self.dao, manager_key, value);
+    }
+
+
     public fun destroy_terminated_proposal(
         self: &mut ObcSystemStateInner,
         manager_key: &OBCDaoManageKey,
@@ -306,5 +336,17 @@ module obc_system::obc_system_state_inner {
         obc_dao::modify_proposal(proposalInfo, index, clock);
 
         obc_dao::setProposalRecord(&mut system_state.dao, proposal_record);
+    }
+
+    public fun withdraw_voting(system_state: &mut ObcSystemStateInner,
+                                       voting_obc: VotingObc,
+                                       ctx: &mut TxContext ) {
+        obc_dao::withdraw_voting(&mut system_state.dao, voting_obc, ctx);
+    }
+
+    public fun create_voting_obc(system_state: &mut ObcSystemStateInner,
+                                       coin: Coin<OBC>,
+                                       ctx: &mut TxContext) {
+        obc_dao::create_voting_obc(&mut system_state.dao, coin, ctx);
     }
 }
