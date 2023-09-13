@@ -201,7 +201,7 @@ module obc_system::obc_system {
         )
     }
 
-    entry public fun destroy_terminated_proposal(
+    public entry fun destroy_terminated_proposal(
         wrapper: &mut ObcSystemState,
         manager_key: &OBCDaoManageKey,
         proposal: &mut Proposal,
@@ -211,7 +211,7 @@ module obc_system::obc_system {
         obc_system_state_inner::destroy_terminated_proposal(system_state, manager_key, proposal, clock);
     }
 
-    entry public fun propose(
+    public entry fun propose(
         wrapper: &mut ObcSystemState,
         manager_key: &OBCDaoManageKey,
         version_id : u64,
@@ -225,7 +225,7 @@ module obc_system::obc_system {
         obc_system_state_inner::propose(system_state, manager_key, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
-    entry public fun create_obcdao_action(
+    public entry fun create_obcdao_action(
         wrapper: &mut ObcSystemState,
         _: &OBCDaoManageKey,
         actionName: vector<u8>,
@@ -234,12 +234,12 @@ module obc_system::obc_system {
         obc_system_state_inner::create_obcdao_action(system_state, _, actionName, ctx);
     }
 
-    entry public fun judge_proposal_state(wrapper: &mut ObcSystemState, current_time: u64) {
+    public entry fun judge_proposal_state(wrapper: &mut ObcSystemState, current_time: u64) {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::judge_proposal_state(system_state, current_time);
     }
 
-    entry public fun modify_proposal(wrapper: &mut ObcSystemState, index: u8, clock: &Clock) {
+    public entry fun modify_proposal(wrapper: &mut ObcSystemState, index: u8, clock: &Clock) {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::modify_proposal(system_state, index, clock);
     }
