@@ -12,6 +12,8 @@ module obc_system::clmm_math {
     const EINVALID_SQRT_PRICE_INPUT: u64 = 1004;
     const EINVALID_FIXED_TOKEN_TYPE: u64 = 1005;
 
+    spec module { pragma verify = false; }
+
     public fun get_liquidity_from_a(
         sqrt_price_0: u128,
         sqrt_price_1: u128,

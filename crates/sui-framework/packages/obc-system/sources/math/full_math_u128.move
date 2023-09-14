@@ -1,4 +1,7 @@
 module obc_system::full_math_u128 {
+
+    spec module { pragma verify = false; }
+
     public fun mul_div_floor(num1: u128, num2: u128, denom: u128): u128 {
         let r = full_mul(num1, num2) / (denom as u256);
         (r as u128)

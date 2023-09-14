@@ -38,12 +38,15 @@ module obc_system::tick {
         ticks: SkipList<Tick>
     }
 
+
     struct Tick has store, copy, drop {
         index: I32,
         sqrt_price: u128,
         liquidity_net: I128,
         liquidity_gross: u128
     }
+
+    spec module { pragma verify = false; }
 
     public(friend) fun create_tick_manager(
         _tick_spacing: u32,

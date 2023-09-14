@@ -1,12 +1,13 @@
 module Chess::game {
     // Part 1: imports
+    //use std::ascii::string;
     use sui::transfer;
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
     use std::vector;
     use std::string;
     use sui::event;
-    use std::debug;
+    //use std::debug;
 
     //use sui::test_scenario;
 
@@ -336,16 +337,17 @@ module Chess::game {
                 event::emit(ChessEvent{
                     name: string::utf8(eventname),
                 });
-                let whiteWin = 200;
-                debug::print(&whiteWin);
+                //let whiteWin = 200;
+                //debug::print(&string(eventname));
             } else {
                 let eventname= b"Black player win";
                 event::emit(ChessEvent{
                     name: string::utf8(eventname),
                 });
 
-                let blackWin = 300;
-                debug::print(&blackWin);
+                //let blackWin = 300;
+                //debug::print(&blackWin);
+                //debug::print(&string(eventname));
             }
         };
     }
@@ -379,6 +381,7 @@ module Chess::game {
     #[test]
     public fun test_chess_init(){
         use sui::test_scenario;
+        use std::debug;
 
         let owner = @0xC0FFEE;
         let user1 = @0xA1;

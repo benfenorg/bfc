@@ -8,6 +8,8 @@ module obc_system::i64 {
     const EQ: u8 = 1;
     const GT: u8 = 2;
 
+    spec module { pragma verify = false; }
+
     struct I64 has copy, drop, store {
         bits: u64
     }
@@ -486,4 +488,6 @@ module obc_system::i64 {
         i = mod(from(2), neg_from(5));
         assert!(cmp(i, from(2)) == EQ, 0);
     }
+
+
 }

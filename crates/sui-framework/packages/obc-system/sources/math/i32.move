@@ -13,6 +13,9 @@ module obc_system::i32 {
     const EQ: u8 = 1;
     const GT: u8 = 2;
 
+
+    spec module { pragma verify = false; }
+
     struct I32 has copy, drop, store {
         bits: u32
     }
@@ -58,6 +61,8 @@ module obc_system::i32 {
     }
 
     public fun wrapping_add(num1: I32, num2: I32): I32 {
+
+
         let sum = num1.bits ^ num2.bits;
         let carry = (num1.bits & num2.bits) << 1;
         while (carry != 0) {
@@ -70,6 +75,7 @@ module obc_system::i32 {
             bits: sum
         }
     }
+
 
     public fun add(num1: I32, num2: I32): I32 {
         let sum = wrapping_add(num1, num2);
@@ -148,6 +154,9 @@ module obc_system::i32 {
             bits: v.bits >> shift
         }
     }
+    spec shr{
+        pragma verify = false; // By default, do not verify specs in this module ...
+    }
 
     public fun mod(v: I32, n: I32): I32 {
         if (sign(v) == 1) {
@@ -164,6 +173,9 @@ module obc_system::i32 {
     public fun sign(v: I32): u8 {
         ((v.bits >> 31) as u8)
     }
+    spec sign{
+        pragma verify = false; // By default, do not verify specs in this module ...
+    }
 
     public fun is_neg(v: I32): bool {
         sign(v) == 1
@@ -178,6 +190,9 @@ module obc_system::i32 {
         } else {
             return LT
         }
+    }
+    spec cmp{
+        pragma verify = false; // By default, do not verify specs in this module ...
     }
 
     public fun eq(num1: I32, num2: I32): bool {
@@ -499,4 +514,7 @@ module obc_system::i32 {
         i = mod(from(2), neg_from(5));
         assert!(cmp(i, from(2)) == EQ, 0);
     }
+
+
 }
+

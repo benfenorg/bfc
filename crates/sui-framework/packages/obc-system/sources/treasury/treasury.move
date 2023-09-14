@@ -25,6 +25,8 @@ module obc_system::treasury {
     friend obc_system::vault_test;
     #[test_only]
     friend obc_system::test_utils;
+    #[test_only]
+    friend obc_system::obc_system_tests;
 
     // === Errors ===
     const ERR_POOL_HAS_REGISTERED: u64 = 100;
@@ -44,6 +46,8 @@ module obc_system::treasury {
         updated_at: u64,
         init: bool,
     }
+
+    //spec module { pragma verify = false; }
 
     // call in obc_system
     public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {

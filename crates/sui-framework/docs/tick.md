@@ -13,20 +13,20 @@
 -  [Function `liquidity_net`](#0xc8_tick_liquidity_net)
 -  [Function `tick_index`](#0xc8_tick_tick_index)
 -  [Function `tick_spacing`](#0xc8_tick_tick_spacing)
+-  [Function `fetch_ticks`](#0xc8_tick_fetch_ticks)
+-  [Function `borrow_tick_for_swap`](#0xc8_tick_borrow_tick_for_swap)
 -  [Function `default`](#0xc8_tick_default)
 -  [Function `tick_score`](#0xc8_tick_tick_score)
 -  [Function `update_by_liquidity`](#0xc8_tick_update_by_liquidity)
 -  [Function `increase_liquidity`](#0xc8_tick_increase_liquidity)
 -  [Function `decrease_liquidity`](#0xc8_tick_decrease_liquidity)
--  [Function `try_borrow_tick`](#0xc8_tick_try_borrow_tick)
--  [Function `borrow_tick_for_swap`](#0xc8_tick_borrow_tick_for_swap)
 -  [Function `cross_by_swap`](#0xc8_tick_cross_by_swap)
 -  [Function `first_score_for_swap`](#0xc8_tick_first_score_for_swap)
 -  [Function `get_ticks`](#0xc8_tick_get_ticks)
+-  [Module Specification](#@Module_Specification_1)
 
 
-<pre><code><b>use</b> <a href="">0x1::option</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<pre><code><b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="i128.md#0xc8_i128">0xc8::i128</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="math_u128.md#0xc8_math_u128">0xc8::math_u128</a>;
@@ -284,6 +284,78 @@ tick info
 
 </details>
 
+<a name="0xc8_tick_fetch_ticks"></a>
+
+## Function `fetch_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick.md#0xc8_tick_fetch_ticks">fetch_ticks</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a>): <a href="">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tick.md#0xc8_tick_fetch_ticks">fetch_ticks</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>): <a href="">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">Tick</a>&gt; {
+    <b>let</b> _ticks = &_tick_manager.ticks;
+    <b>let</b> ticks = <a href="_empty">vector::empty</a>&lt;<a href="tick.md#0xc8_tick_Tick">Tick</a>&gt;();
+    <b>if</b> (<a href="skip_list.md#0xc8_skip_list_length">skip_list::length</a>(_ticks) != 0) {
+        <b>let</b> next_score = &<a href="skip_list.md#0xc8_skip_list_head">skip_list::head</a>(_ticks);
+        <b>while</b> (is_some(next_score)) {
+            <b>let</b> score = <a href="option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(next_score);
+            <b>let</b> node = <a href="skip_list.md#0xc8_skip_list_borrow_node">skip_list::borrow_node</a>(
+                _ticks,
+                score,
+            );
+            <a href="_push_back">vector::push_back</a>(&<b>mut</b> ticks, *<a href="skip_list.md#0xc8_skip_list_borrow">skip_list::borrow</a>&lt;<a href="tick.md#0xc8_tick_Tick">Tick</a>&gt;(_ticks, score));
+            next_score = &<a href="skip_list.md#0xc8_skip_list_next_score">skip_list::next_score</a>(node);
+        };
+    };
+    ticks
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_borrow_tick_for_swap"></a>
+
+## Function `borrow_tick_for_swap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_borrow_tick_for_swap">borrow_tick_for_swap</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a>, _score: u64, _is_x2y: bool): (&<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>, <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_borrow_tick_for_swap">borrow_tick_for_swap</a>(
+    _tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>,
+    _score: u64,
+    _is_x2y: bool
+): (&<a href="tick.md#0xc8_tick_Tick">Tick</a>, OptionU64) {
+    <b>let</b> node = <a href="skip_list.md#0xc8_skip_list_borrow_node">skip_list::borrow_node</a>(&_tick_manager.ticks, _score);
+    <b>let</b> score = <b>if</b> (_is_x2y) {
+        <a href="skip_list.md#0xc8_skip_list_prev_score">skip_list::prev_score</a>(node)
+    } <b>else</b> {
+        <a href="skip_list.md#0xc8_skip_list_next_score">skip_list::next_score</a>(node)
+    };
+    (<a href="skip_list.md#0xc8_skip_list_borrow_value">skip_list::borrow_value</a>(node), score)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_tick_default"></a>
 
 ## Function `default`
@@ -534,69 +606,6 @@ add/remove liquidity
 
 </details>
 
-<a name="0xc8_tick_try_borrow_tick"></a>
-
-## Function `try_borrow_tick`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_try_borrow_tick">try_borrow_tick</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a>, _tick_index: <a href="i32.md#0xc8_i32_I32">i32::I32</a>): <a href="_Option">option::Option</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_try_borrow_tick">try_borrow_tick</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>, _tick_index: I32): Option&lt;<a href="tick.md#0xc8_tick_Tick">Tick</a>&gt; {
-    <b>let</b> tick_score = <a href="tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_index);
-    <b>if</b> (!<a href="skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_score)) {
-        <b>return</b> <a href="_none">option::none</a>&lt;<a href="tick.md#0xc8_tick_Tick">Tick</a>&gt;()
-    };
-    <b>let</b> tick_borrow = <a href="skip_list.md#0xc8_skip_list_borrow">skip_list::borrow</a>(&_tick_manager.ticks, tick_score);
-    <b>return</b> <a href="_some">option::some</a>(*tick_borrow)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_tick_borrow_tick_for_swap"></a>
-
-## Function `borrow_tick_for_swap`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_borrow_tick_for_swap">borrow_tick_for_swap</a>(_tick_manager: &<a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a>, _score: u64, _is_x2y: bool): (&<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>, <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_borrow_tick_for_swap">borrow_tick_for_swap</a>(
-    _tick_manager: &<a href="tick.md#0xc8_tick_TickManager">TickManager</a>,
-    _score: u64,
-    _is_x2y: bool
-): (&<a href="tick.md#0xc8_tick_Tick">Tick</a>, OptionU64) {
-    <b>let</b> node = <a href="skip_list.md#0xc8_skip_list_borrow_node">skip_list::borrow_node</a>(&_tick_manager.ticks, _score);
-    <b>let</b> score = <b>if</b> (_is_x2y) {
-        <a href="skip_list.md#0xc8_skip_list_prev_score">skip_list::prev_score</a>(node)
-    } <b>else</b> {
-        <a href="skip_list.md#0xc8_skip_list_next_score">skip_list::next_score</a>(node)
-    };
-    (<a href="skip_list.md#0xc8_skip_list_borrow_value">skip_list::borrow_value</a>(node), score)
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_tick_cross_by_swap"></a>
 
 ## Function `cross_by_swap`
@@ -727,3 +736,12 @@ add/remove liquidity
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

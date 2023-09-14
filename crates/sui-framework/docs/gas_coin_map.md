@@ -10,12 +10,14 @@
 -  [Constants](#@Constants_0)
 -  [Function `new`](#0xc8_gas_coin_map_new)
 -  [Function `new_default_entity`](#0xc8_gas_coin_map_new_default_entity)
+-  [Function `get_default_rate`](#0xc8_gas_coin_map_get_default_rate)
 -  [Function `new_entity`](#0xc8_gas_coin_map_new_entity)
 -  [Function `map_size`](#0xc8_gas_coin_map_map_size)
 -  [Function `request_add_gas_coin`](#0xc8_gas_coin_map_request_add_gas_coin)
 -  [Function `request_update_gas_coin`](#0xc8_gas_coin_map_request_update_gas_coin)
 -  [Function `requst_get_exchange_rate`](#0xc8_gas_coin_map_requst_get_exchange_rate)
 -  [Function `request_remove_gas_coin`](#0xc8_gas_coin_map_request_remove_gas_coin)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
@@ -157,6 +159,30 @@ Init gas coin map
         id_address,
         exchange_rate:<a href="gas_coin_map.md#0xc8_gas_coin_map_DEFAULT_EXCHANGE_RATE">DEFAULT_EXCHANGE_RATE</a>
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_gas_coin_map_get_default_rate"></a>
+
+## Function `get_default_rate`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0xc8_gas_coin_map_get_default_rate">get_default_rate</a>(): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="gas_coin_map.md#0xc8_gas_coin_map_get_default_rate">get_default_rate</a>():u64 {
+    <a href="gas_coin_map.md#0xc8_gas_coin_map_DEFAULT_EXCHANGE_RATE">DEFAULT_EXCHANGE_RATE</a>
 }
 </code></pre>
 
@@ -337,3 +363,12 @@ Init gas coin map
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>
