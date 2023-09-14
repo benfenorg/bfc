@@ -1,15 +1,15 @@
 #[test_only]
 module obc_system::test_utils {
-    use obc_system::treasury::Treasury;
     use sui::balance;
     use sui::coin;
     use sui::obc::OBC;
-    use obc_system::usd;
-    use obc_system::treasury;
-    use sui::test_scenario;
-    use sui::test_scenario::Scenario;
+    use sui::test_scenario::{Self, Scenario};
     use sui::transfer;
+    use sui::clock;
     use sui::tx_context::TxContext;
+
+    use obc_system::treasury::{Self, Treasury};
+    use obc_system::usd;
 
     friend obc_system::vault_test;
 
@@ -94,5 +94,18 @@ module obc_system::test_utils {
         };
 
         test_scenario::next_tx(scenario_val, owner);
+    }
+
+    public(friend) fun test_rebalance(
+        scenario_val: &mut Scenario,
+    ) {
+        let c = clock::create_for_testing(test_scenario::ctx(scenario_val));
+        clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
+
+        let t = test_scenario::take_shared<Treasury>(scenario_val);
+        treasury::rebalance(&mut t, &c, test_scenario::ctx(scenario_val));
+
+        clock::destroy_for_testing(c);
+        test_scenario::return_shared(t);
     }
 }
