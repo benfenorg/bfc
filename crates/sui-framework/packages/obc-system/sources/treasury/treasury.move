@@ -47,6 +47,8 @@ module obc_system::treasury {
         init: bool,
     }
 
+    //spec module { pragma verify = false; }
+
     // call in obc_system
     public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {

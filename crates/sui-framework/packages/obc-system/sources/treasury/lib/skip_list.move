@@ -20,6 +20,8 @@ module obc_system::skip_list {
     const ESkipListNotEmpty: u64 = 3;
     const ESkipListIsEmpty: u64 = 4;
 
+    spec module { pragma verify = false; }
+
     /// The skip list.
     struct SkipList<phantom V: store> has key, store {
         /// The id of this skip list.

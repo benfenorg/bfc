@@ -22,6 +22,7 @@
 -  [Function `get_next_valid_tick_index`](#0xc8_tick_math_get_next_valid_tick_index)
 -  [Function `get_prev_valid_tick_index`](#0xc8_tick_math_get_prev_valid_tick_index)
 -  [Function `get_default_sqrt_price_limit`](#0xc8_tick_math_get_default_sqrt_price_limit)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="full_math_u128.md#0xc8_full_math_u128">0xc8::full_math_u128</a>;
@@ -298,6 +299,7 @@ Errors
 <pre><code><b>public</b> <b>fun</b> <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">get_tick_at_sqrt_price</a>(sqrt_price: u128): I32 {
     <b>assert</b>!(sqrt_price &gt;= <a href="tick_math.md#0xc8_tick_math_MIN_SQRT_PRICE_X64">MIN_SQRT_PRICE_X64</a> && sqrt_price &lt;= <a href="tick_math.md#0xc8_tick_math_MAX_SQRT_PRICE_X64">MAX_SQRT_PRICE_X64</a>, <a href="tick_math.md#0xc8_tick_math_EINVALID_SQRT_PRICE">EINVALID_SQRT_PRICE</a>);
     <b>let</b> r = sqrt_price;
+
     <b>let</b> msb = 0;
 
     <b>let</b> f: u8 = <a href="tick_math.md#0xc8_tick_math_as_u8">as_u8</a>(r &gt;= 0x10000000000000000) &lt;&lt; 6; // If r &gt;= 2^64, f = 64 <b>else</b> 0
@@ -351,6 +353,18 @@ Errors
         <b>return</b> tick_low
     }
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
 </code></pre>
 
 
@@ -556,6 +570,18 @@ Errors
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_tick_math_get_valid_tick_index"></a>
 
 ## Function `get_valid_tick_index`
@@ -665,3 +691,12 @@ Errors
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

@@ -11,6 +11,8 @@ module obc_system::i128 {
     const EQ: u8 = 1;
     const GT: u8 = 2;
 
+    spec module { pragma verify = false; }
+
     struct I128 has copy, drop, store {
         bits: u128
     }
@@ -528,5 +530,4 @@ module obc_system::i128 {
         assert!((1u128 as u8) == 1u8, 0);
     }
 
-    spec module { pragma verify = false; }
 }

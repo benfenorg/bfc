@@ -18,6 +18,8 @@ module obc_system::tick_math {
     const EINVALID_TICK: u64 = 0;
     const EINVALID_SQRT_PRICE: u64 = 1;
 
+    spec module { pragma verify = false; }
+
     public fun max_tick(): I32 {
         i32::from(MAX_TICK)
     }

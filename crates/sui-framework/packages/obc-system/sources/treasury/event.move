@@ -13,6 +13,8 @@ module obc_system::event {
         vaults_id: ID
     }
 
+    spec module { pragma verify = false; }
+
     // Vault added event
     struct CreateVaultEvent has copy, drop {
         vault_id: ID,

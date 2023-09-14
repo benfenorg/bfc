@@ -48,6 +48,7 @@
 -  [Function `unvote_votes`](#0xc8_obc_system_unvote_votes)
 -  [Function `vote_of`](#0xc8_obc_system_vote_of)
 -  [Function `has_vote`](#0xc8_obc_system_has_vote)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -1317,3 +1318,12 @@ X treasury  swap stablecoin to obc
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

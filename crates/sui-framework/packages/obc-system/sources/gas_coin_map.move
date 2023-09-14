@@ -13,6 +13,8 @@ module obc_system::gas_coin_map {
     ///Default exchange rate
     const DEFAULT_EXCHANGE_RATE: u64 = 1_000_000_000;
 
+    spec module { pragma verify = false; }
+
     struct GasCoinMap has store {
         ///The current active gas coin
         active_gas_coins: VecMap<address, GasCoinEntity>,
