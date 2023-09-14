@@ -996,7 +996,6 @@ module obc_system::obc_dao {
     }
 
     public fun add_admin(
-        _: &OBCDaoManageKey,
         new_admin:address,
         ctx: &mut TxContext,
     ) {
@@ -1120,7 +1119,7 @@ module obc_system::obc_dao {
         //         eta: _,
         //         action_delay: _,
         //         quorum_votes: _,
-        //         action: _
+        //         action: _c
         //         } ,
         //     } = proposal;
         //
@@ -1141,4 +1140,7 @@ module obc_system::obc_dao {
         };
         vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, proposal_status);
     }
+
+    //#[test_only]
+
 }

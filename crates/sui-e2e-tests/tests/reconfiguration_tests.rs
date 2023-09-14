@@ -4,10 +4,12 @@
 use futures::future::join_all;
 use rand::rngs::OsRng;
 use std::collections::{BTreeSet, HashSet};
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
+use move_core_types::account_address::AccountAddress;
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffectsAPI};
+use sui_json_rpc_types::{SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
@@ -23,13 +25,15 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
+use sui_types::transaction::{CallArg, TransactionDataAPI, TransactionExpiration};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::info;
-use sui_json_rpc::api::IndexerApiClient;
+use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
+use sui_sdk::json::{call_args, SuiJsonValue, type_args};
+use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::storage::BackingPackageStore;
-use sui_types::SUI_SYSTEM_PACKAGE_ID;
+use sui_types::{OBC_SYSTEM_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
 #[sim_test]
 async fn advance_epoch_tx_test() {
@@ -497,6 +501,8 @@ async fn test_obc_dao_update_system_package_pass(){
 
 #[sim_test]
 async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -518,6 +524,59 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
 
     let gas = objects.first().unwrap().object().unwrap();
     //let coin = &objects[1].object()?;
+
+
+    // now do the call
+    let module = "obc_system".to_string();
+    let function = "cluster_add_admin".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+
+    let arg = vec![ SuiJsonValue::from_str(&address.to_string())?];
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            arg,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+
+
+
+    info!("============finish add admin");
+
+    // now do the call
+    let module = "obc_system".to_string();
+    let function = "create_obcdao_action".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let arg = vec![ SuiJsonValue::from_str(&package_id.to_string())?,];
+
+
+
+
+
+
     Ok(())
 }
 
