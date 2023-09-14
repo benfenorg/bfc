@@ -16,7 +16,7 @@ module obc_system::vault_test {
     use obc_system::vault;
     use obc_system::test_utils;
 
-    const IS_DEBUG: bool = true;
+    const IS_DEBUG: bool = false;
 
     #[test]
     public fun test_init_and_rebalance() {
