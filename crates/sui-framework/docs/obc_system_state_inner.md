@@ -21,7 +21,9 @@
 -  [Function `init_exchange_pool`](#0xc8_obc_system_state_inner_init_exchange_pool)
 -  [Function `create_treasury`](#0xc8_obc_system_state_inner_create_treasury)
 -  [Function `swap_obc_to_stablecoin`](#0xc8_obc_system_state_inner_swap_obc_to_stablecoin)
+-  [Function `swap_obc_to_stablecoin_balance`](#0xc8_obc_system_state_inner_swap_obc_to_stablecoin_balance)
 -  [Function `swap_stablecoin_to_obc`](#0xc8_obc_system_state_inner_swap_stablecoin_to_obc)
+-  [Function `swap_stablecoin_to_obc_balance`](#0xc8_obc_system_state_inner_swap_stablecoin_to_obc_balance)
 -  [Function `get_stablecoin_by_obc`](#0xc8_obc_system_state_inner_get_stablecoin_by_obc)
 -  [Function `get_obc_by_stablecoin`](#0xc8_obc_system_state_inner_get_obc_by_stablecoin)
 -  [Function `next_epoch_obc_required`](#0xc8_obc_system_state_inner_next_epoch_obc_required)
@@ -38,6 +40,10 @@
 -  [Function `destroy_terminated_proposal`](#0xc8_obc_system_state_inner_destroy_terminated_proposal)
 -  [Function `judge_proposal_state`](#0xc8_obc_system_state_inner_judge_proposal_state)
 -  [Function `modify_proposal`](#0xc8_obc_system_state_inner_modify_proposal)
+-  [Function `cast_vote`](#0xc8_obc_system_state_inner_cast_vote)
+-  [Function `change_vote`](#0xc8_obc_system_state_inner_change_vote)
+-  [Function `queue_proposal_action`](#0xc8_obc_system_state_inner_queue_proposal_action)
+-  [Function `revoke_vote`](#0xc8_obc_system_state_inner_revoke_vote)
 -  [Function `withdraw_voting`](#0xc8_obc_system_state_inner_withdraw_voting)
 -  [Function `create_voting_obc`](#0xc8_obc_system_state_inner_create_voting_obc)
 -  [Module Specification](#@Module_Specification_1)
@@ -603,6 +609,35 @@ swap obc to stablecoin
 
 </details>
 
+<a name="0xc8_obc_system_state_inner_swap_obc_to_stablecoin_balance"></a>
+
+## Function `swap_obc_to_stablecoin_balance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_obc_to_stablecoin_balance">swap_obc_to_stablecoin_balance</a>&lt;StableCoinType&gt;(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_obc_to_stablecoin_balance">swap_obc_to_stablecoin_balance</a>&lt;StableCoinType&gt;(
+    self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    coin_obc: Coin&lt;OBC&gt;,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext,
+): Balance&lt;StableCoinType&gt; {
+    <a href="treasury.md#0xc8_treasury_mint_internal">treasury::mint_internal</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_obc, amount, ctx)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_system_state_inner_swap_stablecoin_to_obc"></a>
 
 ## Function `swap_stablecoin_to_obc`
@@ -626,6 +661,35 @@ swap stablecoin to obc
     ctx: &<b>mut</b> TxContext,
 ) {
     <a href="treasury.md#0xc8_treasury_redeem">treasury::redeem</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_sc, amount, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_swap_stablecoin_to_obc_balance"></a>
+
+## Function `swap_stablecoin_to_obc_balance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_obc_balance">swap_stablecoin_to_obc_balance</a>&lt;StableCoinType&gt;(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_obc_balance">swap_stablecoin_to_obc_balance</a>&lt;StableCoinType&gt;(
+    self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    coin_sc: Coin&lt;StableCoinType&gt;,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext,
+): Balance&lt;OBC&gt; {
+    <a href="treasury.md#0xc8_treasury_redeem_internal">treasury::redeem_internal</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_sc, amount, ctx)
 }
 </code></pre>
 
@@ -841,7 +905,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -850,7 +914,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">create_obcdao_action</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, _: &OBCDaoManageKey,
     actionName: <a href="">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext) {
@@ -868,7 +932,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -877,7 +941,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">propose</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
     version_id: u64,
@@ -901,7 +965,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_delay">set_voting_delay</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_delay">set_voting_delay</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u64)
 </code></pre>
 
 
@@ -910,7 +974,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_delay">set_voting_delay</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, manager_key: &OBCDaoManageKey, value: u64) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_delay">set_voting_delay</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, manager_key: &OBCDaoManageKey, value: u64) {
     <a href="obc_dao.md#0xc8_obc_dao_set_voting_delay">obc_dao::set_voting_delay</a>(&<b>mut</b> self.dao, manager_key, value);
 }
 </code></pre>
@@ -925,7 +989,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_period">set_voting_period</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_period">set_voting_period</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u64)
 </code></pre>
 
 
@@ -934,7 +998,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_period">set_voting_period</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_period">set_voting_period</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
     value: u64,
@@ -953,7 +1017,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_quorum_rate">set_voting_quorum_rate</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u8)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_quorum_rate">set_voting_quorum_rate</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u8)
 </code></pre>
 
 
@@ -962,7 +1026,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_quorum_rate">set_voting_quorum_rate</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_voting_quorum_rate">set_voting_quorum_rate</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
     value: u8,
@@ -981,7 +1045,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_min_action_delay">set_min_action_delay</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_min_action_delay">set_min_action_delay</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u64)
 </code></pre>
 
 
@@ -990,7 +1054,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_min_action_delay">set_min_action_delay</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_set_min_action_delay">set_min_action_delay</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
     value: u64,
@@ -1009,7 +1073,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
 </code></pre>
 
 
@@ -1018,7 +1082,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_destroy_terminated_proposal">destroy_terminated_proposal</a>(
     self: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     manager_key: &OBCDaoManageKey,
     proposal: &<b>mut</b> Proposal,
@@ -1038,7 +1102,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, current_time: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, current_time: u64)
 </code></pre>
 
 
@@ -1047,7 +1111,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, current_time: u64) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, current_time: u64) {
     <b>let</b> proposal_record = <a href="obc_dao.md#0xc8_obc_dao_getProposalRecord">obc_dao::getProposalRecord</a>(&<b>mut</b> wrapper.dao);
     <b>let</b> size: u64 = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&proposal_record);
     <b>if</b> (size == 0) {
@@ -1074,7 +1138,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, proposal_obj: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
 </code></pre>
 
 
@@ -1083,16 +1147,130 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
-    <b>let</b> proposal_record = <a href="obc_dao.md#0xc8_obc_dao_getProposalRecord">obc_dao::getProposalRecord</a>(&<b>mut</b> system_state.dao);
-    <b>let</b> size: u64 = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&proposal_record);
-    <b>if</b> (size == 0) {
-        <b>return</b>
-    };
-    <b>let</b> (_, proposalInfo) = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx_mut">vec_map::get_entry_by_idx_mut</a>(&<b>mut</b> proposal_record, size - 1);
-    <a href="obc_dao.md#0xc8_obc_dao_modify_proposal">obc_dao::modify_proposal</a>(proposalInfo, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, proposal_obj: &<b>mut</b> Proposal, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
+    <a href="obc_dao.md#0xc8_obc_dao_modify_proposal_obj">obc_dao::modify_proposal_obj</a>(&<b>mut</b> system_state.dao ,proposal_obj, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
+}
+</code></pre>
 
-    <a href="obc_dao.md#0xc8_obc_dao_setProposalRecord">obc_dao::setProposalRecord</a>(&<b>mut</b> system_state.dao, proposal_record);
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_cast_vote"></a>
+
+## Function `cast_vote`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_cast_vote">cast_vote</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>, agreeInt: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_cast_vote">cast_vote</a>(
+    system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    proposal: &<b>mut</b> Proposal,
+    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: VotingObc,
+    agreeInt: u8,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
+    ctx: &<b>mut</b> TxContext,
+){
+    <a href="obc_dao.md#0xc8_obc_dao_cast_vote">obc_dao::cast_vote</a>(&<b>mut</b> system_state.dao, proposal, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, agreeInt, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_change_vote"></a>
+
+## Function `change_vote`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_change_vote">change_vote</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, my_vote: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Vote">obc_dao::Vote</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, agree: bool, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_change_vote">change_vote</a>(
+    system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    my_vote: &<b>mut</b> Vote,
+    proposal: &<b>mut</b> Proposal,
+    agree: bool,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
+    ctx: &<b>mut</b> TxContext,
+){
+    <a href="obc_dao.md#0xc8_obc_dao_change_vote">obc_dao::change_vote</a>(&<b>mut</b> system_state.dao, my_vote, proposal, agree, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_queue_proposal_action"></a>
+
+## Function `queue_proposal_action`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_queue_proposal_action">queue_proposal_action</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_queue_proposal_action">queue_proposal_action</a>(
+    system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    manager_key: &OBCDaoManageKey,
+    proposal: &<b>mut</b> Proposal,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
+) {
+    <a href="obc_dao.md#0xc8_obc_dao_queue_proposal_action">obc_dao::queue_proposal_action</a>(&<b>mut</b> system_state.dao, manager_key, proposal, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_revoke_vote"></a>
+
+## Function `revoke_vote`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_revoke_vote">revoke_vote</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, proposal: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Proposal">obc_dao::Proposal</a>, my_vote: <a href="obc_dao.md#0xc8_obc_dao_Vote">obc_dao::Vote</a>, voting_power: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_revoke_vote">revoke_vote</a>(
+    system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    proposal: &<b>mut</b> Proposal,
+    my_vote:  Vote,
+    voting_power: u64,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <a href="obc_dao.md#0xc8_obc_dao_revoke_vote">obc_dao::revoke_vote</a>(&<b>mut</b> system_state.dao, proposal, my_vote, voting_power, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -1132,7 +1310,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_voting_obc">create_voting_obc</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_voting_obc">create_voting_obc</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1141,7 +1319,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_voting_obc">create_voting_obc</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_voting_obc">create_voting_obc</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
                                    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;,
                                    ctx: &<b>mut</b> TxContext) {
     <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">obc_dao::create_voting_obc</a>(&<b>mut</b> system_state.dao, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, ctx);

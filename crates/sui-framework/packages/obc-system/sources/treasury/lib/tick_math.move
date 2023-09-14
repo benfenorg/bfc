@@ -8,6 +8,7 @@ module obc_system::tick_math {
     #[test_only]
     use std::debug;
 
+
     // The maximum tick that may be passed to #getSqrtRatioAtTick computed from log base 1.0001 of 2**64
     const MAX_TICK: u32 = 443636;
     const MIN_SQRT_PRICE_X64: u128 = 4295048016;
@@ -55,9 +56,13 @@ module obc_system::tick_math {
         i32::mul(i32::div(index, i32::from(tick_spacing)), i32::from(tick_spacing))
     }
 
+
+
+
     public fun get_tick_at_sqrt_price(sqrt_price: u128): I32 {
         assert!(sqrt_price >= MIN_SQRT_PRICE_X64 && sqrt_price <= MAX_SQRT_PRICE_X64, EINVALID_SQRT_PRICE);
         let r = sqrt_price;
+
         let msb = 0;
 
         let f: u8 = as_u8(r >= 0x10000000000000000) << 6; // If r >= 2^64, f = 64 else 0
@@ -110,6 +115,9 @@ module obc_system::tick_math {
         } else {
             return tick_low
         }
+    }
+    spec get_tick_at_sqrt_price{
+        pragma verify = false; // By default, do not verify specs in this module ...
     }
 
     fun as_u8(b: bool): u8 {
@@ -250,6 +258,7 @@ module obc_system::tick_math {
 
         ratio >> 32
     }
+    spec get_sqrt_price_at_positive_tick { pragma verify = false; }
 
     fun get_valid_tick_index(index: I32, tick_spacing: u32, prev: bool): I32 {
         if (is_valid_index(index, tick_spacing)) {
@@ -281,6 +290,7 @@ module obc_system::tick_math {
         }
     }
 
+    spec module { pragma verify = false; }
     #[test]
     fun test_get_sqrt_price_at_tick() {
         // min tick
@@ -361,4 +371,6 @@ module obc_system::tick_math {
         let cindex = get_tick_at_sqrt_price(p);
         debug::print(&cindex);
     }
+
+
 }

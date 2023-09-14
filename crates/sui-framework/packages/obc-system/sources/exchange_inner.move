@@ -19,6 +19,8 @@ module obc_system::exchange_inner {
     const EZeroAmount: u64 = 2;
     const EOBCZeroAmount: u64 = 3;
     const ELackOfOBC: u64 = 4;
+    const ENotAllowWithdraw: u64 = 5;
+    const ENotAllowDeposit: u64 = 6;
 
 
     struct ExchangePool<phantom STABLE_COIN> has key, store {
@@ -68,6 +70,17 @@ module obc_system::exchange_inner {
     public fun is_active<STABLE_COIN>(pool: &ExchangePool<STABLE_COIN>): bool {
         option::is_some(&pool.activation_epoch)
     }
+    ///Disable activation of pool and return current epoch
+    public(friend) fun dis_activate<STABLE_COIN>(
+        pool: &mut ExchangePool<STABLE_COIN>
+    ): u64 {
+        option::destroy_some(pool.activation_epoch)
+    }
+    public(friend) fun activate<STABLE_COIN>(
+        pool: &mut ExchangePool<STABLE_COIN>,
+        epoch: u64) {
+        pool.activation_epoch = option::some(epoch);
+    }
 
     public(friend) fun get_obc_amount<STABLE_COIN>(pool: &ExchangePool<STABLE_COIN>): u64 {
         pool.obc_balance
@@ -103,29 +116,43 @@ module obc_system::exchange_inner {
         coin::into_balance(result)
     }
 
+    public(friend) fun get_obc_for_exchange_all<STABLE_COIN>(
+        pool: &mut ExchangePool<STABLE_COIN>,
+    ): Balance<OBC> {
+        if(pool.obc_balance > 0) {
+            //set pool active is false
+            pool.obc_balance = 0;
+           balance::withdraw_all(&mut pool.obc_pool)
+        }else {
+            balance::zero<OBC>()
+        }
+    }
     /// Exchange all stable gas coins to default coins
     public(friend) fun request_exchange_all<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
-        ctx: &mut TxContext,
+        stable: Balance<STABLE_COIN>,
     ) {
         assert!(is_active(pool), ENotActivePool);
-        if(pool.stable_token_balance > 0) {
-            // call stable swap interface
-            // let obc = stable_coin::request_swap_obc<CoinType>(coin::from_balance<CoinType>(pool.stable_pool, ctx), ctx);
-            let obc = coin::zero<OBC>(ctx);//pool::swap_token<P,T>(stable_coin::new_dummy<T>(ctx), ctx);
-            // store obc to exchange pool
-            pool.obc_balance = pool.obc_balance + coin::value(&obc);
-            balance::join(&mut pool.obc_pool, coin::into_balance(obc));
-            pool.stable_token_balance = 0;
-        }
+        pool.stable_token_balance = pool.stable_token_balance + balance::value(&stable);
+        balance::join(&mut pool.stable_pool, stable);
     }
 
     /// Withdraw the stable gas coins.
-    public(friend) fun request_withdraw_stable<STABLE_COIN>(
+    public(friend) fun request_withdraw_all_stable<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
     ): Balance<STABLE_COIN> {
+        assert!(!is_active(pool), ENotAllowWithdraw);
         pool.stable_token_balance = 0;
         balance::withdraw_all<STABLE_COIN>(&mut pool.stable_pool)
+    }
+
+    public(friend) fun request_deposit_obc_balance<STABLE_COIN>(
+        pool: &mut ExchangePool<STABLE_COIN>,
+        obc_balance: Balance<OBC>,
+    ) {
+        assert!(!is_active(pool), ENotAllowDeposit);
+        pool.obc_balance = pool.obc_balance + balance::value(&obc_balance);
+        balance::join(&mut pool.obc_pool, obc_balance);
     }
 
 }

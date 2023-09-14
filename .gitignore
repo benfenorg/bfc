@@ -64,3 +64,5 @@ yarn-error.log*
 *.key
 .env
 /.idea/
+*.bpl
+sui_programmability/examples/hello_world/output.bpl

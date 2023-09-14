@@ -3,8 +3,6 @@ module obc_system::obc_dao {
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
     use sui::clock::{Self, Clock};
-
-
     use std::string;
     use sui::event;
     use sui::tx_context::TxContext;
@@ -18,6 +16,15 @@ module obc_system::obc_dao {
     use sui::obc::OBC;
     use sui::balance;
     //use sui::balance::Balance;
+
+    friend obc_system::obc_system;
+    friend obc_system::obc_system_state_inner;
+
+    #[test_only]
+    friend obc_system::obc_dao_test;
+
+    #[test_only]
+    friend obc_system::obc_dao_voting_pool_test;
 
     const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
 
@@ -158,14 +165,11 @@ module obc_system::obc_dao {
         name: string::String,
     }
 
-    public fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
+    public(friend) fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
         dao.proposal_record
     }
-    public fun setProposalRecord(dao : &mut Dao, record : VecMap<u64, ProposalInfo>){
-        dao.proposal_record = record;
-    }
 
-    public fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
+    public(friend) fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
         obcDaoAction.action_id
     }
 
@@ -213,11 +217,8 @@ module obc_system::obc_dao {
         agree: bool,
     }
 
-
-
-
     //functions
-    public fun create_obcdao_action(
+    public(friend) fun create_obcdao_action(
         dao: &mut Dao,
         _: &OBCDaoManageKey,
         actionName:vector<u8>,
@@ -246,7 +247,7 @@ module obc_system::obc_dao {
     }
 
     // Part 3: transfer the OBC Dao object to the sender
-    public fun create_dao(        admins: vector<address>,
+    public(friend) fun create_dao(        admins: vector<address>,
                                   ctx: &mut TxContext ) : Dao {
         // sender address
         //let sender = tx_context::sender(ctx);
@@ -348,12 +349,18 @@ module obc_system::obc_dao {
     }
 
     // create a dao config
-    public fun new_dao_config(
+    fun new_dao_config(
         voting_delay: u64,
         voting_period: u64,
         voting_quorum_rate: u8,
         min_action_delay: u64,
     ): DaoConfig {
+        assert!(voting_delay > 0, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_period> 0, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate > 1, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
+        assert!(min_action_delay > 0, ERR_CONFIG_PARAM_INVALID);
+
         DaoConfig { voting_delay, voting_period, voting_quorum_rate, min_action_delay }
     }
 
@@ -362,7 +369,7 @@ module obc_system::obc_dao {
     /// propose a proposal.
     /// `action`: the actual action to execute.
     /// `action_delay`: the delay to execute after the proposal is agreed
-    public fun propose (
+    public(friend) fun propose (
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
         version_id: u64,
@@ -430,11 +437,19 @@ module obc_system::obc_dao {
         send_obc_dao_event(manager_key,b"proposal_created");
     }
 
+    fun synchronize_proposal_into_dao(proposal: &Proposal, dao:  &mut Dao) {
+        if (vec_map::contains( &dao.proposal_record,&proposal.proposal.pid)) {
+            let old = vec_map::get_mut(&mut dao.proposal_record,& proposal.proposal.pid);
+            *old = proposal.proposal;
+        }
+    }
+
     /// votes for a proposal.
     /// User can only vote once, then the vote is locked,
     /// which can only be un vote by user after the proposal is expired, or cancelled, or executed.
     /// So think twice before casting vote.
-    public fun cast_vote(
+    public(friend) fun cast_vote(
+        dao:  &mut Dao,
         proposal: &mut Proposal,
         coin: VotingObc,
         agreeInt: u8,
@@ -483,7 +498,7 @@ module obc_system::obc_dao {
             vote_amount
         };
 
-
+        synchronize_proposal_into_dao(proposal, dao);
         // emit event
         event::emit(
             VoteChangedEvent{
@@ -498,7 +513,8 @@ module obc_system::obc_dao {
 
 
     /// Let user change their vote during the voting time.
-    public fun change_vote(
+    public(friend) fun change_vote(
+        dao:  &mut Dao,
         my_vote: &mut Vote,
         proposal: &mut Proposal,
         agree: bool,
@@ -523,6 +539,8 @@ module obc_system::obc_dao {
         // flip the vote
         if (my_vote.agree != agree) {
             let total_voted = do_flip_vote(my_vote, proposal);
+
+            synchronize_proposal_into_dao(proposal, dao);
             // emit event
             event::emit(
                 VoteChangedEvent{
@@ -550,7 +568,8 @@ module obc_system::obc_dao {
     }
 
     /// Revoke some voting powers from vote on `proposal_id` of `proposer_address`.
-    public fun revoke_vote(
+    public(friend) fun revoke_vote(
+        dao:  &mut Dao,
         proposal: &mut Proposal,
         my_vote:  Vote,
         voting_power: u64,
@@ -572,6 +591,9 @@ module obc_system::obc_dao {
         };
         // revoke vote on proposal
         do_revoke_vote(proposal, &mut my_vote, voting_power,ctx);
+
+        synchronize_proposal_into_dao(proposal, dao);
+
         // emit vote changed event
         event::emit(
             VoteChangedEvent{
@@ -610,7 +632,7 @@ module obc_system::obc_dao {
         ctx: &mut TxContext,
     ){
         spec {
-            assume vote.vote.value >= to_revoke;
+            assume vote.vote.principal.value >= to_revoke;
         };
 
         //todo: unlock vote coin or return...
@@ -623,7 +645,7 @@ module obc_system::obc_dao {
             proposal.proposal.against_votes = proposal.proposal.against_votes - to_revoke;
         };
         spec {
-            assert coin::value(reverted_vote) == to_revoke;
+            assert reverted_vote.principal.value == to_revoke;
         };
 
         //reverted_vote
@@ -631,8 +653,8 @@ module obc_system::obc_dao {
     }
 
     /// Retrieve back my voted token voted for a proposal.
-    public fun unvote_votes(
-        proposal: &mut Proposal,
+    public(friend) fun unvote_votes(
+        proposal: & Proposal,
         vote: Vote,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -646,11 +668,15 @@ module obc_system::obc_dao {
         };
 
         let sender = tx_context::sender(ctx);
+
+
         // delete vote.
         let Vote { proposer, id,vid, vote, agree: _ } = vote;
 
 
         object::delete(id);
+
+
 
         // these checks are still required.
         assert!(proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
@@ -667,9 +693,9 @@ module obc_system::obc_dao {
         agree: bool,
         vote: u64,
     }
-    public fun vote_of(
+    public(friend) fun vote_of(
         vote: &Vote,
-        proposal: &mut Proposal,
+        proposal: & Proposal,
         ctx: &mut TxContext,
     ){
         assert!(vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
@@ -689,19 +715,21 @@ module obc_system::obc_dao {
 
     /// Check whether voter has voted on proposal with `proposal_id` of `proposer_address`.
 
-    public fun has_vote(
+    public(friend) fun has_vote(
         vote: &Vote,
-        proposal: &mut Proposal,
+        proposal: &Proposal,
     ): bool  {
         event::emit(
             BooleanEvent{value:
             vote.proposer == proposal.proposal.proposer && vote.vid == proposal.proposal.pid});
+
         vote.proposer == proposal.proposal.proposer && vote.vid == proposal.proposal.pid
     }
 
 
     /// queue agreed proposal to execute.
-    public fun queue_proposal_action(
+    public(friend) fun queue_proposal_action(
+        dao:  &mut Dao,
         manager_key: &OBCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
@@ -716,6 +744,7 @@ module obc_system::obc_dao {
         );
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
 
+        synchronize_proposal_into_dao(proposal, dao);
         send_obc_dao_event(manager_key, b"proposal_queued");
     }
 
@@ -743,7 +772,7 @@ module obc_system::obc_dao {
     }
 
     /// Get the proposal state.
-    public fun proposal_state(
+    public(friend) fun proposal_state(
         proposal: &Proposal,
         clock: & Clock,
     ): u8  {
@@ -760,7 +789,7 @@ module obc_system::obc_dao {
         status
     }
 
-    public fun judge_proposal_state(
+    public(friend) fun judge_proposal_state(
         proposal: &ProposalInfo,
         current_time: u64,
     ): u8 {
@@ -796,7 +825,8 @@ module obc_system::obc_dao {
         for_votes: u64,
         against_votes: u64,
     }
-    public fun proposal_info(
+
+    public(friend) fun proposal_info(
         proposal: &Proposal,
     ) : (u64, u64) {
         event::emit(
@@ -811,10 +841,6 @@ module obc_system::obc_dao {
 
         (proposal.proposal.for_votes, proposal.proposal.against_votes)
     }
-
-
-
-
 
     fun generate_next_proposal_id(dao: &mut Dao): u64 {
         let info = &mut dao.info;
@@ -835,7 +861,7 @@ module obc_system::obc_dao {
     //// Helper functions
 
     /// Quorum votes to make proposal pass.
-    public fun quorum_votes(dao: &mut Dao): u64 {
+    fun quorum_votes(dao: &mut Dao): u64 {
         //let market_cap = total_supply(Coin<OBC>);
         //let balance_in_treasury = Treasury::balance<TokenT>();
         let total_supply_sui: u64 = 10000000000;
@@ -846,23 +872,23 @@ module obc_system::obc_dao {
         supply * rate / 100
     }
     /// get default voting delay of the DAO.
-    public fun voting_delay(dao: &mut Dao): u64 {
+    public(friend) fun voting_delay(dao: &mut Dao): u64 {
         get_config(dao).voting_delay
     }
 
     /// get the default voting period of the DAO.
-    public fun voting_period(dao: &mut Dao): u64 {
+    public(friend) fun voting_period(dao: &mut Dao): u64 {
         get_config(dao).voting_period
     }
 
     /// Get the quorum rate in percent.
-    public fun voting_quorum_rate(dao: &mut Dao): u8 {
+    public(friend) fun voting_quorum_rate(dao: &mut Dao): u8 {
         get_config(dao).voting_quorum_rate
     }
 
 
     /// Get the min_action_delay of the DAO.
-    public fun min_action_delay(dao: &mut Dao): u64 {
+    public(friend) fun min_action_delay(dao: &mut Dao): u64 {
         get_config(dao).min_action_delay
     }
 
@@ -901,7 +927,7 @@ module obc_system::obc_dao {
     }
 
     /// set voting delay
-    public fun set_voting_delay(
+    public(friend) fun set_voting_delay(
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
         value: u64,
@@ -916,7 +942,7 @@ module obc_system::obc_dao {
 
 
     /// set voting period
-    public fun set_voting_period(
+    public(friend) fun set_voting_period(
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
         value: u64,
@@ -930,7 +956,7 @@ module obc_system::obc_dao {
     }
 
     /// set voting quorum rate
-    public fun set_voting_quorum_rate(
+    public(friend) fun set_voting_quorum_rate(
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
         value: u8,
@@ -944,7 +970,7 @@ module obc_system::obc_dao {
 
 
     /// set min action delay
-    public fun set_min_action_delay(
+    public(friend) fun set_min_action_delay(
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
         value: u64,
@@ -956,7 +982,7 @@ module obc_system::obc_dao {
         send_obc_dao_event(manager_key, b"set_min_action_delay");
     }
 
-    public fun set_admins(
+    fun set_admins(
         new_admins: vector<address>,
         ctx: &mut TxContext,
     ) {
@@ -978,7 +1004,7 @@ module obc_system::obc_dao {
     }
 
 
-    public fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
+    fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
         let object_addr = obc_dao_manager::getKeyAddress(manager_key);
         event::emit(
             DaoManagerEvent{
@@ -988,69 +1014,7 @@ module obc_system::obc_dao {
         );
     }
 
-    public entry fun modify_lastest_proposal_in_dao(dao: &mut Dao, index : u8, clock: &Clock) {
-        let proposal_record = dao.proposal_record;
-        let size : u64 =  vec_map::size(& proposal_record);
-        if (size == 0) {
-            return
-        };
-        let (_, proposalInfo) =  vec_map::get_entry_by_idx_mut(&mut proposal_record, size - 1);
-        modify_proposal( proposalInfo, index, clock);
-        dao.proposal_record = proposal_record;
-    }
-
-
-    public fun modify_proposal(proposal: &mut ProposalInfo, index : u8, clock: &Clock) {
-        if (index == 1) {
-            // Pending
-            proposal.start_time = clock::timestamp_ms(clock)  + 1000000000;
-        }else if (index == 2) {
-            // active
-            proposal.start_time = clock::timestamp_ms(clock)  - 1000000000;
-            proposal.end_time = clock::timestamp_ms(clock) + 1000000000;
-        } else if (index == 3){
-            //afer voting  Defeated...
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 1;
-            proposal.against_votes = 2;
-        } else if (index == 4) {
-            //afer voting AGREED
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = 0;
-        } else if (index == 5) {
-            // Queued, waiting to execute
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = clock::timestamp_ms(clock)  + 100000000;
-        } else if (index == 6) {
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal.action.action_id = 1;
-        } else if (index == 7) {
-            proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
-            proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal.for_votes = 3;
-            proposal.against_votes = 2;
-            proposal.quorum_votes = 2;
-            proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal.action.action_id = 0;
-        };
-    }
-
-    public fun modify_proposal_obj(proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
-
+    public entry fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
         if (index == 1) {
             // Pending
@@ -1098,12 +1062,11 @@ module obc_system::obc_dao {
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
             proposal_obj.proposal.action.action_id = 0;
         };
+        synchronize_proposal_into_dao(proposal_obj, dao);
     }
 
 
-
-
-    public fun create_voting_obc(dao: &mut Dao,
+    public(friend) fun create_voting_obc(dao: &mut Dao,
                                        coin: Coin<OBC>,
                                        ctx: &mut TxContext) {
         // sender address
@@ -1114,7 +1077,7 @@ module obc_system::obc_dao {
         transfer::public_transfer(voting_obc, sender);
     }
 
-    public fun withdraw_voting(  dao: &mut Dao,
+    public(friend) fun withdraw_voting(  dao: &mut Dao,
                                        voting_obc: VotingObc,
                                        ctx: &mut TxContext ,) {
         // sender address
@@ -1125,7 +1088,7 @@ module obc_system::obc_dao {
     }
 
     /// remove terminated proposal from proposer
-    public fun destroy_terminated_proposal(
+    public(friend) fun destroy_terminated_proposal(
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
         proposal:  &mut Proposal,
@@ -1166,7 +1129,7 @@ module obc_system::obc_dao {
 
     }
 
-    public fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
+    public(friend) fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
         let flag = vec_map::contains(&dao.current_proposal_status, &proposalInfo.pid);
         if (flag) {
             vec_map::remove(&mut dao.current_proposal_status, &proposalInfo.pid);

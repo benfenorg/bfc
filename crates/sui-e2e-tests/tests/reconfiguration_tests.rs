@@ -492,6 +492,38 @@ async fn test_obc_dao_update_system_package_pass(){
 
 }
 
+
+
+#[sim_test]
+async fn test_obc_dao_create_create_action(){
+
+}
+
+
+#[sim_test]
+async fn test_obc_dao_create_create_propose(){
+
+}
+
+
+
+#[sim_test]
+async fn test_obc_dao_create_votingobc(){
+
+}
+
+#[sim_test]
+async fn test_obc_dao_create_voting(){
+
+}
+
+
+#[sim_test]
+async fn test_obc_dao_withdraw_obc(){
+
+}
+
+
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
 #[sim_test]

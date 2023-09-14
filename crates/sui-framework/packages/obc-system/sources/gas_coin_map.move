@@ -47,6 +47,10 @@ module obc_system::gas_coin_map {
         }
     }
 
+    public(friend) fun get_default_rate():u64 {
+        DEFAULT_EXCHANGE_RATE
+    }
+
     public(friend) fun new_entity(id_address: address, exchange_rate: u64): GasCoinEntity {
         GasCoinEntity {
             id_address,

@@ -30,7 +30,6 @@
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
 <b>use</b> <a href="">0x1::string</a>;
 <b>use</b> <a href="">0x1::type_name</a>;
-<b>use</b> <a href="">0x1::vector</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -446,7 +445,7 @@ position info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_fetch_positions">fetch_positions</a>(_manager: &<a href="position.md#0xc8_position_PositionManager">position::PositionManager</a>, _start: <a href="">vector</a>&lt;u64&gt;, _limit: u64): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_fetch_positions">fetch_positions</a>(_manager: &<a href="position.md#0xc8_position_PositionManager">position::PositionManager</a>, _start: u64, _limit: u64): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
 </code></pre>
 
 
@@ -457,26 +456,15 @@ position info
 
 <pre><code><b>public</b> <b>fun</b> <a href="position.md#0xc8_position_fetch_positions">fetch_positions</a>(
     _manager: &<a href="position.md#0xc8_position_PositionManager">PositionManager</a>,
-    _start: <a href="">vector</a>&lt;u64&gt;,
+    _start: u64,
     _limit: u64
 ): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">Position</a>&gt; {
-    <b>assert</b>!(_limit &gt; 0, <a href="position.md#0xc8_position_ERR_INVALID_LIMIT">ERR_INVALID_LIMIT</a>);
-    <b>let</b> len = <a href="_length">vector::length</a>(&_start);
-    <b>assert</b>!(len &gt; 0, <a href="position.md#0xc8_position_ERR_INVALID_VECTOR_LENGTH">ERR_INVALID_VECTOR_LENGTH</a>);
-    <b>let</b> ret = <a href="_empty">vector::empty</a>&lt;<a href="position.md#0xc8_position_Position">Position</a>&gt;();
-    <b>let</b> idx = 0;
-    <b>while</b> (idx &lt; len) {
-        <b>let</b> positions = <a href="linked_table.md#0xc8_linked_table_fetch">linked_table::fetch</a>(
-            &_manager.positions,
-            *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&_start, idx),
-            _limit
-        );
-        <b>if</b> (<a href="_length">vector::length</a>(&positions) &gt; 0) {
-            <a href="_append">vector::append</a>(&<b>mut</b> ret, positions);
-        };
-        idx = idx + 1;
-    };
-    ret
+    <b>assert</b>!(_limit &gt; 0 && _start &gt; 0, <a href="position.md#0xc8_position_ERR_INVALID_LIMIT">ERR_INVALID_LIMIT</a>);
+    <a href="linked_table.md#0xc8_linked_table_fetch">linked_table::fetch</a>(
+        &_manager.positions,
+        _start,
+        _limit
+    )
 }
 </code></pre>
 
