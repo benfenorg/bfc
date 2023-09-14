@@ -44,15 +44,15 @@ module obc_system::obc_system_state_inner {
         position_number: u32,
         tick_spacing: u32,
         spacing_times: u32,
-        initialize_price: u128,
         time_interval: u32,
-        base_point: u64,
         max_counter_times: u32,
+        base_point: u64,
+        initialize_price: u128,
     }
 
     struct ObcSystemParameters has drop, copy {
-        treasury_parameters: TreasuryParameters,
         chain_start_timestamp_ms: u64,
+        treasury_parameters: TreasuryParameters,
     }
 
     const OBC_SYSTEM_TREASURY_KEY: u64 = 1;

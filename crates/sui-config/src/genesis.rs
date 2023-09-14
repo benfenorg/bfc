@@ -50,6 +50,7 @@ pub struct UnsignedGenesis {
 }
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[serde(rename_all = "kebab-case")]
 pub struct TreasuryParameters {
     /// The position_number is the quantity of positions in the Treasury.
     /// Implement the adjustment of liquidity for a limited number of positions.
@@ -63,17 +64,18 @@ pub struct TreasuryParameters {
     /// Ticks numbers according to spacing_times
     pub spacing_times: u32,
 
-    /// Initialize Price
-    pub initialize_price: u128,
-
-    /// OBC requirement base point
-    pub base_point: u64,
-
     /// rebalance time interval in seconds
     pub time_interval: u32,
 
     /// maximum state counter value
-    pub max_counter_times: u32
+    pub max_counter_times: u32,
+
+    /// OBC requirement base point
+    pub base_point: u64,
+
+    /// Initialize Price
+    pub initialize_price: u128,
+
 }
 
 impl Default for TreasuryParameters {
@@ -82,10 +84,10 @@ impl Default for TreasuryParameters {
             position_numbers: 9,
             tick_spacing: 1,
             spacing_times: 2,
-            initialize_price: 2u128.pow(64),
-            base_point: 1000_000000000,
-            time_interval: 3600 * 4,
+            time_interval: 14400,
             max_counter_times: 5,
+            base_point: 1000_000_000_000,
+            initialize_price: 2u128.pow(64),
         }
     }
 }
@@ -383,13 +385,13 @@ pub struct GenesisChainParameters {
     pub validator_low_stake_grace_period: u64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub struct ObcSystemParameters {
-    #[serde(default)]
+    pub chain_start_timestamp_ms: u64,
+
     pub treasury_parameters: TreasuryParameters,
 
-    pub chain_start_timestamp_ms: u64,
 }
 
 /// Initial set of parameters for a chain.
@@ -500,8 +502,8 @@ impl GenesisCeremonyParameters {
 
     pub fn to_obc_system_parameters(&self) -> ObcSystemParameters {
         ObcSystemParameters {
-            treasury_parameters: TreasuryParameters::default(),
             chain_start_timestamp_ms: self.chain_start_timestamp_ms,
+            treasury_parameters: TreasuryParameters::default(),
         }
     }
 }
