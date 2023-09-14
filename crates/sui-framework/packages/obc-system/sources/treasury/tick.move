@@ -111,7 +111,7 @@ module obc_system::tick {
         Tick {
             sqrt_price,
             index: _tick_index,
-            liquidity_net: i128::from(sqrt_price),
+            liquidity_net: i128::from(0),
             liquidity_gross: 0
         }
     }

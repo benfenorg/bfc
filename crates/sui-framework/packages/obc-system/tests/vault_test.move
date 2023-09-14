@@ -130,6 +130,8 @@ module obc_system::vault_test {
         );
         test_utils::test_rebalance(&mut scenario_val);
 
+        test_scenario::next_tx(&mut scenario_val, owner);
+
         let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
 
         test_scenario::next_tx(&mut scenario_val, owner);
