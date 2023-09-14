@@ -1524,10 +1524,9 @@ propose a proposal.
 
 
 <pre><code><b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_synchronize_proposal_into_dao">synchronize_proposal_into_dao</a>(proposal: &<a href="obc_dao.md#0xc8_obc_dao_Proposal">Proposal</a>, dao:  &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>) {
-    <b>let</b> flag = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>( &dao.proposal_record,&proposal.proposal.pid);
-    <b>if</b> (flag) {
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> dao.proposal_record,& proposal.proposal.pid);
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> dao.proposal_record,  proposal.proposal.pid, proposal.proposal);
+    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>( &dao.proposal_record,&proposal.proposal.pid)) {
+        <b>let</b> <b>old</b> = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> dao.proposal_record,& proposal.proposal.pid);
+        *<b>old</b> = proposal.proposal;
     }
 }
 </code></pre>

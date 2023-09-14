@@ -431,10 +431,9 @@ module obc_system::obc_dao {
     }
 
     fun synchronize_proposal_into_dao(proposal: &Proposal, dao:  &mut Dao) {
-        let flag = vec_map::contains( &dao.proposal_record,&proposal.proposal.pid);
-        if (flag) {
-            vec_map::remove(&mut dao.proposal_record,& proposal.proposal.pid);
-            vec_map::insert(&mut dao.proposal_record,  proposal.proposal.pid, proposal.proposal);
+        if (vec_map::contains( &dao.proposal_record,&proposal.proposal.pid)) {
+            let old = vec_map::get_mut(&mut dao.proposal_record,& proposal.proposal.pid);
+            *old = proposal.proposal;
         }
     }
 
