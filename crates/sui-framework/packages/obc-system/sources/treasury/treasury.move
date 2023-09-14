@@ -25,6 +25,8 @@ module obc_system::treasury {
     friend obc_system::vault_test;
     #[test_only]
     friend obc_system::test_utils;
+    #[test_only]
+    friend obc_system::obc_system_tests;
 
     // === Errors ===
     const ERR_POOL_HAS_REGISTERED: u64 = 100;

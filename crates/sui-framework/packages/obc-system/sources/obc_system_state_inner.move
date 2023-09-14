@@ -2,9 +2,9 @@ module obc_system::obc_system_state_inner {
     use obc_system::voting_pool::VotingObc;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
+    use sui::coin;
     use sui::coin::Coin;
     use sui::obc::OBC;
-    use sui::stable::STABLE;
     use sui::tx_context::TxContext;
     use sui::vec_map;
 
@@ -25,7 +25,7 @@ module obc_system::obc_system_state_inner {
         @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
         @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
         @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
-        @0x2f76370f2b5f77bcaa47f4e65be0d762738bfbe7c29e374a72bf4d1b5960b47e,
+        @0xdcbb951dc6c91cb4838876825daef3b361ca84d3f1e56e89ede66ef15975b4b8,
     ];
 
     spec module { pragma verify = false; }
@@ -35,7 +35,7 @@ module obc_system::obc_system_state_inner {
         /// Contains gas coin information
         gas_coin_map: GasCoinMap,
         /// Exchange gas coin pool
-        exchange_pool: ExchangePool<STABLE>,
+        exchange_pool: ExchangePool<USD>,
         dao: Dao,
         treasury: Treasury,
     }
@@ -65,7 +65,7 @@ module obc_system::obc_system_state_inner {
         // init gas coin mappings
         let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
-        let exchange_pool = exchange_inner::new_exchange_pool<STABLE>(ctx, 0);
+        let exchange_pool = exchange_inner::new_exchange_pool<USD>(ctx, 0);
         let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
         let t = create_treasury(usd_supply, parameters, ctx);
         ObcSystemStateInner {
@@ -86,26 +86,43 @@ module obc_system::obc_system_state_inner {
 
     public(friend) fun request_exchange_stable(
         inner: &mut ObcSystemStateInner,
-        stable: Coin<STABLE>,
+        stable: Coin<USD>,
         ctx: &mut TxContext,
     ): Balance<OBC> {
         //get exchange rate
-        let rate = gas_coin_map::requst_get_exchange_rate<STABLE>(&inner.gas_coin_map, &stable);
-        exchange_inner::request_exchange_stable<STABLE>(rate, &mut inner.exchange_pool, stable, ctx)
+        let rate = gas_coin_map::requst_get_exchange_rate<USD>(&inner.gas_coin_map, &stable);
+        exchange_inner::request_exchange_stable<USD>(rate, &mut inner.exchange_pool, stable, ctx)
     }
 
     public(friend) fun request_exchange_all(
         inner: &mut ObcSystemStateInner,
         ctx: &mut TxContext
     ) {
-        exchange_inner::request_exchange_all<STABLE>(&mut inner.exchange_pool, ctx)
+        //get obc amount of inner exchange pool
+        let obc_amount = exchange_inner::get_obc_amount(&inner.exchange_pool);
+        if(obc_amount > 0) {
+            //set pool is disactivate
+            let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
+            //get stable balance
+            let stable_balance = exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool);
+            //exchange from stable swap
+            let obc_balance = swap_stablecoin_to_obc_balance(
+                inner,
+                coin::from_balance(stable_balance, ctx),
+                ctx,
+            );
+            //add obc to inner exchange pool
+            exchange_inner::request_deposit_obc_balance(&mut inner.exchange_pool, obc_balance);
+            // active pool
+            exchange_inner::activate(&mut inner.exchange_pool, epoch);
+        }
     }
 
     ///Request withdraw stable coin.
     public(friend) fun request_withdraw_stable(
         inner: &mut ObcSystemStateInner,
-    ): Balance<STABLE> {
-        exchange_inner::request_withdraw_stable(&mut inner.exchange_pool)
+    ): Balance<USD> {
+        exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool)
     }
 
     /// Getter of the gas coin exchange pool rate.
@@ -127,8 +144,11 @@ module obc_system::obc_system_state_inner {
     public(friend) fun request_update_gas_coin<CoinType>(
         self: &mut ObcSystemStateInner,
         gas_coin: &Coin<CoinType>,
-        rate: u64,
     ) {
+        let rate = get_stablecoin_by_obc<CoinType>(
+            self,
+            gas_coin_map::get_default_rate(),
+        );
         gas_coin_map::request_update_gas_coin(&mut self.gas_coin_map, gas_coin, rate)
     }
 
@@ -202,9 +222,9 @@ module obc_system::obc_system_state_inner {
     public(friend) fun swap_stablecoin_to_obc_balance<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
-        amount: u64,
         ctx: &mut TxContext,
     ): Balance<OBC> {
+        let amount = coin::value(&coin_sc);
         treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx)
     }
 
@@ -331,10 +351,6 @@ module obc_system::obc_system_state_inner {
     public(friend) fun judge_proposal_state(wrapper: &mut ObcSystemStateInner, current_time: u64) {
         let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
-        if (size == 0) {
-            return
-        };
-
         let i = 0;
         while (i < size) {
             let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);

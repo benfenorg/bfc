@@ -13,6 +13,9 @@ module obc_system::test_utils {
 
     friend obc_system::vault_test;
 
+    #[test_only]
+    friend obc_system::obc_system_tests;
+
     fun create_treasury_and_init_vault_with_positions(
         time_interval: u32,
         initialize_price: u128,
