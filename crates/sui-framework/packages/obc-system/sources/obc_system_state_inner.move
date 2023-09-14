@@ -351,10 +351,6 @@ module obc_system::obc_system_state_inner {
     public(friend) fun judge_proposal_state(wrapper: &mut ObcSystemStateInner, current_time: u64) {
         let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
-        if (size == 0) {
-            return
-        };
-
         let i = 0;
         while (i < size) {
             let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
