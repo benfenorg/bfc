@@ -11,6 +11,7 @@
 -  [Function `rand_n`](#0xc8_random_rand_n)
 -  [Function `rand`](#0xc8_random_rand)
 -  [Function `seed_rand`](#0xc8_random_seed_rand)
+-  [Module Specification](#@Module_Specification_0)
 
 
 <pre><code></code></pre>
@@ -160,6 +161,8 @@
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_seed_rand">seed_rand</a>(r: &<b>mut</b> <a href="random.md#0xc8_random_Random">Random</a>, seed: u64): u64 {
+
+
     r.seed = ((((r.seed <b>as</b> u128) + (seed <b>as</b> u128) & 0x0000000000000000ffffffffffffffff)) <b>as</b> u64);
     r.seed = (((9223372036854775783u128 * ((r.seed <b>as</b> u128) + 999983) &gt;&gt; 1) & 0x0000000000000000ffffffffffffffff) <b>as</b> u64);
     r.seed
@@ -169,3 +172,12 @@
 
 
 </details>
+
+<a name="@Module_Specification_0"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

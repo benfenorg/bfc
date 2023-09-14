@@ -11,6 +11,7 @@
 -  [Function `mul_shr`](#0xc8_full_math_u64_mul_shr)
 -  [Function `mul_shl`](#0xc8_full_math_u64_mul_shl)
 -  [Function `full_mul`](#0xc8_full_math_u64_full_mul)
+-  [Module Specification](#@Module_Specification_0)
 
 
 <pre><code></code></pre>
@@ -165,3 +166,12 @@
 
 
 </details>
+
+<a name="@Module_Specification_0"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

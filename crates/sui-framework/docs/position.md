@@ -25,6 +25,7 @@
 -  [Function `decrease_liquidity`](#0xc8_position_decrease_liquidity)
 -  [Function `destory`](#0xc8_position_destory)
 -  [Function `new_position_name`](#0xc8_position_new_position_name)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -742,3 +743,12 @@ private fun
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

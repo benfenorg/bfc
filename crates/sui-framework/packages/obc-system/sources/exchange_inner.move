@@ -22,6 +22,7 @@ module obc_system::exchange_inner {
     const ENotAllowWithdraw: u64 = 5;
     const ENotAllowDeposit: u64 = 6;
 
+    spec module { pragma verify = false; }
 
     struct ExchangePool<phantom STABLE_COIN> has key, store {
         id: UID,

@@ -22,6 +22,7 @@
 -  [Function `max`](#0xc8_math_u128_max)
 -  [Function `min`](#0xc8_math_u128_min)
 -  [Function `add_check`](#0xc8_math_u128_add_check)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code></code></pre>
@@ -388,6 +389,18 @@
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_math_u128_checked_div_round"></a>
 
 ## Function `checked_div_round`
@@ -499,3 +512,12 @@
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

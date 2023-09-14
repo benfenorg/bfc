@@ -7,7 +7,7 @@ use std::collections::{BTreeSet, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_json_rpc_types::{SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffectsAPI};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
@@ -27,6 +27,7 @@ use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::info;
+use sui_json_rpc::api::IndexerApiClient;
 use sui_types::storage::BackingPackageStore;
 use sui_types::SUI_SYSTEM_PACKAGE_ID;
 
@@ -495,8 +496,29 @@ async fn test_obc_dao_update_system_package_pass(){
 
 
 #[sim_test]
-async fn test_obc_dao_create_create_action(){
+async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
 
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    //let coin = &objects[1].object()?;
+    Ok(())
 }
 
 

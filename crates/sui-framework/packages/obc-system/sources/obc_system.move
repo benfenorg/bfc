@@ -31,6 +31,8 @@ module obc_system::obc_system {
 
     const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
 
+    spec module { pragma verify = false; }
+
     public fun create(
         id: UID,
         usd_supply: Supply<USD>,

@@ -19,6 +19,7 @@
 -  [Function `compute_swap_step`](#0xc8_clmm_math_compute_swap_step)
 -  [Function `get_amount_by_liquidity`](#0xc8_clmm_math_get_amount_by_liquidity)
 -  [Function `get_liquidity_by_amount`](#0xc8_clmm_math_get_liquidity_by_amount)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="full_math_u128.md#0xc8_full_math_u128">0xc8::full_math_u128</a>;
@@ -715,3 +716,12 @@ Returns
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

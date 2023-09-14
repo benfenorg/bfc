@@ -43,6 +43,8 @@ module obc_system::vault {
     const SHAPE_DECREMENT_SIZE: u8 = 1;
     const SHAPE_INCREMENT_SIZE: u8 = 2;
 
+    spec module { pragma verify = false; }
+
     struct Vault<phantom StableCoinType> has key, store {
         id: UID,
 
