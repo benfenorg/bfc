@@ -700,3 +700,9 @@ Errors
 
 <pre><code><b>pragma</b> verify = <b>false</b>;
 </code></pre>
+
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

@@ -12,6 +12,7 @@
 -  [Function `checked_shlw`](#0xc8_math_u256_checked_shlw)
 -  [Function `div_round`](#0xc8_math_u256_div_round)
 -  [Function `add_check`](#0xc8_math_u256_add_check)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code></code></pre>
@@ -187,3 +188,12 @@
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>
