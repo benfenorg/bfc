@@ -161,6 +161,8 @@ pub fn run_move_prover(
     for_test: bool,
     mut options: move_prover::cli::Options,
 ) -> anyhow::Result<()> {
+
+    println!("================");
     // Always run the prover in dev mode, so addresses get default assignments
     config.dev_mode = true;
 

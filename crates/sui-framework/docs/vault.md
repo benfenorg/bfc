@@ -36,6 +36,8 @@
 -  [Function `get_position_amounts`](#0xc8_vault_get_position_amounts)
 -  [Function `get_position_liquidity`](#0xc8_vault_get_position_liquidity)
 -  [Function `get_position_tick_range_and_price`](#0xc8_vault_get_position_tick_range_and_price)
+-  [Function `fetch_ticks`](#0xc8_vault_fetch_ticks)
+-  [Function `fetch_positions`](#0xc8_vault_fetch_positions)
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
@@ -1681,6 +1683,54 @@ Returns
     <b>let</b> price_lower = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_lower_index);
     <b>let</b> price_upper = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_upper_index);
     (tick_lower_index, tick_upper_index, price_lower, price_upper)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_fetch_ticks"></a>
+
+## Function `fetch_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="">vector</a>&lt;Tick&gt; {
+    <a href="tick.md#0xc8_tick_fetch_ticks">tick::fetch_ticks</a>(&_vault.tick_manager)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_fetch_positions"></a>
+
+## Function `fetch_positions`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="">vector</a>&lt;Position&gt; {
+    <a href="position.md#0xc8_position_fetch_positions">position::fetch_positions</a>(&_vault.position_manager, 1, (_vault.position_number <b>as</b> u64))
 }
 </code></pre>
 

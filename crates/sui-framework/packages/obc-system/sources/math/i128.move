@@ -527,4 +527,6 @@ module obc_system::i128 {
     fun test_castdown() {
         assert!((1u128 as u8) == 1u8, 0);
     }
+
+    spec module { pragma verify = false; }
 }

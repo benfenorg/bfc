@@ -354,6 +354,12 @@ module obc_system::obc_dao {
         voting_quorum_rate: u8,
         min_action_delay: u64,
     ): DaoConfig {
+        assert!(voting_delay > 0, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_period> 0, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate > 1, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
+        assert!(min_action_delay > 0, ERR_CONFIG_PARAM_INVALID);
+
         DaoConfig { voting_delay, voting_period, voting_quorum_rate, min_action_delay }
     }
 
