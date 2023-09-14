@@ -7,98 +7,16 @@ module obc_system::vault_test {
     use sui::balance;
     use sui::clock;
     use sui::coin;
-    use sui::coin::Coin;
     use sui::obc::OBC;
     use sui::test_scenario;
-    use sui::test_scenario::Scenario;
-    use sui::transfer;
-    use sui::tx_context::TxContext;
 
     use obc_system::treasury;
     use obc_system::treasury::Treasury;
-    use obc_system::usd::{Self, USD};
+    use obc_system::usd::{USD};
     use obc_system::vault;
     use obc_system::test_utils;
 
-    fun setup(
-        time_interval: u32,
-        initialize_price: u128,
-        base_point: u64,
-        position_number: u32,
-        tick_spacing: u32,
-        spacing_times: u32,
-        max_counter_times: u32,
-        ts: u64,
-    ): Scenario {
-        let owner = @0x0;
-        let alice = @0xA1;
-        let scenario_val = test_scenario::begin(owner);
-        create_treasury_and_init_vault_with_positions(
-            time_interval,
-            initialize_price,
-            base_point,
-            position_number,
-            tick_spacing,
-            spacing_times,
-            max_counter_times,
-            ts,
-            test_scenario::ctx(&mut scenario_val),
-        );
-        test_scenario::next_tx(&mut scenario_val, owner);
-
-        {
-            let obc = balance::create_for_testing<OBC>(30000000000001);
-            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            treasury::deposit(&mut t, coin::from_balance(obc, test_scenario::ctx(&mut scenario_val)));
-            test_scenario::return_shared(t);
-        };
-
-        test_scenario::next_tx(&mut scenario_val, owner);
-        {
-            transfer::public_transfer(
-                coin::from_balance(
-                    balance::create_for_testing<OBC>(100_000_000_000),
-                    test_scenario::ctx(&mut scenario_val)
-                ),
-                alice
-            );
-        };
-
-        test_scenario::next_tx(&mut scenario_val, owner);
-        scenario_val
-    }
-
-    fun tearDown(s: Scenario) {
-        test_scenario::end(s);
-    }
-
-    fun create_treasury_and_init_vault_with_positions(
-        time_interval: u32,
-        initialize_price: u128,
-        base_point: u64,
-        position_number: u32,
-        tick_spacing: u32,
-        spacing_times: u32,
-        max_counter_times: u32,
-        ts: u64,
-        ctx: &mut TxContext
-    ) {
-        let usd_supply = usd::new(ctx);
-        let t = treasury::create_treasury(time_interval, ctx);
-        treasury::init_vault_with_positions(
-            &mut t,
-            usd_supply,
-            initialize_price,
-            base_point,
-            position_number,
-            tick_spacing,
-            spacing_times,
-            max_counter_times,
-            ts,
-            ctx
-        );
-        transfer::public_share_object(t);
-    }
+    const IS_DEBUG: bool = true;
 
     #[test]
     public fun test_init_and_rebalance() {
@@ -123,25 +41,30 @@ module obc_system::vault_test {
 
         let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, type_name::into_string(type_name::get<USD>()));
         let (balance0, balance1) = vault::balances<USD>(usd_mut_vault);
-        debug::print(&string(b"balance0: "));
-        debug::print(&balance0);
-        debug::print(&string(b"balance1: "));
-        debug::print(&balance1);
+        if (IS_DEBUG) {
+            debug::print(&string(b"balance0: "));
+            debug::print(&balance0);
+            debug::print(&string(b"balance1: "));
+            debug::print(&balance1);
+        };
 
         let (amount_a, amount_b) = vault::get_position_amounts(usd_mut_vault, 5, true);
-        debug::print(&amount_b);
-        debug::print(&amount_a);
+        if (IS_DEBUG) {
+            debug::print(&amount_b);
+            debug::print(&amount_a);
+        };
         assert!(amount_b == 1000_000000000, 100);
         assert!(amount_a == 1000_000000000, 101);
         test_scenario::return_shared(t);
         clock::destroy_for_testing(c);
-        tearDown(scenario_val);
+        test_scenario::end(scenario_val);
     }
 
     #[test]
     public fun test_rebalance_after_mint0x01() {
-        let is_debug = false;
-        let scenario = setup(
+        let owner = @0x0;
+        let scenario = test_scenario::begin(owner);
+        test_utils::setup_with_parameters(
             3600 * 4,
             1 << 64,
             1000_000000000,
@@ -149,14 +72,16 @@ module obc_system::vault_test {
             60,
             10,
             0,
-            1008611
+            1008611,
+            &mut scenario,
+            owner
         );
         let c = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
         let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, type_name::into_string(type_name::get<USD>()));
-        if (is_debug) {
+        if (IS_DEBUG) {
             let (amount_a, amount_b) = vault::get_position_amounts(usd_mut_vault, 5, true);
             let liquidity = vault::get_position_liquidity(usd_mut_vault, 5);
             let (tick_lower, tick_upper, price_lower, price_upper) = vault::get_position_tick_range_and_price(
@@ -175,18 +100,65 @@ module obc_system::vault_test {
         };
         assert!(vault::get_vault_state(usd_mut_vault) == 0, 102);
 
-        let alice = @0xA1;
-        let alice_coin = test_scenario::take_from_address<Coin<OBC>>(&scenario, alice);
-        let alice_coin_to_mint = coin::split(&mut alice_coin, 2_000_000_000, test_scenario::ctx(&mut scenario));
-
+        let balance_alice = balance::create_for_testing<OBC>(2_000_000_000);
+        let alice_coin_to_mint = coin::from_balance(balance_alice, test_scenario::ctx(&mut scenario));
 
         treasury::mint<USD>(&mut t, alice_coin_to_mint, 1_000_000_000, test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
 
-        test_scenario::return_to_address(alice, alice_coin);
         test_scenario::return_shared(t);
         clock::destroy_for_testing(c);
-        tearDown(scenario);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    public fun test_calculate_swap_result() {
+        let owner = @0x0;
+        let scenario_val = test_scenario::begin(owner);
+        test_utils::setup_with_parameters(
+            3600 * 4,
+            1 << 64,
+            5_000_000_000,
+            9,
+            1,
+            2,
+            5,
+            1008611,
+            &mut scenario_val,
+            owner
+        );
+        test_utils::test_rebalance(&mut scenario_val);
+
+        let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        let calculate_usd_amount = treasury::calculate_swap_result<USD>(
+            &t,
+            false,
+            100_000_000_000,
+        );
+        if (IS_DEBUG) {
+            debug::print(&string(b"calculate_usd_amount.. input obc"));
+            debug::print(&100_000_000_000);
+            debug::print(&string(b"calculate_usd_amount.. out usd"));
+            debug::print(&calculate_usd_amount);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        let calculate_obc_amount = treasury::calculate_swap_result<USD>(
+            &t,
+            true,
+            100_000_000_000,
+        );
+        if (IS_DEBUG) {
+            debug::print(&string(b"calculate_usd_amount.. input usd"));
+            debug::print(&100_000_000_000);
+            debug::print(&string(b"calculate_usd_amount.. out obc"));
+            debug::print(&calculate_obc_amount);
+        };
+
+        test_scenario::return_shared(t);
+        test_scenario::end(scenario_val);
     }
 }
