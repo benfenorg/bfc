@@ -1,13 +1,14 @@
+import {
+	useGetDaoProposals,
+} from '@mysten/core';
 import { Heading } from '@mysten/ui';
+import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
+
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
-
-import {
-	useGetDaoProposals,
-} from '@mysten/core';
 
 interface DaoDateItem {
 	id: number;
@@ -19,6 +20,7 @@ interface DaoListProps {
 	data: DaoDateItem[];
 	isLoading: boolean;
 }
+
 
 const DaoItem = ({ data }: { data: DaoDateItem }) => {
 	return (
@@ -83,6 +85,8 @@ const DaoList = ({ data, isLoading }: DaoListProps) => {
 };
 const Dao = () => {
 	const data: any = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+	const {data:OBCDaoManageKey} = useGetOBCDaoManageKey()
+	console.log('OBCDaoManageKey',OBCDaoManageKey)
 	return (
 		<PageLayout
 			gradientContent={
