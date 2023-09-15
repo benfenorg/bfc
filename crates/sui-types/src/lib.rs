@@ -49,6 +49,7 @@ pub mod gas_model;
 pub mod governance;
 pub mod proposal;
 pub mod dao;
+pub mod dao_manager;
 pub mod id;
 pub mod in_memory_storage;
 pub mod message_envelope;
