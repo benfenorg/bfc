@@ -4,12 +4,13 @@
 use futures::future::join_all;
 use rand::rngs::OsRng;
 use std::collections::{BTreeSet, HashSet};
+use std::option;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use move_core_types::account_address::AccountAddress;
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
+use sui_json_rpc_types::{SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
@@ -32,8 +33,9 @@ use tracing::info;
 use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{call_args, SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID};
+use sui_types::{OBC_SYSTEM_PACKAGE_ID, parse_sui_struct_tag};
 use serde_json::json;
+use sui_types::dao_manager::MANAGE_MODULE_NAME;
 use sui_types::OBC_SYSTEM_STATE_ADDRESS;
 
 
@@ -635,6 +637,28 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
     sleep(Duration::from_secs(2)).await;
 
 
+    //            SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::test::Test").unwrap()),
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::obc_dao_manager::OBCDaoManageKey").unwrap());
+    let dataOption = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(dataOption),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    info!("============finish get obcdao action {}", objects.len());
 
 
 
