@@ -32,8 +32,10 @@ use tracing::info;
 use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{call_args, SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::storage::BackingPackageStore;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{OBC_SYSTEM_PACKAGE_ID};
+use serde_json::json;
+use sui_types::OBC_SYSTEM_STATE_ADDRESS;
+
 
 #[sim_test]
 async fn advance_epoch_tx_test() {
@@ -483,7 +485,6 @@ async fn test_obc_dao_update_system_package_pass(){
 
     //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
 
-
     sleep(Duration::from_secs(10)).await;
 
 
@@ -523,7 +524,6 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
         .data;
 
     let gas = objects.first().unwrap().object().unwrap();
-    //let coin = &objects[1].object()?;
 
 
     // now do the call
@@ -565,13 +565,74 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
 
 
     info!("============finish add admin");
+    sleep(Duration::from_secs(2)).await;
+
+
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let managerObj = objects.get(1).unwrap().object().unwrap();
+
+
 
     // now do the call
     let module = "obc_system".to_string();
     let function = "create_obcdao_action".to_string();
-    let package_id = OBC_SYSTEM_PACKAGE_ID;
-    let arg = vec![ SuiJsonValue::from_str(&package_id.to_string())?,];
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&managerObj.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+    ];
 
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            arg,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+
+
+
+
+
+    sleep(Duration::from_secs(2)).await;
 
 
 
