@@ -5,7 +5,7 @@ import { lazy } from 'react';
 
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { Activity } from '~/components/Activity';
-import { Overview } from '~/components/HomeMetrics';
+import { CurrentEpoch,Overview } from '~/components/HomeMetrics';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { TransactionsCardGraph } from '~/components/TransactionsCardGraph';
 import { useNetwork } from '~/context';
@@ -21,12 +21,14 @@ function Home() {
 	return (
 		<PageLayout
 			gradientContent={
-				<div data-testid="home-page" className="grid gap-4 sm:grid-flow-col">
-					<div className="col-span">
+				<div data-testid="home-page" className="home-page-grid-container-top">
+					<div style={{ gridArea: 'overview' }}>
 						<Overview />
 					</div>
-					
-					<div className="col-span sm:col-span-2">
+					<div style={{ gridArea: 'epoch' }}>
+						<CurrentEpoch />
+					</div>
+					<div style={{ gridArea: 'transactions' }}>
 						<TransactionsCardGraph />
 					</div>
 				</div>

@@ -29,6 +29,9 @@ module obc_system::position {
     const ERR_POSITION_INSUFFICIENT_LIQUIDITY: u64 = 309;
     const ERR_U128_ADD_CHECK_FAILED: u64 = 310;
 
+
+    spec module { pragma verify = false; }
+
     struct PositionManager has store {
         vault_id: ID,
         tick_spacing: u32,

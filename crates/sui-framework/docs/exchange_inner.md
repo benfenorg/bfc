@@ -21,6 +21,7 @@
 -  [Function `request_exchange_all`](#0xc8_exchange_inner_request_exchange_all)
 -  [Function `request_withdraw_all_stable`](#0xc8_exchange_inner_request_withdraw_all_stable)
 -  [Function `request_deposit_obc_balance`](#0xc8_exchange_inner_request_deposit_obc_balance)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="">0x1::option</a>;
@@ -549,3 +550,12 @@ Withdraw the stable gas coins.
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

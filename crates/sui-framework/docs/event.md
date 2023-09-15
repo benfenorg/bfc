@@ -22,6 +22,7 @@
 -  [Function `swap`](#0xc8_event_swap)
 -  [Function `deposit`](#0xc8_event_deposit)
 -  [Function `update_state`](#0xc8_event_update_state)
+-  [Module Specification](#@Module_Specification_0)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -753,3 +754,12 @@
 
 
 </details>
+
+<a name="@Module_Specification_0"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

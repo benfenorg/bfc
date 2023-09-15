@@ -48,6 +48,8 @@
 -  [Function `unvote_votes`](#0xc8_obc_system_unvote_votes)
 -  [Function `vote_of`](#0xc8_obc_system_vote_of)
 -  [Function `has_vote`](#0xc8_obc_system_has_vote)
+-  [Function `cluster_add_admin`](#0xc8_obc_system_cluster_add_admin)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -1321,3 +1323,40 @@ X treasury  swap stablecoin to obc
 
 
 </details>
+
+<a name="0xc8_obc_system_cluster_add_admin"></a>
+
+## Function `cluster_add_admin`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_cluster_add_admin">cluster_add_admin</a>(new_admin: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_cluster_add_admin">cluster_add_admin</a>(
+    new_admin:<b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <a href="obc_dao.md#0xc8_obc_dao_add_admin">obc_dao::add_admin</a>(new_admin, ctx);
+    //<a href="obc_dao_manager.md#0xc8_obc_dao_manager_new">obc_dao_manager::new</a>(new_admin, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

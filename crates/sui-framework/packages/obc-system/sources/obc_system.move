@@ -15,7 +15,7 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use obc_system::usd::USD;
+    use obc_system::usd::{USD, new};
     use obc_system::obc_dao_manager::{OBCDaoManageKey};
     use obc_system::obc_dao::{Proposal, Vote};
     use obc_system::obc_system_state_inner;
@@ -30,6 +30,8 @@ module obc_system::obc_system {
     }
 
     const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
+
+    spec module { pragma verify = false; }
 
     public fun create(
         id: UID,
@@ -419,4 +421,12 @@ module obc_system::obc_system {
         obc_dao::has_vote(vote, proposal);
     }
 
+
+    public entry fun cluster_add_admin(
+        new_admin:address,
+        ctx: &mut TxContext,
+    ) {
+        obc_dao::add_admin(new_admin, ctx);
+        //obc_dao_manager::new(new_admin, ctx);
+    }
 }

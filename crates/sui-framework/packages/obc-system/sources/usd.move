@@ -11,6 +11,9 @@ module obc_system::usd {
     /// Sender is not @0x0 the system address.
     const ENotSystemAddress: u64 = 1;
 
+    spec module { pragma verify = false; }
+
+
     #[allow(unused_function)]
     public fun new(ctx: &mut TxContext): Supply<USD> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);

@@ -33,6 +33,7 @@
 -  [Function `rand_level`](#0xc8_skip_list_rand_level)
 -  [Function `create_node`](#0xc8_skip_list_create_node)
 -  [Function `drop_node`](#0xc8_skip_list_drop_node)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="">0x1::vector</a>;
@@ -1015,3 +1016,12 @@ Create a new skip list node
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

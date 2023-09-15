@@ -222,7 +222,7 @@
 
 
 
-<pre><code><b>const</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>: <a href="">vector</a>&lt;<b>address</b>&gt; = [15835301299490436797531864052756717558919000202302735629799491391021929516032, 65291099566713687366712577645016528323844253956509590706950403481947121946472, 24534971471998884076320588073588140533011227823836498849038009586284449996719, 51146047687078908496806713158095522211891725112102928692628967303014320690576, 21467571842073344777586981157680533501982638629804211914469802462091489096830];
+<pre><code><b>const</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>: <a href="">vector</a>&lt;<b>address</b>&gt; = [15835301299490436797531864052756717558919000202302735629799491391021929516032, 65291099566713687366712577645016528323844253956509590706950403481947121946472, 24534971471998884076320588073588140533011227823836498849038009586284449996719, 51146047687078908496806713158095522211891725112102928692628967303014320690576, 99840256252410854934884720094907096870421318439837223403968912893243261564088];
 </code></pre>
 
 
@@ -1136,10 +1136,6 @@ X-treasury
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, current_time: u64) {
     <b>let</b> proposal_record = <a href="obc_dao.md#0xc8_obc_dao_getProposalRecord">obc_dao::getProposalRecord</a>(&<b>mut</b> wrapper.dao);
     <b>let</b> size: u64 = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&proposal_record);
-    <b>if</b> (size == 0) {
-        <b>return</b>
-    };
-
     <b>let</b> i = 0;
     <b>while</b> (i &lt; size) {
         <b>let</b> (_, proposalInfo) = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_entry_by_idx">vec_map::get_entry_by_idx</a>(&proposal_record, size - 1);

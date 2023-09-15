@@ -17,6 +17,7 @@
 -  [Function `request_update_gas_coin`](#0xc8_gas_coin_map_request_update_gas_coin)
 -  [Function `requst_get_exchange_rate`](#0xc8_gas_coin_map_requst_get_exchange_rate)
 -  [Function `request_remove_gas_coin`](#0xc8_gas_coin_map_request_remove_gas_coin)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
@@ -362,3 +363,12 @@ Init gas coin map
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify = <b>false</b>;
+</code></pre>

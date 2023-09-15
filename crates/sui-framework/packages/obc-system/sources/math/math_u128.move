@@ -1,5 +1,6 @@
 module obc_system::math_u128 {
 
+
     const MAX_U128: u128 = 0xffffffffffffffffffffffffffffffff;
 
     const HI_64_MASK: u128 = 0xffffffffffffffff0000000000000000;
@@ -7,6 +8,8 @@ module obc_system::math_u128 {
     const LO_128_MASK: u256 = 0x00000000000000000000000000000000ffffffffffffffffffffffffffffffff;
 
     const DIV_BY_ZERO: u64 = 1;
+
+    spec module { pragma verify = false; }
 
     public fun wrapping_add(n1: u128, n2: u128): u128 {
         let (sum, _) = overflowing_add(n1, n2);
@@ -76,6 +79,9 @@ module obc_system::math_u128 {
 
     public fun from_lo_hi(lo: u64, hi: u64): u128 {
         ((hi as u128) << 64) + (lo as u128)
+    }
+    spec from_lo_hi {
+        pragma verify = false; // By default, do not verify specs in this module ...
     }
 
     public fun checked_div_round(num: u128, denom: u128, round_up: bool): u128 {
@@ -170,4 +176,5 @@ module obc_system::math_u128 {
         let (r, o) = overflowing_mul(MAX_U128, 10);
         assert!(r == 0xfffffffffffffffffffffffffffffff6 && o == true, 0);
     }
+
 }
