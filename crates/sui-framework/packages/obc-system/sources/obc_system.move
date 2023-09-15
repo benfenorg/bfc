@@ -132,7 +132,11 @@ module obc_system::obc_system {
         stable: Coin<USD>,
         ctx: &mut TxContext,
     ) {
-        let balance = request_exchange_stable_no_entry(self, stable, ctx);
+        let inner_state = load_system_state_mut(self);
+        let balance = obc_system_state_inner::swap_stablecoin_to_obc_balance<USD>(
+            inner_state,
+            stable,
+            ctx);
         transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
     }
 

@@ -18,7 +18,6 @@ use crate::{
     error::{ExecutionError, ExecutionErrorKind},
     id::UID,
     object::{Data, MoveObject, Object},
-    SUI_FRAMEWORK_ADDRESS,
 };
 
 /// The number of Mist per Sui token
@@ -31,20 +30,21 @@ pub const TOTAL_SUPPLY_SUI: u64 = 10_000_000_000;
 /// Total supply denominated in Mist
 pub const TOTAL_SUPPLY_MIST: u64 = TOTAL_SUPPLY_SUI * MIST_PER_SUI;
 
-pub const GAS_MODULE_NAME: &IdentStr = ident_str!("stable");
-pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("STABLE");
+pub const GAS_MODULE_NAME: &IdentStr = ident_str!("usd");
+pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("USD");
 
 pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
+    use crate::OBC_SYSTEM_ADDRESS;
     use super::*;
 
     pub struct STABLE {}
     impl STABLE {
         pub fn type_() -> StructTag {
             StructTag {
-                address: SUI_FRAMEWORK_ADDRESS,
+                address: OBC_SYSTEM_ADDRESS,
                 name: GAS_STRUCT_NAME.to_owned(),
                 module: GAS_MODULE_NAME.to_owned(),
                 type_params: Vec::new(),

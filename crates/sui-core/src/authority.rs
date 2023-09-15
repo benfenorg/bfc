@@ -39,6 +39,7 @@ use tokio::sync::mpsc::unbounded_channel;
 use tokio::sync::oneshot;
 use tokio_retry::strategy::{jitter, ExponentialBackoff};
 use tracing::{debug, error, info, instrument, trace, warn, Instrument};
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 
 use self::authority_store_pruner::AuthorityStorePruningMetrics;
 pub use authority_notify_read::EffectsNotifyRead;
@@ -107,6 +108,7 @@ use sui_types::temporary_store::{
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, OBC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
+use sui_types::gas_coin::MIST_PER_SUI;
 use sui_types::obc_system_state::ObcSystemState;
 use sui_types::proposal::ProposalStatus;
 use typed_store::Map;
@@ -1336,20 +1338,20 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
-        let response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
+        let mut response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
         if is_stable_gas {
-            // let gas = transaction.gas()[0].0;
-            // //get exchange rate
-            // let rate = self.exchange_rates(gas).await?;
-            // if rate > 0 {
-            //     let mut gas_cost = response_effects.mut_gas_cost_summary();
-            //     let real_rate = rate / MIST_PER_SUI;
-            //     gas_cost.computation_cost = gas_cost.computation_cost * real_rate;
-            //     gas_cost.storage_cost = gas_cost.storage_cost * real_rate;
-            //     gas_cost.storage_rebate = gas_cost.storage_rebate * real_rate;
-            //     gas_cost.non_refundable_storage_fee = gas_cost.non_refundable_storage_fee * real_rate;
-            //     info!("stable gas coin exchange: {}", gas_cost);
-            // }
+            let gas = transaction.gas()[0].0;
+            //get exchange rate
+            let rate = self.exchange_rates(gas).await?;
+            if rate > 0 {
+                let mut gas_cost = response_effects.mut_gas_cost_summary();
+                let real_rate = rate / MIST_PER_SUI;
+                gas_cost.computation_cost = gas_cost.computation_cost * real_rate;
+                gas_cost.storage_cost = gas_cost.storage_cost * real_rate;
+                gas_cost.storage_rebate = gas_cost.storage_rebate * real_rate;
+                gas_cost.non_refundable_storage_fee = gas_cost.non_refundable_storage_fee * real_rate;
+                info!("stable gas coin exchange: {}", gas_cost);
+            }
         }
         Ok((
             DryRunTransactionBlockResponse {

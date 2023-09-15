@@ -130,7 +130,10 @@ module obc_system::obc_system_state_inner {
         self: &ObcSystemStateInner,
         stable: &Coin<CoinType>
     ): u64 {
-        gas_coin_map::requst_get_exchange_rate<CoinType>(&self.gas_coin_map, stable)
+        get_stablecoin_by_obc<CoinType>(
+            self,
+            gas_coin_map::get_default_rate(),
+        )
     }
 
     public(friend) fun request_add_gas_coin<CoinType>(

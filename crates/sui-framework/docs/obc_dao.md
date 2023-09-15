@@ -1816,7 +1816,7 @@ Revoke some voting powers from vote on <code>proposal_id</code> of <code>propose
     ctx: &<b>mut</b> TxContext,
 ){
     <b>spec</b> {
-        <b>assume</b> vote.vote.value &gt;= to_revoke;
+        <b>assume</b> vote.vote.principal.value &gt;= to_revoke;
     };
 
     //todo: unlock vote <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a> or <b>return</b>...
@@ -1829,7 +1829,7 @@ Revoke some voting powers from vote on <code>proposal_id</code> of <code>propose
         proposal.proposal.against_votes = proposal.proposal.against_votes - to_revoke;
     };
     <b>spec</b> {
-        <b>assert</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(reverted_vote) == to_revoke;
+        <b>assert</b> reverted_vote.principal.value == to_revoke;
     };
 
     //reverted_vote
@@ -1872,11 +1872,15 @@ Retrieve back my voted token voted for a proposal.
     };
 
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
+
+
     // delete vote.
     <b>let</b> <a href="obc_dao.md#0xc8_obc_dao_Vote">Vote</a> { proposer, id,vid, vote, agree: _ } = vote;
 
 
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id);
+
+
 
     // these checks are still required.
     <b>assert</b>!(proposer == proposal.proposal.proposer, (<a href="obc_dao.md#0xc8_obc_dao_ERR_PROPOSER_MISMATCH">ERR_PROPOSER_MISMATCH</a>));
