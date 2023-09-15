@@ -15,20 +15,20 @@ const dividerStyles = cva('', {
 			'hero/10': 'border-hero/10',
 			obcBorder: 'border-obc-border',
 		},
-		style: {
-			solid:'border-solid',
+		type: {
+			solid: 'border-solid',
 			dashed: 'border-dashed',
-		}
+		},
 	},
 	defaultVariants: {
 		vertical: false,
 		color: 'obcBorder',
-		style:'solid'
+		type: 'solid',
 	},
 });
 
 export type DividerProps = VariantProps<typeof dividerStyles>;
 
-export function Divider({ vertical, color, style }: DividerProps) {
-	return <div className={dividerStyles({ vertical, color, style })} />;
+export function Divider({ vertical, color, type }: DividerProps) {
+	return <div className={dividerStyles({ vertical, color, type })} />;
 }

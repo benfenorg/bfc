@@ -89,7 +89,7 @@ export function TransactionBlockCardSection({
 						) : (
 							title
 						)}
-						<Divider style="dashed"/>
+						<Divider type="dashed" />
 						<ChevronRight12
 							className={clsx('h-4 w-4 cursor-pointer text-obc-text3', open && 'rotate-90')}
 						/>
@@ -138,7 +138,9 @@ export function TransactionBlockCard({
 				</Collapsible.Root>
 
 				{footer && (
-					<div className={clsx('rounded-b-2xl bg-obc-card py-2.5', size === 'md' ? 'px-6' : 'px-4')}>
+					<div
+						className={clsx('rounded-b-2xl bg-obc-card py-2.5', size === 'md' ? 'px-6' : 'px-4')}
+					>
 						{footer}
 					</div>
 				)}
