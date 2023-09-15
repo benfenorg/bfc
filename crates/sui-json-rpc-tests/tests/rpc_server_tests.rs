@@ -1036,8 +1036,6 @@ async fn test_dao_publish() -> Result<(), anyhow::Error> {
     let function = "create_dao_test".to_string();
 
 
-
-
     let transaction_bytes: TransactionBlockBytes = http_client
         .move_call(
             address,

@@ -2606,7 +2606,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_add_admin">add_admin</a>(_: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, new_admin: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_add_admin">add_admin</a>(new_admin: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2616,7 +2616,6 @@ set min action delay
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_add_admin">add_admin</a>(
-    _: &OBCDaoManageKey,
     new_admin:<b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
@@ -2838,7 +2837,7 @@ remove terminated proposal from proposer
     //         eta: _,
     //         action_delay: _,
     //         quorum_votes: _,
-    //         action: _
+    //         action: _c
     //         } ,
     //     } = proposal;
     //
