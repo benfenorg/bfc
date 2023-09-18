@@ -36,11 +36,13 @@ module obc_system::obc_system {
     public fun create(
         id: UID,
         usd_supply: Supply<USD>,
+        coin_obc: Coin<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ) {
         let inner_state = obc_system_state_inner::create_inner_state(
             usd_supply,
+            coin_obc,
             parameters,
             ctx,
         );
