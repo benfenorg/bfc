@@ -732,7 +732,6 @@ async fn test_obc_dao_create_votingobc()  -> Result<(), anyhow::Error> {
     let coinObj = objects.get(2).unwrap().object().unwrap();
 
 
-    //todo, call create voting obc,
     // now do the call
     let package_id = OBC_SYSTEM_PACKAGE_ID;
     let module = "obc_system".to_string();
@@ -810,9 +809,197 @@ async fn test_obc_dao_cast_voting() -> Result<(), anyhow::Error>{
 
 #[sim_test]
 async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    let amount  = 1_000_000_000u64* 100;
+    let tx = make_transfer_sui_transaction(&cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    let effects0 = cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    let coinObj = objects.get(2).unwrap().object().unwrap();
+
+
+    // now do the call
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "create_voting_obc".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coinObj.object_id.to_string())?,
+    ];
+
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            arg,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+
+
+
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let dataOption = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(dataOption),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 1. pass.
+    info!("============finish get owned objects {}", objects.len());
+
+
+    let votingObc = objects.get(0).unwrap().object().unwrap();
+
+    //with draw the voting obc,,,
+    // now do the call
+    //public entry fun withdraw_voting(   wrapper: &mut ObcSystemState voting_obc: VotingObc)
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "withdraw_voting".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&votingObc.object_id.to_string())?,
+    ];
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            arg,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+
+
+
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let dataOption = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(dataOption),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 0. pass.
+    info!("============finish get owned objects {}", objects.len());
 
     Ok(())
 }
+
+
 
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
