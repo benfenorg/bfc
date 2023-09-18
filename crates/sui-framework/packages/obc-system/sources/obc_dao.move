@@ -31,8 +31,10 @@ module obc_system::obc_dao {
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
-    const DEFAULT_VOTE_QUORUM_RATE: u8 = 50; // 50% default quorum rate
+    const DEFAULT_VOTE_QUORUM_RATE: u8 = 40; // 40% default quorum rate
     const DEFAULT_START_PROPOSAL_VERSION_ID : u64 = 19;
+
+    const DEFAULT_OBC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  OBC
 
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
 
@@ -863,9 +865,7 @@ module obc_system::obc_dao {
     /// Quorum votes to make proposal pass.
     /// temply using 4000* 000_0000 as the pass rate.
     fun quorum_votes(dao: &mut Dao): u64 {
-        //let market_cap = total_supply(Coin<OBC>);
-        //let balance_in_treasury = Treasury::balance<TokenT>();
-        let total_supply_sui: u64 = 10000000000;
+        let total_supply_sui: u64 = DEFAULT_OBC_SUPPLY;
         let supply = total_supply_sui;
 
         let rate = voting_quorum_rate(dao);
