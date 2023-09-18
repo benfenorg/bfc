@@ -604,6 +604,12 @@ Configuration of the <code>Token</code>'s DAO.
 
 <dl>
 <dt>
+<code>project_uid: <b>address</b></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>pid: u64</code>
 </dt>
 <dd>
@@ -1452,6 +1458,7 @@ propose a proposal.
     <b>let</b> object_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx);
 
     <b>let</b> proposalInfo = <a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">ProposalInfo</a> {
+        project_uid: <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_address">object::uid_to_address</a>(&object_id),
         pid: proposal_id,
         proposer: sender,
         start_time,

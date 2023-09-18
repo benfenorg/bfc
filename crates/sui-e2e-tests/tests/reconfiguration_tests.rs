@@ -656,15 +656,7 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
     Ok(())
 }
 
-
-#[sim_test]
-async fn test_obc_dao_create_create_propose() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
-
-    let cluster = TestClusterBuilder::new().build().await;
-    let http_client = cluster.rpc_client();
-    let address = cluster.get_address_0();
-
+async fn create_proposal(cluster: &TestCluster,  gas: &SuiObjectData ,address: SuiAddress, http_client: &HttpClient) -> Result<ObjectID, anyhow::Error> {
     let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::obc::OBC>").unwrap());
     let dataOption = SuiObjectDataOptions::new()
         .with_type()
@@ -685,25 +677,6 @@ async fn test_obc_dao_create_create_propose() -> Result<(), anyhow::Error> {
 
 
     let coinObj = objects.get(2).unwrap().object().unwrap();
-
-    // create action
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
-
 
     // now do the call
     let managerObj = add_cluster_admin(http_client, gas, address, &cluster).await?;
@@ -740,11 +713,99 @@ async fn test_obc_dao_create_create_propose() -> Result<(), anyhow::Error> {
 
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
+    Ok(managerObj)
+}
+
+#[sim_test]
+async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+
+    let managerObj = create_proposal(&cluster, gas, address, http_client).await?;
+    let result = http_client.get_inner_dao_info().await?;
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let dao = result as DaoRPC;
+    let modify_proposal = "modify_proposal".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().project_uid))?,
+        SuiJsonValue::new(json!("7"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), modify_proposal.clone(), arg).await?;
+
+    let destroy_terminated_proposal = "destroy_terminated_proposal".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&managerObj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().project_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), destroy_terminated_proposal.clone(), arg).await?;
     let result = http_client.get_inner_dao_info().await?;
 
     let dao = result as DaoRPC;
+    assert_eq!(dao.proposal_record.len(), 0);
+    Ok(())
+}
 
-    info!("============finish get dao actions {:?}", dao.action_record);
+#[sim_test]
+async fn test_obc_dao_create_create_propose() -> Result<(), anyhow::Error> {
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    let gas = objects.first().unwrap().object().unwrap();
+
+    create_proposal(&cluster, gas, address, http_client).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+    assert!(dao.proposal_record.len() > 0);
     Ok(())
 }
 
