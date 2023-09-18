@@ -58,7 +58,7 @@ module obc_system::obc_system_tests {
         obc_system::create(
             object::new(ctx),
             usd_supply,
-            coin::zero(ctx),
+            balance::zero<OBC>(),
             treasury_parameters,
             ctx,
         );

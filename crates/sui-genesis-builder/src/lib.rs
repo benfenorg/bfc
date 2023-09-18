@@ -12,10 +12,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use sui_config::genesis::{
-    Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule,
-    UnsignedGenesis,ObcSystemParameters
-};
+use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, ObcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST};
 use sui_execution::{self, Executor};
 use sui_framework::BuiltInFramework;
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
@@ -31,6 +28,7 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::epoch_data::EpochData;
 use sui_types::gas::GasCharger;
 use sui_types::gas_coin::GasCoin;
+use sui_types::gas_coin::GAS;
 use sui_types::governance::StakedSui;
 use sui_types::in_memory_storage::InMemoryStorage;
 use sui_types::message_envelope::Message;
@@ -1057,8 +1055,20 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
+        let arguments =  vec![
+            sui_supply,
+            builder.input(CallArg::Pure(bcs::to_bytes(&TOTAL_SUPPLY_WITH_ALLOCATION_MIST).unwrap()))?
+        ];
+        //Step 4 allocation to swap_pool
+        let new_sui_supply= builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("balance").to_owned(),
+            ident_str!("split").to_owned(),
+            vec![GAS::type_tag()],
+            arguments,
+        );
 
-        // Step 4: Run genesis.
+        // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
         let mut arguments = vec![sui_system_state_uid, sui_supply];
@@ -1079,7 +1089,7 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
-        // Step 5: Create the ObcSystemState UID
+        // Step 6: Create the ObcSystemState UID
         let obc_system_state_uid = builder.programmable_move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
             ident_str!("object").to_owned(),
@@ -1097,18 +1107,12 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
-        let mut arguments = vec![
+        let arguments = vec![
             obc_system_state_uid,
             usd_supply,
-            // TODO added obc_coin,
+            new_sui_supply,
+            builder.input(CallArg::Pure(bcs::to_bytes(&obc_system_parameters).unwrap()))?
         ];
-        let mut obc_call_arg_arguments = vec![
-            CallArg::Pure(bcs::to_bytes(&obc_system_parameters).unwrap()),
-        ]
-        .into_iter()
-        .map(|b| builder.input(b))
-        .collect::<anyhow::Result<_, _>>()?;
-        arguments.append(&mut obc_call_arg_arguments);
 
         builder.programmable_move_call(
             OBC_SYSTEM_ADDRESS.into(),

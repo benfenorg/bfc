@@ -658,7 +658,7 @@ Burn swap stablecoin to obc
     _ctx: &<b>mut</b> TxContext,
 ): Balance&lt;OBC&gt; {
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>&lt;StableCoinType&gt;(&_coin_sc) &gt; 0, <a href="treasury.md#0xc8_treasury_ERR_ZERO_AMOUNT">ERR_ZERO_AMOUNT</a>);
-    <b>let</b> (balance_a, balance_b)  =<a href="treasury.md#0xc8_treasury_swap_internal">swap_internal</a>&lt;StableCoinType&gt;(
+    <b>let</b> (balance_a, balance_b) = <a href="treasury.md#0xc8_treasury_swap_internal">swap_internal</a>&lt;StableCoinType&gt;(
         _treasury,
         <b>true</b>,
         _coin_sc,
@@ -805,12 +805,12 @@ Rebalance
     <b>let</b> times_per_day = (3600 * 24 / _treasury.time_interval <b>as</b> u64);
 
     // USD <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> required
-    <b>let</b> usd_v = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;USD&gt;(
-        _treasury,
-        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;(),
-    );
-    <b>let</b> obc_required_per_time = <a href="vault.md#0xc8_vault_obc_required">vault::obc_required</a>(usd_v);
-    total = total + obc_required_per_time * times_per_day;
+    <b>let</b> usd_vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;();
+    <b>if</b> (<a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_exists_">dynamic_object_field::exists_</a>(&_treasury.id, usd_vault_key)) {
+        <b>let</b> usd_v = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;USD&gt;(_treasury, usd_vault_key);
+        <b>let</b> obc_required_per_time = <a href="vault.md#0xc8_vault_obc_required">vault::obc_required</a>(usd_v);
+        total = total + obc_required_per_time * times_per_day;
+    };
 
     total - <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury)
 }
