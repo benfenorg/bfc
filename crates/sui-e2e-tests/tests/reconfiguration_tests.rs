@@ -572,8 +572,7 @@ async fn add_cluster_admin(http_client: &HttpClient, gas: &SuiObjectData, addres
 
     Ok(managerObj.object_id)
 }
-async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID,
-                        module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<(), anyhow::Error> {
+async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<(), anyhow::Error> {
 
     let transaction_bytes: TransactionBlockBytes = http_client
         .move_call(
@@ -629,29 +628,7 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
 
     let gas = objects.first().unwrap().object().unwrap();
 
-
-
-    sleep(Duration::from_secs(2)).await;
-
-
-
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let managerObj = objects.get(1).unwrap().object().unwrap();
-
+    let managerObj = add_cluster_admin(http_client, gas, address, &cluster).await?;
 
 
     // now do the call
@@ -661,71 +638,20 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
     let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let arg = vec![
         SuiJsonValue::from_str(&obc_status_address.to_string())?,
-        SuiJsonValue::from_str(&managerObj.object_id.to_string())?,
+        SuiJsonValue::from_str(&managerObj.to_string())?,
         SuiJsonValue::new(json!("hello world"))?,
     ];
 
 
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            package_id,
-            module,
-            function,
-            type_args![]?,
-            arg,
-            Some(gas.object_id),
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-
-    let tx = cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-
-    let tx_response = http_client
-        .execute_transaction_block(
-            tx_bytes,
-            signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+   do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
 
 
+    let result = http_client.get_inner_dao_info().await?;
 
+    let dao = result as DaoRPC;
 
-
-    sleep(Duration::from_secs(2)).await;
-
-
-    //            SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::test::Test").unwrap()),
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::obc_dao_manager::OBCDaoManageKey").unwrap());
-    let dataOption = SuiObjectDataOptions::new()
-        .with_type()
-        .with_owner()
-        .with_previous_transaction();
-
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new(
-                Option::Some(filter),
-                Option::Some(dataOption),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-
-    info!("============finish get obcdao action {}", objects.len());
-
-
+    info!("============finish get dao actions {:?}", dao.action_record);
+    assert!(dao.action_record.len() > 0);
 
     Ok(())
 }
@@ -897,6 +823,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
         .data;
 
     info!("============finish get owned objects {}", objects.len());
+    assert!(objects.len() > 0);
 
     let gas = objects.first().unwrap().object().unwrap();
 
@@ -939,34 +866,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
         SuiJsonValue::from_str(&coinObj.object_id.to_string())?,
     ];
 
-
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            package_id,
-            module,
-            function,
-            type_args![]?,
-            arg,
-            Some(gas.object_id),
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-
-    let tx = cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-
-    let tx_response = http_client
-        .execute_transaction_block(
-            tx_bytes,
-            signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
 
 
 
@@ -992,6 +892,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
 
     //should be size = 1. pass.
     info!("============finish get owned objects {}", objects.len());
+    assert_eq!(objects.len(), 1);
 
 
     let votingObc = objects.get(0).unwrap().object().unwrap();
@@ -1008,34 +909,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
         SuiJsonValue::from_str(&votingObc.object_id.to_string())?,
     ];
 
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            package_id,
-            module,
-            function,
-            type_args![]?,
-            arg,
-            Some(gas.object_id),
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-
-    let tx = cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-
-    let tx_response = http_client
-        .execute_transaction_block(
-            tx_bytes,
-            signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-
+   do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
 
 
 
@@ -1060,6 +934,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
 
     //should be size = 0. pass.
     info!("============finish get owned objects {}", objects.len());
+    assert_eq!(objects.len(), 0);
 
     Ok(())
 }
@@ -1161,10 +1036,10 @@ async fn test_obc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     let dao = result as DaoRPC;
 
     info!("============finish get dao info {:?}", dao.config);
-    assert!(dao.config.voting_period == 888888);
-    assert!(dao.config.min_action_delay == 888888);
-    assert!(dao.config.voting_delay == 888888);
-    assert!(dao.config.voting_quorum_rate == 88);
+    assert_eq!(dao.config.voting_period, 888888);
+    assert_eq!(dao.config.min_action_delay, 888888);
+    assert_eq!(dao.config.voting_delay, 888888);
+    assert_eq!(dao.config.voting_quorum_rate, 88);
 
 
     Ok(())
