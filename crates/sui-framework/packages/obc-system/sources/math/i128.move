@@ -30,6 +30,10 @@ module obc_system::i128 {
         }
     }
 
+    spec from {
+        pragma opaque;
+    }
+
     public fun neg_from(v: u128): I128 {
         assert!(v <= MIN_AS_U128, EOverflow);
         if (v == 0) {
@@ -192,6 +196,9 @@ module obc_system::i128 {
 
     public fun sign(v: I128): u8 {
         ((v.bits >> 127) as u8)
+    }
+    spec sign {
+        pragma opaque;
     }
 
     public fun is_neg(v: I128): bool {

@@ -174,6 +174,10 @@ module obc_system::tick {
         _tick.liquidity_net = liquidity_net;
     }
 
+    spec update_by_liquidity {
+        pragma opaque;
+    }
+
     /// add/remove liquidity
     public(friend) fun increase_liquidity(
         _tick_manager: &mut TickManager,

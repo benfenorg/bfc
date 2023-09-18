@@ -241,6 +241,9 @@ module obc_system::clmm_math {
         }
     }
 
+    spec compute_swap_step {
+        pragma opaque;
+    }
     public fun compute_swap_step(
         current_sqrt_price: u128,
         target_sqrt_price: u128,

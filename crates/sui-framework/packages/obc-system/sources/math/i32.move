@@ -39,6 +39,9 @@ module obc_system::i32 {
             bits: v
         }
     }
+    spec from_u32 {
+        pragma opaque;
+    }
 
     public fun from(v: u32): I32 {
         assert!(v <= MAX_AS_U32, EOverflow);
@@ -46,6 +49,10 @@ module obc_system::i32 {
             bits: v
         }
     }
+    spec from {
+        pragma opaque;
+    }
+
 
     public fun neg_from(v: u32): I32 {
         assert!(v <= MIN_AS_U32, EOverflow);
@@ -174,10 +181,16 @@ module obc_system::i32 {
        v.bits
     }
 
+    spec as_u32 {
+        pragma opaque;
+    }
+
     public fun sign(v: I32): u8 {
         ((v.bits >> 31) as u8)
     }
-
+    spec sign {
+        pragma opaque;
+    }
 
     public fun is_neg(v: I32): bool {
         sign(v) == 1
@@ -199,6 +212,10 @@ module obc_system::i32 {
 
     public fun eq(num1: I32, num2: I32): bool {
         num1.bits == num2.bits
+    }
+
+    spec eq {
+        pragma opaque;
     }
 
     public fun gt(num1: I32, num2: I32): bool {

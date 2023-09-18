@@ -170,6 +170,9 @@ module obc_system::position {
         position.liquidity
     }
 
+    spec increase_liquidity {
+        pragma opaque;
+    }
     public(friend) fun decrease_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
         assert!(!is_empty(position), ERR_POSITION_INFO_EMPTY);
         if (_liquidity_delta == 0) {

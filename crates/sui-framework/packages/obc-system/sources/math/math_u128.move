@@ -116,6 +116,10 @@ module obc_system::math_u128 {
         (MAX_U128 - num1 >= num2)
     }
 
+    spec add_check {
+        pragma opaque;
+    }
+
     #[test]
     fun test_overflowing_add() {
         let (m, o) = overflowing_add(10, 10);
