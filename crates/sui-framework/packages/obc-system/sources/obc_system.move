@@ -36,11 +36,13 @@ module obc_system::obc_system {
     public fun create(
         id: UID,
         usd_supply: Supply<USD>,
+        coin_obc: Coin<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ) {
         let inner_state = obc_system_state_inner::create_inner_state(
             usd_supply,
+            coin_obc,
             parameters,
             ctx,
         );
@@ -134,7 +136,11 @@ module obc_system::obc_system {
         stable: Coin<USD>,
         ctx: &mut TxContext,
     ) {
-        let balance = request_exchange_stable_no_entry(self, stable, ctx);
+        let inner_state = load_system_state_mut(self);
+        let balance = obc_system_state_inner::swap_stablecoin_to_obc_balance<USD>(
+            inner_state,
+            stable,
+            ctx);
         transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
     }
 

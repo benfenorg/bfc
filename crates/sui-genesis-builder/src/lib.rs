@@ -1100,6 +1100,7 @@ pub fn generate_genesis_system_object(
         let mut arguments = vec![
             obc_system_state_uid,
             usd_supply,
+            // TODO added obc_coin,
         ];
         let mut obc_call_arg_arguments = vec![
             CallArg::Pure(bcs::to_bytes(&obc_system_parameters).unwrap()),

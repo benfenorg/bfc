@@ -44,21 +44,22 @@ module obc_system::obc_system_state_inner {
         position_number: u32,
         tick_spacing: u32,
         spacing_times: u32,
-        initialize_price: u128,
         time_interval: u32,
-        base_point: u64,
         max_counter_times: u32,
+        base_point: u64,
+        initialize_price: u128,
     }
 
     struct ObcSystemParameters has drop, copy {
-        treasury_parameters: TreasuryParameters,
         chain_start_timestamp_ms: u64,
+        treasury_parameters: TreasuryParameters,
     }
 
     const OBC_SYSTEM_TREASURY_KEY: u64 = 1;
 
     public(friend) fun create_inner_state(
         usd_supply: Supply<USD>,
+        coin_obc: Coin<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext,
     ): ObcSystemStateInner {
@@ -67,7 +68,8 @@ module obc_system::obc_system_state_inner {
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<USD>(ctx, 0);
         let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
-        let t = create_treasury(usd_supply, parameters, ctx);
+        let t = create_treasury(usd_supply, coin_obc, parameters, ctx);
+
         ObcSystemStateInner {
             round: OBC_SYSTEM_STATE_START_ROUND,
             gas_coin_map,
@@ -130,7 +132,10 @@ module obc_system::obc_system_state_inner {
         self: &ObcSystemStateInner,
         stable: &Coin<CoinType>
     ): u64 {
-        gas_coin_map::requst_get_exchange_rate<CoinType>(&self.gas_coin_map, stable)
+        get_stablecoin_by_obc<CoinType>(
+            self,
+            gas_coin_map::get_default_rate(),
+        )
     }
 
     public(friend) fun request_add_gas_coin<CoinType>(
@@ -170,11 +175,19 @@ module obc_system::obc_system_state_inner {
     /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<USD>,
+        coin_obc: Coin<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ): Treasury {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
+
+        if (coin::value(&coin_obc) > 0) {
+            treasury::deposit(&mut t, coin_obc);
+        } else {
+            coin::destroy_zero(coin_obc);
+        };
+
         treasury::init_vault_with_positions<USD>(
             &mut t,
             supply,

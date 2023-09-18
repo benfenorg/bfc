@@ -433,7 +433,10 @@ Getter of the gas coin exchange pool rate.
     self: &<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;CoinType&gt;
 ): u64 {
-    <a href="gas_coin_map.md#0xc8_gas_coin_map_requst_get_exchange_rate">gas_coin_map::requst_get_exchange_rate</a>&lt;CoinType&gt;(&self.<a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_stablecoin_by_obc">get_stablecoin_by_obc</a>&lt;CoinType&gt;(
+        self,
+        <a href="gas_coin_map.md#0xc8_gas_coin_map_get_default_rate">gas_coin_map::get_default_rate</a>(),
+    )
 }
 </code></pre>
 

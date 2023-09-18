@@ -1,12 +1,12 @@
-import {
-	useGetDaoProposals,
-} from '@mysten/core';
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+import { useGetDaoProposals } from '@mysten/core';
 import { Heading } from '@mysten/ui';
-import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
-import { PageLayout } from '~/components/Layout/PageLayout';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
+import { PageLayout } from '~/components/Layout/PageLayout';
+import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
 
@@ -21,8 +21,7 @@ interface DaoListProps {
 	isLoading: boolean;
 }
 
-
-const DaoItem = ({ data }: { data: DaoDateItem }) => {
+function DaoItem({ data }: { data: DaoDateItem }) {
 	return (
 		<div className="rounded-md border border-obc-border p-5">
 			<div className="flex gap-1">
@@ -40,13 +39,13 @@ const DaoItem = ({ data }: { data: DaoDateItem }) => {
 				<span className="text-body text-obc-text2">结束时间：</span>
 				<span className="text-body text-obc-text1">asdsdd</span>
 			</div>
-			<Divider style="dashed" />
+			<Divider type="dashed" />
 			<div className="mt-3 flex items-baseline gap-1">
 				<div className="text-heading4 font-semibold">50.5%</div>
 				<div className="text-body text-obc-text2">同意</div>
 			</div>
 			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-obc-green">
-				<div className="absolute h-1 w-[50%] bg-obc-red"></div>
+				<div className="absolute h-1 w-[50%] bg-obc-red" />
 			</div>
 
 			<div className="flex h-4.5 items-center gap-2">
@@ -62,10 +61,11 @@ const DaoItem = ({ data }: { data: DaoDateItem }) => {
 			</div>
 		</div>
 	);
-};
-const DaoList = ({ data, isLoading }: DaoListProps) => {
+}
+
+function DaoList({ data, isLoading }: DaoListProps) {
 	const { data: list } = useGetDaoProposals();
-	console.log('listlist',list)
+	console.log('listlist', list);
 	return (
 		<div>
 			<div>
@@ -75,18 +75,19 @@ const DaoList = ({ data, isLoading }: DaoListProps) => {
 			</div>
 			<div className="mt-5 grid grid-cols-3 gap-5">
 				{data.map((item) => (
-					<LinkWithQuery to="/dao/detail/24324343">
+					<LinkWithQuery key={item.id} to="/dao/detail/24324343">
 						<DaoItem data={item} />
 					</LinkWithQuery>
 				))}
 			</div>
 		</div>
 	);
-};
-const Dao = () => {
+}
+
+function Dao() {
 	const data: any = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-	const {data:OBCDaoManageKey} = useGetOBCDaoManageKey()
-	console.log('OBCDaoManageKey',OBCDaoManageKey)
+	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey();
+	console.log('OBCDaoManageKey', OBCDaoManageKey);
 	return (
 		<PageLayout
 			gradientContent={
@@ -110,6 +111,6 @@ const Dao = () => {
 			}
 		/>
 	);
-};
+}
 
 export default Dao;

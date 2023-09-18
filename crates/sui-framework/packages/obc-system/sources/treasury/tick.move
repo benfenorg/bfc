@@ -114,7 +114,7 @@ module obc_system::tick {
         Tick {
             sqrt_price,
             index: _tick_index,
-            liquidity_net: i128::from(sqrt_price),
+            liquidity_net: i128::from(0),
             liquidity_gross: 0
         }
     }
@@ -258,6 +258,27 @@ module obc_system::tick {
         };
     }
 
+    public(friend) fun cross_by_tick(
+        _tick: &Tick,
+        _is_x2y: bool,
+        _liquidity: u128
+    ): u128
+    {
+        let liquidity_net = if (_is_x2y) {
+            i128::neg(_tick.liquidity_net)
+        } else {
+            _tick.liquidity_net
+        };
+        let abs_liquidity_net = i128::abs_u128(liquidity_net);
+        if (i128::is_neg(liquidity_net)) {
+            assert!(abs_liquidity_net <= _liquidity, ERR_TICK_LIQUIDITY_INSUFFICIENT);
+            _liquidity - abs_liquidity_net
+        } else {
+            assert!(math_u128::add_check(abs_liquidity_net, _liquidity), ERR_TICK_EXCEED_U128_MAXIMUM);
+            _liquidity + abs_liquidity_net
+        }
+    }
+
     public(friend) fun cross_by_swap(
         _tick_manager: &TickManager,
         _tick_index: I32,
@@ -266,20 +287,7 @@ module obc_system::tick {
     ): u128
     {
         let tick = skip_list::borrow(&_tick_manager.ticks, tick_score(_tick_index));
-        let liquidity_net = if (_is_x2y) {
-            i128::neg(tick.liquidity_net)
-        } else {
-            tick.liquidity_net
-        };
-        let liquidity_ret: u128;
-        if (i128::is_neg(liquidity_net)) {
-            assert!(i128::abs_u128(liquidity_net) <= _liquidity, ERR_TICK_LIQUIDITY_INSUFFICIENT);
-            liquidity_ret = _liquidity - i128::abs_u128(liquidity_net);
-        } else {
-            assert!(math_u128::add_check(i128::abs_u128(liquidity_net), _liquidity), ERR_TICK_EXCEED_U128_MAXIMUM);
-            liquidity_ret = i128::abs_u128(liquidity_net) + _liquidity;
-        };
-        liquidity_ret
+        cross_by_tick(tick, _is_x2y, _liquidity)
     }
 
     public(friend) fun first_score_for_swap(

@@ -497,11 +497,13 @@ module obc_system::vault {
                 current_tick_index: tick_index,
             });
             if (target_sqrt_price == next_sqrt_price) {
-                current_sqrt_price = next_sqrt_price;
-                liquidity = tick::cross_by_swap(&_vault.tick_manager, tick_index, _a2b, liquidity);
+                current_sqrt_price = target_sqrt_price;
+                liquidity = tick::cross_by_tick(next_tick, _a2b, liquidity);
                 tick_index = tick::tick_index(next_tick);
-                swap_result.after_sqrt_price = current_sqrt_price;
+            } else {
+                current_sqrt_price = next_sqrt_price
             };
+            swap_result.after_sqrt_price = current_sqrt_price;
         };
         swap_result
     }
@@ -660,21 +662,22 @@ module obc_system::vault {
                 _a2b
             );
             next_score = tick_score;
-            let tick_index = tick::tick_index(tick);
-            let tick_sqrt_price = if (_a2b) {
-                math_u128::max(_sqrt_price_limit, tick::sqrt_price(tick))
+            let next_tick_index = tick::tick_index(tick);
+            let next_tick_sqrt_price = tick::sqrt_price(tick);
+            let target_sqrt_price = if (_a2b) {
+                math_u128::max(_sqrt_price_limit, next_tick_sqrt_price)
             } else {
-                math_u128::min(_sqrt_price_limit, tick::sqrt_price(tick))
+                math_u128::min(_sqrt_price_limit, next_tick_sqrt_price)
             };
             let (amount_in, amount_out, next_sqrt_price) = clmm_math::compute_swap_step(
                 _vault.current_sqrt_price,
-                tick_sqrt_price,
+                target_sqrt_price,
                 _vault.liquidity,
                 remaining_amount,
                 _a2b,
                 _by_amount_in
             );
-            if (amount_in != 0 || amount_out != 0) {
+            if (amount_in != 0) {
                 if (_by_amount_in) {
                     remaining_amount = check_remainer_amount_sub(remaining_amount, amount_in);
                 } else {
@@ -682,12 +685,12 @@ module obc_system::vault {
                 };
                 update_swap_result(&mut swap_result, amount_in, amount_out);
             };
-            if (next_sqrt_price == tick::sqrt_price(tick)) {
-                _vault.current_sqrt_price = tick_sqrt_price;
+            if (next_sqrt_price == next_tick_sqrt_price) {
+                _vault.current_sqrt_price = target_sqrt_price;
                 let next_tick = if (_a2b) {
-                    i32::sub(tick_index, i32::from_u32(1))
+                    i32::sub(next_tick_index, i32::from_u32(1))
                 } else {
-                    tick_index
+                    next_tick_index
                 };
                 _vault.current_tick_index = next_tick;
                 _vault.liquidity = tick::cross_by_swap(
@@ -697,11 +700,12 @@ module obc_system::vault {
                     _vault.liquidity
                 );
             } else {
-                if (_vault.current_sqrt_price != tick::sqrt_price(tick)) {
+                if (_vault.current_sqrt_price != next_tick_sqrt_price) {
                     _vault.current_sqrt_price = next_sqrt_price;
                     _vault.current_tick_index = tick_math::get_tick_at_sqrt_price(next_sqrt_price);
                 }
             };
+            current_sqrt_price = _vault.current_sqrt_price;
         };
         swap_result
     }

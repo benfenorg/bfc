@@ -6,17 +6,17 @@ import { createBrowserRouter, Navigate, useLocation, useParams } from 'react-rou
 
 import AddressResult from './address-result/AddressResult';
 import CheckpointDetail from './checkpoints/CheckpointDetail';
+import Dao from './dao';
+import DaoDetail from './dao/detail';
 import EpochDetail from './epochs/EpochDetail';
 import Home from './home/Home';
 import { ObjectResult } from './object-result/ObjectResult';
+import Packages from './packages/index';
 import { Recent } from './recent';
 import TransactionResult from './transaction-result/TransactionResult';
 import { ValidatorDetails } from './validator/ValidatorDetails';
 import { ValidatorPageResult } from './validators/Validators';
 import { Layout } from '~/components/Layout';
-import Packages from './packages/index';
-import Dao from './dao';
-import DaoDetail from './dao/detail';
 
 function RedirectWithId({ base }: { base: string }) {
 	const params = useParams();
