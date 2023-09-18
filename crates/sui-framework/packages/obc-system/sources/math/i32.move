@@ -64,6 +64,7 @@ module obc_system::i32 {
 
 
         let sum = num1.bits ^ num2.bits;
+
         let carry = (num1.bits & num2.bits) << 1;
         while (carry != 0) {
             let a = sum;
@@ -74,6 +75,9 @@ module obc_system::i32 {
         I32 {
             bits: sum
         }
+    }
+    spec wrapping_add {
+        pragma opaque;
     }
 
 
