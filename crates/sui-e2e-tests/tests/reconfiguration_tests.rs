@@ -659,9 +659,92 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
 
 #[sim_test]
 async fn test_obc_dao_create_create_propose() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::obc::OBC>").unwrap());
+    let dataOption = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(dataOption),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    let coinObj = objects.get(2).unwrap().object().unwrap();
+
+    // create action
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+
+    // now do the call
+    let managerObj = add_cluster_admin(http_client, gas, address, &cluster).await?;
 
 
 
+    // now do the call
+    let module = "obc_system".to_string();
+    let function = "create_obcdao_action".to_string();
+    let propose_function = "propose".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&managerObj.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+    ];
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    //            SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::test::Test").unwrap()),
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&managerObj.to_string())?,
+        SuiJsonValue::new(json!("19"))?,
+        SuiJsonValue::from_str(&coinObj.object_id.to_string())?,
+        SuiJsonValue::new(json!("0"))?,
+        SuiJsonValue::new(json!("6000000"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao actions {:?}", dao.action_record);
     Ok(())
 }
 
