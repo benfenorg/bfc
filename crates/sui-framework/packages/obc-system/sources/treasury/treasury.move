@@ -271,7 +271,7 @@ module obc_system::treasury {
         _ctx: &mut TxContext,
     ): Balance<OBC> {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
-        let (balance_a, balance_b)  =swap_internal<StableCoinType>(
+        let (balance_a, balance_b) = swap_internal<StableCoinType>(
             _treasury,
             true,
             _coin_sc,
@@ -338,12 +338,12 @@ module obc_system::treasury {
         let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
 
         // USD obc required
-        let usd_v = borrow_vault<USD>(
-            _treasury,
-            get_vault_key<USD>(),
-        );
-        let obc_required_per_time = vault::obc_required(usd_v);
-        total = total + obc_required_per_time * times_per_day;
+        let usd_vault_key = get_vault_key<USD>();
+        if (dynamic_object_field::exists_(&_treasury.id, usd_vault_key)) {
+            let usd_v = borrow_vault<USD>(_treasury, usd_vault_key);
+            let obc_required_per_time = vault::obc_required(usd_v);
+            total = total + obc_required_per_time * times_per_day;
+        };
 
         total - get_balance(_treasury)
     }
