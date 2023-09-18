@@ -1045,7 +1045,20 @@ async fn test_obc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+#[sim_test]
+async fn test_obc_dao_unvote_votingobc(){
 
+}
+
+#[sim_test]
+async fn test_obc_dao_change_vote(){
+
+}
+
+#[sim_test]
+async fn test_obc_dao_revoke_vote(){
+
+}
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
