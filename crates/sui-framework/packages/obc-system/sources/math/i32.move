@@ -171,15 +171,13 @@ module obc_system::i32 {
     }
 
     public fun as_u32(v: I32): u32 {
-        v.bits
+       v.bits
     }
 
     public fun sign(v: I32): u8 {
         ((v.bits >> 31) as u8)
     }
-    spec sign{
-        pragma verify = false; // By default, do not verify specs in this module ...
-    }
+
 
     public fun is_neg(v: I32): bool {
         sign(v) == 1

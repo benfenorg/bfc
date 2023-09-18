@@ -64,6 +64,9 @@ module obc_system::i128 {
             bits: sum
         }
     }
+    spec wrapping_add {
+        pragma opaque;
+    }
 
     public fun add(num1: I128, num2: I128): I128 {
         let sum = wrapping_add(num1, num2);
@@ -161,6 +164,10 @@ module obc_system::i128 {
         I128 {
             bits: v.bits >> shift
         }
+    }
+
+    spec shr {
+        pragma opaque;
     }
 
     public fun as_u128(v: I128): u128 {

@@ -118,9 +118,11 @@ module obc_system::tick_math {
             return tick_low
         }
     }
-    spec get_tick_at_sqrt_price{
-        pragma verify = false; // By default, do not verify specs in this module ...
+
+    spec get_tick_at_sqrt_price {
+        pragma opaque;
     }
+
 
     fun as_u8(b: bool): u8 {
         if (b) {
