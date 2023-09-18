@@ -861,6 +861,7 @@ module obc_system::obc_dao {
     //// Helper functions
 
     /// Quorum votes to make proposal pass.
+    /// temply using 4000* 000_0000 as the pass rate.
     fun quorum_votes(dao: &mut Dao): u64 {
         //let market_cap = total_supply(Coin<OBC>);
         //let balance_in_treasury = Treasury::balance<TokenT>();
@@ -955,7 +956,7 @@ module obc_system::obc_dao {
         send_obc_dao_event(manager_key, b"set_voting_period");
     }
 
-    /// set voting quorum rate
+    /// set voting quorum rate: .
     public(friend) fun set_voting_quorum_rate(
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
@@ -1141,6 +1142,6 @@ module obc_system::obc_dao {
         vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, proposal_status);
     }
 
-    //#[test_only]
+
 
 }
