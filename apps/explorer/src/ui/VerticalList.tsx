@@ -7,13 +7,13 @@ import { type ReactNode } from 'react';
 export interface ListItemProps {
 	active?: boolean;
 	children: ReactNode;
-	type?:string;
+	type?: string;
 	onClick?(): void;
 }
 
 export function ListItem({ active, children, type, onClick }: ListItemProps) {
-	const rounded:string =  type === 'borderLine' ? 'rounded-r-md border-l-2' : 'rounded-md border'
-	const border:string = type === 'borderLine' ? 'border-obc-text2' : 'border-obc-card'
+	const rounded: string = type === 'borderLine' ? 'rounded-r-md border-l-2' : 'rounded-md border';
+	const border: string = type === 'borderLine' ? 'border-obc-text2' : 'border-obc-card';
 	return (
 		<li className="list-none">
 			<button

@@ -10,7 +10,6 @@ import {
 } from '@mysten/core';
 import { Heading, Text } from '@mysten/ui';
 
-import { CoinsStack } from '~/ui/CoinsStack';
 import { AddressLink } from '~/ui/InternalLink';
 import { TransactionBlockCard, TransactionBlockCardSection } from '~/ui/TransactionBlockCard';
 

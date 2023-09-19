@@ -12,7 +12,6 @@ import { type SuiClient } from '@mysten/sui.js/client';
 
 import { SuiAmount } from '../Table/SuiAmount';
 import { TxTimeType } from '../tx-time/TxTimeType';
-import { HighlightedTableCol } from '~/components/Table/HighlightedTableCol';
 import { AddressLink, TransactionLink } from '~/ui/InternalLink';
 
 // Generate table data from the transaction data

@@ -1,11 +1,12 @@
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
 import { type ApyByValidator, formatPercentageDisplay } from '@mysten/core';
 import { type SuiEvent, type SuiValidatorSummary, sui2ObcAddress } from '@mysten/sui.js';
 import { Text } from '@mysten/ui';
-import { StakeColumn } from '~/components/top-validators-card/StakeColumn';
 
+import { StakeColumn } from '~/components/top-validators-card/StakeColumn';
 import { ImageIcon } from '~/ui/ImageIcon';
 import { Link } from '~/ui/Link';
-
 import { Tooltip } from '~/ui/Tooltip';
 import { ampli } from '~/utils/analytics/ampli';
 import { getValidatorMoveEvent } from '~/utils/getValidatorMoveEvent';
@@ -128,7 +129,7 @@ export function validatorsTableData(
 				};
 			}),
 		columns: [
-            {
+			{
 				header: '#',
 				accessorKey: '#',
 			},

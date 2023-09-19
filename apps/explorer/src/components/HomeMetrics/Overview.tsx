@@ -8,16 +8,18 @@ import {
 	useGetTotalTransactionBlocks,
 	useGetNetworkOverview,
 } from '@mysten/core';
-import { Card } from '~/ui/Card';
 import { Text } from '@mysten/ui';
+
 import { ReactComponent as XCoinLogo } from '../../assets/XCoin.svg';
 import { numberSuffix } from '../../utils/numberUtil';
+import { Card } from '~/ui/Card';
 
 export function Overview() {
 	const { data: referenceGasPrice } = useGetReferenceGasPrice();
 	const { data: totalTransactionBlocks } = useGetTotalTransactionBlocks();
-    const { data: overview } = useGetNetworkOverview()
+	const { data: overview } = useGetNetworkOverview();
 
+	console.log('overview', overview);
 	const gasPriceFormatted =
 		typeof referenceGasPrice === 'bigint'
 			? formatBalance(referenceGasPrice, 0, CoinFormat.FULL)

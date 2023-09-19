@@ -25,7 +25,7 @@ export function CheckpointTransactionBlocks({ id }: { id: string }) {
 	const cardData = data ? genTableDataFromTxData(data.data) : undefined;
 
 	return (
-		<div className="flex flex-col space-y-5 text-left obc-table-container">
+		<div className="obc-table-container flex flex-col space-y-5 text-left">
 			{isLoading || isFetching || !cardData ? (
 				<PlaceholderTable
 					rowCount={20}

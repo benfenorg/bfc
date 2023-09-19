@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { useRpcClient } from '@mysten/core';
-import { useQuery } from '@tanstack/react-query';
 import { getObjectFields } from '@mysten/sui.js';
+import { useQuery } from '@tanstack/react-query';
 
-export function useGetOBCDaoVotingObc(address:string) {
+export function useGetOBCDaoVotingObc(address: string) {
 	const rpc = useRpcClient();
 	return useQuery({
 		queryKey: ['dao', 'votingobc', address],
@@ -20,7 +20,7 @@ export function useGetOBCDaoVotingObc(address:string) {
 					options: {
 						showType: true,
 						showContent: true,
-					}
+					},
 				})
 				.then((res: any) => {
 					if (res?.data?.length > 0) {
@@ -28,7 +28,6 @@ export function useGetOBCDaoVotingObc(address:string) {
 					}
 					return [];
 				}),
-		select: (data) =>
-			data.map((item:any) => getObjectFields(item!)),
+		select: (data) => data.map((item: any) => getObjectFields(item!)),
 	});
 }

@@ -3,7 +3,7 @@
 import { useRpcClient } from '@mysten/core';
 import { useQuery } from '@tanstack/react-query';
 
-export function useGetOBCDaoManageKey(address:string) {
+export function useGetOBCDaoManageKey(address: string) {
 	const rpc = useRpcClient();
 
 	return useQuery({

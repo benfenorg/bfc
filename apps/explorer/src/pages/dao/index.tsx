@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useGetDaoProposals } from '@mysten/core';
 import { Heading } from '@mysten/ui';
+import { useWalletKit } from '@mysten/wallet-kit';
 
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
@@ -10,7 +11,6 @@ import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
-import { useWalletKit } from '@mysten/wallet-kit';
 
 interface DaoDateItem {
 	id: number;
@@ -91,7 +91,7 @@ function Dao() {
 	const { currentAccount } = useWalletKit();
 	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
 	const { data: OBCDaoVotingObc } = useGetOBCDaoVotingObc(currentAccount?.address || '');
-	console.log('OBCDaoVote', OBCDaoVotingObc);
+	console.log('OBCDaoVote', OBCDaoVotingObc, OBCDaoManageKey);
 	return (
 		<PageLayout
 			gradientContent={

@@ -69,22 +69,17 @@ export function TableCard<DataType extends object>({
 	});
 
 	return (
-		<div
-			className={clsx(
-				'w-full overflow-x-auto',
-				refetching && 'opacity-50',
-			)}
-		>
+		<div className={clsx('w-full overflow-x-auto', refetching && 'opacity-50')}>
 			<table className="w-full min-w-max border-collapse text-left">
 				<thead>
 					{table.getHeaderGroups().map((headerGroup) => (
-						<tr key={headerGroup.id} className='bg-obc-card'>
+						<tr key={headerGroup.id} className="bg-obc-card">
 							{headerGroup.headers.map(({ id, colSpan, column, isPlaceholder, getContext }) => (
 								<th
 									key={id}
 									colSpan={colSpan}
 									scope="col"
-									className="h-7.5 text-left text-subtitle uppercase text-obc-text3 px-3.5"
+									className="h-7.5 px-3.5 text-left text-subtitle uppercase text-obc-text3"
 									onClick={
 										column.columnDef.enableSorting ? column.getToggleSortingHandler() : undefined
 									}
@@ -112,7 +107,7 @@ export function TableCard<DataType extends object>({
 							{row.getVisibleCells().map(({ column, id, getContext }) => (
 								<td
 									key={id}
-									className="h-11 text-body text-gray-75 group-hover:bg-gray-40 group-hover:text-gray-90 group-hover:first:rounded-l group-hover:last:rounded-r px-3.5"
+									className="h-11 px-3.5 text-body text-gray-75 group-hover:bg-gray-40 group-hover:text-gray-90 group-hover:first:rounded-l group-hover:last:rounded-r"
 								>
 									{flexRender(column.columnDef.cell, getContext())}
 								</td>

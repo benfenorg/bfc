@@ -1,23 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
-import { lazy } from 'react';
-
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { Activity } from '~/components/Activity';
-import { CurrentEpoch,Overview } from '~/components/HomeMetrics';
+import { CurrentEpoch, Overview } from '~/components/HomeMetrics';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { TransactionsCardGraph } from '~/components/TransactionsCardGraph';
-import { useNetwork } from '~/context';
-import { Network } from '~/utils/api/DefaultRpcClient';
-
-const ValidatorMap = lazy(() => import('../../components/validator-map'));
 
 const TRANSACTIONS_LIMIT = 25;
 
 function Home() {
-	const [network] = useNetwork();
-	const isSuiTokenCardEnabled = network === Network.MAINNET;
 	return (
 		<PageLayout
 			gradientContent={

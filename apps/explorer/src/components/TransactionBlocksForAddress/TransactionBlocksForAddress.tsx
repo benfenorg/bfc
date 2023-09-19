@@ -110,7 +110,7 @@ function TransactionBlocksForAddress({
 				)}
 			</div>
 
-			<div className="flex flex-col space-y-5 text-left obc-table-container mt-5">
+			<div className="obc-table-container mt-5 flex flex-col space-y-5 text-left">
 				{isLoading || isFetching || isFetchingNextPage || !cardData ? (
 					<PlaceholderTable
 						rowCount={DEFAULT_TRANSACTIONS_LIMIT}

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getTransactionSender } from '@mysten/sui.js';
-import { LoadingIndicator, RadioGroup, RadioGroupItem,Text } from '@mysten/ui';
+import { LoadingIndicator, RadioGroup, RadioGroupItem, Text } from '@mysten/ui';
 import { useState } from 'react';
 import { type Direction } from 'react-resizable-panels';
 
@@ -15,9 +15,9 @@ import { type DataType } from '../ObjectResultType';
 import TransactionBlocksForAddress, {
 	FILTER_VALUES,
 } from '~/components/TransactionBlocksForAddress/TransactionBlocksForAddress';
+import { DescriptionFlexList, DescriptionItem } from '~/ui/DescriptionList';
 import { AddressLink, ObjectLink } from '~/ui/InternalLink';
 import { TabHeader, Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
-import { DescriptionFlexList, DescriptionItem } from '~/ui/DescriptionList';
 
 import styles from './ObjectView.module.css';
 
@@ -58,17 +58,17 @@ function PkgView({ data }: { data: DataType }) {
 			<div>
 				<TabHeader size="lineMdOne" title="Details">
 					<DescriptionFlexList>
-						<DescriptionItem title="Object ID" align="start" direction='cloumn'>
-							<ObjectLink objectId={viewedData.id}/>
+						<DescriptionItem title="Object ID" align="start" direction="cloumn">
+							<ObjectLink objectId={viewedData.id} />
 						</DescriptionItem>
-						<DescriptionItem title="Version" align="start" direction='cloumn'>
-							<Text  variant="pBody/medium" color="steel-darker">
+						<DescriptionItem title="Version" align="start" direction="cloumn">
+							<Text variant="pBody/medium" color="steel-darker">
 								{viewedData.version}
 							</Text>
 						</DescriptionItem>
 						{viewedData?.publisherAddress && (
-							<DescriptionItem title="Publisher" align="start" direction='cloumn'>
-								<AddressLink address={viewedData.publisherAddress}/>
+							<DescriptionItem title="Publisher" align="start" direction="cloumn">
+								<AddressLink address={viewedData.publisherAddress} />
 							</DescriptionItem>
 						)}
 					</DescriptionFlexList>

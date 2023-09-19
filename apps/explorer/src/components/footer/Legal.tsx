@@ -1,10 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
-import { useProductAnalyticsConfig } from '@mysten/core';
 import { Text } from '@mysten/ui';
 
-import { legalLinks } from './footerLinks';
 import { Link } from '~/ui/Link';
 
 export function LegalText() {
@@ -20,19 +17,17 @@ export function LegalText() {
 }
 
 export function LegalLinks() {
-	const { data: productAnalyticsConfig } = useProductAnalyticsConfig();
-
 	return (
 		<ul className="flex flex-col gap-3 md:flex-row md:gap-8">
 			<li className="flex items-center justify-center">
-				<Link variant="text" href={'href'}>
+				<Link variant="text" href="href">
 					<Text variant="subtitleSmall/medium" color="steel-darker">
 						Whitepaper
 					</Text>
 				</Link>
 			</li>
 			<li className="flex items-center justify-center">
-				<Link variant="text" href={'href'}>
+				<Link variant="text" href="href">
 					<Text variant="subtitleSmall/medium" color="steel-darker">
 						Github
 					</Text>

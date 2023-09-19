@@ -51,9 +51,9 @@ export function TransactionsActivityTable({
 		goToFirstPageRef.current();
 	}, [transactionKindFilter]);
 	return (
-		<div data-testid="tx" className='obc-table-container'>
+		<div data-testid="tx" className="obc-table-container">
 			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">
+				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
 					Failed to load Transactions
 				</div>
 			)}
@@ -87,7 +87,7 @@ export function TransactionsActivityTable({
 						</Text>
 						{!disablePagination && (
 							<select
-								className="form-select obc-form-select rounded-md border border-obc-border px-3 py-2 pr-8 text-bodySmall font-normal leading-[1.2] text-steel-darker shadow-button"
+								className="obc-form-select form-select rounded-md border border-obc-border px-3 py-2 pr-8 text-bodySmall font-normal leading-[1.2] text-steel-darker shadow-button"
 								value={limit}
 								onChange={(e) => {
 									setLimit(Number(e.target.value));

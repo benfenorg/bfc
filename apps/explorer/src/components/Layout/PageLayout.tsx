@@ -48,7 +48,7 @@ export function PageLayout({ gradientContent, content }: PageLayoutProps) {
 				)}
 				{isGradientVisible ? (
 					<section className="bg-[#171719]">
-						<div className="mx-auto max-w-[1440px] px-4 py-8 lg:px-6 xl:px-10 xl:py-12 black-bg">
+						<div className="black-bg mx-auto max-w-[1440px] px-4 py-8 lg:px-6 xl:px-10 xl:py-12">
 							{gradientContent}
 						</div>
 					</section>

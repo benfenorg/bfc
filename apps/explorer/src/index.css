@@ -35,7 +35,7 @@ body,
 		grid-template-areas:
 			'overview'
 			'epoch'
-			'transactions'
+			'transactions';
 	}
 	.home-page-grid-container-top.with-token {
 		grid-template-areas:
@@ -46,25 +46,25 @@ body,
 			'accounts';
 	}
 
-	 .obc-table-container {
-		@apply border border-gray-45 rounded-md overflow-hidden
-	 }
+	.obc-table-container {
+		@apply overflow-hidden rounded-md border border-gray-45;
+	}
 
-	 .black-bg {
+	.black-bg {
 		background-image: url(./assets/blackBg.svg);
 		background-size: 100% auto;
 		background-repeat: no-repeat;
 		background-position: center bottom;
-	 }
-	 .obc-form-select {
+	}
+	.obc-form-select {
 		background-image: url(./assets/ObcDown.svg) !important;
-	 }
+	}
 	@screen sm {
 		.home-page-grid-container-top {
 			@apply grid-cols-2;
 			grid-template-areas:
 				'overview epoch'
-				'transactions transactions'
+				'transactions transactions';
 		}
 
 		.home-page-grid-container-top.with-token {
