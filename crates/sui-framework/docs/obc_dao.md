@@ -1113,6 +1113,15 @@ Error codes
 
 
 
+<a name="0xc8_obc_dao_ERR_WRONG_VOTING_POOL"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_ERR_WRONG_VOTING_POOL">ERR_WRONG_VOTING_POOL</a>: u64 = 1412;
+</code></pre>
+
+
+
 <a name="0xc8_obc_dao_MIN_NEW_PROPOSE_COST"></a>
 
 
@@ -1402,12 +1411,24 @@ Error codes
 ): <a href="obc_dao.md#0xc8_obc_dao_DaoConfig">DaoConfig</a> {
     <b>assert</b>!(voting_delay &gt; 0, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
     <b>assert</b>!(voting_period&gt; 0, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
-    <b>assert</b>!(voting_quorum_rate &gt; 1, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
+    <b>assert</b>!(voting_quorum_rate &gt;= 1, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
     <b>assert</b>!(<a href="obc_dao.md#0xc8_obc_dao_voting_quorum_rate">voting_quorum_rate</a> &lt;= 100, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
     <b>assert</b>!(min_action_delay &gt; 0, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
 
     <a href="obc_dao.md#0xc8_obc_dao_DaoConfig">DaoConfig</a> { voting_delay, voting_period, voting_quorum_rate, min_action_delay }
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>include</b> <a href="obc_dao.md#0xc8_obc_dao_NewDaoConfigParamSchema">NewDaoConfigParamSchema</a>;
 </code></pre>
 
 
@@ -1506,6 +1527,18 @@ propose a proposal.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_synchronize_proposal_into_dao"></a>
 
 ## Function `synchronize_proposal_into_dao`
@@ -1527,6 +1560,18 @@ propose a proposal.
         *<b>old</b> = proposal.proposal;
     }
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -1791,6 +1836,42 @@ Revoke some voting powers from vote on <code>proposal_id</code> of <code>propose
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+
+<a name="0xc8_obc_dao_NewDaoConfigParamSchema"></a>
+
+
+<pre><code><b>schema</b> <a href="obc_dao.md#0xc8_obc_dao_NewDaoConfigParamSchema">NewDaoConfigParamSchema</a> {
+    voting_delay: u64;
+    voting_period: u64;
+    voting_quorum_rate: u8;
+    min_action_delay: u64;
+    <b>aborts_if</b> voting_delay == 0;
+    <b>aborts_if</b> voting_period == 0;
+    <b>aborts_if</b> voting_quorum_rate == 0 || voting_quorum_rate &gt; 100;
+    <b>aborts_if</b> min_action_delay == 0;
+}
+</code></pre>
+
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_do_revoke_vote"></a>
 
 ## Function `do_revoke_vote`
@@ -1892,6 +1973,18 @@ Retrieve back my voted token voted for a proposal.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_vote_of"></a>
 
 ## Function `vote_of`
@@ -1925,6 +2018,20 @@ Retrieve back my voted token voted for a proposal.
         }
     );
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> vote.proposer != proposal.proposal.proposer;
+<b>aborts_if</b> vote.vid != proposal.proposal.pid;
 </code></pre>
 
 
@@ -1998,6 +2105,18 @@ queue agreed proposal to execute.
     <a href="obc_dao.md#0xc8_obc_dao_synchronize_proposal_into_dao">synchronize_proposal_into_dao</a>(proposal, dao);
     <a href="obc_dao.md#0xc8_obc_dao_send_obc_dao_event">send_obc_dao_event</a>(manager_key, b"proposal_queued");
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -2216,6 +2335,18 @@ Get the proposal state.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_generate_next_action_id"></a>
 
 ## Function `generate_next_action_id`
@@ -2238,6 +2369,18 @@ Get the proposal state.
     action_id
 
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -2337,6 +2480,18 @@ get the default voting period of the DAO.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_voting_quorum_rate"></a>
 
 ## Function `voting_quorum_rate`
@@ -2381,6 +2536,18 @@ Get the min_action_delay of the DAO.
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_min_action_delay">min_action_delay</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>): u64 {
     <a href="obc_dao.md#0xc8_obc_dao_get_config">get_config</a>(dao).min_action_delay
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -2461,6 +2628,18 @@ if any param is 0, it means no change to that param.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_set_voting_delay"></a>
 
 ## Function `set_voting_delay`
@@ -2489,6 +2668,18 @@ set voting delay
 
     <a href="obc_dao.md#0xc8_obc_dao_send_obc_dao_event">send_obc_dao_event</a>(manager_key, b"set_voting_delay");
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -2529,6 +2720,18 @@ set voting period
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_set_voting_quorum_rate"></a>
 
 ## Function `set_voting_quorum_rate`
@@ -2562,6 +2765,18 @@ set voting quorum rate: .
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_set_min_action_delay"></a>
 
 ## Function `set_min_action_delay`
@@ -2589,6 +2804,18 @@ set min action delay
 
     <a href="obc_dao.md#0xc8_obc_dao_send_obc_dao_event">send_obc_dao_event</a>(manager_key, b"set_min_action_delay");
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -2685,6 +2912,18 @@ set min action delay
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_modify_proposal_obj"></a>
 
 ## Function `modify_proposal_obj`
@@ -2756,6 +2995,18 @@ set min action delay
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_create_voting_obc"></a>
 
 ## Function `create_voting_obc`
@@ -2807,10 +3058,24 @@ set min action delay
                                    ctx: &<b>mut</b> TxContext ,) {
     // sender <b>address</b>
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
+    <b>assert</b>!(pool_id(&voting_obc) == <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>), <a href="obc_dao.md#0xc8_obc_dao_ERR_WRONG_VOTING_POOL">ERR_WRONG_VOTING_POOL</a>);
     <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">voting_pool::request_withdraw_voting</a>(&<b>mut</b> dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, voting_obc);
     <b>let</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(voting_obc, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, sender);
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> pool_id(voting_obc) != <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>);
 </code></pre>
 
 
@@ -2912,6 +3177,18 @@ remove terminated proposal from proposer
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="@Module_Specification_1"></a>
 
 ## Module Specification
@@ -2919,4 +3196,5 @@ remove terminated proposal from proposer
 
 
 <pre><code><b>pragma</b> verify;
+<b>pragma</b> aborts_if_is_strict;
 </code></pre>
