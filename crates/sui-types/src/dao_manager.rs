@@ -3,13 +3,10 @@
 
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
-use move_core_types::language_storage::StructTag;
-use crate::base_types::ObjectID;
 use crate::error::SuiError;
 use crate::id::UID;
 use crate::object::{Data, Object};
 use serde::Deserialize;
-use crate::SUI_SYSTEM_ADDRESS;
 use serde::Serialize;
 use schemars::JsonSchema;
 
@@ -21,20 +18,7 @@ struct OBCDaoManageKey {
     id: UID,
 }
 
-impl OBCDaoManageKey {
-    pub fn type_() -> StructTag {
-        StructTag {
-            address: SUI_SYSTEM_ADDRESS,
-            module: MANAGE_MODULE_NAME.to_owned(),
-            name: MANAGE_STRUCT_NAME.to_owned(),
-            type_params: vec![],
-        }
-    }
-
-    pub fn id(&self) -> ObjectID {
-        self.id.id.bytes
-    }
-}
+impl OBCDaoManageKey {}
 
 impl TryFrom<&Object> for OBCDaoManageKey {
     type Error = SuiError;
