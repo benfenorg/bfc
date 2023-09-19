@@ -7,8 +7,10 @@ import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
+import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
+import { useWalletKit } from '@mysten/wallet-kit';
 
 interface DaoDateItem {
 	id: number;
@@ -86,8 +88,10 @@ function DaoList({ data, isLoading }: DaoListProps) {
 
 function Dao() {
 	const data: any = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey();
-	console.log('OBCDaoManageKey', OBCDaoManageKey);
+	const { currentAccount } = useWalletKit();
+	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
+	const { data: OBCDaoVotingObc } = useGetOBCDaoVotingObc(currentAccount?.address || '');
+	console.log('OBCDaoVote', OBCDaoVotingObc);
 	return (
 		<PageLayout
 			gradientContent={

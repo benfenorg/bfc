@@ -65,7 +65,7 @@ export function TokenView({ data }: { data: SuiObjectResponse }) {
 
 	return (
 		<div className="flex flex-col flex-nowrap gap-14">
-			<TabHeader title="Details" noGap>
+			<TabHeader size="lineMdOne" title="Details" noGap>
 				<div className="flex flex-col md:flex-row md:divide-x md:divide-gray-45">
 					<div className="flex-1 divide-y divide-gray-45 pb-6 md:basis-2/3 md:pb-0 md:pr-10">
 						<div className="py-4 pb-7">
