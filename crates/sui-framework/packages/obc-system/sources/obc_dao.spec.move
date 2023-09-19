@@ -37,7 +37,30 @@ spec obc_system::obc_dao{
     spec withdraw_voting {
         aborts_if false;
         aborts_if pool_id(voting_obc) != object::id(dao.voting_pool);
-        //aborts_if ctx.ids_created =
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+
+    }
+
+    spec create_obcdao_action{
+        aborts_if false;
+
+        let action_id = dao.info.next_action_id + 1;
+        aborts_if action_id  > MAX_U64;
+    }
+
+    spec add_admin {
+        aborts_if false;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+    }
+    spec create_dao {
+        aborts_if false;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+
+    }
+
+    spec set_admins {
+        aborts_if false;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
 
@@ -48,34 +71,50 @@ spec obc_system::obc_dao{
     }
     spec unvote_votes {
         aborts_if false;
+        aborts_if vote.proposer != proposal.proposal.proposer;
+        aborts_if vote.vid != proposal.proposal.pid;
+        let current_time = clock.timestamp_ms;
+        aborts_if judge_proposal_state(proposal.proposal,current_time) <= ACTIVE;
     }
     spec synchronize_proposal_into_dao{
         aborts_if false;
     }
     spec set_voting_quorum_rate{
         aborts_if false;
+        aborts_if value > 100 || value == 0;
     }
     spec set_voting_period{
         aborts_if false;
+        aborts_if value == 0;
+        //aborts_if !internal_check_utf8(&bytes);
     }
 
     spec set_voting_delay{
         aborts_if false;
+        aborts_if value == 0;
     }
     spec set_min_action_delay{
         aborts_if false;
+        aborts_if value == 0;
     }
     spec set_current_status_into_dao{
         aborts_if false;
     }
 
 
-    spec send_obc_dao_event{
-        aborts_if false;
-    }
 
+    spec change_vote {
+        aborts_if false;
+        let current_time = clock.timestamp_ms;
+        aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;
+        aborts_if my_vote.proposer != proposal.proposal.proposer;
+        aborts_if my_vote.vid != proposal.proposal.pid;
+    }
     spec revoke_vote{
         aborts_if false;
+        let current_time = clock.timestamp_ms;
+        aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;
+
     }
     spec queue_proposal_action{
         aborts_if false;
@@ -83,6 +122,9 @@ spec obc_system::obc_dao{
 
     spec propose{
         aborts_if false;
+        let obc =  payment.balance;
+        let count = balance::value(obc);
+        aborts_if count < MIN_NEW_PROPOSE_COST;
     }
 
     spec modify_proposal_obj{

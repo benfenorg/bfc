@@ -15,7 +15,7 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use obc_system::usd::{USD, new};
+    use obc_system::usd::{USD};
     use obc_system::obc_dao_manager::{OBCDaoManageKey};
     use obc_system::obc_dao::{Proposal, Vote};
     use obc_system::obc_system_state_inner;

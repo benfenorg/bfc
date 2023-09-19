@@ -1,0 +1,2709 @@
+================
+[0m[1m[38;5;11mwarning[0m[1m: unused alias[0m
+  [0m[34m┌─[0m ./sources/obc_dao_voting_pool.move:2:30
+  [0m[34m│[0m
+[0m[34m2[0m [0m[34m│[0m     use obc_system::obc_dao::[0m[33madd_admin[0m;
+  [0m[34m│[0m                              [0m[33m^^^^^^^^^[0m [0m[33mUnused 'use' of alias 'add_admin'. Consider removing it[0m
+  [0m[34m│[0m
+  [0m[34m=[0m This warning can be suppressed with '#[allow(unused_use)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:106:5
+    [0m[34m│[0m  
+[0m[34m106[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec change_vote {[0m
+[0m[34m107[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m108[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        let current_time = clock.timestamp_ms;[0m
+[0m[34m109[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;[0m
+[0m[34m110[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if my_vote.proposer != proposal.proposal.proposer;[0m
+[0m[34m111[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if my_vote.vid != proposal.proposal.pid;[0m
+[0m[34m112[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./sources/obc_dao.move:572:79
+    [0m[34m│[0m
+[0m[34m572[0m [0m[34m│[0m             proposal.proposal.against_votes = proposal.proposal.against_votes - total_voted;
+    [0m[34m│[0m                                                                               [0m[34m-[0m [0m[34mabort happened here with execution failure[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:526: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.spec.move:108
+    [0m[34m=[0m     at ./sources/obc_dao.move:526: change_vote
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x2ea6}},
+    [0m[34m=[0m             admin = 0xbb3,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 24465,
+    [0m[34m=[0m                 voting_period = 5706,
+    [0m[34m=[0m                 voting_quorum_rate = 63u8,
+    [0m[34m=[0m                 min_action_delay = 28146},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x26a6}},
+    [0m[34m=[0m                 next_proposal_id = 12382,
+    [0m[34m=[0m                 next_action_id = 292,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 15141,
+    [0m[34m=[0m                     proposer = 0x767d},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 4664,
+    [0m[34m=[0m                     voter = 0x7a5a,
+    [0m[34m=[0m                     proposer = 0x5d03,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 17673}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents = vector{(size): 26299, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 25667,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19912,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x428b}},
+    [0m[34m=[0m                 obc_balance = 1842,
+    [0m[34m=[0m                 pool_token_balance = 3902},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 1869,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         my_vote =
+    [0m[34m=[0m           &obc_dao.Vote{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x12db}},
+    [0m[34m=[0m             vid = 0,
+    [0m[34m=[0m             proposer = 0x0,
+    [0m[34m=[0m             vote =
+    [0m[34m=[0m               voting_pool.VotingObc{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x701f}},
+    [0m[34m=[0m                 pool_id = object.ID{bytes = 0x2d12},
+    [0m[34m=[0m                 principal = balance.Balance{value = 5448}},
+    [0m[34m=[0m             agree = false}
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("14604"), Literal("0"), Literal("0"), Literal("289"), Literal("18446744073709526068"), Literal("11478"), Literal("5447"), Literal("19895"), Literal("19718"), Literal("18716"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("7711"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!0|"), Literal("28253")])])]), Literal("17421")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("5436")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         agree = true
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m             timestamp_ms = 21726}
+    [0m[34m=[0m         ctx =
+    [0m[34m=[0m           &tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x1eb,
+    [0m[34m=[0m             tx_hash = vector{(size): 14771, default: 1u8},
+    [0m[34m=[0m             epoch = 9961,
+    [0m[34m=[0m             epoch_timestamp_ms = 16827,
+    [0m[34m=[0m             ids_created = 23281}
+    [0m[34m=[0m     at ./sources/obc_dao.move:535: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:785: proposal_state
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("14604"), Literal("0"), Literal("0"), Literal("289"), Literal("18446744073709526068"), Literal("11478"), Literal("5447"), Literal("19895"), Literal("19718"), Literal("18716"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("7711"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!0|"), Literal("28253")])])]), Literal("17421")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("5436")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m             timestamp_ms = 21726}
+    [0m[34m=[0m     at ./sources/obc_dao.move:789: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:790: proposal_state
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:33: timestamp_ms
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m             timestamp_ms = 21726}
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:34: timestamp_ms
+    [0m[34m=[0m         result = 21726
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:35: timestamp_ms
+    [0m[34m=[0m         current_time#1#0 = 21726
+    [0m[34m=[0m     at ./sources/obc_dao.move:791: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:802: judge_proposal_state
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           obc_dao.ProposalInfo{
+    [0m[34m=[0m             project_uid = 0x390c,
+    [0m[34m=[0m             pid = 0,
+    [0m[34m=[0m             proposer = 0x0,
+    [0m[34m=[0m             start_time = 289,
+    [0m[34m=[0m             end_time = 18446744073709526068,
+    [0m[34m=[0m             for_votes = 11478,
+    [0m[34m=[0m             against_votes = 5447,
+    [0m[34m=[0m             eta = 19895,
+    [0m[34m=[0m             action_delay = 19718,
+    [0m[34m=[0m             quorum_votes = 18716,
+    [0m[34m=[0m             action =
+    [0m[34m=[0m               obc_dao.OBCDaoAction{
+    [0m[34m=[0m                 action_id = 7711,
+    [0m[34m=[0m                 name =
+    [0m[34m=[0m                   string.String{bytes = vector{(size): 28253, default: 1u8}}},
+    [0m[34m=[0m             version_id = 17421}
+    [0m[34m=[0m         current_time = 21726
+    [0m[34m=[0m     at ./sources/obc_dao.move:806: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:809: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:811: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:809: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:806: judge_proposal_state
+    [0m[34m=[0m         result = 2u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:827: judge_proposal_state
+    [0m[34m=[0m         status#1#0 = 2u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:796: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:795: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:794: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:799: proposal_state
+    [0m[34m=[0m         result = 2u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:800: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:537: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:542: change_vote
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:38: sender
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x1eb,
+    [0m[34m=[0m             tx_hash = vector{(size): 14771, default: 1u8},
+    [0m[34m=[0m             epoch = 9961,
+    [0m[34m=[0m             epoch_timestamp_ms = 16827,
+    [0m[34m=[0m             ids_created = 23281}
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:39: sender
+    [0m[34m=[0m         result = 0x1eb
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:40: sender
+    [0m[34m=[0m         sender#1#0 = 0x1eb
+    [0m[34m=[0m     at ./sources/obc_dao.move:545: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:546: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:550: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:551: change_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:566: do_flip_vote
+    [0m[34m=[0m         my_vote =
+    [0m[34m=[0m           &obc_dao.Vote{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x12db}},
+    [0m[34m=[0m             vid = 0,
+    [0m[34m=[0m             proposer = 0x0,
+    [0m[34m=[0m             vote =
+    [0m[34m=[0m               voting_pool.VotingObc{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x701f}},
+    [0m[34m=[0m                 pool_id = object.ID{bytes = 0x2d12},
+    [0m[34m=[0m                 principal = balance.Balance{value = 5448}},
+    [0m[34m=[0m             agree = false}
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("14604"), Literal("0"), Literal("0"), Literal("289"), Literal("18446744073709526068"), Literal("11478"), Literal("5447"), Literal("19895"), Literal("19718"), Literal("18716"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("7711"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!0|"), Literal("28253")])])]), Literal("17421")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("5436")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m     at ./sources/obc_dao.move:568: do_flip_vote
+    [0m[34m=[0m         my_vote =
+    [0m[34m=[0m           &obc_dao.Vote{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x12db}},
+    [0m[34m=[0m             vid = 0,
+    [0m[34m=[0m             proposer = 0x0,
+    [0m[34m=[0m             vote =
+    [0m[34m=[0m               voting_pool.VotingObc{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x701f}},
+    [0m[34m=[0m                 pool_id = object.ID{bytes = 0x2d12},
+    [0m[34m=[0m                 principal = balance.Balance{value = 5448}},
+    [0m[34m=[0m             agree = true}
+    [0m[34m=[0m     at ./sources/obc_dao.move:569: do_flip_vote
+    [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:146: voting_obc_amount
+    [0m[34m=[0m         voting_obc =
+    [0m[34m=[0m           voting_pool.VotingObc{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x701f}},
+    [0m[34m=[0m             pool_id = object.ID{bytes = 0x2d12},
+    [0m[34m=[0m             principal = balance.Balance{value = 5448}}
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:38: value
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_balance_Balance'$2_obc_OBC'|"), Literal("5448")])>
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:39: value
+    [0m[34m=[0m         result = 5448
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:40: value
+    [0m[34m=[0m         result = 5448
+    [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:146: voting_obc_amount
+    [0m[34m=[0m         total_voted#1#0 = 5448
+    [0m[34m=[0m     at ./sources/obc_dao.move:570: do_flip_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:571: do_flip_vote
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("14604"), Literal("0"), Literal("0"), Literal("289"), Literal("18446744073709526068"), Literal("16926"), Literal("5447"), Literal("19895"), Literal("19718"), Literal("18716"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("7711"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!0|"), Literal("28253")])])]), Literal("17421")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("5436")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m     at ./sources/obc_dao.move:572: do_flip_vote
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+   [0m[34m┌─[0m ./sources/obc_dao.spec.move:55:5
+   [0m[34m│[0m  
+[0m[34m55[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec create_dao {[0m
+[0m[34m56[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m57[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if ctx.ids_created + 1 > MAX_U64;[0m
+[0m[34m58[0m [0m[34m│[0m [0m[31m│[0m 
+[0m[34m59[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+   [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+   [0m[34m│[0m  
+   [0m[34m┌─[0m ./../sui-framework/sources/tx_context.move:64:39
+   [0m[34m│[0m
+[0m[34m64[0m [0m[34m│[0m         ctx.ids_created = ids_created + 1;
+   [0m[34m│[0m                                       [0m[34m-[0m [0m[34mabort happened here with execution failure[0m
+   [0m[34m│[0m
+   [0m[34m=[0m     at ./sources/obc_dao.move:259: create_dao
+   [0m[34m=[0m         admins = vector{(size): 19170, 0x5f90, default: 0x12db}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 0}
+   [0m[34m=[0m     at ./sources/obc_dao.move:264: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:265: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:266: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:267: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:264: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:361: new_dao_config
+   [0m[34m=[0m         voting_delay = 259200000
+   [0m[34m=[0m         voting_period = 604800000
+   [0m[34m=[0m         voting_quorum_rate = 40u8
+   [0m[34m=[0m         min_action_delay = 604800000
+   [0m[34m=[0m     at ./sources/obc_dao.move:367: new_dao_config
+   [0m[34m=[0m     at ./sources/obc_dao.move:368: new_dao_config
+   [0m[34m=[0m     at ./sources/obc_dao.move:369: new_dao_config
+   [0m[34m=[0m     at ./sources/obc_dao.move:370: new_dao_config
+   [0m[34m=[0m     at ./sources/obc_dao.move:371: new_dao_config
+   [0m[34m=[0m     at ./sources/obc_dao.move:373: new_dao_config
+   [0m[34m=[0m         result =
+   [0m[34m=[0m           obc_dao.DaoConfig{
+   [0m[34m=[0m             voting_delay = 259200000,
+   [0m[34m=[0m             voting_period = 604800000,
+   [0m[34m=[0m             voting_quorum_rate = 40u8,
+   [0m[34m=[0m             min_action_delay = 604800000}
+   [0m[34m=[0m     at ./sources/obc_dao.move:374: new_dao_config
+   [0m[34m=[0m         daoConfig#1#0 =
+   [0m[34m=[0m           obc_dao.DaoConfig{
+   [0m[34m=[0m             voting_delay = 259200000,
+   [0m[34m=[0m             voting_period = 604800000,
+   [0m[34m=[0m             voting_quorum_rate = 40u8,
+   [0m[34m=[0m             min_action_delay = 604800000}
+   [0m[34m=[0m     at ./sources/obc_dao.move:271: create_dao
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:129: new
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 0}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:131: new
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:61: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 0}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:62: fresh_object_address
+   [0m[34m=[0m         ids_created#1#0 = 0
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:63: fresh_object_address
+   [0m[34m=[0m         id#1#0 = 0x4823
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:64: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 1}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:65: fresh_object_address
+   [0m[34m=[0m         result = 0x4823
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 1}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:66: fresh_object_address
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:130: new
+   [0m[34m=[0m         result = object.UID{id = object.ID{bytes = 0x4823}}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 1}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:133: new
+   [0m[34m=[0m     at ./sources/obc_dao.move:272: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:273: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:275: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:276: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:274: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:279: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:280: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:281: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:282: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:283: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:278: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:270: create_dao
+   [0m[34m=[0m         daoInfo#1#0 =
+   [0m[34m=[0m           obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x4823}},
+   [0m[34m=[0m             next_proposal_id = 19,
+   [0m[34m=[0m             next_action_id = 0,
+   [0m[34m=[0m             proposal_create_event =
+   [0m[34m=[0m               obc_dao.ProposalCreatedEvent{proposal_id = 19, proposer = 0x0},
+   [0m[34m=[0m             vote_changed_event =
+   [0m[34m=[0m               obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                 proposal_id = 19,
+   [0m[34m=[0m                 voter = 0x0,
+   [0m[34m=[0m                 proposer = 0x0,
+   [0m[34m=[0m                 agree = false,
+   [0m[34m=[0m                 vote = 0}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:287: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:62: new
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 1}
+   [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:64: new
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:129: new
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 1}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:131: new
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:61: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 1}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:62: fresh_object_address
+   [0m[34m=[0m         ids_created#1#0 = 1
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:63: fresh_object_address
+   [0m[34m=[0m         id#1#0 = 0x72ae
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:64: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 2}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:65: fresh_object_address
+   [0m[34m=[0m         result = 0x72ae
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 2}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:66: fresh_object_address
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:130: new
+   [0m[34m=[0m         result = object.UID{id = object.ID{bytes = 0x72ae}}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 2}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:133: new
+   [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:65: new
+   [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:66: new
+   [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:63: new
+   [0m[34m=[0m         result =
+   [0m[34m=[0m           voting_pool.VotingPool{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x72ae}},
+   [0m[34m=[0m             obc_balance = 0,
+   [0m[34m=[0m             pool_token_balance = 0}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 2}
+   [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:68: new
+   [0m[34m=[0m         votingPool#1#0 =
+   [0m[34m=[0m           voting_pool.VotingPool{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x72ae}},
+   [0m[34m=[0m             obc_balance = 0,
+   [0m[34m=[0m             pool_token_balance = 0}
+   [0m[34m=[0m     at ./sources/obc_dao.move:288: create_dao
+   [0m[34m=[0m         rootAdmin#1#0 = 0x5f90
+   [0m[34m=[0m     at ./sources/obc_dao.move:290: create_dao
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:129: new
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 2}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:131: new
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:61: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 2}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:62: fresh_object_address
+   [0m[34m=[0m         ids_created#1#0 = 2
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:63: fresh_object_address
+   [0m[34m=[0m         id#1#0 = 0x6952
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:64: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 3}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:65: fresh_object_address
+   [0m[34m=[0m         result = 0x6952
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 3}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:66: fresh_object_address
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:130: new
+   [0m[34m=[0m         result = object.UID{id = object.ID{bytes = 0x6952}}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 3}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:133: new
+   [0m[34m=[0m     at ./sources/obc_dao.move:294: create_dao
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:41: empty
+   [0m[34m=[0m         result =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("0")])])>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:42: empty
+   [0m[34m=[0m     at ./sources/obc_dao.move:295: create_dao
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:41: empty
+   [0m[34m=[0m         result =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_OBCDaoAction'|"), List([Literal("Vec_236086"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_OBCDaoAction'!val!0|"), Literal("0")])])>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:42: empty
+   [0m[34m=[0m     at ./sources/obc_dao.move:296: create_dao
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:41: empty
+   [0m[34m=[0m         result =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_u64'|"), List([Literal("Vec_236047"), Literal("|T@[Int]$2_vec_map_Entry'u64_u64'!val!0|"), Literal("0")])])>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:42: empty
+   [0m[34m=[0m     at ./sources/obc_dao.move:298: create_dao
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:41: empty
+   [0m[34m=[0m         result =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!0|"), Literal("0")])])>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:42: empty
+   [0m[34m=[0m     at ./sources/obc_dao.move:289: create_dao
+   [0m[34m=[0m         dao_obj#1#0 =
+   [0m[34m=[0m           obc_dao.Dao{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x6952}},
+   [0m[34m=[0m             admin = 0x5f90,
+   [0m[34m=[0m             config =
+   [0m[34m=[0m               obc_dao.DaoConfig{
+   [0m[34m=[0m                 voting_delay = 259200000,
+   [0m[34m=[0m                 voting_period = 604800000,
+   [0m[34m=[0m                 voting_quorum_rate = 40u8,
+   [0m[34m=[0m                 min_action_delay = 604800000},
+   [0m[34m=[0m             info =
+   [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x4823}},
+   [0m[34m=[0m                 next_proposal_id = 19,
+   [0m[34m=[0m                 next_action_id = 0,
+   [0m[34m=[0m                 proposal_create_event =
+   [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+   [0m[34m=[0m                     proposal_id = 19,
+   [0m[34m=[0m                     proposer = 0x0},
+   [0m[34m=[0m                 vote_changed_event =
+   [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                     proposal_id = 19,
+   [0m[34m=[0m                     voter = 0x0,
+   [0m[34m=[0m                     proposer = 0x0,
+   [0m[34m=[0m                     agree = false,
+   [0m[34m=[0m                     vote = 0}},
+   [0m[34m=[0m             proposal_record = vec_map.VecMap{contents = vector{}},
+   [0m[34m=[0m             action_record = vec_map.VecMap{contents = vector{}},
+   [0m[34m=[0m             votes_record = vec_map.VecMap{contents = vector{}},
+   [0m[34m=[0m             voting_pool =
+   [0m[34m=[0m               voting_pool.VotingPool{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x72ae}},
+   [0m[34m=[0m                 obc_balance = 0,
+   [0m[34m=[0m                 pool_token_balance = 0},
+   [0m[34m=[0m             current_proposal_status = vec_map.VecMap{contents = vector{}}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:303: create_dao
+   [0m[34m=[0m     at ./sources/obc_dao.move:994: set_admins
+   [0m[34m=[0m         new_admins = vector{(size): 19170, 0x5f90, default: 0x12db}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x3d6c,
+   [0m[34m=[0m             tx_hash = vector{(size): 11478, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 3}
+   [0m[34m=[0m     at ./sources/obc_dao.move:999: set_admins
+   [0m[34m=[0m     enter loop, variable(s) new_admins, ctx havocked and reassigned
+   [0m[34m=[0m         new_admins = vector{0x12db}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1eb,
+   [0m[34m=[0m             tx_hash = vector{(size): 2995, default: undef},
+   [0m[34m=[0m             epoch = 23281,
+   [0m[34m=[0m             epoch_timestamp_ms = 28145,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./sources/obc_dao.move:1000: set_admins
+   [0m[34m=[0m         new_admins = vector{}
+   [0m[34m=[0m     at ./sources/obc_dao.move:1001: set_admins
+   [0m[34m=[0m     at ./sources/obc_dao_manager.move:15: new
+   [0m[34m=[0m         sender = 0x12db
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1eb,
+   [0m[34m=[0m             tx_hash = vector{(size): 2995, default: undef},
+   [0m[34m=[0m             epoch = 23281,
+   [0m[34m=[0m             epoch_timestamp_ms = 28145,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./sources/obc_dao_manager.move:17: new
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:129: new
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1eb,
+   [0m[34m=[0m             tx_hash = vector{(size): 2995, default: undef},
+   [0m[34m=[0m             epoch = 23281,
+   [0m[34m=[0m             epoch_timestamp_ms = 28145,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:131: new
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:61: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1eb,
+   [0m[34m=[0m             tx_hash = vector{(size): 2995, default: undef},
+   [0m[34m=[0m             epoch = 23281,
+   [0m[34m=[0m             epoch_timestamp_ms = 28145,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:62: fresh_object_address
+   [0m[34m=[0m         ids_created#1#0 = 18446744073709551615
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:63: fresh_object_address
+   [0m[34m=[0m         id#1#0 = 0x2ea6
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:64: fresh_object_address
+   [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+   [0m[34m┌─[0m ./sources/obc_dao.spec.move:44:5
+   [0m[34m│[0m  
+[0m[34m44[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec create_obcdao_action{[0m
+[0m[34m45[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m46[0m [0m[34m│[0m [0m[31m│[0m 
+[0m[34m47[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        let action_id = dao.info.next_action_id + 1;[0m
+[0m[34m48[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if action_id  > MAX_U64;[0m
+[0m[34m49[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+   [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+   [0m[34m│[0m  
+   [0m[34m┌─[0m ./../sui-framework/sources/vec_map.move:47:9
+   [0m[34m│[0m
+[0m[34m47[0m [0m[34m│[0m         assert!(!contains(self, &key), EKeyAlreadyExists);
+   [0m[34m│[0m         [0m[34m-------------------------------------------------[0m [0m[34mabort happened here with code 0x0[0m
+   [0m[34m│[0m
+   [0m[34m=[0m     at ./sources/obc_dao.move:230: create_obcdao_action
+   [0m[34m=[0m     at ./sources/obc_dao.spec.move:47
+   [0m[34m=[0m     at ./sources/obc_dao.move:230: create_obcdao_action
+   [0m[34m=[0m         dao =
+   [0m[34m=[0m           &obc_dao.Dao{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x41bb}},
+   [0m[34m=[0m             admin = 0x2cd6,
+   [0m[34m=[0m             config =
+   [0m[34m=[0m               obc_dao.DaoConfig{
+   [0m[34m=[0m                 voting_delay = 26501,
+   [0m[34m=[0m                 voting_period = 19170,
+   [0m[34m=[0m                 voting_quorum_rate = 35u8,
+   [0m[34m=[0m                 min_action_delay = 15725},
+   [0m[34m=[0m             info =
+   [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0xf3e}},
+   [0m[34m=[0m                 next_proposal_id = 2995,
+   [0m[34m=[0m                 next_action_id = 18446744073709551614,
+   [0m[34m=[0m                 proposal_create_event =
+   [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+   [0m[34m=[0m                     proposal_id = 19718,
+   [0m[34m=[0m                     proposer = 0x305e},
+   [0m[34m=[0m                 vote_changed_event =
+   [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                     proposal_id = 18716,
+   [0m[34m=[0m                     voter = 0x124,
+   [0m[34m=[0m                     proposer = 0x99,
+   [0m[34m=[0m                     agree = false,
+   [0m[34m=[0m                     vote = 17421}},
+   [0m[34m=[0m             proposal_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents = vector{(size): 32391, default: undef}},
+   [0m[34m=[0m             action_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     vec_map.Entry{
+   [0m[34m=[0m                       key = 18446744073709551614,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.OBCDaoAction{
+   [0m[34m=[0m                           action_id = 19912,
+   [0m[34m=[0m                           name =
+   [0m[34m=[0m                             string.String{
+   [0m[34m=[0m                               bytes =
+   [0m[34m=[0m                                 vector{(size): 26299, default: 0u8}}}}}},
+   [0m[34m=[0m             votes_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 5436,
+   [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+   [0m[34m=[0m             voting_pool =
+   [0m[34m=[0m               voting_pool.VotingPool{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+   [0m[34m=[0m                 obc_balance = 491,
+   [0m[34m=[0m                 pool_token_balance = 9961},
+   [0m[34m=[0m             current_proposal_status =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 4827,
+   [0m[34m=[0m                     default: vec_map.Entry{
+   [0m[34m=[0m                       key = 0,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.ProposalStatus{
+   [0m[34m=[0m                           version_id = 0,
+   [0m[34m=[0m                           status = 0u8}}}}}
+   [0m[34m=[0m         _ =
+   [0m[34m=[0m           obc_dao_manager.OBCDaoManageKey{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x5af1}}}
+   [0m[34m=[0m         actionName = vector{(size): 28145, default: 0u8}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x72ae,
+   [0m[34m=[0m             tx_hash = vector{(size): 11942, default: 0u8},
+   [0m[34m=[0m             epoch = 5705,
+   [0m[34m=[0m             epoch_timestamp_ms = 24464,
+   [0m[34m=[0m             ids_created = 26962}
+   [0m[34m=[0m     at ./sources/obc_dao.move:238: create_obcdao_action
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:38: sender
+   [0m[34m=[0m         self =
+   [0m[34m=[0m           tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x72ae,
+   [0m[34m=[0m             tx_hash = vector{(size): 11942, default: 0u8},
+   [0m[34m=[0m             epoch = 5705,
+   [0m[34m=[0m             epoch_timestamp_ms = 24464,
+   [0m[34m=[0m             ids_created = 26962}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:39: sender
+   [0m[34m=[0m         result = 0x72ae
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:40: sender
+   [0m[34m=[0m         sender#1#0 = 0x72ae
+   [0m[34m=[0m     at ./sources/obc_dao.move:239: create_obcdao_action
+   [0m[34m=[0m     at ./sources/obc_dao.move:863: generate_next_action_id
+   [0m[34m=[0m         dao =
+   [0m[34m=[0m           &obc_dao.Dao{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x41bb}},
+   [0m[34m=[0m             admin = 0x2cd6,
+   [0m[34m=[0m             config =
+   [0m[34m=[0m               obc_dao.DaoConfig{
+   [0m[34m=[0m                 voting_delay = 26501,
+   [0m[34m=[0m                 voting_period = 19170,
+   [0m[34m=[0m                 voting_quorum_rate = 35u8,
+   [0m[34m=[0m                 min_action_delay = 15725},
+   [0m[34m=[0m             info =
+   [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0xf3e}},
+   [0m[34m=[0m                 next_proposal_id = 2995,
+   [0m[34m=[0m                 next_action_id = 18446744073709551614,
+   [0m[34m=[0m                 proposal_create_event =
+   [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+   [0m[34m=[0m                     proposal_id = 19718,
+   [0m[34m=[0m                     proposer = 0x305e},
+   [0m[34m=[0m                 vote_changed_event =
+   [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                     proposal_id = 18716,
+   [0m[34m=[0m                     voter = 0x124,
+   [0m[34m=[0m                     proposer = 0x99,
+   [0m[34m=[0m                     agree = false,
+   [0m[34m=[0m                     vote = 17421}},
+   [0m[34m=[0m             proposal_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents = vector{(size): 32391, default: undef}},
+   [0m[34m=[0m             action_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     vec_map.Entry{
+   [0m[34m=[0m                       key = 18446744073709551614,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.OBCDaoAction{
+   [0m[34m=[0m                           action_id = 19912,
+   [0m[34m=[0m                           name =
+   [0m[34m=[0m                             string.String{
+   [0m[34m=[0m                               bytes =
+   [0m[34m=[0m                                 vector{(size): 26299, default: 0u8}}}}}},
+   [0m[34m=[0m             votes_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 5436,
+   [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+   [0m[34m=[0m             voting_pool =
+   [0m[34m=[0m               voting_pool.VotingPool{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+   [0m[34m=[0m                 obc_balance = 491,
+   [0m[34m=[0m                 pool_token_balance = 9961},
+   [0m[34m=[0m             current_proposal_status =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 4827,
+   [0m[34m=[0m                     default: vec_map.Entry{
+   [0m[34m=[0m                       key = 0,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.ProposalStatus{
+   [0m[34m=[0m                           version_id = 0,
+   [0m[34m=[0m                           status = 0u8}}}}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:864: generate_next_action_id
+   [0m[34m=[0m         info#1#0 =
+   [0m[34m=[0m           &obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0xf3e}},
+   [0m[34m=[0m             next_proposal_id = 2995,
+   [0m[34m=[0m             next_action_id = 18446744073709551614,
+   [0m[34m=[0m             proposal_create_event =
+   [0m[34m=[0m               obc_dao.ProposalCreatedEvent{
+   [0m[34m=[0m                 proposal_id = 19718,
+   [0m[34m=[0m                 proposer = 0x305e},
+   [0m[34m=[0m             vote_changed_event =
+   [0m[34m=[0m               obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                 proposal_id = 18716,
+   [0m[34m=[0m                 voter = 0x124,
+   [0m[34m=[0m                 proposer = 0x99,
+   [0m[34m=[0m                 agree = false,
+   [0m[34m=[0m                 vote = 17421}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:865: generate_next_action_id
+   [0m[34m=[0m         action_id#1#0 = 18446744073709551614
+   [0m[34m=[0m     at ./sources/obc_dao.move:866: generate_next_action_id
+   [0m[34m=[0m         dao =
+   [0m[34m=[0m           &obc_dao.Dao{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x41bb}},
+   [0m[34m=[0m             admin = 0x2cd6,
+   [0m[34m=[0m             config =
+   [0m[34m=[0m               obc_dao.DaoConfig{
+   [0m[34m=[0m                 voting_delay = 26501,
+   [0m[34m=[0m                 voting_period = 19170,
+   [0m[34m=[0m                 voting_quorum_rate = 35u8,
+   [0m[34m=[0m                 min_action_delay = 15725},
+   [0m[34m=[0m             info =
+   [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0xf3e}},
+   [0m[34m=[0m                 next_proposal_id = 2995,
+   [0m[34m=[0m                 next_action_id = 18446744073709551615,
+   [0m[34m=[0m                 proposal_create_event =
+   [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+   [0m[34m=[0m                     proposal_id = 19718,
+   [0m[34m=[0m                     proposer = 0x305e},
+   [0m[34m=[0m                 vote_changed_event =
+   [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                     proposal_id = 18716,
+   [0m[34m=[0m                     voter = 0x124,
+   [0m[34m=[0m                     proposer = 0x99,
+   [0m[34m=[0m                     agree = false,
+   [0m[34m=[0m                     vote = 17421}},
+   [0m[34m=[0m             proposal_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents = vector{(size): 32391, default: undef}},
+   [0m[34m=[0m             action_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     vec_map.Entry{
+   [0m[34m=[0m                       key = 18446744073709551614,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.OBCDaoAction{
+   [0m[34m=[0m                           action_id = 19912,
+   [0m[34m=[0m                           name =
+   [0m[34m=[0m                             string.String{
+   [0m[34m=[0m                               bytes =
+   [0m[34m=[0m                                 vector{(size): 26299, default: 0u8}}}}}},
+   [0m[34m=[0m             votes_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 5436,
+   [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+   [0m[34m=[0m             voting_pool =
+   [0m[34m=[0m               voting_pool.VotingPool{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+   [0m[34m=[0m                 obc_balance = 491,
+   [0m[34m=[0m                 pool_token_balance = 9961},
+   [0m[34m=[0m             current_proposal_status =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 4827,
+   [0m[34m=[0m                     default: vec_map.Entry{
+   [0m[34m=[0m                       key = 0,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.ProposalStatus{
+   [0m[34m=[0m                           version_id = 0,
+   [0m[34m=[0m                           status = 0u8}}}}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:867: generate_next_action_id
+   [0m[34m=[0m         result = 18446744073709551614
+   [0m[34m=[0m         dao =
+   [0m[34m=[0m           &obc_dao.Dao{
+   [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x41bb}},
+   [0m[34m=[0m             admin = 0x2cd6,
+   [0m[34m=[0m             config =
+   [0m[34m=[0m               obc_dao.DaoConfig{
+   [0m[34m=[0m                 voting_delay = 26501,
+   [0m[34m=[0m                 voting_period = 19170,
+   [0m[34m=[0m                 voting_quorum_rate = 35u8,
+   [0m[34m=[0m                 min_action_delay = 15725},
+   [0m[34m=[0m             info =
+   [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0xf3e}},
+   [0m[34m=[0m                 next_proposal_id = 2995,
+   [0m[34m=[0m                 next_action_id = 18446744073709551615,
+   [0m[34m=[0m                 proposal_create_event =
+   [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+   [0m[34m=[0m                     proposal_id = 19718,
+   [0m[34m=[0m                     proposer = 0x305e},
+   [0m[34m=[0m                 vote_changed_event =
+   [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+   [0m[34m=[0m                     proposal_id = 18716,
+   [0m[34m=[0m                     voter = 0x124,
+   [0m[34m=[0m                     proposer = 0x99,
+   [0m[34m=[0m                     agree = false,
+   [0m[34m=[0m                     vote = 17421}},
+   [0m[34m=[0m             proposal_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents = vector{(size): 32391, default: undef}},
+   [0m[34m=[0m             action_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     vec_map.Entry{
+   [0m[34m=[0m                       key = 18446744073709551614,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.OBCDaoAction{
+   [0m[34m=[0m                           action_id = 19912,
+   [0m[34m=[0m                           name =
+   [0m[34m=[0m                             string.String{
+   [0m[34m=[0m                               bytes =
+   [0m[34m=[0m                                 vector{(size): 26299, default: 0u8}}}}}},
+   [0m[34m=[0m             votes_record =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 5436,
+   [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+   [0m[34m=[0m             voting_pool =
+   [0m[34m=[0m               voting_pool.VotingPool{
+   [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+   [0m[34m=[0m                 obc_balance = 491,
+   [0m[34m=[0m                 pool_token_balance = 9961},
+   [0m[34m=[0m             current_proposal_status =
+   [0m[34m=[0m               vec_map.VecMap{
+   [0m[34m=[0m                 contents =
+   [0m[34m=[0m                   vector{
+   [0m[34m=[0m                     (size): 4827,
+   [0m[34m=[0m                     default: vec_map.Entry{
+   [0m[34m=[0m                       key = 0,
+   [0m[34m=[0m                       value =
+   [0m[34m=[0m                         obc_dao.ProposalStatus{
+   [0m[34m=[0m                           version_id = 0,
+   [0m[34m=[0m                           status = 0u8}}}}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:869: generate_next_action_id
+   [0m[34m=[0m         action_id#1#0 = 18446744073709551614
+   [0m[34m=[0m     at ./sources/obc_dao.move:243: create_obcdao_action
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:22: utf8
+   [0m[34m=[0m         bytes = vector{(size): 28145, default: 0u8}
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:23: utf8
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:24: utf8
+   [0m[34m=[0m         result = string.String{bytes = vector{(size): 28145, default: 0u8}}
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:25: utf8
+   [0m[34m=[0m     at ./sources/obc_dao.move:241: create_obcdao_action
+   [0m[34m=[0m         action#1#0 =
+   [0m[34m=[0m           obc_dao.OBCDaoAction{
+   [0m[34m=[0m             action_id = 18446744073709551614,
+   [0m[34m=[0m             name = string.String{bytes = vector{(size): 28145, default: 0u8}}}
+   [0m[34m=[0m     at ./sources/obc_dao.move:250: create_obcdao_action
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:22: utf8
+   [0m[34m=[0m         bytes = vector{(size): 28145, default: 0u8}
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:23: utf8
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:24: utf8
+   [0m[34m=[0m         result = string.String{bytes = vector{(size): 28145, default: 0u8}}
+   [0m[34m=[0m     at ./../move-stdlib/sources/string.move:25: utf8
+   [0m[34m=[0m     at ./sources/obc_dao.move:248: create_obcdao_action
+   [0m[34m=[0m     at ./sources/obc_dao.move:247: create_obcdao_action
+   [0m[34m=[0m     at ./sources/obc_dao.move:254: create_obcdao_action
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:46: insert
+   [0m[34m=[0m         self =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_OBCDaoAction'|"), List([Literal("Vec_236086"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_OBCDaoAction'!val!8|"), Literal("1")])])>
+   [0m[34m=[0m         key = <generic>
+   [0m[34m=[0m         value = <generic>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:47: insert
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:93: contains
+   [0m[34m=[0m         self =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_OBCDaoAction'|"), List([Literal("Vec_236086"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_OBCDaoAction'!val!8|"), Literal("1")])])>
+   [0m[34m=[0m         key = <generic>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:94: contains
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+   [0m[34m=[0m         self =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_OBCDaoAction'|"), List([Literal("Vec_236086"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_OBCDaoAction'!val!8|"), Literal("1")])])>
+   [0m[34m=[0m         key = <generic>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+   [0m[34m=[0m         i#1#0 = 0
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+   [0m[34m=[0m         self =
+   [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_OBCDaoAction'|"), List([Literal("Vec_236086"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_OBCDaoAction'!val!8|"), Literal("1")])])>
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+   [0m[34m=[0m         result = 1
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+   [0m[34m=[0m         n#1#0 = 1
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+   [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+   [0m[34m=[0m         i#1#0 = 0
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:154: get_idx_opt
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:155: get_idx_opt
+   [0m[34m=[0m         result = option.Option{vec = vector{0}}
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+   [0m[34m=[0m         result = true
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:95: contains
+   [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:47: insert
+   [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:137:5
+    [0m[34m│[0m  
+[0m[34m137[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec generate_next_action_id {[0m
+[0m[34m138[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m139[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        //aborts_if  >= MAX_U64;[0m
+[0m[34m140[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./sources/obc_dao.move:866:41
+    [0m[34m│[0m
+[0m[34m866[0m [0m[34m│[0m         info.next_action_id = action_id + 1;
+    [0m[34m│[0m                                         [0m[34m-[0m [0m[34mabort happened here with execution failure[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:863: generate_next_action_id
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x5af1}},
+    [0m[34m=[0m             admin = 0x6df1,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 26501,
+    [0m[34m=[0m                 voting_period = 19170,
+    [0m[34m=[0m                 voting_quorum_rate = 35u8,
+    [0m[34m=[0m                 min_action_delay = 15725},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 491,
+    [0m[34m=[0m                 next_action_id = 18446744073709551615,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 9961,
+    [0m[34m=[0m                 pool_token_balance = 16827},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:864: generate_next_action_id
+    [0m[34m=[0m         info#1#0 =
+    [0m[34m=[0m           &obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m             next_proposal_id = 491,
+    [0m[34m=[0m             next_action_id = 18446744073709551615,
+    [0m[34m=[0m             proposal_create_event =
+    [0m[34m=[0m               obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                 proposal_id = 18716,
+    [0m[34m=[0m                 proposer = 0x124},
+    [0m[34m=[0m             vote_changed_event =
+    [0m[34m=[0m               obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                 proposal_id = 17421,
+    [0m[34m=[0m                 voter = 0x99,
+    [0m[34m=[0m                 proposer = 0xf3e,
+    [0m[34m=[0m                 agree = false,
+    [0m[34m=[0m                 vote = 12382}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:865: generate_next_action_id
+    [0m[34m=[0m         action_id#1#0 = 18446744073709551615
+    [0m[34m=[0m     at ./sources/obc_dao.move:866: generate_next_action_id
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:141:5
+    [0m[34m│[0m  
+[0m[34m141[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec generate_next_proposal_id {[0m
+[0m[34m142[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m143[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./sources/obc_dao.move:858:45
+    [0m[34m│[0m
+[0m[34m858[0m [0m[34m│[0m         info.next_proposal_id = proposal_id + 1;
+    [0m[34m│[0m                                             [0m[34m-[0m [0m[34mabort happened here with execution failure[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:855: generate_next_proposal_id
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x5af1}},
+    [0m[34m=[0m             admin = 0x6df1,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 26501,
+    [0m[34m=[0m                 voting_period = 19170,
+    [0m[34m=[0m                 voting_quorum_rate = 35u8,
+    [0m[34m=[0m                 min_action_delay = 15725},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 18446744073709551615,
+    [0m[34m=[0m                 next_action_id = 491,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 9961,
+    [0m[34m=[0m                 pool_token_balance = 16827},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:856: generate_next_proposal_id
+    [0m[34m=[0m         info#1#0 =
+    [0m[34m=[0m           &obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m             next_proposal_id = 18446744073709551615,
+    [0m[34m=[0m             next_action_id = 491,
+    [0m[34m=[0m             proposal_create_event =
+    [0m[34m=[0m               obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                 proposal_id = 18716,
+    [0m[34m=[0m                 proposer = 0x124},
+    [0m[34m=[0m             vote_changed_event =
+    [0m[34m=[0m               obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                 proposal_id = 17421,
+    [0m[34m=[0m                 voter = 0x99,
+    [0m[34m=[0m                 proposer = 0xf3e,
+    [0m[34m=[0m                 agree = false,
+    [0m[34m=[0m                 vote = 12382}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:857: generate_next_proposal_id
+    [0m[34m=[0m         proposal_id#1#0 = 18446744073709551615
+    [0m[34m=[0m     at ./sources/obc_dao.move:858: generate_next_proposal_id
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:134:5
+    [0m[34m│[0m  
+[0m[34m134[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec modify_dao_config{[0m
+[0m[34m135[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m136[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./sources/obc_dao.move:928:13
+    [0m[34m│[0m
+[0m[34m928[0m [0m[34m│[0m             assert!(voting_quorum_rate <= 100, (ERR_QUORUM_RATE_INVALID));
+    [0m[34m│[0m             [0m[34m-------------------------------------------------------------[0m [0m[34mabort happened here with code 0x57E[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:910: modify_dao_config
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x6df1}},
+    [0m[34m=[0m             admin = 0x5f90,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 6335,
+    [0m[34m=[0m                 voting_period = 26501,
+    [0m[34m=[0m                 voting_quorum_rate = 68u8,
+    [0m[34m=[0m                 min_action_delay = 19170},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 491,
+    [0m[34m=[0m                 next_action_id = 9961,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 16827,
+    [0m[34m=[0m                 pool_token_balance = 23281},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         _ =
+    [0m[34m=[0m           obc_dao_manager.OBCDaoManageKey{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x1649}}}
+    [0m[34m=[0m         voting_delay = 29359
+    [0m[34m=[0m         voting_period = 26963
+    [0m[34m=[0m         voting_quorum_rate = 101u8
+    [0m[34m=[0m         min_action_delay = 11478
+    [0m[34m=[0m     at ./sources/obc_dao.move:920: modify_dao_config
+    [0m[34m=[0m     at ./sources/obc_dao.move:904: get_config
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x6df1}},
+    [0m[34m=[0m             admin = 0x5f90,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 6335,
+    [0m[34m=[0m                 voting_period = 26501,
+    [0m[34m=[0m                 voting_quorum_rate = 68u8,
+    [0m[34m=[0m                 min_action_delay = 19170},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 491,
+    [0m[34m=[0m                 next_action_id = 9961,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 16827,
+    [0m[34m=[0m                 pool_token_balance = 23281},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:905: get_config
+    [0m[34m=[0m         result =
+    [0m[34m=[0m           &obc_dao.DaoConfig{
+    [0m[34m=[0m             voting_delay = 6335,
+    [0m[34m=[0m             voting_period = 26501,
+    [0m[34m=[0m             voting_quorum_rate = 68u8,
+    [0m[34m=[0m             min_action_delay = 19170}
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x6df1}},
+    [0m[34m=[0m             admin = 0x5f90,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 6335,
+    [0m[34m=[0m                 voting_period = 26501,
+    [0m[34m=[0m                 voting_quorum_rate = 68u8,
+    [0m[34m=[0m                 min_action_delay = 19170},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 491,
+    [0m[34m=[0m                 next_action_id = 9961,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 16827,
+    [0m[34m=[0m                 pool_token_balance = 23281},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x6df1}},
+    [0m[34m=[0m             admin = 0x5f90,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 6335,
+    [0m[34m=[0m                 voting_period = 26501,
+    [0m[34m=[0m                 voting_quorum_rate = 68u8,
+    [0m[34m=[0m                 min_action_delay = 19170},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 491,
+    [0m[34m=[0m                 next_action_id = 9961,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 16827,
+    [0m[34m=[0m                 pool_token_balance = 23281},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:906: get_config
+    [0m[34m=[0m         config#1#0 =
+    [0m[34m=[0m           &obc_dao.DaoConfig{
+    [0m[34m=[0m             voting_delay = 6335,
+    [0m[34m=[0m             voting_period = 26501,
+    [0m[34m=[0m             voting_quorum_rate = 68u8,
+    [0m[34m=[0m             min_action_delay = 19170}
+    [0m[34m=[0m     at ./sources/obc_dao.move:921: modify_dao_config
+    [0m[34m=[0m     at ./sources/obc_dao.move:922: modify_dao_config
+    [0m[34m=[0m     at ./sources/obc_dao.move:924: modify_dao_config
+    [0m[34m=[0m     at ./sources/obc_dao.move:925: modify_dao_config
+    [0m[34m=[0m     at ./sources/obc_dao.move:927: modify_dao_config
+    [0m[34m=[0m     at ./sources/obc_dao.move:928: modify_dao_config
+    [0m[34m=[0m     at <internal>:1
+    [0m[34m=[0m     at ./sources/obc_dao.move:928: modify_dao_config
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x6df1}},
+    [0m[34m=[0m             admin = 0x5f90,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 29359,
+    [0m[34m=[0m                 voting_period = 26963,
+    [0m[34m=[0m                 voting_quorum_rate = 68u8,
+    [0m[34m=[0m                 min_action_delay = 19170},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m                 next_proposal_id = 491,
+    [0m[34m=[0m                 next_action_id = 9961,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 18716,
+    [0m[34m=[0m                     proposer = 0x124},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17421,
+    [0m[34m=[0m                     voter = 0x99,
+    [0m[34m=[0m                     proposer = 0xf3e,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 12382}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 5436, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 4827,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11942,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m                 obc_balance = 16827,
+    [0m[34m=[0m                 pool_token_balance = 23281},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 2995,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:130:5
+    [0m[34m│[0m  
+[0m[34m130[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec modify_proposal_obj{[0m
+[0m[34m131[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m132[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./../sui-framework/sources/vec_map.move:166:9
+    [0m[34m│[0m
+[0m[34m166[0m [0m[34m│[0m         assert!(option::is_some(&idx_opt), EKeyDoesNotExist);
+    [0m[34m│[0m         [0m[34m----------------------------------------------------[0m [0m[34mabort happened here with code 0x1[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:1025: modify_proposal_obj
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x1eb}},
+    [0m[34m=[0m             admin = 0x41bb,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 24465,
+    [0m[34m=[0m                 voting_period = 5706,
+    [0m[34m=[0m                 voting_quorum_rate = 63u8,
+    [0m[34m=[0m                 min_action_delay = 28146},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x66bb}},
+    [0m[34m=[0m                 next_proposal_id = 153,
+    [0m[34m=[0m                 next_action_id = 3902,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 30333,
+    [0m[34m=[0m                     proposer = 0x701f},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 31322,
+    [0m[34m=[0m                     voter = 0x26a6,
+    [0m[34m=[0m                     proposer = 0x428b,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 23811}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("13931"), Literal("4966"), Literal("7376"), Literal("11840"), Literal("18756"), Literal("19954"), Literal("24084"), Literal("12623"), Literal("19629"), Literal("3548"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("32439"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!32|"), Literal("5537")])])]), Literal("24393")])])]), List([Literal("|$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'|"), Literal("14771"), List([Literal("a!1")])])])>}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19912,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 1869,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x6443}},
+    [0m[34m=[0m                 obc_balance = 14604,
+    [0m[34m=[0m                 pool_token_balance = 32391},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11538,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         proposal_obj =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("5436"), Literal("14771"), Literal("4827"), Literal("21726"), Literal("5447"), Literal("19895"), Literal("19718"), Literal("18716"), Literal("17421"), Literal("12382"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("17673"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!42|"), Literal("4664")])])]), Literal("292")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("2995")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         index = 225u8
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x2ea6}},
+    [0m[34m=[0m             timestamp_ms = 9961}
+    [0m[34m=[0m     at ./sources/obc_dao.move:1027: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1030: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1034: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1040: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1048: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1056: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1064: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:1073: modify_proposal_obj
+    [0m[34m=[0m     at ./sources/obc_dao.move:450: synchronize_proposal_into_dao
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("5436"), Literal("14771"), Literal("4827"), Literal("21726"), Literal("5447"), Literal("19895"), Literal("19718"), Literal("18716"), Literal("17421"), Literal("12382"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("17673"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!42|"), Literal("4664")])])]), Literal("292")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("2995")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x1eb}},
+    [0m[34m=[0m             admin = 0x41bb,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 24465,
+    [0m[34m=[0m                 voting_period = 5706,
+    [0m[34m=[0m                 voting_quorum_rate = 63u8,
+    [0m[34m=[0m                 min_action_delay = 28146},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x66bb}},
+    [0m[34m=[0m                 next_proposal_id = 153,
+    [0m[34m=[0m                 next_action_id = 3902,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 30333,
+    [0m[34m=[0m                     proposer = 0x701f},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 31322,
+    [0m[34m=[0m                     voter = 0x26a6,
+    [0m[34m=[0m                     proposer = 0x428b,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 23811}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("13931"), Literal("4966"), Literal("7376"), Literal("11840"), Literal("18756"), Literal("19954"), Literal("24084"), Literal("12623"), Literal("19629"), Literal("3548"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("32439"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!32|"), Literal("5537")])])]), Literal("24393")])])]), List([Literal("|$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'|"), Literal("14771"), List([Literal("a!1")])])])>}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19912,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 1869,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x6443}},
+    [0m[34m=[0m                 obc_balance = 14604,
+    [0m[34m=[0m                 pool_token_balance = 32391},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11538,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:451: synchronize_proposal_into_dao
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:93: contains
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:94: contains
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+    [0m[34m=[0m         result = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+    [0m[34m=[0m         n#1#0 = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+    [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:154: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:155: get_idx_opt
+    [0m[34m=[0m         result = option.Option{vec = vector{0}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+    [0m[34m=[0m         result = true
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:95: contains
+    [0m[34m=[0m     at ./sources/obc_dao.move:452: synchronize_proposal_into_dao
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:67: get_mut
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:68: get_mut
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:164: get_idx
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:165: get_idx
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!0|"), Literal("1")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+    [0m[34m=[0m         result = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+    [0m[34m=[0m         n#1#0 = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+    [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+    [0m[34m=[0m         i#1#0 = 11479
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:159: get_idx_opt
+    [0m[34m=[0m         result = option.Option{vec = vector{}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+    [0m[34m=[0m         idx_opt#1#0 = option.Option{vec = vector{}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:166: get_idx
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:123:5
+    [0m[34m│[0m  
+[0m[34m123[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec propose{[0m
+[0m[34m124[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m125[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        let obc =  payment.balance;[0m
+[0m[34m126[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        let count = balance::value(obc);[0m
+[0m[34m127[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if count < MIN_NEW_PROPOSE_COST;[0m
+[0m[34m128[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./../sui-framework/sources/tx_context.move:64:39
+    [0m[34m│[0m
+[0m[34m 64[0m [0m[34m│[0m         ctx.ids_created = ids_created + 1;
+    [0m[34m│[0m                                       [0m[34m-[0m [0m[34mabort happened here with execution failure[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:381: propose
+    [0m[34m=[0m     at ./sources/obc_dao.spec.move:125
+    [0m[34m=[0m     at ./sources/obc_dao.spec.move:126
+    [0m[34m=[0m     at ./sources/obc_dao.move:381: propose
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x390c}},
+    [0m[34m=[0m             admin = 0x12db,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 24465,
+    [0m[34m=[0m                 voting_period = 5706,
+    [0m[34m=[0m                 voting_quorum_rate = 63u8,
+    [0m[34m=[0m                 min_action_delay = 28146},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x2d12}},
+    [0m[34m=[0m                 next_proposal_id = 17421,
+    [0m[34m=[0m                 next_action_id = 12382,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 9894,
+    [0m[34m=[0m                     proposer = 0x6443},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17035,
+    [0m[34m=[0m                     voter = 0x4dc8,
+    [0m[34m=[0m                     proposer = 0x74d,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 26299}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents = vector{(size): 21726, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 5447,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19895,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x39b3}},
+    [0m[34m=[0m                 obc_balance = 292,
+    [0m[34m=[0m                 pool_token_balance = 153},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19718,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         _ =
+    [0m[34m=[0m           obc_dao_manager.OBCDaoManageKey{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x153c}}}
+    [0m[34m=[0m         version_id = 23281
+    [0m[34m=[0m         payment =
+    [0m[34m=[0m           coin.Coin{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0xf3e}},
+    [0m[34m=[0m             balance = balance.Balance{value = 200000029358}}
+    [0m[34m=[0m         action_id = 16827
+    [0m[34m=[0m         action_delay = 18467
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m             timestamp_ms = 9961}
+    [0m[34m=[0m         ctx =
+    [0m[34m=[0m           &tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x2ea6,
+    [0m[34m=[0m             tx_hash = vector{(size): 18716, default: 2u8},
+    [0m[34m=[0m             epoch = 2995,
+    [0m[34m=[0m             epoch_timestamp_ms = 491,
+    [0m[34m=[0m             ids_created = 18446744073709551615}
+    [0m[34m=[0m     at ./sources/obc_dao.move:393: propose
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:38: sender
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x2ea6,
+    [0m[34m=[0m             tx_hash = vector{(size): 18716, default: 2u8},
+    [0m[34m=[0m             epoch = 2995,
+    [0m[34m=[0m             epoch_timestamp_ms = 491,
+    [0m[34m=[0m             ids_created = 18446744073709551615}
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:39: sender
+    [0m[34m=[0m         result = 0x2ea6
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:40: sender
+    [0m[34m=[0m         sender#1#0 = 0x2ea6
+    [0m[34m=[0m     at ./sources/obc_dao.move:394: propose
+    [0m[34m=[0m     at ./../sui-framework/sources/coin.move:107: into_balance
+    [0m[34m=[0m         coin =
+    [0m[34m=[0m           <? List([Literal("|$2_coin_Coin'$2_obc_OBC'|"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("3902")])]), List([Literal("|$2_balance_Balance'$2_obc_OBC'|"), Literal("200000029358")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/coin.move:108: into_balance
+    [0m[34m=[0m         balance#1#0 =
+    [0m[34m=[0m           <? List([Literal("|$2_balance_Balance'$2_obc_OBC'|"), Literal("200000029358")])>
+    [0m[34m=[0m     at ./../sui-framework/sources/coin.move:109: into_balance
+    [0m[34m=[0m     at ./../sui-framework/sources/object.move:140: delete
+    [0m[34m=[0m         id = object.UID{id = object.ID{bytes = 0xf3e}}
+    [0m[34m=[0m     at ./../sui-framework/sources/object.move:141: delete
+    [0m[34m=[0m     at ./../sui-framework/sources/object.move:142: delete
+    [0m[34m=[0m     at ./../sui-framework/sources/object.move:143: delete
+    [0m[34m=[0m     at ./../sui-framework/sources/coin.move:110: into_balance
+    [0m[34m=[0m         result =
+    [0m[34m=[0m           <? List([Literal("|$2_balance_Balance'$2_obc_OBC'|"), Literal("200000029358")])>
+    [0m[34m=[0m     at ./../sui-framework/sources/coin.move:111: into_balance
+    [0m[34m=[0m         balance#1#0 = balance.Balance{value = 200000029358}
+    [0m[34m=[0m     at ./sources/obc_dao.move:395: propose
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:38: value
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_balance_Balance'$2_obc_OBC'|"), Literal("200000029358")])>
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:39: value
+    [0m[34m=[0m         result = 200000029358
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:40: value
+    [0m[34m=[0m     at ./sources/obc_dao.move:397: propose
+    [0m[34m=[0m     at ./sources/obc_dao.move:399: propose
+    [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:74: request_add_voting
+    [0m[34m=[0m         pool =
+    [0m[34m=[0m           &voting_pool.VotingPool{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x39b3}},
+    [0m[34m=[0m             obc_balance = 292,
+    [0m[34m=[0m             pool_token_balance = 153}
+    [0m[34m=[0m         voting = balance.Balance{value = 200000029358}
+    [0m[34m=[0m         ctx =
+    [0m[34m=[0m           &tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x2ea6,
+    [0m[34m=[0m             tx_hash = vector{(size): 18716, default: 2u8},
+    [0m[34m=[0m             epoch = 2995,
+    [0m[34m=[0m             epoch_timestamp_ms = 491,
+    [0m[34m=[0m             ids_created = 18446744073709551615}
+    [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:79: request_add_voting
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:38: value
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_balance_Balance'$2_obc_OBC'|"), Literal("200000029358")])>
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:39: value
+    [0m[34m=[0m         result = 200000029358
+    [0m[34m=[0m     at ./../sui-framework/sources/balance.move:40: value
+    [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:80: request_add_voting
+    [0m[34m=[0m     at ./sources/obc_dao_voting_pool.move:82: request_add_voting
+    [0m[34m=[0m     at ./../sui-framework/sources/object.move:129: new
+    [0m[34m=[0m         ctx =
+    [0m[34m=[0m           &tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x2ea6,
+    [0m[34m=[0m             tx_hash = vector{(size): 18716, default: 2u8},
+    [0m[34m=[0m             epoch = 2995,
+    [0m[34m=[0m             epoch_timestamp_ms = 491,
+    [0m[34m=[0m             ids_created = 18446744073709551615}
+    [0m[34m=[0m     at ./../sui-framework/sources/object.move:131: new
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:61: fresh_object_address
+    [0m[34m=[0m         ctx =
+    [0m[34m=[0m           &tx_context.TxContext{
+    [0m[34m=[0m             sender = 0x2ea6,
+    [0m[34m=[0m             tx_hash = vector{(size): 18716, default: 2u8},
+    [0m[34m=[0m             epoch = 2995,
+    [0m[34m=[0m             epoch_timestamp_ms = 491,
+    [0m[34m=[0m             ids_created = 18446744073709551615}
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:62: fresh_object_address
+    [0m[34m=[0m         ids_created#1#0 = 18446744073709551615
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:63: fresh_object_address
+    [0m[34m=[0m         id#1#0 = 0x701f
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:64: fresh_object_address
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:119:5
+    [0m[34m│[0m  
+[0m[34m119[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec queue_proposal_action{[0m
+[0m[34m120[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m121[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./sources/obc_dao.move:751:9
+    [0m[34m│[0m  
+[0m[34m751[0m [0m[34m│[0m [0m[34m╭[0m         assert!(
+[0m[34m752[0m [0m[34m│[0m [0m[34m│[0m             proposal_state(proposal, clock) == AGREED,
+[0m[34m753[0m [0m[34m│[0m [0m[34m│[0m             (ERR_PROPOSAL_STATE_INVALID)
+[0m[34m754[0m [0m[34m│[0m [0m[34m│[0m         );
+    [0m[34m│[0m [0m[34m╰[0m[0m[34m─────────' abort happened here with code 0x57B[0m
+    [0m[34m│[0m  
+    [0m[34m=[0m     at ./sources/obc_dao.move:741: queue_proposal_action
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x26e9}},
+    [0m[34m=[0m             admin = 0x5af1,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 29359,
+    [0m[34m=[0m                 voting_period = 26963,
+    [0m[34m=[0m                 voting_quorum_rate = 79u8,
+    [0m[34m=[0m                 min_action_delay = 24465},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x2d12}},
+    [0m[34m=[0m                 next_proposal_id = 3902,
+    [0m[34m=[0m                 next_action_id = 14604,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 9894,
+    [0m[34m=[0m                     proposer = 0x6443},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 17035,
+    [0m[34m=[0m                     voter = 0x4dc8,
+    [0m[34m=[0m                     proposer = 0x74d,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 26299}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents = vector{(size): 21726, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 5447,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19895,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x39b3}},
+    [0m[34m=[0m                 obc_balance = 32391,
+    [0m[34m=[0m                 pool_token_balance = 5436},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 19718,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         _ =
+    [0m[34m=[0m           obc_dao_manager.OBCDaoManageKey{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x41bb}}}
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("4827"), Literal("18716"), Literal("11942"), Literal("0"), Literal("29803"), Literal("5706"), Literal("0"), Literal("12383"), Literal("292"), Literal("0"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("0"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!44|"), Literal("28703")])])]), Literal("153")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("491")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0xbb3}},
+    [0m[34m=[0m             timestamp_ms = 29804}
+    [0m[34m=[0m     at ./sources/obc_dao.move:752: queue_proposal_action
+    [0m[34m=[0m     at ./sources/obc_dao.move:785: proposal_state
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("4827"), Literal("18716"), Literal("11942"), Literal("0"), Literal("29803"), Literal("5706"), Literal("0"), Literal("12383"), Literal("292"), Literal("0"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("0"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!44|"), Literal("28703")])])]), Literal("153")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("491")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0xbb3}},
+    [0m[34m=[0m             timestamp_ms = 29804}
+    [0m[34m=[0m     at ./sources/obc_dao.move:789: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:790: proposal_state
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:33: timestamp_ms
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0xbb3}},
+    [0m[34m=[0m             timestamp_ms = 29804}
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:34: timestamp_ms
+    [0m[34m=[0m         result = 29804
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:35: timestamp_ms
+    [0m[34m=[0m         current_time#1#0 = 29804
+    [0m[34m=[0m     at ./sources/obc_dao.move:791: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:802: judge_proposal_state
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           obc_dao.ProposalInfo{
+    [0m[34m=[0m             project_uid = 0x12db,
+    [0m[34m=[0m             pid = 18716,
+    [0m[34m=[0m             proposer = 0x2ea6,
+    [0m[34m=[0m             start_time = 0,
+    [0m[34m=[0m             end_time = 29803,
+    [0m[34m=[0m             for_votes = 5706,
+    [0m[34m=[0m             against_votes = 0,
+    [0m[34m=[0m             eta = 12383,
+    [0m[34m=[0m             action_delay = 292,
+    [0m[34m=[0m             quorum_votes = 0,
+    [0m[34m=[0m             action =
+    [0m[34m=[0m               obc_dao.OBCDaoAction{
+    [0m[34m=[0m                 action_id = 0,
+    [0m[34m=[0m                 name =
+    [0m[34m=[0m                   string.String{bytes = vector{(size): 28703, default: 1u8}}},
+    [0m[34m=[0m             version_id = 153}
+    [0m[34m=[0m         current_time = 29804
+    [0m[34m=[0m     at ./sources/obc_dao.move:806: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:809: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:812: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:813: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:812: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:816: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:819: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:822: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:825: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:822: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:819: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:816: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:812: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:809: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:806: judge_proposal_state
+    [0m[34m=[0m         result = 7u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:827: judge_proposal_state
+    [0m[34m=[0m         status#1#0 = 7u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:796: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:795: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:794: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:799: proposal_state
+    [0m[34m=[0m         result = 7u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:800: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:751: queue_proposal_action
+    [0m[34m=[0m     at ./sources/obc_dao.move:145
+    [0m[34m=[0m     at ./sources/obc_dao.move:146
+    [0m[34m=[0m     at ./sources/obc_dao.move:147
+    [0m[34m=[0m     at ./sources/obc_dao.move:148
+    [0m[34m=[0m     at ./sources/obc_dao.move:751: queue_proposal_action
+    [0m[34m=[0m     at ./sources/obc_dao.move:753: queue_proposal_action
+    [0m[34m=[0m     at ./sources/obc_dao.move:751: queue_proposal_action
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:113:5
+    [0m[34m│[0m  
+[0m[34m113[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec revoke_vote{[0m
+[0m[34m114[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m115[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        let current_time = clock.timestamp_ms;[0m
+[0m[34m116[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;[0m
+[0m[34m117[0m [0m[34m│[0m [0m[31m│[0m 
+[0m[34m118[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./sources/obc_dao.move:599:13
+    [0m[34m│[0m
+[0m[34m599[0m [0m[34m│[0m             assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
+    [0m[34m│[0m             [0m[34m--------------------------------------------------------------------------------[0m [0m[34mabort happened here with code 0x57D[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:581: revoke_vote
+    [0m[34m=[0m     at ./sources/obc_dao.spec.move:115
+    [0m[34m=[0m     at ./sources/obc_dao.move:581: revoke_vote
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x7e87}},
+    [0m[34m=[0m             admin = 0x2ea6,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 24465,
+    [0m[34m=[0m                 voting_period = 5706,
+    [0m[34m=[0m                 voting_quorum_rate = 63u8,
+    [0m[34m=[0m                 min_action_delay = 28146},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x4509}},
+    [0m[34m=[0m                 next_proposal_id = 18716,
+    [0m[34m=[0m                 next_action_id = 17421,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 27644,
+    [0m[34m=[0m                     proposer = 0x6e5d},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 25547,
+    [0m[34m=[0m                     voter = 0x1e1f,
+    [0m[34m=[0m                     proposer = 0x3b25,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 6868}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents = vector{(size): 31322, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 23811,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 28703,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x767d}},
+    [0m[34m=[0m                 obc_balance = 12382,
+    [0m[34m=[0m                 pool_token_balance = 292},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 9894,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("153"), Literal("19912"), Literal("4828"), Literal("0"), Literal("12859"), Literal("11538"), Literal("14771"), Literal("21726"), Literal("5447"), Literal("19895"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("32662"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!0|"), Literal("32757")])])]), Literal("19718")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("14604")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         my_vote =
+    [0m[34m=[0m           obc_dao.Vote{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0xf3e}},
+    [0m[34m=[0m             vid = 491,
+    [0m[34m=[0m             proposer = 0x12db,
+    [0m[34m=[0m             vote =
+    [0m[34m=[0m               voting_pool.VotingObc{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x1238}},
+    [0m[34m=[0m                 pool_id = object.ID{bytes = 0x66bb},
+    [0m[34m=[0m                 principal = balance.Balance{value = 17035}},
+    [0m[34m=[0m             agree = false}
+    [0m[34m=[0m         voting_power = 15724
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x153c}},
+    [0m[34m=[0m             timestamp_ms = 12859}
+    [0m[34m=[0m         ctx =
+    [0m[34m=[0m           &tx_context.TxContext{
+    [0m[34m=[0m             sender = 0xbb3,
+    [0m[34m=[0m             tx_hash = vector{(size): 25667, default: 4u8},
+    [0m[34m=[0m             epoch = 9961,
+    [0m[34m=[0m             epoch_timestamp_ms = 16827,
+    [0m[34m=[0m             ids_created = 23281}
+    [0m[34m=[0m     at ./sources/obc_dao.move:590: revoke_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:785: proposal_state
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("153"), Literal("19912"), Literal("4828"), Literal("0"), Literal("12859"), Literal("11538"), Literal("14771"), Literal("21726"), Literal("5447"), Literal("19895"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("32662"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!0|"), Literal("32757")])])]), Literal("19718")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("14604")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x153c}},
+    [0m[34m=[0m             timestamp_ms = 12859}
+    [0m[34m=[0m     at ./sources/obc_dao.move:789: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:790: proposal_state
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:33: timestamp_ms
+    [0m[34m=[0m         clock =
+    [0m[34m=[0m           clock.Clock{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x153c}},
+    [0m[34m=[0m             timestamp_ms = 12859}
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:34: timestamp_ms
+    [0m[34m=[0m         result = 12859
+    [0m[34m=[0m     at ./../sui-framework/sources/clock.move:35: timestamp_ms
+    [0m[34m=[0m         current_time#1#0 = 12859
+    [0m[34m=[0m     at ./sources/obc_dao.move:791: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:802: judge_proposal_state
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           obc_dao.ProposalInfo{
+    [0m[34m=[0m             project_uid = 0x99,
+    [0m[34m=[0m             pid = 19912,
+    [0m[34m=[0m             proposer = 0x12dc,
+    [0m[34m=[0m             start_time = 0,
+    [0m[34m=[0m             end_time = 12859,
+    [0m[34m=[0m             for_votes = 11538,
+    [0m[34m=[0m             against_votes = 14771,
+    [0m[34m=[0m             eta = 21726,
+    [0m[34m=[0m             action_delay = 5447,
+    [0m[34m=[0m             quorum_votes = 19895,
+    [0m[34m=[0m             action =
+    [0m[34m=[0m               obc_dao.OBCDaoAction{
+    [0m[34m=[0m                 action_id = 32662,
+    [0m[34m=[0m                 name =
+    [0m[34m=[0m                   string.String{bytes = vector{(size): 32757, default: 4u8}}},
+    [0m[34m=[0m             version_id = 19718}
+    [0m[34m=[0m         current_time = 12859
+    [0m[34m=[0m     at ./sources/obc_dao.move:806: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:809: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:811: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:809: judge_proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:806: judge_proposal_state
+    [0m[34m=[0m         result = 2u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:827: judge_proposal_state
+    [0m[34m=[0m         status#1#0 = 2u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:796: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:795: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:794: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:799: proposal_state
+    [0m[34m=[0m         result = 2u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:800: proposal_state
+    [0m[34m=[0m     at ./sources/obc_dao.move:592: revoke_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:597: revoke_vote
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:38: sender
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           tx_context.TxContext{
+    [0m[34m=[0m             sender = 0xbb3,
+    [0m[34m=[0m             tx_hash = vector{(size): 25667, default: 4u8},
+    [0m[34m=[0m             epoch = 9961,
+    [0m[34m=[0m             epoch_timestamp_ms = 16827,
+    [0m[34m=[0m             ids_created = 23281}
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:39: sender
+    [0m[34m=[0m         result = 0xbb3
+    [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:40: sender
+    [0m[34m=[0m         sender#1#0 = 0xbb3
+    [0m[34m=[0m     at ./sources/obc_dao.move:599: revoke_vote
+    [0m[34m=[0m     at ./sources/obc_dao.move:145
+    [0m[34m=[0m     at ./sources/obc_dao.move:146
+    [0m[34m=[0m     at ./sources/obc_dao.move:147
+    [0m[34m=[0m     at ./sources/obc_dao.move:148
+    [0m[34m=[0m     at ./sources/obc_dao.move:599: revoke_vote
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: function does not abort under this condition[0m
+   [0m[34m┌─[0m ./sources/obc_dao.spec.move:63:9
+   [0m[34m│[0m
+[0m[34m63[0m [0m[34m│[0m         [0m[31maborts_if ctx.ids_created + 1 > MAX_U64;[0m
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+   [0m[34m│[0m
+   [0m[34m=[0m     at ./sources/obc_dao.move:994: set_admins
+   [0m[34m=[0m         new_admins = vector{(size): 26962, default: 0x4}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x5f90,
+   [0m[34m=[0m             tx_hash = vector{(size): 28145, default: 4u8},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./sources/obc_dao.move:999: set_admins
+   [0m[34m=[0m     enter loop, variable(s) new_admins, ctx havocked and reassigned
+   [0m[34m=[0m         new_admins = vector{}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1649,
+   [0m[34m=[0m             tx_hash = vector{(size): 23281, default: 4u8},
+   [0m[34m=[0m             epoch = 15724,
+   [0m[34m=[0m             epoch_timestamp_ms = 19169,
+   [0m[34m=[0m             ids_created = 491}
+   [0m[34m=[0m     at ./sources/obc_dao.move:999: set_admins
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1649,
+   [0m[34m=[0m             tx_hash = vector{(size): 23281, default: 4u8},
+   [0m[34m=[0m             epoch = 15724,
+   [0m[34m=[0m             epoch_timestamp_ms = 19169,
+   [0m[34m=[0m             ids_created = 491}
+   [0m[34m=[0m     at ./sources/obc_dao.spec.move:62
+   [0m[34m=[0m     at ./sources/obc_dao.spec.move:63
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+   [0m[34m┌─[0m ./sources/obc_dao.spec.move:61:5
+   [0m[34m│[0m  
+[0m[34m61[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec set_admins {[0m
+[0m[34m62[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m63[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if ctx.ids_created + 1 > MAX_U64;[0m
+[0m[34m64[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+   [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+   [0m[34m│[0m  
+   [0m[34m┌─[0m ./../sui-framework/sources/tx_context.move:64:39
+   [0m[34m│[0m
+[0m[34m64[0m [0m[34m│[0m         ctx.ids_created = ids_created + 1;
+   [0m[34m│[0m                                       [0m[34m-[0m [0m[34mabort happened here with execution failure[0m
+   [0m[34m│[0m
+   [0m[34m=[0m     at ./sources/obc_dao.move:994: set_admins
+   [0m[34m=[0m         new_admins = vector{(size): 26962, default: 0x26e9}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x5f90,
+   [0m[34m=[0m             tx_hash = vector{(size): 28145, default: undef},
+   [0m[34m=[0m             epoch = 26500,
+   [0m[34m=[0m             epoch_timestamp_ms = 6334,
+   [0m[34m=[0m             ids_created = 0}
+   [0m[34m=[0m     at ./sources/obc_dao.move:999: set_admins
+   [0m[34m=[0m     enter loop, variable(s) new_admins, ctx havocked and reassigned
+   [0m[34m=[0m         new_admins = vector{0x26e9}
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1649,
+   [0m[34m=[0m             tx_hash = vector{(size): 23281, default: undef},
+   [0m[34m=[0m             epoch = 15724,
+   [0m[34m=[0m             epoch_timestamp_ms = 19169,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./sources/obc_dao.move:1000: set_admins
+   [0m[34m=[0m         new_admins = vector{}
+   [0m[34m=[0m     at ./sources/obc_dao.move:1001: set_admins
+   [0m[34m=[0m     at ./sources/obc_dao_manager.move:15: new
+   [0m[34m=[0m         sender = 0x26e9
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1649,
+   [0m[34m=[0m             tx_hash = vector{(size): 23281, default: undef},
+   [0m[34m=[0m             epoch = 15724,
+   [0m[34m=[0m             epoch_timestamp_ms = 19169,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./sources/obc_dao_manager.move:17: new
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:129: new
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1649,
+   [0m[34m=[0m             tx_hash = vector{(size): 23281, default: undef},
+   [0m[34m=[0m             epoch = 15724,
+   [0m[34m=[0m             epoch_timestamp_ms = 19169,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./../sui-framework/sources/object.move:131: new
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:61: fresh_object_address
+   [0m[34m=[0m         ctx =
+   [0m[34m=[0m           &tx_context.TxContext{
+   [0m[34m=[0m             sender = 0x1649,
+   [0m[34m=[0m             tx_hash = vector{(size): 23281, default: undef},
+   [0m[34m=[0m             epoch = 15724,
+   [0m[34m=[0m             epoch_timestamp_ms = 19169,
+   [0m[34m=[0m             ids_created = 18446744073709551615}
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:62: fresh_object_address
+   [0m[34m=[0m         ids_created#1#0 = 18446744073709551615
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:63: fresh_object_address
+   [0m[34m=[0m         id#1#0 = 0x41bb
+   [0m[34m=[0m     at ./../sui-framework/sources/tx_context.move:64: fresh_object_address
+   [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:100:5
+    [0m[34m│[0m  
+[0m[34m100[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec set_current_status_into_dao{[0m
+[0m[34m101[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m102[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./../sui-framework/sources/vec_map.move:166:9
+    [0m[34m│[0m
+[0m[34m166[0m [0m[34m│[0m         assert!(option::is_some(&idx_opt), EKeyDoesNotExist);
+    [0m[34m│[0m         [0m[34m----------------------------------------------------[0m [0m[34mabort happened here with code 0x1[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:1141: set_current_status_into_dao
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x124}},
+    [0m[34m=[0m             admin = 0x390c,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 19170,
+    [0m[34m=[0m                 voting_period = 15725,
+    [0m[34m=[0m                 voting_quorum_rate = 1u8,
+    [0m[34m=[0m                 min_action_delay = 11479},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x6443}},
+    [0m[34m=[0m                 next_proposal_id = 5447,
+    [0m[34m=[0m                 next_action_id = 19895,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 31322,
+    [0m[34m=[0m                     proposer = 0x26a6},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 23811,
+    [0m[34m=[0m                     voter = 0x428b,
+    [0m[34m=[0m                     proposer = 0x66bb,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 28703}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{contents = vector{(size): 1869, default: undef}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 11538,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 14771,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x4dc8}},
+    [0m[34m=[0m                 obc_balance = 19718,
+    [0m[34m=[0m                 pool_token_balance = 18716},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 4664,
+    [0m[34m=[0m                           status = 9u8}}}}}
+    [0m[34m=[0m         proposalInfo =
+    [0m[34m=[0m           obc_dao.ProposalInfo{
+    [0m[34m=[0m             project_uid = 0x99,
+    [0m[34m=[0m             pid = 0,
+    [0m[34m=[0m             proposer = 0xf3e,
+    [0m[34m=[0m             start_time = 5436,
+    [0m[34m=[0m             end_time = 4827,
+    [0m[34m=[0m             for_votes = 11942,
+    [0m[34m=[0m             against_votes = 2995,
+    [0m[34m=[0m             eta = 491,
+    [0m[34m=[0m             action_delay = 9961,
+    [0m[34m=[0m             quorum_votes = 16827,
+    [0m[34m=[0m             action =
+    [0m[34m=[0m               obc_dao.OBCDaoAction{
+    [0m[34m=[0m                 action_id = 21726,
+    [0m[34m=[0m                 name =
+    [0m[34m=[0m                   string.String{bytes = vector{(size): 30333, default: 0u8}}},
+    [0m[34m=[0m             version_id = 23281}
+    [0m[34m=[0m         curProposalStatus = 73u8
+    [0m[34m=[0m     at ./sources/obc_dao.move:1142: set_current_status_into_dao
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:93: contains
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:94: contains
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+    [0m[34m=[0m         result = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+    [0m[34m=[0m         n#1#0 = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+    [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:154: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:155: get_idx_opt
+    [0m[34m=[0m         result = option.Option{vec = vector{0}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+    [0m[34m=[0m         result = true
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:95: contains
+    [0m[34m=[0m     at ./sources/obc_dao.move:1143: set_current_status_into_dao
+    [0m[34m=[0m     at ./sources/obc_dao.move:1144: set_current_status_into_dao
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:52: remove
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:53: remove
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:164: get_idx
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:165: get_idx
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalStatus'|"), List([Literal("Vec_236164"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalStatus'!val!19|"), Literal("1")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+    [0m[34m=[0m         result = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+    [0m[34m=[0m         n#1#0 = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+    [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+    [0m[34m=[0m         i#1#0 = 6335
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:159: get_idx_opt
+    [0m[34m=[0m         result = option.Option{vec = vector{}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+    [0m[34m=[0m         idx_opt#1#0 = option.Option{vec = vector{}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:166: get_idx
+    [0m[34m=[0m         ABORTED
+
+[0m[1m[38;5;9merror[0m[1m: abort not covered by any of the `aborts_if` clauses[0m
+    [0m[34m┌─[0m ./sources/obc_dao.spec.move:79:5
+    [0m[34m│[0m  
+[0m[34m 79[0m [0m[34m│[0m [0m[31m╭[0m     [0m[31mspec synchronize_proposal_into_dao{[0m
+[0m[34m 80[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        aborts_if false;[0m
+[0m[34m 81[0m [0m[34m│[0m [0m[31m│[0m [0m[31m    }[0m
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────^[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m ./../sui-framework/sources/vec_map.move:166:9
+    [0m[34m│[0m
+[0m[34m166[0m [0m[34m│[0m         assert!(option::is_some(&idx_opt), EKeyDoesNotExist);
+    [0m[34m│[0m         [0m[34m----------------------------------------------------[0m [0m[34mabort happened here with code 0x1[0m
+    [0m[34m│[0m
+    [0m[34m=[0m     at ./sources/obc_dao.move:450: synchronize_proposal_into_dao
+    [0m[34m=[0m         proposal =
+    [0m[34m=[0m           <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("9961"), Literal("0"), Literal("16827"), Literal("3902"), Literal("14604"), Literal("32391"), Literal("5436"), Literal("4827"), Literal("11942"), Literal("2995"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("28703"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!33|"), Literal("32757")])])]), Literal("491")])])]), List([Literal("$c8_obc_dao_Proposal"), List([Literal("$2_object_UID"), List([Literal("$2_object_ID"), Literal("292")])]), List([Literal("a!1")])])])>
+    [0m[34m=[0m         dao =
+    [0m[34m=[0m           &obc_dao.Dao{
+    [0m[34m=[0m             id = object.UID{id = object.ID{bytes = 0x99}},
+    [0m[34m=[0m             admin = 0x5af1,
+    [0m[34m=[0m             config =
+    [0m[34m=[0m               obc_dao.DaoConfig{
+    [0m[34m=[0m                 voting_delay = 19170,
+    [0m[34m=[0m                 voting_period = 15725,
+    [0m[34m=[0m                 voting_quorum_rate = 1u8,
+    [0m[34m=[0m                 min_action_delay = 11479},
+    [0m[34m=[0m             info =
+    [0m[34m=[0m               obc_dao.DaoGlobalInfo{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x1238}},
+    [0m[34m=[0m                 next_proposal_id = 9894,
+    [0m[34m=[0m                 next_action_id = 17035,
+    [0m[34m=[0m                 proposal_create_event =
+    [0m[34m=[0m                   obc_dao.ProposalCreatedEvent{
+    [0m[34m=[0m                     proposal_id = 32662,
+    [0m[34m=[0m                     proposer = 0x6e5d},
+    [0m[34m=[0m                 vote_changed_event =
+    [0m[34m=[0m                   obc_dao.VoteChangedEvent{
+    [0m[34m=[0m                     proposal_id = 27644,
+    [0m[34m=[0m                     voter = 0x1e1f,
+    [0m[34m=[0m                     proposer = 0x3b25,
+    [0m[34m=[0m                     agree = false,
+    [0m[34m=[0m                     vote = 25547}},
+    [0m[34m=[0m             proposal_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     <? List([Literal("let"), List([Literal("_"), List([Literal("a!1"), List([Literal("$c8_obc_dao_ProposalInfo"), Literal("30106"), Literal("1842"), Literal("288"), Literal("22190"), Literal("3035"), Literal("12316"), Literal("778"), Literal("27529"), Literal("9741"), Literal("8723"), List([Literal("$c8_obc_dao_OBCDaoAction"), Literal("9040"), List([Literal("$1_string_String"), List([Literal("Vec_44066"), Literal("|T@[Int]Int!val!31|"), Literal("8942")])])]), Literal("12859")])])]), List([Literal("|$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'|"), Literal("0"), List([Literal("a!1")])])])>}},
+    [0m[34m=[0m             action_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 30333,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.OBCDaoAction{
+    [0m[34m=[0m                           action_id = 0,
+    [0m[34m=[0m                           name = string.String{bytes = vector{}}}}}},
+    [0m[34m=[0m             votes_record =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 31322,
+    [0m[34m=[0m                     default: vec_map.Entry{key = 0, value = 0}}},
+    [0m[34m=[0m             voting_pool =
+    [0m[34m=[0m               voting_pool.VotingPool{
+    [0m[34m=[0m                 id = object.UID{id = object.ID{bytes = 0x4509}},
+    [0m[34m=[0m                 obc_balance = 26299,
+    [0m[34m=[0m                 pool_token_balance = 25667},
+    [0m[34m=[0m             current_proposal_status =
+    [0m[34m=[0m               vec_map.VecMap{
+    [0m[34m=[0m                 contents =
+    [0m[34m=[0m                   vector{
+    [0m[34m=[0m                     (size): 23811,
+    [0m[34m=[0m                     default: vec_map.Entry{
+    [0m[34m=[0m                       key = 0,
+    [0m[34m=[0m                       value =
+    [0m[34m=[0m                         obc_dao.ProposalStatus{
+    [0m[34m=[0m                           version_id = 0,
+    [0m[34m=[0m                           status = 0u8}}}}}
+    [0m[34m=[0m     at ./sources/obc_dao.move:451: synchronize_proposal_into_dao
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:93: contains
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:94: contains
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+    [0m[34m=[0m         result = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+    [0m[34m=[0m         n#1#0 = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+    [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:154: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:155: get_idx_opt
+    [0m[34m=[0m         result = option.Option{vec = vector{0}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+    [0m[34m=[0m         result = true
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:95: contains
+    [0m[34m=[0m     at ./sources/obc_dao.move:452: synchronize_proposal_into_dao
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:67: get_mut
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:68: get_mut
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:164: get_idx
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:165: get_idx
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:150: get_idx_opt
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m         key = <generic>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:151: get_idx_opt
+    [0m[34m=[0m         i#1#0 = 0
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:152: get_idx_opt
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:98: size
+    [0m[34m=[0m         self =
+    [0m[34m=[0m           <? List([Literal("|$2_vec_map_VecMap'u64_$c8_obc_dao_ProposalInfo'|"), List([Literal("Vec_236125"), Literal("|T@[Int]$2_vec_map_Entry'u64_$c8_obc_dao_ProposalInfo'!val!8|"), Literal("1")])])>
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:99: size
+    [0m[34m=[0m         result = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:100: size
+    [0m[34m=[0m         n#1#0 = 1
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:153: get_idx_opt
+    [0m[34m=[0m     enter loop, variable(s) i#1#0 havocked and reassigned
+    [0m[34m=[0m         i#1#0 = 18446744073709545281
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:159: get_idx_opt
+    [0m[34m=[0m         result = option.Option{vec = vector{}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:160: get_idx_opt
+    [0m[34m=[0m         idx_opt#1#0 = option.Option{vec = vector{}}
+    [0m[34m=[0m     at ./../sui-framework/sources/vec_map.move:166: get_idx
+    [0m[34m=[0m         ABORTED
+
+exiting with verification errors

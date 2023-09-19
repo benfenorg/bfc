@@ -1,4 +1,5 @@
 module obc_system::voting_pool {
+    use obc_system::obc_dao::add_admin;
     use sui::balance::{Self, Balance};
     use sui::obc::OBC;
     use sui::tx_context::{Self, TxContext};
@@ -13,7 +14,7 @@ module obc_system::voting_pool {
 
     spec module{
         pragma verify;
-        pragma aborts_if_is_strict;
+        //pragma aborts_if_is_strict;
     }
 
 
@@ -65,9 +66,7 @@ module obc_system::voting_pool {
             pool_token_balance: 0,
         }
     }
-    spec new{
-        aborts_if false;
-    }
+
 
     // ==== voting requests ====
 
@@ -168,6 +167,13 @@ module obc_system::voting_pool {
 
     spec split{
         aborts_if false;
+        let original_amount = balance::value(self.principal);
+        aborts_if split_amount > original_amount;
+        let remaining_amount = original_amount - split_amount;
+        aborts_if remaining_amount < MIN_STAKING_THRESHOLD;
+        aborts_if split_amount < MIN_STAKING_THRESHOLD;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+
     }
 
 

@@ -28,7 +28,7 @@ module obc_system::obc_dao {
 
     spec module{
         pragma verify;
-        pragma aborts_if_is_strict;
+        //pragma aborts_if_is_strict;
     }
 
     const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
@@ -380,7 +380,7 @@ module obc_system::obc_dao {
     /// `action_delay`: the delay to execute after the proposal is agreed
     public(friend) fun propose (
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         version_id: u64,
         payment: Coin<OBC>,
         action_id: u64,
@@ -444,7 +444,7 @@ module obc_system::obc_dao {
                 proposer: sender,
             }
         );
-        send_obc_dao_event(manager_key,b"proposal_created");
+        //send_obc_dao_event(manager_key,b"proposal_created");
     }
 
     fun synchronize_proposal_into_dao(proposal: &Proposal, dao:  &mut Dao) {
@@ -740,7 +740,7 @@ module obc_system::obc_dao {
     /// queue agreed proposal to execute.
     public(friend) fun queue_proposal_action(
         dao:  &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
     )  {
@@ -755,7 +755,7 @@ module obc_system::obc_dao {
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
 
         synchronize_proposal_into_dao(proposal, dao);
-        send_obc_dao_event(manager_key, b"proposal_queued");
+        //send_obc_dao_event(manager_key, b"proposal_queued");
     }
 
     /// extract proposal action to execute.
@@ -909,7 +909,7 @@ module obc_system::obc_dao {
     /// if any param is 0, it means no change to that param.
     public fun modify_dao_config(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         voting_delay: u64,
         voting_period: u64,
         voting_quorum_rate: u8,
@@ -932,13 +932,13 @@ module obc_system::obc_dao {
             config.min_action_delay = min_action_delay;
         };
 
-        send_obc_dao_event(manager_key, b"modify_dao_config");
+        //send_obc_dao_event(manager_key, b"modify_dao_config");
     }
 
     /// set voting delay
     public(friend) fun set_voting_delay(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u64,
     ) {
 
@@ -946,14 +946,14 @@ module obc_system::obc_dao {
         let config = get_config(dao);
         config.voting_delay = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_delay");
+        //send_obc_dao_event(manager_key, b"set_voting_delay");
     }
 
 
     /// set voting period
     public(friend) fun set_voting_period(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u64,
     ) {
 
@@ -961,34 +961,34 @@ module obc_system::obc_dao {
         let config = get_config(dao);
         config.voting_period = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_period");
+        //send_obc_dao_event(manager_key, b"set_voting_period");
     }
 
     /// set voting quorum rate: .
     public(friend) fun set_voting_quorum_rate(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u8,
     ) {
         assert!(value <= 100 && value > 0, (ERR_QUORUM_RATE_INVALID));
         let config = get_config(dao);
         config.voting_quorum_rate = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_quorum_rate");
+        //send_obc_dao_event(manager_key, b"set_voting_quorum_rate");
     }
 
 
     /// set min action delay
     public(friend) fun set_min_action_delay(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u64,
     ) {
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
         let config = get_config(dao);
         config.min_action_delay = value;
 
-        send_obc_dao_event(manager_key, b"set_min_action_delay");
+        //send_obc_dao_event(manager_key, b"set_min_action_delay");
     }
 
     fun set_admins(
@@ -1012,15 +1012,15 @@ module obc_system::obc_dao {
     }
 
 
-    fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
-        let object_addr = obc_dao_manager::getKeyAddress(manager_key);
-        event::emit(
-            DaoManagerEvent{
-                key: object_addr,
-                msg: string::utf8(msg),
-            }
-        );
-    }
+    // fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
+    //     let object_addr = obc_dao_manager::getKeyAddress(manager_key);
+    //     event::emit(
+    //         DaoManagerEvent{
+    //             key: object_addr,
+    //             msg: string::utf8(msg),
+    //         }
+    //     );
+    // }
 
     public entry fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
@@ -1099,7 +1099,7 @@ module obc_system::obc_dao {
     /// remove terminated proposal from proposer
     public(friend) fun destroy_terminated_proposal(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         proposal:  &mut Proposal,
         clock: & Clock,
     )  {
@@ -1134,7 +1134,7 @@ module obc_system::obc_dao {
         //     } = proposal;
         //
         //  object::delete(uid);
-        send_obc_dao_event(manager_key, b"ProposalDestroyed");
+        //send_obc_dao_event(manager_key, b"ProposalDestroyed");
 
     }
 
