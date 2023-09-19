@@ -26,6 +26,7 @@
 -  [Function `pool_token_amount`](#0xc8_voting_pool_pool_token_amount)
 -  [Function `get_token_amount`](#0xc8_voting_pool_get_token_amount)
 -  [Function `initial_exchange_rate`](#0xc8_voting_pool_initial_exchange_rate)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -267,6 +268,18 @@ Create a new, empty voting pool.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_request_add_voting"></a>
 
 ## Function `request_add_voting`
@@ -376,6 +389,18 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
         principal_withdraw,
     )
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -509,6 +534,18 @@ All the other parameters of the votingObc like <code>voting</code> or <code>pool
         principal: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> self.principal, split_amount),
     }
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -727,3 +764,13 @@ Returns true if all the staking parameters of the voting obc except the principa
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify;
+<b>pragma</b> aborts_if_is_strict;
+</code></pre>

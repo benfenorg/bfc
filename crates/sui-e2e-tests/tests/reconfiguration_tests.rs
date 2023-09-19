@@ -985,7 +985,7 @@ async fn test_obc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
 }
 
 #[sim_test]
-async fn test_unvote_votes() -> Result<(), anyhow::Error>{
+async fn test_obc_dao_unvote_votingobc() -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1365,13 +1365,6 @@ async fn test_obc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     assert_eq!(dao.config.min_action_delay, 888888);
     assert_eq!(dao.config.voting_delay, 888888);
     assert_eq!(dao.config.voting_quorum_rate, 88);
-
-
-    Ok(())
-}
-
-#[sim_test]
-async fn test_obc_dao_unvote_votingobc()  -> Result<(), anyhow::Error>{
 
 
     Ok(())
