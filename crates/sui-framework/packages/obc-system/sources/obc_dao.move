@@ -181,6 +181,7 @@ module obc_system::obc_dao {
     }
 
     struct ProposalInfo has store, copy, drop{
+        project_uid: address,
         pid: u64,
         /// creator of the proposal
         proposer: address,
@@ -412,6 +413,7 @@ module obc_system::obc_dao {
         let object_id = object::new(ctx);
 
         let proposalInfo = ProposalInfo {
+            project_uid: object::uid_to_address(&object_id),
             pid: proposal_id,
             proposer: sender,
             start_time,
