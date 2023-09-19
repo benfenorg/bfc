@@ -4,15 +4,13 @@
 use futures::future::join_all;
 use rand::rngs::OsRng;
 use std::collections::{BTreeSet, HashSet};
-use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use move_core_types::account_address::AccountAddress;
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
-use sui_protocol_config::{ProtocolConfig, ProtocolVersion, SupportedProtocolVersions};
+use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::SuiAddress;
@@ -25,15 +23,14 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{CallArg, TransactionDataAPI, TransactionExpiration};
+use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::info;
 use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
-use sui_sdk::json::{call_args, SuiJsonValue, type_args};
+use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::storage::BackingPackageStore;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{OBC_SYSTEM_PACKAGE_ID};
 
 #[sim_test]
 async fn advance_epoch_tx_test() {
@@ -345,7 +342,7 @@ async fn test_change_obc_round() {
         .get_node_handle()
         .unwrap()
         .with(|node| {
-            let state = node
+            let _state = node
                 .state()
                 .get_obc_system_state_object_for_testing().unwrap();
             //assert_eq!(state.inner_state().round, 1);
@@ -365,7 +362,7 @@ async fn test_obc_dao_update_system_package_blocked(){
     ProtocolConfig::poison_get_for_min_version();
 
     let START_VERSION= 18u64;
-    let UPDATE_TARGET_VERSION = 19u64;
+    // let UPDATE_TARGET_VERSION = 19u64;
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_protocol_version(ProtocolVersion::new(START_VERSION))
@@ -437,7 +434,7 @@ async fn test_obc_dao_update_system_package_pass(){
     ProtocolConfig::poison_get_for_min_version();
 
     let START_VERSION= 18u64;
-    let UPDATE_TARGET_VERSION = 19u64;
+    // let UPDATE_TARGET_VERSION = 19u64;
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_protocol_version(ProtocolVersion::new(START_VERSION))
@@ -560,17 +557,17 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+    let _current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
 
 
 
     info!("============finish add admin");
 
     // now do the call
-    let module = "obc_system".to_string();
-    let function = "create_obcdao_action".to_string();
+    let _module = "obc_system".to_string();
+    let _function = "create_obcdao_action".to_string();
     let package_id = OBC_SYSTEM_PACKAGE_ID;
-    let arg = vec![ SuiJsonValue::from_str(&package_id.to_string())?,];
+    let _arg = vec![ SuiJsonValue::from_str(&package_id.to_string())?,];
 
 
 
