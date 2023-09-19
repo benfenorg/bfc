@@ -1292,11 +1292,13 @@ open <code>position_number</code> positions
             current_tick_index: tick_index,
         });
         <b>if</b> (target_sqrt_price == next_sqrt_price) {
-            current_sqrt_price = next_sqrt_price;
-            liquidity = <a href="tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(&_vault.tick_manager, tick_index, _a2b, liquidity);
+            current_sqrt_price = target_sqrt_price;
+            liquidity = <a href="tick.md#0xc8_tick_cross_by_tick">tick::cross_by_tick</a>(next_tick, _a2b, liquidity);
             tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(next_tick);
-            swap_result.after_sqrt_price = current_sqrt_price;
+        } <b>else</b> {
+            current_sqrt_price = next_sqrt_price
         };
+        swap_result.after_sqrt_price = current_sqrt_price;
     };
     swap_result
 }
@@ -1525,21 +1527,22 @@ open <code>position_number</code> positions
             _a2b
         );
         next_score = tick_score;
-        <b>let</b> tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(<a href="tick.md#0xc8_tick">tick</a>);
-        <b>let</b> tick_sqrt_price = <b>if</b> (_a2b) {
-            <a href="math_u128.md#0xc8_math_u128_max">math_u128::max</a>(_sqrt_price_limit, <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>))
+        <b>let</b> next_tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(<a href="tick.md#0xc8_tick">tick</a>);
+        <b>let</b> next_tick_sqrt_price = <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>);
+        <b>let</b> target_sqrt_price = <b>if</b> (_a2b) {
+            <a href="math_u128.md#0xc8_math_u128_max">math_u128::max</a>(_sqrt_price_limit, next_tick_sqrt_price)
         } <b>else</b> {
-            <a href="math_u128.md#0xc8_math_u128_min">math_u128::min</a>(_sqrt_price_limit, <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>))
+            <a href="math_u128.md#0xc8_math_u128_min">math_u128::min</a>(_sqrt_price_limit, next_tick_sqrt_price)
         };
         <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
             _vault.current_sqrt_price,
-            tick_sqrt_price,
+            target_sqrt_price,
             _vault.liquidity,
             remaining_amount,
             _a2b,
             _by_amount_in
         );
-        <b>if</b> (amount_in != 0 || amount_out != 0) {
+        <b>if</b> (amount_in != 0) {
             <b>if</b> (_by_amount_in) {
                 remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_in);
             } <b>else</b> {
@@ -1547,12 +1550,12 @@ open <code>position_number</code> positions
             };
             <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
         };
-        <b>if</b> (next_sqrt_price == <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>)) {
-            _vault.current_sqrt_price = tick_sqrt_price;
+        <b>if</b> (next_sqrt_price == next_tick_sqrt_price) {
+            _vault.current_sqrt_price = target_sqrt_price;
             <b>let</b> next_tick = <b>if</b> (_a2b) {
-                <a href="i32.md#0xc8_i32_sub">i32::sub</a>(tick_index, <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(1))
+                <a href="i32.md#0xc8_i32_sub">i32::sub</a>(next_tick_index, <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(1))
             } <b>else</b> {
-                tick_index
+                next_tick_index
             };
             _vault.current_tick_index = next_tick;
             _vault.liquidity = <a href="tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(
@@ -1562,11 +1565,12 @@ open <code>position_number</code> positions
                 _vault.liquidity
             );
         } <b>else</b> {
-            <b>if</b> (_vault.current_sqrt_price != <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>)) {
+            <b>if</b> (_vault.current_sqrt_price != next_tick_sqrt_price) {
                 _vault.current_sqrt_price = next_sqrt_price;
                 _vault.current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
             }
         };
+        current_sqrt_price = _vault.current_sqrt_price;
     };
     swap_result
 }

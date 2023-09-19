@@ -152,13 +152,13 @@
 
 </dd>
 <dt>
-<code>initialize_price: u128</code>
+<code>time_interval: u32</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>time_interval: u32</code>
+<code>max_counter_times: u32</code>
 </dt>
 <dd>
 
@@ -170,7 +170,7 @@
 
 </dd>
 <dt>
-<code>max_counter_times: u32</code>
+<code>initialize_price: u128</code>
 </dt>
 <dd>
 
@@ -197,13 +197,13 @@
 
 <dl>
 <dt>
-<code>treasury_parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_TreasuryParameters">obc_system_state_inner::TreasuryParameters</a></code>
+<code>chain_start_timestamp_ms: u64</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>chain_start_timestamp_ms: u64</code>
+<code>treasury_parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_TreasuryParameters">obc_system_state_inner::TreasuryParameters</a></code>
 </dt>
 <dd>
 
@@ -251,7 +251,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">create_inner_state</a>(usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">create_inner_state</a>(usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>
 </code></pre>
 
 
@@ -262,6 +262,7 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">create_inner_state</a>(
     usd_supply: Supply&lt;USD&gt;,
+    obc_balance: Balance&lt;OBC&gt;,
     parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">ObcSystemParameters</a>,
     ctx: &<b>mut</b> TxContext,
 ): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
@@ -270,7 +271,8 @@
     <b>let</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0xc8_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;USD&gt;(ctx, 0);
     <b>let</b> dao = <a href="obc_dao.md#0xc8_obc_dao_create_dao">obc_dao::create_dao</a>(<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
-    <b>let</b> t = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, parameters, ctx);
+    <b>let</b> t = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, obc_balance, parameters, ctx);
+
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
         round: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_STATE_START_ROUND">OBC_SYSTEM_STATE_START_ROUND</a>,
         <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>,
@@ -565,7 +567,7 @@ Init exchange pool by add obc coin.
 X treasury  init treasury
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>
 </code></pre>
 
 
@@ -576,11 +578,20 @@ X treasury  init treasury
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(
     supply: Supply&lt;USD&gt;,
+    obc_balance: Balance&lt;OBC&gt;,
     parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">ObcSystemParameters</a>,
     ctx: &<b>mut</b> TxContext
 ): Treasury {
     <b>let</b> treasury_parameters = parameters.treasury_parameters;
     <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(treasury_parameters.time_interval, ctx);
+
+    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&obc_balance);
+    <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> &gt; 0) {
+        <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(obc_balance, ctx));
+    } <b>else</b> {
+       <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(obc_balance);
+    };
+
     <a href="treasury.md#0xc8_treasury_init_vault_with_positions">treasury::init_vault_with_positions</a>&lt;USD&gt;(
         &<b>mut</b> t,
         supply,

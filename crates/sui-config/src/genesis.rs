@@ -29,6 +29,7 @@ use sui_types::sui_system_state::{
 };
 use sui_types::transaction::Transaction;
 
+pub const TOTAL_SUPPLY_WITH_ALLOCATION_MIST: u64 = TOTAL_SUPPLY_MIST / 2;
 #[derive(Clone, Debug)]
 pub struct Genesis {
     checkpoint: CertifiedCheckpointSummary,
@@ -529,8 +530,8 @@ impl TokenDistributionSchedule {
             total_mist += allocation.amount_mist;
         }
 
-        if total_mist != TOTAL_SUPPLY_MIST {
-            panic!("TokenDistributionSchedule adds up to {total_mist} and not expected {TOTAL_SUPPLY_MIST}");
+        if total_mist != TOTAL_SUPPLY_WITH_ALLOCATION_MIST {
+            panic!("TokenDistributionSchedule adds up to {total_mist} and not expected {TOTAL_SUPPLY_WITH_ALLOCATION_MIST}");
         }
     }
 
@@ -569,7 +570,7 @@ impl TokenDistributionSchedule {
     pub fn new_for_validators_with_default_allocation<I: IntoIterator<Item=SuiAddress>>(
         validators: I,
     ) -> Self {
-        let mut supply = TOTAL_SUPPLY_MIST;
+        let mut supply = TOTAL_SUPPLY_WITH_ALLOCATION_MIST;
         let default_allocation = sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST;
 
         let allocations = validators
@@ -605,7 +606,7 @@ impl TokenDistributionSchedule {
         let mut allocations: Vec<TokenAllocation> =
             reader.deserialize().collect::<Result<_, _>>()?;
         assert_eq!(
-            TOTAL_SUPPLY_MIST,
+            TOTAL_SUPPLY_WITH_ALLOCATION_MIST,
             allocations.iter().map(|a| a.amount_mist).sum::<u64>(),
             "Token Distribution Schedule must add up to 10B Sui",
         );
@@ -668,7 +669,7 @@ impl TokenDistributionScheduleBuilder {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            pool: TOTAL_SUPPLY_MIST,
+            pool: TOTAL_SUPPLY_WITH_ALLOCATION_MIST,
             allocations: vec![],
         }
     }

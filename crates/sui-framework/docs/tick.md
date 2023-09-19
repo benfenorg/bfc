@@ -20,6 +20,7 @@
 -  [Function `update_by_liquidity`](#0xc8_tick_update_by_liquidity)
 -  [Function `increase_liquidity`](#0xc8_tick_increase_liquidity)
 -  [Function `decrease_liquidity`](#0xc8_tick_decrease_liquidity)
+-  [Function `cross_by_tick`](#0xc8_tick_cross_by_tick)
 -  [Function `cross_by_swap`](#0xc8_tick_cross_by_swap)
 -  [Function `first_score_for_swap`](#0xc8_tick_first_score_for_swap)
 -  [Function `get_ticks`](#0xc8_tick_get_ticks)
@@ -377,7 +378,7 @@ private fun
     <a href="tick.md#0xc8_tick_Tick">Tick</a> {
         sqrt_price,
         index: _tick_index,
-        liquidity_net: <a href="i128.md#0xc8_i128_from">i128::from</a>(sqrt_price),
+        liquidity_net: <a href="i128.md#0xc8_i128_from">i128::from</a>(0),
         liquidity_gross: 0
     }
 }
@@ -606,6 +607,47 @@ add/remove liquidity
 
 </details>
 
+<a name="0xc8_tick_cross_by_tick"></a>
+
+## Function `cross_by_tick`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_cross_by_tick">cross_by_tick</a>(_tick: &<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>, _is_x2y: bool, _liquidity: u128): u128
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tick.md#0xc8_tick_cross_by_tick">cross_by_tick</a>(
+    _tick: &<a href="tick.md#0xc8_tick_Tick">Tick</a>,
+    _is_x2y: bool,
+    _liquidity: u128
+): u128
+{
+    <b>let</b> liquidity_net = <b>if</b> (_is_x2y) {
+        <a href="i128.md#0xc8_i128_neg">i128::neg</a>(_tick.liquidity_net)
+    } <b>else</b> {
+        _tick.liquidity_net
+    };
+    <b>let</b> abs_liquidity_net = <a href="i128.md#0xc8_i128_abs_u128">i128::abs_u128</a>(liquidity_net);
+    <b>if</b> (<a href="i128.md#0xc8_i128_is_neg">i128::is_neg</a>(liquidity_net)) {
+        <b>assert</b>!(abs_liquidity_net &lt;= _liquidity, <a href="tick.md#0xc8_tick_ERR_TICK_LIQUIDITY_INSUFFICIENT">ERR_TICK_LIQUIDITY_INSUFFICIENT</a>);
+        _liquidity - abs_liquidity_net
+    } <b>else</b> {
+        <b>assert</b>!(<a href="math_u128.md#0xc8_math_u128_add_check">math_u128::add_check</a>(abs_liquidity_net, _liquidity), <a href="tick.md#0xc8_tick_ERR_TICK_EXCEED_U128_MAXIMUM">ERR_TICK_EXCEED_U128_MAXIMUM</a>);
+        _liquidity + abs_liquidity_net
+    }
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_tick_cross_by_swap"></a>
 
 ## Function `cross_by_swap`
@@ -629,20 +671,7 @@ add/remove liquidity
 ): u128
 {
     <b>let</b> <a href="tick.md#0xc8_tick">tick</a> = <a href="skip_list.md#0xc8_skip_list_borrow">skip_list::borrow</a>(&_tick_manager.ticks, <a href="tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_index));
-    <b>let</b> liquidity_net = <b>if</b> (_is_x2y) {
-        <a href="i128.md#0xc8_i128_neg">i128::neg</a>(<a href="tick.md#0xc8_tick">tick</a>.liquidity_net)
-    } <b>else</b> {
-        <a href="tick.md#0xc8_tick">tick</a>.liquidity_net
-    };
-    <b>let</b> liquidity_ret: u128;
-    <b>if</b> (<a href="i128.md#0xc8_i128_is_neg">i128::is_neg</a>(liquidity_net)) {
-        <b>assert</b>!(<a href="i128.md#0xc8_i128_abs_u128">i128::abs_u128</a>(liquidity_net) &lt;= _liquidity, <a href="tick.md#0xc8_tick_ERR_TICK_LIQUIDITY_INSUFFICIENT">ERR_TICK_LIQUIDITY_INSUFFICIENT</a>);
-        liquidity_ret = _liquidity - <a href="i128.md#0xc8_i128_abs_u128">i128::abs_u128</a>(liquidity_net);
-    } <b>else</b> {
-        <b>assert</b>!(<a href="math_u128.md#0xc8_math_u128_add_check">math_u128::add_check</a>(<a href="i128.md#0xc8_i128_abs_u128">i128::abs_u128</a>(liquidity_net), _liquidity), <a href="tick.md#0xc8_tick_ERR_TICK_EXCEED_U128_MAXIMUM">ERR_TICK_EXCEED_U128_MAXIMUM</a>);
-        liquidity_ret = <a href="i128.md#0xc8_i128_abs_u128">i128::abs_u128</a>(liquidity_net) + _liquidity;
-    };
-    liquidity_ret
+    <a href="tick.md#0xc8_tick_cross_by_tick">cross_by_tick</a>(<a href="tick.md#0xc8_tick">tick</a>, _is_x2y, _liquidity)
 }
 </code></pre>
 

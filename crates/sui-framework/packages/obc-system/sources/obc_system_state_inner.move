@@ -1,9 +1,10 @@
 module obc_system::obc_system_state_inner {
+    use sui::balance;
     use obc_system::voting_pool::VotingObc;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
     use sui::coin;
-    use sui::coin::Coin;
+    use sui::coin::{Coin, balance};
     use sui::obc::OBC;
     use sui::tx_context::TxContext;
     use sui::vec_map;
@@ -59,7 +60,7 @@ module obc_system::obc_system_state_inner {
 
     public(friend) fun create_inner_state(
         usd_supply: Supply<USD>,
-        coin_obc: Coin<OBC>,
+        obc_balance: Balance<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext,
     ): ObcSystemStateInner {
@@ -68,7 +69,7 @@ module obc_system::obc_system_state_inner {
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<USD>(ctx, 0);
         let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
-        let t = create_treasury(usd_supply, coin_obc, parameters, ctx);
+        let t = create_treasury(usd_supply, obc_balance, parameters, ctx);
 
         ObcSystemStateInner {
             round: OBC_SYSTEM_STATE_START_ROUND,
@@ -175,17 +176,18 @@ module obc_system::obc_system_state_inner {
     /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<USD>,
-        coin_obc: Coin<OBC>,
+        obc_balance: Balance<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ): Treasury {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
 
-        if (coin::value(&coin_obc) > 0) {
-            treasury::deposit(&mut t, coin_obc);
+        let balance = balance::value<OBC>(&obc_balance);
+        if (balance > 0) {
+            treasury::deposit(&mut t, coin::from_balance(obc_balance, ctx));
         } else {
-            coin::destroy_zero(coin_obc);
+           balance::destroy_zero(obc_balance);
         };
 
         treasury::init_vault_with_positions<USD>(
