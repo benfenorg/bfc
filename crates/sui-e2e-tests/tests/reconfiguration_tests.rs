@@ -943,6 +943,52 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 }
 
 #[sim_test]
+async fn test_obc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+    //create votingObc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().project_uid))?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::new(json!("1000000000"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let revoke_vote_function = "revoke_vote".to_string();
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, revoke_vote_function, arg).await?;
+    Ok(())
+}
+
+#[sim_test]
 async fn test_obc_dao_change_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
@@ -1272,13 +1318,6 @@ async fn test_obc_dao_unvote_votingobc()  -> Result<(), anyhow::Error>{
 
     Ok(())
 }
-
-#[sim_test]
-async fn test_obc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
-
-    Ok(())
-}
-
 
 #[sim_test]
 async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
