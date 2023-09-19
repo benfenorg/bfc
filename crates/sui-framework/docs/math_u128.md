@@ -513,6 +513,18 @@
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="@Module_Specification_1"></a>
 
 ## Module Specification

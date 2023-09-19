@@ -661,6 +661,18 @@ add/remove liquidity
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_position_decrease_liquidity"></a>
 
 ## Function `decrease_liquidity`

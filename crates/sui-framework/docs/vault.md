@@ -616,6 +616,18 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_init_positions"></a>
 
 ## Function `init_positions`
@@ -832,6 +844,18 @@ open <code>position_number</code> positions
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_add_liquidity"></a>
 
 ## Function `add_liquidity`
@@ -936,6 +960,18 @@ open <code>position_number</code> positions
     );
     (balance_a, balance_b)
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
 </code></pre>
 
 
@@ -1300,6 +1336,18 @@ open <code>position_number</code> positions
     };
     swap_result
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
 </code></pre>
 
 

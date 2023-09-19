@@ -604,6 +604,18 @@
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_clmm_math_get_amount_by_liquidity"></a>
 
 ## Function `get_amount_by_liquidity`

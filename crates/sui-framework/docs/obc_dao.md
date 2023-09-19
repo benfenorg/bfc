@@ -67,6 +67,7 @@
 -  [Function `withdraw_voting`](#0xc8_obc_dao_withdraw_voting)
 -  [Function `destroy_terminated_proposal`](#0xc8_obc_dao_destroy_terminated_proposal)
 -  [Function `set_current_status_into_dao`](#0xc8_obc_dao_set_current_status_into_dao)
+-  [Module Specification](#@Module_Specification_1)
 
 
 <pre><code><b>use</b> <a href="">0x1::string</a>;
@@ -943,6 +944,15 @@ Proposal state
 
 
 
+<a name="0xc8_obc_dao_DEFAULT_OBC_SUPPLY"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_OBC_SUPPLY">DEFAULT_OBC_SUPPLY</a>: u64 = 100000000000000000;
+</code></pre>
+
+
+
 <a name="0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID"></a>
 
 
@@ -983,7 +993,7 @@ Proposal state
 
 
 
-<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_VOTE_QUORUM_RATE">DEFAULT_VOTE_QUORUM_RATE</a>: u8 = 50;
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_VOTE_QUORUM_RATE">DEFAULT_VOTE_QUORUM_RATE</a>: u8 = 40;
 </code></pre>
 
 
@@ -2232,6 +2242,7 @@ Get the proposal state.
 ## Function `quorum_votes`
 
 Quorum votes to make proposal pass.
+temply using 4000* 000_0000 as the pass rate.
 
 
 <pre><code><b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_quorum_votes">quorum_votes</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>): u64
@@ -2244,9 +2255,7 @@ Quorum votes to make proposal pass.
 
 
 <pre><code><b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_quorum_votes">quorum_votes</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>): u64 {
-    //<b>let</b> market_cap = total_supply(Coin&lt;OBC&gt;);
-    //<b>let</b> balance_in_treasury = Treasury::balance&lt;TokenT&gt;();
-    <b>let</b> total_supply_sui: u64 = 10000000000;
+    <b>let</b> total_supply_sui: u64 = <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_OBC_SUPPLY">DEFAULT_OBC_SUPPLY</a>;
     <b>let</b> supply = total_supply_sui;
 
     <b>let</b> rate = <a href="obc_dao.md#0xc8_obc_dao_voting_quorum_rate">voting_quorum_rate</a>(dao);
@@ -2278,6 +2287,18 @@ get default voting delay of the DAO.
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_voting_delay">voting_delay</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>): u64 {
     <a href="obc_dao.md#0xc8_obc_dao_get_config">get_config</a>(dao).voting_delay
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -2505,7 +2526,7 @@ set voting period
 
 ## Function `set_voting_quorum_rate`
 
-set voting quorum rate
+set voting quorum rate: .
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_set_voting_quorum_rate">set_voting_quorum_rate</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, value: u8)
@@ -2883,3 +2904,12 @@ remove terminated proposal from proposer
 
 
 </details>
+
+<a name="@Module_Specification_1"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify;
+</code></pre>

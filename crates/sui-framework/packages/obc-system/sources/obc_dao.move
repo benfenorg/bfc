@@ -26,6 +26,11 @@ module obc_system::obc_dao {
     #[test_only]
     friend obc_system::obc_dao_voting_pool_test;
 
+    spec module{
+        pragma verify;
+        //pragma aborts_if_is_strict;
+    }
+
     const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
 
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test

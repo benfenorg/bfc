@@ -203,6 +203,18 @@ Errors
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_tick_math_get_sqrt_price_at_tick"></a>
 
 ## Function `get_sqrt_price_at_tick`
@@ -364,7 +376,7 @@ Errors
 
 
 
-<pre><code><b>pragma</b> verify = <b>false</b>;
+<pre><code><b>pragma</b> opaque;
 </code></pre>
 
 
