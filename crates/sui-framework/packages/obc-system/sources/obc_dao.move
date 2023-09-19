@@ -8,7 +8,7 @@ module obc_system::obc_dao {
     use sui::tx_context::TxContext;
     use sui::tx_context;
     use sui::transfer;
-    use obc_system::voting_pool::{VotingObc, voting_obc_amount};
+    use obc_system::voting_pool::{VotingObc, voting_obc_amount, pool_id};
     use obc_system::voting_pool;
     use obc_system::obc_dao_manager::{OBCDaoManageKey};
     use std::vector;
@@ -28,7 +28,7 @@ module obc_system::obc_dao {
 
     spec module{
         pragma verify;
-        //pragma aborts_if_is_strict;
+        pragma aborts_if_is_strict;
     }
 
     const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
@@ -66,6 +66,7 @@ module obc_system::obc_dao {
     const ERR_ACTION_MUST_EXIST: u64 = 1409;
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
+    const ERR_WRONG_VOTING_POOL: u64 = 1412;
 
     //
     struct DaoEvent has copy, drop, store {
@@ -365,7 +366,7 @@ module obc_system::obc_dao {
     ): DaoConfig {
         assert!(voting_delay > 0, ERR_CONFIG_PARAM_INVALID);
         assert!(voting_period> 0, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_quorum_rate > 1, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate >= 1, ERR_CONFIG_PARAM_INVALID);
         assert!(voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
         assert!(min_action_delay > 0, ERR_CONFIG_PARAM_INVALID);
 
@@ -1089,6 +1090,7 @@ module obc_system::obc_dao {
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
+        assert!(pool_id(&voting_obc) == object::id(&dao.voting_pool), ERR_WRONG_VOTING_POOL);
         let voting_obc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_obc);
         let coin = coin::from_balance(voting_obc, ctx);
         transfer::public_transfer(coin, sender);
