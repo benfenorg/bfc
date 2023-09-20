@@ -1,4 +1,5 @@
 module obc_system::obc_dao {
+    use std::option;
     use sui::object::{Self, UID};
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
@@ -39,6 +40,8 @@ module obc_system::obc_dao {
     const DEFAULT_VOTE_QUORUM_RATE: u8 = 40; // 40% default quorum rate
     const DEFAULT_START_PROPOSAL_VERSION_ID : u64 = 19;
 
+    const MAX_ADMIN_COUNT: u64 = 1000;
+
     const DEFAULT_OBC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  OBC
 
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
@@ -67,6 +70,7 @@ module obc_system::obc_dao {
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
     const ERR_WRONG_VOTING_POOL: u64 = 1412;
+    const ERR_INVALID_STRING: u64 = 1413;
 
     //
     struct DaoEvent has copy, drop, store {
@@ -234,20 +238,23 @@ module obc_system::obc_dao {
         ctx: &mut TxContext): OBCDaoAction {
         //auth
 
+        let nameString = string::try_utf8(actionName);
+        assert!(nameString != option::none(), ERR_INVALID_STRING);
+
+        let name_ref = option::extract(&mut nameString);
         // sender address
         let sender = tx_context::sender(ctx);
         let action_id = generate_next_action_id(dao);
 
         let action = OBCDaoAction{
             action_id: action_id,
-            name: string::utf8(actionName),
-            //description: string::utf8(actionName),
+            name: name_ref,
         };
 
         event::emit(
             ActionCreateEvent{
                 actionId: action_id,
-                name: string::utf8(actionName),
+                name: name_ref,
                 creator: sender,
             }
         );
@@ -258,8 +265,9 @@ module obc_system::obc_dao {
     // Part 3: transfer the OBC Dao object to the sender
     public(friend) fun create_dao(        admins: vector<address>,
                                   ctx: &mut TxContext ) : Dao {
-        // sender address
-        //let sender = tx_context::sender(ctx);
+
+
+        assert!( vector::length(&admins) <= MAX_ADMIN_COUNT, ERR_CONFIG_PARAM_INVALID );
 
         let daoConfig = new_dao_config(DEFAULT_VOTE_DELAY,
             DEFAULT_VOTE_PERIOD,
@@ -924,8 +932,7 @@ module obc_system::obc_dao {
         if (voting_delay > 0) {
             config.voting_delay = voting_delay;
         };
-        if (voting_quorum_rate > 0) {
-            assert!(voting_quorum_rate <= 100, (ERR_QUORUM_RATE_INVALID));
+        if (voting_quorum_rate > 0 && voting_quorum_rate <= 100) {
             config.voting_quorum_rate = voting_quorum_rate;
         };
         if (min_action_delay > 0) {
