@@ -49,7 +49,8 @@
 -  [Module Specification](#@Module_Specification_1)
 
 
-<pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<pre><code><b>use</b> <a href="">0x1::vector</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
@@ -224,6 +225,15 @@
 ## Constants
 
 
+<a name="0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>: <a href="">vector</a>&lt;<b>address</b>&gt; = [15835301299490436797531864052756717558919000202302735629799491391021929516032, 65291099566713687366712577645016528323844253956509590706950403481947121946472, 24534971471998884076320588073588140533011227823836498849038009586284449996719, 51146047687078908496806713158095522211891725112102928692628967303014320690576, 99840256252410854934884720094907096870421318439837223403968912893243261564088];
+</code></pre>
+
+
+
 <a name="0xc8_obc_system_state_inner_OBC_SYSTEM_STATE_START_ROUND"></a>
 
 
@@ -267,7 +277,8 @@
     <b>let</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0xc8_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;USD&gt;(ctx, 0);
 
-    <b>let</b> admin = <a href="">vector</a>[parameters.validate_address_0];
+    <b>let</b>  admin = <a href="">vector</a>[parameters.validate_address_0];
+    <a href="_append">vector::append</a>(&<b>mut</b> admin, <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>);
     <b>let</b> dao = <a href="obc_dao.md#0xc8_obc_dao_create_dao">obc_dao::create_dao</a>(admin, ctx);
 
     <b>let</b> t = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, parameters, ctx);

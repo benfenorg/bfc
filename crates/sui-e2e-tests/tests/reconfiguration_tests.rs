@@ -1034,7 +1034,7 @@ async fn test_obc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     create_proposal(http_client, gas, address, &cluster).await?;
     //create votingObc
     // now do the call
-    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+    case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
     assert!(objects.len() > 0);
