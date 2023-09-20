@@ -4,10 +4,10 @@ import { useRpcClient } from '@mysten/core';
 import { getObjectFields } from '@mysten/sui.js';
 import { useQuery } from '@tanstack/react-query';
 
-export function useGetOBCDaoVotingObc(address: string) {
+export function useGetOBCDaoVote(address: string) {
 	const rpc = useRpcClient();
 	return useQuery({
-		queryKey: ['dao', 'votingobc', address],
+		queryKey: ['dao', 'vote', address],
 		enabled: Boolean(address),
 		queryFn: () =>
 			rpc
@@ -15,7 +15,7 @@ export function useGetOBCDaoVotingObc(address: string) {
 					owner: address,
 					filter: {
 						StructType:
-							'0xc8::voting_pool::VotingObc',
+							'0xc8::obc_dao::Vote',
 					},
 					options: {
 						showType: true,

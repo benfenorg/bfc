@@ -9,6 +9,7 @@ import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
 
@@ -91,7 +92,9 @@ function Dao() {
 	const { currentAccount } = useWalletKit();
 	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
 	const { data: OBCDaoVotingObc } = useGetOBCDaoVotingObc(currentAccount?.address || '');
-	console.log('OBCDaoVote', OBCDaoVotingObc, OBCDaoManageKey);
+	// vote list
+	const { data: OBCDaoVote } = useGetOBCDaoVote(currentAccount?.address || '');
+	console.log('OBCDaoVote', OBCDaoVote,OBCDaoVotingObc, OBCDaoManageKey);
 	return (
 		<PageLayout
 			gradientContent={
