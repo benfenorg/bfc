@@ -13,11 +13,10 @@ import { Popover } from '@headlessui/react';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { Link } from '~/ui/Link';
 import { NavItem } from './NavItem';
 import { ReactComponent as ChevronDownIcon } from '../icons/chevron_down.svg';
 import { ReactComponent as MenuIcon } from '../icons/menu.svg';
-
+import { Link } from '~/ui/Link';
 
 function ResponsiveIcon() {
 	return (
@@ -28,28 +27,31 @@ function ResponsiveIcon() {
 	);
 }
 
-export function PageSelect({
-	isDarker,
-}: any) {
+export function PageSelect({ isDarker }: any) {
 	const { x, y, refs, strategy } = useFloating({
 		placement: 'bottom-end',
 		middleware: [offset(5), flip(), shift()],
 		whileElementsMounted: autoUpdate,
 	});
 
-    const pages = [
-        { id: '/recent?tab=checkpoints', label: 'Checkpoints' },
+	const pages = [
+		{ id: '/recent?tab=checkpoints', label: 'Checkpoints' },
 		{ id: '/recent', label: 'Transaction Blocks' },
 		{ id: '/recent?tab=epochs', label: 'Epochs' },
 		{ id: '/validators', label: 'Validators' },
-        { id: '/packages', label: 'Packages' },
-    ]
+		{ id: '/packages', label: 'Packages' },
+	];
 
 	return (
 		<Popover>
 			{({ open, close }) => (
 				<>
-					<Popover.Button ref={refs.setReference} as={NavItem} isDarker={isDarker} afterIcon={<ResponsiveIcon />}>
+					<Popover.Button
+						ref={refs.setReference}
+						as={NavItem}
+						isDarker={isDarker}
+						afterIcon={<ResponsiveIcon />}
+					>
 						<span className="hidden md:block">Blockchain</span>
 					</Popover.Button>
 					<FloatingPortal>
@@ -79,26 +81,20 @@ export function PageSelect({
 										left: x ?? 0,
 									}}
 								>
-                                    {pages.map((item)=>{
-                                        return(
-                                            <div
-                                                key={item.id}
-                                                role="button"
-                                                onClick={close}
-                                                className={clsx(
-                                                    'flex items-start gap-3 rounded-md px-1.25 py-2 text-body font-semibold hover:bg-gray-40 ui-active:bg-gray-40 text-steel-dark'
-                                                )}
-                                            >  
-                                                <Link to={item.id} className="w-full">
-                                                    <div className="mt-px">
-                                                    
-                                                            {item.label}
-                                                    
-                                                    </div>
-                                                </Link>
-                                            </div>
-                                        )
-                                    })}
+									{pages.map((item) => (
+										<div
+											key={item.id}
+											role="button"
+											onClick={close}
+											className={clsx(
+												'flex items-start gap-3 rounded-md px-1.25 py-2 text-body font-semibold text-steel-dark hover:bg-gray-40 ui-active:bg-gray-40',
+											)}
+										>
+											<Link to={item.id} className="w-full">
+												<div className="mt-px">{item.label}</div>
+											</Link>
+										</div>
+									))}
 								</Popover.Panel>
 							)}
 						</AnimatePresence>

@@ -42,9 +42,11 @@ export function EpochsActivityTable({
 	const cardData = data ? genTableDataFromEpochsData(data) : undefined;
 
 	return (
-		<div className="flex flex-col space-y-3 text-left obc-table-container">
+		<div className="obc-table-container flex flex-col space-y-3 text-left">
 			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">Failed to load Epochs</div>
+				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
+					Failed to load Epochs
+				</div>
 			)}
 			{isLoading || isFetching || !cardData ? (
 				<PlaceholderTable

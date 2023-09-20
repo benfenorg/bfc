@@ -34,7 +34,7 @@ export interface NetworkSelectProps {
 	value: string;
 	version?: number | string;
 	binaryVersion?: string;
-	isDarker?:boolean;
+	isDarker?: boolean;
 	onChange(networkId: string): void;
 }
 
@@ -218,7 +218,12 @@ export function NetworkSelect({
 		<Popover>
 			{({ open, close }) => (
 				<>
-					<Popover.Button ref={refs.setReference} as={NavItem} isDarker={isDarker} afterIcon={<ResponsiveIcon />}>
+					<Popover.Button
+						ref={refs.setReference}
+						as={NavItem}
+						isDarker={isDarker}
+						afterIcon={<ResponsiveIcon />}
+					>
 						<span className="hidden md:block">{selected?.label || 'Custom'}</span>
 					</Popover.Button>
 					<FloatingPortal>

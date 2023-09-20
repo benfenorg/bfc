@@ -10,7 +10,7 @@ const TRANSACTIONS_LIMIT = 20;
 
 export function Recent() {
 	const [searchParams] = useSearchParamsMerged();
-	const tab = searchParams.get('tab')
+	const tab = searchParams.get('tab');
 	return (
 		<PageLayout
 			content={

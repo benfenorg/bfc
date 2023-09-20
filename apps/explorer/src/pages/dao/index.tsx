@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useGetDaoProposals } from '@mysten/core';
 import { Heading } from '@mysten/ui';
+import { useWalletKit } from '@mysten/wallet-kit';
 
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
+import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
 
@@ -86,8 +89,12 @@ function DaoList({ data, isLoading }: DaoListProps) {
 
 function Dao() {
 	const data: any = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey();
-	console.log('OBCDaoManageKey', OBCDaoManageKey);
+	const { currentAccount } = useWalletKit();
+	const { data: OBCDaoManageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
+	const { data: OBCDaoVotingObc } = useGetOBCDaoVotingObc(currentAccount?.address || '');
+	// vote list
+	const { data: OBCDaoVote } = useGetOBCDaoVote(currentAccount?.address || '');
+	console.log('OBCDaoVote', OBCDaoVote,OBCDaoVotingObc, OBCDaoManageKey);
 	return (
 		<PageLayout
 			gradientContent={

@@ -17,7 +17,7 @@ export type StatsProps = {
 	tooltip?: string;
 	unavailable?: boolean;
 	postfix?: ReactNode;
-	darker?:boolean;
+	darker?: boolean;
 	orientation?: 'horizontal' | 'vertical';
 	color?: 'steel-darker' | 'hero' | 'steel-dark';
 };

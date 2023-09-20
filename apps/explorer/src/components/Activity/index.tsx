@@ -7,13 +7,13 @@ import { useState } from 'react';
 
 import { EpochsActivityTable } from './EpochsActivityTable';
 import { TransactionsActivityTable } from './TransactionsActivityTable';
+import { TopValidatorsCard } from '../../components/top-validators-card/TopValidatorsCard';
 import { CheckpointsTable } from '../checkpoints/CheckpointsTable';
 // import { PlayPause } from '~/ui/PlayPause';
 // import { useNetwork } from '~/context';
 // import { DropdownMenu, DropdownMenuCheckboxItem } from '~/ui/DropdownMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
 // import { Network } from '~/utils/api/DefaultRpcClient';
-import { TopValidatorsCard } from '../../components/top-validators-card/TopValidatorsCard';
 
 const VALID_TABS = ['transactions', 'epochs', 'checkpoints'];
 
@@ -63,7 +63,7 @@ export function Activity({ initialTab, initialLimit, disablePagination }: Props)
 		<div>
 			<Tabs size="md" value={activeTab} onValueChange={setActiveTab}>
 				<div className="relative">
-					<TabsList disableBottomBorder={true}>
+					<TabsList disableBottomBorder>
 						<TabsTrigger value="transactions">Transaction Blocks</TabsTrigger>
 						<TabsTrigger value="epochs">Epochs</TabsTrigger>
 						<TabsTrigger value="checkpoints">Checkpoints</TabsTrigger>

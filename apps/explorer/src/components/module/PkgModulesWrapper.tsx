@@ -11,7 +11,6 @@ import ModuleView from './ModuleView';
 import { ModuleFunctionsInteraction } from './module-functions-interaction';
 import { useBreakpoint } from '~/hooks/useBreakpoint';
 import { SplitPanes } from '~/ui/SplitPanes';
-import { TabHeader } from '~/ui/Tabs';
 import { ListItem, VerticalList } from '~/ui/VerticalList';
 import { useSearchParamsMerged } from '~/ui/utils/LinkWithQuery';
 
@@ -90,35 +89,38 @@ function PkgModuleViewWrapper({ id, modules, splitPanelOrientation }: Props) {
 	const bytecodeContent = [
 		{
 			panel: (
-				<div key="bytecode" className="h-full grow overflow-auto border border-obc-border rounded-md py-5 px-4">
-						<Heading variant="heading4/semibold" color="steel-darker">
-							Bytecode
-						</Heading>
-						<div
-							className={clsx(
-								'overflow-auto bg-obc-card p-4 rounded-md mt-5',
-								(splitPanelOrientation === 'horizontal' || !isMediumOrAbove) &&
-									'h-verticalListLong',
-							)}
-						>
-							<ModuleViewWrapper id={id} modules={modules} selectedModuleName={selectedModule} />
-						</div>
-
+				<div
+					key="bytecode"
+					className="h-full grow overflow-auto rounded-md border border-obc-border px-4 py-5"
+				>
+					<Heading variant="heading4/semibold" color="steel-darker">
+						Bytecode
+					</Heading>
+					<div
+						className={clsx(
+							'mt-5 overflow-auto rounded-md bg-obc-card p-4',
+							(splitPanelOrientation === 'horizontal' || !isMediumOrAbove) && 'h-verticalListLong',
+						)}
+					>
+						<ModuleViewWrapper id={id} modules={modules} selectedModuleName={selectedModule} />
+					</div>
 				</div>
 			),
 			defaultSize: 40,
 		},
 		{
 			panel: (
-				<div key="execute" className="h-full grow overflow-auto border border-obc-border rounded-md pt-5 px-4 pb-15">
+				<div
+					key="execute"
+					className="pb-15 h-full grow overflow-auto rounded-md border border-obc-border px-4 pt-5"
+				>
 					<Heading variant="heading4/semibold" color="steel-darker">
 						Execute
 					</Heading>
 					<div
 						className={clsx(
-							'overflow-auto mt-5',
-							(splitPanelOrientation === 'horizontal' || !isMediumOrAbove) &&
-								'h-verticalListLong',
+							'mt-5 overflow-auto',
+							(splitPanelOrientation === 'horizontal' || !isMediumOrAbove) && 'h-verticalListLong',
 						)}
 					>
 						{id && selectedModule ? (
@@ -138,10 +140,13 @@ function PkgModuleViewWrapper({ id, modules, splitPanelOrientation }: Props) {
 
 	return (
 		<div className="mt-5 flex flex-col gap-5 md:flex-row md:flex-nowrap">
-			<div className="w-full md:w-1/5 border border-obc-border rounded-md p-2">
+			<div className="w-full rounded-md border border-obc-border p-2 md:w-1/5">
 				<Combobox value={query} onValueChange={setQuery}>
-					<div className="flex w-full justify-between rounded-md border border-obc-border pl-3 placeholder-obc-text3 bg-obc-card overflow-hidden">
-						<ComboboxInput placeholder="Search" className="w-full border-none bg-obc-card text-body leading-9 text-obc-text1 outline-none placeholder:text-xs placeholder:text-obc-text3" />
+					<div className="flex w-full justify-between overflow-hidden rounded-md border border-obc-border bg-obc-card pl-3 placeholder-obc-text3">
+						<ComboboxInput
+							placeholder="Search"
+							className="w-full border-none bg-obc-card text-body leading-9 text-obc-text1 outline-none placeholder:text-xs placeholder:text-obc-text3"
+						/>
 						<button onClick={submitSearch} className="border-none bg-inherit pr-2" type="submit">
 							<Search24 className="h-4.5 w-4.5 cursor-pointer fill-steel align-middle text-gray-60" />
 						</button>
@@ -159,7 +164,11 @@ function PkgModuleViewWrapper({ id, modules, splitPanelOrientation }: Props) {
 					<VerticalList>
 						{modulenames.map((name) => (
 							<div key={name} className="mx-0.5 mt-0.5 md:min-w-fit">
-								<ListItem active={selectedModule === name} type="borderLine" onClick={() => onChangeModule(name)}>
+								<ListItem
+									active={selectedModule === name}
+									type="borderLine"
+									onClick={() => onChangeModule(name)}
+								>
 									{name}
 								</ListItem>
 							</div>

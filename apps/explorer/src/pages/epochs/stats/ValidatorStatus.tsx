@@ -5,8 +5,8 @@ import { Heading, Text } from '@mysten/ui';
 import { useMemo } from 'react';
 
 import { Card } from '~/ui/Card';
-import { RingChart, RingChartLegend } from '~/ui/RingChart';
 import { Divider } from '~/ui/Divider';
+import { RingChart, RingChartLegend } from '~/ui/RingChart';
 
 export function ValidatorStatus() {
 	const { data } = useGetSystemState();
@@ -55,14 +55,16 @@ export function ValidatorStatus() {
 					<RingChartLegend data={chartData} title={`Validators in Epoch ${nextEpoch}`} />
 				</div>
 			</div>
-			<div className="mt-5"><Divider/></div>
+			<div className="mt-5">
+				<Divider />
+			</div>
 			<div className="mt-5">
 				<div>
 					<Text variant="pSubtitle/normal" color="steel-dark">
 						Estimated Next Epoch Reference Gas Price
 					</Text>
 				</div>
-				<div className="flex gap-1 items-baseline">
+				<div className="flex items-baseline gap-1">
 					<Heading variant="heading4/semibold" color="steel-darker">
 						{nextRefGasPrice.toString()}
 					</Heading>

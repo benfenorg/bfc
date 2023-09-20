@@ -9,10 +9,10 @@ function Home() {
 	return (
 		<PageLayout
 			gradientContent={
-				<div 
-                    data-testid="home-page" 
-                    className="flex items-center justify-center h-34 xl:h-36 text-white text-2xl font-bold"
-                >
+				<div
+					data-testid="home-page"
+					className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
+				>
 					Packages
 				</div>
 			}

@@ -37,6 +37,7 @@ function ValidatorDetails() {
 		);
 	}, [id, data]);
 	const atRiskRemainingEpochs = getAtRiskRemainingEpochs(data, id);
+	console.log(atRiskRemainingEpochs);
 
 	const numberOfValidators = data?.activeValidators.length ?? null;
 	const { data: rollingAverageApys, isLoading: validatorsApysLoading } = useGetValidatorsApy();

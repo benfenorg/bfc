@@ -1,16 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetSystemState,useGetValidatorsEvents,useGetValidatorsApy } from '@mysten/core';
+import { useGetSystemState, useGetValidatorsEvents, useGetValidatorsApy } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
 import { type SuiValidatorSummary } from '@mysten/sui.js';
 import { Text } from '@mysten/ui';
 import { useMemo } from 'react';
+
+import { validatorsTableData } from '../../pages/validators/utils';
 import { Link } from '~/ui/Link';
 import { PlaceholderTable } from '~/ui/PlaceholderTable';
 import { TableCard } from '~/ui/TableCard';
-
-import {validatorsTableData} from '../../pages/validators/utils';
 
 const NUMBER_OF_VALIDATORS = 10;
 
@@ -30,7 +30,7 @@ type TopValidatorsCardProps = {
 
 export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
 	const { data, isLoading, isSuccess, isError } = useGetSystemState();
-	
+
 	const numberOfValidators = data?.activeValidators.length || 0;
 
 	const { data: validatorsApy } = useGetValidatorsApy();
@@ -44,26 +44,28 @@ export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
 		order: 'descending',
 	});
 
-	const tableData = useMemo(
-		() => {
-			if (!data || !validatorEvents) return null;
-			let activeValidators = data?.activeValidators?.length ? [...data.activeValidators] : []
-			activeValidators = limit ? activeValidators.splice(0, limit) : activeValidators;
-			return validatorsTableData(activeValidators,data.atRiskValidators,validatorEvents,validatorsApy || null)
-		},
-		[data, validatorEvents,validatorsApy,limit],
-	);
+	const tableData = useMemo(() => {
+		if (!data || !validatorEvents) return null;
+		let activeValidators = data?.activeValidators?.length ? [...data.activeValidators] : [];
+		activeValidators = limit ? activeValidators.splice(0, limit) : activeValidators;
+		return validatorsTableData(
+			activeValidators,
+			data.atRiskValidators,
+			validatorEvents,
+			validatorsApy || null,
+		);
+	}, [data, validatorEvents, validatorsApy, limit]);
 
 	if (isError || validatorEventError) {
 		return (
-			<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">
+			<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
 				Failed to load Validator
 			</div>
 		);
 	}
 
 	return (
-		<div className='obc-table-container'>
+		<div className="obc-table-container">
 			{(isLoading || validatorsEventsLoading) && (
 				<PlaceholderTable
 					rowCount={limit || NUMBER_OF_VALIDATORS}
@@ -73,12 +75,9 @@ export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
 				/>
 			)}
 
-			{isSuccess && tableData?.data  && (
+			{isSuccess && tableData?.data && (
 				<div>
-					<TableCard
-						data={tableData.data}
-						columns={tableData.columns}
-					/>
+					<TableCard data={tableData.data} columns={tableData.columns} />
 					<div className="mt-3 flex justify-between bg-obc-card p-3.5">
 						<Link to="/validators">
 							<div className="flex items-center gap-2">

@@ -59,9 +59,9 @@ export function CheckpointsTable({
 	const cardData = data ? genTableDataFromCheckpointsData(data) : undefined;
 
 	return (
-		<div className="flex flex-col space-y-3 text-left obc-table-container">
+		<div className="obc-table-container flex flex-col space-y-3 text-left">
 			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark px-3.5">
+				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
 					Failed to load Checkpoints
 				</div>
 			)}

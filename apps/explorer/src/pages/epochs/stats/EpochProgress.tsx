@@ -7,8 +7,8 @@ import clsx from 'clsx';
 
 import { getElapsedTime, useEpochProgress } from '~/pages/epochs/utils';
 import { Card } from '~/ui/Card';
-import { ProgressBar } from '~/ui/ProgressBar';
 import { Divider } from '~/ui/Divider';
+import { ProgressBar } from '~/ui/ProgressBar';
 
 export interface EpochProgressProps {
 	epoch?: string;
@@ -26,7 +26,7 @@ export function EpochProgress({ epoch, start, end, inProgress }: EpochProgressPr
 		<Card bg={inProgress ? 'highlight' : 'default'} spacing="lg" rounded="2xl">
 			<div className="flex flex-col space-y-5">
 				<div className={clsx(inProgress ? 'space-y-4' : 'space-y-5')}>
-					<div className="flex justify-between items-center">
+					<div className="flex items-center justify-between">
 						<Heading color="steel-darker" variant="heading4/semibold">
 							{inProgress ? `Epoch ${epoch}` : `Epoch ${epoch}`}
 						</Heading>
@@ -34,13 +34,14 @@ export function EpochProgress({ epoch, start, end, inProgress }: EpochProgressPr
 							<Heading variant="heading6/medium" color="steel">
 								{elapsedTime}
 							</Heading>
-						) :  <Heading variant="heading6/medium" color="steel">
+						) : (
+							<Heading variant="heading6/medium" color="steel">
 								in progress
 							</Heading>
-						}
+						)}
 					</div>
 					<Divider />
-					<div className='space-y-1.5'>
+					<div className="space-y-1.5">
 						<Text variant="body/normal" uppercase color="steel-dark">
 							Start
 						</Text>
@@ -64,13 +65,13 @@ export function EpochProgress({ epoch, start, end, inProgress }: EpochProgressPr
 						<Text variant="body/normal" color="steel-dark">
 							End
 						</Text>
-						<div className='flex gap-2 items-center'>
-							<div className='whitespace-nowrap'>
+						<div className="flex items-center gap-2">
+							<div className="whitespace-nowrap">
 								<Text variant="pHeading4/semibold" color="steel-darker">
 									{label}
 								</Text>
 							</div>
-							
+
 							<ProgressBar animate progress={progress || 0} />
 						</div>
 					</div>

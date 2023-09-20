@@ -13,13 +13,13 @@ const descriptionItemStyles = cva(['flex flex-col gap-2'], {
 		},
 		direction: {
 			default: 'md:flex-row md:gap-10',
-			cloumn: ''
+			cloumn: '',
 		},
 	},
-	
+
 	defaultVariants: {
 		align: 'center',
-		direction: 'default'
+		direction: 'default',
 	},
 });
 
@@ -48,11 +48,17 @@ export interface DescriptionItemProps
 	children: ReactNode;
 }
 
-export function DescriptionItem({ title, align, labelWidth, direction, children }: DescriptionItemProps) {
+export function DescriptionItem({
+	title,
+	align,
+	labelWidth,
+	direction,
+	children,
+}: DescriptionItemProps) {
 	return (
-		<div className={descriptionItemStyles({ align,direction })}>
+		<div className={descriptionItemStyles({ align, direction })}>
 			<dt className={descriptionItemLabelStyles({ labelWidth })}>{title}</dt>
-			<dd className="ml-0 min-w-0 flex-1 leading-none max-w-full">{children}</dd>
+			<dd className="ml-0 min-w-0 max-w-full flex-1 leading-none">{children}</dd>
 		</div>
 	);
 }

@@ -25,12 +25,12 @@ function AddressResult({ address }: { address: string }) {
 					</Heading>
 				</div>
 				<ErrorBoundary>
-					<div className="border-b border-obc-border flex flex-col gap-10 md:flex-row">
-						<div className="flex-1  pb-3 overflow-hidden">
+					<div className="flex flex-col gap-10 border-b border-obc-border md:flex-row">
+						<div className="flex-1  overflow-hidden pb-3">
 							<OwnedCoins id={address} />
 						</div>
 						<div className="hidden w-px bg-obc-border md:block" />
-						<div className="flex-1  pb-3 overflow-hidden">
+						<div className="flex-1  overflow-hidden pb-3">
 							<OwnedObjects id={address} />
 						</div>
 					</div>

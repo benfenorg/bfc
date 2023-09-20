@@ -117,12 +117,7 @@ export function Pagination({ hasNext, hasPrev, onFirst, onPrev, onNext }: Pagina
 				disabled={!hasPrev}
 				onClick={onPrev}
 			/>
-			<PaginationButton 
-				label="Next" 
-				icon={PaginationNext18} 
-				disabled={!hasNext} 
-				onClick={onNext}
-			/>
+			<PaginationButton label="Next" icon={PaginationNext18} disabled={!hasNext} onClick={onNext} />
 		</div>
 	);
 }

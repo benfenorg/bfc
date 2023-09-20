@@ -8,7 +8,6 @@ import { TopPackagesTable } from './TopPackagesTable';
 import { ErrorBoundary } from '../error-boundary/ErrorBoundary';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
 import { FilterList } from '~/ui/FilterList';
-import { TabHeader } from '~/ui/Tabs';
 
 export type DateFilter = '3D' | '7D' | '30D';
 export type ApiDateFilter = 'rank3Days' | 'rank7Days' | 'rank30Days';

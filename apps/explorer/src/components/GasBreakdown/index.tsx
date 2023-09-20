@@ -54,8 +54,8 @@ function TotalGasAmount({ amount }: GasProps) {
 	}
 
 	return (
-		<div className="flex flex-full flex-1 mt-3">
-			<div className="flex w-1/2 gap-1 flex-col">
+		<div className="flex-full mt-3 flex flex-1">
+			<div className="flex w-1/2 flex-col gap-1">
 				<Text variant="body/medium" color="steel-dark">
 					Gas
 				</Text>
@@ -69,7 +69,7 @@ function TotalGasAmount({ amount }: GasProps) {
 				</div>
 			</div>
 
-			<div className="flex w-1/2 gap-1 flex-col">
+			<div className="flex w-1/2 flex-col gap-1">
 				<Text variant="body/medium" color="steel-dark">
 					Storage Fee
 				</Text>

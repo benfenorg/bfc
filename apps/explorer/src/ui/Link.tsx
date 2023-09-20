@@ -13,7 +13,7 @@ const linkStyles = cva([], {
 			mono: 'font-mono text-body font-medium text-obc-link hover:text-hero-darkest break-all',
 			textHeroDark: 'text-pBody font-medium text-hero-dark hover:text-hero-darkest',
 			large: 'font-mono text-heading4 font-bold text-obc-link break-all',
-			content: ''
+			content: '',
 		},
 		uppercase: {
 			true: 'uppercase',

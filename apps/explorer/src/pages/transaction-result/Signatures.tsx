@@ -15,11 +15,10 @@ import { Text } from '@mysten/ui';
 
 import { DescriptionItem, DescriptionList } from '~/ui/DescriptionList';
 import { AddressLink } from '~/ui/InternalLink';
-import { TabHeader } from '~/ui/Tabs';
 
 function SignaturePanel({ title, signature }: { title: string; signature: SignaturePubkeyPair }) {
 	return (
-		<div className="px-2 py-5 border border-obc-border rounded-md">
+		<div className="rounded-md border border-obc-border px-2 py-5">
 			<div className="text-heading6 font-semibold">{title}</div>
 			<DescriptionList>
 				<DescriptionItem title="Scheme" align="start" labelWidth="sm">

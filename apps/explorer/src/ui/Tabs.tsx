@@ -32,8 +32,10 @@ const tabStyles = cva(
 				lg: 'text-heading4 data-[state=active]:text-obc-white',
 				md: 'text-heading6 data-[state=active]:bg-obc data-[state=active]:text-obc-white px-3.5 py-2 rounded-md',
 				sm: 'text-captionSmall font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
-				lineMd: 'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1 data-[state=active]:border-obc-text1',
-				lineMdOne: 'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
+				lineMd:
+					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1 data-[state=active]:border-obc-text1',
+				lineMdOne:
+					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
 			},
 		},
 		defaultVariants: {

@@ -5,8 +5,8 @@ import { type SuiValidatorSummary } from '@mysten/sui.js';
 import { Heading } from '@mysten/ui';
 
 import { DelegationAmount } from './DelegationAmount';
-import { Stats } from '~/ui/Stats';
 import { Divider } from '~/ui/Divider';
+import { Stats } from '~/ui/Stats';
 
 type StatsCardProps = {
 	validatorData: SuiValidatorSummary;

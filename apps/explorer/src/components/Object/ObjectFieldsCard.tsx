@@ -74,7 +74,7 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 	}
 
 	return (
-		<TabHeader title="Fields">
+		<TabHeader size="lineMdOne" title="Fields">
 			<div className="mt-4 flex flex-col gap-5 border-b border-gray-45">
 				<div className="flex flex-col gap-5  md:flex-row md:flex-nowrap">
 					<div className="w-full md:w-1/5">

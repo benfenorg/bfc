@@ -44,15 +44,19 @@ export default function CheckpointDetail() {
 								</TabsList>
 								<TabsContent value="details">
 									<DescriptionFlexList>
-										<DescriptionItem title="Checkpoint Sequence No." direction='cloumn' align="start">
+										<DescriptionItem
+											title="Checkpoint Sequence No."
+											direction="cloumn"
+											align="start"
+										>
 											<Text variant="pBody/medium" color="steel-darker">
 												{data.sequenceNumber}
 											</Text>
 										</DescriptionItem>
-										<DescriptionItem direction="cloumn"  align="start" title="Epoch">
+										<DescriptionItem direction="cloumn" align="start" title="Epoch">
 											<EpochLink epoch={data.epoch} />
 										</DescriptionItem>
-										<DescriptionItem direction="cloumn"  align="start" title="Checkpoint Timestamp">
+										<DescriptionItem direction="cloumn" align="start" title="Checkpoint Timestamp">
 											<Text variant="pBody/medium" color="steel-darker">
 												{data.timestampMs
 													? new Date(Number(data.timestampMs)).toLocaleString(undefined, {
@@ -78,7 +82,12 @@ export default function CheckpointDetail() {
 										</TabsList>
 										<TabsContent value="aggregated">
 											<DescriptionFlexList>
-												<DescriptionItem direction="cloumn" align="start" key={data.validatorSignature} title="Signature">
+												<DescriptionItem
+													direction="cloumn"
+													align="start"
+													key={data.validatorSignature}
+													title="Signature"
+												>
 													<Text variant="pBody/medium" color="steel-darker">
 														{data.validatorSignature}
 													</Text>
