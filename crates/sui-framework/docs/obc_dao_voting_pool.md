@@ -274,6 +274,7 @@ Create a new, empty voting pool.
 
 
 <pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
 </code></pre>
 
 
@@ -401,6 +402,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 <pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> voting_obc.pool_id != <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool);
 </code></pre>
 
 
@@ -546,6 +548,12 @@ All the other parameters of the votingObc like <code>voting</code> or <code>pool
 
 
 <pre><code><b>aborts_if</b> <b>false</b>;
+<b>let</b> original_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(self.principal);
+<b>aborts_if</b> split_amount &gt; original_amount;
+<b>let</b> remaining_amount = original_amount - split_amount;
+<b>aborts_if</b> remaining_amount &lt; <a href="obc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> split_amount &lt; <a href="obc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
 </code></pre>
 
 
@@ -772,5 +780,4 @@ Returns true if all the staking parameters of the voting obc except the principa
 
 
 <pre><code><b>pragma</b> verify;
-<b>pragma</b> aborts_if_is_strict;
 </code></pre>

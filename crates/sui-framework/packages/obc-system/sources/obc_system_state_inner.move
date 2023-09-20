@@ -20,13 +20,13 @@ module obc_system::obc_system_state_inner {
     friend obc_system::obc_system;
 
     const OBC_SYSTEM_STATE_START_ROUND: u64 = 0;
-    const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[
-        @0x23027681c7d461e3db271aeed97b5da2b6e157350fa2ff659a7ff9cccb28cc00,
-        @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
-        @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
-        @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
-        @0xdcbb951dc6c91cb4838876825daef3b361ca84d3f1e56e89ede66ef15975b4b8,
-    ];
+    // const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[
+    //     @0x23027681c7d461e3db271aeed97b5da2b6e157350fa2ff659a7ff9cccb28cc00,
+    //     @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
+    //     @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
+    //     @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+    //     @0xdcbb951dc6c91cb4838876825daef3b361ca84d3f1e56e89ede66ef15975b4b8,
+    // ];
 
     spec module { pragma verify = false; }
 
@@ -53,6 +53,7 @@ module obc_system::obc_system_state_inner {
     struct ObcSystemParameters has drop, copy {
         treasury_parameters: TreasuryParameters,
         chain_start_timestamp_ms: u64,
+        validate_address_0: address,
     }
 
     const OBC_SYSTEM_TREASURY_KEY: u64 = 1;
@@ -66,7 +67,10 @@ module obc_system::obc_system_state_inner {
         let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<USD>(ctx, 0);
-        let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
+
+        let admin = vector[parameters.validate_address_0];
+        let dao = obc_dao::create_dao(admin, ctx);
+
         let t = create_treasury(usd_supply, parameters, ctx);
         ObcSystemStateInner {
             round: OBC_SYSTEM_STATE_START_ROUND,
@@ -274,6 +278,7 @@ module obc_system::obc_system_state_inner {
         base_point: u64,
         max_counter_times: u32,
         chain_start_timestamp_ms: u64,
+        validate_address_0 : address,
     ): ObcSystemParameters {
         let treasury_parameters = TreasuryParameters {
             position_number,
@@ -287,6 +292,7 @@ module obc_system::obc_system_state_inner {
         ObcSystemParameters {
             treasury_parameters,
             chain_start_timestamp_ms,
+            validate_address_0,
         }
     }
 

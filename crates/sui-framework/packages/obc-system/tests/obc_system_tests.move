@@ -54,6 +54,7 @@ module obc_system::obc_system_tests {
             1000,
             4,
             2000,
+            @0x9,
         );
         obc_system::create(
             object::new(ctx),

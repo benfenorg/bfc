@@ -190,6 +190,7 @@ module obc_system::obc_system {
         base_point: u64,
         max_counter_times: u32,
         chain_start_timestamp_ms: u64,
+        validate_address_0: address,
     ): ObcSystemParameters {
         obc_system_state_inner::obc_system_stat_parameter(
             position_number,
@@ -200,6 +201,7 @@ module obc_system::obc_system {
             base_point,
             max_counter_times,
             chain_start_timestamp_ms,
+            validate_address_0,
         )
     }
 
