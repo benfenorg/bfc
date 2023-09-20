@@ -31,6 +31,7 @@ use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClie
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{OBC_SYSTEM_PACKAGE_ID};
+use std::str::FromStr;
 
 #[sim_test]
 async fn advance_epoch_tx_test() {

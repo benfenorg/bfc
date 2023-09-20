@@ -17,7 +17,6 @@
 -  [Function `request_update_gas_coin`](#0xc8_obc_system_request_update_gas_coin)
 -  [Function `request_remove_gas_coin`](#0xc8_obc_system_request_remove_gas_coin)
 -  [Function `request_exchange_stable`](#0xc8_obc_system_request_exchange_stable)
--  [Function `request_exchange_stable_no_entry`](#0xc8_obc_system_request_exchange_stable_no_entry)
 -  [Function `request_exchange_all`](#0xc8_obc_system_request_exchange_all)
 -  [Function `request_withdraw_stable`](#0xc8_obc_system_request_withdraw_stable)
 -  [Function `request_withdraw_stable_no_entry`](#0xc8_obc_system_request_withdraw_stable_no_entry)
@@ -420,35 +419,6 @@ Request exchange stable coin to obc.
         <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>,
         ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx), <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_obc_system_request_exchange_stable_no_entry"></a>
-
-## Function `request_exchange_stable_no_entry`
-
-
-
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_stable_no_entry">request_exchange_stable_no_entry</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_stable_no_entry">request_exchange_stable_no_entry</a>(
-    self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;USD&gt;,
-    ctx: &<b>mut</b> TxContext,
-): Balance&lt;OBC&gt; {
-    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_exchange_stable">obc_system_state_inner::request_exchange_stable</a>(inner_state, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>, ctx)
 }
 </code></pre>
 
