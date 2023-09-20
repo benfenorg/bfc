@@ -10,7 +10,9 @@ module obc_system::obc_dao_manager {
         id: UID,
     }
 
-
+    spec module{
+        pragma verify;
+    }
     /// Create a new key.
     public(friend) fun new(sender: address, ctx: &mut TxContext)  {
         let key = OBCDaoManageKey {
@@ -18,6 +20,10 @@ module obc_system::obc_dao_manager {
 
         };
         transfer::transfer(key, sender);
+    }
+    spec new {
+        aborts_if false;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
     public(friend) fun getKeyAddress(key: &OBCDaoManageKey) : address {

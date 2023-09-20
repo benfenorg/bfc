@@ -39,12 +39,15 @@ module obc_system::obc_dao {
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_VOTE_QUORUM_RATE: u8 = 40; // 40% default quorum rate
     const DEFAULT_START_PROPOSAL_VERSION_ID : u64 = 19;
+    const MAX_TIME_PERIOD: u64 = 1000 * 60 * 60 * 24 * 365 * 100; // 100 years
+
 
     const MAX_ADMIN_COUNT: u64 = 1000;
 
     const DEFAULT_OBC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  OBC
-
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
+    const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max OBC
+    const MIN_VOTING_THRESHOLD: u64 = 1_000_000_000; // 1 obc
 
     /// Proposal state
     const PENDING: u8 = 1;
@@ -67,6 +70,7 @@ module obc_system::obc_dao {
     const ERR_CONFIG_PARAM_INVALID: u64 = 1407;
     const ERR_VOTE_STATE_MISMATCH: u64 = 1408;
     const ERR_ACTION_MUST_EXIST: u64 = 1409;
+    const ERR_ACTION_ID_ALREADY_INDAO: u64 = 1414;
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
     const ERR_WRONG_VOTING_POOL: u64 = 1412;
@@ -258,6 +262,8 @@ module obc_system::obc_dao {
                 creator: sender,
             }
         );
+
+        assert!(vec_map::contains(&dao.action_record, &action_id) == false, ERR_ACTION_ID_ALREADY_INDAO);
         vec_map::insert(&mut dao.action_record, action_id, copy action);
         action
     }
@@ -268,6 +274,8 @@ module obc_system::obc_dao {
 
 
         assert!( vector::length(&admins) <= MAX_ADMIN_COUNT, ERR_CONFIG_PARAM_INVALID );
+        assert!( vector::length(&admins) > 0, ERR_CONFIG_PARAM_INVALID );
+
 
         let daoConfig = new_dao_config(DEFAULT_VOTE_DELAY,
             DEFAULT_VOTE_PERIOD,
@@ -308,7 +316,7 @@ module obc_system::obc_dao {
 
         // transfer::share_object(dao_obj);
 
-        set_admins(admins, ctx);
+        set_admins(admins,  ctx);
 
         dao_obj
     }
@@ -372,11 +380,10 @@ module obc_system::obc_dao {
         voting_quorum_rate: u8,
         min_action_delay: u64,
     ): DaoConfig {
-        assert!(voting_delay > 0, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_period> 0, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_quorum_rate >= 1, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
-        assert!(min_action_delay > 0, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_delay > 0 && voting_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_period> 0 && voting_period <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+        assert!(min_action_delay > 0 && min_action_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate >= 1 && voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
 
         DaoConfig { voting_delay, voting_period, voting_quorum_rate, min_action_delay }
     }
@@ -546,12 +553,12 @@ module obc_system::obc_dao {
         };
 
 
-        // sender address
         let sender = tx_context::sender(ctx);
-        //let my_vote = vote
+        let total_voted = voting_obc_amount(&my_vote.vote);
         {
             assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
             assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+
         };
 
         // flip the vote
@@ -576,9 +583,15 @@ module obc_system::obc_dao {
         my_vote.agree = !my_vote.agree;
         let total_voted = voting_obc_amount(&my_vote.vote);
         if (my_vote.agree) {
+            assert!(proposal.proposal.against_votes >= total_voted, (ERR_VOTED_ERR_AMOUNT));
+            assert!(proposal.proposal.for_votes + total_voted <= MAX_VOTE_AMOUNT , (ERR_VOTED_ERR_AMOUNT));
+
             proposal.proposal.for_votes = proposal.proposal.for_votes + total_voted;
             proposal.proposal.against_votes = proposal.proposal.against_votes - total_voted;
         } else {
+            assert!(proposal.proposal.for_votes >= total_voted, (ERR_VOTED_ERR_AMOUNT));
+            assert!(proposal.proposal.against_votes + total_voted <= MAX_VOTE_AMOUNT, (ERR_VOTED_ERR_AMOUNT));
+
             proposal.proposal.for_votes = proposal.proposal.for_votes - total_voted;
             proposal.proposal.against_votes = proposal.proposal.against_votes + total_voted;
         };
@@ -606,6 +619,9 @@ module obc_system::obc_dao {
         {
             assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
             assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+            assert!(voting_obc_amount(&my_vote.vote) >= voting_power, (ERR_VOTED_ERR_AMOUNT));
+            assert!(voting_power >= MIN_VOTING_THRESHOLD && voting_power <= MAX_VOTE_AMOUNT, (ERR_VOTED_ERR_AMOUNT));
+            assert!(voting_obc_amount(&my_vote.vote) - voting_power >= MIN_VOTING_THRESHOLD, (ERR_VOTED_ERR_AMOUNT));
         };
         // revoke vote on proposal
         do_revoke_vote(proposal, &mut my_vote, voting_power,ctx);
@@ -760,6 +776,8 @@ module obc_system::obc_dao {
             proposal_state(proposal, clock) == AGREED,
             (ERR_PROPOSAL_STATE_INVALID)
         );
+        assert!(proposal.proposal.action_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
 
         synchronize_proposal_into_dao(proposal, dao);
@@ -924,6 +942,12 @@ module obc_system::obc_dao {
         min_action_delay: u64,
     ) {
 
+        assert!(voting_delay <= MAX_TIME_PERIOD && voting_delay > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(voting_period <= MAX_TIME_PERIOD && voting_period > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(min_action_delay <= MAX_TIME_PERIOD && min_action_delay > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(voting_quorum_rate>0 && voting_quorum_rate <= 100, (ERR_QUORUM_RATE_INVALID));
+
+
 
         let config = get_config(dao);
         if (voting_period > 0) {
@@ -950,6 +974,8 @@ module obc_system::obc_dao {
     ) {
 
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(value <= MAX_TIME_PERIOD, (ERR_CONFIG_PARAM_INVALID));
+
         let config = get_config(dao);
         config.voting_delay = value;
 
@@ -965,6 +991,8 @@ module obc_system::obc_dao {
     ) {
 
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(value <= MAX_TIME_PERIOD, (ERR_CONFIG_PARAM_INVALID));
+
         let config = get_config(dao);
         config.voting_period = value;
 
@@ -992,6 +1020,8 @@ module obc_system::obc_dao {
         value: u64,
     ) {
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(value <= MAX_TIME_PERIOD, (ERR_CONFIG_PARAM_INVALID));
+
         let config = get_config(dao);
         config.min_action_delay = value;
 
@@ -1003,11 +1033,15 @@ module obc_system::obc_dao {
         ctx: &mut TxContext,
     ) {
         //let index = 0;
-        while (!vector::is_empty(&new_admins)) {
-            let admin = vector::pop_back(&mut new_admins);
-            obc_dao_manager::new(admin, ctx);
+        let count = vector::length(&new_admins);
+        assert!(count > 0 && count <= MAX_ADMIN_COUNT, ERR_CONFIG_PARAM_INVALID);
 
-        }
+        let i = 0;
+        while (i < count) {
+            let admin = vector::borrow(&new_admins, i);
+            obc_dao_manager::new(*admin, ctx);
+            i = i+1;
+        };
 
     }
 
