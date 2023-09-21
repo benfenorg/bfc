@@ -1,4 +1,4 @@
-spec obc_system::obc_dao{
+spec obc_system::obc_dao {
     spec voting_delay {
         aborts_if false;
     }
@@ -7,7 +7,7 @@ spec obc_system::obc_dao{
     spec voting_period {
         aborts_if false;
     }
-    spec voting_quorum_rate{
+    spec voting_quorum_rate {
         aborts_if false;
     }
 
@@ -15,17 +15,20 @@ spec obc_system::obc_dao{
         aborts_if false;
         //ensures result == spec_dao_config.min_action_delay;
     }
-    spec quorum_votes{
+    spec quorum_votes {
         aborts_if false;
     }
 
-    spec get_config{
+    spec get_config {
         aborts_if false;
     }
-    spec proposal_info{
+    spec proposal_info {
         aborts_if false;
     }
 
+    spec getProposalRecord {
+        aborts_if false;
+    }
     spec schema NewDaoConfigParamSchema {
         voting_delay: u64;
         voting_period: u64;
@@ -38,7 +41,7 @@ spec obc_system::obc_dao{
         aborts_if min_action_delay > MAX_TIME_PERIOD || min_action_delay == 0;
     }
 
-    spec new_dao_config{
+    spec new_dao_config {
         include NewDaoConfigParamSchema;
     }
 
@@ -49,7 +52,7 @@ spec obc_system::obc_dao{
 
     }
 
-    spec create_obcdao_action{
+    spec create_obcdao_action {
         pragma aborts_if_is_partial = true;
         aborts_if false;
 
@@ -58,6 +61,15 @@ spec obc_system::obc_dao{
         //aborts_if vec_map::contains(dao.action_record, action_id) == true;
     }
 
+    spec getDaoActionByActionId {
+        aborts_if false;
+        pragma aborts_if_is_partial = true;
+    }
+
+    spec create_dao_and_share {
+        aborts_if false;
+        pragma aborts_if_is_partial = true;
+    }
     spec add_admin {
         aborts_if false;
         aborts_if ctx.ids_created + 1 > MAX_U64;
@@ -75,7 +87,7 @@ spec obc_system::obc_dao{
     }
 
 
-    spec vote_of{
+    spec vote_of {
         aborts_if false;
         aborts_if vote.proposer != proposal.proposal.proposer;
         aborts_if vote.vid != proposal.proposal.pid;
@@ -87,31 +99,31 @@ spec obc_system::obc_dao{
         let current_time = clock.timestamp_ms;
         aborts_if judge_proposal_state(proposal.proposal,current_time) <= ACTIVE;
     }
-    spec synchronize_proposal_into_dao{
+    spec synchronize_proposal_into_dao {
         aborts_if false;
         pragma aborts_if_is_partial = true;
     }
-    spec set_voting_quorum_rate{
+    spec set_voting_quorum_rate {
         aborts_if false;
         aborts_if value > 100 || value == 0;
     }
-    spec set_voting_period{
+    spec set_voting_period {
         aborts_if false;
         aborts_if value == 0;
         aborts_if value > MAX_TIME_PERIOD;
     }
 
-    spec set_voting_delay{
+    spec set_voting_delay {
         aborts_if false;
         aborts_if value == 0;
         aborts_if value > MAX_TIME_PERIOD;
     }
-    spec set_min_action_delay{
+    spec set_min_action_delay {
         aborts_if false;
         aborts_if value == 0;
         aborts_if value > MAX_TIME_PERIOD;
     }
-    spec set_current_status_into_dao{
+    spec set_current_status_into_dao {
         aborts_if false;
         pragma aborts_if_is_partial = true;
     }
@@ -119,6 +131,18 @@ spec obc_system::obc_dao{
 
     spec has_vote {
         aborts_if false;
+    }
+    spec cast_vote {
+        aborts_if false;
+        let current_time = clock.timestamp_ms;
+        aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;
+        aborts_if coin.principal.value == 0 || coin.principal.value > MAX_VOTE_AMOUNT;
+        aborts_if coin.principal.value < MIN_VOTING_THRESHOLD;
+        aborts_if agreeInt != 1 &&  proposal.proposal.against_votes + coin.principal.value > MAX_U64;
+        aborts_if agreeInt == 1 &&  proposal.proposal.for_votes + coin.principal.value > MAX_U64;
+
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+        pragma aborts_if_is_partial = true;
     }
     spec change_vote {
         pragma aborts_if_is_partial = true;
@@ -141,7 +165,7 @@ spec obc_system::obc_dao{
 
 
     }
-    spec revoke_vote{
+    spec revoke_vote {
         pragma aborts_if_is_partial = true;
 
         aborts_if false;
@@ -158,8 +182,12 @@ spec obc_system::obc_dao{
 
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
+    spec do_revoke_vote {
+        aborts_if false;
+        pragma aborts_if_is_partial = true;
+    }
 
-    spec queue_proposal_action{
+    spec queue_proposal_action {
         pragma aborts_if_is_partial = true;
         aborts_if false;
         let current_time = clock.timestamp_ms;
@@ -168,7 +196,7 @@ spec obc_system::obc_dao{
         aborts_if proposal.proposal.action_delay + current_time > MAX_U64;
     }
 
-    spec propose{
+    spec propose {
         pragma aborts_if_is_partial = true;
         aborts_if false;
         let obc =  payment.balance;
@@ -177,20 +205,20 @@ spec obc_system::obc_dao{
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
-    spec proposal_exists{
+    spec proposal_exists {
         aborts_if false;
         //aborts_if vec_map::contains(dao.proposals, pid) == false;
     }
 
-    spec get_obcdao_actionid{
+    spec get_obcdao_actionid {
         aborts_if false;
     }
-    spec modify_proposal_obj{
+    spec modify_proposal_obj {
         aborts_if false;
         pragma aborts_if_is_partial = true;
     }
 
-    spec modify_dao_config{
+    spec modify_dao_config {
         aborts_if false;
         include NewDaoConfigParamSchema;
     }
@@ -204,8 +232,21 @@ spec obc_system::obc_dao{
         aborts_if dao.info.next_proposal_id >= MAX_U64;
     }
 
+    spec extract_proposal_action {
+        aborts_if false;
+        let current_time = clock.timestamp_ms;
+        aborts_if judge_proposal_state(proposal.proposal,current_time) != EXECUTABLE;
 
-    spec create_voting_obc{
+    }
+
+    spec proposal_state {
+        aborts_if false;
+    }
+    spec judge_proposal_state {
+        aborts_if false;
+    }
+
+    spec create_voting_obc {
         aborts_if false;
         aborts_if ctx.ids_created + 1 > MAX_U64;
         aborts_if coin.balance.value < MIN_VOTING_THRESHOLD;
@@ -213,5 +254,17 @@ spec obc_system::obc_dao{
     }
 
 
+    spec destroy_terminated_proposal {
+        pragma aborts_if_is_partial = true;
+        aborts_if false;
+    }
+
+    spec set_current_status_into_dao {
+        aborts_if false;
+    }
+
+    spec withdraw_voting {
+        aborts_if false;
+    }
 
 }

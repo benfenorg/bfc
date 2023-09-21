@@ -29,7 +29,7 @@ module obc_system::obc_dao {
 
     spec module{
         pragma verify;
-        //pragma aborts_if_is_strict;
+        pragma aborts_if_is_strict;
     }
 
     const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
@@ -490,12 +490,8 @@ module obc_system::obc_dao {
 
         let vote_amount = voting_pool::voting_obc_amount(&coin);
         {
-            if(vote_amount <= 0) {
-                assert!(false, ERR_VOTED_ERR_AMOUNT);
-            };
-            if(vote_amount > voting_pool::voting_obc_amount(&coin)){
-                assert!(false, ERR_VOTED_ERR_AMOUNT);
-            };
+            assert!(vote_amount >= MIN_VOTING_THRESHOLD, ERR_VOTED_ERR_AMOUNT);
+            assert!(vote_amount <= MAX_VOTE_AMOUNT, ERR_VOTED_ERR_AMOUNT);
         };
 
         let sender = tx_context::sender(ctx);

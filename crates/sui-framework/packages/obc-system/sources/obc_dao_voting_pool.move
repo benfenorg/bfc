@@ -128,6 +128,7 @@ module obc_system::voting_pool {
 
 
     public fun unwrap_voting_obc(voting_obc: VotingObc): Balance<OBC> {
+
         let VotingObc {
             id,
             pool_id: _,
@@ -165,16 +166,7 @@ module obc_system::voting_pool {
         }
     }
 
-    spec split{
-        aborts_if false;
-        let original_amount = balance::value(self.principal);
-        aborts_if split_amount > original_amount;
-        let remaining_amount = original_amount - split_amount;
-        aborts_if remaining_amount < MIN_STAKING_THRESHOLD;
-        aborts_if split_amount < MIN_STAKING_THRESHOLD;
-        aborts_if ctx.ids_created + 1 > MAX_U64;
 
-    }
 
 
     /// Split the given votingObc to the two parts, one with principal `split_amount`,
