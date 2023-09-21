@@ -45,6 +45,12 @@ pub struct Treasury {
     init: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct TreasuryPool {
+    pub id: UID,
+    pub balance: Balance,
+}
+
 #[derive(Debug)]
 pub struct ObcRoundParams {
     pub round_id: u64,
@@ -129,6 +135,7 @@ pub struct ObcSystemStateInnerV1 {
     pub exchange_pool: ExchangePoolV1,
     pub dao: Dao,
     pub treasury: Treasury,
+    pub treasury_pool: TreasuryPool,
 }
 
 // Rust version of the Move obc_system::obc_system_state_inner::ExchangePool type
