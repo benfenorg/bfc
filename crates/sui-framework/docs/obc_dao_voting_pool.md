@@ -303,7 +303,7 @@ Request to voting to a staking pool. The voting starts counting at the beginning
     ctx: &<b>mut</b> TxContext
 ) : <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a> {
     <b>let</b> obc_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&voting);
-    <b>assert</b>!(obc_amount &gt; 0, <a href="obc_dao_voting_pool.md#0xc8_voting_pool_EDelegationOfZeroObc">EDelegationOfZeroObc</a>);
+    <b>assert</b>!(obc_amount &gt;= <a href="obc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>, <a href="obc_dao_voting_pool.md#0xc8_voting_pool_EDelegationOfZeroObc">EDelegationOfZeroObc</a>);
     <b>let</b> votingobc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a> {
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         pool_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool),
