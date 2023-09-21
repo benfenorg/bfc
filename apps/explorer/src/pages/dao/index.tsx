@@ -102,11 +102,9 @@ function DaoList() {
 							<CreateProposal manageKey={manageKey!} dao={data} refetchDao={refetch} />
 						</DisclosureBox>
 					)}
-					{manageKey && data && (
-						<DisclosureBox title="create voting obc" defaultOpen={false}>
-							<CreateVotingObc manageKey={manageKey!} dao={data} refetchDao={refetch} />
-						</DisclosureBox>
-					)}
+					<DisclosureBox title="create voting obc" defaultOpen={false}>
+						<CreateVotingObc />
+					</DisclosureBox>
 				</div>
 			)}
 			<div>

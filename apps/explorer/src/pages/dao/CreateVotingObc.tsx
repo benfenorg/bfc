@@ -7,7 +7,6 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ObcDao } from '@mysten/sui.js/src/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
@@ -18,11 +17,7 @@ import { useZodForm } from '~/hooks/useZodForm';
 import { Input } from '~/ui/Input';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	manageKey: string;
-	dao: ObcDao;
-	refetchDao: () => void;
-}
+export interface Props {}
 
 const schema = z.object({
 	amount: z
@@ -32,7 +27,7 @@ const schema = z.object({
 		.refine((n) => n >= 1),
 });
 
-export function CreateVotingObc({ manageKey, refetchDao, dao }: Props) {
+export function CreateVotingObc() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
 	const { handleSubmit, register } = useZodForm({
@@ -60,9 +55,7 @@ export function CreateVotingObc({ manageKey, refetchDao, dao }: Props) {
 			}
 			return result;
 		},
-		onSuccess: () => {
-			refetchDao();
-		},
+		onSuccess: () => {},
 	});
 	return (
 		<form
