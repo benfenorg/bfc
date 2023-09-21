@@ -1377,7 +1377,10 @@ Error codes
 
 
 <pre><code><b>aborts_if</b> <b>false</b>;
+<<<<<<< Updated upstream
 <b>pragma</b> aborts_if_is_partial = <b>true</b>;
+=======
+>>>>>>> Stashed changes
 <b>aborts_if</b> <a href="_length">vector::length</a>(admins) &gt; <a href="obc_dao.md#0xc8_obc_dao_MAX_ADMIN_COUNT">MAX_ADMIN_COUNT</a> || <a href="_length">vector::length</a>(admins) == 0;
 <b>aborts_if</b> ctx.ids_created + 3 &gt; MAX_U64;
 </code></pre>
@@ -1978,8 +1981,36 @@ Revoke some voting powers from vote on <code>proposal_id</code> of <code>propose
 
 
 
+<<<<<<< Updated upstream
 <pre><code><b>pragma</b> aborts_if_is_partial = <b>true</b>;
 <b>aborts_if</b> <b>false</b>;
+=======
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+
+<a name="0xc8_obc_dao_NewDaoConfigParamSchema"></a>
+
+
+<pre><code><b>schema</b> <a href="obc_dao.md#0xc8_obc_dao_NewDaoConfigParamSchema">NewDaoConfigParamSchema</a> {
+    voting_delay: u64;
+    voting_period: u64;
+    voting_quorum_rate: u8;
+    min_action_delay: u64;
+    <b>aborts_if</b> voting_delay &gt; <a href="obc_dao.md#0xc8_obc_dao_MAX_TIME_PERIOD">MAX_TIME_PERIOD</a> || voting_delay == 0;
+    <b>aborts_if</b> voting_period &gt; <a href="obc_dao.md#0xc8_obc_dao_MAX_TIME_PERIOD">MAX_TIME_PERIOD</a> || voting_period == 0 ;
+    <b>aborts_if</b> voting_quorum_rate == 0 || voting_quorum_rate &gt; 100;
+    <b>aborts_if</b> min_action_delay &gt; <a href="obc_dao.md#0xc8_obc_dao_MAX_TIME_PERIOD">MAX_TIME_PERIOD</a> || min_action_delay == 0;
+}
+</code></pre>
+
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+>>>>>>> Stashed changes
 <b>let</b> current_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>.timestamp_ms;
 <b>aborts_if</b> <a href="obc_dao.md#0xc8_obc_dao_judge_proposal_state">judge_proposal_state</a>(proposal.proposal,current_time) != <a href="obc_dao.md#0xc8_obc_dao_ACTIVE">ACTIVE</a>;
 <b>aborts_if</b> my_vote.proposer != proposal.proposal.proposer;
@@ -3050,8 +3081,13 @@ set min action delay
 
 
 
+<<<<<<< Updated upstream
 <pre><code><b>pragma</b> aborts_if_is_partial = <b>true</b>;
 <b>aborts_if</b> <a href="_length">vector::length</a>(new_admins) &gt; <a href="obc_dao.md#0xc8_obc_dao_MAX_ADMIN_COUNT">MAX_ADMIN_COUNT</a> || <a href="_length">vector::length</a>(new_admins) == 0;
+=======
+<pre><code><b>aborts_if</b> <a href="_length">vector::length</a>(new_admins) &gt; <a href="obc_dao.md#0xc8_obc_dao_MAX_ADMIN_COUNT">MAX_ADMIN_COUNT</a> || <a href="_length">vector::length</a>(new_admins) == 0;
+<b>aborts_if</b> ctx.ids_created + <a href="_length">vector::length</a>(new_admins) &gt; MAX_U64;
+>>>>>>> Stashed changes
 </code></pre>
 
 
