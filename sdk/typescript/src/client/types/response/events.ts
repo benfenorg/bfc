@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { SuiAddress } from '../../../types/common.js';
 import type { ObjectOwner } from './objects.js';
 
 // event types mirror those in "sui-json-rpc-types/src/sui_event.rs"
@@ -101,3 +102,74 @@ export type SuiObjectChange =
 	| SuiObjectChangeDeleted
 	| SuiObjectChangeWrapped
 	| SuiObjectChangeCreated;
+
+export type ProposalRecord = {
+	pid: number;
+	proposer: SuiAddress;
+	start_time: number;
+	end_time: number;
+	for_votes: number;
+	against_votes: number;
+	eta: number;
+	action_delay: number;
+	quorum_votes: number;
+	action: {
+		action_id: number;
+		name: string;
+	};
+	version_id: number;
+};
+
+export type ObcDao = {
+	id: {
+		id: SuiAddress;
+	};
+	admin: SuiAddress;
+	config: {
+		voting_delay: number;
+		voting_period: number;
+		voting_quorum_rate: number;
+		min_action_delay: number;
+	};
+	info: {
+		id: {
+			id: SuiAddress;
+		};
+		next_proposal_id: number;
+		next_action_id: number;
+		proposal_create_event: {
+			proposal_id: number;
+			proposer: SuiAddress;
+		};
+		vote_changed_event: {
+			proposal_id: number;
+			voter: SuiAddress;
+			proposer: SuiAddress;
+			agree: boolean;
+			vote: number;
+		};
+	};
+	proposal_record: ProposalRecord[];
+	action_record: Record<
+		string,
+		{
+			action_id: number;
+			name: string;
+		}
+	>;
+	votes_record: Record<string, string>;
+	voting_pool: {
+		id: {
+			id: SuiAddress;
+		};
+		obc_balance: number;
+		pool_token_balance: number;
+	};
+	current_proposal_status: Record<
+		string,
+		{
+			version_id: number;
+			status: number;
+		}
+	>;
+};

@@ -45,6 +45,7 @@ import type {
 	NetworkMetrics,
 	AddressMetrics,
 	AllEpochsAddressMetrics,
+	ObcDao,
 } from './types/index.js';
 import {
 	isValidTransactionDigest,
@@ -516,14 +517,13 @@ export class SuiClient {
 	}
 
 	/**
-	 * Getting the overview for the network
+	 * Getting inner dao info
 	 */
-	async getDaoProposals(): Promise<any> {
-		const resp = await this.transport.request<string>({
-			method: 'suix_getDaoProposals',
+	async getInnerDao(): Promise<ObcDao> {
+		return await this.transport.request({
+			method: 'sui_getInnerDaoInfo',
 			params: [],
 		});
-		return resp;
 	}
 
 	/**

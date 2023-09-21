@@ -1,13 +1,28 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { Heading } from '@mysten/ui';
+import { useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
+import { useGetDao } from '~/hooks/useGetDao';
 import { PageHeader } from '~/ui/PageHeader';
 
 function DaoContentDeatil() {
+	const { id } = useParams<{ id: string }>();
+	const { data: daoData, isLoading } = useGetDao();
+
+	const data = useMemo(
+		() => daoData?.proposal_record.find((i) => i.pid.toString() === id),
+		[daoData, id],
+	);
+
+	if (isLoading || !data) {
+		return null;
+	}
+
 	return (
 		<div>
 			<div className="rounded-md border border-obc-border px-3 py-6">
@@ -15,7 +30,7 @@ function DaoContentDeatil() {
 				<div className="mt-5 space-y-3">
 					<div className="flex justify-between">
 						<div className="text-pBody text-obc-text2">ID</div>
-						<div className="text-pBody text-obc-text1">12345</div>
+						<div className="text-pBody text-obc-text1">{data.pid}</div>
 					</div>
 					<div className="flex justify-between">
 						<div className="text-pBody text-obc-text2">状态</div>
@@ -23,11 +38,11 @@ function DaoContentDeatil() {
 					</div>
 					<div className="flex justify-between">
 						<div className="text-pBody text-obc-text2">创建者</div>
-						<div className="text-pBody text-obc-text1">12345</div>
+						<div className="text-pBody text-obc-text1">{data.proposer}</div>
 					</div>
 					<div className="flex justify-between">
 						<div className="text-pBody text-obc-text2">结束时间</div>
-						<div className="text-pBody text-obc-text1">12345</div>
+						<div className="text-pBody text-obc-text1">{data.end_time}</div>
 					</div>
 					<div className="flex justify-between">
 						<div className="text-pBody text-obc-text2">留言板</div>

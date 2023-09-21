@@ -88,6 +88,7 @@ export function ModuleFunction({
 							: tx.object(param);
 					}) ?? [],
 			});
+			debugger;
 			const result = await signAndExecuteTransactionBlock({
 				transactionBlock: tx,
 				options: {
