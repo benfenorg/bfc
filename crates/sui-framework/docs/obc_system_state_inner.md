@@ -60,6 +60,7 @@
 <b>use</b> <a href="obc_dao.md#0xc8_obc_dao">0xc8::obc_dao</a>;
 <b>use</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager">0xc8::obc_dao_manager</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
+<b>use</b> <a href="treasury_pool.md#0xc8_treasury_pool">0xc8::treasury_pool</a>;
 <b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
 <b>use</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -108,6 +109,12 @@
 </dd>
 <dt>
 <code><a href="treasury.md#0xc8_treasury">treasury</a>: <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>: <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a></code>
 </dt>
 <dd>
 
@@ -271,7 +278,8 @@
     <b>let</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0xc8_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;USD&gt;(ctx, 0);
     <b>let</b> dao = <a href="obc_dao.md#0xc8_obc_dao_create_dao">obc_dao::create_dao</a>(<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
-    <b>let</b> t = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, obc_balance, parameters, ctx);
+    <b>let</b> (t, remain_balance) = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, obc_balance, parameters, ctx);
+    <b>let</b> tp = <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">treasury_pool::create_treasury_pool</a>(remain_balance, ctx);
 
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a> {
         round: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_OBC_SYSTEM_STATE_START_ROUND">OBC_SYSTEM_STATE_START_ROUND</a>,
@@ -279,6 +287,7 @@
         exchange_pool,
         dao,
         <a href="treasury.md#0xc8_treasury">treasury</a>: t,
+        <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>: tp,
     }
 }
 </code></pre>
@@ -365,7 +374,7 @@
 ) {
     //get <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> amount of inner exchange pool
     <b>let</b> obc_amount = <a href="exchange_inner.md#0xc8_exchange_inner_get_obc_amount">exchange_inner::get_obc_amount</a>(&inner.exchange_pool);
-    <b>if</b>(obc_amount &gt; 0) {
+    <b>if</b> (obc_amount &gt; 0) {
         //set pool is disactivate
         <b>let</b> epoch = <a href="exchange_inner.md#0xc8_exchange_inner_dis_activate">exchange_inner::dis_activate</a>(&<b>mut</b> inner.exchange_pool);
         //get <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
@@ -567,7 +576,7 @@ Init exchange pool by add obc coin.
 X treasury  init treasury
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
 </code></pre>
 
 
@@ -581,15 +590,14 @@ X treasury  init treasury
     obc_balance: Balance&lt;OBC&gt;,
     parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">ObcSystemParameters</a>,
     ctx: &<b>mut</b> TxContext
-): Treasury {
+): (Treasury, Balance&lt;OBC&gt;) {
     <b>let</b> treasury_parameters = parameters.treasury_parameters;
     <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(treasury_parameters.time_interval, ctx);
 
     <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&obc_balance);
     <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> &gt; 0) {
-        <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(obc_balance, ctx));
-    } <b>else</b> {
-       <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(obc_balance);
+        <b>let</b> deposit_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> obc_balance, <a href="treasury.md#0xc8_treasury_next_epoch_obc_required">treasury::next_epoch_obc_required</a>(&t));
+        <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(deposit_balance, ctx));
     };
 
     <a href="treasury.md#0xc8_treasury_init_vault_with_positions">treasury::init_vault_with_positions</a>&lt;USD&gt;(
@@ -604,7 +612,7 @@ X treasury  init treasury
         parameters.chain_start_timestamp_ms,
         ctx,
     );
-    t
+    (t, obc_balance)
 }
 </code></pre>
 
@@ -879,6 +887,14 @@ X-treasury
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <b>let</b> amount = <a href="treasury.md#0xc8_treasury_next_epoch_obc_required">treasury::next_epoch_obc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
+    <b>let</b> withdraw_balance =
+        <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">treasury_pool::withdraw_to_treasury</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, amount, ctx);
+    <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&withdraw_balance) &gt; 0) {
+        <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(withdraw_balance, ctx));
+    } <b>else</b> {
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(withdraw_balance);
+    };
     <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
@@ -1176,8 +1192,13 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>, proposal_obj: &<b>mut</b> Proposal, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
-    <a href="obc_dao.md#0xc8_obc_dao_modify_proposal_obj">obc_dao::modify_proposal_obj</a>(&<b>mut</b> system_state.dao ,proposal_obj, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_modify_proposal">modify_proposal</a>(
+    system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
+    proposal_obj: &<b>mut</b> Proposal,
+    index: u8,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock
+) {
+    <a href="obc_dao.md#0xc8_obc_dao_modify_proposal_obj">obc_dao::modify_proposal_obj</a>(&<b>mut</b> system_state.dao, proposal_obj, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
 }
 </code></pre>
 
@@ -1207,7 +1228,7 @@ X-treasury
     agreeInt: u8,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext,
-){
+) {
     <a href="obc_dao.md#0xc8_obc_dao_cast_vote">obc_dao::cast_vote</a>(&<b>mut</b> system_state.dao, proposal, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, agreeInt, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
@@ -1238,7 +1259,7 @@ X-treasury
     agree: bool,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext,
-){
+) {
     <a href="obc_dao.md#0xc8_obc_dao_change_vote">obc_dao::change_vote</a>(&<b>mut</b> system_state.dao, my_vote, proposal, agree, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
@@ -1294,7 +1315,7 @@ X-treasury
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_revoke_vote">revoke_vote</a>(
     system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
     proposal: &<b>mut</b> Proposal,
-    my_vote:  Vote,
+    my_vote: Vote,
     voting_power: u64,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext,
@@ -1323,8 +1344,8 @@ X-treasury
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_withdraw_voting">withdraw_voting</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
-                                   voting_obc: VotingObc,
-                                   ctx: &<b>mut</b> TxContext ) {
+                           voting_obc: VotingObc,
+                           ctx: &<b>mut</b> TxContext) {
     <a href="obc_dao.md#0xc8_obc_dao_withdraw_voting">obc_dao::withdraw_voting</a>(&<b>mut</b> system_state.dao, voting_obc, ctx);
 }
 </code></pre>
@@ -1349,8 +1370,8 @@ X-treasury
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_voting_obc">create_voting_obc</a>(system_state: &<b>mut</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>,
-                                   <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;,
-                                   ctx: &<b>mut</b> TxContext) {
+                                     <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;,
+                                     ctx: &<b>mut</b> TxContext) {
     <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">obc_dao::create_voting_obc</a>(&<b>mut</b> system_state.dao, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, ctx);
 }
 </code></pre>

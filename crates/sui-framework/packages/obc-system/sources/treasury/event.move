@@ -7,10 +7,15 @@ module obc_system::event {
     use obc_system::i32::I32;
 
     friend obc_system::treasury;
+    friend obc_system::treasury_pool;
     friend obc_system::vault;
 
     struct InitTreasuryEvent has copy, drop {
         vaults_id: ID
+    }
+
+    struct InitTreasuryPoolEvent has copy, drop {
+        treasury_pool_id: ID
     }
 
     spec module { pragma verify = false; }
@@ -80,6 +85,10 @@ module obc_system::event {
 
     public(friend) fun init_treasury(vaults_id: ID) {
         emit(InitTreasuryEvent { vaults_id })
+    }
+
+    public(friend) fun init_treasury_pool(treasury_pool_id: ID) {
+        emit(InitTreasuryPoolEvent { treasury_pool_id })
     }
 
     public(friend) fun create_vault(
