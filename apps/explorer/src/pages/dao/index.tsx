@@ -1,20 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { ArrowRight12 } from '@mysten/icons';
-import {
-	TransactionBlock,
-	getExecutionStatusError,
-	getExecutionStatusType,
-	getTransactionDigest,
-	isValidSuiAddress,
-} from '@mysten/sui.js';
-import { Heading, Button } from '@mysten/ui';
+import { Heading } from '@mysten/ui';
 import { useWalletKit, ConnectButton } from '@mysten/wallet-kit';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-import { useMutation } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { z } from 'zod';
 
+import { CreateDaoAction } from './CreateDaoAction';
+import { CreateProposal } from './CreateProposal';
+import { CreateVotingObc } from './CreateVotingObc';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
@@ -22,11 +15,8 @@ import { useGetDao } from '~/hooks/useGetDao';
 import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
 import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
-import { useZodForm } from '~/hooks/useZodForm';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
-import { Input } from '~/ui/Input';
-import { Selector } from '~/ui/Selector';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
 
 import type { ProposalRecord } from '@mysten/sui.js/src/client';
@@ -76,185 +66,47 @@ function DaoItem({ data }: { data: ProposalRecord }) {
 	);
 }
 
-const createObcdaoSchema = z.object({
-	text: z.string().trim().min(1),
-});
-
-const createProposalSchema = z.object({
-	coin: z.string().trim().min(1),
-	action: z.string().trim(),
-});
-
 function DaoList() {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+	const { isConnected, currentAccount } = useWalletKit();
 	const { data: manageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
 	const { data, refetch } = useGetDao();
 
-	const { handleSubmit: createObcdaoHandleSubmit, register: createObcdaoRegister } = useZodForm({
-		schema: createObcdaoSchema,
-	});
-
-	const createObcdao = useMutation({
-		mutationFn: async ({ text }: { text: string }) => {
-			const tx = new TransactionBlock();
-			tx.moveCall({
-				target: `0xc8::obc_system::create_obcdao_action`,
-				typeArguments: [],
-				arguments: [
-					tx.object('OBC00000000000000000000000000000000000000000000000000000000000000c903b9'),
-					tx.object(manageKey!),
-					tx.object(`0x${bytesToHex(new TextEncoder().encode(text))}`),
-				],
-			});
-
-			const result = await signAndExecuteTransactionBlock({
-				transactionBlock: tx,
-			});
-			if (getExecutionStatusType(result) === 'failure') {
-				throw new Error(getExecutionStatusError(result) || 'Transaction failed');
-			}
-			return result;
-		},
-		onSuccess: () => {
-			refetch();
-		},
-	});
-
-	const { handleSubmit: createProposalHandleSubmit, register: createProposalRegister } = useZodForm(
-		{
-			schema: createProposalSchema,
-		},
-	);
-
-	const createProposal = useMutation({
-		mutationFn: async ({ coin, action }: { coin: string; action: string }) => {
-			if (!isValidSuiAddress(coin)) {
-				throw new Error('Invalid obc address');
-			}
-			const tx = new TransactionBlock();
-			tx.moveCall({
-				target: `0xc8::obc_system::propose`,
-				typeArguments: [],
-				arguments: [
-					tx.object('OBC00000000000000000000000000000000000000000000000000000000000000c903b9'),
-					tx.object(manageKey!),
-					tx.pure(20),
-					tx.object(coin),
-					tx.pure(Number.parseInt(action)),
-					tx.pure(6000000),
-					tx.object('0x6'),
-				],
-			});
-
-			const result = await signAndExecuteTransactionBlock({
-				transactionBlock: tx,
-			});
-			if (getExecutionStatusType(result) === 'failure') {
-				throw new Error(getExecutionStatusError(result) || 'Transaction failed');
-			}
-			return result;
-		},
-		onSuccess: () => {
-			refetch();
-		},
-	});
-
 	return (
-		<div>
-			{manageKey && (
+		<div className="flex flex-col items-stretch gap-5">
+			<div className="self-start">
+				<ConnectButton
+					connectText={
+						<>
+							Connect Wallet
+							<ArrowRight12 fill="currentColor" className="-rotate-45" />
+						</>
+					}
+					size="md"
+					className={clsx(
+						'!rounded-md !text-bodySmall',
+						isConnected
+							? '!border !border-solid  !bg-obc !font-mono !text-white'
+							: '!flex !flex-nowrap !items-center !gap-1 !bg-obc !font-sans !text-white',
+					)}
+				/>
+			</div>
+			{isConnected && (
 				<div className="flex flex-col gap-2">
-					<DisclosureBox title="create obcdao" defaultOpen={false}>
-						<form
-							onSubmit={createObcdaoHandleSubmit((formData) => {
-								createObcdao.mutateAsync(formData).catch((e) => {
-									console.error(`failed to create dao`, e);
-								});
-							})}
-							autoComplete="off"
-							className="flex flex-col flex-nowrap items-stretch gap-4"
-						>
-							<Input label="text" {...createObcdaoRegister('text')} />
-							<div className="flex items-stretch gap-1.5">
-								<Button
-									variant="primary"
-									type="submit"
-									loading={createObcdao.isLoading}
-									disabled={!isConnected}
-								>
-									create
-								</Button>
-								<ConnectButton
-									connectText={
-										<>
-											Connect Wallet
-											<ArrowRight12 fill="currentColor" className="-rotate-45" />
-										</>
-									}
-									size="md"
-									className={clsx(
-										'!rounded-md !text-bodySmall',
-										isConnected
-											? '!border !border-solid  !bg-obc !font-mono !text-white'
-											: '!flex !flex-nowrap !items-center !gap-1 !bg-obc !font-sans !text-white',
-									)}
-								/>
-							</div>
-							{createObcdao.error ? (
-								<div className="">{(createObcdao.error as Error).message || 'Error'}</div>
-							) : null}
-							{createObcdao.data && <div>{getTransactionDigest(createObcdao.data)}</div>}
-						</form>
-					</DisclosureBox>
-					<DisclosureBox title="create proposal" defaultOpen={false}>
-						<form
-							onSubmit={createProposalHandleSubmit((formData) => {
-								createProposal.mutateAsync(formData).catch((e) => {
-									console.error(`failed to create proposal`, e);
-								});
-							})}
-							autoComplete="off"
-							className="flex flex-col flex-nowrap items-stretch gap-4"
-						>
-							<Selector
-								{...createProposalRegister('action')}
-								label="action"
-								options={Object.values(data?.action_record || {}).map((i) => ({
-									value: i.action_id.toString(),
-									label: new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
-								}))}
-							/>
-							<Input label="coin" {...createProposalRegister('coin')} />
-							<div className="flex items-stretch gap-1.5">
-								<Button
-									variant="primary"
-									type="submit"
-									loading={createObcdao.isLoading}
-									disabled={!isConnected}
-								>
-									create
-								</Button>
-								<ConnectButton
-									connectText={
-										<>
-											Connect Wallet
-											<ArrowRight12 fill="currentColor" className="-rotate-45" />
-										</>
-									}
-									size="md"
-									className={clsx(
-										'!rounded-md !text-bodySmall',
-										isConnected
-											? '!border !border-solid  !bg-obc !font-mono !text-white'
-											: '!flex !flex-nowrap !items-center !gap-1 !bg-obc !font-sans !text-white',
-									)}
-								/>
-							</div>
-							{createObcdao.error ? (
-								<div className="">{(createObcdao.error as Error).message || 'Error'}</div>
-							) : null}
-							{createObcdao.data && <div>{getTransactionDigest(createObcdao.data)}</div>}
-						</form>
-					</DisclosureBox>
+					{manageKey && (
+						<DisclosureBox title="create action" defaultOpen={false}>
+							<CreateDaoAction manageKey={manageKey!} refetchDao={refetch} />
+						</DisclosureBox>
+					)}
+					{manageKey && data && (
+						<DisclosureBox title="create proposal" defaultOpen={false}>
+							<CreateProposal manageKey={manageKey!} dao={data} refetchDao={refetch} />
+						</DisclosureBox>
+					)}
+					{manageKey && data && (
+						<DisclosureBox title="create voting obc" defaultOpen={false}>
+							<CreateVotingObc manageKey={manageKey!} dao={data} refetchDao={refetch} />
+						</DisclosureBox>
+					)}
 				</div>
 			)}
 			<div>

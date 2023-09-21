@@ -1,0 +1,6 @@
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
+export const ADDRESS = {
+	OBC_SYSTEM_STATE: 'OBC00000000000000000000000000000000000000000000000000000000000000c903b9',
+};
