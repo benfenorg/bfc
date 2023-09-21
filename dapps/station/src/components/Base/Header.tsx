@@ -20,9 +20,9 @@ export function Header() {
 					className="text-lg font-bold text-center mr-3 bg-transparent ease-in-out duration-300 rounded border border-transparent py-2 px-4 bg-gray-200"
 					onClick={() => navigate('/')}
 				>
-					Kiosk demo
+					Station demo
 				</button>
-				<Button
+				{/* <Button
 					className={classNames(
 						!isHome && '!bg-gray-100',
 						'mr-2 bg-transparent ease-in-out duration-300 rounded border border-transparent py-2 px-4',
@@ -44,8 +44,8 @@ export function Header() {
 						<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
 						<polyline points="9 22 9 12 15 12 15 22"></polyline>
 					</svg>
-				</Button>
-				<FindKiosk />
+				</Button> */}
+				{/* <FindKiosk /> */}
 				<div className="ml-auto my-3 md:my-1">
 					<SuiConnectButton></SuiConnectButton>
 				</div>
