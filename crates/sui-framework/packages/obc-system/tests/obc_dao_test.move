@@ -2,7 +2,7 @@ module obc_system::obc_dao_test {
     #[test_only]
     use sui::clock;
     #[test_only]
-    use obc_system::obc_dao::{Dao, getOBCDaoActionId, Proposal, Vote, modify_proposal_obj};
+    use obc_system::obc_dao::{Dao, get_obcdao_actionid, Proposal, Vote, modify_proposal_obj};
     #[test_only]
     use std::debug;
     #[test_only]
@@ -121,7 +121,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 
@@ -198,7 +198,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 
@@ -311,7 +311,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 
@@ -385,7 +385,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 
@@ -511,7 +511,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 
@@ -626,7 +626,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 
@@ -731,7 +731,7 @@ module obc_system::obc_dao_test {
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
             let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
-            let actionId = getOBCDaoActionId(action);
+            let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
 

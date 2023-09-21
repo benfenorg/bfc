@@ -7,14 +7,22 @@ spec obc_system::obc_dao{
     spec voting_period {
         aborts_if false;
     }
-
+    spec voting_quorum_rate{
+        aborts_if false;
+    }
 
     spec min_action_delay {
         aborts_if false;
         //ensures result == spec_dao_config.min_action_delay;
     }
+    spec quorum_votes{
+        aborts_if false;
+    }
 
-    spec revoke_vote {
+    spec get_config{
+        aborts_if false;
+    }
+    spec proposal_info{
         aborts_if false;
     }
 
@@ -42,6 +50,7 @@ spec obc_system::obc_dao{
     }
 
     spec create_obcdao_action{
+        pragma aborts_if_is_partial = true;
         aborts_if false;
 
         let action_id = dao.info.next_action_id + 1;
@@ -55,15 +64,14 @@ spec obc_system::obc_dao{
     }
     spec create_dao {
         aborts_if false;
+        pragma aborts_if_is_partial = true;
         aborts_if vector::length(admins) > MAX_ADMIN_COUNT || vector::length(admins) == 0;
         aborts_if ctx.ids_created + 3 > MAX_U64;
     }
 
     spec set_admins {
-
+        pragma aborts_if_is_partial = true;
         aborts_if vector::length(new_admins) > MAX_ADMIN_COUNT || vector::length(new_admins) == 0;
-        aborts_if ctx.ids_created + vector::length(new_admins) > MAX_U64;
-
     }
 
 
@@ -109,8 +117,11 @@ spec obc_system::obc_dao{
     }
 
 
-
+    spec has_vote {
+        aborts_if false;
+    }
     spec change_vote {
+        pragma aborts_if_is_partial = true;
         aborts_if false;
         let current_time = clock.timestamp_ms;
         aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;
@@ -131,6 +142,8 @@ spec obc_system::obc_dao{
 
     }
     spec revoke_vote{
+        pragma aborts_if_is_partial = true;
+
         aborts_if false;
         let current_time = clock.timestamp_ms;
         aborts_if judge_proposal_state(proposal.proposal,current_time) != ACTIVE;
@@ -147,6 +160,7 @@ spec obc_system::obc_dao{
     }
 
     spec queue_proposal_action{
+        pragma aborts_if_is_partial = true;
         aborts_if false;
         let current_time = clock.timestamp_ms;
         aborts_if judge_proposal_state(proposal.proposal,current_time) != AGREED;
@@ -155,6 +169,7 @@ spec obc_system::obc_dao{
     }
 
     spec propose{
+        pragma aborts_if_is_partial = true;
         aborts_if false;
         let obc =  payment.balance;
         let count = balance::value(obc);
@@ -162,6 +177,14 @@ spec obc_system::obc_dao{
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
+    spec proposal_exists{
+        aborts_if false;
+        //aborts_if vec_map::contains(dao.proposals, pid) == false;
+    }
+
+    spec get_obcdao_actionid{
+        aborts_if false;
+    }
     spec modify_proposal_obj{
         aborts_if false;
         pragma aborts_if_is_partial = true;
@@ -181,32 +204,14 @@ spec obc_system::obc_dao{
         aborts_if dao.info.next_proposal_id >= MAX_U64;
     }
 
-    // spec set_voting_delay {
-    //     //include CheckModifyConfigWithCap;
-    //     //aborts_if false;
-    //     aborts_if value == 0;
-    // }
 
+    spec create_voting_obc{
+        aborts_if false;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+        aborts_if coin.balance.value < MIN_VOTING_THRESHOLD;
 
-    // spec set_voting_period {
-    //     //include CheckModifyConfigWithCap;
-    //     aborts_if value == 0;
-    // }
-    //
-    //
-    //
-    //
-    //
-    // spec set_voting_quorum_rate {
-    //     aborts_if !(value > 0 && value <= 100);
-    //     //include CheckModifyConfigWithCap;
-    // }
-    //
-    //
-    // spec set_min_action_delay {
-    //     aborts_if value == 0;
-    //     //include CheckModifyConfigWithCap;
-    // }
+    }
+
 
 
 }

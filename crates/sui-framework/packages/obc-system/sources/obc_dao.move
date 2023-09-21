@@ -185,7 +185,7 @@ module obc_system::obc_dao {
         dao.proposal_record
     }
 
-    public(friend) fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
+    public(friend) fun get_obcdao_actionid(obcDaoAction: OBCDaoAction): u64 {
         obcDaoAction.action_id
     }
 
@@ -314,7 +314,6 @@ module obc_system::obc_dao {
             current_proposal_status: vec_map::empty(),
         };
 
-        // transfer::share_object(dao_obj);
 
         set_admins(admins,  ctx);
 
@@ -554,7 +553,7 @@ module obc_system::obc_dao {
 
 
         let sender = tx_context::sender(ctx);
-        let total_voted = voting_obc_amount(&my_vote.vote);
+        //let total_voted = voting_obc_amount(&my_vote.vote);
         {
             assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
             assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));

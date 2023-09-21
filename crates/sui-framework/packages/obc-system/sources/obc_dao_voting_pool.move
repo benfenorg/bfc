@@ -1,5 +1,5 @@
 module obc_system::voting_pool {
-    use obc_system::obc_dao::add_admin;
+    //use obc_system::obc_dao::add_admin;
     use sui::balance::{Self, Balance};
     use sui::obc::OBC;
     use sui::tx_context::{Self, TxContext};
@@ -77,7 +77,7 @@ module obc_system::voting_pool {
         ctx: &mut TxContext
     ) : VotingObc {
         let obc_amount = balance::value(&voting);
-        assert!(obc_amount > 0, EDelegationOfZeroObc);
+        assert!(obc_amount >= MIN_STAKING_THRESHOLD, EDelegationOfZeroObc);
         let votingobc = VotingObc {
             id: object::new(ctx),
             pool_id: object::id(pool),
