@@ -275,4 +275,16 @@ spec obc_system::obc_dao {
         aborts_if false;
     }
 
+    spec create_stake_manager_key {
+        aborts_if false;
+
+        aborts_if payment.balance.value < MIN_STAKE_MANAGER_KEY_COST;
+        aborts_if ctx.ids_created + 2 > MAX_U64;
+    }
+    spec unstake_manager_key {
+        aborts_if false;
+        aborts_if ctx.ids_created + 1 > MAX_U64;
+        aborts_if key.amount != token.principal.value;
+        aborts_if key.key_type != 1; //STAKE_MANAGER_KEY == 1
+    }
 }
