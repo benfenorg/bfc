@@ -9,7 +9,7 @@ import type { ComponentProps } from 'react';
 
 export interface SelectProps extends Omit<ComponentProps<'select'>, 'ref' | 'className'> {
 	label: string;
-	options: { label: string; value: string }[];
+	options: { label: string; value: string | number }[];
 }
 
 export const Selector = forwardRef<HTMLSelectElement, SelectProps>(

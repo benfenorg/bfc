@@ -17,7 +17,9 @@ import { useZodForm } from '~/hooks/useZodForm';
 import { Input } from '~/ui/Input';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {}
+export interface Props {
+	refetchDao: () => void;
+}
 
 const schema = z.object({
 	amount: z
@@ -27,14 +29,14 @@ const schema = z.object({
 		.refine((n) => n >= 1),
 });
 
-export function CreateVotingObc() {
+export function CreateVotingObc({ refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
 	const { handleSubmit, register } = useZodForm({
 		schema: schema,
 	});
 
-	const create = useMutation({
+	const execute = useMutation({
 		mutationFn: async ({ amount }: { amount: number }) => {
 			const bigIntAmount = BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString());
 
@@ -55,12 +57,14 @@ export function CreateVotingObc() {
 			}
 			return result;
 		},
-		onSuccess: () => {},
+		onSuccess: () => {
+			refetchDao();
+		},
 	});
 	return (
 		<form
 			onSubmit={handleSubmit((formData) => {
-				create.mutateAsync(formData).catch((e) => {
+				execute.mutateAsync(formData).catch((e) => {
 					console.error(`failed to create voting obc`, e);
 				});
 			})}
@@ -69,12 +73,12 @@ export function CreateVotingObc() {
 		>
 			<Input label="amount" type="number" {...register('amount')} />
 			<div className="flex items-stretch gap-1.5">
-				<Button variant="primary" type="submit" loading={create.isLoading} disabled={!isConnected}>
-					create
+				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
+					execute
 				</Button>
 			</div>
-			{create.error ? <div className="">{(create.error as Error).message || 'Error'}</div> : null}
-			{create.data && <div>{getTransactionDigest(create.data)}</div>}
+			{execute.error ? <div className="">{(execute.error as Error).message || 'Error'}</div> : null}
+			{execute.data && <div>{getTransactionDigest(execute.data)}</div>}
 		</form>
 	);
 }

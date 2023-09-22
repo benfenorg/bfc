@@ -14,8 +14,7 @@ export function useGetOBCDaoVote(address: string) {
 				.getOwnedObjects({
 					owner: address,
 					filter: {
-						StructType:
-							'0xc8::obc_dao::Vote',
+						StructType: '0xc8::obc_dao::Vote',
 					},
 					options: {
 						showType: true,

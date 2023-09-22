@@ -33,7 +33,7 @@ export function CreateDaoAction({ manageKey, refetchDao }: Props) {
 		schema: schema,
 	});
 
-	const create = useMutation({
+	const execute = useMutation({
 		mutationFn: async ({ text }: { text: string }) => {
 			const tx = new TransactionBlock();
 			tx.moveCall({
@@ -61,8 +61,8 @@ export function CreateDaoAction({ manageKey, refetchDao }: Props) {
 	return (
 		<form
 			onSubmit={handleSubmit((formData) => {
-				create.mutateAsync(formData).catch((e) => {
-					console.error(`failed to create dao`, e);
+				execute.mutateAsync(formData).catch((e) => {
+					console.error(`failed to create dao action`, e);
 				});
 			})}
 			autoComplete="off"
@@ -70,12 +70,12 @@ export function CreateDaoAction({ manageKey, refetchDao }: Props) {
 		>
 			<Input label="text" {...register('text')} />
 			<div className="flex items-stretch gap-1.5">
-				<Button variant="primary" type="submit" loading={create.isLoading} disabled={!isConnected}>
-					create
+				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
+					execute
 				</Button>
 			</div>
-			{create.error ? <div className="">{(create.error as Error).message || 'Error'}</div> : null}
-			{create.data && <div>{getTransactionDigest(create.data)}</div>}
+			{execute.error ? <div className="">{(execute.error as Error).message || 'Error'}</div> : null}
+			{execute.data && <div>{getTransactionDigest(execute.data)}</div>}
 		</form>
 	);
 }

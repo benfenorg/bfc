@@ -105,6 +105,7 @@ export type SuiObjectChange =
 
 export type ProposalRecord = {
 	pid: number;
+	proposal_uid: SuiAddress;
 	proposer: SuiAddress;
 	start_time: number;
 	end_time: number;
@@ -118,6 +119,20 @@ export type ProposalRecord = {
 		name: string;
 	};
 	version_id: number;
+};
+
+export enum ProposalStatus {
+	Pending = 1,
+	Active = 2,
+	Defeat = 3,
+	Agree = 4,
+	Queued = 5,
+	Executable = 6,
+	Extracted = 7,
+}
+
+export type ProposalRecordWithStatus = ProposalRecord & {
+	status: ProposalStatus;
 };
 
 export type ObcDao = {
@@ -169,7 +184,15 @@ export type ObcDao = {
 		string,
 		{
 			version_id: number;
-			status: number;
+			status: ProposalStatus;
 		}
 	>;
+};
+
+export type VotingObc = {
+	id: {
+		id: SuiAddress;
+	};
+	pool_id: SuiAddress;
+	principal: string;
 };

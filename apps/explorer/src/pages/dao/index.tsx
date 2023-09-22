@@ -14,7 +14,6 @@ import { PageLayout } from '~/components/Layout/PageLayout';
 import { useGetDao } from '~/hooks/useGetDao';
 import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
@@ -103,7 +102,7 @@ function DaoList() {
 						</DisclosureBox>
 					)}
 					<DisclosureBox title="create voting obc" defaultOpen={false}>
-						<CreateVotingObc />
+						<CreateVotingObc refetchDao={refetch} />
 					</DisclosureBox>
 				</div>
 			)}
@@ -114,7 +113,7 @@ function DaoList() {
 			</div>
 			<div className="mt-5 grid grid-cols-3 gap-5">
 				{data?.proposal_record.map((item) => (
-					<LinkWithQuery key={item.pid} to={`/dao/detail/${item.pid}`}>
+					<LinkWithQuery key={item.pid} to={`/dao/detail/${item.proposal_uid}`}>
 						<DaoItem data={item} />
 					</LinkWithQuery>
 				))}
@@ -125,10 +124,8 @@ function DaoList() {
 
 function Dao() {
 	const { currentAccount } = useWalletKit();
-	const { data: OBCDaoVotingObc } = useGetOBCDaoVotingObc(currentAccount?.address || '');
-	// vote list
 	const { data: OBCDaoVote } = useGetOBCDaoVote(currentAccount?.address || '');
-	console.log('OBCDaoVote', OBCDaoVote, OBCDaoVotingObc);
+	console.log('OBCDaoVote', OBCDaoVote);
 	return (
 		<PageLayout
 			gradientContent={

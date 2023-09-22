@@ -7,58 +7,44 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ObcDao } from '@mysten/sui.js/src/client';
+import { type ProposalRecord, ProposalStatus } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
-import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
-import BigNumber from 'bignumber.js';
+import { useMemo } from 'react';
 import { z } from 'zod';
 
 import { useZodForm } from '~/hooks/useZodForm';
-import { Input } from '~/ui/Input';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
 export interface Props {
-	manageKey: string;
-	dao: ObcDao;
+	proposal: ProposalRecord;
 	refetchDao: () => void;
 }
 
 const schema = z.object({
-	amount: z
-		.string()
-		.regex(/\d+/)
-		.transform(Number)
-		.refine((n) => n >= 200),
-	action: z.string().trim(),
+	status: z.string().transform(Number),
 });
 
-export function CreateProposal({ manageKey, refetchDao, dao }: Props) {
+export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
-	const { handleSubmit, register } = useZodForm({
+	const { handleSubmit, formState, register } = useZodForm({
 		schema: schema,
 	});
 
 	const execute = useMutation({
-		mutationFn: async ({ amount, action }: { amount: number; action: string }) => {
-			const bigIntAmount = BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString());
-
+		mutationFn: async ({ status }: { status: number }) => {
 			const tx = new TransactionBlock();
-			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::obc_system::propose`,
+				target: `0xc8::obc_system::modify_proposal`,
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.OBC_SYSTEM_STATE),
-					tx.object(manageKey!),
-					tx.pure(20),
-					coin,
-					tx.pure(Number.parseInt(action)),
-					tx.pure(6000000),
+					tx.object(proposal.proposal_uid),
+					tx.pure(status),
 					tx.object(ADDRESS.CLOCK),
 				],
 			});
@@ -75,30 +61,33 @@ export function CreateProposal({ manageKey, refetchDao, dao }: Props) {
 			refetchDao();
 		},
 	});
+
+	const options = useMemo(() => {
+		const codes = Object.values(ProposalStatus).filter((i) => typeof i === 'number') as number[];
+		return codes.map((i) => ({ label: ProposalStatus[i], value: i }));
+	}, []);
+
 	return (
 		<form
 			onSubmit={handleSubmit((formData) => {
 				execute.mutateAsync(formData).catch((e) => {
-					console.error(`failed to create proposal`, e);
+					console.error(`failed to modify proposal`, e);
 				});
 			})}
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector
-				{...register('action')}
-				label="action"
-				options={Object.values(dao?.action_record || {}).map((i) => ({
-					value: i.action_id.toString(),
-					label: new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
-				}))}
-			/>
-			<Input label="amount" type="number" {...register('amount')} />
+			<Selector label="status" options={options} {...register('status')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute
 				</Button>
 			</div>
+			{Object.values(formState.errors).length > 0
+				? Object.keys(formState.errors).map((i) => (
+						<div key={i}>{formState.errors[i as keyof typeof formState.errors]?.message}</div>
+				  ))
+				: null}
 			{execute.error ? <div className="">{(execute.error as Error).message || 'Error'}</div> : null}
 			{execute.data && <div>{getTransactionDigest(execute.data)}</div>}
 		</form>
