@@ -11,7 +11,7 @@ module obc_system::obc_dao {
     use sui::transfer;
     use obc_system::voting_pool::{VotingObc, voting_obc_amount, pool_id};
     use obc_system::voting_pool;
-    use obc_system::obc_dao_manager::{OBCDaoManageKey};
+    use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use std::vector;
     use obc_system::obc_dao_manager;
     use sui::obc::OBC;
@@ -47,6 +47,8 @@ module obc_system::obc_dao {
     const DEFAULT_OBC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  OBC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
     const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 OBC
+    const MIN_STAKE_MANAGER_KEY_COST: u64 = 100 * 1000000000; // 100 OBC
+
     const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max OBC
     const MIN_VOTING_THRESHOLD: u64 = 1_000_000_000; // 1 obc
 
@@ -1049,6 +1051,24 @@ module obc_system::obc_dao {
             i = i+1;
         };
 
+    }
+
+
+    fun create_stake_manager_key( payment: Coin<OBC>,
+                                  ctx: &mut TxContext, ){
+
+        //convert proposal payment to voting_obc
+        let sender = tx_context::sender(ctx);
+        let balance = coin::into_balance(payment);
+        let value = balance::value(&balance);
+        // ensure the user pays enough
+        assert!(value >= MIN_STAKE_MANAGER_KEY_COST, ERR_EINSUFFICIENT_FUNDS);
+        obc_dao_manager::create_stake_key(sender,balance, ctx);
+    }
+    fun unstake_manager_key(key: OBCDaoManageKey,
+                            token: ManagerKeyObc,
+                            ctx: &mut TxContext){
+        obc_dao_manager::unstake_key(key,token, ctx);
     }
 
     public fun add_admin(
