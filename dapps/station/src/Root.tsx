@@ -10,7 +10,7 @@ import { RpcClientContext } from './context/RpcClientContext';
 import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 
 const queryClient = new QueryClient();
-const suiClient = new SuiClient({ url: getFullnodeUrl('testnet') });
+const suiClient = new SuiClient({ url: 'http://yobcrpc.openblock.vip' });
 
 export default function Root() {
 	return (

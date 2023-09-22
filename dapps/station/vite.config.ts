@@ -9,5 +9,8 @@ export default defineConfig({
 	plugins: [react()],
 	resolve: {
 		conditions: ['source'],
+		alias: {
+			'~': new URL('./src', import.meta.url).pathname,
+		},
 	},
 });
