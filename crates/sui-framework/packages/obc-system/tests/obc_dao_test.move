@@ -118,9 +118,11 @@ module obc_system::obc_dao_test {
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
-            let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
+            //let _ = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao,action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -128,12 +130,12 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19,  coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19,  coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
             test_scenario::return_shared(dao);
-            test_scenario::return_to_sender(&mut scenario_val, key);
+            //test_scenario::return_to_sender(&mut scenario_val, key);
 
 
         };
@@ -197,7 +199,9 @@ module obc_system::obc_dao_test {
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao,action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -205,7 +209,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -310,7 +314,9 @@ module obc_system::obc_dao_test {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao,action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -318,7 +324,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -384,7 +390,9 @@ module obc_system::obc_dao_test {
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao, action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -392,7 +400,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -510,7 +518,9 @@ module obc_system::obc_dao_test {
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao, action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -518,7 +528,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -625,7 +635,9 @@ module obc_system::obc_dao_test {
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao,action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -633,7 +645,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -730,7 +742,9 @@ module obc_system::obc_dao_test {
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
 
-            let action = obc_dao::create_obcdao_action(&mut dao,&key, b"hello world", test_scenario::ctx(&mut scenario_val));
+            let action_coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
+
+            let action = obc_dao::create_obcdao_action(&mut dao,action_coin, b"hello world", test_scenario::ctx(&mut scenario_val));
             let actionId = get_obcdao_actionid(action);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -738,7 +752,7 @@ module obc_system::obc_dao_test {
             let coin =  coin::mint_for_testing<OBC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<OBC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            obc_dao::propose(&mut dao,&key, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            obc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 

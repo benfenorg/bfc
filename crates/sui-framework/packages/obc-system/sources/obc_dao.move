@@ -46,6 +46,7 @@ module obc_system::obc_dao {
 
     const DEFAULT_OBC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  OBC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
+    const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 OBC
     const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max OBC
     const MIN_VOTING_THRESHOLD: u64 = 1_000_000_000; // 1 obc
 
@@ -75,6 +76,7 @@ module obc_system::obc_dao {
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
     const ERR_WRONG_VOTING_POOL: u64 = 1412;
     const ERR_INVALID_STRING: u64 = 1413;
+    const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
 
     //
     struct DaoEvent has copy, drop, store {
@@ -237,10 +239,20 @@ module obc_system::obc_dao {
     //functions
     public(friend) fun create_obcdao_action(
         dao: &mut Dao,
-        _: &OBCDaoManageKey,
+        payment: Coin<OBC>,
         actionName:vector<u8>,
         ctx: &mut TxContext): OBCDaoAction {
         //auth
+
+        //convert proposal payment to voting_obc
+        let sender = tx_context::sender(ctx);
+        let balance = coin::into_balance(payment);
+        let value = balance::value(&balance);
+        // ensure the user pays enough
+        assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
+
+        let voting_obc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        transfer::public_transfer(voting_obc, sender);
 
         let nameString = string::try_utf8(actionName);
         assert!(nameString != option::none(), ERR_INVALID_STRING);
@@ -394,7 +406,6 @@ module obc_system::obc_dao {
     /// `action_delay`: the delay to execute after the proposal is agreed
     public(friend) fun propose (
         dao: &mut Dao,
-        _: &OBCDaoManageKey,
         version_id: u64,
         payment: Coin<OBC>,
         action_id: u64,
@@ -766,11 +777,11 @@ module obc_system::obc_dao {
 
         //let sender = tx_context::sender(ctx);
 
-        // Only agreed proposal can be submitted.
-        assert!(
-            proposal_state(proposal, clock) == AGREED,
-            (ERR_PROPOSAL_STATE_INVALID)
-        );
+            // Only agreed proposal can be submitted.
+            assert!(
+                proposal_state(proposal, clock) == AGREED,
+                (ERR_PROPOSAL_STATE_INVALID)
+            );
         assert!(proposal.proposal.action_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
 
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
@@ -1048,15 +1059,6 @@ module obc_system::obc_dao {
     }
 
 
-    // fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
-    //     let object_addr = obc_dao_manager::getKeyAddress(manager_key);
-    //     event::emit(
-    //         DaoManagerEvent{
-    //             key: object_addr,
-    //             msg: string::utf8(msg),
-    //         }
-    //     );
-    // }
 
     public entry fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
@@ -1148,6 +1150,8 @@ module obc_system::obc_dao {
         );
 
 
+
+        assert!(vec_map::contains(&dao.proposal_record, &proposal.proposal.pid), (ERR_PROPOSAL_NOT_EXIST));
         vec_map::remove(&mut dao.proposal_record, &proposal.proposal.pid);
         if (proposal_state == DEFEATED) {
             let _ =  proposal.proposal.action;

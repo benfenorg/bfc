@@ -299,15 +299,16 @@ module obc_system::obc_system_state_inner {
     }
 
     public(friend) fun create_obcdao_action(
-        self: &mut ObcSystemStateInner, _: &OBCDaoManageKey,
+        self: &mut ObcSystemStateInner,
+        payment: Coin<OBC>,
+
         actionName: vector<u8>,
         ctx: &mut TxContext) {
-        obc_dao::create_obcdao_action(&mut self.dao, _, actionName, ctx);
+        obc_dao::create_obcdao_action(&mut self.dao, payment, actionName, ctx);
     }
 
     public(friend) fun propose(
         self: &mut ObcSystemStateInner,
-        manager_key: &OBCDaoManageKey,
         version_id: u64,
         payment: Coin<OBC>,
         action_id: u64,
@@ -315,7 +316,7 @@ module obc_system::obc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        obc_dao:: propose(&mut self.dao, manager_key, version_id, payment, action_id, action_delay, clock, ctx);
+        obc_dao:: propose(&mut self.dao, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
     public(friend) fun set_voting_delay(self: &mut ObcSystemStateInner, manager_key: &OBCDaoManageKey, value: u64) {

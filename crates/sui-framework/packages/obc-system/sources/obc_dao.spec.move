@@ -13,7 +13,6 @@ spec obc_system::obc_dao {
 
     spec min_action_delay {
         aborts_if false;
-        //ensures result == spec_dao_config.min_action_delay;
     }
     spec quorum_votes {
         aborts_if false;
@@ -254,9 +253,18 @@ spec obc_system::obc_dao {
     }
 
 
+
     spec destroy_terminated_proposal {
         pragma aborts_if_is_partial = true;
         aborts_if false;
+        let current_time = clock.timestamp_ms;
+        aborts_if judge_proposal_state(proposal.proposal,current_time) != DEFEATED
+            && judge_proposal_state(proposal.proposal,current_time) != EXTRACTED;
+
+
+        // let result = exists i:u64  where i >= 0 && i < vector::length(dao.proposal_record.contents) :
+        //   vector::borrow(dao.proposal_record.contents, i).value.pid == proposal.proposal.pid;
+        // aborts_if result == false;
     }
 
     spec set_current_status_into_dao {

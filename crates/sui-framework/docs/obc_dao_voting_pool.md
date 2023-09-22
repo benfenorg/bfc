@@ -317,6 +317,20 @@ Request to voting to a staking pool. The voting starts counting at the beginning
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> voting.value &lt; <a href="obc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_request_withdraw_voting"></a>
 
 ## Function `request_withdraw_voting`
@@ -349,6 +363,19 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
     // TODO: implement withdraw bonding period here.
     principal_withdraw
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> voting_obc.pool_id != <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool);
 </code></pre>
 
 
@@ -425,6 +452,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_obc">unwrap_voting_obc</a>(voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>): Balance&lt;OBC&gt; {
+
     <b>let</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a> {
         id,
         pool_id: _,
@@ -433,6 +461,18 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id);
     principal
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -461,6 +501,18 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_pool_id"></a>
 
 ## Function `pool_id`
@@ -483,6 +535,18 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_voting_obc_amount"></a>
 
 ## Function `voting_obc_amount`
@@ -499,6 +563,18 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_voting_obc_amount">voting_obc_amount</a>(voting_obc: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>): u64 { <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&voting_obc.principal) }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -586,6 +662,23 @@ transfer the newly split part to the sender address.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> split_amount &gt; votingObc.principal.value;
+<b>let</b> remaining_amount = votingObc.principal.value - split_amount;
+<b>aborts_if</b> remaining_amount &lt; <a href="obc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> split_amount &lt; <a href="obc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_join_voting_obc"></a>
 
 ## Function `join_voting_obc`
@@ -620,6 +713,20 @@ Aborts if some of the staking parameters are incompatible (pool id,  activation 
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> other.pool_id != self.pool_id;
+<b>aborts_if</b> self.principal.value + other.principal.value &gt; MAX_U64;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_is_equal_staking_metadata"></a>
 
 ## Function `is_equal_staking_metadata`
@@ -639,6 +746,18 @@ Returns true if all the staking parameters of the voting obc except the principa
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_is_equal_staking_metadata">is_equal_staking_metadata</a>(self: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>, other: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>): bool {
     (self.pool_id == other.pool_id)
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
@@ -669,6 +788,18 @@ Returns true if all the staking parameters of the voting obc except the principa
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_voting_pool_obc_amount"></a>
 
 ## Function `obc_amount`
@@ -687,6 +818,18 @@ Returns true if all the staking parameters of the voting obc except the principa
 <pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_obc_amount">obc_amount</a>(exchange_rate: &<a href="obc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>): u64 {
     exchange_rate.obc_amount
 }
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
 </code></pre>
 
 
