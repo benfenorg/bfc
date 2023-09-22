@@ -7,7 +7,7 @@ export function useGetOBCDaoManageKey(address: string) {
 	const rpc = useRpcClient();
 
 	return useQuery({
-		queryKey: ['dao', 'object', address],
+		queryKey: ['dao', 'manageKey', address],
 		enabled: Boolean(address),
 		queryFn: () =>
 			rpc
@@ -21,7 +21,7 @@ export function useGetOBCDaoManageKey(address: string) {
 						showType: true,
 					},
 				})
-				.then((res: any) => {
+				.then((res: any): string => {
 					if (res?.data?.length > 0) {
 						return res.data[0]?.data?.objectId ?? '';
 					}

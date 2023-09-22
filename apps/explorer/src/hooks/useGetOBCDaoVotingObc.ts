@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useRpcClient } from '@mysten/core';
 import { getObjectFields } from '@mysten/sui.js';
+import { type VotingObc } from '@mysten/sui.js/src/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetOBCDaoVotingObc(address: string) {
@@ -14,8 +15,7 @@ export function useGetOBCDaoVotingObc(address: string) {
 				.getOwnedObjects({
 					owner: address,
 					filter: {
-						StructType:
-							'0xc8::voting_pool::VotingObc',
+						StructType: '0xc8::voting_pool::VotingObc',
 					},
 					options: {
 						showType: true,
@@ -28,6 +28,6 @@ export function useGetOBCDaoVotingObc(address: string) {
 					}
 					return [];
 				}),
-		select: (data) => data.map((item: any) => getObjectFields(item!)),
+		select: (data): VotingObc[] => data.map((item: any) => getObjectFields(item!) as VotingObc),
 	});
 }

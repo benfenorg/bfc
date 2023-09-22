@@ -15,7 +15,7 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use obc_system::usd::{USD, new};
+    use obc_system::usd::{USD};
     use obc_system::obc_dao_manager::{OBCDaoManageKey};
     use obc_system::obc_dao::{Proposal, Vote};
     use obc_system::obc_system_state_inner;
@@ -142,15 +142,6 @@ module obc_system::obc_system {
             stable,
             ctx);
         transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
-    }
-
-    fun request_exchange_stable_no_entry(
-        self: &mut ObcSystemState,
-        stable: Coin<USD>,
-        ctx: &mut TxContext,
-    ): Balance<OBC> {
-        let inner_state = load_system_state_mut(self);
-        obc_system_state_inner::request_exchange_stable(inner_state, stable, ctx)
     }
 
     /// Request exchange all stable coin to obc.

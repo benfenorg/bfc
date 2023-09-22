@@ -4,7 +4,7 @@ module obc_system::obc_system_state_inner {
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
     use sui::coin;
-    use sui::coin::{Coin, balance};
+    use sui::coin::{Coin};
     use sui::obc::OBC;
     use sui::tx_context::TxContext;
     use sui::vec_map;
@@ -131,7 +131,7 @@ module obc_system::obc_system_state_inner {
     /// Getter of the gas coin exchange pool rate.
     public(friend) fun requst_get_exchange_rate<CoinType>(
         self: &ObcSystemStateInner,
-        stable: &Coin<CoinType>
+        _stable: &Coin<CoinType>
     ): u64 {
         get_stablecoin_by_obc<CoinType>(
             self,

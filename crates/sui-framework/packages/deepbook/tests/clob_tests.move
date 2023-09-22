@@ -9,7 +9,6 @@ module deepbook::clob_test {
 
     use sui::clock::{Self, Clock};
     use sui::coin::{Self, mint_for_testing, burn_for_testing};
-    use sui::object;
     use sui::obc::OBC;
     use sui::test_scenario::{Self as test, Scenario, next_tx, ctx, end, TransactionEffects};
     use sui::test_utils::assert_eq;
