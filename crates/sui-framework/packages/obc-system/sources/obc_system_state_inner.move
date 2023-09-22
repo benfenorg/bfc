@@ -188,12 +188,6 @@ module obc_system::obc_system_state_inner {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
 
-        let balance = balance::value<OBC>(&obc_balance);
-        if (balance > 0) {
-            let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
-            treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
-        };
-
         treasury::init_vault_with_positions<USD>(
             &mut t,
             supply,
@@ -206,6 +200,10 @@ module obc_system::obc_system_state_inner {
             parameters.chain_start_timestamp_ms,
             ctx,
         );
+        if (balance::value<OBC>(&obc_balance) > 0) {
+            let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
+            treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
+        };
         (t, obc_balance)
     }
 
