@@ -1667,9 +1667,7 @@ async fn test_obc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     assert_eq!(dao.config.min_action_delay, 888888);
     assert_eq!(dao.config.voting_delay, 888888);
     assert_eq!(dao.config.voting_quorum_rate, 88);
-
-
-     Ok(())
+    Ok(())
 }
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
