@@ -300,7 +300,7 @@ module obc_system::obc_dao {
         let daoInfo = DaoGlobalInfo{
             id: object::new(ctx),
             next_proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-            next_action_id: 0,
+            next_action_id: 1,
             proposal_create_event: ProposalCreatedEvent{
                 proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
                 proposer: DEFAULT_TOKEN_ADDRESS,
@@ -1054,8 +1054,8 @@ module obc_system::obc_dao {
     }
 
 
-    fun create_stake_manager_key( payment: Coin<OBC>,
-                                  ctx: &mut TxContext, ){
+    public(friend) fun create_stake_manager_key( payment: Coin<OBC>,
+                                  ctx: &mut TxContext){
 
         //convert proposal payment to voting_obc
         let sender = tx_context::sender(ctx);
@@ -1065,7 +1065,7 @@ module obc_system::obc_dao {
         assert!(value >= MIN_STAKE_MANAGER_KEY_COST, ERR_EINSUFFICIENT_FUNDS);
         obc_dao_manager::create_stake_key(sender,balance, ctx);
     }
-    fun unstake_manager_key(key: OBCDaoManageKey,
+    public(friend) fun unstake_manager_key(key: OBCDaoManageKey,
                             token: ManagerKeyObc,
                             ctx: &mut TxContext){
         obc_dao_manager::unstake_key(key,token, ctx);

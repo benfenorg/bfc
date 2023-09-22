@@ -15,7 +15,7 @@ module obc_system::obc_system_state_inner {
     use obc_system::gas_coin_map::{GasCoinMap, GasCoinEntity};
     use obc_system::treasury::{Self, Treasury};
     use obc_system::usd::USD;
-    use obc_system::obc_dao_manager::{OBCDaoManageKey};
+    use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use obc_system::obc_dao::{Dao, Proposal, Self, Vote};
 
     friend obc_system::obc_system;
@@ -357,6 +357,16 @@ module obc_system::obc_system_state_inner {
         obc_dao::destroy_terminated_proposal(&mut self.dao, manager_key, proposal, clock);
     }
 
+    public (friend) fun create_stake_manager_key( payment: Coin<OBC>,
+                                                      ctx: &mut TxContext) {
+        obc_dao::create_stake_manager_key(payment, ctx);
+    }
+
+    public(friend) fun unstake_manager_key(key: OBCDaoManageKey,
+                                           token: ManagerKeyObc,
+                                           ctx: &mut TxContext) {
+        obc_dao::unstake_manager_key(key, token, ctx);
+    }
     public(friend) fun judge_proposal_state(wrapper: &mut ObcSystemStateInner, current_time: u64) {
         let proposal_record = obc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
