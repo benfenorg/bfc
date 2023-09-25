@@ -6,6 +6,7 @@
 
 
 -  [Struct `InitTreasuryEvent`](#0xc8_event_InitTreasuryEvent)
+-  [Struct `InitTreasuryPoolEvent`](#0xc8_event_InitTreasuryPoolEvent)
 -  [Struct `CreateVaultEvent`](#0xc8_event_CreateVaultEvent)
 -  [Struct `OpenPositionEvent`](#0xc8_event_OpenPositionEvent)
 -  [Struct `ClosePositionEvent`](#0xc8_event_ClosePositionEvent)
@@ -14,6 +15,7 @@
 -  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
 -  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
 -  [Function `init_treasury`](#0xc8_event_init_treasury)
+-  [Function `init_treasury_pool`](#0xc8_event_init_treasury_pool)
 -  [Function `create_vault`](#0xc8_event_create_vault)
 -  [Function `open_position`](#0xc8_event_open_position)
 -  [Function `close_position`](#0xc8_event_close_position)
@@ -51,6 +53,33 @@
 <dl>
 <dt>
 <code>vaults_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_InitTreasuryPoolEvent"></a>
+
+## Struct `InitTreasuryPoolEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_InitTreasuryPoolEvent">InitTreasuryPoolEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>treasury_pool_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
 </dt>
 <dd>
 
@@ -440,6 +469,30 @@
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_init_treasury">init_treasury</a>(vaults_id: ID) {
     emit(<a href="event.md#0xc8_event_InitTreasuryEvent">InitTreasuryEvent</a> { vaults_id })
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_init_treasury_pool"></a>
+
+## Function `init_treasury_pool`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_init_treasury_pool">init_treasury_pool</a>(treasury_pool_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_init_treasury_pool">init_treasury_pool</a>(treasury_pool_id: ID) {
+    emit(<a href="event.md#0xc8_event_InitTreasuryPoolEvent">InitTreasuryPoolEvent</a> { treasury_pool_id })
 }
 </code></pre>
 

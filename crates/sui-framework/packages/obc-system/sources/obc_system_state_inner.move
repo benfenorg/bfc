@@ -1,10 +1,9 @@
 module obc_system::obc_system_state_inner {
     use sui::balance;
-    use obc_system::voting_pool::VotingObc;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
     use sui::coin;
-    use sui::coin::{Coin};
+    use sui::coin::Coin;
     use sui::obc::OBC;
     use sui::tx_context::TxContext;
     use sui::vec_map;
@@ -12,11 +11,14 @@ module obc_system::obc_system_state_inner {
     use obc_system::exchange_inner;
     use obc_system::exchange_inner::ExchangePool;
     use obc_system::gas_coin_map;
-    use obc_system::gas_coin_map::{GasCoinMap, GasCoinEntity};
+    use obc_system::gas_coin_map::{GasCoinEntity, GasCoinMap};
+    use obc_system::obc_dao::{Self, Dao, Proposal, Vote};
+    use obc_system::obc_dao_manager::OBCDaoManageKey;
     use obc_system::treasury::{Self, Treasury};
+    use obc_system::treasury_pool;
+    use obc_system::treasury_pool::TreasuryPool;
     use obc_system::usd::USD;
-    use obc_system::obc_dao_manager::{OBCDaoManageKey};
-    use obc_system::obc_dao::{Dao, Proposal, Self, Vote};
+    use obc_system::voting_pool::VotingObc;
 
     friend obc_system::obc_system;
 
@@ -39,6 +41,7 @@ module obc_system::obc_system_state_inner {
         exchange_pool: ExchangePool<USD>,
         dao: Dao,
         treasury: Treasury,
+        treasury_pool: TreasuryPool,
     }
 
     struct TreasuryParameters has drop, copy {
@@ -69,7 +72,8 @@ module obc_system::obc_system_state_inner {
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<USD>(ctx, 0);
         let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
-        let t = create_treasury(usd_supply, obc_balance, parameters, ctx);
+        let (t, remain_balance) = create_treasury(usd_supply, obc_balance, parameters, ctx);
+        let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
 
         ObcSystemStateInner {
             round: OBC_SYSTEM_STATE_START_ROUND,
@@ -77,6 +81,7 @@ module obc_system::obc_system_state_inner {
             exchange_pool,
             dao,
             treasury: t,
+            treasury_pool: tp,
         }
     }
 
@@ -103,7 +108,7 @@ module obc_system::obc_system_state_inner {
     ) {
         //get obc amount of inner exchange pool
         let obc_amount = exchange_inner::get_obc_amount(&inner.exchange_pool);
-        if(obc_amount > 0) {
+        if (obc_amount > 0) {
             //set pool is disactivate
             let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
             //get stable balance
@@ -179,16 +184,9 @@ module obc_system::obc_system_state_inner {
         obc_balance: Balance<OBC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
-    ): Treasury {
+    ): (Treasury, Balance<OBC>) {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
-
-        let balance = balance::value<OBC>(&obc_balance);
-        if (balance > 0) {
-            treasury::deposit(&mut t, coin::from_balance(obc_balance, ctx));
-        } else {
-           balance::destroy_zero(obc_balance);
-        };
 
         treasury::init_vault_with_positions<USD>(
             &mut t,
@@ -202,7 +200,11 @@ module obc_system::obc_system_state_inner {
             parameters.chain_start_timestamp_ms,
             ctx,
         );
-        t
+        if (balance::value<OBC>(&obc_balance) > 0) {
+            let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
+            treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
+        };
+        (t, obc_balance)
     }
 
     /// swap obc to stablecoin
@@ -277,6 +279,14 @@ module obc_system::obc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
+        let amount = treasury::next_epoch_obc_required(&self.treasury);
+        let withdraw_balance =
+            treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
+        if (balance::value(&withdraw_balance) > 0) {
+            treasury::deposit(&mut self.treasury, coin::from_balance(withdraw_balance, ctx));
+        } else {
+            balance::destroy_zero(withdraw_balance);
+        };
         treasury::rebalance(&mut self.treasury, clock, ctx);
     }
 
@@ -375,8 +385,13 @@ module obc_system::obc_system_state_inner {
         };
     }
 
-    public(friend) fun modify_proposal(system_state: &mut ObcSystemStateInner, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
-        obc_dao::modify_proposal_obj(&mut system_state.dao ,proposal_obj, index, clock);
+    public(friend) fun modify_proposal(
+        system_state: &mut ObcSystemStateInner,
+        proposal_obj: &mut Proposal,
+        index: u8,
+        clock: &Clock
+    ) {
+        obc_dao::modify_proposal_obj(&mut system_state.dao, proposal_obj, index, clock);
     }
 
     public(friend) fun cast_vote(
@@ -386,7 +401,7 @@ module obc_system::obc_system_state_inner {
         agreeInt: u8,
         clock: & Clock,
         ctx: &mut TxContext,
-    ){
+    ) {
         obc_dao::cast_vote(&mut system_state.dao, proposal, coin, agreeInt, clock, ctx);
     }
 
@@ -397,7 +412,7 @@ module obc_system::obc_system_state_inner {
         agree: bool,
         clock: & Clock,
         ctx: &mut TxContext,
-    ){
+    ) {
         obc_dao::change_vote(&mut system_state.dao, my_vote, proposal, agree, clock, ctx);
     }
 
@@ -413,7 +428,7 @@ module obc_system::obc_system_state_inner {
     public(friend) fun revoke_vote(
         system_state: &mut ObcSystemStateInner,
         proposal: &mut Proposal,
-        my_vote:  Vote,
+        my_vote: Vote,
         voting_power: u64,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -422,14 +437,14 @@ module obc_system::obc_system_state_inner {
     }
 
     public fun withdraw_voting(system_state: &mut ObcSystemStateInner,
-                                       voting_obc: VotingObc,
-                                       ctx: &mut TxContext ) {
+                               voting_obc: VotingObc,
+                               ctx: &mut TxContext) {
         obc_dao::withdraw_voting(&mut system_state.dao, voting_obc, ctx);
     }
 
     public(friend) fun create_voting_obc(system_state: &mut ObcSystemStateInner,
-                                       coin: Coin<OBC>,
-                                       ctx: &mut TxContext) {
+                                         coin: Coin<OBC>,
+                                         ctx: &mut TxContext) {
         obc_dao::create_voting_obc(&mut system_state.dao, coin, ctx);
     }
 }

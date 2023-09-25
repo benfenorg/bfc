@@ -1,0 +1,139 @@
+
+<a name="0xc8_treasury_pool"></a>
+
+# Module `0xc8::treasury_pool`
+
+
+
+-  [Resource `TreasuryPool`](#0xc8_treasury_pool_TreasuryPool)
+-  [Constants](#@Constants_0)
+-  [Function `create_treasury_pool`](#0xc8_treasury_pool_create_treasury_pool)
+-  [Function `withdraw_to_treasury`](#0xc8_treasury_pool_withdraw_to_treasury)
+
+
+<pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
+</code></pre>
+
+
+
+<a name="0xc8_treasury_pool_TreasuryPool"></a>
+
+## Resource `TreasuryPool`
+
+
+
+<pre><code><b>struct</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> <b>has</b> store, key
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="@Constants_0"></a>
+
+## Constants
+
+
+<a name="0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS"></a>
+
+The <code>withdraw</code> function only called by 0x0 address.
+
+
+<pre><code><b>const</b> <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>: u64 = 900;
+</code></pre>
+
+
+
+<a name="0xc8_treasury_pool_create_treasury_pool"></a>
+
+## Function `create_treasury_pool`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: Balance&lt;OBC&gt;,
+    ctx: &<b>mut</b> TxContext
+): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>
+{
+    <b>let</b> <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a> = <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> {
+        id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
+    };
+    <b>let</b> treasury_pool_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
+    event::init_treasury_pool(treasury_pool_id);
+    <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_pool_withdraw_to_treasury"></a>
+
+## Function `withdraw_to_treasury`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(
+    self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext
+): Balance&lt;OBC&gt;
+{
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>);
+    // Take the minimum of the amount and the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> in
+    // order <b>to</b> ensure we don't overdraft the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
+    <b>let</b> to_withdraw = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(amount, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>));
+    <b>let</b> withdraw_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, to_withdraw);
+
+    withdraw_balance
+}
+</code></pre>
+
+
+
+</details>
