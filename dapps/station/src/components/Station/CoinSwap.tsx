@@ -3,11 +3,15 @@ import classnames from 'classnames';
 import { useStationQuery } from '~/hooks/station';
 import { Button } from '../Base/Button';
 import { Spinner } from '../Base/Spinner';
+import { useSwapMutation } from '../../mutations/station';
+import { useWalletKit } from '@mysten/wallet-kit';
 
 function CoinSwap() {
 	const [type, setType] = useState<'mint' | 'withdraw'>('mint');
 	const [amount, setAmount] = useState('');
 	const selectTabCss = 'font-medium';
+
+    const { currentAccount } = useWalletKit();
 
 	const token = useMemo(() => {
 		if (type === 'mint') return 'OBC';
@@ -15,6 +19,13 @@ function CoinSwap() {
 	}, [type]);
 
 	const { data,isFetching: loading } = useStationQuery(type, amount);
+
+    const swapCoin = useSwapMutation({
+        onSuccess: () => {
+			// onCreate();
+			// toast.success('Kiosk created successfully');
+		},
+    });
 
 	console.log('estimateestimate', data);
 	return (
@@ -60,7 +71,15 @@ function CoinSwap() {
 			<div className='flex items-center'>获得：{loading ? <Spinner /> : data}</div>
 			<div>
 				<Button
-					onClick={() => {}}
+					onClick={() => {
+                        if(amount && Number(amount) && Number(amount)>0){
+                            swapCoin.mutate({
+                                address:currentAccount?.address || '',
+                                type, 
+                                amount
+                            })
+                        }
+                    }}
 				>
 					执行
 				</Button>

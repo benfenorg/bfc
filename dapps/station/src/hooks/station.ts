@@ -197,3 +197,7 @@ export function useBalance() {
 	// 		})),
 	// });
 }
+
+// const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
+// const coin = tx.splitCoins(primaryCoinInput, [tx.pure(amount)]);
+//     tx.transferObjects([coin], tx.pure(to));
