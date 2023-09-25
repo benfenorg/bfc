@@ -3,6 +3,7 @@
 
 import { fromB58, splitGenericParameters } from '@mysten/bcs';
 import { obc2SuiAddress } from './format.js';
+import BigNumber from 'bignumber.js';
 
 const TX_DIGEST_LENGTH = 32;
 
@@ -114,4 +115,12 @@ function isHex(value: string): boolean {
 
 function getHexByteLength(value: string): number {
 	return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
+}
+
+export function humanReadableToObcDigits(amount: number | string) {
+	return BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString());
+}
+
+export function obcDigitsToHumanReadable(amount: string) {
+	return new BigNumber(amount).shiftedBy(-9).toString();
 }

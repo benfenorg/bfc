@@ -7,9 +7,11 @@ import { useMemo, createContext, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { CastVote } from './CastVote';
+import { ChangeVote } from './ChangeVote';
 import { JudgeProposalState } from './JudgeProposalState';
 import { ModifyProposalObj } from './ModifyProposal';
 import { QueueProposalAction } from './QueueProposalAction';
+import { RevokeVote } from './RevokeVote';
 import { UnvoteVotes } from './UnvoteVotes';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
@@ -109,9 +111,17 @@ function PollDetail() {
 					<JudgeProposalState refetchDao={refetch} />
 				</DisclosureBox>
 				{proposal.status === ProposalStatus.Active && (
-					<DisclosureBox title="cast vote" defaultOpen={false}>
-						<CastVote proposal={proposal} refetchDao={refetch} />
-					</DisclosureBox>
+					<>
+						<DisclosureBox title="cast vote" defaultOpen={false}>
+							<CastVote proposal={proposal} refetchDao={refetch} />
+						</DisclosureBox>
+						<DisclosureBox title="change vote" defaultOpen={false}>
+							<ChangeVote proposal={proposal} refetchDao={refetch} />
+						</DisclosureBox>
+						<DisclosureBox title="revoke vote" defaultOpen={false}>
+							<RevokeVote proposal={proposal} refetchDao={refetch} />
+						</DisclosureBox>
+					</>
 				)}
 				{proposal.end_time < Date.now() && (
 					<DisclosureBox title="unvote votes" defaultOpen={false}>
@@ -151,7 +161,7 @@ function DaoContent() {
 		const proposal = daoData.proposal_record.find((i) => i.proposal_uid === id)!;
 		return {
 			...proposal,
-			status: daoData.current_proposal_status[proposal!.pid].status,
+			status: daoData.current_proposal_status[proposal!.pid]?.status || ProposalStatus.Pending,
 		};
 	}, [daoData, id]);
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useRpcClient } from '@mysten/core';
 import { getObjectFields } from '@mysten/sui.js';
-import { type Vote } from '@mysten/sui.js/src/client';
+import { type Vote } from '@mysten/sui.js/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetOBCDaoVote(address: string) {

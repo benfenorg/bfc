@@ -7,7 +7,7 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/src/client';
+import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
@@ -32,7 +32,9 @@ const schema = z.object({
 export function CastVote({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votingObcs = [] } = useGetOBCDaoVotingObc(currentAccount?.address || '');
+	const { data: votingObcs = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
+		currentAccount?.address || '',
+	);
 
 	const { handleSubmit, register, formState } = useZodForm({
 		schema: schema,
@@ -64,6 +66,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 		},
 		onSuccess: () => {
 			refetchDao();
+			refetchVoting();
 		},
 	});
 

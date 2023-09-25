@@ -7,14 +7,16 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { humanReadableToObcDigits } from '@mysten/sui.js/utils';
+import { obcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { z } from 'zod';
 
+import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
 import { useZodForm } from '~/hooks/useZodForm';
-import { Input } from '~/ui/Input';
+import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
 export interface Props {
@@ -22,31 +24,28 @@ export interface Props {
 }
 
 const schema = z.object({
-	amount: z
-		.string()
-		.regex(/\d+/)
-		.transform(Number)
-		.refine((n) => n >= 1),
+	vote: z.string().trim().nonempty(),
 });
 
-export function CreateVotingObc({ refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+export function WithdrawVoting({ refetchDao }: Props) {
+	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
 	const { handleSubmit, register, formState } = useZodForm({
 		schema: schema,
 	});
 
-	const execute = useMutation({
-		mutationFn: async ({ amount }: { amount: number }) => {
-			const bigIntAmount = humanReadableToObcDigits(amount);
+	const { data: votes = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
+		currentAccount?.address || '',
+	);
 
+	const execute = useMutation({
+		mutationFn: async ({ vote }: { vote: string }) => {
 			const tx = new TransactionBlock();
-			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::obc_system::create_voting_obc`,
+				target: `0xc8::obc_system::withdraw_voting`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), coin],
+				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), tx.object(vote)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
@@ -59,19 +58,30 @@ export function CreateVotingObc({ refetchDao }: Props) {
 		},
 		onSuccess: () => {
 			refetchDao();
+			refetchVoting();
 		},
 	});
+
+	const options = useMemo(
+		() =>
+			votes.map((i) => ({
+				label: obcDigitsToHumanReadable(i.principal),
+				value: i.id.id,
+			})),
+		[votes],
+	);
+
 	return (
 		<form
 			onSubmit={handleSubmit((formData) => {
 				execute.mutateAsync(formData).catch((e) => {
-					console.error(`failed to create voting obc`, e);
+					console.error(`failed to withdraw voting obc`, e);
 				});
 			})}
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Input label="amount" type="number" {...register('amount')} />
+			<Selector label="voting" options={options} {...register('vote')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

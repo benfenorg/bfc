@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import { CreateDaoAction } from './CreateDaoAction';
 import { CreateProposal } from './CreateProposal';
 import { CreateVotingObc } from './CreateVotingObc';
+import { WithdrawVoting } from './WithdrawVoting';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
@@ -17,7 +18,7 @@ import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
 
-import type { ProposalRecord } from '@mysten/sui.js/src/client';
+import type { ProposalRecord } from '@mysten/sui.js/client';
 
 function DaoItem({ data }: { data: ProposalRecord }) {
 	return (
@@ -67,6 +68,7 @@ function DaoItem({ data }: { data: ProposalRecord }) {
 function DaoList() {
 	const { isConnected, currentAccount } = useWalletKit();
 	const { data: manageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
+	console.log(manageKey); // TODO: remove useless code
 	const { data, refetch } = useGetDao();
 
 	return (
@@ -90,18 +92,19 @@ function DaoList() {
 			</div>
 			{isConnected && (
 				<div className="flex flex-col gap-2">
-					{manageKey && (
-						<DisclosureBox title="create action" defaultOpen={false}>
-							<CreateDaoAction manageKey={manageKey!} refetchDao={refetch} />
-						</DisclosureBox>
-					)}
-					{manageKey && data && (
+					<DisclosureBox title="create action" defaultOpen={false}>
+						<CreateDaoAction refetchDao={refetch} />
+					</DisclosureBox>
+					{data && (
 						<DisclosureBox title="create proposal" defaultOpen={false}>
-							<CreateProposal manageKey={manageKey!} dao={data} refetchDao={refetch} />
+							<CreateProposal dao={data} refetchDao={refetch} />
 						</DisclosureBox>
 					)}
 					<DisclosureBox title="create voting obc" defaultOpen={false}>
 						<CreateVotingObc refetchDao={refetch} />
+					</DisclosureBox>
+					<DisclosureBox title="withdraw voting obc" defaultOpen={false}>
+						<WithdrawVoting refetchDao={refetch} />
 					</DisclosureBox>
 				</div>
 			)}

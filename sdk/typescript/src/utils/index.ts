@@ -11,6 +11,8 @@ import {
 	normalizeSuiObjectId,
 	parseStructTag,
 	SUI_ADDRESS_LENGTH,
+	humanReadableToObcDigits,
+	obcDigitsToHumanReadable,
 } from './sui-types.js';
 
 export { fromB64, toB64 } from '@mysten/bcs';
@@ -27,4 +29,6 @@ export {
 	normalizeSuiObjectId,
 	parseStructTag,
 	SUI_ADDRESS_LENGTH,
+	humanReadableToObcDigits,
+	obcDigitsToHumanReadable,
 };
