@@ -546,7 +546,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, max_counter_times: u32, chain_start_timestamp_ms: u64, validate_address_0: <b>address</b>): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, max_counter_times: u32, chain_start_timestamp_ms: u64): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
 </code></pre>
 
 
@@ -564,7 +564,6 @@ Init exchange pool by add obc coin.
     base_point: u64,
     max_counter_times: u32,
     chain_start_timestamp_ms: u64,
-    validate_address_0: <b>address</b>,
 ): ObcSystemParameters {
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_state_inner::obc_system_stat_parameter</a>(
         position_number,
@@ -575,7 +574,6 @@ Init exchange pool by add obc coin.
         base_point,
         max_counter_times,
         chain_start_timestamp_ms,
-        validate_address_0,
     )
 }
 </code></pre>
@@ -620,7 +618,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_propose">propose</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, manager_key: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_propose">propose</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -631,7 +629,6 @@ Init exchange pool by add obc coin.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_propose">propose</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    manager_key: &OBCDaoManageKey,
     version_id : u64,
     payment: Coin&lt;OBC&gt;,
     action_id: u64,
@@ -640,7 +637,7 @@ Init exchange pool by add obc coin.
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">obc_system_state_inner::propose</a>(system_state, manager_key, version_id, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_propose">obc_system_state_inner::propose</a>(system_state, version_id, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -654,7 +651,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_obcdao_action">create_obcdao_action</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_obcdao_action">create_obcdao_action</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -665,11 +662,11 @@ Init exchange pool by add obc coin.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_obcdao_action">create_obcdao_action</a>(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    _: &OBCDaoManageKey,
+    payment: Coin&lt;OBC&gt;,
     actionName: <a href="">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">obc_system_state_inner::create_obcdao_action</a>(system_state, _, actionName, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_obcdao_action">obc_system_state_inner::create_obcdao_action</a>(system_state, payment, actionName, ctx);
 }
 </code></pre>
 

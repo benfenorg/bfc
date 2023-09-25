@@ -60,6 +60,8 @@
 -  [Function `set_voting_quorum_rate`](#0xc8_obc_dao_set_voting_quorum_rate)
 -  [Function `set_min_action_delay`](#0xc8_obc_dao_set_min_action_delay)
 -  [Function `set_admins`](#0xc8_obc_dao_set_admins)
+-  [Function `create_stake_manager_key`](#0xc8_obc_dao_create_stake_manager_key)
+-  [Function `unstake_manager_key`](#0xc8_obc_dao_unstake_manager_key)
 -  [Function `add_admin`](#0xc8_obc_dao_add_admin)
 -  [Function `modify_proposal_obj`](#0xc8_obc_dao_modify_proposal_obj)
 -  [Function `create_voting_obc`](#0xc8_obc_dao_create_voting_obc)
@@ -604,7 +606,7 @@ Configuration of the <code>Token</code>'s DAO.
 
 <dl>
 <dt>
-<code>project_uid: <b>address</b></code>
+<code>proposal_uid: <b>address</b></code>
 </dt>
 <dd>
 
@@ -1175,11 +1177,29 @@ Error codes
 
 
 
+<a name="0xc8_obc_dao_MIN_NEW_ACTION_COST"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_ACTION_COST">MIN_NEW_ACTION_COST</a>: u64 = 1000000000;
+</code></pre>
+
+
+
 <a name="0xc8_obc_dao_MIN_NEW_PROPOSE_COST"></a>
 
 
 
 <pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>: u64 = 200000000000;
+</code></pre>
+
+
+
+<a name="0xc8_obc_dao_MIN_STAKE_MANAGER_KEY_COST"></a>
+
+
+
+<pre><code><b>const</b> <a href="obc_dao.md#0xc8_obc_dao_MIN_STAKE_MANAGER_KEY_COST">MIN_STAKE_MANAGER_KEY_COST</a>: u64 = 100000000000;
 </code></pre>
 
 
@@ -1289,7 +1309,7 @@ Error codes
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">obc_dao::OBCDaoAction</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">obc_dao::OBCDaoAction</a>
 </code></pre>
 
 
@@ -1300,10 +1320,20 @@ Error codes
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
-    _: &OBCDaoManageKey,
+    payment: Coin&lt;OBC&gt;,
     actionName:<a href="">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext): <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">OBCDaoAction</a> {
     //auth
+
+    //convert proposal payment <b>to</b> voting_obc
+    <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
+    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(payment);
+    <b>let</b> value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
+    // ensure the user pays enough
+    <b>assert</b>!(value &gt;= <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_ACTION_COST">MIN_NEW_ACTION_COST</a>, <a href="obc_dao.md#0xc8_obc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
+
+    <b>let</b> voting_obc = <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="obc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+    <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_obc, sender);
 
     <b>let</b> nameString = <a href="_try_utf8">string::try_utf8</a>(actionName);
     <b>assert</b>!(nameString != <a href="_none">option::none</a>(), <a href="obc_dao.md#0xc8_obc_dao_ERR_INVALID_STRING">ERR_INVALID_STRING</a>);
@@ -1383,7 +1413,7 @@ Error codes
     <b>let</b> daoInfo = <a href="obc_dao.md#0xc8_obc_dao_DaoGlobalInfo">DaoGlobalInfo</a>{
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         next_proposal_id: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
-        next_action_id: 0,
+        next_action_id: 1,
         proposal_create_event: <a href="obc_dao.md#0xc8_obc_dao_ProposalCreatedEvent">ProposalCreatedEvent</a>{
             proposal_id: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
             proposer: <a href="obc_dao.md#0xc8_obc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
@@ -1610,7 +1640,7 @@ propose a proposal.
 <code>action_delay</code>: the delay to execute after the proposal is agreed
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, _: &<a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1621,7 +1651,6 @@ propose a proposal.
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a> (
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
-    _: &OBCDaoManageKey,
     version_id: u64,
     payment: Coin&lt;OBC&gt;,
     action_id: u64,
@@ -1655,7 +1684,7 @@ propose a proposal.
     <b>let</b> object_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx);
 
     <b>let</b> proposalInfo = <a href="obc_dao.md#0xc8_obc_dao_ProposalInfo">ProposalInfo</a> {
-        project_uid: <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_address">object::uid_to_address</a>(&object_id),
+        proposal_uid: <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_address">object::uid_to_address</a>(&object_id),
         pid: proposal_id,
         proposer: sender,
         start_time,
@@ -2341,11 +2370,11 @@ queue agreed proposal to execute.
 
     //<b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
 
-    // Only agreed proposal can be submitted.
-    <b>assert</b>!(
-        <a href="obc_dao.md#0xc8_obc_dao_proposal_state">proposal_state</a>(proposal, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) == <a href="obc_dao.md#0xc8_obc_dao_AGREED">AGREED</a>,
-        (<a href="obc_dao.md#0xc8_obc_dao_ERR_PROPOSAL_STATE_INVALID">ERR_PROPOSAL_STATE_INVALID</a>)
-    );
+        // Only agreed proposal can be submitted.
+        <b>assert</b>!(
+            <a href="obc_dao.md#0xc8_obc_dao_proposal_state">proposal_state</a>(proposal, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) == <a href="obc_dao.md#0xc8_obc_dao_AGREED">AGREED</a>,
+            (<a href="obc_dao.md#0xc8_obc_dao_ERR_PROPOSAL_STATE_INVALID">ERR_PROPOSAL_STATE_INVALID</a>)
+        );
     <b>assert</b>!(proposal.proposal.action_delay &lt;= <a href="obc_dao.md#0xc8_obc_dao_MAX_TIME_PERIOD">MAX_TIME_PERIOD</a>, <a href="obc_dao.md#0xc8_obc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>);
 
     proposal.proposal.eta =  <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  + proposal.proposal.action_delay;
@@ -3244,6 +3273,93 @@ set min action delay
 
 </details>
 
+<a name="0xc8_obc_dao_create_stake_manager_key"></a>
+
+## Function `create_stake_manager_key`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">create_stake_manager_key</a>(payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">create_stake_manager_key</a>( payment: Coin&lt;OBC&gt;,
+                              ctx: &<b>mut</b> TxContext){
+
+    //convert proposal payment <b>to</b> voting_obc
+    <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
+    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(payment);
+    <b>let</b> value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
+    // ensure the user pays enough
+    <b>assert</b>!(value &gt;= <a href="obc_dao.md#0xc8_obc_dao_MIN_STAKE_MANAGER_KEY_COST">MIN_STAKE_MANAGER_KEY_COST</a>, <a href="obc_dao.md#0xc8_obc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
+    <a href="obc_dao_manager.md#0xc8_obc_dao_manager_create_stake_key">obc_dao_manager::create_stake_key</a>(sender,<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> payment.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>.value &lt; <a href="obc_dao.md#0xc8_obc_dao_MIN_STAKE_MANAGER_KEY_COST">MIN_STAKE_MANAGER_KEY_COST</a>;
+<b>aborts_if</b> ctx.ids_created + 2 &gt; MAX_U64;
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_dao_unstake_manager_key"></a>
+
+## Function `unstake_manager_key`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_unstake_manager_key">unstake_manager_key</a>(key: <a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, token: <a href="obc_dao_manager.md#0xc8_obc_dao_manager_ManagerKeyObc">obc_dao_manager::ManagerKeyObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_unstake_manager_key">unstake_manager_key</a>(key: OBCDaoManageKey,
+                        token: ManagerKeyObc,
+                        ctx: &<b>mut</b> TxContext){
+    <a href="obc_dao_manager.md#0xc8_obc_dao_manager_unstake_key">obc_dao_manager::unstake_key</a>(key,token, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
+<b>aborts_if</b> key.amount != token.principal.value;
+<b>aborts_if</b> key.key_type != 1;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_add_admin"></a>
 
 ## Function `add_admin`
@@ -3533,12 +3649,11 @@ remove terminated proposal from proposer
 
 
 
-<pre><code><b>aborts_if</b> <b>false</b>;
+<pre><code><b>pragma</b> aborts_if_is_partial = <b>true</b>;
+<b>aborts_if</b> <b>false</b>;
 <b>let</b> current_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>.timestamp_ms;
 <b>aborts_if</b> <a href="obc_dao.md#0xc8_obc_dao_judge_proposal_state">judge_proposal_state</a>(proposal.proposal,current_time) != <a href="obc_dao.md#0xc8_obc_dao_DEFEATED">DEFEATED</a>
     && <a href="obc_dao.md#0xc8_obc_dao_judge_proposal_state">judge_proposal_state</a>(proposal.proposal,current_time) != <a href="obc_dao.md#0xc8_obc_dao_EXTRACTED">EXTRACTED</a>;
-<b>let</b> result = <b>exists</b> i in 0..<a href="_length">vector::length</a>(dao.proposal_record.contents) :
-    <a href="_borrow">vector::borrow</a>(dao.proposal_record.contents, i).value.pid == proposal.proposal.pid ;
 </code></pre>
 
 
