@@ -7,6 +7,8 @@
 
 -  [Resource `ObcSystemState`](#0xc8_obc_system_ObcSystemState)
 -  [Constants](#@Constants_0)
+-  [Function `create_stake_manager_key`](#0xc8_obc_system_create_stake_manager_key)
+-  [Function `unstake_manager_key`](#0xc8_obc_system_unstake_manager_key)
 -  [Function `create`](#0xc8_obc_system_create)
 -  [Function `obc_round`](#0xc8_obc_system_obc_round)
 -  [Function `update_round`](#0xc8_obc_system_update_round)
@@ -114,6 +116,57 @@
 </code></pre>
 
 
+
+<a name="0xc8_obc_system_create_stake_manager_key"></a>
+
+## Function `create_stake_manager_key`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_stake_manager_key">create_stake_manager_key</a>(payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create_stake_manager_key">create_stake_manager_key</a>( payment: Coin&lt;OBC&gt;,
+                                           ctx: &<b>mut</b> TxContext) {
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_stake_manager_key">obc_system_state_inner::create_stake_manager_key</a>(payment, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_unstake_manager_key"></a>
+
+## Function `unstake_manager_key`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_unstake_manager_key">unstake_manager_key</a>(key: <a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, token: <a href="obc_dao_manager.md#0xc8_obc_dao_manager_ManagerKeyObc">obc_dao_manager::ManagerKeyObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_unstake_manager_key">unstake_manager_key</a>(key: OBCDaoManageKey,
+                                     token: ManagerKeyObc,
+                                     ctx: &<b>mut</b> TxContext) {
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_unstake_manager_key">obc_system_state_inner::unstake_manager_key</a>(key, token, ctx);
+}
+</code></pre>
+
+
+
+</details>
 
 <a name="0xc8_obc_system_create"></a>
 

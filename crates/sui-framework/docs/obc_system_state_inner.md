@@ -10,6 +10,8 @@
 -  [Struct `ObcSystemParameters`](#0xc8_obc_system_state_inner_ObcSystemParameters)
 -  [Constants](#@Constants_0)
 -  [Function `create_inner_state`](#0xc8_obc_system_state_inner_create_inner_state)
+-  [Function `create_stake_manager_key`](#0xc8_obc_system_state_inner_create_stake_manager_key)
+-  [Function `unstake_manager_key`](#0xc8_obc_system_state_inner_unstake_manager_key)
 -  [Function `update_round`](#0xc8_obc_system_state_inner_update_round)
 -  [Function `request_exchange_stable`](#0xc8_obc_system_state_inner_request_exchange_stable)
 -  [Function `request_exchange_all`](#0xc8_obc_system_state_inner_request_exchange_all)
@@ -289,6 +291,57 @@
         <a href="treasury.md#0xc8_treasury">treasury</a>: t,
         <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>: tp,
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_create_stake_manager_key"></a>
+
+## Function `create_stake_manager_key`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_stake_manager_key">create_stake_manager_key</a>(payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> (<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_stake_manager_key">create_stake_manager_key</a>( payment: Coin&lt;OBC&gt;,
+                                              ctx: &<b>mut</b> TxContext) {
+    <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">obc_dao::create_stake_manager_key</a>(payment, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_unstake_manager_key"></a>
+
+## Function `unstake_manager_key`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_unstake_manager_key">unstake_manager_key</a>(key: <a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">obc_dao_manager::OBCDaoManageKey</a>, token: <a href="obc_dao_manager.md#0xc8_obc_dao_manager_ManagerKeyObc">obc_dao_manager::ManagerKeyObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_unstake_manager_key">unstake_manager_key</a>(key: OBCDaoManageKey,
+                                       token: ManagerKeyObc,
+                                       ctx: &<b>mut</b> TxContext) {
+    <a href="obc_dao.md#0xc8_obc_dao_unstake_manager_key">obc_dao::unstake_manager_key</a>(key, token, ctx);
 }
 </code></pre>
 
