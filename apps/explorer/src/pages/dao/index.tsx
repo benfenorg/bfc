@@ -13,7 +13,6 @@ import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { useGetDao } from '~/hooks/useGetDao';
 import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
-import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
@@ -123,9 +122,6 @@ function DaoList() {
 }
 
 function Dao() {
-	const { currentAccount } = useWalletKit();
-	const { data: OBCDaoVote } = useGetOBCDaoVote(currentAccount?.address || '');
-	console.log('OBCDaoVote', OBCDaoVote);
 	return (
 		<PageLayout
 			gradientContent={

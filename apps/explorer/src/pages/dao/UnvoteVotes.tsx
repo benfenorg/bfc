@@ -11,10 +11,10 @@ import { type ProposalRecord } from '@mysten/sui.js/src/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import BigNumber from 'bignumber.js';
+import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
 import { useZodForm } from '~/hooks/useZodForm';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
@@ -25,33 +25,28 @@ export interface Props {
 }
 
 const schema = z.object({
-	voting: z.string().trim().nonempty(),
-	agree: z.string().transform(Number),
+	vote: z.string().trim().nonempty(),
 });
 
-export function CastVote({ proposal, refetchDao }: Props) {
+export function UnvoteVotes({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votingObcs = [] } = useGetOBCDaoVotingObc(currentAccount?.address || '');
+	const { data: votes = [], refetch: refetchVotes } = useGetOBCDaoVote(
+		currentAccount?.address || '',
+	);
 
 	const { handleSubmit, register, formState } = useZodForm({
 		schema: schema,
 	});
 
 	const execute = useMutation({
-		mutationFn: async ({ voting, agree }: { voting: string; agree: number }) => {
+		mutationFn: async ({ vote }: { vote: string }) => {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::cast_vote`,
+				target: `0xc8::obc_system::unvote_votes`,
 				typeArguments: [],
-				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
-					tx.object(proposal.proposal_uid),
-					tx.object(voting),
-					tx.pure(!!agree),
-					tx.object(ADDRESS.CLOCK),
-				],
+				arguments: [tx.object(proposal.proposal_uid), tx.object(vote), tx.object(ADDRESS.CLOCK)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
@@ -64,35 +59,32 @@ export function CastVote({ proposal, refetchDao }: Props) {
 		},
 		onSuccess: () => {
 			refetchDao();
+			refetchVotes();
 		},
 	});
+
+	const options = useMemo(
+		() =>
+			votes
+				.filter((i) => i.vid === proposal.pid.toString())
+				.map((i) => ({
+					label: i.id.id,
+					value: i.id.id,
+				})),
+		[proposal, votes],
+	);
 
 	return (
 		<form
 			onSubmit={handleSubmit((formData) => {
 				execute.mutateAsync(formData).catch((e) => {
-					console.error(`failed to cast vote`, e);
+					console.error(`failed to unvote votes`, e);
 				});
 			})}
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector
-				label="voting"
-				options={votingObcs.map((i) => ({
-					label: new BigNumber(i.principal).shiftedBy(-9).toString(),
-					value: i.id.id,
-				}))}
-				{...register('voting')}
-			/>
-			<Selector
-				label="agree"
-				options={[
-					{ label: 'upvote', value: 1 },
-					{ label: 'downvote', value: 0 },
-				]}
-				{...register('agree')}
-			/>
+			<Selector label="voting" options={options} {...register('vote')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

@@ -196,3 +196,22 @@ export type VotingObc = {
 	pool_id: SuiAddress;
 	principal: string;
 };
+
+export type Vote = {
+	agree: true;
+	id: {
+		id: SuiAddress;
+	};
+	proposer: SuiAddress;
+	vid: string;
+	vote: {
+		type: string;
+		fields: {
+			id: {
+				id: SuiAddress;
+			};
+			pool_id: SuiAddress;
+			principal: string;
+		};
+	};
+};

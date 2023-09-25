@@ -10,6 +10,7 @@ import { CastVote } from './CastVote';
 import { JudgeProposalState } from './JudgeProposalState';
 import { ModifyProposalObj } from './ModifyProposal';
 import { QueueProposalAction } from './QueueProposalAction';
+import { UnvoteVotes } from './UnvoteVotes';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
@@ -110,6 +111,11 @@ function PollDetail() {
 				{proposal.status === ProposalStatus.Active && (
 					<DisclosureBox title="cast vote" defaultOpen={false}>
 						<CastVote proposal={proposal} refetchDao={refetch} />
+					</DisclosureBox>
+				)}
+				{proposal.end_time < Date.now() && (
+					<DisclosureBox title="unvote votes" defaultOpen={false}>
+						<UnvoteVotes proposal={proposal} refetchDao={refetch} />
 					</DisclosureBox>
 				)}
 				{manageKey && proposal.status === ProposalStatus.Agree && (
