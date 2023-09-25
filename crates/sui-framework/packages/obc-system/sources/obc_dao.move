@@ -1,4 +1,5 @@
 module obc_system::obc_dao {
+    use std::option;
     use sui::object::{Self, UID};
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
@@ -8,9 +9,9 @@ module obc_system::obc_dao {
     use sui::tx_context::TxContext;
     use sui::tx_context;
     use sui::transfer;
-    use obc_system::voting_pool::{VotingObc, voting_obc_amount};
+    use obc_system::voting_pool::{VotingObc, voting_obc_amount, pool_id};
     use obc_system::voting_pool;
-    use obc_system::obc_dao_manager::{OBCDaoManageKey};
+    use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use std::vector;
     use obc_system::obc_dao_manager;
     use sui::obc::OBC;
@@ -26,15 +27,30 @@ module obc_system::obc_dao {
     #[test_only]
     friend obc_system::obc_dao_voting_pool_test;
 
+    spec module{
+        pragma verify;
+        pragma aborts_if_is_strict;
+    }
+
     const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
 
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
-    const DEFAULT_VOTE_QUORUM_RATE: u8 = 50; // 50% default quorum rate
+    const DEFAULT_VOTE_QUORUM_RATE: u8 = 40; // 40% default quorum rate
     const DEFAULT_START_PROPOSAL_VERSION_ID : u64 = 19;
+    const MAX_TIME_PERIOD: u64 = 1000 * 60 * 60 * 24 * 365 * 100; // 100 years
 
+
+    const MAX_ADMIN_COUNT: u64 = 1000;
+
+    const DEFAULT_OBC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  OBC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
+    const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 OBC
+    const MIN_STAKE_MANAGER_KEY_COST: u64 = 100 * 1000000000; // 100 OBC
+
+    const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max OBC
+    const MIN_VOTING_THRESHOLD: u64 = 1_000_000_000; // 1 obc
 
     /// Proposal state
     const PENDING: u8 = 1;
@@ -57,8 +73,12 @@ module obc_system::obc_dao {
     const ERR_CONFIG_PARAM_INVALID: u64 = 1407;
     const ERR_VOTE_STATE_MISMATCH: u64 = 1408;
     const ERR_ACTION_MUST_EXIST: u64 = 1409;
+    const ERR_ACTION_ID_ALREADY_INDAO: u64 = 1414;
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
+    const ERR_WRONG_VOTING_POOL: u64 = 1412;
+    const ERR_INVALID_STRING: u64 = 1413;
+    const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
 
     //
     struct DaoEvent has copy, drop, store {
@@ -169,11 +189,12 @@ module obc_system::obc_dao {
         dao.proposal_record
     }
 
-    public(friend) fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
+    public(friend) fun get_obcdao_actionid(obcDaoAction: OBCDaoAction): u64 {
         obcDaoAction.action_id
     }
 
     struct ProposalInfo has store, copy, drop{
+        proposal_uid: address,
         pid: u64,
         /// creator of the proposal
         proposer: address,
@@ -220,28 +241,43 @@ module obc_system::obc_dao {
     //functions
     public(friend) fun create_obcdao_action(
         dao: &mut Dao,
-        _: &OBCDaoManageKey,
+        payment: Coin<OBC>,
         actionName:vector<u8>,
         ctx: &mut TxContext): OBCDaoAction {
         //auth
 
+        //convert proposal payment to voting_obc
+        let sender = tx_context::sender(ctx);
+        let balance = coin::into_balance(payment);
+        let value = balance::value(&balance);
+        // ensure the user pays enough
+        assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
+
+        let voting_obc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        transfer::public_transfer(voting_obc, sender);
+
+        let nameString = string::try_utf8(actionName);
+        assert!(nameString != option::none(), ERR_INVALID_STRING);
+
+        let name_ref = option::extract(&mut nameString);
         // sender address
         let sender = tx_context::sender(ctx);
         let action_id = generate_next_action_id(dao);
 
         let action = OBCDaoAction{
             action_id: action_id,
-            name: string::utf8(actionName),
-            //description: string::utf8(actionName),
+            name: name_ref,
         };
 
         event::emit(
             ActionCreateEvent{
                 actionId: action_id,
-                name: string::utf8(actionName),
+                name: name_ref,
                 creator: sender,
             }
         );
+
+        assert!(vec_map::contains(&dao.action_record, &action_id) == false, ERR_ACTION_ID_ALREADY_INDAO);
         vec_map::insert(&mut dao.action_record, action_id, copy action);
         action
     }
@@ -249,8 +285,11 @@ module obc_system::obc_dao {
     // Part 3: transfer the OBC Dao object to the sender
     public(friend) fun create_dao(        admins: vector<address>,
                                   ctx: &mut TxContext ) : Dao {
-        // sender address
-        //let sender = tx_context::sender(ctx);
+
+
+        assert!( vector::length(&admins) <= MAX_ADMIN_COUNT, ERR_CONFIG_PARAM_INVALID );
+        assert!( vector::length(&admins) > 0, ERR_CONFIG_PARAM_INVALID );
+
 
         let daoConfig = new_dao_config(DEFAULT_VOTE_DELAY,
             DEFAULT_VOTE_PERIOD,
@@ -261,7 +300,7 @@ module obc_system::obc_dao {
         let daoInfo = DaoGlobalInfo{
             id: object::new(ctx),
             next_proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-            next_action_id: 0,
+            next_action_id: 1,
             proposal_create_event: ProposalCreatedEvent{
                 proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
                 proposer: DEFAULT_TOKEN_ADDRESS,
@@ -289,9 +328,8 @@ module obc_system::obc_dao {
             current_proposal_status: vec_map::empty(),
         };
 
-        // transfer::share_object(dao_obj);
 
-        set_admins(admins, ctx);
+        set_admins(admins,  ctx);
 
         dao_obj
     }
@@ -355,11 +393,10 @@ module obc_system::obc_dao {
         voting_quorum_rate: u8,
         min_action_delay: u64,
     ): DaoConfig {
-        assert!(voting_delay > 0, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_period> 0, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_quorum_rate > 1, ERR_CONFIG_PARAM_INVALID);
-        assert!(voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
-        assert!(min_action_delay > 0, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_delay > 0 && voting_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_period> 0 && voting_period <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+        assert!(min_action_delay > 0 && min_action_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+        assert!(voting_quorum_rate >= 1 && voting_quorum_rate <= 100, ERR_CONFIG_PARAM_INVALID);
 
         DaoConfig { voting_delay, voting_period, voting_quorum_rate, min_action_delay }
     }
@@ -371,7 +408,6 @@ module obc_system::obc_dao {
     /// `action_delay`: the delay to execute after the proposal is agreed
     public(friend) fun propose (
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
         version_id: u64,
         payment: Coin<OBC>,
         action_id: u64,
@@ -405,6 +441,7 @@ module obc_system::obc_dao {
         let object_id = object::new(ctx);
 
         let proposalInfo = ProposalInfo {
+            proposal_uid: object::uid_to_address(&object_id),
             pid: proposal_id,
             proposer: sender,
             start_time,
@@ -434,7 +471,7 @@ module obc_system::obc_dao {
                 proposer: sender,
             }
         );
-        send_obc_dao_event(manager_key,b"proposal_created");
+        //send_obc_dao_event(manager_key,b"proposal_created");
     }
 
     fun synchronize_proposal_into_dao(proposal: &Proposal, dao:  &mut Dao) {
@@ -466,12 +503,8 @@ module obc_system::obc_dao {
 
         let vote_amount = voting_pool::voting_obc_amount(&coin);
         {
-            if(vote_amount <= 0) {
-                assert!(false, ERR_VOTED_ERR_AMOUNT);
-            };
-            if(vote_amount > voting_pool::voting_obc_amount(&coin)){
-                assert!(false, ERR_VOTED_ERR_AMOUNT);
-            };
+            assert!(vote_amount >= MIN_VOTING_THRESHOLD, ERR_VOTED_ERR_AMOUNT);
+            assert!(vote_amount <= MAX_VOTE_AMOUNT, ERR_VOTED_ERR_AMOUNT);
         };
 
         let sender = tx_context::sender(ctx);
@@ -528,12 +561,12 @@ module obc_system::obc_dao {
         };
 
 
-        // sender address
         let sender = tx_context::sender(ctx);
-        //let my_vote = vote
+        //let total_voted = voting_obc_amount(&my_vote.vote);
         {
             assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
             assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+
         };
 
         // flip the vote
@@ -558,9 +591,15 @@ module obc_system::obc_dao {
         my_vote.agree = !my_vote.agree;
         let total_voted = voting_obc_amount(&my_vote.vote);
         if (my_vote.agree) {
+            assert!(proposal.proposal.against_votes >= total_voted, (ERR_VOTED_ERR_AMOUNT));
+            assert!(proposal.proposal.for_votes + total_voted <= MAX_VOTE_AMOUNT , (ERR_VOTED_ERR_AMOUNT));
+
             proposal.proposal.for_votes = proposal.proposal.for_votes + total_voted;
             proposal.proposal.against_votes = proposal.proposal.against_votes - total_voted;
         } else {
+            assert!(proposal.proposal.for_votes >= total_voted, (ERR_VOTED_ERR_AMOUNT));
+            assert!(proposal.proposal.against_votes + total_voted <= MAX_VOTE_AMOUNT, (ERR_VOTED_ERR_AMOUNT));
+
             proposal.proposal.for_votes = proposal.proposal.for_votes - total_voted;
             proposal.proposal.against_votes = proposal.proposal.against_votes + total_voted;
         };
@@ -588,6 +627,9 @@ module obc_system::obc_dao {
         {
             assert!(my_vote.proposer == proposal.proposal.proposer, (ERR_PROPOSER_MISMATCH));
             assert!(my_vote.vid == proposal.proposal.pid, (ERR_VOTED_OTHERS_ALREADY));
+            assert!(voting_obc_amount(&my_vote.vote) >= voting_power, (ERR_VOTED_ERR_AMOUNT));
+            assert!(voting_power >= MIN_VOTING_THRESHOLD && voting_power <= MAX_VOTE_AMOUNT, (ERR_VOTED_ERR_AMOUNT));
+            assert!(voting_obc_amount(&my_vote.vote) - voting_power >= MIN_VOTING_THRESHOLD, (ERR_VOTED_ERR_AMOUNT));
         };
         // revoke vote on proposal
         do_revoke_vote(proposal, &mut my_vote, voting_power,ctx);
@@ -730,22 +772,24 @@ module obc_system::obc_dao {
     /// queue agreed proposal to execute.
     public(friend) fun queue_proposal_action(
         dao:  &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
     )  {
 
         //let sender = tx_context::sender(ctx);
 
-        // Only agreed proposal can be submitted.
-        assert!(
-            proposal_state(proposal, clock) == AGREED,
-            (ERR_PROPOSAL_STATE_INVALID)
-        );
+            // Only agreed proposal can be submitted.
+            assert!(
+                proposal_state(proposal, clock) == AGREED,
+                (ERR_PROPOSAL_STATE_INVALID)
+            );
+        assert!(proposal.proposal.action_delay <= MAX_TIME_PERIOD, ERR_CONFIG_PARAM_INVALID);
+
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
 
         synchronize_proposal_into_dao(proposal, dao);
-        send_obc_dao_event(manager_key, b"proposal_queued");
+        //send_obc_dao_event(manager_key, b"proposal_queued");
     }
 
     /// extract proposal action to execute.
@@ -861,10 +905,9 @@ module obc_system::obc_dao {
     //// Helper functions
 
     /// Quorum votes to make proposal pass.
+    /// temply using 4000* 000_0000 as the pass rate.
     fun quorum_votes(dao: &mut Dao): u64 {
-        //let market_cap = total_supply(Coin<OBC>);
-        //let balance_in_treasury = Treasury::balance<TokenT>();
-        let total_supply_sui: u64 = 10000000000;
+        let total_supply_sui: u64 = DEFAULT_OBC_SUPPLY;
         let supply = total_supply_sui;
 
         let rate = voting_quorum_rate(dao);
@@ -900,12 +943,18 @@ module obc_system::obc_dao {
     /// if any param is 0, it means no change to that param.
     public fun modify_dao_config(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         voting_delay: u64,
         voting_period: u64,
         voting_quorum_rate: u8,
         min_action_delay: u64,
     ) {
+
+        assert!(voting_delay <= MAX_TIME_PERIOD && voting_delay > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(voting_period <= MAX_TIME_PERIOD && voting_period > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(min_action_delay <= MAX_TIME_PERIOD && min_action_delay > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(voting_quorum_rate>0 && voting_quorum_rate <= 100, (ERR_QUORUM_RATE_INVALID));
+
 
 
         let config = get_config(dao);
@@ -915,71 +964,76 @@ module obc_system::obc_dao {
         if (voting_delay > 0) {
             config.voting_delay = voting_delay;
         };
-        if (voting_quorum_rate > 0) {
-            assert!(voting_quorum_rate <= 100, (ERR_QUORUM_RATE_INVALID));
+        if (voting_quorum_rate > 0 && voting_quorum_rate <= 100) {
             config.voting_quorum_rate = voting_quorum_rate;
         };
         if (min_action_delay > 0) {
             config.min_action_delay = min_action_delay;
         };
 
-        send_obc_dao_event(manager_key, b"modify_dao_config");
+        //send_obc_dao_event(manager_key, b"modify_dao_config");
     }
 
     /// set voting delay
     public(friend) fun set_voting_delay(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u64,
     ) {
 
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(value <= MAX_TIME_PERIOD, (ERR_CONFIG_PARAM_INVALID));
+
         let config = get_config(dao);
         config.voting_delay = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_delay");
+        //send_obc_dao_event(manager_key, b"set_voting_delay");
     }
 
 
     /// set voting period
     public(friend) fun set_voting_period(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u64,
     ) {
 
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(value <= MAX_TIME_PERIOD, (ERR_CONFIG_PARAM_INVALID));
+
         let config = get_config(dao);
         config.voting_period = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_period");
+        //send_obc_dao_event(manager_key, b"set_voting_period");
     }
 
-    /// set voting quorum rate
+    /// set voting quorum rate: .
     public(friend) fun set_voting_quorum_rate(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u8,
     ) {
         assert!(value <= 100 && value > 0, (ERR_QUORUM_RATE_INVALID));
         let config = get_config(dao);
         config.voting_quorum_rate = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_quorum_rate");
+        //send_obc_dao_event(manager_key, b"set_voting_quorum_rate");
     }
 
 
     /// set min action delay
     public(friend) fun set_min_action_delay(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         value: u64,
     ) {
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
+        assert!(value <= MAX_TIME_PERIOD, (ERR_CONFIG_PARAM_INVALID));
+
         let config = get_config(dao);
         config.min_action_delay = value;
 
-        send_obc_dao_event(manager_key, b"set_min_action_delay");
+        //send_obc_dao_event(manager_key, b"set_min_action_delay");
     }
 
     fun set_admins(
@@ -987,12 +1041,34 @@ module obc_system::obc_dao {
         ctx: &mut TxContext,
     ) {
         //let index = 0;
-        while (!vector::is_empty(&new_admins)) {
-            let admin = vector::pop_back(&mut new_admins);
-            obc_dao_manager::new(admin, ctx);
+        let count = vector::length(&new_admins);
+        assert!(count > 0 && count <= MAX_ADMIN_COUNT, ERR_CONFIG_PARAM_INVALID);
 
-        }
+        let i = 0;
+        while (i < count) {
+            let admin = vector::borrow(&new_admins, i);
+            obc_dao_manager::new(*admin, ctx);
+            i = i+1;
+        };
 
+    }
+
+
+    public(friend) fun create_stake_manager_key( payment: Coin<OBC>,
+                                  ctx: &mut TxContext){
+
+        //convert proposal payment to voting_obc
+        let sender = tx_context::sender(ctx);
+        let balance = coin::into_balance(payment);
+        let value = balance::value(&balance);
+        // ensure the user pays enough
+        assert!(value >= MIN_STAKE_MANAGER_KEY_COST, ERR_EINSUFFICIENT_FUNDS);
+        obc_dao_manager::create_stake_key(sender,balance, ctx);
+    }
+    public(friend) fun unstake_manager_key(key: OBCDaoManageKey,
+                            token: ManagerKeyObc,
+                            ctx: &mut TxContext){
+        obc_dao_manager::unstake_key(key,token, ctx);
     }
 
     public fun add_admin(
@@ -1003,15 +1079,6 @@ module obc_system::obc_dao {
     }
 
 
-    fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
-        let object_addr = obc_dao_manager::getKeyAddress(manager_key);
-        event::emit(
-            DaoManagerEvent{
-                key: object_addr,
-                msg: string::utf8(msg),
-            }
-        );
-    }
 
     public entry fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
@@ -1081,6 +1148,7 @@ module obc_system::obc_dao {
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
+        assert!(pool_id(&voting_obc) == object::id(&dao.voting_pool), ERR_WRONG_VOTING_POOL);
         let voting_obc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_obc);
         let coin = coin::from_balance(voting_obc, ctx);
         transfer::public_transfer(coin, sender);
@@ -1089,7 +1157,7 @@ module obc_system::obc_dao {
     /// remove terminated proposal from proposer
     public(friend) fun destroy_terminated_proposal(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        _: &OBCDaoManageKey,
         proposal:  &mut Proposal,
         clock: & Clock,
     )  {
@@ -1102,6 +1170,8 @@ module obc_system::obc_dao {
         );
 
 
+
+        assert!(vec_map::contains(&dao.proposal_record, &proposal.proposal.pid), (ERR_PROPOSAL_NOT_EXIST));
         vec_map::remove(&mut dao.proposal_record, &proposal.proposal.pid);
         if (proposal_state == DEFEATED) {
             let _ =  proposal.proposal.action;
@@ -1124,7 +1194,7 @@ module obc_system::obc_dao {
         //     } = proposal;
         //
         //  object::delete(uid);
-        send_obc_dao_event(manager_key, b"ProposalDestroyed");
+        //send_obc_dao_event(manager_key, b"ProposalDestroyed");
 
     }
 
@@ -1141,6 +1211,6 @@ module obc_system::obc_dao {
         vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, proposal_status);
     }
 
-    //#[test_only]
+
 
 }

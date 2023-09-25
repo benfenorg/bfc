@@ -546,7 +546,7 @@ Init exchange pool by add obc coin.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, max_counter_times: u32, chain_start_timestamp_ms: u64): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_system.md#0xc8_obc_system_obc_system_stat_parameter">obc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, max_counter_times: u32, chain_start_timestamp_ms: u64, validate_address_0: <b>address</b>): <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>
 </code></pre>
 
 
@@ -564,6 +564,7 @@ Init exchange pool by add obc coin.
     base_point: u64,
     max_counter_times: u32,
     chain_start_timestamp_ms: u64,
+    validate_address_0: <b>address</b>,
 ): ObcSystemParameters {
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_state_inner::obc_system_stat_parameter</a>(
         position_number,
@@ -574,6 +575,7 @@ Init exchange pool by add obc coin.
         base_point,
         max_counter_times,
         chain_start_timestamp_ms,
+        validate_address_0,
     )
 }
 </code></pre>

@@ -145,6 +145,18 @@
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_random_seed_rand"></a>
 
 ## Function `seed_rand`

@@ -483,6 +483,18 @@ private fun
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_tick_increase_liquidity"></a>
 
 ## Function `increase_liquidity`

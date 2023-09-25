@@ -1,4 +1,5 @@
 module obc_system::voting_pool {
+    //use obc_system::obc_dao::add_admin;
     use sui::balance::{Self, Balance};
     use sui::obc::OBC;
     use sui::tx_context::{Self, TxContext};
@@ -10,6 +11,11 @@ module obc_system::voting_pool {
     //use hello_world::obc_dao_manager;
     //use sui::event;
     //use hello_world::obc_dao::send_obc_dao_event;
+
+    spec module{
+        pragma verify;
+        //pragma aborts_if_is_strict;
+    }
 
 
     friend obc_system::obc_dao;
@@ -61,6 +67,7 @@ module obc_system::voting_pool {
         }
     }
 
+
     // ==== voting requests ====
 
     /// Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
@@ -70,7 +77,7 @@ module obc_system::voting_pool {
         ctx: &mut TxContext
     ) : VotingObc {
         let obc_amount = balance::value(&voting);
-        assert!(obc_amount > 0, EDelegationOfZeroObc);
+        assert!(obc_amount >= MIN_STAKING_THRESHOLD, EDelegationOfZeroObc);
         let votingobc = VotingObc {
             id: object::new(ctx),
             pool_id: object::id(pool),
@@ -117,7 +124,11 @@ module obc_system::voting_pool {
             principal_withdraw,
         )
     }
+
+
+
     public fun unwrap_voting_obc(voting_obc: VotingObc): Balance<OBC> {
+
         let VotingObc {
             id,
             pool_id: _,
@@ -154,6 +165,9 @@ module obc_system::voting_pool {
             principal: balance::split(&mut self.principal, split_amount),
         }
     }
+
+
+
 
     /// Split the given votingObc to the two parts, one with principal `split_amount`,
     /// transfer the newly split part to the sender address.
@@ -198,17 +212,6 @@ module obc_system::voting_pool {
 
 
 
-    // fun _get_obc_amount(exchange_rate: &PoolTokenExchangeRate, token_amount: u64): u64 {
-    //     // When either amount is 0, that means we have no voting with this pool.
-    //     // The other amount might be non-zero when there's dust left in the pool.
-    //     if (exchange_rate.obc_amount == 0 || exchange_rate.pool_token_amount == 0) {
-    //         return token_amount
-    //     };
-    //     let res = (exchange_rate.obc_amount as u128)
-    //         * (token_amount as u128)
-    //         / (exchange_rate.pool_token_amount as u128);
-    //     (res as u64)
-    // }
 
     fun get_token_amount(exchange_rate: &PoolTokenExchangeRate, obc_amount: u64): u64 {
         // When either amount is 0, that means we have no voting with this pool.

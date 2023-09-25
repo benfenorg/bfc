@@ -8,6 +8,7 @@
 -  [Resource `OBCDaoManageKey`](#0xc8_obc_dao_manager_OBCDaoManageKey)
 -  [Function `new`](#0xc8_obc_dao_manager_new)
 -  [Function `getKeyAddress`](#0xc8_obc_dao_manager_getKeyAddress)
+-  [Module Specification](#@Module_Specification_0)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
@@ -73,6 +74,19 @@ Create a new key.
 
 </details>
 
+<details>
+<summary>Specification</summary>
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_obc_dao_manager_getKeyAddress"></a>
 
 ## Function `getKeyAddress`
@@ -96,3 +110,12 @@ Create a new key.
 
 
 </details>
+
+<a name="@Module_Specification_0"></a>
+
+## Module Specification
+
+
+
+<pre><code><b>pragma</b> verify;
+</code></pre>

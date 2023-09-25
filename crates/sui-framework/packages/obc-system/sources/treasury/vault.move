@@ -88,6 +88,10 @@ module obc_system::vault {
         base_point: u64,
     }
 
+
+    spec create_vault {
+        pragma opaque;
+    }
     // === Create vault ====
     public(friend) fun create_vault<StableCoinType>(
         _index: u64,
@@ -196,6 +200,9 @@ module obc_system::vault {
         amount_b: u64
     }
 
+    spec add_liquidity_internal {
+        pragma opaque;
+    }
     fun add_liquidity_internal<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64,
@@ -284,6 +291,11 @@ module obc_system::vault {
             0u64,
             false
         )
+    }
+
+
+    spec remove_liquidity {
+        pragma opaque;
     }
 
     public(friend) fun remove_liquidity<StableCoinType>(
@@ -438,6 +450,10 @@ module obc_system::vault {
         _swap_result.amount_out = _swap_result.amount_out + _out;
     }
 
+
+    spec calculate_swap_result {
+        pragma opaque;
+    }
     // Calculate Swap Result
     public fun calculate_swap_result<StableCoinType>(
         _vault: &Vault<StableCoinType>,

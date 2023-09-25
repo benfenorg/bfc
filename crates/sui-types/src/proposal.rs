@@ -31,6 +31,7 @@ pub struct OBCDaoAction{
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
 pub struct ProposalInfo{
+    pub proposal_uid: ID,
     pub pid: u64,
     /// creator of the proposal
     pub proposer: ID,

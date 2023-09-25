@@ -39,6 +39,9 @@ module obc_system::tick_math {
     public fun tick_bound(): u32 {
         MAX_TICK
     }
+    spec tick_bound {
+        pragma opaque;
+    }
 
     public fun get_sqrt_price_at_tick(tick: I32): u128 {
         assert!(i32::gte(tick, min_tick()) && i32::lte(tick, max_tick()), EINVALID_TICK);
@@ -118,9 +121,11 @@ module obc_system::tick_math {
             return tick_low
         }
     }
-    spec get_tick_at_sqrt_price{
-        pragma verify = false; // By default, do not verify specs in this module ...
+
+    spec get_tick_at_sqrt_price {
+        pragma opaque;
     }
+
 
     fun as_u8(b: bool): u8 {
         if (b) {
