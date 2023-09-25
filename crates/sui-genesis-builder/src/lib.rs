@@ -684,7 +684,7 @@ fn build_unsigned_genesis_data(
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
-    let obc_system_parameters = parameters.to_obc_system_parameters(validators.get(0).unwrap().info.account_address);
+    let obc_system_parameters = parameters.to_obc_system_parameters();
     let genesis_validators = validators
         .iter()
         .cloned()

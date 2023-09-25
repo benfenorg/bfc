@@ -2,9 +2,8 @@ module obc_system::obc_dao_manager {
     use sui::balance;
     use sui::balance::Balance;
     use sui::coin;
-    use sui::coin::Coin;
     use sui::obc::OBC;
-    use sui::object::{UID, ID};
+    use sui::object::UID;
     use sui::tx_context::TxContext;
     use sui::object;
     use sui::transfer;
