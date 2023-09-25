@@ -13,7 +13,7 @@ module obc_system::obc_system_state_inner {
     use obc_system::gas_coin_map;
     use obc_system::gas_coin_map::{GasCoinEntity, GasCoinMap};
     use obc_system::obc_dao::{Self, Dao, Proposal, Vote};
-    use obc_system::obc_dao_manager::OBCDaoManageKey;
+    use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use obc_system::treasury::{Self, Treasury};
     use obc_system::treasury_pool;
     use obc_system::treasury_pool::TreasuryPool;
@@ -83,6 +83,17 @@ module obc_system::obc_system_state_inner {
             treasury: t,
             treasury_pool: tp,
         }
+    }
+
+    public (friend) fun create_stake_manager_key( payment: Coin<OBC>,
+                                                  ctx: &mut TxContext) {
+        obc_dao::create_stake_manager_key(payment, ctx);
+    }
+
+    public(friend) fun unstake_manager_key(key: OBCDaoManageKey,
+                                           token: ManagerKeyObc,
+                                           ctx: &mut TxContext) {
+        obc_dao::unstake_manager_key(key, token, ctx);
     }
 
     public(friend) fun update_round(

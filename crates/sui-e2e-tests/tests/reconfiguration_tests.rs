@@ -4,16 +4,20 @@
 use futures::future::join_all;
 use rand::rngs::OsRng;
 use std::collections::{BTreeSet, HashSet};
+
+
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
+use jsonrpsee::http_client::HttpClient;
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
+use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
-use sui_types::base_types::SuiAddress;
+use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
 use sui_types::gas::GasCostSummary;
@@ -27,11 +31,13 @@ use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::info;
-use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
+use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID};
-use std::str::FromStr;
+use sui_types::{OBC_SYSTEM_PACKAGE_ID, parse_sui_struct_tag};
+use serde_json::json;
+use sui_types::dao::DaoRPC;
+
 
 #[sim_test]
 async fn advance_epoch_tx_test() {
@@ -354,19 +360,16 @@ async fn test_change_obc_round() {
 
 #[sim_test]
 async fn test_obc_dao_update_system_package_blocked(){
-
-    telemetry_subscribers::init_for_testing();
     // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
     //     config.set_commit_root_state_digest_supported(true);
     //     config
     // });
     ProtocolConfig::poison_get_for_min_version();
 
-    let START_VERSION= 18u64;
-    // let UPDATE_TARGET_VERSION = 19u64;
+    let start_version = 18u64;
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
-        .with_protocol_version(ProtocolVersion::new(START_VERSION))
+        .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
 
@@ -412,124 +415,19 @@ async fn test_obc_dao_update_system_package_blocked(){
 
     sleep(Duration::from_secs(10)).await;
 
-
-    epochid =  node.state().current_epoch_for_testing();
-    protocol_version = epoch_store.protocol_version();
-
-    info!("=============epochid: {}", epochid);
-    info!("=============protocol_version:{:?} ", protocol_version);
-
-    assert_eq!(protocol_version, ProtocolVersion::new(START_VERSION));
-
-}
-
-
-#[sim_test]
-async fn test_obc_dao_update_system_package_pass(){
-
-    telemetry_subscribers::init_for_testing();
-    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_commit_root_state_digest_supported(true);
-        config
-    });
-    ProtocolConfig::poison_get_for_min_version();
-
-    let START_VERSION= 18u64;
-    // let UPDATE_TARGET_VERSION = 19u64;
-    let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
-        .with_protocol_version(ProtocolVersion::new(START_VERSION))
-        .build()
-        .await;
-
-
-
-    let  node = test_cluster
-        .swarm
-        .validator_nodes()
-        .next()
-        .unwrap()
-        .get_node_handle()
-        .unwrap();
     let epoch_store = node.state().load_epoch_store_one_call_per_task();
 
-
-    let mut epochid =  node.state().current_epoch_for_testing();
-    let mut protocol_version = epoch_store.protocol_version();
-    info!("=============epochid: {}", epochid);
-    info!("=============protocol_version:{:?} ", protocol_version);
-
-
-    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
-        .ok()
-        .map(|v| v.parse().unwrap())
-        .unwrap_or(1);
-    info!("=============target_epoch: {}", target_epoch);
-
-    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
-
-
-
-    epochid =  node.state().current_epoch_for_testing();
-    protocol_version = epoch_store.protocol_version();
-    info!("=============epochid: {}", epochid);
-    info!("=============protocol_version:{:?} ", protocol_version);
-
-
-
-    //waiting for....
-
-    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
-
-
-    sleep(Duration::from_secs(10)).await;
-
-
     epochid =  node.state().current_epoch_for_testing();
     protocol_version = epoch_store.protocol_version();
 
     info!("=============epochid: {}", epochid);
     info!("=============protocol_version:{:?} ", protocol_version);
 
-    assert_eq!(protocol_version, ProtocolVersion::new(START_VERSION));
+    assert_eq!(protocol_version, ProtocolVersion::new(start_version));
 
 }
 
-
-
-#[sim_test]
-async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
-    telemetry_subscribers::init_for_testing();
-
-    let cluster = TestClusterBuilder::new().build().await;
-    let http_client = cluster.rpc_client();
-    let address = cluster.get_address_0();
-
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
-    //let coin = &objects[1].object()?;
-
-
-    // now do the call
-    let module = "obc_system".to_string();
-    let function = "cluster_add_admin".to_string();
-    let package_id = OBC_SYSTEM_PACKAGE_ID;
-
-    let arg = vec![ SuiJsonValue::from_str(&address.to_string())?];
+async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
 
     let transaction_bytes: TransactionBlockBytes = http_client
         .move_call(
@@ -558,50 +456,1219 @@ async fn test_obc_dao_create_create_action() -> Result<(), anyhow::Error>{
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    let _current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+    Ok(tx_response)
+}
+
+async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
 
 
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    Ok(objects)
+}
 
-    info!("============finish add admin");
+
+#[sim_test]
+async fn test_obc_dao_create_action() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    //let manager_obj = add_cluster_admin(http_client, gas, address, &cluster).await?;
+    let payment = objects.get(2).unwrap().object().unwrap();
+    // now do the call
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "create_obcdao_action".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+    ];
+
+
+    do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+
+
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao actions {:?}", dao.action_record);
+    assert!(dao.action_record.len() > 0);
+
+    Ok(())
+}
+
+async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::obc::OBC>").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
 
     // now do the call
-    let _module = "obc_system".to_string();
-    let _function = "create_obcdao_action".to_string();
+    let payment = objects.get(2).unwrap().object().unwrap();
+    let module = "obc_system".to_string();
     let package_id = OBC_SYSTEM_PACKAGE_ID;
-    let _arg = vec![ SuiJsonValue::from_str(&package_id.to_string())?,];
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let function = "set_voting_period".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("60000"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let function = "set_voting_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+    // now do the call
+    let function = "create_obcdao_action".to_string();
+    let propose_function = "propose".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let coin_obj = objects.get(3).unwrap().object().unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!("19"))?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+        SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
+
+    Ok(())
+}
+
+async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::obc::OBC>").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
 
 
 
+    // now do the call
+    let payment = objects.get(2).unwrap().object().unwrap();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "obc_system".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+    let function = "set_voting_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+    // now do the call
+    let function = "create_obcdao_action".to_string();
+    let propose_function = "propose".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
 
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let coin_obj = objects.get(4).unwrap().object().unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!("19"))?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+        SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
+
+    Ok(())
+}
+
+async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<ObjectID, anyhow::Error> {
+    // now do the call
+    let module = "obc_system".to_string();
+    let function = "create_stake_manager_key".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let payment =  objects.get(1).unwrap().object().unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    let objects = do_get_owned_objects_with_filter("0xc8::obc_dao_manager::OBCDaoManageKey", http_client, address).await?;
+    let manager_obj = objects.get(0).unwrap().object().unwrap();
+    Ok(manager_obj.object_id)
+}
+
+#[sim_test]
+async fn test_obc_dao_create_propose() -> Result<(), anyhow::Error> {
+    //telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await.unwrap();
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao actions {:?}", dao.action_record);
+    info!("============finish get dao proposes {:?}", dao.proposal_record);
+    assert_eq!(dao.proposal_record.len(), 1);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_dao_create_votingobc()  -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    let amount  = 1_000_000_000u64* 100;
+    let tx = make_transfer_sui_transaction(&cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    let coin_obj = objects.get(2).unwrap().object().unwrap();
+
+
+    // now do the call
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "create_voting_obc".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 1. pass.
+    info!("============finish get owned objects {}", objects.len());
+
+    Ok(())
+}
+
+async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) ->  Result<ObjectID, anyhow::Error>{
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "create_voting_obc".to_string();
+
+    let coin_obj = objects.get(4).unwrap().object().unwrap();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+    let objects = do_get_owned_objects_with_filter("0xc8::voting_pool::VotingObc", http_client, address).await?;
+    let voting_obc = objects.get(0).unwrap().object().unwrap();
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "cast_vote".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&voting_obc.object_id.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::obc_dao::Vote").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    let vote = objects.get(0).unwrap().object().unwrap();
+    Ok(vote.object_id)
+}
+
+#[sim_test]
+async fn test_obc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+    //create votingObc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::new(json!("1000000000"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let revoke_vote_function = "revoke_vote".to_string();
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, revoke_vote_function, arg).await?;
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
+    let start_version = 18u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
+
+
+    let  node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    //waiting for....
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &test_cluster).await?;
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "obc_system".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+
+    // modify voting quorum
+    let function = "set_voting_quorum_rate".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    // set voting delay
+    let function = "set_min_action_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    create_active_proposal(http_client, gas, address, &test_cluster).await?;
+    //create votingObc
+    // now do the call
+    case_vote(http_client, gas, address, &test_cluster).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(objects.len() > 0);
+
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    let queue_proposal_action_function = "queue_proposal_action".to_string();
+    do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), queue_proposal_action_function, arg).await?;
+
+    let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().end_time + 120000));
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "judge_proposal_state".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(start_time))?,
+    ];
+
+    do_move_call(&http_client, &gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+    sleep(Duration::from_secs(5)).await;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let _status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+
+    test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+    assert_ne!(protocol_version, ProtocolVersion::new(start_version));
 
     Ok(())
 }
 
 
 #[sim_test]
-async fn test_obc_dao_create_create_propose(){
+async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
 
+    let gas = objects.first().unwrap().object().unwrap();
+
+    // now do the call
+    // modify voting period
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "obc_system".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    // modify voting quorum
+    let function = "set_voting_quorum_rate".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    // set voting delay
+    let function = "set_min_action_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    create_active_proposal(http_client, gas, address, &cluster).await?;
+    //create votingObc
+    // now do the call
+    case_vote(http_client, gas, address, &cluster).await?;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(objects.len() > 0);
+
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    let queue_proposal_action_function = "queue_proposal_action".to_string();
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), queue_proposal_action_function, arg).await?;
+
+    let destroy_terminated_proposal_function = "destroy_terminated_proposal".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module, destroy_terminated_proposal_function, arg).await?;
+    Ok(())
 }
 
+#[sim_test]
+async fn test_obc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    // now do the call
+    // modify voting period
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "obc_system".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+
+    // modify voting quorum
+    let function = "set_voting_quorum_rate".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    create_active_proposal(http_client, gas, address, &cluster).await?;
+    //create votingObc
+    // now do the call
+    case_vote(http_client, gas, address, &cluster).await?;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(objects.len() > 0);
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    let queue_proposal_action_function = "queue_proposal_action".to_string();
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_dao_unvote_votingobc() -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    create_active_proposal(http_client, gas, address, &cluster).await?;
+    //create votingObc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+    assert!(objects.len() > 0);
+
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let change_vote_function = "unvote_votes".to_string();
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, change_vote_function, arg).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_dao_change_vote()  -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+    //create votingObc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+    assert!(objects.len() > 0);
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::new(json!(true))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let change_vote_function = "change_vote".to_string();
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, change_vote_function, arg).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_dao_cast_voting() -> Result<(), anyhow::Error> {
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+
+    case_vote(http_client, gas, address, &cluster).await?;
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_dao_judge_proposal_state()  -> Result<(), anyhow::Error> {
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(40000)
+        .build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(dao.proposal_record.len() > 0);
+    let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time - 40000));
+
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "judge_proposal_state".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(start_time))?,
+    ];
+
+    do_move_call(&http_client, &gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+    sleep(Duration::from_secs(5)).await;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+    assert_eq!(status, 1);
+
+    let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time + 60000));
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!(start_time))?,
+    ];
+    do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+    sleep(Duration::from_secs(5)).await;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+    assert_eq!(status, 2);
+    Ok(())
+}
 
 
 #[sim_test]
-async fn test_obc_dao_create_votingobc(){
+async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
+    //log
+    //telemetry_subscribers::init_for_testing();
 
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    assert!(objects.len() > 0);
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    let amount  = 1_000_000_000u64* 100;
+    let tx = make_transfer_sui_transaction(&cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    let coin_obj = objects.get(2).unwrap().object().unwrap();
+
+
+    // now do the call
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "create_voting_obc".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+
+
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 1. pass.
+    info!("============finish get owned objects {}", objects.len());
+    assert_eq!(objects.len(), 1);
+
+
+    let voting_obc = objects.get(0).unwrap().object().unwrap();
+
+    //with draw the voting obc,,,
+    // now do the call
+    //public entry fun withdraw_voting(   wrapper: &mut ObcSystemState voting_obc: VotingObc)
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "withdraw_voting".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&voting_obc.object_id.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 0. pass.
+    info!("============finish get owned objects {}", objects.len());
+    assert_eq!(objects.len(), 0);
+
+    Ok(())
 }
+
 
 #[sim_test]
-async fn test_obc_dao_create_voting(){
+async fn test_obc_dao_change_setting_config() -> Result<(), anyhow::Error> {
 
+    //telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+
+    // now do the call  public entry fun set_voting_period(
+    //         wrapper: &mut ObcSystemState,
+    //         manager_key: &OBCDaoManageKey,
+    //         value: u64,
+    //     )
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "set_voting_period".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("888888"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_voting_period");
+
+
+    let module = "obc_system".to_string();
+    let function = "set_min_action_delay".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("888888"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_min_action_delay");
+
+
+
+    let module = "obc_system".to_string();
+    let function = "set_voting_delay".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("888888"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_voting_delay");
+
+
+    let module = "obc_system".to_string();
+    let function = "set_voting_quorum_rate".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("88"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_voting_quorum_rate");
+
+
+
+
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao info {:?}", dao.config);
+    assert_eq!(dao.config.voting_period, 888888);
+    assert_eq!(dao.config.min_action_delay, 888888);
+    assert_eq!(dao.config.voting_delay, 888888);
+    assert_eq!(dao.config.voting_quorum_rate, 88);
+    Ok(())
 }
-
-
-#[sim_test]
-async fn test_obc_dao_withdraw_obc(){
-
-}
-
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
@@ -754,15 +1821,15 @@ async fn test_validator_candidate_pool_read() {
             system_state_summary.validator_candidates_id,
             &address,
         )
-        .unwrap()
-        .staking_pool_id;
+            .unwrap()
+            .staking_pool_id;
         let validator = get_validator_by_pool_id(
             node.state().db().as_ref(),
             &system_state,
             &system_state_summary,
             staking_pool_id,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(validator.sui_address, address);
     });
 }
@@ -800,7 +1867,7 @@ async fn test_inactive_validator_pool_read() {
             &system_state_summary,
             staking_pool_id,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(validator.sui_address, address);
     });
     execute_remove_validator_tx(&test_cluster, &validator).await;
@@ -835,7 +1902,7 @@ async fn test_inactive_validator_pool_read() {
             &system_state_summary,
             staking_pool_id,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(validator.sui_address, address);
         assert!(validator.staking_pool_deactivation_epoch.is_some());
     })
@@ -1007,10 +2074,7 @@ async fn safe_mode_reconfig_test() {
     assert_eq!(system_state.system_state_version(), 2);
 }
 
-async fn add_validator_candidate(
-    test_cluster: &TestCluster,
-    new_validator: &ValidatorGenesisConfig,
-) {
+async fn add_validator_candidate(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig, ) {
     let cur_validator_candidate_count = test_cluster.fullnode_handle.sui_node.with(|node| {
         node.state()
             .get_sui_system_state_object_for_testing()
@@ -1069,10 +2133,7 @@ async fn execute_remove_validator_tx(test_cluster: &TestCluster, handle: &SuiNod
 /// Execute a sequence of transactions to add a validator, including adding candidate, adding stake
 /// and activate the validator.
 /// It does not however trigger reconfiguration yet.
-async fn execute_add_validator_transactions(
-    test_cluster: &TestCluster,
-    new_validator: &ValidatorGenesisConfig,
-) {
+async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig){
     let pending_active_count = test_cluster.fullnode_handle.sui_node.with(|node| {
         let system_state = node
             .state()

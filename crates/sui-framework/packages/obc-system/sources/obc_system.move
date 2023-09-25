@@ -16,7 +16,7 @@ module obc_system::obc_system {
     use sui::tx_context::TxContext;
 
     use obc_system::usd::{USD};
-    use obc_system::obc_dao_manager::{OBCDaoManageKey};
+    use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use obc_system::obc_dao::{Proposal, Vote};
     use obc_system::obc_system_state_inner;
     use obc_system::obc_system_state_inner::{ObcSystemStateInner, ObcSystemParameters};
@@ -28,6 +28,18 @@ module obc_system::obc_system {
         id: UID,
         version: u64
     }
+
+    public entry fun create_stake_manager_key( payment: Coin<OBC>,
+                                               ctx: &mut TxContext) {
+        obc_system_state_inner::create_stake_manager_key(payment, ctx);
+    }
+
+    public entry fun unstake_manager_key(key: OBCDaoManageKey,
+                                         token: ManagerKeyObc,
+                                         ctx: &mut TxContext) {
+        obc_system_state_inner::unstake_manager_key(key, token, ctx);
+    }
+
 
     const OBC_SYSTEM_STATE_VERSION_V1: u64 = 1;
 
