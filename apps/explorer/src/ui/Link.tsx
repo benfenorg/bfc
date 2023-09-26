@@ -10,10 +10,8 @@ const linkStyles = cva([], {
 	variants: {
 		variant: {
 			text: 'text-body font-semibold text-steel-dark hover:text-steel-darker active:text-steel disabled:text-gray-60',
-			mono: 'font-mono text-body font-medium text-obc-link hover:text-hero-darkest break-all',
+			mono: 'font-mono text-body font-medium text-hero-dark hover:text-hero-darkest break-all',
 			textHeroDark: 'text-pBody font-medium text-hero-dark hover:text-hero-darkest',
-			large: 'font-mono text-heading4 font-bold text-obc-link break-all',
-			content: '',
 		},
 		uppercase: {
 			true: 'uppercase',
@@ -29,10 +27,32 @@ const linkStyles = cva([], {
 	},
 });
 
-export interface LinkProps extends ButtonOrLinkProps, VariantProps<typeof linkStyles> {
+const linkContentStyles = cva(['flex-nowrap items-center'], {
+	variants: {
+		gap: {
+			'gap-1': 'gap-1',
+			'gap-2': 'gap-2',
+		},
+		display: {
+			'inline-flex': 'inline-flex',
+			block: 'block',
+			flex: 'flex',
+		},
+	},
+	defaultVariants: {
+		gap: 'gap-2',
+		display: 'inline-flex',
+	},
+});
+
+type LinkContentStylesProps = VariantProps<typeof linkContentStyles>;
+
+export interface LinkProps
+	extends ButtonOrLinkProps,
+		VariantProps<typeof linkStyles>,
+		LinkContentStylesProps {
 	before?: ReactNode;
 	after?: ReactNode;
-	gap?: 'gap-1' | 'gap-2';
 }
 
 export function Link({
@@ -42,12 +62,13 @@ export function Link({
 	before,
 	after,
 	children,
-	gap = 'gap-2',
+	display,
+	gap,
 	...props
 }: LinkProps) {
 	return (
 		<ButtonOrLink className={linkStyles({ variant, size, uppercase })} {...props}>
-			<div className={`inline-flex flex-nowrap items-center ${gap}`}>
+			<div className={linkContentStyles({ gap, display })}>
 				{before}
 				{children}
 				{after}

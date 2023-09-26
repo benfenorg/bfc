@@ -3,11 +3,7 @@
 
 use diesel::prelude::*;
 
-use move_core_types::account_address::AccountAddress;
-use move_core_types::ident_str;
-use move_core_types::identifier::IdentStr;
 use sui_json_rpc_types::{SuiTransactionBlockDataAPI, SuiTransactionBlockEffectsAPI};
-use sui_types::TypeTag;
 
 use crate::errors::IndexerError;
 use crate::schema::transactions;
@@ -39,7 +35,6 @@ pub struct Transaction {
     pub raw_transaction: Vec<u8>,
     pub transaction_effects_content: String,
     pub confirmed_local_execution: Option<bool>,
-    pub transact_obc: i64,
 }
 
 impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
@@ -53,7 +48,7 @@ impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
             effects,
             events: _,
             object_changes: _,
-            balance_changes,
+            balance_changes: _,
             timestamp_ms,
             confirmed_local_execution,
             checkpoint,
@@ -66,14 +61,6 @@ impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
                 err
             ))
         })?;
-        let transact_obc = match balance_changes {
-            Some(changes) => changes
-                .iter()
-                .filter(|x| is_obc_coin(&x.coin_type) && x.amount > 0)
-                .map(|x| x.amount)
-                .sum(),
-            None => 0,
-        } as i64;
 
         let gas_summary = effects.gas_cost_summary();
         let computation_cost = gas_summary.computation_cost;
@@ -104,19 +91,6 @@ impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
             raw_transaction,
             transaction_effects_content: tx_effect_json,
             confirmed_local_execution,
-            transact_obc,
         })
     }
-}
-
-const OBC_MODULE_NAME: &IdentStr = ident_str!("obc");
-const OBC_STRUCT_NAME: &IdentStr = ident_str!("OBC");
-
-fn is_obc_coin(tt: &TypeTag) -> bool {
-    if let TypeTag::Struct(st) = tt {
-        return st.address == AccountAddress::TWO
-            && st.module == OBC_MODULE_NAME.into()
-            && st.name == OBC_STRUCT_NAME.into();
-    }
-    return false;
 }

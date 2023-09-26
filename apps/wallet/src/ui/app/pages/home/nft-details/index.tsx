@@ -3,7 +3,6 @@
 
 import { useGetKioskContents } from '@mysten/core';
 import { ArrowUpRight12, ArrowRight16 } from '@mysten/icons';
-import { hasPublicTransfer } from '@mysten/sui.js';
 import { formatAddress } from '@mysten/sui.js/utils';
 import cl from 'classnames';
 import { Navigate, useSearchParams } from 'react-router-dom';
@@ -11,7 +10,7 @@ import { Navigate, useSearchParams } from 'react-router-dom';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import { Button } from '_app/shared/ButtonUI';
 import { Link } from '_app/shared/Link';
-import { Collapse } from '_app/shared/collapse';
+import { Collapsible } from '_app/shared/collapse';
 import { LabelValueItem } from '_components/LabelValueItem';
 import { LabelValuesContainer } from '_components/LabelValuesContainer';
 import { ExplorerLinkType } from '_components/explorer-link/ExplorerLinkType';
@@ -21,12 +20,19 @@ import { useGetNFTMeta, useNFTBasicData, useOwnedNFT } from '_hooks';
 import { useExplorerLink } from '_src/ui/app/hooks/useExplorerLink';
 import PageTitle from '_src/ui/app/shared/PageTitle';
 
+type NftFields = {
+	metadata?: { fields?: { attributes?: { fields?: { keys: string[]; values: string[] } } } };
+};
+
 function NFTDetailsPage() {
 	const [searchParams] = useSearchParams();
 	const nftId = searchParams.get('objectId');
 	const accountAddress = useActiveAddress();
 	const { data: objectData, isLoading } = useOwnedNFT(nftId || '', accountAddress);
-	const isTransferable = !!objectData && hasPublicTransfer(objectData);
+	const isTransferable =
+		!!objectData &&
+		objectData.content?.dataType === 'moveObject' &&
+		objectData.content?.hasPublicTransfer;
 	const { nftFields, fileExtensionType, filePath } = useNFTBasicData(objectData);
 	const address = useActiveAddress();
 	const { data } = useGetKioskContents(address);
@@ -36,13 +42,13 @@ function NFTDetailsPage() {
 
 	// Extract either the attributes, or use the top-level NFT fields:
 	const metaFields =
-		nftFields?.metadata?.fields?.attributes?.fields ||
+		(nftFields as NftFields)?.metadata?.fields?.attributes?.fields ||
 		Object.entries(nftFields ?? {})
 			.filter(([key]) => key !== 'id')
 			.reduce(
 				(acc, [key, value]) => {
 					acc.keys.push(key);
-					acc.values.push(value);
+					acc.values.push(value as string);
 					return acc;
 				},
 				{ keys: [] as string[], values: [] as string[] },
@@ -55,7 +61,8 @@ function NFTDetailsPage() {
 		objectID: nftId || '',
 	});
 	const ownerAddress =
-		(typeof objectData?.owner === 'object' &&
+		(objectData?.owner &&
+			typeof objectData?.owner === 'object' &&
 			'AddressOwner' in objectData.owner &&
 			objectData.owner.AddressOwner) ||
 		'';
@@ -100,7 +107,7 @@ function NFTDetailsPage() {
 												mono
 												href={ownerExplorerLink}
 												text={formatAddress(ownerAddress)}
-												title="View on OBC Explorer"
+												title="View on Sui Explorer"
 											/>
 										}
 									/>
@@ -116,7 +123,7 @@ function NFTDetailsPage() {
 												mono
 												href={objectExplorerLink || ''}
 												text={formatAddress(nftId)}
-												title="View on OBC Explorer"
+												title="View on Sui Explorer"
 											/>
 										) : null
 									}
@@ -130,7 +137,7 @@ function NFTDetailsPage() {
 									}
 								/>
 							</LabelValuesContainer>
-							<Collapse initialIsOpen title="Details">
+							<Collapsible defaultOpen title="Details">
 								<LabelValuesContainer>
 									<LabelValueItem label="Name" value={nftDisplayData?.name} />
 									<LabelValueItem
@@ -142,9 +149,9 @@ function NFTDetailsPage() {
 									<LabelValueItem label="Link" value={nftDisplayData?.link} parseUrl />
 									<LabelValueItem label="Website" value={nftDisplayData?.projectUrl} parseUrl />
 								</LabelValuesContainer>
-							</Collapse>
+							</Collapsible>
 							{metaKeys.length ? (
-								<Collapse title="Attributes" initialIsOpen>
+								<Collapsible title="Attributes" defaultOpen>
 									<LabelValuesContainer>
 										{metaKeys.map((aKey, idx) => (
 											<LabelValueItem
@@ -158,10 +165,10 @@ function NFTDetailsPage() {
 											/>
 										))}
 									</LabelValuesContainer>
-								</Collapse>
+								</Collapsible>
 							) : null}
 
-							{isContainedInKiosk && kioskItem.isLocked ? (
+							{isContainedInKiosk && kioskItem?.isLocked ? (
 								<div className="flex flex-col gap-2 mb-3">
 									<Button
 										after={<ArrowUpRight12 />}

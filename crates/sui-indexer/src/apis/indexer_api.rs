@@ -1,8 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::sync::Arc;
-
 use anyhow::anyhow;
 use async_trait::async_trait;
 use futures::future::join_all;
@@ -12,9 +10,7 @@ use jsonrpsee::types::SubscriptionResult;
 use jsonrpsee::{RpcModule, SubscriptionSink};
 
 use move_core_types::identifier::Identifier;
-use sui_core::subscription_handler::SubscriptionHandler;
 use sui_json_rpc::api::{cap_page_limit, IndexerApiClient, IndexerApiServer};
-use sui_json_rpc::indexer_api::spawn_subscription;
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     DynamicFieldPage, EventFilter, EventPage, ObjectsPage, Page, SuiObjectDataFilter,
@@ -33,21 +29,14 @@ use crate::store::IndexerStore;
 pub(crate) struct IndexerApi<S> {
     state: S,
     fullnode: HttpClient,
-    subscription_handler: Arc<SubscriptionHandler>,
     migrated_methods: Vec<String>,
 }
 
 impl<S: IndexerStore> IndexerApi<S> {
-    pub fn new(
-        state: S,
-        fullnode_client: HttpClient,
-        subscription_handler: Arc<SubscriptionHandler>,
-        migrated_methods: Vec<String>,
-    ) -> Self {
+    pub fn new(state: S, fullnode_client: HttpClient, migrated_methods: Vec<String>) -> Self {
         Self {
             state,
             fullnode: fullnode_client,
-            subscription_handler,
             migrated_methods,
         }
     }
@@ -454,20 +443,15 @@ where
         df_obj_resp
     }
 
-    fn subscribe_event(&self, sink: SubscriptionSink, filter: EventFilter) -> SubscriptionResult {
-        spawn_subscription(sink, self.subscription_handler.subscribe_events(filter));
+    fn subscribe_event(&self, _sink: SubscriptionSink, _filter: EventFilter) -> SubscriptionResult {
         Ok(())
     }
 
     fn subscribe_transaction(
         &self,
-        sink: SubscriptionSink,
-        filter: TransactionFilter,
+        _sink: SubscriptionSink,
+        _filter: TransactionFilter,
     ) -> SubscriptionResult {
-        spawn_subscription(
-            sink,
-            self.subscription_handler.subscribe_transactions(filter),
-        );
         Ok(())
     }
 

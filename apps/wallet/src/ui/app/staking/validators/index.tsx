@@ -22,7 +22,7 @@ export function Validators() {
 
 	const navigate = useNavigate();
 
-	const pageTitle = stakedValidators?.length ? 'Stake & Earn OBC' : 'Select a Validator';
+	const pageTitle = stakedValidators?.length ? 'Stake & Earn SUI' : 'Select a Validator';
 
 	return (
 		<Overlay showModal title={isLoading ? 'Loading' : pageTitle} closeOverlay={() => navigate('/')}>
@@ -35,6 +35,7 @@ export function Validators() {
 							</Alert>
 						</div>
 					) : null}
+
 					{stakedValidators?.length ? <ValidatorsCard /> : <SelectValidatorCard />}
 				</Loading>
 			</div>

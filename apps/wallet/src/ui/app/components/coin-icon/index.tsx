@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useCoinMetadata } from '@mysten/core';
-import { Logo, Unstaked } from '@mysten/icons';
-import { SUI_TYPE_ARG } from '@mysten/sui.js';
+import { Sui, Unstaked } from '@mysten/icons';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { ImageIcon } from '_app/shared/image-icon';
 
-const imageStyle = cva(['rounded-full flex rounded-full flex justify-center items-center'], {
+const imageStyle = cva(['rounded-full flex'], {
 	variants: {
 		size: {
 			sm: 'w-6 h-6',
@@ -16,15 +16,21 @@ const imageStyle = cva(['rounded-full flex rounded-full flex justify-center item
 			lg: 'md:w-10 md:h-10 w-8 h-8',
 			xl: 'md:w-31.5 md:h-31.5 w-16 h-16 ',
 		},
+		fill: {
+			sui: 'bg-sui',
+			suiPrimary2023: 'bg-sui-primaryBlue2023',
+		},
 	},
-
 	defaultVariants: {
 		size: 'md',
+		fill: 'suiPrimary2023',
 	},
 });
 
 function SuiCoin() {
-	return <Logo className="w-6 h-6 text-body rounded-full bg-obc" />;
+	return (
+		<Sui className="flex items-center w-full h-full justify-center text-white p-1 text-body rounded-full" />
+	);
 }
 
 type NonSuiCoinProps = {
@@ -34,7 +40,7 @@ type NonSuiCoinProps = {
 function NonSuiCoin({ coinType }: NonSuiCoinProps) {
 	const { data: coinMeta } = useCoinMetadata(coinType);
 	return (
-		<div className="flex h-full w-full items-center justify-center text-obc rounded-full">
+		<div className="flex h-full w-full items-center justify-center text-white bg-steel rounded-full">
 			{coinMeta?.iconUrl ? (
 				<ImageIcon
 					src={coinMeta.iconUrl}

@@ -13,7 +13,7 @@ module deepbook::clob_v2 {
     use sui::event;
     use sui::linked_table::{Self, LinkedTable};
     use sui::object::{Self, UID, ID};
-    use sui::obc::OBC;
+    use sui::sui::SUI;
     use sui::table::{Self, Table, contains, add, borrow_mut};
     use sui::transfer;
     use sui::tx_context::TxContext;
@@ -123,6 +123,27 @@ module deepbook::clob_v2 {
         price: u64
     }
 
+    /// A struct to make all orders canceled a more effifient struct
+    struct AllOrdersCanceledComponent<phantom BaseAsset, phantom QuoteAsset> has copy, store, drop {
+        /// ID of the order within the pool
+        order_id: u64,
+        /// ID of the order defined by client
+        client_order_id: u64,
+        is_bid: bool,
+        /// owner ID of the `AccountCap` that canceled the order
+        owner: address,
+        original_quantity: u64,
+        base_asset_quantity_canceled: u64,
+        price: u64
+    }
+
+    /// Emitted when batch of orders are canceled.
+    struct AllOrdersCanceled<phantom BaseAsset, phantom QuoteAsset> has copy, store, drop {
+        /// object ID of the pool the order was placed on
+        pool_id: ID,
+        orders_canceled: vector<AllOrdersCanceledComponent<BaseAsset, QuoteAsset>>,
+    }
+
     /// Emitted only when a maker order is filled.
     struct OrderFilled<phantom BaseAsset, phantom QuoteAsset> has copy, store, drop {
         /// object ID of the pool the order was placed on
@@ -221,7 +242,7 @@ module deepbook::clob_v2 {
         base_custodian: Custodian<BaseAsset>,
         quote_custodian: Custodian<QuoteAsset>,
         // Stores the fee paid to create this pool. These funds are not accessible.
-        creation_fee: Balance<OBC>,
+        creation_fee: Balance<SUI>,
         // Deprecated.
         base_asset_trading_fees: Balance<BaseAsset>,
         // Stores the trading fees paid in `QuoteAsset`. These funds are not accessible.
@@ -246,7 +267,7 @@ module deepbook::clob_v2 {
         maker_rebate_rate: u64,
         tick_size: u64,
         lot_size: u64,
-        creation_fee: Balance<OBC>,
+        creation_fee: Balance<SUI>,
         ctx: &mut TxContext,
     ) {
         let base_type_name = type_name::get<BaseAsset>();
@@ -291,7 +312,7 @@ module deepbook::clob_v2 {
     public fun create_pool<BaseAsset, QuoteAsset>(
         tick_size: u64,
         lot_size: u64,
-        creation_fee: Coin<OBC>,
+        creation_fee: Coin<SUI>,
         ctx: &mut TxContext,
     ) {
         assert!(coin::value(&creation_fee) == FEE_AMOUNT_FOR_CREATE_POOL, EInvalidFee);
@@ -313,7 +334,7 @@ module deepbook::clob_v2 {
         lot_size: u64,
         taker_fee_rate: u64,
         maker_rebate_rate: u64,
-        creation_fee: Coin<OBC>,
+        creation_fee: Coin<SUI>,
         ctx: &mut TxContext,
     ) {
         assert!(coin::value(&creation_fee) == FEE_AMOUNT_FOR_CREATE_POOL, EInvalidFee);
@@ -470,6 +491,7 @@ module deepbook::clob_v2 {
         };
         let (tick_price, tick_index) = min_leaf(all_open_orders);
         let terminate_loop = false;
+        let canceled_order_events = vector[];
 
         while (!is_empty<TickLevel>(all_open_orders) && tick_price <= price_limit) {
             let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
@@ -484,6 +506,18 @@ module deepbook::clob_v2 {
                     skip_order = true;
                     custodian::unlock_balance(&mut pool.base_custodian, maker_order.owner, maker_order.quantity);
                     emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
+                    let canceled_order_event = AllOrdersCanceledComponent<BaseAsset, QuoteAsset> {
+                        client_order_id: maker_order.client_order_id,
+                        order_id: maker_order.order_id,
+                        is_bid: maker_order.is_bid,
+                        owner: maker_order.owner,
+                        original_quantity: maker_order.original_quantity,
+                        base_asset_quantity_canceled: maker_order.quantity,
+                        price: maker_order.price
+                    };
+
+                    vector::push_back(&mut canceled_order_events, canceled_order_event);
+
                 } else {
                     // Calculate how much quote asset (maker_quote_quantity) is required, including the commission, to fill the maker order.
                     let maker_quote_quantity_without_commission = clob_math::mul(
@@ -614,6 +648,14 @@ module deepbook::clob_v2 {
                 break
             };
         };
+
+        if (!vector::is_empty(&canceled_order_events)) {
+            event::emit(AllOrdersCanceled<BaseAsset, QuoteAsset> {
+                pool_id,
+                orders_canceled: canceled_order_events,
+            });
+        };
+
         return (base_balance_filled, quote_balance_left)
     }
 
@@ -637,6 +679,7 @@ module deepbook::clob_v2 {
             return (base_balance_filled, quote_balance_left)
         };
         let (tick_price, tick_index) = min_leaf(all_open_orders);
+        let canceled_order_events = vector[];
 
         while (!is_empty<TickLevel>(all_open_orders) && tick_price <= price_limit) {
             let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
@@ -651,6 +694,17 @@ module deepbook::clob_v2 {
                     skip_order = true;
                     custodian::unlock_balance(&mut pool.base_custodian, maker_order.owner, maker_order.quantity);
                     emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
+                    let canceled_order_event = AllOrdersCanceledComponent<BaseAsset, QuoteAsset> {
+                        client_order_id: maker_order.client_order_id,
+                        order_id: maker_order.order_id,
+                        is_bid: maker_order.is_bid,
+                        owner: maker_order.owner,
+                        original_quantity: maker_order.original_quantity,
+                        base_asset_quantity_canceled: maker_order.quantity,
+                        price: maker_order.price
+                    };
+                    vector::push_back(&mut canceled_order_events, canceled_order_event);
+
                 } else {
                     let filled_base_quantity =
                         if (taker_base_quantity_remaining > maker_base_quantity) { maker_base_quantity }
@@ -741,6 +795,13 @@ module deepbook::clob_v2 {
                 break
             };
         };
+
+        if (!vector::is_empty(&canceled_order_events)) {
+            event::emit(AllOrdersCanceled<BaseAsset, QuoteAsset> {
+                pool_id,
+                orders_canceled: canceled_order_events,
+            });
+        };
         return (base_balance_filled, quote_balance_left)
     }
 
@@ -761,6 +822,7 @@ module deepbook::clob_v2 {
             return (base_balance_left, quote_balance_filled)
         };
         let (tick_price, tick_index) = max_leaf(all_open_orders);
+        let canceled_order_events = vector[];
         while (!is_empty<TickLevel>(all_open_orders) && tick_price >= price_limit) {
             let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
             let order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
@@ -773,7 +835,18 @@ module deepbook::clob_v2 {
                     skip_order = true;
                     let maker_quote_quantity = clob_math::mul(maker_order.quantity, maker_order.price);
                     custodian::unlock_balance(&mut pool.quote_custodian, maker_order.owner, maker_quote_quantity);
+                    // TODO (jian): remove the canceled orders after we ensure market makers update
                     emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
+                    let canceled_order_event = AllOrdersCanceledComponent<BaseAsset, QuoteAsset> {
+                        client_order_id: maker_order.client_order_id,
+                        order_id: maker_order.order_id,
+                        is_bid: maker_order.is_bid,
+                        owner: maker_order.owner,
+                        original_quantity: maker_order.original_quantity,
+                        base_asset_quantity_canceled: maker_order.quantity,
+                        price: maker_order.price
+                    };
+                    vector::push_back(&mut canceled_order_events, canceled_order_event);
                 } else {
                     let taker_base_quantity_remaining = balance::value(&base_balance_left);
                     let filled_base_quantity =
@@ -821,7 +894,6 @@ module deepbook::clob_v2 {
                             filled_base_quantity,
                         ),
                     );
-
                     emit_order_filled<BaseAsset, QuoteAsset>(
                         *object::uid_as_inner(&pool.id),
                         client_order_id,
@@ -863,6 +935,14 @@ module deepbook::clob_v2 {
                 break
             };
         };
+
+        if (!vector::is_empty(&canceled_order_events)) {
+            event::emit(AllOrdersCanceled<BaseAsset, QuoteAsset> {
+                pool_id,
+                orders_canceled: canceled_order_events,
+            });
+        };
+
         return (base_balance_left, quote_balance_filled)
     }
 
@@ -1224,7 +1304,11 @@ module deepbook::clob_v2 {
             owner
         );
         if (is_bid) {
-            let balance_locked = clob_math::mul(order.quantity, order.price);
+            let (is_round_down, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
+            // make sure when we cancel we unlock the extra bit so we can fully unlock the amount for our users
+            if (is_round_down) {
+                balance_locked = balance_locked + 1;
+            };
             custodian::unlock_balance(&mut pool.quote_custodian, owner, balance_locked);
         } else {
             custodian::unlock_balance(&mut pool.base_custodian, owner, order.quantity);
@@ -1259,6 +1343,7 @@ module deepbook::clob_v2 {
         let owner = account_owner(account_cap);
         assert!(contains(&pool.usr_open_orders, owner), EInvalidUser);
         let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, owner);
+        let canceled_order_events = vector[];
         while (!linked_table::is_empty(usr_open_order_ids)) {
             let order_id = *option::borrow(linked_table::back(usr_open_order_ids));
             let order_price = *linked_table::borrow(usr_open_order_ids, order_id);
@@ -1280,7 +1365,26 @@ module deepbook::clob_v2 {
             } else {
                 custodian::unlock_balance(&mut pool.base_custodian, owner, order.quantity);
             };
+            // TODO (jian): remove the canceled orders after we ensure market makers update
             emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, &order);
+            let canceled_order_event = AllOrdersCanceledComponent<BaseAsset, QuoteAsset> {
+                client_order_id: order.client_order_id,
+                order_id: order.order_id,
+                is_bid: order.is_bid,
+                owner: order.owner,
+                original_quantity: order.original_quantity,
+                base_asset_quantity_canceled: order.quantity,
+                price: order.price
+            };
+
+            vector::push_back(&mut canceled_order_events, canceled_order_event);
+        };
+
+        if (!vector::is_empty(&canceled_order_events)) {
+            event::emit(AllOrdersCanceled<BaseAsset, QuoteAsset> {
+                pool_id,
+                orders_canceled: canceled_order_events,
+            });
         };
     }
 
@@ -1310,6 +1414,8 @@ module deepbook::clob_v2 {
         let n_order = vector::length(&order_ids);
         let i_order = 0;
         let usr_open_orders = borrow_mut(&mut pool.usr_open_orders, owner);
+        let canceled_order_events = vector[];
+
         while (i_order < n_order) {
             let order_id = *vector::borrow(&order_ids, i_order);
             assert!(linked_table::contains(usr_open_orders, order_id), EInvalidOrderId);
@@ -1332,14 +1438,36 @@ module deepbook::clob_v2 {
                 owner
             );
             if (is_bid) {
-                let balance_locked = clob_math::mul(order.quantity, order.price);
+                let (is_round_down, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
+                // make sure when we cancel we unlock the extra bit so we can fully unlock the amount for our users
+                if (is_round_down) {
+                    balance_locked = balance_locked + 1;
+                };
                 custodian::unlock_balance(&mut pool.quote_custodian, owner, balance_locked);
             } else {
                 custodian::unlock_balance(&mut pool.base_custodian, owner, order.quantity);
             };
             emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, &order);
+            let canceled_order_event = AllOrdersCanceledComponent<BaseAsset, QuoteAsset> {
+                client_order_id: order.client_order_id,
+                order_id: order.order_id,
+                is_bid: order.is_bid,
+                owner: order.owner,
+                original_quantity: order.original_quantity,
+                base_asset_quantity_canceled: order.quantity,
+                price: order.price
+            };
+            vector::push_back(&mut canceled_order_events, canceled_order_event);
+
             i_order = i_order + 1;
-        }
+        };
+
+        if (!vector::is_empty(&canceled_order_events)) {
+            event::emit(AllOrdersCanceled<BaseAsset, QuoteAsset> {
+                pool_id,
+                orders_canceled: canceled_order_events,
+            });
+        };
     }
 
     /// Clean up expired orders
@@ -1362,6 +1490,7 @@ module deepbook::clob_v2 {
         let i_order = 0;
         let tick_index: u64 = 0;
         let tick_price: u64 = 0;
+        let canceled_order_events = vector[];
         while (i_order < n_order) {
             let order_id = *vector::borrow(&order_ids, i_order);
             let owner = *vector::borrow(&order_owners, i_order);
@@ -1388,9 +1517,28 @@ module deepbook::clob_v2 {
             } else {
                 custodian::unlock_balance(&mut pool.base_custodian, owner, order.quantity);
             };
+            // TODO (jian): remove the canceled orders after we ensure market makers update
             emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, &order);
+            let canceled_order_event = AllOrdersCanceledComponent<BaseAsset, QuoteAsset> {
+                client_order_id: order.client_order_id,
+                order_id: order.order_id,
+                is_bid: order.is_bid,
+                owner: order.owner,
+                original_quantity: order.original_quantity,
+                base_asset_quantity_canceled: order.quantity,
+                price: order.price
+            };
+            vector::push_back(&mut canceled_order_events, canceled_order_event);
+
             i_order = i_order + 1;
-        }
+        };
+
+        if (!vector::is_empty(&canceled_order_events)) {
+            event::emit(AllOrdersCanceled<BaseAsset, QuoteAsset> {
+                pool_id,
+                orders_canceled: canceled_order_events,
+            });
+        };
     }
 
     public fun list_open_orders<BaseAsset, QuoteAsset>(
@@ -1596,7 +1744,7 @@ module deepbook::clob_v2 {
 
         test_scenario::next_tx(scenario, sender);
         {
-            create_pool_<OBC, USD>(
+            create_pool_<SUI, USD>(
                 taker_fee_rate,
                 maker_rebate_rate,
                 tick_size,
@@ -1945,13 +2093,13 @@ module deepbook::clob_v2 {
         };
         test_scenario::next_tx(&mut test, alice);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(1000 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(1000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
             custodian::deposit(
@@ -1959,7 +2107,7 @@ module deepbook::clob_v2 {
                 mint_for_testing<USD>(10000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 5 * FLOAT_SCALING,
@@ -2007,13 +2155,13 @@ module deepbook::clob_v2 {
         };
         test_scenario::next_tx(&mut test, alice);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(1000 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(1000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
             custodian::deposit(
@@ -2021,7 +2169,7 @@ module deepbook::clob_v2 {
                 mint_for_testing<USD>(10000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 5 * FLOAT_SCALING,
@@ -2034,7 +2182,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2047,7 +2195,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2060,7 +2208,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 10 * FLOAT_SCALING,
@@ -2082,7 +2230,7 @@ module deepbook::clob_v2 {
                 7400 * 100000000,
                 2600 * 100000000
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 0, 1000 * 100000000);
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 0, 1000 * 100000000);
             test_scenario::return_shared(pool);
             test_scenario::return_shared(clock);
             test_scenario::return_to_address<AccountCap>(alice, account_cap);
@@ -2090,17 +2238,17 @@ module deepbook::clob_v2 {
 
         test_scenario::next_tx(&mut test, bob);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, bob);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(900 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(900 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
-            place_limit_order<OBC, USD>(
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_BOB,
                 4 * FLOAT_SCALING,
@@ -2148,13 +2296,13 @@ module deepbook::clob_v2 {
         };
         test_scenario::next_tx(&mut test, alice);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(1000 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(1000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
             custodian::deposit(
@@ -2162,7 +2310,7 @@ module deepbook::clob_v2 {
                 mint_for_testing<USD>(10000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 5 * FLOAT_SCALING,
@@ -2175,7 +2323,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2188,7 +2336,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2201,7 +2349,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 10 * FLOAT_SCALING,
@@ -2223,7 +2371,7 @@ module deepbook::clob_v2 {
                 7400 * 100000000,
                 2600 * 100000000
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 0, 1000 * 100000000);
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 0, 1000 * 100000000);
             test_scenario::return_shared(pool);
             test_scenario::return_shared(clock);
             test_scenario::return_to_address<AccountCap>(alice, account_cap);
@@ -2231,17 +2379,17 @@ module deepbook::clob_v2 {
 
         test_scenario::next_tx(&mut test, bob);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, bob);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(900 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(900 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
-            place_limit_order<OBC, USD>(
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_BOB,
                 4 * FLOAT_SCALING,
@@ -2254,7 +2402,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
             test_scenario::return_shared(pool);
             test_scenario::return_shared(clock);
             test_scenario::return_to_address<AccountCap>(bob, account_cap);
@@ -2288,13 +2436,13 @@ module deepbook::clob_v2 {
         };
         test_scenario::next_tx(&mut test, alice);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(1000 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(1000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
             custodian::deposit(
@@ -2302,7 +2450,7 @@ module deepbook::clob_v2 {
                 mint_for_testing<USD>(10000 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 5 * FLOAT_SCALING,
@@ -2315,7 +2463,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2328,7 +2476,7 @@ module deepbook::clob_v2 {
                 &account_cap,
                 test_scenario::ctx(&mut test)
             );
-            place_limit_order<OBC, USD>(
+            place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2342,7 +2490,7 @@ module deepbook::clob_v2 {
                 test_scenario::ctx(&mut test)
             );
 
-            let (base_filled, quote_filled, maker_injected, maker_order_id) = place_limit_order<OBC, USD>(
+            let (base_filled, quote_filled, maker_injected, maker_order_id) = place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 10 * FLOAT_SCALING,
@@ -2369,7 +2517,7 @@ module deepbook::clob_v2 {
                 7400 * 100000000,
                 2600 * 100000000
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 0, 1000 * 100000000);
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 0, 1000 * 100000000);
             test_scenario::return_shared(pool);
             test_scenario::return_shared(clock);
             test_scenario::return_to_address<AccountCap>(alice, account_cap);
@@ -2377,18 +2525,18 @@ module deepbook::clob_v2 {
 
         test_scenario::next_tx(&mut test, bob);
         {
-            let pool = test_scenario::take_shared<Pool<OBC, USD>>(&mut test);
+            let pool = test_scenario::take_shared<Pool<SUI, USD>>(&mut test);
             let clock = test_scenario::take_shared<Clock>(&test);
             let account_cap = test_scenario::take_from_address<AccountCap>(&test, bob);
             let account_cap_user = account_owner(&account_cap);
             custodian::deposit(
                 &mut pool.base_custodian,
-                mint_for_testing<OBC>(900 * 100000000, test_scenario::ctx(&mut test)),
+                mint_for_testing<SUI>(900 * 100000000, test_scenario::ctx(&mut test)),
                 account_cap_user
             );
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 900 * 100000000, 0);
 
-            let (base_filled, quote_filled, maker_injected, _) = place_limit_order<OBC, USD>(
+            let (base_filled, quote_filled, maker_injected, _) = place_limit_order<SUI, USD>(
                 &mut pool,
                 CLIENT_ID_ALICE,
                 4 * FLOAT_SCALING,
@@ -2405,7 +2553,7 @@ module deepbook::clob_v2 {
             assert!(quote_filled == 2600 * 100000000, E_NULL);
             assert!(!maker_injected, E_NULL);
 
-            custodian::assert_user_balance<OBC>(&pool.base_custodian, account_cap_user, 300 * 100000000, 0);
+            custodian::assert_user_balance<SUI>(&pool.base_custodian, account_cap_user, 300 * 100000000, 0);
             {
                 let (_, _, bids, _) = get_pool_stat(&pool);
                 check_empty_tick_level(bids, 4 * FLOAT_SCALING);
@@ -2429,7 +2577,7 @@ module deepbook::clob_v2 {
         // create pool which is already exist fail
         test_scenario::next_tx(&mut test, owner);
         {
-            create_pool_<OBC, OBC>(
+            create_pool_<SUI, SUI>(
                 REFERENCE_TAKER_FEE_RATE,
                 REFERENCE_MAKER_REBATE_RATE,
                 1 * FLOAT_SCALING,
@@ -2453,7 +2601,7 @@ module deepbook::clob_v2 {
         // create pool which is already exist fail
         test_scenario::next_tx(&mut test, owner);
         {
-            create_pool_<OBC, OBC>(
+            create_pool_<SUI, SUI>(
                 REFERENCE_TAKER_FEE_RATE,
                 REFERENCE_MAKER_REBATE_RATE,
                 100_000,
@@ -2463,5 +2611,42 @@ module deepbook::clob_v2 {
             );
         };
         test_scenario::end(test);
+    }
+
+    // Ensure that the custodian's locked balance matches the sum of all values for a given account
+    // Assumption: custodian has only placed orders in the given pool--if they have orders in other pools, the locked balance will be too small
+    #[test_only]
+    public fun check_balance_invariants_for_account<BaseAsset, QuoteAsset>(
+        account_cap: &AccountCap,
+        quote_custodian: &Custodian<QuoteAsset>,
+        base_custodian: &Custodian<BaseAsset>, 
+        pool: &Pool<BaseAsset, QuoteAsset>
+    ) {
+        let account_cap_user = custodian::account_owner(account_cap);
+        let quote_account_locked_balance = custodian::account_locked_balance<QuoteAsset>(quote_custodian, account_cap_user);
+        let base_account_locked_balance = custodian::account_locked_balance<BaseAsset>(base_custodian, account_cap_user);
+        let usr_open_order_ids = table::borrow(&pool.usr_open_orders, account_cap_user);
+
+        let quote_asset_amount = 0;
+        let base_asset_amount = 0;
+        let curr = linked_table::front(usr_open_order_ids);
+
+        while (option::is_some(curr)) {
+            let order_id = *option::borrow(curr);
+            let order = get_order_status<BaseAsset, QuoteAsset>(pool, order_id, account_cap);
+            let (is_round_down, total_balance) = clob_math::unsafe_mul_round(order.price, order.quantity);
+            if (is_round_down) {
+                total_balance = total_balance + 1;
+            };
+            if (order.is_bid) {
+                quote_asset_amount = quote_asset_amount + total_balance;
+            } else {
+                // For base swaps we actually only need the order quantity
+                base_asset_amount = base_asset_amount + order.quantity;
+            };
+            curr = linked_table::next(usr_open_order_ids, order_id);
+        };
+        assert!(quote_asset_amount == quote_account_locked_balance, 0);
+        assert!(base_asset_amount == base_account_locked_balance, 0);
     }
 }

@@ -26,6 +26,7 @@ use move_compiler::{
     diagnostics::{report_diagnostics_to_color_buffer, report_warnings},
     expansion::ast::{AttributeName_, Attributes},
     shared::known_attributes::KnownAttribute,
+    typing::visitor::TypingVisitor,
 };
 use move_core_types::{
     account_address::AccountAddress,
@@ -48,8 +49,9 @@ use sui_types::{base_types::ObjectID, error::{SuiError, SuiResult}, is_system_pa
 use sui_verifier::verifier as sui_bytecode_verifier;
 
 use crate::linters::{
-    custom_state_change::CustomStateChangeVerifier, known_filters,
-    self_transfer::SelfTransferVerifier, share_owned::ShareOwnedVerifier,
+    coin_field::CoinFieldVisitor, collection_equality::CollectionEqualityVisitor,
+    custom_state_change::CustomStateChangeVerifier, freeze_wrapped::FreezeWrappedVisitor,
+    known_filters, self_transfer::SelfTransferVerifier, share_owned::ShareOwnedVerifier,
 };
 
 #[cfg(test)]
@@ -133,6 +135,9 @@ impl BuildConfig {
                     ShareOwnedVerifier.visitor(),
                     SelfTransferVerifier.visitor(),
                     CustomStateChangeVerifier.visitor(),
+                    CoinFieldVisitor.visitor(),
+                    FreezeWrappedVisitor.visitor(),
+                    CollectionEqualityVisitor.visitor(),
                 ];
                 let (filter_attr_name, filters) = known_filters();
                 compiler
@@ -354,7 +359,8 @@ impl CompiledPackage {
         ids.into_iter().collect()
     }
 
-    pub fn get_package_digest(&self, with_unpublished_deps: bool, hash_modules: bool) -> [u8; 32] {
+    pub fn get_package_digest(&self, with_unpublished_deps: bool) -> [u8; 32] {
+        let hash_modules = true;
         MovePackage::compute_digest_for_modules_and_deps(
             &self.get_package_bytes(with_unpublished_deps),
             self.dependency_ids.published.values(),
@@ -413,7 +419,6 @@ impl CompiledPackage {
         self.get_modules_and_deps()
             .filter(|m| *m.self_id().address() == MOVE_STDLIB_ADDRESS)
     }
-
     /// Get bytecode modules from the obc system that are used by this package
     pub fn get_obc_system_modules(&self) -> impl Iterator<Item = &CompiledModule> {
         self.get_modules_and_deps()

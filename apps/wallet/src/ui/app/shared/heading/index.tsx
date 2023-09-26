@@ -19,7 +19,7 @@ const headingStyles = cva(
 			variant: {
 				heading1: 'text-heading1',
 				heading2: 'md:text-heading2 text-heading3',
-				heading3: 'text-heading3/[26px]',
+				heading3: 'text-heading3',
 				heading4: 'md:text-heading4 text-heading6',
 				heading5: 'text-heading5',
 				heading6: 'text-heading6',
@@ -39,10 +39,6 @@ const headingStyles = cva(
 				'steel-darker': 'text-steel-darker',
 				'success-dark': 'text-success-dark',
 				'hero-dark': 'text-hero-dark',
-				black: 'text-black',
-				'obc-text1': 'text-obc-text1',
-				'obc-text2': 'text-obc-text2',
-				'obc-text3': 'text-obc-text3',
 			},
 			weight: {
 				medium: 'font-medium',

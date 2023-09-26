@@ -35,6 +35,7 @@ use sui_types::transaction::{
 use tracing::instrument;
 use crate::api::JsonRpcMetrics;
 use crate::api::WriteApiServer;
+use crate::authority_state::StateRead;
 use crate::error::{Error, SuiRpcInputError};
 use crate::{
     get_balance_changes_from_effect, get_object_changes, with_tracing, ObjectProviderCache,
@@ -42,7 +43,7 @@ use crate::{
 };
 
 pub struct TransactionExecutionApi {
-    state: Arc<AuthorityState>,
+    state: Arc<dyn StateRead>,
     transaction_orchestrator: Arc<TransactiondOrchestrator<NetworkAuthorityClient>>,
     metrics: Arc<JsonRpcMetrics>,
 }
@@ -185,7 +186,7 @@ impl TransactionExecutionApi {
                     sender,
                     effects.effects.modified_at_versions(),
                     effects.effects.all_changed_objects(),
-                    effects.effects.all_deleted(),
+                    effects.effects.all_removed_objects(),
                 )
                 .await?,
             )
@@ -213,7 +214,6 @@ impl TransactionExecutionApi {
         tx_bytes: Base64,
     ) -> Result<(TransactionData, TransactionDigest, Vec<InputObjectKind>), SuiRpcInputError> {
         let tx_data: TransactionData = self.convert_bytes(tx_bytes)?;
-
         let input_objs = tx_data.input_objects()?;
         let intent_msg = IntentMessage::new(
             Intent {
@@ -231,7 +231,6 @@ impl TransactionExecutionApi {
         &self,
         tx_bytes: Base64,
     ) -> Result<DryRunTransactionBlockResponse, Error> {
-
         let (txn_data, txn_digest, input_objs) =
             self.prepare_dry_run_transaction_block(tx_bytes)?;
         let sender = txn_data.sender();
@@ -252,7 +251,7 @@ impl TransactionExecutionApi {
             sender,
             transaction_effects.modified_at_versions(),
             transaction_effects.all_changed_objects(),
-            transaction_effects.all_deleted(),
+            transaction_effects.all_removed_objects(),
         )
         .await?;
 

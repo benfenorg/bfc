@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress } from '@mysten/sui.js';
 import { type TransactionBlock } from '@mysten/sui.js/transactions';
+import { formatAddress } from '@mysten/sui.js/utils';
 
 import { DescriptionItem, DescriptionList } from './DescriptionList';
 import { SummaryCard } from './SummaryCard';
@@ -24,7 +24,7 @@ export function GasFees({ sender, transaction }: Props) {
 			header="Estimated Gas Fees"
 			badge={
 				isSponsored ? (
-					<div className="bg-white text-obc-green px-1.5 py-0.5 text-body rounded-full font-medium uppercase">
+					<div className="bg-white text-success px-1.5 py-0.5 text-captionSmallExtra rounded-full font-medium uppercase">
 						Sponsored
 					</div>
 				) : null

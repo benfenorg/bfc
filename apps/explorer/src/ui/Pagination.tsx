@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PaginationFirst18, PaginationNext18, PaginationPrev18 } from '@mysten/icons';
+import { PaginationFirst24, PaginationNext24, PaginationPrev24 } from '@mysten/icons';
 import { type UseInfiniteQueryResult } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -11,6 +11,10 @@ export interface PaginationProps {
 	onFirst(): void;
 	onPrev(): void;
 	onNext(): void;
+}
+
+interface CursorPaginationProps extends PaginationProps {
+	currentPage: number;
 }
 
 export interface PaginationResponse<Cursor = string> {
@@ -45,7 +49,8 @@ export function useCursorPagination<T>(query: UseInfiniteQueryResult<T>) {
 				!query.isFetchingNextPage &&
 				(currentPage < (query.data?.pages.length ?? 0) - 1 || !!query.hasNextPage),
 			hasPrev: currentPage !== 0,
-		} satisfies PaginationProps,
+			currentPage,
+		} satisfies CursorPaginationProps,
 	};
 }
 
@@ -85,13 +90,13 @@ function PaginationButton({
 	onClick,
 }: {
 	label: string;
-	icon: typeof PaginationFirst18;
+	icon: typeof PaginationFirst24;
 	disabled: boolean;
 	onClick(): void;
 }) {
 	return (
 		<button
-			className="rounded-md border border-obc-border px-2 py-1 text-obc-text1 shadow-xs disabled:text-obc-text3"
+			className="rounded-md border border-steel px-2 py-1 text-steel shadow-xs disabled:border-gray-45 disabled:text-gray-45"
 			aria-label={label}
 			type="button"
 			disabled={disabled}
@@ -107,17 +112,17 @@ export function Pagination({ hasNext, hasPrev, onFirst, onPrev, onNext }: Pagina
 		<div className="flex gap-2">
 			<PaginationButton
 				label="Go to First"
-				icon={PaginationFirst18}
+				icon={PaginationFirst24}
 				disabled={!hasPrev}
 				onClick={onFirst}
 			/>
 			<PaginationButton
 				label="Previous"
-				icon={PaginationPrev18}
+				icon={PaginationPrev24}
 				disabled={!hasPrev}
 				onClick={onPrev}
 			/>
-			<PaginationButton label="Next" icon={PaginationNext18} disabled={!hasNext} onClick={onNext} />
+			<PaginationButton label="Next" icon={PaginationNext24} disabled={!hasNext} onClick={onNext} />
 		</div>
 	);
 }

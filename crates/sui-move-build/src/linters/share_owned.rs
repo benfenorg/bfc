@@ -22,26 +22,29 @@ use move_compiler::{
         Diagnostic, Diagnostics,
     },
     hlir::ast::{
-        BaseType_, Command, Exp, LValue, LValue_, Label, ModuleCall, SingleType, SingleType_, Type,
-        Type_, Var,
+        BaseType_, Exp, LValue, LValue_, Label, ModuleCall, SingleType, SingleType_, Type, Type_,
+        Var,
     },
     parser::ast::Ability_,
     shared::{CompilationEnv, Identifier},
 };
 use std::collections::BTreeMap;
 
-use super::{LINT_WARNING_PREFIX, SHARE_OWNED_DIAG_CATEGORY, SHARE_OWNED_DIAG_CODE};
+use super::{
+    LinterDiagCategory, LINTER_DEFAULT_DIAG_CODE, LINT_WARNING_PREFIX, PUBLIC_SHARE_FUN, SHARE_FUN,
+    SUI_PKG_NAME, TRANSFER_MOD_NAME,
+};
 
 const SHARE_FUNCTIONS: &[(&str, &str, &str)] = &[
-    ("sui", "transfer", "public_share_object"),
-    ("sui", "transfer", "share_object"),
+    (SUI_PKG_NAME, TRANSFER_MOD_NAME, PUBLIC_SHARE_FUN),
+    (SUI_PKG_NAME, TRANSFER_MOD_NAME, SHARE_FUN),
 ];
 
 const SHARE_OWNED_DIAG: DiagnosticInfo = custom(
     LINT_WARNING_PREFIX,
     Severity::Warning,
-    SHARE_OWNED_DIAG_CATEGORY,
-    SHARE_OWNED_DIAG_CODE,
+    LinterDiagCategory::ShareOwned as u8,
+    LINTER_DEFAULT_DIAG_CODE,
     "possible owned object share",
 );
 
@@ -175,10 +178,6 @@ impl SimpleAbsInt for ShareOwnedVerifierAI {
                 })
                 .collect(),
         })
-    }
-
-    fn command_custom(&self, _: &mut ExecutionContext, _: &mut State, _: &Command) -> bool {
-        false
     }
 
     fn lvalue_custom(

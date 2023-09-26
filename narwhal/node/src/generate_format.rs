@@ -1,5 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+use clap::Parser;
 use config::{CommitteeBuilder, Epoch, WorkerIndex, WorkerInfo};
 use crypto::{KeyPair, NetworkKeyPair};
 use fastcrypto::{
@@ -10,11 +11,10 @@ use mysten_network::Multiaddr;
 use rand::{prelude::StdRng, SeedableRng};
 use serde_reflection::{Registry, Result, Samples, Tracer, TracerConfig};
 use std::{fs::File, io::Write};
-use structopt::{clap::arg_enum, StructOpt};
 use types::{
     Batch, BatchDigest, Certificate, CertificateDigest, Header, HeaderDigest, HeaderV1Builder,
-    Metadata, MetadataV1, VersionedMetadata, WorkerOthersBatchMessage, WorkerOurBatchMessage,
-    WorkerOwnBatchMessage, WorkerSynchronizeMessage,
+    MetadataV1, VersionedMetadata, WorkerOthersBatchMessage, WorkerOwnBatchMessage,
+    WorkerSynchronizeMessage,
 };
 
 #[allow(clippy::mutable_key_type)]
@@ -112,12 +112,7 @@ fn get_registry() -> Result<Registry> {
     );
     tracer.trace_value(&mut samples, &worker_index)?;
 
-    let our_batch = WorkerOurBatchMessage {
-        digest: BatchDigest([0u8; 32]),
-        worker_id: 0,
-        metadata: Metadata { created_at: 0 },
-    };
-    let our_batch_v2 = WorkerOwnBatchMessage {
+    let own_batch = WorkerOwnBatchMessage {
         digest: BatchDigest([0u8; 32]),
         worker_id: 0,
         metadata: VersionedMetadata::V1(MetadataV1 {
@@ -135,8 +130,7 @@ fn get_registry() -> Result<Registry> {
         is_certified: true,
     };
 
-    tracer.trace_value(&mut samples, &our_batch)?;
-    tracer.trace_value(&mut samples, &our_batch_v2)?;
+    tracer.trace_value(&mut samples, &own_batch)?;
     tracer.trace_value(&mut samples, &others_batch)?;
     tracer.trace_value(&mut samples, &sync)?;
 
@@ -149,29 +143,27 @@ fn get_registry() -> Result<Registry> {
     tracer.registry()
 }
 
-arg_enum! {
-#[derive(Debug, StructOpt, Clone, Copy)]
+#[derive(Debug, clap::ValueEnum, Clone, Copy)]
 enum Action {
     Print,
     Test,
     Record,
 }
-}
 
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "Narwhal format generator",
     about = "Trace serde (de)serialization to generate format descriptions for Narwhal types"
 )]
 struct Options {
-    #[structopt(possible_values = &Action::variants(), default_value = "Print", case_insensitive = true)]
+    #[arg(value_enum, default_value = "Print", ignore_case = true)]
     action: Action,
 }
 
 const FILE_PATH: &str = "node/tests/staged/narwhal.yaml";
 
 fn main() {
-    let options = Options::from_args();
+    let options = Options::parse();
     let registry = get_registry().unwrap();
     match options.action {
         Action::Print => {

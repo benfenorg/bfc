@@ -13,6 +13,7 @@ use transaction_provider::{FuzzStartPoint, TransactionSource};
 
 use crate::replay::LocalExec;
 use crate::replay::ProtocolVersionSummary;
+use std::io::BufRead;
 use std::path::PathBuf;
 use std::str::FromStr;
 use sui_config::node::ExpensiveSafetyCheckConfig;
@@ -28,72 +29,83 @@ pub mod transaction_provider;
 pub mod types;
 
 #[derive(Parser, Clone)]
-#[clap(rename_all = "kebab-case")]
+#[command(rename_all = "kebab-case")]
 pub enum ReplayToolCommand {
     /// Generate a new network config file
-    #[clap(name = "gen")]
+    #[command(name = "gen")]
     GenerateDefaultConfig,
 
     /// Replay transaction
-    #[clap(name = "tx")]
+    #[command(name = "tx")]
     ReplayTransaction {
-        #[clap(long, short)]
+        #[arg(long, short)]
         tx_digest: String,
-        #[clap(long, short)]
+        #[arg(long, short)]
         show_effects: bool,
-        #[clap(long, short)]
+        #[arg(long, short)]
         diag: bool,
-        #[clap(long, short, allow_hyphen_values = true)]
+        #[arg(long, short, allow_hyphen_values = true)]
         executor_version_override: Option<i64>,
-        #[clap(long, short, allow_hyphen_values = true)]
+        #[arg(long, short, allow_hyphen_values = true)]
         protocol_version_override: Option<i64>,
     },
 
+    /// Replay transactions listed in a file
+    #[command(name = "rb")]
+    ReplayBatch {
+        #[arg(long, short)]
+        path: PathBuf,
+        #[arg(long, short)]
+        terminate_early: bool,
+        #[arg(long, short, default_value = "16")]
+        batch_size: u64,
+    },
+
     /// Replay a transaction from a node state dump
-    #[clap(name = "rd")]
+    #[command(name = "rd")]
     ReplayDump {
-        #[clap(long, short)]
+        #[arg(long, short)]
         path: String,
-        #[clap(long, short)]
+        #[arg(long, short)]
         show_effects: bool,
     },
 
     /// Replay all transactions in a range of checkpoints
-    #[clap(name = "ch")]
+    #[command(name = "ch")]
     ReplayCheckpoints {
-        #[clap(long, short)]
+        #[arg(long, short)]
         start: u64,
-        #[clap(long, short)]
+        #[arg(long, short)]
         end: u64,
-        #[clap(long, short)]
+        #[arg(long, short)]
         terminate_early: bool,
-        #[clap(long, short, default_value = "16")]
+        #[arg(long, short, default_value = "16")]
         max_tasks: u64,
     },
 
     /// Replay all transactions in an epoch
-    #[clap(name = "ep")]
+    #[command(name = "ep")]
     ReplayEpoch {
-        #[clap(long, short)]
+        #[arg(long, short)]
         epoch: u64,
-        #[clap(long, short)]
+        #[arg(long, short)]
         terminate_early: bool,
-        #[clap(long, short, default_value = "16")]
+        #[arg(long, short, default_value = "16")]
         max_tasks: u64,
     },
 
     /// Run the replay based fuzzer
-    #[clap(name = "fz")]
+    #[command(name = "fz")]
     Fuzz {
-        #[clap(long, short)]
+        #[arg(long, short)]
         start: Option<FuzzStartPoint>,
-        #[clap(long, short)]
+        #[arg(long, short)]
         num_mutations_per_base: u64,
-        #[clap(long, short = 'b', default_value = "18446744073709551614")]
+        #[arg(long, short = 'b', default_value = "18446744073709551614")]
         num_base_transactions: u64,
     },
 
-    #[clap(name = "report")]
+    #[command(name = "report")]
     Report,
 }
 
@@ -157,6 +169,120 @@ pub async fn execute_replay_command(
             info!("Execution finished successfully. Local and on-chain effects match.");
             Some((1u64, 1u64))
         }
+        ReplayToolCommand::ReplayBatch {
+            path,
+            terminate_early,
+            batch_size,
+        } => {
+            async fn exec_batch(
+                rpc_url: Option<String>,
+                safety: ExpensiveSafetyCheckConfig,
+                use_authority: bool,
+                cfg_path: Option<PathBuf>,
+                tx_digests: &[TransactionDigest],
+            ) -> anyhow::Result<()> {
+                let mut handles = vec![];
+                for tx_digest in tx_digests {
+                    let tx_digest = *tx_digest;
+                    let rpc_url = rpc_url.clone();
+                    let cfg_path = cfg_path.clone();
+                    let safety = safety.clone();
+                    handles.push(tokio::spawn(async move {
+                        info!("Executing tx: {}", tx_digest);
+                        let sandbox_state = LocalExec::replay_with_network_config(
+                            rpc_url,
+                            cfg_path.map(|p| p.to_str().unwrap().to_string()),
+                            tx_digest,
+                            safety,
+                            use_authority,
+                            None,
+                            None,
+                        )
+                        .await?;
+
+                        sandbox_state.check_effects()?;
+
+                        info!("Execution finished successfully: {}. Local and on-chain effects match.", tx_digest);
+                        Ok::<_, anyhow::Error>(())
+                    }));
+                }
+                futures::future::join_all(handles)
+                    .await
+                    .into_iter()
+                    .collect::<Result<Vec<_>, _>>()
+                    .expect("Join all failed")
+                    .into_iter()
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(())
+            }
+
+            // While file end not reached, read up to max_tasks lines from path
+            let file = std::fs::File::open(path).unwrap();
+            let reader = std::io::BufReader::new(file);
+
+            let mut chunk = Vec::new();
+            for tx_digest in reader.lines() {
+                chunk.push(
+                    match TransactionDigest::from_str(&tx_digest.expect("Unable to readline")) {
+                        Ok(digest) => digest,
+                        Err(e) => {
+                            panic!("Error parsing tx digest: {:?}", e);
+                        }
+                    },
+                );
+                if chunk.len() == batch_size as usize {
+                    println!("=========================================================");
+                    println!("Executing batch: {:?}", chunk);
+                    // execute all in chunk
+                    match exec_batch(
+                        rpc_url.clone(),
+                        safety.clone(),
+                        use_authority,
+                        cfg_path.clone(),
+                        &chunk,
+                    )
+                    .await
+                    {
+                        Ok(_) => info!("Batch executed successfully: {:?}", chunk),
+                        Err(e) => {
+                            error!("Error executing batch: {:?}", e);
+                            if terminate_early {
+                                return Err(e);
+                            }
+                        }
+                    }
+                    println!("Finished batch execution");
+                    println!("=========================================================");
+                    chunk.clear();
+                }
+            }
+            if !chunk.is_empty() {
+                println!("=========================================================");
+                println!("Executing batch: {:?}", chunk);
+                match exec_batch(
+                    rpc_url.clone(),
+                    safety,
+                    use_authority,
+                    cfg_path.clone(),
+                    &chunk,
+                )
+                .await
+                {
+                    Ok(_) => info!("Batch executed successfully: {:?}", chunk),
+                    Err(e) => {
+                        error!("Error executing batch: {:?}", e);
+                        if terminate_early {
+                            return Err(e);
+                        }
+                    }
+                }
+                println!("Finished batch execution");
+                println!("=========================================================");
+            }
+
+            // TODO: clean this up
+            Some((0u64, 0u64))
+        }
         ReplayToolCommand::ReplayTransaction {
             tx_digest,
             show_effects,
@@ -219,8 +345,8 @@ pub async fn execute_replay_command(
                     tx_digest,
                     start_epoch,
                     end_epoch,
-                    checkpoint_start,
-                    checkpoint_end
+                    checkpoint_start.unwrap_or(u64::MAX),
+                    checkpoint_end.unwrap_or(u64::MAX)
                 );
             }
 

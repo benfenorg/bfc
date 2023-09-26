@@ -1,12 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-	useGetValidatorsApy,
-	formatPercentageDisplay,
-	calculateStakeShare,
-	useGetSystemState,
-} from '@mysten/core';
+import { useGetValidatorsApy, formatPercentageDisplay, calculateStakeShare } from '@mysten/core';
+import { useLatestSuiSystemState } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
 import cl from 'classnames';
 import { useState, useMemo } from 'react';
@@ -38,7 +34,7 @@ export function SelectValidatorCard() {
 	const [selectedValidator, setSelectedValidator] = useState<Validator | null>(null);
 	const [sortKey, setSortKey] = useState<SortKeys | null>(null);
 	const [sortAscending, setSortAscending] = useState(true);
-	const { data, isLoading, isError } = useGetSystemState();
+	const { data, isLoading, isError } = useLatestSuiSystemState();
 
 	const { data: rollingAverageApys } = useGetValidatorsApy();
 
@@ -115,11 +111,11 @@ export function SelectValidatorCard() {
 	}
 
 	return (
-		<div className="flex flex-col w-full">
+		<div className="flex flex-col w-full -my-5">
 			<Content className="flex flex-col w-full items-center">
-				<div className="flex flex-col w-full items-center bg-white sticky pt-5 pb-2.5 z-50 mt-0">
+				<div className="flex flex-col w-full items-center -top-5 bg-white sticky pt-5 pb-2.5 z-50 mt-0">
 					<div className="flex items-start w-full mb-2">
-						<Text variant="body" weight="normal" color="obc-text2">
+						<Text variant="subtitle" weight="medium" color="steel-darker">
 							Sort by:
 						</Text>
 						<div className="flex items-center ml-2 gap-1.5">
@@ -127,20 +123,20 @@ export function SelectValidatorCard() {
 								return (
 									<button
 										key={key}
-										className="bg-transparent border-0 p-0 flex items-center gap-1 cursor-pointer"
+										className="bg-transparent border-0 p-0 flex gap-1 cursor-pointer"
 										onClick={() => handleSortByKey(key as SortKeys)}
 									>
 										<Text
-											variant="body"
-											weight="normal"
-											color={sortKey === key ? 'hero' : 'obc-text1'}
+											variant="caption"
+											weight="medium"
+											color={sortKey === key ? 'hero' : 'steel-darker'}
 										>
 											{value}
 										</Text>
 										{sortKey === key && (
 											<ArrowRight16
 												className={cl(
-													'text-body font-thin text-hero',
+													'text-captionSmall font-thin text-hero',
 													sortAscending ? 'rotate-90' : '-rotate-90',
 												)}
 											/>
@@ -151,12 +147,12 @@ export function SelectValidatorCard() {
 						</div>
 					</div>
 					<div className="flex items-start w-full">
-						<Text variant="body" weight="normal" color="obc-text1">
-							Select a validator to start staking OBC.
+						<Text variant="subtitle" weight="medium" color="steel-darker">
+							Select a validator to start staking SUI.
 						</Text>
 					</div>
 				</div>
-				<div className="flex items-start flex-col w-full mt-2.5 flex-1">
+				<div className="flex items-start flex-col w-full mt-1 flex-1">
 					{data &&
 						validatorList.map((validator) => (
 							<div

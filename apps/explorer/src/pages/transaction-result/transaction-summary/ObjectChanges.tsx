@@ -14,8 +14,8 @@ import {
 	type SuiObjectChangePublished,
 	type SuiObjectChange,
 	type DisplayFieldsResponse,
-	parseStructTag,
-} from '@mysten/sui.js';
+} from '@mysten/sui.js/client';
+import { parseStructTag } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import clsx from 'clsx';
@@ -272,6 +272,7 @@ export function ObjectChangeEntriesCards({ data, type }: ObjectChangeEntriesCard
 						key={ownerAddress}
 						title="Changes"
 						size="sm"
+						shadow
 						footer={
 							renderFooter && (
 								<ObjectChangeEntriesCardFooter

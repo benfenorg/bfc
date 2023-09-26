@@ -3,14 +3,10 @@
 
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { Button } from '@mysten/ui';
-import {
-	ConnectButton,
-	useWalletKit,
-	type StandardWalletAdapter,
-	type WalletWithFeatures,
-} from '@mysten/wallet-kit';
+import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@mysten/wallet-kit';
 import { useParams } from 'react-router-dom';
 
+// This is a custom feature supported by the Sui Wallet:
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
 	'suiWallet:stake': {
@@ -28,15 +24,7 @@ export function StakeButton() {
 
 	if (!stakeButtonEnabled) return null;
 
-	const stakeSupportedWallets = wallets.filter((wallet) => {
-		if (!('wallet' in wallet)) {
-			return false;
-		}
-
-		const standardWallet = wallet.wallet as StakeWallet;
-		return 'suiWallet:stake' in standardWallet.features;
-	});
-
+	const stakeSupportedWallets = wallets.filter((wallet) => 'suiWallet:stake' in wallet.features);
 	const currentWalletSupportsStake =
 		currentWallet && !!stakeSupportedWallets.find(({ name }) => currentWallet.name === name);
 
@@ -48,7 +36,7 @@ export function StakeButton() {
 					target="_blank"
 					rel="noreferrer noopener"
 				>
-					Install OBC Wallet to stake OBC
+					Install Sui Wallet to stake SUI
 				</a>
 			</Button>
 		);
@@ -58,7 +46,7 @@ export function StakeButton() {
 		return (
 			<ConnectButton
 				className="!border !border-solid !border-steel-dark !bg-transparent !px-4 !py-3 !text-body !font-semibold !text-steel-dark !shadow-none"
-				connectText="Stake OBC"
+				connectText="Stake SUI"
 			/>
 		);
 	}
@@ -72,7 +60,7 @@ export function StakeButton() {
 					connect(stakeSupportedWallets[0].name);
 				}}
 			>
-				Stake OBC on a supported wallet
+				Stake SUI on a supported wallet
 			</Button>
 		);
 	}
@@ -81,12 +69,12 @@ export function StakeButton() {
 		<Button
 			size="lg"
 			onClick={() => {
-				((currentWallet as StandardWalletAdapter).wallet as StakeWallet).features[
-					'suiWallet:stake'
-				]?.stake({ validatorAddress: id! });
+				(currentWallet as StakeWallet).features['suiWallet:stake']?.stake({
+					validatorAddress: id!,
+				});
 			}}
 		>
-			Stake OBC
+			Stake SUI
 		</Button>
 	);
 }

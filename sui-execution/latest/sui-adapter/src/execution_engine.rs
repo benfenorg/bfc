@@ -17,6 +17,10 @@ mod checked {
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     }, transaction::ChangeObcRound};
+    use sui_types::balance::{
+        BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
+        BALANCE_MODULE_NAME,
+    };
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::metrics::LimitsMetrics;
@@ -26,6 +30,7 @@ mod checked {
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
+    use crate::{gas_charger::GasCharger, temporary_store::TemporaryStore};
     use move_binary_format::access::ModuleAccess;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
@@ -34,6 +39,8 @@ mod checked {
     use sui_types::error::{ExecutionError, ExecutionErrorKind};
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::{GasCharger, GasCostSummary};
+    use sui_types::gas::GasCostSummary;
+    use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::messages_consensus::ConsensusCommitPrologue;
     use sui_types::storage::WriteKind;
     #[cfg(msim)]
@@ -53,6 +60,9 @@ mod checked {
         SUI_FRAMEWORK_ADDRESS,
     };
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};
+        SUI_FRAMEWORK_ADDRESS,
+    };
+    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -113,7 +123,8 @@ mod checked {
             epoch_timestamp_ms,
         );
 
-        let is_epoch_change: bool = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
+        //let is_epoch_change: bool = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
+        let is_epoch_change = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
 
         let deny_cert = is_certificate_denied(&transaction_digest, certificate_deny_set);
         let (gas_cost_summary, execution_result) = execute_transaction::<Mode>(
@@ -190,7 +201,8 @@ mod checked {
                 .unwrap()
         } // else, in dev inspect mode and anything goes--don't check
 
-        let (inner, effects) = temporary_store.to_effects(
+        //let (inner, effects) = temporary_store.to_effects(
+        let (inner, effects) = temporary_store.into_effects(
             shared_object_refs,
             &transaction_digest,
             transaction_dependencies.into_iter().collect(),
@@ -273,6 +285,7 @@ mod checked {
 
             execution_result
         });
+<<<<<<< HEAD
 
         let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
 
@@ -304,6 +317,8 @@ mod checked {
         advance_epoch_gas_summary: Option<(u64, u64)>,
     ) -> Result<(), ExecutionError> {
         // === begin SUI conservation checks ===
+
+        let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
         // For advance epoch transaction, we need to provide epoch rewards and rebates as extra
         // information provided to check_sui_conserved, because we mint rewards, and burn
         // the rebates. We also need to pass in the unmetered_storage_rebate because storage
@@ -313,6 +328,37 @@ mod checked {
         // to the 0x5 object so that it's not lost.
         let mut result: std::result::Result<(), sui_types::error::ExecutionError> = Ok(());
         temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
+
+        if let Err(e) = run_conservation_checks::<Mode>(
+            temporary_store,
+            gas_charger,
+            tx_ctx,
+            move_vm,
+            enable_expensive_checks,
+            &cost_summary,
+            is_genesis_tx,
+            advance_epoch_gas_summary,
+        ) {
+            // FIXME: we cannot fail the transaction if this is an epoch change transaction.
+            result = Err(e);
+        }
+
+        (cost_summary, result)
+    }
+
+    #[instrument(name = "run_conservation_checks", level = "debug", skip_all)]
+    fn run_conservation_checks<Mode: ExecutionMode>(
+        temporary_store: &mut TemporaryStore<'_>,
+        gas_charger: &mut GasCharger,
+        tx_ctx: &mut TxContext,
+        move_vm: &Arc<MoveVM>,
+        enable_expensive_checks: bool,
+        cost_summary: &GasCostSummary,
+        is_genesis_tx: bool,
+        advance_epoch_gas_summary: Option<(u64, u64)>,
+    ) -> Result<(), ExecutionError> {
+        let mut result: std::result::Result<(), sui_types::error::ExecutionError> = Ok(());
+
         if !is_genesis_tx && !Mode::allow_arbitrary_values() {
             // ensure that this transaction did not create or destroy SUI, try to recover if the check fails
             let conservation_result = {
@@ -353,7 +399,7 @@ mod checked {
             }
         } // else, we're in the genesis transaction which mints the SUI supply, and hence does not satisfy SUI conservation, or
           // we're in the non-production dev inspect mode which allows us to violate conservation
-          // === end SUI conservation checks ===
+
         result
     }
 
@@ -653,7 +699,7 @@ mod checked {
 
         Ok(builder.finish())
     }
-    
+
     pub fn construct_obc_round_pt(
         round_id: u64,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
@@ -746,7 +792,6 @@ mod checked {
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
-
         let advance_epoch_pt = construct_advance_epoch_pt(&params)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,

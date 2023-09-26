@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { SuiObjectData } from '../../src';
+import { SuiObjectData } from '../../src/client';
 import { TransactionBlock } from '../../src/builder';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 import { Keypair } from '../../src/cryptography';
@@ -32,7 +32,7 @@ describe('Test dev inspect', () => {
 		const coin_0 = coins[0].data as SuiObjectData;
 		const obj = tx.moveCall({
 			target: `${packageId}::serializer_tests::return_struct`,
-			typeArguments: ['0x2::coin::Coin<0x2::obc::OBC>'],
+			typeArguments: ['0x2::coin::Coin<0x2::sui::SUI>'],
 			arguments: [tx.pure(coin_0.objectId)],
 		});
 

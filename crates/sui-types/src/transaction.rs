@@ -19,6 +19,7 @@ use crate::object::{MoveObject, Object, Owner};
 use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
 use crate::{OBC_SYSTEM_STATE_OBJECT_ID, OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
+
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
 use itertools::Either;
@@ -991,6 +992,15 @@ impl TransactionKind {
             _ => [].iter(),
         }
     }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::ChangeEpoch(_) => "ChangeEpoch",
+            Self::Genesis(_) => "Genesis",
+            Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
+            Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
+        }
+    }
 }
 
 impl Display for TransactionKind {
@@ -1835,7 +1845,6 @@ impl Message for SenderSignedData {
         Ok(())
     }
 }
-
 impl AuthenticatedMessage for SenderSignedData {
     fn verify_message_signature(&self, verify_params: &VerifyParams) -> SuiResult {
         fp_ensure!(

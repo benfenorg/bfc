@@ -88,7 +88,7 @@ export default function StepOne({ next, data, mode }: StepProps) {
 							})}
 						</div>
 					</FieldLabel>
-					<div className="flex flex-col flex-nowrap items-stretch gap-2.5 mt-10">
+					<div className="bg-sui-lightest flex flex-col flex-nowrap items-stretch gap-2.5 sticky -bottom-7.5 px-7.5 pb-7.5 pt-4.5 -mx-7.5 -mb-7.5">
 						{touched.mnemonic && typeof errors.mnemonic === 'string' && (
 							<Alert>{errors.mnemonic}</Alert>
 						)}

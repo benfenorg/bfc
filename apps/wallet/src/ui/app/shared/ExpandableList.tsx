@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ChevronDown14 } from '@mysten/icons';
+import { ChevronDown12 } from '@mysten/icons';
 import clsx from 'classnames';
 import { type ReactNode, useMemo, useState } from 'react';
 
@@ -33,18 +33,16 @@ export function ExpandableList({ items, defaultItemsToShow }: ExpandableListProp
 					<Link
 						onClick={handleShowAllClick}
 						after={
-							<ChevronDown14
-								height={14}
-								width={14}
-								className={clsx('text-obc-text2', {
+							<ChevronDown12
+								height={12}
+								width={12}
+								className={clsx('text-steel hover:text-steel-dark', {
 									'rotate-180': showAll,
 								})}
 							/>
 						}
 					>
-						<Text variant="body" color="obc-text2" weight="normal">
-							{showAll ? 'Show Less' : 'Show All'}
-						</Text>
+						<Text variant="bodySmall">{showAll ? 'Show Less' : 'Show All'}</Text>
 					</Link>
 				</div>
 			)}

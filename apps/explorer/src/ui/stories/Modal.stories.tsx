@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { RpcClientContext } from '@mysten/core';
+import { SuiClientProvider } from '@mysten/dapp-kit';
 import { type Meta, type StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -17,7 +17,6 @@ import {
 	type ModalProps,
 } from '../Modal';
 import { ObjectModal, type ObjectModalProps } from '../Modal/ObjectModal';
-import { DefaultRpcClient, Network } from '~/utils/api/DefaultRpcClient';
 
 export default {
 	component: () => {
@@ -41,9 +40,9 @@ export default {
 		(Story) => (
 			<MemoryRouter>
 				<QueryClientProvider client={new QueryClient()}>
-					<RpcClientContext.Provider value={DefaultRpcClient(Network.LOCAL)}>
+					<SuiClientProvider>
 						<Story />
-					</RpcClientContext.Provider>
+					</SuiClientProvider>
 				</QueryClientProvider>
 			</MemoryRouter>
 		),
@@ -61,10 +60,10 @@ export const Image: StoryObj<ObjectModalProps> = {
 		return (
 			<div>
 				<ObjectModal
-					title="OBC"
+					title="Sui"
 					open={open}
 					src="https://images.unsplash.com/photo-1562016600-ece13e8ba570?auto=format&fit=crop&w=738&q=80"
-					alt="OBC"
+					alt="Sui"
 					onClose={() => setOpen(false)}
 					subtitle="Still water runs deep."
 				/>
@@ -82,11 +81,11 @@ export const Video: StoryObj<ObjectModalProps> = {
 		return (
 			<div>
 				<ObjectModal
-					title="OBC"
+					title="Sui"
 					open={open}
 					src="https://images.unsplash.com/photo-1562016600-ece13e8ba570?auto=format&fit=crop&w=738&q=80"
 					video="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
-					alt="OBC"
+					alt="Sui"
 					onClose={() => setOpen(false)}
 					subtitle="Still water runs deep."
 				/>

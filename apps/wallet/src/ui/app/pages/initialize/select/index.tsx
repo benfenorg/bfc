@@ -4,6 +4,8 @@
 import { Add16, Download16 } from '@mysten/icons';
 import { Link } from 'react-router-dom';
 
+import { Heading } from '_app/shared/heading';
+import { Text } from '_app/shared/text';
 import { ampli } from '_src/shared/analytics/ampli';
 
 const selections = [
@@ -28,27 +30,29 @@ const selections = [
 const SelectPage = () => {
 	return (
 		<>
-			<div className="text-xl/[26px] text-white font-bold">
-				New to <span className="text-obc-text3">XChain</span> Wallet?
-			</div>
-			<div className="flex flex-col flex-nowrap gap-5 mt-10">
+			<Heading variant="heading1" color="gray-90" as="h2" weight="bold">
+				New to Sui Wallet?
+			</Heading>
+			<div className="flex flex-col flex-nowrap gap-7.5 mt-7">
 				{selections.map((aSelection) => (
 					<div
 						className={
-							'bg-obc-card flex flex-col flex-nowrap items-center text-center rounded-xl py-10 p-5 max-w-popup-width border border-obc-border'
+							'bg-sui-lightest flex flex-col flex-nowrap items-center gap-3 text-center rounded-15 py-10 px-7.5 max-w-popup-width shadow-wallet-content'
 						}
 						key={aSelection.url}
 					>
-						<div className="text-base/[22px] font-semibold text-obc-text1">{aSelection.title}</div>
-						<div className="grow mt-2.5 text-xs/[18px] font-normal text-obc-text2 text-center">
+						<Heading variant="heading3" color="gray-90" as="h3" weight="semibold">
+							{aSelection.title}
+						</Heading>
+						<Text variant="pBody" color="gray-85" weight="medium">
 							{aSelection.desc}
-						</div>
+						</Text>
 
 						<Link
 							to={aSelection.url}
 							onClick={aSelection.onClick}
 							className={
-								'mt-[25px] flex flex-nowrap items-center justify-center w-full h-10 gap-2.5 rounded-lg bg-obc no-underline font-medium text-white text-xs'
+								'mt-3.5 flex flex-nowrap items-center justify-center bg-hero-dark text-white !rounded-xl py-3.75 px-5 w-full gap-2.5 no-underline font-semibold text-body hover:bg-hero'
 							}
 						>
 							{aSelection.icon}

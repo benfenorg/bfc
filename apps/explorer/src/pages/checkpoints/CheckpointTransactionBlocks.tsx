@@ -25,7 +25,7 @@ export function CheckpointTransactionBlocks({ id }: { id: string }) {
 	const cardData = data ? genTableDataFromTxData(data.data) : undefined;
 
 	return (
-		<div className="obc-table-container flex flex-col space-y-5 text-left">
+		<div className="flex flex-col space-y-5 text-left xl:pr-10">
 			{isLoading || isFetching || !cardData ? (
 				<PlaceholderTable
 					rowCount={20}
@@ -38,7 +38,7 @@ export function CheckpointTransactionBlocks({ id }: { id: string }) {
 					<TableCard data={cardData.data} columns={cardData.columns} />
 				</div>
 			)}
-			<div className="flex justify-between bg-obc-card p-3.5">
+			<div className="flex justify-between">
 				<Pagination {...pagination} />
 				<select
 					className="form-select rounded-md border border-gray-45 px-3 py-2 pr-8 text-bodySmall font-medium leading-[1.2] text-steel-dark shadow-button"

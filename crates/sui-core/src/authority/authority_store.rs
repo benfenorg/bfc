@@ -869,7 +869,7 @@ impl AuthorityStore {
         Ok(())
     }
 
-    pub async fn bulk_insert_live_objects(
+    pub fn bulk_insert_live_objects(
         perpetual_db: &AuthorityPerpetualTables,
         live_objects: impl Iterator<Item = LiveObject>,
         indirect_objects_threshold: usize,
@@ -1446,10 +1446,9 @@ impl AuthorityStore {
         }
 
         let tombstones = effects
-            .deleted()
+            .all_removed_objects()
             .into_iter()
-            .chain(effects.wrapped())
-            .map(|obj_ref| ObjectKey(obj_ref.0, obj_ref.1));
+            .map(|(obj_ref, _)| ObjectKey(obj_ref.0, obj_ref.1));
         write_batch.delete_batch(&self.perpetual_tables.objects, tombstones)?;
 
         let all_new_object_keys = effects
@@ -1612,21 +1611,24 @@ impl AuthorityStore {
             .map(|v| v.map(|v| v.into()))
     }
 
-    pub fn get_transaction_and_serialized_size(
+    pub fn get_transactions_and_serialized_sizes<'a>(
         &self,
-        tx_digest: &TransactionDigest,
-    ) -> Result<Option<(VerifiedTransaction, usize)>, TypedStoreError> {
+        digests: impl IntoIterator<Item = &'a TransactionDigest>,
+    ) -> Result<Vec<Option<(VerifiedTransaction, usize)>>, TypedStoreError> {
         self.perpetual_tables
             .transactions
-            .get_raw_bytes(tx_digest)
-            .and_then(|v| match v {
-                Some(tx_bytes) => {
-                    let tx: VerifiedTransaction =
-                        bcs::from_bytes::<TrustedTransaction>(&tx_bytes)?.into();
-                    Ok(Some((tx, tx_bytes.len())))
-                }
-                None => Ok(None),
+            .multi_get_raw_bytes(digests)?
+            .into_iter()
+            .map(|raw_bytes_option| {
+                raw_bytes_option
+                    .map(|tx_bytes| {
+                        let tx: VerifiedTransaction =
+                            bcs::from_bytes::<TrustedTransaction>(&tx_bytes)?.into();
+                        Ok((tx, tx_bytes.len()))
+                    })
+                    .transpose()
             })
+            .collect()
     }
 
     // TODO: Transaction Orchestrator also calls this, which is not ideal.

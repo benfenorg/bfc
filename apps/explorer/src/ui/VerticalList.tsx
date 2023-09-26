@@ -7,22 +7,19 @@ import { type ReactNode } from 'react';
 export interface ListItemProps {
 	active?: boolean;
 	children: ReactNode;
-	type?: string;
 	onClick?(): void;
 }
 
-export function ListItem({ active, children, type, onClick }: ListItemProps) {
-	const rounded: string = type === 'borderLine' ? 'rounded-r-md border-l-2' : 'rounded-md border';
-	const border: string = type === 'borderLine' ? 'border-obc-text2' : 'border-obc-card';
+export function ListItem({ active, children, onClick }: ListItemProps) {
 	return (
 		<li className="list-none">
 			<button
 				type="button"
 				className={clsx(
-					`block w-full cursor-pointer ${rounded} px-2.5 py-2 text-left text-body`,
+					'block w-full cursor-pointer rounded-md border px-2.5 py-2 text-left text-body',
 					active
-						? `${border} bg-obc-card font-semibold text-obc-text1`
-						: 'border-transparent bg-white font-medium text-obc-text2',
+						? 'border-gray-40 bg-gray-40 font-semibold text-gray-90 shadow-sm'
+						: 'border-transparent bg-white font-medium text-gray-80',
 				)}
 				onClick={onClick}
 			>

@@ -1,23 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useFormatCoin, useGetSystemState } from '@mysten/core';
-import { SUI_TYPE_ARG } from '@mysten/sui.js';
+import { useFormatCoin } from '@mysten/core';
+import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { LoadingIndicator } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
-import clsx from 'clsx';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { EpochProgress } from './stats/EpochProgress';
 import { EpochStats } from './stats/EpochStats';
 import { ValidatorStatus } from './stats/ValidatorStatus';
-import { validatorsTableData } from '../validators/utils';
+import { validatorsTableData } from '../validators/Validators';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { CheckpointsTable } from '~/components/checkpoints/CheckpointsTable';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
 import { Banner } from '~/ui/Banner';
-import { PageBackHeader } from '~/ui/PageBackHeader';
 import { Stats, type StatsProps } from '~/ui/Stats';
 import { TableCard } from '~/ui/TableCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
@@ -32,7 +31,7 @@ function SuiStats({
 	const [formattedAmount, symbol] = useFormatCoin(amount, SUI_TYPE_ARG);
 
 	return (
-		<Stats postfix={formattedAmount && symbol} {...props} darker>
+		<Stats postfix={formattedAmount && symbol} {...props}>
 			{formattedAmount || '--'}
 		</Stats>
 	);
@@ -41,7 +40,7 @@ function SuiStats({
 export default function EpochDetail() {
 	const { id } = useParams();
 	const enhancedRpc = useEnhancedRpcClient();
-	const { data: systemState } = useGetSystemState();
+	const { data: systemState } = useLatestSuiSystemState();
 	const { data, isLoading, isError } = useQuery({
 		queryKey: ['epoch', id],
 		queryFn: async () =>
@@ -93,22 +92,16 @@ export default function EpochDetail() {
 	return (
 		<PageLayout
 			content={
-				<div className="flex flex-col">
-					<div>
-						<PageBackHeader title="Epochs Details" />
-					</div>
-					<div
-						className={clsx(
-							'grid gap-4 max-sm:grid-cols-1 sm:gap-2 md:gap-5',
-							isCurrentEpoch ? 'grid-cols-4' : 'grid-cols-3',
-						)}
-					>
-						<EpochProgress
-							epoch={epochData.epoch}
-							inProgress={isCurrentEpoch}
-							start={Number(epochData.epochStartTimestamp)}
-							end={Number(epochData.endOfEpochInfo?.epochEndTimestamp ?? 0)}
-						/>
+				<div className="flex flex-col space-y-16">
+					<div className="grid grid-flow-row gap-4 sm:gap-2 md:flex md:gap-6">
+						<div className="flex min-w-[136px] max-w-[240px]">
+							<EpochProgress
+								epoch={epochData.epoch}
+								inProgress={isCurrentEpoch}
+								start={Number(epochData.epochStartTimestamp)}
+								end={Number(epochData.endOfEpochInfo?.epochEndTimestamp ?? 0)}
+							/>
+						</div>
 
 						<EpochStats label="Rewards">
 							<SuiStats
@@ -137,8 +130,8 @@ export default function EpochDetail() {
 						{isCurrentEpoch ? <ValidatorStatus /> : null}
 					</div>
 
-					<Tabs size="md" defaultValue="checkpoints" className="mt-5 ">
-						<TabsList disableBottomBorder>
+					<Tabs size="lg" defaultValue="checkpoints">
+						<TabsList>
 							<TabsTrigger value="checkpoints">Checkpoints</TabsTrigger>
 							<TabsTrigger value="validators">Participating Validators</TabsTrigger>
 						</TabsList>
@@ -151,9 +144,11 @@ export default function EpochDetail() {
 						</TabsContent>
 						<TabsContent value="validators">
 							{validatorsTable ? (
-								<div className="obc-table-container">
-									<TableCard data={validatorsTable.data} columns={validatorsTable.columns} />
-								</div>
+								<TableCard
+									data={validatorsTable.data}
+									columns={validatorsTable.columns}
+									sortTable
+								/>
 							) : null}
 						</TabsContent>
 					</Tabs>

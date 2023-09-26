@@ -47,7 +47,6 @@ use sui_types::error::SuiObjectResponseError;
 use sui_types::{base_types::ObjectID, crypto::get_key_pair, gas_coin::GasCoin};
 use test_cluster::TestClusterBuilder;
 
-
 const TEST_DATA_DIR: &str = "tests/data/";
 
 #[sim_test]
@@ -1070,10 +1069,7 @@ async fn test_package_publish_nonexistent_dependency() -> Result<(), anyhow::Err
     Ok(())
 }
 
-// TODO(tzakian): When we remove the upgrade feature flag un-ignore this test.
-// This test will fail until the protocol config allows upgrades (doesn't work with an override).
 #[sim_test]
-#[ignore]
 async fn test_package_upgrade_command() -> Result<(), anyhow::Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
@@ -1184,7 +1180,6 @@ async fn test_package_upgrade_command() -> Result<(), anyhow::Error> {
         gas_budget: rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
-        legacy_digest: false,
         serialize_unsigned_transaction: false,
         serialize_signed_transaction: false,
         lint: false,

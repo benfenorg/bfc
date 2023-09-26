@@ -32,7 +32,7 @@ The source for the documentation published on this site also resides in the Sui 
 
 Sui supports the following operating systems:
 
-- Linux - Ubuntu version 20.04 (Bionic Beaver)
+- Linux - Ubuntu version 20.04 (Jammy Jellfish)
 - macOS - macOS Monterey
 - Microsoft Windows - Windows 11
 
@@ -286,6 +286,14 @@ cargo install --git https://github.com/move-language/move move-analyzer --branch
 ```
 
 See more [IDE options](https://github.com/MystenLabs/awesome-move#ides) in the [Awesome Move](https://github.com/MystenLabs/awesome-move) documentation.
+
+## Upgrade Sui binaries
+
+If you previously installed the Sui binaries, you can update them to the most recent release with the same command you used to install them:
+
+```shell
+cargo install --locked --git https://github.com/MystenLabs/sui.git --branch devnet sui
+```
 
 ## SUI tokens
 

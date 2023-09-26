@@ -1,5 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './deepbook_query';
-export * from './deepbook_sdk';
+<<<<<<<< HEAD:sdk/typescript/src/multisig/index.ts
+export * from './publickey.js';
+========
+export * from './client';
+>>>>>>>> heads/mainnet-v1.9.1:sdk/deepbook/src/index.ts

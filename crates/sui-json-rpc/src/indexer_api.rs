@@ -1,8 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::bail;
 use std::str::FromStr;
 use std::sync::Arc;
+use sui_core::authority::AuthorityState;
 
 use async_trait::async_trait;
 use futures::Stream;
@@ -21,7 +23,6 @@ use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
 use move_core_types::language_storage::{StructTag, TypeTag};
 use mysten_metrics::spawn_monitored_task;
-use sui_core::authority::AuthorityState;
 use sui_json_rpc_types::{
     DynamicFieldPage, EventFilter, EventPage, ObjectsPage, Page, SuiMoveValue,
     SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedMoveObject,
@@ -29,15 +30,18 @@ use sui_json_rpc_types::{
     TransactionFilter,
 };
 use sui_open_rpc::Module;
+use sui_storage::key_value_store::TransactionKeyValueStore;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::digests::TransactionDigest;
 use sui_types::dynamic_field::DynamicFieldName;
 use sui_types::event::EventID;
+use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 use crate::api::{
     cap_page_limit, validate_limit, IndexerApiServer, JsonRpcMetrics, ReadApiServer,
     QUERY_MAX_RESULT_LIMIT,
 };
+use crate::authority_state::StateRead;
 use crate::error::{Error, SuiRpcInputError};
 use crate::name_service::Domain;
 use crate::with_tracing;
@@ -55,12 +59,16 @@ const NAME_SERVICE_DEFAULT_REGISTRY: &str =
 const NAME_SERVICE_DEFAULT_REVERSE_REGISTRY: &str =
     "0x2fd099e17a292d2bc541df474f9fafa595653848cbabb2d7a4656ec786a1969f";
 
-pub fn spawn_subscription<S, T>(mut sink: SubscriptionSink, rx: S)
-where
+pub fn spawn_subscription<S, T>(
+    mut sink: SubscriptionSink,
+    rx: S,
+    permit: Option<OwnedSemaphorePermit>,
+) where
     S: Stream<Item = T> + Unpin + Send + 'static,
     T: Serialize,
 {
     spawn_monitored_task!(async move {
+        let _permit = permit;
         match sink.pipe_from_stream(rx).await {
             SubscriptionClosed::Success => {
                 debug!("Subscription completed.");
@@ -77,31 +85,61 @@ where
         };
     });
 }
+const DEFAULT_MAX_SUBSCRIPTIONS: usize = 100;
+
 pub struct IndexerApi<R> {
-    state: Arc<AuthorityState>,
+    state: Arc<dyn StateRead>,
     read_api: R,
+    transaction_kv_store: Arc<TransactionKeyValueStore>,
     ns_package_addr: Option<SuiAddress>,
     ns_registry_id: Option<ObjectID>,
     ns_reverse_registry_id: Option<ObjectID>,
     pub metrics: Arc<JsonRpcMetrics>,
+    subscription_semaphore: Arc<Semaphore>,
 }
 
 impl<R: ReadApiServer> IndexerApi<R> {
     pub fn new(
         state: Arc<AuthorityState>,
         read_api: R,
+        transaction_kv_store: Arc<TransactionKeyValueStore>,
         ns_package_addr: Option<SuiAddress>,
         ns_registry_id: Option<ObjectID>,
         ns_reverse_registry_id: Option<ObjectID>,
         metrics: Arc<JsonRpcMetrics>,
+        max_subscriptions: Option<usize>,
     ) -> Self {
+        let max_subscriptions = max_subscriptions.unwrap_or(DEFAULT_MAX_SUBSCRIPTIONS);
         Self {
             state,
+            transaction_kv_store,
             read_api,
             ns_registry_id,
             ns_package_addr,
             ns_reverse_registry_id,
             metrics,
+            subscription_semaphore: Arc::new(Semaphore::new(max_subscriptions)),
+        }
+    }
+
+    fn extract_values_from_dynamic_field_name(
+        &self,
+        name: DynamicFieldName,
+    ) -> Result<(TypeTag, Vec<u8>), SuiRpcInputError> {
+        let DynamicFieldName {
+            type_: name_type,
+            value,
+        } = name;
+        let layout = TypeLayoutBuilder::build_with_types(&name_type, &self.state.get_db())?;
+        let sui_json_value = SuiJsonValue::new(value)?;
+        let name_bcs_value = sui_json_value.to_bcs_bytes(&layout)?;
+        Ok((name_type, name_bcs_value))
+    }
+
+    fn acquire_subscribe_permit(&self) -> anyhow::Result<OwnedSemaphorePermit> {
+        match self.subscription_semaphore.clone().try_acquire_owned() {
+            Ok(p) => Ok(p),
+            Err(_) => bail!("Resources exhausted"),
         }
     }
 
@@ -138,7 +176,7 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
             let options = options.unwrap_or_default();
             let mut objects = self
                 .state
-                .get_owner_objects(address, cursor, limit + 1, filter)
+                .get_owner_objects_with_limit(address, cursor, limit + 1, filter)
                 .map_err(Error::from)?;
 
             // objects here are of size (limit + 1), where the last one is the cursor for the next page
@@ -194,7 +232,14 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
             // Retrieve 1 extra item for next cursor
             let mut digests = self
                 .state
-                .get_transactions(query.filter, cursor, Some(limit + 1), descending)
+                .get_transactions(
+                    &self.transaction_kv_store,
+                    query.filter,
+                    cursor,
+                    Some(limit + 1),
+                    descending,
+                )
+                .await
                 .map_err(Error::from)?;
 
             // extract next cursor
@@ -242,7 +287,14 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
             // Retrieve 1 extra item for next cursor
             let mut data = self
                 .state
-                .query_events(query, cursor.clone(), limit + 1, descending)
+                .query_events(
+                    &self.transaction_kv_store,
+                    query,
+                    cursor.clone(),
+                    limit + 1,
+                    descending,
+                )
+                .await
                 .map_err(Error::from)?;
             let has_next_page = data.len() > limit;
             data.truncate(limit);
@@ -263,9 +315,13 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
 
     #[instrument(skip(self))]
     fn subscribe_event(&self, sink: SubscriptionSink, filter: EventFilter) -> SubscriptionResult {
+        let permit = self.acquire_subscribe_permit()?;
         spawn_subscription(
             sink,
-            self.state.subscription_handler.subscribe_events(filter),
+            self.state
+                .get_subscription_handler()
+                .subscribe_events(filter),
+            Some(permit),
         );
         Ok(())
     }
@@ -275,11 +331,13 @@ impl<R: ReadApiServer> IndexerApiServer for IndexerApi<R> {
         sink: SubscriptionSink,
         filter: TransactionFilter,
     ) -> SubscriptionResult {
+        let permit = self.acquire_subscribe_permit()?;
         spawn_subscription(
             sink,
             self.state
-                .subscription_handler
+                .get_subscription_handler()
                 .subscribe_transactions(filter),
+            Some(permit),
         );
         Ok(())
     }

@@ -39,12 +39,12 @@ export function CurrentEpoch() {
 			to={`/epoch/${epoch}`}
 			onClick={() => ampli.clickedCurrentEpochCard({ epoch: Number(epoch) })}
 		>
-			<Card bg="white" height="full" spacing="lg">
+			<Card growOnHover bg="white/80" height="full" spacing="lg">
 				<div className="flex flex-col gap-2">
 					<Heading color="success-dark" variant="heading4/semibold">
 						Epoch {formatAmountParts(epoch)}
 					</Heading>
-					<Text variant="pSubtitle/normal" color="steel-dark">
+					<Text variant="pSubtitle/semibold" color="steel-dark">
 						{!progress && end
 							? `End ${formatDate(end)}`
 							: formattedDateString

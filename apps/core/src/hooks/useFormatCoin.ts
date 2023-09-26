@@ -1,12 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Coin, CoinMetadata, SUI_TYPE_ARG } from '@mysten/sui.js';
+import { Coin } from '@mysten/sui.js';
+import { CoinMetadata } from '@mysten/sui.js/client';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
-import { useRpcClient } from '../api/RpcClientContext';
 import { formatAmount } from '../utils/formatAmount';
+import { useSuiClient } from '@mysten/dapp-kit';
 
 type FormattedCoin = [
 	formattedBalance: string,
@@ -43,13 +45,14 @@ const SYMBOL_TRUNCATE_LENGTH = 5;
 const NAME_TRUNCATE_LENGTH = 10;
 
 export function useCoinMetadata(coinType?: string | null) {
-	const rpc = useRpcClient();
+	const client = useSuiClient();
 	return useQuery({
 		queryKey: ['coin-metadata', coinType],
 		queryFn: async () => {
 			if (!coinType) {
 				throw new Error('Fetching coin metadata should be disabled when coin type is disabled.');
 			}
+
 			// Optimize the known case of SUI to avoid a network call:
 			if (coinType === SUI_TYPE_ARG) {
 				const metadata: CoinMetadata = {
@@ -57,13 +60,14 @@ export function useCoinMetadata(coinType?: string | null) {
 					decimals: 9,
 					description: '',
 					iconUrl: null,
-					name: 'OBC',
-					symbol: 'OBC',
+					name: 'Sui',
+					symbol: 'SUI',
 				};
+
 				return metadata;
 			}
 
-			return rpc.getCoinMetadata({ coinType });
+			return client.getCoinMetadata({ coinType });
 		},
 		select(data) {
 			if (!data) return null;
@@ -94,20 +98,10 @@ export function useFormatCoin(
 	coinType?: string | null,
 	format: CoinFormat = CoinFormat.ROUNDED,
 ): FormattedCoin {
+	const fallbackSymbol = useMemo(() => (coinType ? Coin.getCoinSymbol(coinType) : ''), [coinType]);
+
 	const queryResult = useCoinMetadata(coinType);
 	const { isFetched, data } = queryResult;
-
-	const fallbackSymbol = useMemo(() => {
-		let type = data?.symbol;
-		if (!type) {
-			if (!coinType) {
-				type = '';
-			} else {
-				type = Coin.getCoinSymbol(coinType);
-			}
-		}
-		return type === 'SUI' ? 'OBC' : type;
-	}, [coinType, data]);
 
 	const formatted = useMemo(() => {
 		if (typeof balance === 'undefined' || balance === null) return '';
@@ -117,5 +111,5 @@ export function useFormatCoin(
 		return formatBalance(balance, data?.decimals ?? 0, format);
 	}, [data?.decimals, isFetched, balance, format]);
 
-	return [formatted, isFetched ? fallbackSymbol : '', queryResult];
+	return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
 }

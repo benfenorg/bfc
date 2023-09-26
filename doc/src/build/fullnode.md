@@ -360,7 +360,7 @@ it might not be possible for peer nodes to catch up with the transactions and ef
 nodes can fall back by downloading this data from an archive.
 The archive is a history of all transaction data on Sui, trailing behind the latest checkpoint by 10 minutes. 
 You should enable this for all nodes as a best practice. To configure a Sui node to automatically fall back to a 
-snapshot image, add the following to your `fullnode.yaml` file.:
+S3 archive, add the following to your `fullnode.yaml` file:
 
 ```yaml
 state-archive-read-config:
@@ -374,6 +374,23 @@ state-archive-read-config:
       # Use your AWS account secret access key
       aws-secret-access-key: "<AWS_SECRET_ACCESS_KEY>"
       aws-region: "us-west-2"
+      object-store-connection-limit: 20
+    # How many objects to read ahead when catching up  
+    concurrency: 5
+    # Whether to prune local state based on latest checkpoint in archive.
+    # This should stay false for most use cases
+    use-for-pruning-watermark: false
+```
+To configure a Sui node to automatically fall back to a GCS archive, add the following to your `fullnode.yaml` file:
+```yaml
+state-archive-read-config:
+  - object-store-config:
+      object-store: "GCS"
+      # Use mysten-mainnet-archives for mainnet
+      # Notice there is no archive bucket setup for testnet in GCS
+      bucket: "mysten-mainnet-archives"
+      # Use your gcloud service account credentials
+      google-service-account: "</path/to/service/account/credentials>"
       object-store-connection-limit: 20
     # How many objects to read ahead when catching up  
     concurrency: 5
@@ -397,8 +414,19 @@ state-archive-write-config:
     aws-region: "<aws_region>"
     object-store-connection-limit: 20
   concurrency: 5
-  # This is needed to be set as true on the node that archives the data
-  # This prevents the node from pruning its local state until the data has been
-  # successfully archived
-  use-for-pruning-watermark: true
+  use-for-pruning-watermark: false
+state-archive-read-config:
+  - object-store-config:
+      object-store: "S3"
+      # Use the same bucket which is being used in `state-archive-write-config`
+      bucket: "<bucket_name>"
+      aws-access-key-id: "<AWS_ACCESS_KEY_ID>"
+      aws-secret-access-key: "<AWS_SECRET_ACCESS_KEY>"
+      aws-region: "<aws_region>"
+      object-store-connection-limit: 20
+    concurrency: 5
+    # This should be set to true in this case. Setting this to true
+    # would prevent pruning of local transaction data until it is archived
+    # in the bucket
+    use-for-pruning-watermark: true
 ```

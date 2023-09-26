@@ -78,8 +78,7 @@ pub enum SuiCommand {
         #[clap(
             long,
             value_name = "ADDR",
-            multiple_occurrences = false,
-            multiple_values = true,
+            num_args(1..),
             value_delimiter = ',',
             help = "A list of ip addresses to generate a genesis suitable for benchmarks"
         )]
@@ -96,6 +95,9 @@ pub enum SuiCommand {
     KeyTool {
         #[clap(long)]
         keystore_path: Option<PathBuf>,
+        ///Return command outputs in json format
+        #[clap(long, global = true)]
+        json: bool,
         /// Subcommands.
         #[clap(subcommand)]
         cmd: KeyToolCommand,
@@ -155,7 +157,7 @@ pub enum SuiCommand {
     #[clap(name = "move")]
     Move {
         /// Path to a package which the command should be run with respect to.
-        #[clap(long = "path", short = 'p', global = true, parse(from_os_str))]
+        #[clap(long = "path", short = 'p', global = true)]
         package_path: Option<PathBuf>,
         /// Package build options
         #[clap(flatten)]
@@ -274,11 +276,16 @@ impl SuiCommand {
                 .await
             }
             SuiCommand::GenesisCeremony(cmd) => run(cmd),
-            SuiCommand::KeyTool { keystore_path, cmd } => {
+            SuiCommand::KeyTool {
+                keystore_path,
+                json,
+                cmd,
+            } => {
                 let keystore_path =
                     keystore_path.unwrap_or(sui_config_dir()?.join(SUI_KEYSTORE_FILENAME));
                 let mut keystore = Keystore::from(FileBasedKeystore::new(&keystore_path)?);
-                cmd.execute(&mut keystore).await
+                cmd.execute(&mut keystore).await?.print(!json);
+                Ok(())
             }
             SuiCommand::Console { config } => {
                 let config = config.unwrap_or(sui_config_dir()?.join(SUI_CLIENT_CONFIG));

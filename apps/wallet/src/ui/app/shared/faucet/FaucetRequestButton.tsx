@@ -11,14 +11,13 @@ import { API_ENV_TO_INFO } from '_app/ApiProvider';
 import { Button, type ButtonProps } from '_app/shared/ButtonUI';
 import { useAppSelector } from '_hooks';
 import { API_ENV } from '_src/shared/api-env';
-import { Text } from '_src/ui/app/shared/text';
 
 export type FaucetRequestButtonProps = {
 	variant?: ButtonProps['variant'];
 	size?: ButtonProps['size'];
 };
 
-const FAUCET_HOSTS = {
+export const FAUCET_HOSTS = {
 	[API_ENV.local]: getFaucetHost('localnet'),
 	[API_ENV.devNet]: getFaucetHost('devnet'),
 	[API_ENV.testNet]: getFaucetHost('testnet'),
@@ -52,11 +51,7 @@ function FaucetRequestButton({ variant = 'primary', size = 'narrow' }: FaucetReq
 				});
 			}}
 			loading={mutation.isMutating}
-			text={
-				<Text variant="bodySmall" weight="medium" color="obc-text2">
-					Request {networkName} OBC Tokens
-				</Text>
-			}
+			text={`Request ${networkName} SUI Tokens`}
 		/>
 	) : null;
 }

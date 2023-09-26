@@ -1,104 +1,75 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Copy12 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui.js';
-import { useEffect, useRef, useState } from 'react';
-import { useNextMenuUrl } from '../hooks';
+import { Disclosure, Transition } from '@headlessui/react';
+import { useResolveSuiNSName } from '@mysten/core';
+import { ChevronDown16, Copy16 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui.js/utils';
+import { cx } from 'class-variance-authority';
 
-import { type SerializedAccount } from '_src/background/keyring/Account';
+import { AccountActions } from './AccountActions';
+import { AccountBadge } from '../../AccountBadge';
+import { type SerializedUIAccount } from '_src/background/accounts/Account';
 import { useCopyToClipboard } from '_src/ui/app/hooks/useCopyToClipboard';
-import { Link } from '_src/ui/app/shared/Link';
+import { Text } from '_src/ui/app/shared/text';
 
 export type AccountProps = {
-	account: SerializedAccount;
+	account: SerializedUIAccount;
 };
 
 export function Account({ account }: AccountProps) {
-	const [isActionsVisible, setIsActionsVisible] = useState(false);
-	const overlayRef = useRef<HTMLDivElement>(null);
-	const { address } = account;
+	const { address, type } = account;
 	const copyCallback = useCopyToClipboard(address, {
 		copySuccessMessage: 'Address copied',
 	});
-
-	const exportAccountUrl = useNextMenuUrl(true, `/export/${account.address}`);
-	const recoveryPassphraseUrl = useNextMenuUrl(true, '/recovery-passphrase');
-
-	useEffect(() => {
-		if (isActionsVisible) {
-			const onClick = (e: MouseEvent) => {
-				const target = e.target as HTMLElement;
-				if (overlayRef.current && !overlayRef.current.contains(target)) {
-					setIsActionsVisible(false);
-					document.removeEventListener('click', onClick);
-				}
-			};
-			document.addEventListener('click', onClick);
-			return () => {
-				document.removeEventListener('click', onClick);
-			};
-		}
-		return () => {};
-	}, [isActionsVisible]);
+	const { data: domainName } = useResolveSuiNSName(address);
 
 	return (
-		<div className="flex items-center gap-2.5">
-			<div className="grow text-bodySmall font-medium text-obc-text1">{formatAddress(address)}</div>
-			<div
-				className="w-[22px] h-[22px] rounded flex items-center justify-center cursor-pointer"
-				onClick={copyCallback}
-			>
-				<Copy12 />
-			</div>
-			<div
-				ref={overlayRef}
-				className="relative w-[22px] h-[22px] rounded flex items-center justify-center cursor-pointer"
-				onClick={(e) => {
-					e.stopPropagation();
-					setIsActionsVisible(true);
-				}}
-			>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 14 14"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
+		<Disclosure>
+			{({ open }) => (
+				<div
+					className={cx(
+						'transition flex flex-col flex-nowrap border border-solid rounded-2xl hover:bg-gray-40',
+						open ? 'bg-gray-40 border-transparent' : 'hover:border-steel border-gray-60',
+					)}
 				>
-					<g clipPath="url(#clip0_377_5975)">
-						<path
-							d="M1.75 11.0832H12.25V12.2498H1.75V11.0832ZM7.58333 3.3995V9.9165H6.41667V3.3995L2.87525 6.9415L2.05042 6.11667L7 1.1665L11.9496 6.11609L11.1247 6.94092L7.58333 3.40067V3.3995Z"
-							fill="#5A6070"
+					<Disclosure.Button
+						as="div"
+						className="flex flex-nowrap items-center px-5 py-3 self-stretch cursor-pointer gap-3 group"
+					>
+						<div className="transition flex flex-1 gap-3 justify-start items-center text-steel-dark group-hover:text-steel-darker ui-open:text-steel-darker min-w-0">
+							<div className="overflow-hidden flex flex-col gap-1">
+								{domainName && (
+									<Text variant="body" weight="semibold" truncate>
+										{domainName}
+									</Text>
+								)}
+								<Text mono variant={domainName ? 'bodySmall' : 'body'} weight="semibold">
+									{formatAddress(address)}
+								</Text>
+							</div>
+							<AccountBadge accountType={type} />
+						</div>
+						<Copy16
+							onClick={copyCallback}
+							className="transition text-base leading-none text-gray-60 active:text-gray-60 group-hover:text-hero-darkest cursor-pointer"
 						/>
-					</g>
-					<defs>
-						<clipPath id="clip0_377_5975">
-							<rect width="14" height="14" fill="white" />
-						</clipPath>
-					</defs>
-				</svg>
-				{isActionsVisible && (
-					<div className="absolute top-6 right-0 p-1 w-32 bg-white rounded-lg border border-solid border-obc-border shadow-accountAction flex flex-col items-stretch z-10">
-						<div className="h-[26px] rounded flex items-center text-bodySmall hover:bg-obc-card">
-							<Link
-								text="Export Private Key"
-								to={exportAccountUrl}
-								color="obc-text1"
-								weight="normal"
-							/>
-						</div>
-						<div className="h-[26px] rounded flex items-center text-bodySmall hover:bg-obc-card">
-							<Link
-								to={recoveryPassphraseUrl}
-								color="obc-text1"
-								weight="normal"
-								text="Export Passphrase"
-							/>
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
+						<ChevronDown16 className="transition text-base leading-none text-gray-60 ui-open:rotate-180 ui-open:text-hero-darkest group-hover:text-hero-darkest" />
+					</Disclosure.Button>
+					<Transition
+						enter="transition duration-100 ease-out"
+						enterFrom="transform opacity-0"
+						enterTo="transform opacity-100"
+						leave="transition duration-75 ease-out"
+						leaveFrom="transform opacity-100"
+						leaveTo="transform opacity-0"
+					>
+						<Disclosure.Panel className="px-5 pb-4">
+							<AccountActions account={account} />
+						</Disclosure.Panel>
+					</Transition>
+				</div>
+			)}
+		</Disclosure>
 	);
 }

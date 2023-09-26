@@ -21,7 +21,7 @@ use tokio::{
 use tracing::{error, warn};
 use types::{
     error::DagError, now, Batch, BatchAPI, BatchDigest, ConditionalBroadcastReceiver, MetadataAPI,
-    Transaction, TxResponse, WorkerOurBatchMessage, WorkerOwnBatchMessage,
+    Transaction, TxResponse, WorkerOwnBatchMessage,
 };
 
 #[cfg(feature = "trace_transaction")]
@@ -235,7 +235,7 @@ impl BatchMaker {
             .observe(size as f64);
 
         // Send the batch through the deliver channel for further processing.
-        let (notify_done, done_sending) = tokio::sync::oneshot::channel();
+        let (notify_done, broadcasted_to_quorum) = tokio::sync::oneshot::channel();
         if self
             .tx_quorum_waiter
             .send((batch.clone(), notify_done))
@@ -268,95 +268,52 @@ impl BatchMaker {
         let store = self.store.clone();
         let worker_id = self.id;
 
-        // TODO: Remove once we have upgraded to protocol version 12.
-        if self.protocol_config.narwhal_versioned_metadata() {
-            // The batch has been sealed so we can officially set its creation time
-            // for latency calculations.
-            batch.versioned_metadata_mut().set_created_at(now());
-            let metadata = batch.versioned_metadata().clone();
+        // The batch has been sealed so we can officially set its creation time
+        // for latency calculations.
+        batch.versioned_metadata_mut().set_created_at(now());
+        let metadata = batch.versioned_metadata().clone();
 
-            Some(Box::pin(async move {
-                // Now save it to disk
-                let digest = batch.digest();
+        Some(Box::pin(async move {
+            let responses = responses;
 
-                if let Err(e) = store.insert(&digest, &batch) {
-                    error!("Store failed with error: {:?}", e);
-                    return;
-                }
+            // Also wait quorum broadcast here.
+            //
+            // Error can only happen when the worker is shutting down.
+            // All other errors, e.g. timeouts, failure responses from individual peers,
+            // are retried indefinitely underneath.
+            if broadcasted_to_quorum.await.is_err() {
+                // Drop all response handlers to signal error.
+                return;
+            }
 
-                // Also wait for sending to be done here
-                //
-                // TODO: Here if we get back Err it means that potentially this was not send
-                //       to a quorum. However, if that happens we can still proceed on the basis
-                //       that an other authority will request the batch from us, and we will deliver
-                //       it since it is now stored. So ignore the error for the moment.
-                let _ = done_sending.await;
+            // Now save it to disk
+            let digest = batch.digest();
 
-                // Send the batch to the primary.
-                let message = WorkerOwnBatchMessage {
-                    digest,
-                    worker_id,
-                    metadata,
-                };
-                if let Err(e) = client.report_own_batch(message).await {
-                    warn!("Failed to report our batch: {}", e);
-                    // Drop all response handers to signal error, since we
-                    // cannot ensure the primary has actually signaled the
-                    // batch will eventually be sent.
-                    // The transaction submitter will see the error and retry.
-                    return;
-                }
+            if let Err(e) = store.insert(&digest, &batch) {
+                error!("Store failed with error: {:?}", e);
+                return;
+            }
 
-                // We now signal back to the transaction sender that the transaction is in a
-                // batch and also the digest of the batch.
-                for response in responses {
-                    let _ = response.send(digest);
-                }
-            }))
-        } else {
-            // The batch has been sealed so we can officially set its creation time
-            // for latency calculations.
-            batch.metadata_mut().created_at = now();
-            let metadata = batch.metadata().clone();
+            // Send the batch to the primary.
+            let message = WorkerOwnBatchMessage {
+                digest,
+                worker_id,
+                metadata,
+            };
+            if let Err(e) = client.report_own_batch(message).await {
+                warn!("Failed to report our batch: {}", e);
+                // Drop all response handlers to signal error, since we
+                // cannot ensure the primary has actually signaled the
+                // batch will eventually be sent.
+                // The transaction submitter will see the error and retry.
+                return;
+            }
 
-            Some(Box::pin(async move {
-                // Now save it to disk
-                let digest = batch.digest();
-
-                if let Err(e) = store.insert(&digest, &batch) {
-                    error!("Store failed with error: {:?}", e);
-                    return;
-                }
-
-                // Also wait for sending to be done here
-                //
-                // TODO: Here if we get back Err it means that potentially this was not send
-                //       to a quorum. However, if that happens we can still proceed on the basis
-                //       that an other authority will request the batch from us, and we will deliver
-                //       it since it is now stored. So ignore the error for the moment.
-                let _ = done_sending.await;
-
-                // Send the batch to the primary.
-                let message = WorkerOurBatchMessage {
-                    digest,
-                    worker_id,
-                    metadata,
-                };
-                if let Err(e) = client.report_our_batch(message).await {
-                    warn!("Failed to report our batch: {}", e);
-                    // Drop all response handers to signal error, since we
-                    // cannot ensure the primary has actually signaled the
-                    // batch will eventually be sent.
-                    // The transaction submitter will see the error and retry.
-                    return;
-                }
-
-                // We now signal back to the transaction sender that the transaction is in a
-                // batch and also the digest of the batch.
-                for response in responses {
-                    let _ = response.send(digest);
-                }
-            }))
-        }
+            // We now signal back to the transaction senders that the transaction is in a
+            // batch and also the digest of the batch.
+            for response in responses {
+                let _ = response.send(digest);
+            }
+        }))
     }
 }

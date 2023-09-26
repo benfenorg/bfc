@@ -1,13 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useZodForm } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
-import {
-	getPureSerializationType,
-	getExecutionStatusType,
-	getExecutionStatusError,
-	TransactionBlock,
-} from '@mysten/sui.js';
+import { TransactionBlock, getPureSerializationType } from '@mysten/sui.js/transactions';
 import { Button } from '@mysten/ui';
 import { useWalletKit, ConnectButton } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
@@ -19,11 +15,10 @@ import { z } from 'zod';
 import { FunctionExecutionResult } from './FunctionExecutionResult';
 import { useFunctionParamsDetails } from './useFunctionParamsDetails';
 import { useFunctionTypeArguments } from './useFunctionTypeArguments';
-import { useZodForm } from '~/hooks/useZodForm';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Input } from '~/ui/Input';
 
-import type { SuiMoveNormalizedFunction } from '@mysten/sui.js';
+import type { SuiMoveNormalizedFunction } from '@mysten/sui.js/client';
 import type { TypeOf } from 'zod';
 
 const argsSchema = z.object({
@@ -67,28 +62,12 @@ export function ModuleFunction({
 				target: `${packageId}::${moduleName}::${functionName}`,
 				typeArguments: types ?? [],
 				arguments:
-					params?.map((param, i) => {
-						let value: string | boolean | number | string[] = param;
-						const type = functionDetails.parameters[i];
-						if (typeof type === 'string') {
-							if (['U8', 'U16', 'U32', 'U64', 'U128', 'U256'].includes(type)) {
-								value = Number.parseInt(value);
-							} else if (type === 'Bool') {
-								value = value.toLowerCase() === 'true';
-							}
-						} else if ('Vector' in type) {
-							if (typeof value === 'string' && type.Vector === 'U8') {
-								// do nothing;
-							} else {
-								value = value.split(',').filter(Boolean);
-							}
-						}
-						return getPureSerializationType(functionDetails.parameters[i], value)
-							? tx.pure(value)
-							: tx.object(param);
-					}) ?? [],
+					params?.map((param, i) =>
+						getPureSerializationType(functionDetails.parameters[i], param)
+							? tx.pure(param)
+							: tx.object(param),
+					) ?? [],
 			});
-			debugger;
 			const result = await signAndExecuteTransactionBlock({
 				transactionBlock: tx,
 				options: {
@@ -97,8 +76,8 @@ export function ModuleFunction({
 					showInput: true,
 				},
 			});
-			if (getExecutionStatusType(result) === 'failure') {
-				throw new Error(getExecutionStatusError(result) || 'Transaction failed');
+			if (result.effects?.status.status === 'failure') {
+				throw new Error(result.effects.status.error || 'Transaction failed');
 			}
 			return result;
 		},
@@ -153,8 +132,8 @@ export function ModuleFunction({
 						className={clsx(
 							'!rounded-md !text-bodySmall',
 							isConnected
-								? '!border !border-solid  !bg-obc !font-mono !text-white'
-								: '!flex !flex-nowrap !items-center !gap-1 !bg-obc !font-sans !text-white',
+								? '!border !border-solid !border-steel !bg-white !font-mono !text-hero-dark !shadow-sm !shadow-ebony/5'
+								: '!flex !flex-nowrap !items-center !gap-1 !bg-sui-dark !font-sans !text-sui-light hover:!bg-sui-dark hover:!text-white',
 						)}
 					/>
 				</div>

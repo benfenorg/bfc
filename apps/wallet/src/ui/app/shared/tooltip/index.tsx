@@ -86,18 +86,14 @@ export function Tooltip({ tip, children, placement = 'top' }: TooltipProps) {
 
 	return (
 		<>
-			<div
-				tabIndex={0}
-				className="w-fit flex items-center"
-				{...getReferenceProps({ ref: reference })}
-			>
+			<div tabIndex={0} className="w-fit" {...getReferenceProps({ ref: reference })}>
 				{children}
 			</div>
 			<FloatingPortal>
 				<AnimatePresence>
 					{open ? (
 						<motion.div
-							className="pointer-events-none left-0 top-0 z-[99999] text-body font-normal text-white leading-130"
+							className="pointer-events-none left-0 top-0 z-[99999] text-subtitleSmall font-semibold text-white leading-130"
 							initial={{
 								opacity: 0,
 								scale: 0,
@@ -126,10 +122,12 @@ export function Tooltip({ tip, children, placement = 'top' }: TooltipProps) {
 							}}
 							{...getFloatingProps({ ref: floating })}
 						>
-							<div className="flex flex-col flex-nowrap gap-px rounded-md bg-obc p-2">{tip}</div>
+							<div className="flex flex-col flex-nowrap gap-px rounded-md bg-gray-100 p-2">
+								{tip}
+							</div>
 							<div
 								ref={arrowRef}
-								className="absolute z-[-1] h-[12px] w-[12px] rotate-45 transform bg-obc"
+								className="absolute z-[-1] h-[12px] w-[12px] rotate-45 transform bg-gray-100"
 								style={arrowStyle}
 							/>
 						</motion.div>
@@ -145,7 +143,7 @@ export type IconTooltipProps = Omit<TooltipProps, 'children'>;
 export function IconTooltip(props: IconTooltipProps) {
 	return (
 		<Tooltip {...props}>
-			<Info16 className="shrink-0 font-normal text-obc-text2" />
+			<Info16 className="shrink-0 font-normal text-steel" />
 		</Tooltip>
 	);
 }

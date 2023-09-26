@@ -33,9 +33,10 @@ body,
 	.home-page-grid-container-top {
 		@apply grid grid-cols-1 gap-4;
 		grid-template-areas:
-			'overview'
+			'network'
 			'epoch'
-			'transactions';
+			'transactions'
+			'accounts';
 	}
 	.home-page-grid-container-top.with-token {
 		grid-template-areas:
@@ -46,30 +47,18 @@ body,
 			'accounts';
 	}
 
-	.obc-table-container {
-		@apply overflow-hidden rounded-md border border-gray-45;
-	}
-
-	.black-bg {
-		background-image: url(./assets/blackBg.svg);
-		background-size: 100% auto;
-		background-repeat: no-repeat;
-		background-position: center bottom;
-	}
-	.obc-form-select {
-		background-image: url(./assets/ObcDown.svg) !important;
-	}
 	@screen sm {
 		.home-page-grid-container-top {
 			@apply grid-cols-2;
 			grid-template-areas:
-				'overview epoch'
-				'transactions transactions';
+				'network epoch'
+				'transactions transactions'
+				'accounts accounts';
 		}
 
 		.home-page-grid-container-top.with-token {
 			grid-template-areas:
-				'overview epoch'
+				'network epoch'
 				'network token'
 				'transactions transactions'
 				'accounts accounts';
@@ -80,8 +69,8 @@ body,
 		.home-page-grid-container-top {
 			@apply grid-cols-2;
 			grid-template-areas:
-				'overview epoch'
-				'transactions transactions';
+				'network epoch'
+				'transactions accounts';
 		}
 
 		.home-page-grid-container-top.with-token {
@@ -94,10 +83,10 @@ body,
 
 	@screen xl {
 		.home-page-grid-container-top {
-			@apply grid-cols-[1fr,2fr];
+			@apply grid-cols-[315px,1fr,1fr];
 			grid-template-areas:
-				'overview transactions'
-				'epoch transactions';
+				'network transactions accounts'
+				'epoch transactions accounts';
 		}
 
 		.home-page-grid-container-top.with-token {

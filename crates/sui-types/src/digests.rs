@@ -635,6 +635,10 @@ impl TransactionEventsDigest {
     pub fn next_lexicographical(&self) -> Option<Self> {
         self.0.next_lexicographical().map(Self)
     }
+
+    pub fn into_inner(self) -> [u8; 32] {
+        self.0.into_inner()
+    }
 }
 
 impl fmt::Debug for TransactionEventsDigest {
@@ -642,6 +646,28 @@ impl fmt::Debug for TransactionEventsDigest {
         f.debug_tuple("TransactionEventsDigest")
             .field(&self.0)
             .finish()
+    }
+}
+
+impl AsRef<[u8]> for TransactionEventsDigest {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+impl AsRef<[u8; 32]> for TransactionEventsDigest {
+    fn as_ref(&self) -> &[u8; 32] {
+        self.0.as_ref()
+    }
+}
+
+impl std::str::FromStr for TransactionEventsDigest {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut result = [0; 32];
+        result.copy_from_slice(&Base58::decode(s).map_err(|e| anyhow::anyhow!(e))?);
+        Ok(Self::new(result))
     }
 }
 

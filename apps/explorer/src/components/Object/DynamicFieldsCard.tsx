@@ -37,7 +37,7 @@ export function DynamicFieldsCard({ id }: { id: string }) {
 
 	return hasPages ? (
 		<div className="mt-10">
-			<TabHeader size="lineMdOne" title="Dynamic Fields">
+			<TabHeader title="Dynamic Fields">
 				<div className="mt-4 flex max-h-600 flex-col gap-5 overflow-auto">
 					{data.pages.map(({ data }) =>
 						// Show the field name and type is it is not an object

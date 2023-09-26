@@ -6,7 +6,7 @@
 	"background": {
 		"service_worker": "background.js"
 	},
-	"permissions": ["storage", "tabs", "alarms"],
+	"permissions": ["storage", "tabs", "alarms", "unlimitedStorage", "identity"],
 	"action": {
 		"default_popup": "ui.html?type=popup"
 	},
@@ -16,10 +16,10 @@
 		"https://fullnode.staging.sui.io/"
 	],
 	"icons": {
-		"16": "manifest/icons/obc-16.png",
-		"32": "manifest/icons/obc-32.png",
-		"48": "manifest/icons/obc-48.png",
-		"128": "manifest/icons/obc-128.png"
+		"16": "manifest/icons/sui-icon-16.png",
+		"32": "manifest/icons/sui-icon-32.png",
+		"48": "manifest/icons/sui-icon-48.png",
+		"128": "manifest/icons/sui-icon-128.png"
 	},
 	"content_scripts": [
 		{

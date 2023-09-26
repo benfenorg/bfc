@@ -22,7 +22,6 @@ import { builder } from './bcs.js';
 import { TransactionType, TransactionBlockInput } from './Transactions.js';
 import { BuilderCallArg, PureCallArg } from './Inputs.js';
 import { create } from './utils.js';
-import { obc2SuiAddress } from '../utils/format.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
 
 export const TransactionExpiration = optional(
@@ -62,11 +61,7 @@ export const SerializedTransactionDataBuilder = object({
 export type SerializedTransactionDataBuilder = Infer<typeof SerializedTransactionDataBuilder>;
 
 function prepareSuiAddress(address: string) {
-	let value = address;
-	if (/^obc/i.test(address)) {
-		value = obc2SuiAddress(address);
-	}
-	return normalizeSuiAddress(value).replace('0x', '');
+	return normalizeSuiAddress(address).replace('0x', '');
 }
 
 export class TransactionBlockDataBuilder {

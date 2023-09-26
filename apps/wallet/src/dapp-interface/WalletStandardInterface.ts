@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { isTransactionBlock } from '@mysten/sui.js/transactions';
 import { toB64, fromB64 } from '@mysten/sui.js/utils';
 import {
 	SUI_CHAINS,
@@ -19,6 +19,7 @@ import {
 	type StandardEventsListeners,
 	type SuiSignTransactionBlockMethod,
 	type SuiSignMessageMethod,
+	type SuiSignPersonalMessageMethod,
 	SUI_MAINNET_CHAIN,
 } from '@mysten/wallet-standard';
 import mitt, { type Emitter } from 'mitt';
@@ -53,18 +54,18 @@ import type {
 	SignTransactionRequest,
 	SignTransactionResponse,
 } from '_payloads/transactions';
-import type { NetworkEnvType } from '_src/background/NetworkEnv';
+import type { NetworkEnvType } from '_src/shared/api-env';
 
 type WalletEventsMap = {
 	[E in keyof StandardEventsListeners]: Parameters<StandardEventsListeners[E]>[0];
 };
 
 // NOTE: Because this runs in a content script, we can't fetch the manifest.
-const name = process.env.APP_NAME || 'OBC Wallet';
+const name = process.env.APP_NAME || 'Sui Wallet';
 
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
-	'obcWallet:stake': {
+	'suiWallet:stake': {
 		version: '0.0.1';
 		stake: (input: StakeInput) => Promise<void>;
 	};
@@ -128,21 +129,25 @@ export class SuiWallet implements Wallet {
 				version: '1.0.0',
 				on: this.#on,
 			},
-			'obc:signTransactionBlock': {
+			'sui:signTransactionBlock': {
 				version: '1.0.0',
 				signTransactionBlock: this.#signTransactionBlock,
 			},
-			'obc:signAndExecuteTransactionBlock': {
+			'sui:signAndExecuteTransactionBlock': {
 				version: '1.0.0',
 				signAndExecuteTransactionBlock: this.#signAndExecuteTransactionBlock,
 			},
-			'obcWallet:stake': {
+			'suiWallet:stake': {
 				version: '0.0.1',
 				stake: this.#stake,
 			},
-			'obc:signMessage': {
+			'sui:signMessage': {
 				version: '1.0.0',
 				signMessage: this.#signMessage,
+			},
+			'sui:signPersonalMessage': {
+				version: '1.0.0',
+				signPersonalMessage: this.#signPersonalMessage,
 			},
 			'qredo:connect': {
 				version: '0.0.1',
@@ -162,7 +167,7 @@ export class SuiWallet implements Wallet {
 					address,
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
-					features: ['obc:signAndExecuteTransaction'],
+					features: ['sui:signAndExecuteTransaction'],
 				}),
 		);
 	}
@@ -170,7 +175,7 @@ export class SuiWallet implements Wallet {
 	constructor() {
 		this.#events = mitt();
 		this.#accounts = [];
-		this.#messagesStream = new WindowMessageStream('obc_in-page', 'obc_content-script');
+		this.#messagesStream = new WindowMessageStream('sui_in-page', 'sui_content-script');
 		this.#messagesStream.messages.subscribe(({ payload }) => {
 			if (isWalletStatusChangePayload(payload)) {
 				const { network, accounts } = payload;
@@ -234,7 +239,7 @@ export class SuiWallet implements Wallet {
 	};
 
 	#signTransactionBlock: SuiSignTransactionBlockMethod = async (input) => {
-		if (!TransactionBlock.is(input.transactionBlock)) {
+		if (!isTransactionBlock(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);
@@ -256,7 +261,7 @@ export class SuiWallet implements Wallet {
 	};
 
 	#signAndExecuteTransactionBlock: SuiSignAndExecuteTransactionBlockMethod = async (input) => {
-		if (!TransactionBlock.is(input.transactionBlock)) {
+		if (!isTransactionBlock(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);
@@ -299,6 +304,27 @@ export class SuiWallet implements Wallet {
 					throw new Error('Invalid sign message response');
 				}
 				return response.return;
+			},
+		);
+	};
+
+	#signPersonalMessage: SuiSignPersonalMessageMethod = async ({ message, account }) => {
+		return mapToPromise(
+			this.#send<SignMessageRequest, SignMessageRequest>({
+				type: 'sign-message-request',
+				args: {
+					message: toB64(message),
+					accountAddress: account.address,
+				},
+			}),
+			(response) => {
+				if (!response.return) {
+					throw new Error('Invalid sign message response');
+				}
+				return {
+					bytes: response.return.messageBytes,
+					signature: response.return.signature,
+				};
 			},
 		);
 	};

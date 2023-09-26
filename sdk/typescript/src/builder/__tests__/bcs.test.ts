@@ -5,7 +5,7 @@ import { toB58 } from '@mysten/bcs';
 import { it, expect } from 'vitest';
 import type { MoveCallTransaction, TransferObjectsTransaction } from '../index.js';
 import { builder, PROGRAMMABLE_CALL, TRANSACTION } from '../index.js';
-import { sui2ObcAddress } from '../../utils/format.js';
+import { normalizeSuiAddress } from '../../utils/sui-types.js';
 
 // Oooh-weeee we nailed it!
 it('can serialize simplified programmable call struct', () => {
@@ -53,17 +53,17 @@ it('can serialize enum with "kind" property', () => {
 
 function ref(): { objectId: string; version: string; digest: string } {
 	return {
-		objectId: sui2ObcAddress((Math.random() * 100000).toFixed(0).padEnd(64, '0')),
+		objectId: (Math.random() * 100000).toFixed(0).padEnd(64, '0'),
 		version: String((Math.random() * 10000).toFixed(0)),
 		digest: toB58(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])),
 	};
 }
 
 it('can serialize transaction data with a programmable transaction', () => {
-	let sui = sui2ObcAddress('0x2');
+	let sui = normalizeSuiAddress('0x2').replace('0x', '');
 	let txData = {
 		V1: {
-			sender: sui2ObcAddress('0xBAD'),
+			sender: normalizeSuiAddress('0xBAD').replace('0x', ''),
 			expiration: { None: true },
 			gasData: {
 				payment: [ref()],

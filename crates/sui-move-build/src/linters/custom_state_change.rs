@@ -25,8 +25,7 @@ use move_compiler::{
         Diagnostic, Diagnostics,
     },
     hlir::ast::{
-        BaseType_, Command, Exp, LValue, Label, ModuleCall, SingleType, SingleType_, Type,
-        TypeName_, Type_, Var,
+        BaseType_, Label, ModuleCall, SingleType, SingleType_, Type, TypeName_, Type_, Var,
     },
     parser::ast::Ability_,
     shared::{CompilationEnv, Identifier},
@@ -34,25 +33,21 @@ use move_compiler::{
 use std::collections::BTreeMap;
 
 use super::{
-    CUSTOM_STATE_CHANGE_DIAG_CATEGORY, CUSTOM_STATE_CHANGE_DIAG_CODE, INVALID_LOC,
-    LINT_WARNING_PREFIX,
+    LinterDiagCategory, FREEZE_FUN, INVALID_LOC, LINTER_DEFAULT_DIAG_CODE, LINT_WARNING_PREFIX,
+    SHARE_FUN, SUI_PKG_NAME, TRANSFER_FUN, TRANSFER_MOD_NAME,
 };
 
-const TRANSFER_FUN: &str = "transfer";
-const SHARE_FUN: &str = "share_object";
-const FREEZE_FUN: &str = "freeze_object";
-
 const PRIVATE_OBJ_FUNCTIONS: &[(&str, &str, &str)] = &[
-    ("sui", "transfer", TRANSFER_FUN),
-    ("sui", "transfer", SHARE_FUN),
-    ("sui", "transfer", FREEZE_FUN),
+    (SUI_PKG_NAME, TRANSFER_MOD_NAME, TRANSFER_FUN),
+    (SUI_PKG_NAME, TRANSFER_MOD_NAME, SHARE_FUN),
+    (SUI_PKG_NAME, TRANSFER_MOD_NAME, FREEZE_FUN),
 ];
 
 const CUSTOM_STATE_CHANGE_DIAG: DiagnosticInfo = custom(
     LINT_WARNING_PREFIX,
     Severity::Warning,
-    CUSTOM_STATE_CHANGE_DIAG_CATEGORY,
-    CUSTOM_STATE_CHANGE_DIAG_CODE,
+    LinterDiagCategory::CustomStateChange as u8,
+    LINTER_DEFAULT_DIAG_CODE,
     "potentially unenforceable custom transfer/share/freeze policy",
 );
 
@@ -127,15 +122,6 @@ impl SimpleAbsInt for CustomStateChangeVerifierAI {
         diags
     }
 
-    fn exp_custom(
-        &self,
-        _context: &mut ExecutionContext,
-        _state: &mut State,
-        _e: &Exp,
-    ) -> Option<Vec<Value>> {
-        None
-    }
-
     fn call_custom(
         &self,
         context: &mut ExecutionContext,
@@ -186,20 +172,6 @@ impl SimpleAbsInt for CustomStateChangeVerifierAI {
             Type_::Single(_) => vec![Value::Other],
             Type_::Multiple(types) => vec![Value::Other; types.len()],
         })
-    }
-
-    fn command_custom(&self, _: &mut ExecutionContext, _: &mut State, _: &Command) -> bool {
-        false
-    }
-
-    fn lvalue_custom(
-        &self,
-        _context: &mut ExecutionContext,
-        _state: &mut State,
-        _l: &LValue,
-        _value: &Value,
-    ) -> bool {
-        false
     }
 }
 

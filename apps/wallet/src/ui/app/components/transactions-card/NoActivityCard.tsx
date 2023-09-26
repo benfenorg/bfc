@@ -12,8 +12,8 @@ export type NoActivityCardType = {
 export function NoActivityCard({ message }: NoActivityCardType) {
 	return (
 		<div className="flex flex-col gap-4 justify-center items-center text-center h-full px-10">
-			<TransferObject16 className="text-obc-text2 text-3xl" />
-			<Text variant="body" weight="medium" color="obc-text2">
+			<TransferObject16 className="text-gray-45 text-3xl" />
+			<Text variant="pBody" weight="medium" color="steel">
 				{message}
 			</Text>
 		</div>

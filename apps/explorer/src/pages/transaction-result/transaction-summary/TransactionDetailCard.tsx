@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { formatDate, useResolveSuiNSName } from '@mysten/core';
-import { Text } from '@mysten/ui';
+import { Heading, Text } from '@mysten/ui';
 import { type ReactNode } from 'react';
 
 import { useBreakpoint } from '~/hooks/useBreakpoint';
@@ -11,9 +11,9 @@ import { TransactionBlockCard, TransactionBlockCardSection } from '~/ui/Transact
 export function TransactionDetail({ label, value }: { label: string; value: ReactNode | string }) {
 	return (
 		<div className="flex basis-1/3 flex-col gap-2 pl-3 first:pl-0 md:pl-5">
-			<Text variant="pBody/normal" color="steel-dark">
+			<Heading variant="heading4/semibold" color="steel-darker">
 				{label}
-			</Text>
+			</Heading>
 			<Text variant="pBody/normal" color="steel-dark">
 				{value}
 			</Text>
@@ -23,9 +23,9 @@ export function TransactionDetail({ label, value }: { label: string; value: Reac
 
 interface TransactionDetailsProps {
 	sender?: string;
-	checkpoint?: string;
+	checkpoint?: string | null;
 	executedEpoch?: string;
-	timestamp?: string;
+	timestamp?: string | null;
 }
 
 export function TransactionDetailCard({
@@ -42,7 +42,7 @@ export function TransactionDetailCard({
 			<TransactionBlockCardSection>
 				<div className="flex flex-col gap-6">
 					{timestamp && (
-						<Text variant="pHeading4/semibold" color="steel-darker">
+						<Text variant="pBody/medium" color="steel-dark">
 							{formatDate(Number(timestamp))}
 						</Text>
 					)}
@@ -50,7 +50,7 @@ export function TransactionDetailCard({
 						{sender && (
 							<TransactionDetail
 								label="Sender"
-								value={<AddressLink address={domainName ?? sender} variant="large" />}
+								value={<AddressLink address={domainName ?? sender} />}
 							/>
 						)}
 						{checkpoint && (
@@ -60,16 +60,12 @@ export function TransactionDetailCard({
 									<CheckpointSequenceLink
 										sequence={checkpoint}
 										label={Number(checkpoint).toLocaleString()}
-										variant="large"
 									/>
 								}
 							/>
 						)}
 						{executedEpoch && (
-							<TransactionDetail
-								label="Epoch"
-								value={<EpochLink epoch={executedEpoch} variant="large" />}
-							/>
+							<TransactionDetail label="Epoch" value={<EpochLink epoch={executedEpoch} />} />
 						)}
 					</div>
 				</div>

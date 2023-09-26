@@ -10,6 +10,7 @@ const styles = cva(
 	[
 		'transition flex flex-nowrap items-center justify-center outline-none gap-1 w-full',
 		'bg-transparent p-0 border-none',
+		'active:opacity-70',
 		'disabled:opacity-40',
 		'cursor-pointer group',
 	],
@@ -31,22 +32,10 @@ const styles = cva(
 				],
 				suiDark: ['text-sui-dark'],
 				hero: ['text-hero hover:text-hero-dark focus:text-hero-dark disabled:text-hero-dark'],
-				'obc-text1': [
-					'text-obc-text1 hover:text-obc-text1 focus:text-obc-text1 disabled:text-obc-text1',
-				],
-				'obc-text2': [
-					'text-obc-text2 hover:text-obc-text2 focus:text-obc-text2 disabled:text-obc-text2',
-				],
-				'obc-text3': [
-					'text-obc-text3 hover:text-obc-text3 focus:text-obc-text3 disabled:text-obc-text3',
-				],
-				'obc-link':
-					'text-obc-link hover:text-obc-link-dark focus:text-obc-link-dark disabled:text-obc-link',
 			},
 			weight: {
 				semibold: 'font-semibold',
 				medium: 'font-medium',
-				normal: 'font-normal',
 			},
 			size: {
 				bodySmall: 'text-bodySmall',
@@ -64,6 +53,9 @@ const styles = cva(
 
 const iconStyles = cva(['transition flex'], {
 	variants: {
+		beforeColor: {
+			steelDarker: ['text-steel-darker'],
+		},
 		color: {
 			steelDark: [
 				'text-steel group-hover:text-steel-darker group-focus:text-steel-darker group-disabled:text-steel-dark',
@@ -80,15 +72,11 @@ const iconStyles = cva(['transition flex'], {
 			hero: [
 				'text-hero group-hover:text-hero-dark group-focus:text-hero-dark group-disabled:text-hero-dark',
 			],
-			'obc-text1': ['text-obc-text1'],
-			'obc-text2': ['text-obc-text2'],
-			'obc-text3': ['text-obc-text3'],
-			'obc-link': 'text-obc-link',
 		},
 	},
 });
 
-interface LinkProps
+export interface LinkProps
 	extends VariantProps<typeof styles>,
 		VariantProps<typeof iconStyles>,
 		Omit<ButtonOrLinkProps, 'className' | 'color'> {
@@ -101,11 +89,12 @@ export const Link = forwardRef(
 	(
 		{
 			before,
+			beforeColor,
 			after,
 			text,
 			color,
 			weight,
-			size = 'body',
+			size = 'bodySmall',
 			underline = 'none',
 			mono,
 			...otherProps
@@ -117,7 +106,11 @@ export const Link = forwardRef(
 			{...otherProps}
 			ref={ref}
 		>
-			{before ? <div className={iconStyles({ color })}>{before}</div> : null}
+			{before ? (
+				<div className={beforeColor ? iconStyles({ beforeColor }) : iconStyles({ color })}>
+					{before}
+				</div>
+			) : null}
 			{text ? <div className={'truncate leading-none'}>{text}</div> : null}
 			{after ? <div className={iconStyles({ color })}>{after}</div> : null}
 		</ButtonOrLink>

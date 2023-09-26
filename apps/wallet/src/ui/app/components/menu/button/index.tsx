@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Menu, Close } from '@mysten/icons';
 import cl from 'classnames';
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
@@ -18,8 +17,14 @@ function MenuButton({ className }: MenuButtonProps) {
 	const isOpen = useMenuIsOpen();
 	const menuUrl = useNextMenuUrl(!isOpen, '/');
 	return (
-		<Link data-testid="menu" className={cl(st.button, className)} to={menuUrl}>
-			{isOpen ? <Close className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+		<Link
+			data-testid="menu"
+			className={cl(st.button, { [st.open]: isOpen }, className)}
+			to={menuUrl}
+		>
+			<span className={cl(st.line, st.line1)} />
+			<span className={cl(st.line, st.line2)} />
+			<span className={cl(st.line, st.line3)} />
 		</Link>
 	);
 }

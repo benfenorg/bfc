@@ -16,7 +16,7 @@ export const Default: StoryObj<FilterListProps> = {
 		return <FilterList {...props} value={value} onChange={onChange} />;
 	},
 	args: {
-		options: ['MINT', 'OBC'],
+		options: ['MINT', 'SUI'],
 		disabled: false,
 		size: 'sm',
 		lessSpacing: true,

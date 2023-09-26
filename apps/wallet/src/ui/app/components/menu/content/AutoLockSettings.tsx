@@ -10,9 +10,9 @@ export function AutoLockSettings() {
 	const backUrl = useNextMenuUrl(true, '/');
 	return (
 		<MenuLayout title="Auto Lock" back={backUrl}>
-			<div className="flex flex-col gap-1.25">
-				<Text color="obc-text1" weight="normal" variant="bodySmall">
-					Set the idle time in minutes before OBC Wallet locks itself.
+			<div className="flex flex-col gap-3.75 mt-3.75">
+				<Text color="gray-90" weight="medium" variant="pBody">
+					Set the idle time in minutes before Sui Wallet locks itself.
 				</Text>
 				<AutoLockTimerSelector />
 			</div>

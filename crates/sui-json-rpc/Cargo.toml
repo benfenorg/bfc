@@ -7,6 +7,7 @@ publish = false
 edition = "2021"
 
 [dependencies]
+arc-swap.workspace = true
 fastcrypto.workspace = true
 jsonrpsee.workspace = true
 jsonrpsee-proc-macros.workspace = true
@@ -14,6 +15,7 @@ hyper.workspace = true
 itertools.workspace = true
 linked-hash-map.workspace = true
 tower.workspace = true
+axum.workspace = true
 tower-http.workspace = true
 move-binary-format.workspace = true
 move-core-types.workspace = true
@@ -32,6 +34,8 @@ bcs.workspace = true
 eyre.workspace = true
 num_cpus.workspace = true
 once_cell.workspace = true
+axum-server.workspace = true
+serde_json.workspace = true
 
 tap.workspace = true
 
@@ -64,3 +68,5 @@ sui-macros = { path = "../sui-macros" }
 sui-simulator = { path = "../sui-simulator" }
 reqwest = { version = "0.11.13", default_features = false, features = ["rustls-tls"] }
 hex = "0.4.3"
+sui-types = { workspace = true, features = ["test-utils"] }
+telemetry-subscribers.workspace = true

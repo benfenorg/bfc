@@ -18,6 +18,12 @@ use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_macros::sim_test;
+use sui_node::SuiNodeHandle;
+use sui_protocol_config::ProtocolConfig;
+use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
+use sui_types::base_types::SuiAddress;
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
 use sui_types::gas::GasCostSummary;
@@ -1828,8 +1834,7 @@ async fn test_validator_candidate_pool_read() {
             &system_state,
             &system_state_summary,
             staking_pool_id,
-        )
-            .unwrap();
+        ).unwrap();
         assert_eq!(validator.sui_address, address);
     });
 }
@@ -2075,6 +2080,7 @@ async fn safe_mode_reconfig_test() {
 }
 
 async fn add_validator_candidate(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig, ) {
+
     let cur_validator_candidate_count = test_cluster.fullnode_handle.sui_node.with(|node| {
         node.state()
             .get_sui_system_state_object_for_testing()

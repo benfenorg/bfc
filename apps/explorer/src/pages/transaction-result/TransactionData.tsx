@@ -3,14 +3,13 @@
 
 import { useTransactionSummary } from '@mysten/core';
 import {
-	getTransactionKind,
-	getTransactionKindName,
 	type ProgrammableTransaction,
 	type SuiTransactionBlockResponse,
-} from '@mysten/sui.js';
+} from '@mysten/sui.js/client';
 
 import { TransactionDetailCard } from './transaction-summary/TransactionDetailCard';
 import { GasBreakdown } from '~/components/GasBreakdown';
+import { useRecognizedPackages } from '~/hooks/useRecognizedPackages';
 import { InputsCard } from '~/pages/transaction-result/programmable-transaction-view/InputsCard';
 import { TransactionsCard } from '~/pages/transaction-result/programmable-transaction-view/TransactionsCard';
 
@@ -19,19 +18,21 @@ interface Props {
 }
 
 export function TransactionData({ transaction }: Props) {
+	const recognizedPackagesList = useRecognizedPackages();
 	const summary = useTransactionSummary({
 		transaction,
+		recognizedPackagesList,
 	});
 
-	const transactionKindName = getTransactionKindName(getTransactionKind(transaction)!);
+	const transactionKindName = transaction.transaction?.data.transaction.kind;
 
 	const isProgrammableTransaction = transactionKindName === 'ProgrammableTransaction';
 
 	const programmableTxn = transaction.transaction!.data.transaction as ProgrammableTransaction;
 
 	return (
-		<div className="flex flex-wrap gap-6">
-			<section className="flex w-96 flex-1 flex-col gap-6 max-md:min-w-[50%]">
+		<div className="flex flex-wrap gap-3 md:gap-6">
+			<section className="flex w-96 flex-1 flex-col gap-3 max-md:min-w-[50%] md:gap-6">
 				<TransactionDetailCard
 					timestamp={summary?.timestamp}
 					sender={summary?.sender}
@@ -46,7 +47,7 @@ export function TransactionData({ transaction }: Props) {
 				)}
 			</section>
 
-			<section className="flex w-96 flex-1 flex-col gap-6 md:min-w-transactionColumn">
+			<section className="flex w-96 flex-1 flex-col gap-3 md:min-w-transactionColumn md:gap-6">
 				{isProgrammableTransaction && (
 					<>
 						<div data-testid="transactions-card">

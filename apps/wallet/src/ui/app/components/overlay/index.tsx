@@ -28,7 +28,7 @@ function Overlay({
 	showModal,
 	closeOverlay,
 	setShowModal,
-	closeIcon = <X32 fill="currentColor" className="text-white w-6 h-6" />,
+	closeIcon = <X32 fill="currentColor" className="text-sui-light w-8 h-8" />,
 }: OverlayProps) {
 	const closeModal = useCallback(
 		(e: React.MouseEvent<HTMLElement>) => {
@@ -48,10 +48,10 @@ function Overlay({
 				})}
 			>
 				{title && (
-					<div className="bg-obc-card h-12 w-full">
+					<div className="bg-gray-40 h-12 w-full">
 						<div
 							data-testid="overlay-title"
-							className="text-obc-text3 flex justify-center h-12 items-center text-heading4 font-semibold"
+							className="text-steel-darker bg-gray-40 flex justify-center h-12 items-center text-heading4 font-semibold"
 						>
 							{title}
 						</div>
@@ -60,7 +60,7 @@ function Overlay({
 				<div
 					className={st.content}
 					style={{
-						height: title ? 'calc(100% - 108px)' : 'calc(100% - 60px)',
+						height: title ? 'calc(100% - 128px)' : 'calc(100% - 80px)',
 					}}
 				>
 					{children}

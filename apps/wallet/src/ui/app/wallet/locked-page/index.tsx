@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LockUnlocked16, Logo } from '@mysten/icons';
+import { LockUnlocked16 } from '@mysten/icons';
 import { Form, Formik } from 'formik';
 import { Link } from 'react-router-dom';
 import Browser from 'webextension-polyfill';
@@ -11,10 +11,8 @@ import Alert from '_app/components/alert';
 import { Button } from '_app/shared/ButtonUI';
 import { CardLayout } from '_app/shared/card-layout';
 import FieldLabel from '_app/shared/field-label';
-import { Heading } from '_app/shared/heading';
 import { PasswordInputField } from '_app/shared/input/password';
 import PageMainLayout from '_app/shared/page-main-layout';
-import { Text } from '_app/shared/text';
 import { unlockWallet } from '_app/wallet/actions';
 import { devQuickUnlockEnabled } from '_app/wallet/constants';
 import { useLockedGuard } from '_app/wallet/hooks';
@@ -46,18 +44,7 @@ export default function LockedPage() {
 		<Loading loading={guardsLoading}>
 			<PageLayout>
 				<PageMainLayout className={st.main}>
-					<CardLayout>
-						<div className="flex flex-col flex-nowrap items-center justify-center rounded-full w-15 h-15 mb-5">
-							<Logo className="bg-obc rounded-full w-15 h-15" />
-						</div>
-						<Text variant="caption" color="obc-text1" weight="normal">
-							Hello There
-						</Text>
-						<div className="mt-1.25 text-center w-[280px]">
-							<Heading variant="heading3" color="black" as="h1" weight="bold" leading="none">
-								Welcome Back
-							</Heading>
-						</div>
+					<CardLayout icon="sui" headerCaption="Hello There" title="Welcome Back">
 						<Formik
 							initialValues={{ password: '' }}
 							validationSchema={validation}

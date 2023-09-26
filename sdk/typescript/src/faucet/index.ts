@@ -115,9 +115,9 @@ export async function getFaucetRequestStatus(input: {
 export function getFaucetHost(network: 'testnet' | 'devnet' | 'localnet') {
 	switch (network) {
 		case 'testnet':
-			return 'https://obcfaucet.openblock.vip';
+			return 'https://faucet.testnet.sui.io';
 		case 'devnet':
-			return 'https://obcfaucet.openblock.vip';
+			return 'https://faucet.devnet.sui.io';
 		case 'localnet':
 			return 'http://127.0.0.1:9123';
 		default:

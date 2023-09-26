@@ -7,21 +7,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 const timeStyle = cva([], {
 	variants: {
 		variant: {
-			body: 'text-body/[18px]',
+			body: 'text-body',
 			bodySmall: 'text-bodySmall',
 		},
 		color: {
 			'steel-dark': 'text-steel-dark',
 			'steel-darker': 'text-steel-darker',
-			'obc-text1': 'text-obc-text1',
-			'obc-text2': 'text-obc-text2',
-			'obc-text3': 'text-obc-text3',
-			'obc-red': 'text-obc-red',
 		},
 		weight: {
 			medium: 'font-medium',
 			semibold: 'font-semibold',
-			normal: 'font-normal',
 		},
 	},
 	defaultVariants: {

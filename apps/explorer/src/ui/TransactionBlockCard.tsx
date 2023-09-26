@@ -83,15 +83,15 @@ export function TransactionBlockCardSection({
 				<Collapsible.Trigger>
 					<div className="flex items-center gap-2">
 						{typeof title === 'string' ? (
-							<Text color="steel-darker" variant="bodyLarge/normal">
+							<Text color="steel-darker" variant="body/semibold">
 								{title}
 							</Text>
 						) : (
 							title
 						)}
-						<Divider type="dashed" />
+						<Divider />
 						<ChevronRight12
-							className={clsx('h-4 w-4 cursor-pointer text-obc-text3', open && 'rotate-90')}
+							className={clsx('h-4 w-4 cursor-pointer text-gray-45', open && 'rotate-90')}
 						/>
 					</div>
 				</Collapsible.Trigger>
@@ -108,6 +108,7 @@ export interface TransactionBlockCardProps extends Omit<CardProps, 'size'> {
 	footer?: ReactNode;
 	collapsible?: boolean;
 	size?: Size;
+	initialClose?: boolean;
 }
 
 export function TransactionBlockCard({
@@ -116,12 +117,13 @@ export function TransactionBlockCard({
 	collapsible,
 	size = 'md',
 	children,
+	initialClose,
 	...cardProps
 }: TransactionBlockCardProps) {
-	const [open, setOpen] = useState(true);
+	const [open, setOpen] = useState(!initialClose);
 	return (
 		<div className="relative w-full">
-			<Card rounded="2xl" border="obcBorder" bg="white" spacing="none" {...cardProps}>
+			<Card rounded="2xl" border="gray45" bg="white" spacing="none" {...cardProps}>
 				<Collapsible.Root
 					open={open}
 					onOpenChange={setOpen}
@@ -138,9 +140,7 @@ export function TransactionBlockCard({
 				</Collapsible.Root>
 
 				{footer && (
-					<div
-						className={clsx('rounded-b-2xl bg-obc-card py-2.5', size === 'md' ? 'px-6' : 'px-4')}
-					>
+					<div className={clsx('rounded-b-2xl bg-sui/10 py-2.5', size === 'md' ? 'px-6' : 'px-4')}>
 						{footer}
 					</div>
 				)}

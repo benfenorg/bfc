@@ -71,6 +71,10 @@
 					{
 						"label": "Consensus Engine",
 						"fileName": "learn/architecture/consensus"
+					},
+					{
+						"label": "Full Node Data Management",
+						"fileName": "learn/architecture/sui-full-node-data"
 					}
 				]
 			},
@@ -188,6 +192,10 @@
 				"label": "Sui Kiosk",
 				"fileName": "build/sui-kiosk"
 			},
+			{
+				"label": "Sui Transfer Policy",
+				"fileName": "build/sui-transfer-policy"
+			},			
 			{
 				"label": "Create Smart Contracts with Move",
 				"fileName": "build/move/index",

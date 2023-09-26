@@ -12,6 +12,7 @@ use sui_json_rpc::api::{
     TransactionBuilderClient, WriteApiClient,
 };
 use sui_json_rpc_types::{ObjectChange, SuiTransactionBlockEffects};
+use sui_json_rpc_types::ObjectChange;
 use sui_json_rpc_types::ObjectsPage;
 use sui_json_rpc_types::{
     Balance, CoinPage, DelegatedStake, StakeStatus, SuiCoinMetadata, SuiExecutionStatus,
@@ -430,6 +431,7 @@ async fn test_get_balance() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_get_metadata() -> Result<(), anyhow::Error> {
+    //telemetry_subscribers::init_for_testing();
     let cluster = TestClusterBuilder::new().build().await;
 
     let http_client = cluster.rpc_client();

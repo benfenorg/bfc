@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useRpcClient } from '@mysten/core';
+import { useLatestCheckpointSequenceNumber } from '@mysten/dapp-kit';
 import { ArrowRight12 } from '@mysten/icons';
 import { Text } from '@mysten/ui';
-import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
 import { genTableDataFromCheckpointsData } from './utils';
@@ -32,12 +31,8 @@ export function CheckpointsTable({
 	maxCursor,
 }: Props) {
 	const [limit, setLimit] = useState(initialLimit);
-	const rpc = useRpcClient();
 
-	const countQuery = useQuery({
-		queryKey: ['checkpoints', 'count'],
-		queryFn: () => rpc.getLatestCheckpointSequenceNumber(),
-	});
+	const countQuery = useLatestCheckpointSequenceNumber();
 
 	const checkpoints = useGetCheckpoints(initialCursor, limit);
 
@@ -59,9 +54,9 @@ export function CheckpointsTable({
 	const cardData = data ? genTableDataFromCheckpointsData(data) : undefined;
 
 	return (
-		<div className="obc-table-container flex flex-col space-y-3 text-left">
+		<div className="flex flex-col space-y-3 text-left xl:pr-10">
 			{isError && (
-				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
+				<div className="pt-2 font-sans font-semibold text-issue-dark">
 					Failed to load Checkpoints
 				</div>
 			)}
@@ -78,7 +73,7 @@ export function CheckpointsTable({
 				</div>
 			)}
 
-			<div className="flex justify-between bg-obc-card p-3.5">
+			<div className="flex justify-between">
 				{!disablePagination ? (
 					<Pagination
 						{...pagination}
@@ -96,7 +91,7 @@ export function CheckpointsTable({
 				)}
 
 				<div className="flex items-center space-x-3">
-					<Text variant="body/normal" color="steel-darker">
+					<Text variant="body/medium" color="steel-dark">
 						{count ? numberSuffix(Number(count)) : '-'}
 						{` Total`}
 					</Text>

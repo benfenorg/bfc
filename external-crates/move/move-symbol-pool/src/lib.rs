@@ -70,6 +70,7 @@ static_symbols!(
     "tx_context",
     "TxContext",
     "ID",
+    "SUI",
 );
 
 /// The global, unique cache of strings.

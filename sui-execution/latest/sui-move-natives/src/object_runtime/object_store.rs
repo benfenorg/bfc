@@ -17,7 +17,7 @@ use sui_types::{
     base_types::{MoveObjectType, ObjectID, SequenceNumber},
     error::VMMemoryLimitExceededSubStatusCode,
     metrics::LimitsMetrics,
-    object::{Data, MoveObject, Owner},
+    object::{Data, MoveObject, Object, Owner},
     storage::ChildObjectResolver,
 };
 
@@ -32,8 +32,6 @@ pub(super) struct ChildObject {
 #[derive(Debug)]
 pub(crate) struct ChildObjectEffect {
     pub(super) owner: ObjectID,
-    // none if it was an input object
-    pub(super) loaded_version: Option<SequenceNumber>,
     pub(super) ty: Type,
     pub(super) effect: Op<Value>,
 }
@@ -47,18 +45,18 @@ struct Inner<'a> {
     root_version: BTreeMap<ObjectID, SequenceNumber>,
     // cached objects from the resolver. An object might be in this map but not in the store
     // if it's existence was queried, but the value was not used.
-    cached_objects: BTreeMap<ObjectID, Option<MoveObject>>,
+    cached_objects: BTreeMap<ObjectID, Option<Object>>,
     // whether or not this TX is gas metered
     is_metered: bool,
     // Local protocol config used to enforce limits
-    constants: LocalProtocolConfig,
+    local_config: LocalProtocolConfig,
     // Metrics for reporting exceeded limits
     metrics: Arc<LimitsMetrics>,
 }
 
 // maintains the runtime GlobalValues for child objects and manages the fetching of objects
 // from storage, through the `ChildObjectResolver`
-pub(super) struct ObjectStore<'a> {
+pub(super) struct ChildObjectStore<'a> {
     // contains object resolver and object cache
     // kept as a separate struct to deal with lifetime issues where the `store` is accessed
     // at the same time as the `cached_objects` is populated
@@ -68,8 +66,6 @@ pub(super) struct ObjectStore<'a> {
     store: BTreeMap<ObjectID, ChildObject>,
     // whether or not this TX is gas metered
     is_metered: bool,
-    // Local protocol config used to enforce limits
-    constants: LocalProtocolConfig,
 }
 
 pub(crate) enum ObjectResult<V> {
@@ -132,7 +128,7 @@ impl<'a> Inner<'a> {
                             ),
                         ))
                     }
-                    Data::Move(mo @ MoveObject { .. }) => Some(mo),
+                    Data::Move(_) => Some(object),
                 }
             } else {
                 None
@@ -141,8 +137,8 @@ impl<'a> Inner<'a> {
             if let LimitThresholdCrossed::Hard(_, lim) = check_limit_by_meter!(
                 self.is_metered,
                 cached_objects_count,
-                self.constants.object_runtime_max_num_cached_objects,
-                self.constants
+                self.local_config.object_runtime_max_num_cached_objects,
+                self.local_config
                     .object_runtime_max_num_cached_objects_system_tx,
                 self.metrics.excessive_object_runtime_cached_objects
             ) {
@@ -159,7 +155,17 @@ impl<'a> Inner<'a> {
 
             e.insert(obj_opt);
         }
-        Ok(self.cached_objects.get(&child).unwrap().as_ref())
+        Ok(self
+            .cached_objects
+            .get(&child)
+            .unwrap()
+            .as_ref()
+            .map(|obj| {
+                obj.data
+                    .try_as_move()
+                    // unwrap safe because we only insert Move objects
+                    .unwrap()
+            }))
     }
 
     fn fetch_object_impl(
@@ -225,12 +231,12 @@ impl<'a> Inner<'a> {
     }
 }
 
-impl<'a> ObjectStore<'a> {
+impl<'a> ChildObjectStore<'a> {
     pub(super) fn new(
         resolver: &'a dyn ChildObjectResolver,
         root_version: BTreeMap<ObjectID, SequenceNumber>,
         is_metered: bool,
-        constants: LocalProtocolConfig,
+        local_config: LocalProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Self {
         Self {
@@ -239,12 +245,11 @@ impl<'a> ObjectStore<'a> {
                 root_version,
                 cached_objects: BTreeMap::new(),
                 is_metered,
-                constants: constants.clone(),
+                local_config,
                 metrics,
             },
             store: BTreeMap::new(),
             is_metered,
-            constants,
         }
     }
 
@@ -306,8 +311,9 @@ impl<'a> ObjectStore<'a> {
                 if let LimitThresholdCrossed::Hard(_, lim) = check_limit_by_meter!(
                     self.is_metered,
                     store_entries_count,
-                    self.constants.object_runtime_max_num_store_entries,
-                    self.constants
+                    self.inner.local_config.object_runtime_max_num_store_entries,
+                    self.inner
+                        .local_config
                         .object_runtime_max_num_store_entries_system_tx,
                     self.inner.metrics.excessive_object_runtime_store_entries
                 ) {
@@ -348,19 +354,12 @@ impl<'a> ObjectStore<'a> {
         child_move_type: MoveObjectType,
         child_value: Value,
     ) -> PartialVMResult<()> {
-        let mut child_object = ChildObject {
-            owner: parent,
-            ty: child_ty.clone(),
-            move_type: child_move_type,
-            value: GlobalValue::none(),
-        };
-        child_object.value.move_to(child_value).unwrap();
-
         if let LimitThresholdCrossed::Hard(_, lim) = check_limit_by_meter!(
             self.is_metered,
             self.store.len(),
-            self.constants.object_runtime_max_num_store_entries,
-            self.constants
+            self.inner.local_config.object_runtime_max_num_store_entries,
+            self.inner
+                .local_config
                 .object_runtime_max_num_store_entries_system_tx,
             self.inner.metrics.excessive_object_runtime_store_entries
         ) {
@@ -374,8 +373,8 @@ impl<'a> ObjectStore<'a> {
                 ));
         };
 
-        if let Some(prev) = self.store.insert(child, child_object) {
-            if prev.value.exists()? {
+        let mut value = if let Some(ChildObject { ty, value, .. }) = self.store.remove(&child) {
+            if value.exists()? {
                 return Err(
                     PartialVMError::new(StatusCode::UNKNOWN_INVARIANT_VIOLATION_ERROR)
                         .with_message(
@@ -387,28 +386,46 @@ impl<'a> ObjectStore<'a> {
                         ),
                 );
             }
+            if self.inner.local_config.loaded_child_object_format {
+                // double check format did not change
+                if !self.inner.local_config.loaded_child_object_format_type && child_ty != &ty {
+                    let msg = format!("Type changed for child {child} when setting the value back");
+                    return Err(
+                        PartialVMError::new(StatusCode::UNKNOWN_INVARIANT_VIOLATION_ERROR)
+                            .with_message(msg),
+                    );
+                }
+                value
+            } else {
+                GlobalValue::none()
+            }
+        } else {
+            GlobalValue::none()
+        };
+        if let Err((e, _)) = value.move_to(child_value) {
+            return Err(
+                PartialVMError::new(StatusCode::UNKNOWN_INVARIANT_VIOLATION_ERROR).with_message(
+                    format!("Unable to set value for child {child}, with error {e}",),
+                ),
+            );
         }
+        let child_object = ChildObject {
+            owner: parent,
+            ty: child_ty.clone(),
+            move_type: child_move_type,
+            value,
+        };
+        self.store.insert(child, child_object);
         Ok(())
     }
 
-    pub(super) fn cached_objects(&self) -> &BTreeMap<ObjectID, Option<MoveObject>> {
+    pub(super) fn cached_objects(&self) -> &BTreeMap<ObjectID, Option<Object>> {
         &self.inner.cached_objects
     }
 
     // retrieve the `Op` effects for the child objects
-    pub(super) fn take_effects(
-        &mut self,
-    ) -> (
-        BTreeMap<ObjectID, SequenceNumber>,
-        BTreeMap<ObjectID, ChildObjectEffect>,
-    ) {
-        let loaded_versions: BTreeMap<ObjectID, SequenceNumber> = self
-            .inner
-            .cached_objects
-            .iter()
-            .filter_map(|(id, obj_opt)| Some((*id, obj_opt.as_ref()?.version())))
-            .collect();
-        let child_object_effects = std::mem::take(&mut self.store)
+    pub(super) fn take_effects(&mut self) -> BTreeMap<ObjectID, ChildObjectEffect> {
+        std::mem::take(&mut self.store)
             .into_iter()
             .filter_map(|(id, child_object)| {
                 let ChildObject {
@@ -417,18 +434,11 @@ impl<'a> ObjectStore<'a> {
                     move_type: _,
                     value,
                 } = child_object;
-                let loaded_version = loaded_versions.get(&id).copied();
                 let effect = value.into_effect()?;
-                let child_effect = ChildObjectEffect {
-                    owner,
-                    loaded_version,
-                    ty,
-                    effect,
-                };
+                let child_effect = ChildObjectEffect { owner, ty, effect };
                 Some((id, child_effect))
             })
-            .collect();
-        (loaded_versions, child_object_effects)
+            .collect()
     }
 
     pub(super) fn all_active_objects(&self) -> impl Iterator<Item = (&ObjectID, &Type, Value)> {

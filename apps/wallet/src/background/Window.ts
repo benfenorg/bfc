@@ -13,8 +13,7 @@ const windowRemovedStream = fromEventPattern<number>(
 
 // This is arbitrary across different operating systems, and unfortunately
 // there isn't a great way to tell how much extra height we need to tack on
-const windowHeightWithFrame = POPUP_HEIGHT + 39;
-const windowWidthWithFrame = POPUP_WIDTH + 16;
+const windowHeightWithFrame = POPUP_HEIGHT + 28;
 
 export class Window {
 	private _id: number | null = null;
@@ -29,7 +28,7 @@ export class Window {
 		const w = await Browser.windows.create({
 			url: this._url,
 			focused: true,
-			width: windowWidthWithFrame,
+			width: POPUP_WIDTH,
 			height: windowHeightWithFrame,
 			type: 'popup',
 			top: top,

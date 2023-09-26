@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { normalizeSuiObjectId } from '../utils/sui-types.js';
 import { TransactionBlock } from '../builder/index.js';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
 import { getObjectReference } from '../types/index.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
 import type { SuiClient } from '../client/index.js';
 import { SUI_SYSTEM_ADDRESS } from './framework.js';
 
@@ -12,7 +12,7 @@ import { SUI_SYSTEM_ADDRESS } from './framework.js';
  * Address of the Sui System object.
  * Always the same in every Sui network (local, devnet, testnet).
  */
-export const SUI_SYSTEM_STATE_OBJECT_ID: string = normalizeSuiAddress('0x5');
+export const SUI_SYSTEM_STATE_OBJECT_ID: string = normalizeSuiObjectId('0x5');
 
 export const SUI_SYSTEM_MODULE_NAME = 'sui_system';
 export const ADD_STAKE_FUN_NAME = 'request_add_stake';

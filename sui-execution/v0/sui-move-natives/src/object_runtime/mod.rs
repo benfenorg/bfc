@@ -20,7 +20,7 @@ use std::{
     sync::Arc,
 };
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, id::UID, metrics::LimitsMetrics, OBC_SYSTEM_PACKAGE_ID, object::{MoveObject, Owner}, storage::{ChildObjectResolver, DeleteKind, WriteKind}, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
+use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::LoadedChildObjectMetadata, id::UID, metrics::LimitsMetrics, OBC_SYSTEM_PACKAGE_ID, object::{MoveObject, Owner}, storage::{ChildObjectResolver, DeleteKind, WriteKind}, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
 
 pub(crate) mod object_store;
 
@@ -392,11 +392,22 @@ impl<'a> ObjectRuntime<'a> {
         self.object_store.all_active_objects()
     }
 
-    pub fn loaded_child_objects(&self) -> BTreeMap<ObjectID, SequenceNumber> {
+    pub fn loaded_child_objects(&self) -> BTreeMap<ObjectID, LoadedChildObjectMetadata> {
         self.object_store
             .cached_objects()
             .iter()
-            .filter_map(|(id, obj_opt)| Some((*id, obj_opt.as_ref()?.version())))
+            .filter_map(|(id, obj_opt)| {
+                obj_opt.as_ref().map(|obj| {
+                    (
+                        *id,
+                        LoadedChildObjectMetadata {
+                            version: obj.version(),
+                            digest: obj.digest(),
+                            storage_rebate: obj.storage_rebate,
+                        },
+                    )
+                })
+            })
             .collect()
     }
 }
@@ -507,7 +518,7 @@ impl ObjectRuntimeState {
                     if input_objects.contains_key(&id) || loaded_child_objects.contains_key(&id) {
                         debug_assert!(!new_ids.contains_key(&id));
                         WriteKind::Mutate
-                    } else if id == SUI_SYSTEM_STATE_OBJECT_ID ||id== OBC_SYSTEM_PACKAGE_ID|| new_ids.contains_key(&id) {
+                    } else if id == SUI_SYSTEM_STATE_OBJECT_ID ||id== OBC_SYSTEM_PACKAGE_ID || new_ids.contains_key(&id) {
                         // SUI_SYSTEM_STATE_OBJECT_ID is only transferred during genesis
                         // TODO find a way to insert this in the new_ids during genesis transactions
                         WriteKind::Create
