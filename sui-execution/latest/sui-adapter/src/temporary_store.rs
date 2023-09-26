@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::gas_charger::GasCharger;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::GetModule;
 use move_core_types::account_address::AccountAddress;
@@ -10,135 +11,13 @@ use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
 use sui_protocol_config::ProtocolConfig;
-
-pub type WrittenObjects = BTreeMap<ObjectID, (ObjectRef, Object, WriteKind)>;
-pub type ObjectMap = BTreeMap<ObjectID, Object>;
-pub type TxCoins = (ObjectMap, WrittenObjects);
-
-#[serde_as]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct InnerTemporaryStore {
-    pub objects: ObjectMap,
-    pub mutable_inputs: Vec<ObjectRef>,
-    // All the written objects' sequence number should have been updated to the lamport version.
-    pub written: WrittenObjects,
-    // deleted or wrapped or unwrap-then-delete. The sequence number should have been updated to
-    // the lamport version.
-    pub deleted: BTreeMap<ObjectID, (SequenceNumber, DeleteKind)>,
-    pub loaded_child_objects: BTreeMap<ObjectID, SequenceNumber>,
-    pub events: TransactionEvents,
-    pub max_binary_format_version: u32,
-    pub no_extraneous_module_bytes: bool,
-    pub runtime_packages_loaded_from_db: BTreeMap<ObjectID, Object>,
-}
-
-impl InnerTemporaryStore {
-    /// Return the written object value with the given ID (if any)
-    pub fn get_written_object(&self, id: &ObjectID) -> Option<&Object> {
-        self.written.get(id).map(|o| &o.1)
-    }
-
-    /// Return the set of object ID's created during the current tx
-    pub fn created(&self) -> Vec<ObjectID> {
-        self.written
-            .values()
-            .filter_map(|(obj_ref, _, w)| {
-                if *w == WriteKind::Create {
-                    Some(obj_ref.0)
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    /// Get the written objects owned by `address`
-    pub fn get_written_objects_owned_by(&self, address: &SuiAddress) -> Vec<ObjectID> {
-        self.written
-            .values()
-            .filter_map(|(_, o, _)| {
-                if o.get_single_owner()
-                    .map_or(false, |owner| &owner == address)
-                {
-                    Some(o.id())
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn get_sui_system_state_object(&self) -> SuiResult<SuiSystemState> {
-        get_sui_system_state(&self.written)
-    }
-}
-
-pub struct TemporaryModuleResolver<'a, R> {
-    temp_store: &'a InnerTemporaryStore,
-    fallback: R,
-}
-
-impl<'a, R> TemporaryModuleResolver<'a, R> {
-    pub fn new(temp_store: &'a InnerTemporaryStore, fallback: R) -> Self {
-        Self {
-            temp_store,
-            fallback,
-        }
-    }
-}
-
-impl<R> GetModule for TemporaryModuleResolver<'_, R>
-where
-    R: GetModule<Item = Arc<CompiledModule>, Error = anyhow::Error>,
-{
-    type Error = anyhow::Error;
-    type Item = Arc<CompiledModule>;
-
-    fn get_module_by_id(&self, id: &ModuleId) -> anyhow::Result<Option<Self::Item>, Self::Error> {
-        let obj = self.temp_store.written.get(&ObjectID::from(*id.address()));
-        if let Some((_, o, _)) = obj {
-            if let Some(p) = o.data.try_as_package() {
-                return Ok(Some(Arc::new(p.deserialize_module(
-                    &id.name().into(),
-                    self.temp_store.max_binary_format_version,
-                    self.temp_store.no_extraneous_module_bytes,
-                )?)));
-            }
-        }
-        self.fallback.get_module_by_id(id)
-    }
-}
-
-pub trait BackingStore:
-    BackingPackageStore
-    + ChildObjectResolver
-    + GetModule<Error = SuiError, Item = CompiledModule>
-    + ObjectStore
-    + ParentSync
-{
-    fn as_object_store(&self) -> &dyn ObjectStore;
-}
-
-impl<T> BackingStore for T
-where
-    T: BackingPackageStore,
-    T: ChildObjectResolver,
-    T: GetModule<Error = SuiError, Item = CompiledModule>,
-    T: ObjectStore,
-    T: ParentSync,
-{
-    fn as_object_store(&self) -> &dyn ObjectStore {
-        self
-    }
-}
-
 use sui_types::committee::EpochId;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::execution::{ExecutionResults, LoadedChildObjectMetadata};
 use sui_types::execution_status::ExecutionStatus;
-//use sui_types::inner_temporary_store::InnerTemporaryStore;
-use sui_types::storage::{DeleteKindWithOldVersion, ObjectStore};
-use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams, SuiSystemState, get_sui_system_state};
+use sui_types::inner_temporary_store::InnerTemporaryStore;
+use sui_types::storage::{BackingStore, DeleteKindWithOldVersion};
+use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
 use sui_types::type_resolver::LayoutResolver;
 use sui_types::{
     base_types::{
@@ -157,7 +36,9 @@ use sui_types::{
     transaction::InputObjects,
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
-use sui_types::inner_temporary_store::InnerTemporaryStore;
+use sui_types::collection_types::VecMap;
+use sui_types::obc_system_state::{get_obc_system_proposal_state_map, get_obc_system_state_wrapper};
+use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
     // The backing store for retrieving Move packages onchain.
@@ -801,16 +682,6 @@ impl<'backing> TemporaryStore<'backing> {
             debug_assert!(obj.is_package());
             obj.storage_rebate
         } else {
-            //v OBC
-            // else, this is a dynamic field, not an input object
-            // if let Ok(Some(old_obj)) = self.store.get_object_by_key(id, expected_version) {
-            //     old_obj.storage_rebate
-            // } else {
-            //     // not a lot we can do safely and under this condition everything is broken
-            //     panic!("Looking up storage rebate of mutated object should not fail")
-            // }
-
-            //v1.9.1
             // not a lot we can do safely and under this condition everything is broken
             panic!(
                 "Looking up storage rebate of mutated object {:?} should not fail",
@@ -856,7 +727,6 @@ impl<'backing> TemporaryStore<'backing> {
                             old_obj.storage_rebate
                         } else {
                             // not a lot we can do safely and under this condition everything is broken
-                            //panic!("Looking up storage rebate of mutated object should not fail");
                             panic!(
                                 "Looking up storage rebate of mutated object {:?} should not fail",
                                 (object_id, expected_version)
@@ -918,7 +788,6 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.advance_epoch_safe_mode(params, self.store.as_object_store(), protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
-
     pub fn advance_obc_round_mode(
         &mut self,
         protocol_config: &ProtocolConfig,
@@ -929,7 +798,6 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.obc_round_safe_mode(self.store.as_object_store(),protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
-
     pub fn get_obc_system_state_temporary(& self) -> VecMap<u64, ProposalStatus> {
         let wrapper = get_obc_system_proposal_state_map(self.store.as_object_store())
             .expect("System state wrapper object must exist");
@@ -940,6 +808,7 @@ impl<'backing> TemporaryStore<'backing> {
 type ModifiedObjectInfo<'a> = (ObjectID, Option<(SequenceNumber, u64)>, Option<&'a Object>);
 
 impl<'backing> TemporaryStore<'backing> {
+
     fn get_input_sui(
         &self,
         id: &ObjectID,
@@ -970,27 +839,13 @@ impl<'backing> TemporaryStore<'backing> {
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
-            let input_sui = if do_expensive_checks {
-                obj.get_total_sui(layout_resolver).map_err(|e| {
-                    make_invariant_violation!(
-                        "Failed looking up input SUI in SUI conservation checking for type \
+            obj.get_total_sui(layout_resolver).map_err(|e| {
+                make_invariant_violation!(
+                    "Failed looking up input SUI in SUI conservation checking for type \
                          {:?}: {e:#?}",
-                        obj.struct_tag(),
-                    )
-                })?
-            } else {
-                0
-            };
-            Ok((input_sui, obj.storage_rebate))
-
-            //v1.9.1
-            // obj.get_total_sui(layout_resolver).map_err(|e| {
-            //     make_invariant_violation!(
-            //         "Failed looking up input SUI in SUI conservation checking for type \
-            //              {:?}: {e:#?}",
-            //         obj.struct_tag(),
-            //     )
-            // })
+                    obj.struct_tag(),
+                )
+            })
         }
     }
 
@@ -1079,44 +934,6 @@ impl<'backing> TemporaryStore<'backing> {
                 }
             }
         }
-            /*
-        for (id, kind) in &self.deleted {
-            match kind {
-                DeleteKindWithOldVersion::Normal(input_version) => {
-                    let (input_sui, input_storage_rebate) = self.get_input_sui(
-                        id,
-                        *input_version,
-                        layout_resolver,
-                        do_expensive_checks,
-                    )?;
-                    total_input_sui += input_sui;
-                    total_input_rebate += input_storage_rebate;
-                }
-                DeleteKindWithOldVersion::Wrap(input_version) => {
-                    // wrapped object was a tx input or dynamic field--need to account for it in input SUI
-                    // note: if an object is created by the tx, then wrapped, it will not appear here
-                    let (input_sui, input_storage_rebate) = self.get_input_sui(
-                        id,
-                        *input_version,
-                        layout_resolver,
-                        do_expensive_checks,
-                    )?;
-                    total_input_sui += input_sui;
-                    total_input_rebate += input_storage_rebate;
-                    // else, the wrapped object was either:
-                    // 1. freshly created, which means it has 0 contribution to input SUI
-                    // 2. unwrapped from another object A, which means its contribution to input SUI will be captured by looking at A
-                }
-                DeleteKindWithOldVersion::UnwrapThenDelete
-                | DeleteKindWithOldVersion::UnwrapThenDeleteDEPRECATED(_) => {
-                    // an unwrapped option was wrapped in input object or dynamic field A, which means its contribution to input SUI will
-                    // be captured by looking at A
-                }
-            }
-        }
-
-             */
-
         if do_expensive_checks {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
@@ -1129,10 +946,10 @@ impl<'backing> TemporaryStore<'backing> {
             }
             if total_input_sui != total_output_sui {
                 return Err(ExecutionError::invariant_violation(
-                format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
-                total_input_sui,
-                total_output_sui))
-            );
+                    format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                            total_input_sui,
+                            total_output_sui))
+                );
             }
         }
 

@@ -14,6 +14,7 @@ leb128.workspace = true
 once_cell.workspace = true
 tracing.workspace = true
 serde.workspace = true
+serde_with.workspace = true
 
 move-binary-format.workspace = true
 move-bytecode-utils.workspace = true

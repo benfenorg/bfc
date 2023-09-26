@@ -13,6 +13,8 @@ mod checked {
         collections::{BTreeSet, HashSet},
         sync::Arc,
     };
+    use crate::{temporary_store::TemporaryStore};
+
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
@@ -28,7 +30,7 @@ mod checked {
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
-    use crate::{gas_charger::GasCharger, temporary_store::TemporaryStore};
+    use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
@@ -36,15 +38,12 @@ mod checked {
     use sui_types::effects::TransactionEffects;
     use sui_types::error::{ExecutionError, ExecutionErrorKind};
     use sui_types::execution_status::ExecutionStatus;
-    use sui_types::gas::{GasCharger, GasCostSummary};
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::messages_consensus::ConsensusCommitPrologue;
     use sui_types::storage::WriteKind;
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
     use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME};
-    use sui_types::temporary_store::InnerTemporaryStore;
-    use sui_types::temporary_store::TemporaryStore;
     use sui_types::transaction::{
         Argument, CallArg, ChangeEpoch, Command, GenesisTransaction, ProgrammableTransaction,
         TransactionKind,
@@ -58,6 +57,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};
+    use sui_types::gas::GasCostSummary;
     //use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
@@ -700,7 +700,7 @@ mod checked {
             round_id:change_round.obc_round
         };
         let advance_epoch_pt = construct_obc_round_pt(change_round.obc_round)?;
-        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+        let _result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
             move_vm,

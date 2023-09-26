@@ -8,7 +8,6 @@ pub use checked::*;
 pub mod checked {
 
     use crate::sui_types::gas::SuiGasStatusAPI;
-    use crate::temporary_store::TemporaryStore;
     use sui_protocol_config::ProtocolConfig;
     use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
     use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
@@ -22,6 +21,7 @@ pub mod checked {
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
     use tracing::trace;
+    use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
     /// This is the main entry point for gas accounting.
