@@ -17,10 +17,8 @@ mod checked {
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     }, transaction::ChangeObcRound};
-    use sui_types::balance::{
-        BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
-        BALANCE_MODULE_NAME,
-    };
+
+
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::metrics::LimitsMetrics;
@@ -59,9 +57,8 @@ mod checked {
         obc_system_state::{OBC_SYSTEM_MODULE_NAME,OBC_ROUND_FUNCTION_NAME,ObcRoundParams},
         SUI_FRAMEWORK_ADDRESS,
     };
+
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};
-        SUI_FRAMEWORK_ADDRESS,
-    };
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
@@ -285,7 +282,6 @@ mod checked {
 
             execution_result
         });
-<<<<<<< HEAD
 
         let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
 
