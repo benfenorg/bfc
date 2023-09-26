@@ -84,7 +84,7 @@ export function UnvoteVotes({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
+			<Selector label="vote" options={options} {...register('vote')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute
