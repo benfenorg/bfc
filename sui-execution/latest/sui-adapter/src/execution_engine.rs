@@ -37,7 +37,6 @@ mod checked {
     use sui_types::error::{ExecutionError, ExecutionErrorKind};
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::{GasCharger, GasCostSummary};
-    use sui_types::gas::GasCostSummary;
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::messages_consensus::ConsensusCommitPrologue;
     use sui_types::storage::WriteKind;
@@ -59,7 +58,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,OBC_SYSTEM_PACKAGE_ID};
-    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+    //use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -301,46 +300,7 @@ mod checked {
         (cost_summary, result)
     }
 
-    #[instrument(name = "run_conservation_checks", level = "debug", skip_all)]
-    fn run_conservation_checks<Mode: ExecutionMode>(
-        temporary_store: &mut TemporaryStore<'_>,
-        gas_charger: &mut GasCharger,
-        tx_ctx: &mut TxContext,
-        move_vm: &Arc<MoveVM>,
-        enable_expensive_checks: bool,
-        cost_summary: &GasCostSummary,
-        is_genesis_tx: bool,
-        advance_epoch_gas_summary: Option<(u64, u64)>,
-    ) -> Result<(), ExecutionError> {
-        // === begin SUI conservation checks ===
 
-        let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
-        // For advance epoch transaction, we need to provide epoch rewards and rebates as extra
-        // information provided to check_sui_conserved, because we mint rewards, and burn
-        // the rebates. We also need to pass in the unmetered_storage_rebate because storage
-        // rebate is not reflected in the storage_rebate of gas summary. This is a bit confusing.
-        // We could probably clean up the code a bit.
-        // Put all the storage rebate accumulated in the system transaction
-        // to the 0x5 object so that it's not lost.
-        let mut result: std::result::Result<(), sui_types::error::ExecutionError> = Ok(());
-        temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
-
-        if let Err(e) = run_conservation_checks::<Mode>(
-            temporary_store,
-            gas_charger,
-            tx_ctx,
-            move_vm,
-            enable_expensive_checks,
-            &cost_summary,
-            is_genesis_tx,
-            advance_epoch_gas_summary,
-        ) {
-            // FIXME: we cannot fail the transaction if this is an epoch change transaction.
-            result = Err(e);
-        }
-
-        (cost_summary, result)
-    }
 
     #[instrument(name = "run_conservation_checks", level = "debug", skip_all)]
     fn run_conservation_checks<Mode: ExecutionMode>(
