@@ -4,7 +4,7 @@
 #[test_only]
 module sui::kiosk_marketplace_ext {
     use sui::bag;
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID};
     use sui::tx_context::TxContext;
@@ -43,7 +43,7 @@ module sui::kiosk_marketplace_ext {
     ///
     /// There can be only one bid per type.
     public fun bid<Market, T: key + store>(
-        kiosk: &mut Kiosk, cap: &KioskOwnerCap, bid: Coin<SUI>
+        kiosk: &mut Kiosk, cap: &KioskOwnerCap, bid: Coin<OBC>
     ) {
         assert!(kiosk::has_access(kiosk, cap), ENotOwner);
         assert!(ext::is_installed<Ext<Market>>(kiosk), ENotInstalled);
@@ -63,7 +63,7 @@ module sui::kiosk_marketplace_ext {
         policy: &TransferPolicy<T>,
         lock: bool
     ): (TransferRequest<T>, TransferRequest<Market>) {
-        let bid: Coin<SUI> = bag::remove(
+        let bid: Coin<OBC> = bag::remove(
             ext::storage_mut(Ext<Market> {}, destination),
             Bid<T> {}
         );
@@ -110,7 +110,7 @@ module sui::kiosk_marketplace_ext {
     public fun purchase<Market, T: key + store>(
         kiosk: &mut Kiosk,
         item_id: ID,
-        payment: Coin<SUI>,
+        payment: Coin<OBC>,
     ): (T, TransferRequest<T>, TransferRequest<Market>) {
         let purchase_cap: PurchaseCap<T> = bag::remove(
             ext::storage_mut(Ext<Market> {}, kiosk),

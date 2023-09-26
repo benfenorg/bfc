@@ -93,7 +93,7 @@ module sui::kiosk {
     };
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::obc::OBC;
     use sui::event;
 
     // Gets access to:
@@ -136,7 +136,7 @@ module sui::kiosk {
     struct Kiosk has key, store {
         id: UID,
         /// Balance of the Kiosk - all profits from sales go here.
-        profits: Balance<SUI>,
+        profits: Balance<OBC>,
         /// Always point to `sender` of the transaction.
         /// Can be changed by calling `set_owner` with Cap.
         owner: address,
@@ -264,7 +264,7 @@ module sui::kiosk {
     /// case where there's no items inside and a `Kiosk` is not shared.
     public fun close_and_withdraw(
         self: Kiosk, cap: KioskOwnerCap, ctx: &mut TxContext
-    ): Coin<SUI> {
+    ): Coin<OBC> {
         let Kiosk { id, profits, owner: _, item_count, allow_extensions: _ } = self;
         let KioskOwnerCap { id: cap_id, for } = cap;
 
@@ -382,7 +382,7 @@ module sui::kiosk {
     /// request their approval (by calling some function) so that the trade can be
     /// finalized.
     public fun purchase<T: key + store>(
-        self: &mut Kiosk, id: ID, payment: Coin<SUI>
+        self: &mut Kiosk, id: ID, payment: Coin<OBC>
     ): (T, TransferRequest<T>) {
         let price = df::remove<Listing, u64>(&mut self.id, Listing { id, is_exclusive: false });
         let inner = dof::remove<Item, T>(&mut self.id, Item { id });
@@ -421,7 +421,7 @@ module sui::kiosk {
     /// Unpack the `PurchaseCap` and call `purchase`. Sets the payment amount
     /// as the price for the listing making sure it's no less than `min_amount`.
     public fun purchase_with_cap<T: key + store>(
-        self: &mut Kiosk, purchase_cap: PurchaseCap<T>, payment: Coin<SUI>
+        self: &mut Kiosk, purchase_cap: PurchaseCap<T>, payment: Coin<OBC>
     ): (T, TransferRequest<T>) {
         let PurchaseCap { id, item_id, kiosk_id, min_price } = purchase_cap;
         object::delete(id);
@@ -456,7 +456,7 @@ module sui::kiosk {
     /// Withdraw profits from the Kiosk.
     public fun withdraw(
         self: &mut Kiosk, cap: &KioskOwnerCap, amount: Option<u64>, ctx: &mut TxContext
-    ): Coin<SUI> {
+    ): Coin<OBC> {
         assert!(has_access(self, cap), ENotOwner);
 
         let amount = if (option::is_some(&amount)) {
@@ -574,7 +574,7 @@ module sui::kiosk {
     }
 
     /// Get mutable access to `profits` - owner only action.
-    public fun profits_mut(self: &mut Kiosk, cap: &KioskOwnerCap): &mut Balance<SUI> {
+    public fun profits_mut(self: &mut Kiosk, cap: &KioskOwnerCap): &mut Balance<OBC> {
         assert!(has_access(self, cap), ENotOwner);
         &mut self.profits
     }

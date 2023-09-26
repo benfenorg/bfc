@@ -35,7 +35,7 @@ module sui::obc {
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
         let (treasury, metadata) = coin::create_currency(
-            OBC {},
+            OBC{},
             9,
             b"OBC",
             b"Obc",

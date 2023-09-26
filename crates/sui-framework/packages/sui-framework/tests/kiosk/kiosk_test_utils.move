@@ -4,7 +4,7 @@
 #[test_only]
 module sui::kiosk_test_utils {
     use std::vector;
-    use sui::package;
+    //use sui::package;
     use sui::obc::OBC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID, UID};

@@ -128,7 +128,7 @@ This should be called only once during genesis creation.
     <b>assert</b>!(<a href="tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="stable.md#0x2_stable_EAlreadyMinted">EAlreadyMinted</a>);
 
     <b>let</b> (treasury, metadata) = <a href="coin.md#0x2_coin_create_currency">coin::create_currency</a>(
-        <a href="stable.md#0x2_stable_STABLE">STABLE</a> {},
+        <a href="stable.md#0x2_stable_STABLE">STABLE</a>{},
         9,
         b"<a href="stable.md#0x2_stable_STABLE">STABLE</a>",
         b"Stable",

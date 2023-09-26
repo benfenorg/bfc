@@ -27,6 +27,8 @@ module sui::stable {
     /// Name of the coin
     struct STABLE has drop {}
 
+
+
     #[allow(unused_function)]
     /// Register the `STABLE` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
@@ -35,7 +37,7 @@ module sui::stable {
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
         let (treasury, metadata) = coin::create_currency(
-            STABLE {},
+            STABLE{},
             9,
             b"STABLE",
             b"Stable",
