@@ -1065,7 +1065,7 @@ async fn test_dao_publish() -> Result<(), anyhow::Error> {
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+    let _current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
 
     //let dao_share_id = current_effects.created().get(0).unwrap().object_id();
 
@@ -1224,7 +1224,6 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
 
     let count = objects.len();
     assert_eq!(7, count);
-    ///create_proposal_for_test
 
     //need the proposal address.
     let address = SuiAddress::from(proposal_id);
@@ -1256,7 +1255,7 @@ async fn test_get_dao() -> Result<(), anyhow::Error> {
 
     let http_client = cluster.rpc_client();
 
-    let objects = http_client
+    http_client
         .get_owned_objects(
             address,
             Some(SuiObjectResponseQuery::new_with_options(
@@ -1271,7 +1270,6 @@ async fn test_get_dao() -> Result<(), anyhow::Error> {
         .await?
         .data;
 
-    let gas = objects.first().unwrap().object().unwrap();
     let http_client = cluster.rpc_client();
     let result = http_client.get_inner_dao_info().await?;
 
