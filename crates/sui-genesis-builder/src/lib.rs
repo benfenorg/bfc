@@ -13,10 +13,6 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, ObcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST};
-use sui_config::genesis::{
-    Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule,
-    UnsignedGenesis,
-};
 use sui_execution::{self, Executor};
 use sui_framework::BuiltInFramework;
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
@@ -30,7 +26,8 @@ use sui_types::crypto::{
 };
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::epoch_data::EpochData;
-use sui_types::gas::GasCharger;
+//use sui_types::gas::GasCharger;
+
 use sui_types::gas::SuiGasStatus;
 use sui_types::gas_coin::GasCoin;
 use sui_types::gas_coin::GAS;
@@ -813,12 +810,12 @@ fn create_genesis_transaction(
     let genesis_digest = *genesis_transaction.digest();
     // execute txn to effects
     let (effects, events, objects) = {
-        let temporary_store = TemporaryStore::new(
-            InMemoryStorage::new(Vec::new()),
-            InputObjects::new(vec![]),
-            genesis_digest,
-            protocol_config,
-        );
+        // let temporary_store = TemporaryStore::new(
+        //     InMemoryStorage::new(Vec::new()),
+        //     InputObjects::new(vec![]),
+        //     genesis_digest,
+        //     protocol_config,
+        // );
 
         let silent = true;
         let paranoid_checks = false;
@@ -972,12 +969,12 @@ fn process_package(
         .collect();
 
     let genesis_digest = ctx.digest();
-    let mut temporary_store = TemporaryStore::new(
-        store.clone(),
-        InputObjects::new(loaded_dependencies),
-        genesis_digest,
-        protocol_config,
-    );
+    // let mut temporary_store = TemporaryStore::new(
+    //     store.clone(),
+    //     InputObjects::new(loaded_dependencies),
+    //     genesis_digest,
+    //     protocol_config,
+    // );
     let module_bytes = modules
         .iter()
         .map(|m| {
@@ -1039,12 +1036,12 @@ pub fn generate_genesis_system_object(
         ProtocolVersion::new(genesis_chain_parameters.protocol_version),
         sui_protocol_config::Chain::Unknown,
     );
-    let mut temporary_store = TemporaryStore::new(
-        store.clone(),
-        InputObjects::new(vec![]),
-        genesis_digest,
-        &protocol_config,
-    );
+    // let mut temporary_store = TemporaryStore::new(
+    //     store.clone(),
+    //     InputObjects::new(vec![]),
+    //     genesis_digest,
+    //     &protocol_config,
+    // );
     let pt = {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create the SuiSystemState UID
@@ -1145,14 +1142,14 @@ pub fn generate_genesis_system_object(
     };
 
     //todo:
-    executor.update_genesis_state(
-        &protocol_config,
-        metrics,
-        &mut temporary_store,
-        genesis_ctx,
-        &mut GasCharger::new_unmetered(genesis_digest),
-        pt,
-    )?;
+    // executor.update_genesis_state(
+    //     &protocol_config,
+    //     metrics,
+    //     &mut temporary_store,
+    //     genesis_ctx,
+    //     &mut GasCharger::new_unmetered(genesis_digest),
+    //     pt,
+    // )?;
 
     let InnerTemporaryStore {
         written, deleted, ..

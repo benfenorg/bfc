@@ -42,7 +42,7 @@ pub mod read_api;
 mod routing_layer;
 pub mod transaction_builder_api;
 pub mod transaction_execution_api;
-pub mod gas_exchange_inner_api;
+//pub mod gas_exchange_inner_api;
 pub const CLIENT_SDK_TYPE_HEADER: &str = "client-sdk-type";
 /// The version number of the SDK itself. This can be different from the API version.
 pub const CLIENT_SDK_VERSION_HEADER: &str = "client-sdk-version";
@@ -175,25 +175,8 @@ impl JsonRpcServerBuilder {
         let metrics_logger = MetricsLogger::new(&self.registry, &methods_names);
 
         let middleware = tower::ServiceBuilder::new()
-            .layer(
-                TraceLayer::new_for_http()
-                    .make_span_with(|request: &Request<Body>| {
-                        let request_id = request
-                            .headers()
-                            .get("x-req-id")
-                            .and_then(|v| v.to_str().ok())
-                            .map(tracing::field::display);
-
-                        tracing::info_span!("json-rpc-request", "x-req-id" = request_id)
-                    })
-                    .on_request(())
-                    .on_response(())
-                    .on_body_chunk(())
-                    .on_eos(())
-                    .on_failure(()),
-            )
-            .layer(cors)
-            .layer(routing_layer);
+            .layer(Self::trace_layer())
+            .layer(Self::cors()?);
 
         let service =
             crate::axum_router::JsonRpcService::new(module.into(), rpc_router, metrics_logger);
@@ -232,6 +215,7 @@ impl JsonRpcServerBuilder {
 
         Ok(app)
     }
+
 
     pub async fn start(
         self,

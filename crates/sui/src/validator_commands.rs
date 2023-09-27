@@ -10,16 +10,10 @@ use std::{
 };
 use sui_genesis_builder::validator_info::GenesisValidatorInfo;
 
-use sui_types::{
-    base_types::{ObjectID, ObjectRef, SuiAddress},
-    crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID},
-    multiaddr::Multiaddr,
-    object::Owner,
-    sui_system_state::{
-        sui_system_state_inner_v1::{UnverifiedValidatorOperationCapV1, ValidatorV1},
-        sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary},
-    },
-};
+use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID}, multiaddr::Multiaddr, object::Owner, SUI_SYSTEM_PACKAGE_ID, sui_system_state::{
+    sui_system_state_inner_v1::{UnverifiedValidatorOperationCapV1, ValidatorV1},
+    sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary},
+}};
 use tap::tap::TapOptional;
 
 use clap::*;
@@ -29,10 +23,10 @@ use fastcrypto::{
     encoding::{Base64, Encoding},
     traits::KeyPair,
 };
+use move_core_types::ident_str;
 use serde::Serialize;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
-use sui_json_rpc_types::{
-    SuiObjectDataOptions, SuiTransactionBlockResponse};
+use sui_json_rpc_types::{SuiObjectDataOptions, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
 use sui_keys::keystore::AccountKeystore;
 use sui_keys::{
     key_derive::generate_new_key,
@@ -47,8 +41,9 @@ use sui_types::crypto::{
     generate_proof_of_possession, get_authority_key_pair, AuthorityPublicKeyBytes,
 };
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair};
-use sui_types::transaction::{CallArg, ObjectArg, TransactionData};
-use crate::{call_0x5, construct_unsigned_0x5_txn};
+use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
+use crate::fire_drill::get_gas_obj_ref;
+//use crate::{call_0x5, construct_unsigned_0x5_txn};
 
 #[path = "unit_tests/validator_tests.rs"]
 #[cfg(test)]

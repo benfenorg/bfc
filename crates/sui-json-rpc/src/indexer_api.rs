@@ -143,19 +143,19 @@ impl<R: ReadApiServer> IndexerApi<R> {
         }
     }
 
-    fn extract_values_from_dynamic_field_name(
-        &self,
-        name: DynamicFieldName,
-    ) -> Result<(TypeTag, Vec<u8>), SuiRpcInputError> {
-        let DynamicFieldName {
-            type_: name_type,
-            value,
-        } = name;
-        let layout = TypeLayoutBuilder::build_with_types(&name_type, &self.state.database)?;
-        let sui_json_value = SuiJsonValue::new(value)?;
-        let name_bcs_value = sui_json_value.to_bcs_bytes(&layout)?;
-        Ok((name_type, name_bcs_value))
-    }
+    // fn extract_values_from_dynamic_field_name(
+    //     &self,
+    //     name: DynamicFieldName,
+    // ) -> Result<(TypeTag, Vec<u8>), SuiRpcInputError> {
+    //     let DynamicFieldName {
+    //         type_: name_type,
+    //         value,
+    //     } = name;
+    //     let layout = TypeLayoutBuilder::build_with_types(&name_type, &self.state.database)?;
+    //     let sui_json_value = SuiJsonValue::new(value)?;
+    //     let name_bcs_value = sui_json_value.to_bcs_bytes(&layout)?;
+    //     Ok((name_type, name_bcs_value))
+    // }
 }
 
 #[async_trait]

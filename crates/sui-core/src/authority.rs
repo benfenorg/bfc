@@ -34,11 +34,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
 use std::{
-    collections::{HashMap, HashSet},
-    fs,
-    pin::Pin,
-    sync::Arc,
-    thread,
+    collections::{ HashSet},
 };
 use sui_config::node::StateDebugDumpConfig;
 use sui_config::NodeConfig;
@@ -92,7 +88,6 @@ use sui_types::effects::{
 use sui_types::error::{ExecutionError, UserInputError};
 use sui_types::event::{Event, EventID};
 use sui_types::executable_transaction::VerifiedExecutableTransaction;
-use sui_types::gas::{GasCharger, GasCostSummary, SuiGasStatus};
 use sui_types::gas::{GasCostSummary, SuiGasStatus};
 use sui_types::inner_temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
@@ -114,10 +109,7 @@ use sui_types::object::{MoveObject, Owner, PastObjectRead, OBJECT_START_VERSION}
 use sui_types::storage::{ObjectKey, ObjectStore, WriteKind};
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
-use sui_types::temporary_store::TemporaryStore;
-use sui_types::temporary_store::{
-    InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
-};
+
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, OBC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
@@ -127,15 +119,9 @@ use sui_types::proposal::ProposalStatus;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::{
     base_types::*,
-    committee::Committee,
-    crypto::AuthoritySignature,
-    error::{SuiError, SuiResult},
-    fp_ensure,
-    object::{Object, ObjectFormatOptions, ObjectRead},
     transaction::*,
-    SUI_SYSTEM_ADDRESS,
 };
-use sui_types::{is_system_package, TypeTag};
+//use sui_types::{is_system_package, TypeTag};
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -1025,7 +1011,7 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, _, effects, execution_error_opt) = match self
+        let (inner_temporary_store, effects, execution_error_opt) = match self
             .prepare_certificate(&execution_guard, certificate, epoch_store)
             .await
         {
@@ -1175,7 +1161,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
         InnerTemporaryStore,
-        VecMap<u64, ProposalStatus>,
+        //VecMap<u64, ProposalStatus>,
         TransactionEffects,
         Option<ExecutionError>,
     )> {
@@ -1196,17 +1182,20 @@ impl AuthorityState {
         let protocol_config = epoch_store.protocol_config();
         let shared_object_refs = input_objects.filter_shared_objects();
         let transaction_dependencies = input_objects.transaction_dependencies();
-        let temporary_store = TemporaryStore::new(
-            self.database.clone(),
-            input_objects,
-            tx_digest,
-            protocol_config,
-        );
-        let prposal_map = temporary_store.get_obc_system_state_temporary();
+        // let temporary_store = TemporaryStore::new(
+        //     self.database.clone(),
+        //     input_objects,
+        //     tx_digest,
+        //     protocol_config,
+        // );
+
+        //todo:
+        //let prposal_map = temporary_store.get_obc_system_state_temporary();
+        //let prposal_map = BTreeMap::new();
 
         let transaction_data = &certificate.data().intent_message().value;
         let (kind, signer, gas) = transaction_data.execution_parts();
-        let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
+        //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
         let (inner_temp_store, effects, execution_error_opt) =
             epoch_store.executor().execute_transaction_to_effects(
                 self.database.clone(),
@@ -1235,7 +1224,7 @@ impl AuthorityState {
                 transaction_dependencies,
             );
 
-        Ok((inner_temp_store, prposal_map, effects, execution_error_opt.err()))
+        Ok((inner_temp_store, effects, execution_error_opt.err()))
     }
 
     pub async fn dry_exec_transaction(
@@ -1318,12 +1307,12 @@ impl AuthorityState {
 
         let protocol_config = epoch_store.protocol_config();
         let transaction_dependencies = input_objects.transaction_dependencies();
-        let temporary_store = TemporaryStore::new_for_mock_transaction(
-            self.database.clone(),
-            input_objects,
-            transaction_digest,
-            protocol_config,
-        );
+        // let temporary_store = TemporaryStore::new_for_mock_transaction(
+        //     self.database.clone(),
+        //     input_objects,
+        //     transaction_digest,
+        //     protocol_config,
+        // );
 
         let (kind, signer, _) = transaction.execution_parts();
 
@@ -3147,56 +3136,7 @@ impl AuthorityState {
         }
     }
 
-    pub fn get_checkpoints(&self, cursor: Option<CheckpointSequenceNumber>, limit: u64, descending_order: bool, ) -> SuiResult<Vec<Checkpoint>> {
-        let max_checkpoint = self.get_latest_checkpoint_sequence_number()?;
-        let checkpoint_numbers =
-            calculate_checkpoint_numbers(cursor, limit, descending_order, max_checkpoint);
-
-        let verified_checkpoints = self
-            .get_checkpoint_store()
-            .multi_get_checkpoint_by_sequence_number(&checkpoint_numbers)?;
-
-        let checkpoint_summaries_and_signatures: Vec<(
-            CheckpointSummary,
-            AggregateAuthoritySignature,
-        )> = verified_checkpoints
-            .into_iter()
-            .flatten()
-            .map(|check| {
-                (
-                    check.clone().into_summary_and_sequence().1,
-                    check.get_validator_signature(),
-                )
-            })
-            .collect();
-
-        let checkpoint_contents_digest: Vec<CheckpointContentsDigest> =
-            checkpoint_summaries_and_signatures
-                .iter()
-                .map(|summary| summary.0.content_digest)
-                .collect();
-        let checkpoint_contents = self
-            .get_checkpoint_store()
-            .multi_get_checkpoint_content(checkpoint_contents_digest.as_slice())?;
-        let contents: Vec<CheckpointContents> = checkpoint_contents.into_iter().flatten().collect();
-
-        let mut checkpoints: Vec<Checkpoint> = vec![];
-
-        for (summary_and_sig, content) in checkpoint_summaries_and_signatures
-            .into_iter()
-            .zip(contents.into_iter())
-        {
-            checkpoints.push(Checkpoint::from((
-                summary_and_sig.0,
-                content,
-                summary_and_sig.1,
-            )));
-        }
-
-        Ok(checkpoints)
-    }
-
-    pub fn query_events(
+    pub async fn query_events(
         &self,
         kv_store: &Arc<TransactionKeyValueStore>,
         query: EventFilter,
@@ -4098,12 +4038,12 @@ impl AuthorityState {
             .database
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
-        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
+        let (temporary_store, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
-        let mut tmp = self.proposal_state_map.lock();
-        tmp.contents = proposal_map.contents;
+        //let mut tmp = self.proposal_state_map.lock();
+        //tmp.contents = proposal_map.contents;
 
         //let system_obj = temporary_store.get_sui_system_state_object();
         let system_obj = get_sui_system_state(&temporary_store.written)
@@ -4172,7 +4112,7 @@ impl AuthorityState {
             "Try to execute transaction: {:?}",tx_digest
         );
 
-        let (store, _, effects, _execution_error_opt) = self
+        let (store, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 

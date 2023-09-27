@@ -120,166 +120,16 @@ pub enum SuiClientCommands {
         bcs: bool,
     },
 
-    /// Get the effects of executing the given transaction block
-    #[clap(name = "tx-block")]
-    TransactionBlock {
-        /// Digest of the transaction block
-        #[clap(name = "digest")]
-        digest: TransactionDigest,
-    },
 
-    /// Publish Move modules
-    #[clap(name = "publish")]
-    Publish {
-        /// Path to directory containing a Move package
-        #[clap(
-            name = "package_path",
-            global = true,
-            parse(from_os_str),
-            default_value = "."
-        )]
-        package_path: PathBuf,
 
-        /// Package build options
-        #[clap(flatten)]
-        build_config: MoveBuildConfig,
 
-        /// ID of the gas object for gas payment, in 20 bytes Hex string
-        /// If not provided, a gas object with at least gas_budget value will be selected
-        #[clap(long)]
-        gas: Option<ObjectID>,
 
-        /// Gas budget for running module initializers
-        #[clap(long)]
-        gas_budget: u64,
-
-        /// Publish the package without checking whether compiling dependencies from source results
-        /// in bytecode matching the dependencies found on-chain.
-        #[clap(long)]
-        skip_dependency_verification: bool,
-
-        /// Also publish transitive dependencies that have not already been published.
-        #[clap(long)]
-        with_unpublished_dependencies: bool,
-
-        /// Instead of executing the transaction, serialize the bcs bytes of the unsigned transaction data
-        /// (TransactionData) using base64 encoding, and print out the string.
-        #[clap(long, required = false)]
-        serialize_unsigned_transaction: bool,
-
-        /// Instead of executing the transaction, serialize the bcs bytes of the signed transaction data
-        /// (SenderSignedData) using base64 encoding, and print out the string.
-        #[clap(long, required = false)]
-        serialize_signed_transaction: bool,
-
-        /// If `true`, enable linters
-        #[clap(long, global = true)]
-        lint: bool,
-    },
-
-    /// Run the bytecode verifier on the package
-    #[clap(name = "verify-bytecode-meter")]
-    VerifyBytecodeMeter {
-        /// Path to directory containing a Move package
-        #[clap(
-            name = "package_path",
-            global = true,
-            parse(from_os_str),
-            default_value = "."
-        )]
-        package_path: PathBuf,
-
-        /// Package build options
-        #[clap(flatten)]
-        build_config: MoveBuildConfig,
-    },
 
     /// Upgrade Move modules
     #[clap(name = "upgrade")]
-    Upgrade {
-        /// Path to directory containing a Move package
-        #[clap(
-            name = "package_path",
-            global = true,
-            parse(from_os_str),
-            default_value = "."
-        )]
-        package_path: PathBuf,
 
-        /// ID of the upgrade capability for the package being upgraded.
-        #[clap(long)]
-        upgrade_capability: ObjectID,
 
-        /// Package build options
-        #[clap(flatten)]
-        build_config: MoveBuildConfig,
 
-        /// ID of the gas object for gas payment, in 20 bytes Hex string
-        /// If not provided, a gas object with at least gas_budget value will be selected
-        #[clap(long)]
-        gas: Option<ObjectID>,
-
-        /// Gas budget for running module initializers
-        #[clap(long)]
-        gas_budget: u64,
-
-        /// Publish the package without checking whether compiling dependencies from source results
-        /// in bytecode matching the dependencies found on-chain.
-        #[clap(long)]
-        skip_dependency_verification: bool,
-
-        /// Also publish transitive dependencies that have not already been published.
-        #[clap(long)]
-        with_unpublished_dependencies: bool,
-
-        /// Use the legacy digest calculation algorithm
-        #[clap(long)]
-        legacy_digest: bool,
-
-        /// Instead of executing the transaction, serialize the bcs bytes of the unsigned transaction data
-        /// (TransactionData) using base64 encoding, and print out the string.
-        #[clap(long, required = false)]
-        serialize_unsigned_transaction: bool,
-
-        /// Instead of executing the transaction, serialize the bcs bytes of the signed transaction data
-        /// (SenderSignedData) using base64 encoding, and print out the string.
-        #[clap(long, required = false)]
-        serialize_signed_transaction: bool,
-
-        /// If `true`, enable linters
-        #[clap(long, global = true)]
-        lint: bool,
-    },
-
-    /// Verify local Move packages against on-chain packages, and optionally their dependencies.
-    #[clap(name = "verify-source")]
-    VerifySource {
-        /// Path to directory containing a Move package
-        #[clap(
-            name = "package_path",
-            global = true,
-            parse(from_os_str),
-            default_value = "."
-        )]
-        package_path: PathBuf,
-
-        /// Package build options
-        #[clap(flatten)]
-        build_config: MoveBuildConfig,
-
-        /// Verify on-chain dependencies.
-        #[clap(long)]
-        verify_deps: bool,
-
-        /// Don't verify source (only valid if --verify-deps is enabled).
-        #[clap(long)]
-        skip_source: bool,
-
-        /// If specified, override the addresses for the package's own modules with this address.
-        /// Only works for unpublished modules (whose addresses are currently 0x0).
-        #[clap(long)]
-        address_override: Option<ObjectID>,
-    },
     /// Obtain the Addresses managed by the client.
     #[clap(name = "addresses")]
     Addresses,
@@ -417,17 +267,7 @@ pub enum SuiClientCommands {
         ws: Option<String>,
     },
 
-    /// Get object info
-    #[clap(name = "object")]
-    Object {
-        /// Object ID of the object to fetch
-        #[clap(name = "object_id")]
-        id: ObjectID,
 
-        /// Return the bcs serialized version of the object
-        #[clap(long)]
-        bcs: bool,
-    },
     /// Obtain all objects owned by the address
     #[clap(name = "objects")]
     Objects {
