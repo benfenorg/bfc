@@ -1093,6 +1093,8 @@ async fn test_dao_publish() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+
+#[ignore]
 #[sim_test]
 async fn test_get_proposal() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();

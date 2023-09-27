@@ -327,9 +327,9 @@ async fn test_pay_all_sui_failure_insufficient_gas_budget_multiple_input_coins()
 async fn test_pay_all_sui_success_one_input_coin() -> anyhow::Result<()> {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let object_id = ObjectID::random();
-    let coin_obj = Object::with_id_owner_gas_for_testing(object_id, sender, 3000000);
+    let coin_obj = Object::with_id_owner_gas_for_testing(object_id, sender, 300000000);
     let recipient = dbg_addr(2);
-    let res = execute_pay_all_sui(vec![&coin_obj], recipient, sender, sender_key, 2000000).await;
+    let res = execute_pay_all_sui(vec![&coin_obj], recipient, sender, sender_key, 200000000).await;
 
     let effects = res.txn_result.unwrap().into_data();
     assert_eq!(*effects.status(), ExecutionStatus::Success);
@@ -342,7 +342,7 @@ async fn test_pay_all_sui_success_one_input_coin() -> anyhow::Result<()> {
 
     let gas_used = effects.gas_cost_summary().gas_used();
     let gas_object = res.authority_state.get_object(&object_id).await?.unwrap();
-    assert_eq!(GasCoin::try_from(&gas_object)?.value(), 3000000 - gas_used,);
+    assert_eq!(GasCoin::try_from(&gas_object)?.value(), 300000000 - gas_used,);
     Ok(())
 }
 
