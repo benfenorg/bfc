@@ -115,7 +115,7 @@ async fn test_public_transfer_object() -> Result<(), anyhow::Error> {
     let gas = objects.clone().last().unwrap().object().unwrap().object_id;
 
     let transaction_bytes: TransactionBlockBytes = http_client
-        .transfer_object(address, obj, Some(gas), 100_000_000.into(), address)
+        .transfer_object(address, obj, Some(gas), 1000_000_000.into(), address)
         .await?;
 
     let tx = cluster
