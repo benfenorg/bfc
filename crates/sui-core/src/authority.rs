@@ -70,6 +70,7 @@ use sui_json_rpc_types::{
 };
 use sui_macros::{fail_point, fail_point_async};
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
+use sui_simulator::sui_adapter::temporary_store::TemporaryStore;
 use sui_storage::indexes::{CoinInfo, ObjectIndexChanges};
 use sui_storage::key_value_store::{TransactionKeyValueStore, TransactionKeyValueStoreTrait};
 use sui_storage::key_value_store_metrics::KeyValueStoreMetrics;
@@ -117,10 +118,6 @@ use sui_types::gas_coin::MIST_PER_SUI;
 use sui_types::obc_system_state::ObcSystemState;
 use sui_types::proposal::ProposalStatus;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
-use sui_types::{
-    base_types::*,
-    transaction::*,
-};
 //use sui_types::{is_system_package, TypeTag};
 use typed_store::Map;
 
@@ -1011,7 +1008,7 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, effects, execution_error_opt) = match self
+        let (inner_temporary_store, _, effects, execution_error_opt) = match self
             .prepare_certificate(&execution_guard, certificate, epoch_store)
             .await
         {
@@ -1161,7 +1158,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
         InnerTemporaryStore,
-        //VecMap<u64, ProposalStatus>,
+        VecMap<u64, ProposalStatus>,
         TransactionEffects,
         Option<ExecutionError>,
     )> {
@@ -1182,16 +1179,13 @@ impl AuthorityState {
         let protocol_config = epoch_store.protocol_config();
         let shared_object_refs = input_objects.filter_shared_objects();
         let transaction_dependencies = input_objects.transaction_dependencies();
-        // let temporary_store = TemporaryStore::new(
-        //     self.database.clone(),
-        //     input_objects,
-        //     tx_digest,
-        //     protocol_config,
-        // );
-
-        //todo:
-        //let prposal_map = temporary_store.get_obc_system_state_temporary();
-        //let prposal_map = BTreeMap::new();
+        let temporary_store = TemporaryStore::new(
+            self.database.clone(),
+            input_objects.clone(),
+            tx_digest,
+            protocol_config,
+        );
+        let proposal_map = temporary_store.get_obc_system_state_temporary();
 
         let transaction_data = &certificate.data().intent_message().value;
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -1224,7 +1218,7 @@ impl AuthorityState {
                 transaction_dependencies,
             );
 
-        Ok((inner_temp_store, effects, execution_error_opt.err()))
+        Ok((inner_temp_store, proposal_map, effects, execution_error_opt.err()))
     }
 
     pub async fn dry_exec_transaction(
@@ -4038,12 +4032,12 @@ impl AuthorityState {
             .database
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
-        let (temporary_store, effects, _execution_error_opt) = self
+        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
-        //let mut tmp = self.proposal_state_map.lock();
-        //tmp.contents = proposal_map.contents;
+        let mut tmp = self.proposal_state_map.lock();
+        tmp.contents = proposal_map.contents;
 
         //let system_obj = temporary_store.get_sui_system_state_object();
         let system_obj = get_sui_system_state(&temporary_store.written)
@@ -4112,7 +4106,7 @@ impl AuthorityState {
             "Try to execute transaction: {:?}",tx_digest
         );
 
-        let (store, effects, _execution_error_opt) = self
+        let (store, _, effects, _execution_error_opt) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 

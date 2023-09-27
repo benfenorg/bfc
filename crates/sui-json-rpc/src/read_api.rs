@@ -47,7 +47,6 @@ use sui_types::object::{Object, ObjectRead, PastObjectRead};
 use sui_types::sui_serde::BigInt;
 use sui_types::transaction::Transaction;
 use sui_types::transaction::TransactionDataAPI;
-use sui_types::transaction::VerifiedTransaction;
 
 use crate::api::JsonRpcMetrics;
 use crate::api::{validate_limit, ReadApiServer};

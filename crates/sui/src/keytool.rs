@@ -44,7 +44,6 @@ use rand::Rng;
 use tabled::builder::Builder;
 use tabled::settings::Rotate;
 use tabled::settings::{object::Rows, Modify, Width};
-use sui_types::base_types_obc::obc_address_util::{convert_to_evm_address, convert_to_obc_address};
 
 use crate::zklogin_commands_util::{perform_zk_login_test_tx, read_cli_line};
 
@@ -916,28 +915,4 @@ fn anemo_styling(pk: &PublicKey) -> Option<String> {
     } else {
         None
     }
-}
-
-fn convert_obc_sui_address(value: String) {
-    println!("Enter the obcAddress or suiAddress to convert");
-
-    let mut sui_address = String::from("0x");
-    let mut obc_address = String::from("OBC");
-
-    //obc address
-    if value.starts_with("OBC") || value.starts_with("obc") {
-        obc_address = value.clone();
-        sui_address = convert_to_evm_address(value);
-    } else {
-        //sui address
-        if value.starts_with("0x") {
-            sui_address = value.clone();
-            obc_address = convert_to_obc_address("OBC", value.as_str());
-        } else {
-            println!("Invalid address");
-        }
-    }
-
-    println!("Sui Address: {}", sui_address);
-    println!("OBC Address: {}", obc_address);
 }
