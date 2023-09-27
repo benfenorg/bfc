@@ -9,8 +9,8 @@ use prometheus::{Histogram, IntCounter};
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
     Checkpoint as RpcCheckpoint, CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics,
-    NetworkMetrics, SuiObjectData, SuiObjectDataFilter, SuiTransactionBlockEffects,
-    SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
+    NetworkMetrics, NetworkOverview, SuiObjectData, SuiObjectDataFilter,
+    SuiTransactionBlockEffects, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::{CheckpointDigest, TransactionDigest};
@@ -216,6 +216,7 @@ pub trait IndexerStore {
 
     async fn get_network_metrics(&self) -> Result<NetworkMetrics, IndexerError>;
     async fn get_move_call_metrics(&self) -> Result<MoveCallMetrics, IndexerError>;
+    async fn get_network_overview(&self) -> Result<NetworkOverview, IndexerError>;
 
     async fn persist_checkpoint_transactions(
         &self,
