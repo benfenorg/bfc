@@ -248,7 +248,7 @@ async fn test_stake_all() {
 #[tokio::test]
 async fn test_withdraw_stake() {
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(5)
         .build()
         .await;
     let sender = test_cluster.get_address_0();

@@ -369,7 +369,7 @@ mod tests {
             let expected_message = expect!["Failed to sign transaction by a quorum of validators because of locked objects. Retried a conflicting transaction Some(TransactionDigest(11111111111111111111111111111111)), success: Some(true)"];
             expected_message.assert_eq(error_object.message());
             let expected_data = expect![[
-                r#"{"11111111111111111111111111111111":[["0x0000000000000000000000000000000000000000000000000000000000000000",0,"11111111111111111111111111111111"]]}"#
+                r#"{"11111111111111111111111111111111":[["OBC000000000000000000000000000000000000000000000000000000000000000060e0",0,"11111111111111111111111111111111"]]}"#
             ]];
             let actual_data = error_object.data().unwrap().to_string();
             expected_data.assert_eq(&actual_data);

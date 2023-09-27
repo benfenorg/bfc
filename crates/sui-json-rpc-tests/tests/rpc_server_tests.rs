@@ -819,7 +819,7 @@ async fn test_unstaking() -> Result<(), anyhow::Error> {
             address,
             staked_sui_copy[0].stakes[2].staked_sui_id,
             None,
-            1_000_000.into(),
+            100_000_000.into(),
         )
         .await?;
     let tx = cluster
