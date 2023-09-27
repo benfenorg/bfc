@@ -12,7 +12,7 @@ use sui_json_rpc::api::{
     TransactionBuilderClient, WriteApiClient,
 };
 use sui_json_rpc_types::{ObjectChange, SuiTransactionBlockEffects};
-use sui_json_rpc_types::ObjectChange;
+//use sui_json_rpc_types::ObjectChange;
 use sui_json_rpc_types::ObjectsPage;
 use sui_json_rpc_types::{
     Balance, CoinPage, DelegatedStake, StakeStatus, SuiCoinMetadata, SuiExecutionStatus,
@@ -1275,8 +1275,8 @@ async fn test_get_dao() -> Result<(), anyhow::Error> {
 
     let dao = result as DaoRPC;
 
-    assert!(dao.info.next_proposal_id>=0);
-    assert!(dao.info.next_action_id>=0);
+    assert!(dao.info.next_proposal_id>0);
+    assert!(dao.info.next_action_id>0);
 
 
     Ok(())
