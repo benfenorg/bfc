@@ -1,11 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useTimeAgo } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useGetSystemState, useTimeAgo } from '@mysten/core';
 
 export function useEpochProgress(suffix: string = 'left') {
-	const { data } = useLatestSuiSystemState();
+	const { data } = useGetSystemState();
 	const start = data?.epochStartTimestampMs ? Number(data.epochStartTimestampMs) : undefined;
 	const duration = data?.epochDurationMs ? Number(data.epochDurationMs) : undefined;
 	const end = start !== undefined && duration !== undefined ? start + duration : undefined;

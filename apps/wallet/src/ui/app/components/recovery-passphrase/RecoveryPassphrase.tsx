@@ -6,13 +6,17 @@ import { useState } from 'react';
 import { HideShowDisplayBox } from '_components/HideShowDisplayBox';
 import Alert from '_components/alert';
 import { MenuLayout } from '_components/menu/content/MenuLayout';
+import { PasswordInputDialog } from '_components/menu/content/PasswordInputDialog';
 import { useNextMenuUrl } from '_components/menu/hooks';
-import { PasswordInputDialog } from '_src/ui/app/components/PasswordInputDialog';
+import { useAppDispatch } from '_hooks';
+import { loadEntropyFromKeyring } from '_redux/slices/account';
+import { entropyToMnemonic, toEntropy } from '_shared/utils/bip39';
 
 export function RecoveryPassphrase() {
-	const [passwordConfirmed, _setPasswordConfirmed] = useState(false);
-	const [mnemonic, _setMnemonic] = useState<string[] | null>(null);
+	const [passwordConfirmed, setPasswordConfirmed] = useState(false);
+	const [mnemonic, setMnemonic] = useState<string[] | null>(null);
 	const accountsUrl = useNextMenuUrl(true, '/accounts');
+	const dispatch = useAppDispatch();
 
 	if (!passwordConfirmed) {
 		return (
@@ -22,9 +26,12 @@ export function RecoveryPassphrase() {
 					title="Export Recovery Passphrase"
 					continueLabel="Continue"
 					onPasswordVerified={async () => {
-						throw new Error('Not implemented yet');
+						const mnemonic = entropyToMnemonic(
+							toEntropy(await dispatch(loadEntropyFromKeyring({})).unwrap()),
+						).split(' ');
+						setMnemonic(mnemonic);
+						setPasswordConfirmed(true);
 					}}
-					showBackButton
 				/>
 			</div>
 		);

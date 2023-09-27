@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useQuery } from '@tanstack/react-query';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useRpcClient } from '../api/RpcClientContext';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 
 const SUI_NS_FEATURE_FLAG = 'suins';
@@ -18,13 +18,13 @@ export function useSuiNSEnabled() {
 }
 
 export function useResolveSuiNSAddress(name?: string | null) {
-	const client = useSuiClient();
+	const rpc = useRpcClient();
 	const enabled = useSuiNSEnabled();
 
 	return useQuery({
 		queryKey: ['resolve-suins-address', name],
 		queryFn: async () => {
-			return await client.resolveNameServiceAddress({
+			return await rpc.resolveNameServiceAddress({
 				name: name!,
 			});
 		},
@@ -35,14 +35,14 @@ export function useResolveSuiNSAddress(name?: string | null) {
 }
 
 export function useResolveSuiNSName(address?: string | null) {
-	const client = useSuiClient();
+	const rpc = useRpcClient();
 	const enabled = useSuiNSEnabled();
 
 	return useQuery({
 		queryKey: ['resolve-suins-name', address],
 		queryFn: async () => {
 			// NOTE: We only fetch 1 here because it's the default name.
-			const { data } = await client.resolveNameServiceNames({
+			const { data } = await rpc.resolveNameServiceNames({
 				address: address!,
 				limit: 1,
 			});

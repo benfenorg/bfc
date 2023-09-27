@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { cva, type VariantProps } from 'class-variance-authority';
+import cl from 'classnames';
 import { useField, useFormikContext } from 'formik';
 
 import { Pill, type PillProps } from './Pill';
@@ -12,10 +13,10 @@ import type { ComponentProps } from 'react';
 
 const styles = cva(
 	[
-		'transition flex flex-row items-center p-3 bg-white text-body font-semibold',
-		'placeholder:text-gray-60 w-full pr-[calc(20%_+_24px)] shadow-button',
-		'border-solid border border-gray-45 text-steel-darker hover:border-steel focus:border-steel',
-		'disabled:border-gray-40 disabled:text-gray-55',
+		'transition flex flex-row items-center h-10 w-full text-bodySmall text-obc-text1 gap-5 bg-obc-card px-2.5 border border-solid border-obc-border rounded-lg',
+		'placeholder-obc-text3 w-full pr-[calc(20%_+_24px)]',
+		'focus:bg-transparent focus:border-obc-text1',
+		'disabled:bg-white disabled:text-obc-text2',
 	],
 	{
 		variants: {
@@ -46,6 +47,7 @@ export type InputWithActionProps = VariantProps<typeof styles> &
 		  })
 	) & {
 		actionText: string;
+		actionClass?: string;
 		onActionClicked?: PillProps['onClick'];
 		actionType?: PillProps['type'];
 		name: string;
@@ -54,6 +56,7 @@ export type InputWithActionProps = VariantProps<typeof styles> &
 
 export function InputWithAction({
 	actionText,
+	actionClass,
 	onActionClicked,
 	actionType = 'submit',
 	type,
@@ -95,7 +98,12 @@ export function InputWithAction({
 						className={styles({ rounded })}
 					/>
 				)}
-				<div className="flex items-center justify-end absolute right-0 max-w-[20%] mx-3 overflow-hidden">
+				<div
+					className={cl(
+						'flex items-center justify-end absolute right-0 max-w-[20%] mx-2.5 overflow-hidden',
+						actionClass,
+					)}
+				>
 					<Pill
 						text={actionText}
 						type={actionType}

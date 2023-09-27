@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { fromB64, toB64 } from '@mysten/bcs';
-import type { TransactionBlock } from '../builder/TransactionBlock.js';
-import { isTransactionBlock } from '../builder/TransactionBlock.js';
+import { TransactionBlock } from '../builder/TransactionBlock.js';
 import { TransactionBlockDataBuilder } from '../builder/TransactionBlockData.js';
 import type { SerializedSignature } from '../cryptography/signature.js';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
@@ -20,7 +19,7 @@ import { IntentScope, messageWithIntent } from '../cryptography/intent.js';
 import type { Signer } from './signer.js';
 import type { SignedTransaction, SignedMessage } from './types.js';
 import type { SuiClient } from '../client/index.js';
-import { bcs } from '../bcs/index.js';
+import { bcs } from '../types/sui-bcs.js';
 
 ///////////////////////////////
 // Exported Abstracts
@@ -32,7 +31,7 @@ export abstract class SignerWithProvider implements Signer {
 		return this.client;
 	}
 
-	readonly client: SuiClient;
+	readonly client: JsonRpcProvider | SuiClient;
 
 	///////////////////
 	// Sub-classes MUST implement these
@@ -59,15 +58,15 @@ export abstract class SignerWithProvider implements Signer {
 	 * @deprecated Use `@mysten/sui.js/faucet` instead.
 	 */
 	async requestSuiFromFaucet(httpHeaders?: HttpHeaders) {
-		if (!('requestSuiFromFaucet' in this.provider)) {
+		if (!('requestSuiFromFaucet' in this.client)) {
 			throw new Error('To request SUI from faucet, please use @mysten/sui.js/faucet instead');
 		}
 
-		return this.provider.requestSuiFromFaucet(await this.getAddress(), httpHeaders);
+		return this.client.requestSuiFromFaucet(await this.getAddress(), httpHeaders);
 	}
 
 	constructor(client: JsonRpcProvider | SuiClient) {
-		this.client = client as SuiClient;
+		this.client = client;
 	}
 
 	/**
@@ -88,7 +87,7 @@ export abstract class SignerWithProvider implements Signer {
 	}
 
 	protected async prepareTransactionBlock(transactionBlock: Uint8Array | TransactionBlock) {
-		if (isTransactionBlock(transactionBlock)) {
+		if (TransactionBlock.is(transactionBlock)) {
 			// If the sender has not yet been set on the transaction, then set it.
 			// NOTE: This allows for signing transactions with mis-matched senders, which is important for sponsored transactions.
 			transactionBlock.setSenderIfNotSet(await this.getAddress());
@@ -154,9 +153,9 @@ export abstract class SignerWithProvider implements Signer {
 	 * @returns transaction digest
 	 */
 	async getTransactionBlockDigest(tx: Uint8Array | TransactionBlock): Promise<string> {
-		if (isTransactionBlock(tx)) {
+		if (TransactionBlock.is(tx)) {
 			tx.setSenderIfNotSet(await this.getAddress());
-			return tx.getDigest({ client: this.client });
+			return tx.getDigest({ provider: this.provider });
 		} else if (tx instanceof Uint8Array) {
 			return TransactionBlockDataBuilder.getDigestFromBytes(tx);
 		} else {
@@ -173,7 +172,7 @@ export abstract class SignerWithProvider implements Signer {
 		input: Omit<Parameters<JsonRpcProvider['devInspectTransactionBlock']>[0], 'sender'>,
 	): Promise<DevInspectResults> {
 		const address = await this.getAddress();
-		return this.client.devInspectTransactionBlock({
+		return this.provider.devInspectTransactionBlock({
 			sender: address,
 			...input,
 		});
@@ -186,7 +185,7 @@ export abstract class SignerWithProvider implements Signer {
 		transactionBlock: TransactionBlock | string | Uint8Array;
 	}): Promise<DryRunTransactionBlockResponse> {
 		let dryRunTxBytes: Uint8Array;
-		if (isTransactionBlock(input.transactionBlock)) {
+		if (TransactionBlock.is(input.transactionBlock)) {
 			input.transactionBlock.setSenderIfNotSet(await this.getAddress());
 			dryRunTxBytes = await input.transactionBlock.build({
 				client: this.client,

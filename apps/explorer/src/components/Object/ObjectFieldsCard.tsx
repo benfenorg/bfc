@@ -1,15 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import { useGetObject, useGetNormalizedMoveStruct } from '@mysten/core';
 import { Search24 } from '@mysten/icons';
 import { getObjectFields, getObjectType } from '@mysten/sui.js';
-=======
-import { useGetObject } from '@mysten/core';
-import { useNormalizedMoveStruct } from '@mysten/dapp-kit';
-import { Search24 } from '@mysten/icons';
->>>>>>> heads/mainnet-v1.9.1
 import { Text, LoadingIndicator, Combobox, ComboboxInput, ComboboxList } from '@mysten/ui';
 import { useState } from 'react';
 
@@ -29,14 +23,7 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 	const { data, isLoading, isError } = useGetObject(id);
 	const [query, setQuery] = useState('');
 	const [activeFieldName, setActiveFieldName] = useState('');
-<<<<<<< HEAD
 	const objectType = getObjectType(data!);
-=======
-	const objectType =
-		data?.data?.type ?? data?.data?.content?.dataType === 'package'
-			? data.data.type
-			: data?.data?.content?.type;
->>>>>>> heads/mainnet-v1.9.1
 
 	// Get the packageId, moduleName, functionName from the objectType
 	const [packageId, moduleName, functionName] = objectType?.split('<')[0]?.split('::') || [];
@@ -46,7 +33,6 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 		data: normalizedStruct,
 		isLoading: loadingNormalizedStruct,
 		isError: errorNormalizedMoveStruct,
-<<<<<<< HEAD
 	} = useGetNormalizedMoveStruct({
 		packageId,
 		module: moduleName,
@@ -57,23 +43,6 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 			}
 		},
 	});
-=======
-	} = useNormalizedMoveStruct(
-		{
-			package: packageId,
-			module: moduleName,
-			struct: functionName,
-		},
-		{
-			enabled: !!packageId && !!moduleName && !!functionName,
-			onSuccess: (data) => {
-				if (data?.fields && activeFieldName === '') {
-					setActiveFieldName(data.fields[0].name);
-				}
-			},
-		},
-	);
->>>>>>> heads/mainnet-v1.9.1
 
 	if (isLoading || loadingNormalizedStruct) {
 		return (
@@ -90,14 +59,7 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 		);
 	}
 
-<<<<<<< HEAD
 	const fieldsData = getObjectFields(data!);
-=======
-	const fieldsData =
-		data.data?.content?.dataType === 'moveObject'
-			? (data.data?.content?.fields as Record<string, string | number | object>)
-			: null;
->>>>>>> heads/mainnet-v1.9.1
 
 	const filteredFieldNames =
 		query === ''
@@ -112,11 +74,7 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 	}
 
 	return (
-<<<<<<< HEAD
 		<TabHeader size="lineMdOne" title="Fields">
-=======
-		<TabHeader title="Fields">
->>>>>>> heads/mainnet-v1.9.1
 			<div className="mt-4 flex flex-col gap-5 border-b border-gray-45">
 				<div className="flex flex-col gap-5  md:flex-row md:flex-nowrap">
 					<div className="w-full md:w-1/5">

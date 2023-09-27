@@ -4,13 +4,14 @@
 import { fromB64 } from '@mysten/bcs';
 import { is, mask } from 'superstruct';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
-import type { SuiObjectResponse } from '../types/index.js';
 import {
 	extractMutableReference,
 	extractStructTag,
 	getObjectReference,
+	getSharedObjectInitialVersion,
 	SuiObjectRef,
 } from '../types/index.js';
+import { normalizeSuiAddress } from '../utils/sui-types.js';
 import type { TransactionArgument, TransactionType, MoveCallTransaction } from './Transactions.js';
 import { Transactions, TransactionBlockInput, getTransactionType } from './Transactions.js';
 import type { ObjectCallArg } from './Inputs.js';
@@ -27,9 +28,8 @@ import { TransactionBlockDataBuilder } from './TransactionBlockData.js';
 import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
 import { SUI_TYPE_ARG } from '../framework/framework.js';
-import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 type TransactionResult = TransactionArgument & TransactionArgument[];
 
@@ -86,14 +86,14 @@ function createTransactionResult(index: number): TransactionResult {
 	}) as TransactionResult;
 }
 
-function expectClient(options: BuildOptions): SuiClient {
+function expectClient(options: BuildOptions): JsonRpcProvider | SuiClient {
 	if (!options.client && !options.provider) {
 		throw new Error(
 			`No provider passed to Transaction#build, but transaction data was not sufficient to build offline.`,
 		);
 	}
 
-	return (options.client ?? options.provider!) as SuiClient;
+	return options.client ?? options.provider!;
 }
 
 const TRANSACTION_BRAND = Symbol.for('@mysten/transaction');
@@ -135,21 +135,11 @@ interface BuildOptions {
 	limits?: Limits;
 }
 
-interface SignOptions extends BuildOptions {
-	signer: Keypair;
-}
-
-export function isTransactionBlock(obj: unknown): obj is TransactionBlock {
-	return !!obj && typeof obj === 'object' && (obj as any)[TRANSACTION_BRAND] === true;
-}
-
 /**
  * Transaction Builder
  */
 export class TransactionBlock {
-	/** Returns `true` if the object is an instance of the Transaction builder class.
-	 * @deprecated Use `isTransactionBlock` from `@mysten/sui.js/transactions` instead.
-	 */
+	/** Returns `true` if the object is an instance of the Transaction builder class. */
 	static is(obj: unknown): obj is TransactionBlock {
 		return !!obj && typeof obj === 'object' && (obj as any)[TRANSACTION_BRAND] === true;
 	}
@@ -404,13 +394,6 @@ export class TransactionBlock {
 		return Number(value);
 	}
 
-	/** Build the transaction to BCS bytes, and sign it with the provided keypair. */
-	async sign(options: SignOptions): Promise<SignatureWithBytes> {
-		const { signer, ...buildOptions } = options;
-		const bytes = await this.build(buildOptions);
-		return signer.signTransactionBlock(bytes);
-	}
-
 	/** Build the transaction to BCS bytes. */
 	async build(options: BuildOptions = {}): Promise<Uint8Array> {
 		await this.#prepare(options);
@@ -427,7 +410,7 @@ export class TransactionBlock {
 			 * @deprecated Use `client` instead.
 			 */
 			provider?: JsonRpcProvider | SuiClient;
-			client?: SuiClient;
+			client?: SuiClient | JsonRpcProvider;
 		} = {},
 	): Promise<string> {
 		await this.#prepare(options);
@@ -478,7 +461,10 @@ export class TransactionBlock {
 						'Object' in input.value &&
 						'ImmOrOwned' in input.value.Object
 					) {
-						return coin.coinObjectId === input.value.Object.ImmOrOwned.objectId;
+						return (
+							sui2ObcAddress(coin.coinObjectId) ===
+							sui2ObcAddress(input.value.Object.ImmOrOwned.objectId)
+						);
 					}
 
 					return false;
@@ -591,7 +577,7 @@ export class TransactionBlock {
 					const [packageId, moduleName, functionName] = moveCall.target.split('::');
 
 					const normalized = await expectClient(options).getNormalizedMoveFunction({
-						package: normalizeSuiObjectId(packageId),
+						package: normalizeSuiAddress(packageId),
 						module: moduleName,
 						function: functionName,
 					});
@@ -686,11 +672,7 @@ export class TransactionBlock {
 
 			objectsToResolve.forEach(({ id, input, normalizedType }) => {
 				const object = objectsById.get(id)!;
-				const owner = object.data?.owner;
-				const initialSharedVersion =
-					owner && typeof owner === 'object' && 'Shared' in owner
-						? owner.Shared.initial_shared_version
-						: undefined;
+				const initialSharedVersion = getSharedObjectInitialVersion(object);
 
 				if (initialSharedVersion) {
 					// There could be multiple transactions that reference the same shared object.
@@ -706,7 +688,7 @@ export class TransactionBlock {
 						mutable,
 					});
 				} else {
-					input.value = Inputs.ObjectRef(getObjectReference(object as SuiObjectResponse)!);
+					input.value = Inputs.ObjectRef(getObjectReference(object)!);
 				}
 			});
 		}

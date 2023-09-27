@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { getExecutionStatusType } from '../../src';
 import { TransactionBlock } from '../../src/builder';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
@@ -22,7 +23,7 @@ describe('Test Move call with strings', () => {
 				showEffects: true,
 			},
 		});
-		expect(result.effects?.status.status).toEqual('success');
+		expect(getExecutionStatusType(result)).toEqual('success');
 	}
 
 	beforeAll(async () => {

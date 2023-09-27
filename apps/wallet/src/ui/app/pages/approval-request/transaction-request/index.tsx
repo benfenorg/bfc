@@ -10,14 +10,11 @@ import { GasFees } from './GasFees';
 import { TransactionDetails } from './TransactionDetails';
 import { ConfirmationModal } from '../../../shared/ConfirmationModal';
 import { UserApproveContainer } from '_components/user-approve-container';
-import { useAppDispatch, useTransactionData, useTransactionDryRun } from '_hooks';
+import { useAppDispatch, useSigner, useTransactionData, useTransactionDryRun } from '_hooks';
 import { type TransactionApprovalRequest } from '_payloads/transactions/ApprovalRequest';
 import { respondToTransactionRequest } from '_redux/slices/transaction-requests';
 import { ampli } from '_src/shared/analytics/ampli';
-import { useAccountByAddress } from '_src/ui/app/hooks/useAccountByAddress';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
 import { PageMainLayoutTitle } from '_src/ui/app/shared/page-main-layout/PageMainLayoutTitle';
 import { TransactionSummary } from '_src/ui/app/shared/transaction-summary';
 
@@ -33,8 +30,7 @@ const appOriginsToExcludeFromAnalytics = ['https://sui8192.ethoswallet.xyz'];
 
 export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 	const addressForTransaction = txRequest.tx.account;
-	const { data: accountForTransaction } = useAccountByAddress(addressForTransaction);
-	const signer = useSigner(accountForTransaction);
+	const signer = useSigner(addressForTransaction);
 	const dispatch = useAppDispatch();
 	const transaction = useMemo(() => {
 		const tx = TransactionBlock.from(txRequest.tx.data);
@@ -51,12 +47,10 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 		isError: isDryRunError,
 		isLoading: isDryRunLoading,
 	} = useTransactionDryRun(addressForTransaction, transaction);
-	const recognizedPackagesList = useRecognizedPackages();
 
 	const summary = useTransactionSummary({
 		transaction: data,
 		currentAddress: addressForTransaction,
-		recognizedPackagesList,
 	});
 	const { clientIdentifier, notificationModal } = useQredoTransaction(true);
 	if (!signer) {
@@ -98,7 +92,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 			>
 				<PageMainLayoutTitle title="Approve Transaction" />
 
-				<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-5">
 					<TransactionSummary
 						isDryRun
 						isLoading={isDryRunLoading}
@@ -107,7 +101,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 						summary={summary}
 					/>
 				</div>
-				<section className="flex flex-col gap-4">
+				<section className="flex flex-col gap-5">
 					<GasFees sender={addressForTransaction} transaction={transaction} />
 					<TransactionDetails sender={addressForTransaction} transaction={transaction} />
 				</section>

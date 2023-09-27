@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type GasSummaryType, useFormatCoin } from '@mysten/core';
-import { formatAddress } from '@mysten/sui.js/utils';
+import { formatAddress } from '@mysten/sui.js';
 
+import { Heading } from '../../heading';
 import { Text } from '../../text';
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
@@ -16,45 +17,45 @@ export function GasSummary({ gasSummary }: { gasSummary?: GasSummaryType }) {
 	if (!gasSummary) return null;
 
 	return (
-		<div className="bg-white relative flex flex-col shadow-card-soft rounded-2xl">
-			<div className="bg-gray-40 rounded-t-2xl py-2.5 px-4">
-				<Text color="steel-darker" variant="captionSmall" weight="semibold">
+		<div className="flex flex-col justify-stretch rounded-lg border border-solid border-obc-border">
+			<div className="h-10 px-2.5 bg-obc-card flex items-center rounded-t-lg">
+				<Heading variant="heading4" color="obc-text1" weight="semibold">
 					Gas Fees
-				</Text>
+				</Heading>
 			</div>
-			<div className="flex flex-col items-center gap-2 w-full px-4 py-3">
+			<div className="p-2.5 flex flex-col items-center gap-2.5 w-full">
 				<div className="flex w-full items-center justify-start">
 					{address === gasSummary?.owner && (
 						<div className="mr-auto">
-							<Text color="steel-dark" variant="pBody" weight="medium">
+							<Text color="obc-text2" variant="body" weight="normal">
 								You Paid
 							</Text>
 						</div>
 					)}
-					<Text color="steel-darker" variant="pBody" weight="medium">
+					<Text color="obc-text1" variant="body" weight="medium">
 						{gasSummary?.isSponsored ? '0' : gas} {symbol}
 					</Text>
 				</div>
 				{gasSummary?.isSponsored && gasSummary.owner && (
 					<>
 						<div className="flex w-full justify-between">
-							<Text color="steel-dark" variant="pBody" weight="medium">
+							<Text color="obc-text2" variant="body" weight="normal">
 								Paid by Sponsor
 							</Text>
-							<Text color="steel-darker" variant="pBody" weight="medium">
+							<Text color="obc-text1" variant="body" weight="medium">
 								{gas} {symbol}
 							</Text>
 						</div>
 						<div className="flex w-full justify-between">
-							<Text color="steel-dark" variant="pBody" weight="medium">
+							<Text color="obc-text2" variant="body" weight="normal">
 								Sponsor
 							</Text>
 							<ExplorerLink
 								type={ExplorerLinkType.address}
 								address={gasSummary.owner}
-								className="text-hero-dark no-underline"
+								className="no-underline"
 							>
-								<Text variant="pBodySmall" truncate mono>
+								<Text variant="body" color="obc-text1" weight="medium" truncate>
 									{formatAddress(gasSummary.owner)}
 								</Text>
 							</ExplorerLink>

@@ -8,17 +8,15 @@ import { useActiveAddress } from '../../hooks/useActiveAddress';
 
 type UseFaucetMutationOptions = Pick<UseMutationOptions, 'onError'> & {
 	host: string | null;
-	address?: string;
 };
 
 export function useFaucetMutation(options?: UseFaucetMutationOptions) {
-	const activeAddress = useActiveAddress();
-	const addressToTopUp = options?.address || activeAddress;
-	const mutationKey = ['faucet-request-tokens', activeAddress];
+	const address = useActiveAddress();
+	const mutationKey = ['faucet-request-tokens', address];
 	const mutation = useMutation({
 		mutationKey,
 		mutationFn: async () => {
-			if (!addressToTopUp) {
+			if (!address) {
 				throw new Error('Failed, wallet address not found.');
 			}
 			if (!options?.host) {
@@ -26,7 +24,7 @@ export function useFaucetMutation(options?: UseFaucetMutationOptions) {
 			}
 
 			const { error, transferredGasObjects } = await requestSuiFromFaucetV0({
-				recipient: addressToTopUp,
+				recipient: address,
 				host: options.host,
 			});
 

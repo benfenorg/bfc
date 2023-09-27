@@ -8,6 +8,7 @@ import Browser from 'webextension-polyfill';
 
 import Tabs from './Tabs';
 import { Window } from './Window';
+import { type Account } from './keyring/Account';
 import { ALL_PERMISSION_TYPES, isValidPermissionTypes } from '_payloads/permissions';
 
 import type { ContentScriptConnection } from './connections/ContentScriptConnection';
@@ -228,7 +229,7 @@ class Permissions {
 		}
 	}
 
-	public async ensurePermissionAccountsUpdated(accounts: { address: string }[]) {
+	public async ensurePermissionAccountsUpdated(accounts: Account[]) {
 		const allPermissions = await this.getPermissions();
 		const availableAccountsIndex = accounts.reduce<Record<string, boolean>>((acc, { address }) => {
 			acc[address] = true;

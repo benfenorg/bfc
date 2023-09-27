@@ -8,10 +8,6 @@ import { TopPackagesTable } from './TopPackagesTable';
 import { ErrorBoundary } from '../error-boundary/ErrorBoundary';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
 import { FilterList } from '~/ui/FilterList';
-<<<<<<< HEAD
-=======
-import { TabHeader } from '~/ui/Tabs';
->>>>>>> heads/mainnet-v1.9.1
 
 export type DateFilter = '3D' | '7D' | '30D';
 export type ApiDateFilter = 'rank3Days' | 'rank7Days' | 'rank30Days';
@@ -33,13 +29,8 @@ export function TopPackagesCard() {
 	const filteredData = data ? data[FILTER_TO_API_FILTER[selectedFilter]] : [];
 
 	return (
-<<<<<<< HEAD
 		<div>
 			<div className="">
-=======
-		<div className="relative">
-			<div className="absolute right-0 mt-1">
->>>>>>> heads/mainnet-v1.9.1
 				<FilterList
 					lessSpacing
 					options={['3D', '7D', '30D']}
@@ -47,22 +38,11 @@ export function TopPackagesCard() {
 					onChange={(val) => setSelectedFilter(val)}
 				/>
 			</div>
-<<<<<<< HEAD
 			<div className="obc-table-container mt-5">
 				<ErrorBoundary>
 					<TopPackagesTable data={filteredData} isLoading={isLoading} />
 				</ErrorBoundary>
 			</div>
-=======
-			<TabHeader
-				title="Popular Packages"
-				tooltip="Popular packages is recomputed on epoch changes."
-			>
-				<ErrorBoundary>
-					<TopPackagesTable data={filteredData} isLoading={isLoading} />
-				</ErrorBoundary>
-			</TabHeader>
->>>>>>> heads/mainnet-v1.9.1
 		</div>
 	);
 }

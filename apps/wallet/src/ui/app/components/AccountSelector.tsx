@@ -4,11 +4,11 @@
 import { Popover, Transition } from '@headlessui/react';
 import { useResolveSuiNSName } from '@mysten/core';
 import { ChevronDown12, Copy12 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui.js/utils';
+import { formatAddress, sui2ObcAddress } from '@mysten/sui.js';
 
 import { AccountList } from './AccountList';
-import { useActiveAddress } from '../hooks';
 import { useAccounts } from '../hooks/useAccounts';
+import { useActiveAddress } from '../hooks/useActiveAddress';
 import { useBackgroundClient } from '../hooks/useBackgroundClient';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { ButtonConnectedTo } from '../shared/ButtonConnectedTo';
@@ -16,14 +16,14 @@ import { Text } from '../shared/text';
 import { ampli } from '_src/shared/analytics/ampli';
 
 export function AccountSelector() {
-	const { data: allAccounts } = useAccounts();
-	const activeAddress = useActiveAddress() || '';
-	const copyToAddress = useCopyToClipboard(activeAddress, {
+	const allAccounts = useAccounts();
+	const activeAddress = useActiveAddress();
+	const copyToAddress = useCopyToClipboard(activeAddress ? sui2ObcAddress(activeAddress) : '', {
 		copySuccessMessage: 'Address copied',
 	});
 	const backgroundClient = useBackgroundClient();
 	const { data: domainName } = useResolveSuiNSName(activeAddress);
-	if (!allAccounts?.length) {
+	if (!allAccounts.length) {
 		return null;
 	}
 
@@ -35,24 +35,20 @@ export function AccountSelector() {
 
 	if (allAccounts.length === 1) {
 		return (
-			<ButtonConnectedTo
-				text={buttonText}
+			<div
+				className="flex items-center justify-center gap-1.25 rounded-[20px] border border-solid border-obc-border py-1.25 px-2.5 cursor-pointer"
 				onClick={copyToAddress}
-				iconAfter={<Copy12 data-testid="copy-address" />}
-				bgOnHover="grey"
-			/>
+			>
+				{buttonText}
+				<Copy12 data-testid="copy-address" />
+			</div>
 		);
 	}
 	return (
 		<Popover className="relative z-10 max-w-full px-5">
 			{({ close }) => (
 				<>
-					<Popover.Button
-						as={ButtonConnectedTo}
-						text={buttonText}
-						iconAfter={<ChevronDown12 />}
-						bgOnHover="grey"
-					/>
+					<Popover.Button as={ButtonConnectedTo} text={buttonText} iconAfter={<ChevronDown12 />} />
 					<Transition
 						enter="transition duration-200 ease-out"
 						enterFrom="transform scale-95 opacity-0"
@@ -61,16 +57,16 @@ export function AccountSelector() {
 						leaveFrom="transform scale-100 opacity-100"
 						leaveTo="transform scale-75 opacity-0"
 					>
-						<Popover.Panel className="absolute left-1/2 -translate-x-1/2 w-[280px] drop-shadow-accountModal mt-2 z-0 rounded-md bg-white">
+						<Popover.Panel className="absolute left-1/2 -translate-x-1/2 w-[240px] mt-2 z-0 rounded-xl bg-white border border-solid border-obc-border shadow-[0px_16px_24px_0px_rgba(0_0_0_0.08)]">
 							<div className="absolute w-3 h-3 bg-white -top-1 left-1/2 -translate-x-1/2 rotate-45" />
-							<div className="relative px-1.25 max-h-80 overflow-y-auto max-w-full z-10">
+							<div className="relative max-h-80 overflow-y-auto max-w-full z-10">
 								<AccountList
-									onAccountSelected={async ({ id, type, selected }) => {
-										if (!selected) {
+									onAccountSelected={async ({ address, type }) => {
+										if (address !== activeAddress) {
 											ampli.switchedAccount({
 												toAccountType: type,
 											});
-											await backgroundClient.selectAccount(id);
+											await backgroundClient.selectAccount(address);
 										}
 										close();
 									}}

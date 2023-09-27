@@ -4,24 +4,25 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useAccounts } from '../hooks/useAccounts';
-import { useActiveAccount } from '../hooks/useActiveAccount';
+import { useAppSelector } from '_hooks';
 
 export function useLockedGuard(requiredLockedStatus: boolean) {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 	const { pathname, search, state } = useLocation();
-	const { data: allAccounts, isLoading: isAccountsLoading } = useAccounts();
-	const activeAccount = useActiveAccount();
-	const loading = isAccountsLoading || !activeAccount;
-	const isInitialized = !!allAccounts?.length;
-	const isLocked = activeAccount?.isLocked || false;
+	const { isInitialized, isLocked } = useAppSelector(
+		({ account: { isInitialized, isLocked } }) => ({
+			isInitialized,
+			isLocked,
+		}),
+	);
+	const loading = isInitialized === null || isLocked === null;
 	const guardAct = !loading && isInitialized && requiredLockedStatus !== isLocked;
 	const nextUrl = searchParams.get('url') || '/';
 	useEffect(() => {
 		if (guardAct) {
 			navigate(
-				requiredLockedStatus ? nextUrl : `/tokens?url=${encodeURIComponent(pathname + search)}`,
+				requiredLockedStatus ? nextUrl : `/locked?url=${encodeURIComponent(pathname + search)}`,
 				{ replace: true, state },
 			);
 		}

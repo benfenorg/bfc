@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetObject } from '@mysten/core';
+import { getObjectDisplay } from '@mysten/sui.js';
 import { useMemo } from 'react';
 
 export type NFTMetadata = {
@@ -14,11 +15,11 @@ export function useGetNFTMeta(objectID: string) {
 	const resp = useGetObject(objectID);
 	const nftMeta = useMemo(() => {
 		if (!resp.data) return null;
-		const display = resp.data.data?.display?.data;
-		if (!display) {
+		const display = getObjectDisplay(resp.data);
+		if (!display.data) {
 			return null;
 		}
-		const { name, description, creator, image_url, link, project_url } = display;
+		const { name, description, creator, image_url, link, project_url } = display.data;
 		return {
 			name: name || null,
 			description: description || null,

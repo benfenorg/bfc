@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useTransactionSummary, getLabel } from '@mysten/core';
+import {
+	getExecutionStatusError,
+	getExecutionStatusType,
+	getTransactionDigest,
+	getTransactionKindName,
+	getTransactionKind,
+	getTransactionSender,
+} from '@mysten/sui.js';
 import { Link } from 'react-router-dom';
 
 import { TxnTypeLabel } from './TxnActionLabel';
@@ -9,9 +17,12 @@ import { TxnIcon } from './TxnIcon';
 import { DateCard } from '_app/shared/date-card';
 import { Text } from '_app/shared/text';
 import { useGetTxnRecipientAddress } from '_hooks';
-import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
 
-import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import type {
+	// SuiEvent,
+	SuiTransactionBlockResponse,
+	// TransactionEvents,
+} from '@mysten/sui.js';
 
 export function TransactionCard({
 	txn,
@@ -20,22 +31,22 @@ export function TransactionCard({
 	txn: SuiTransactionBlockResponse;
 	address: string;
 }) {
-	const executionStatus = txn.effects?.status.status;
-	const recognizedPackagesList = useRecognizedPackages();
+	const transaction = getTransactionKind(txn)!;
+	const executionStatus = getExecutionStatusType(txn);
+	getTransactionKindName(transaction);
 
 	const summary = useTransactionSummary({
 		transaction: txn,
 		currentAddress: address,
-		recognizedPackagesList,
 	});
 
 	// we only show Sui Transfer amount or the first non-Sui transfer amount
 
 	const recipientAddress = useGetTxnRecipientAddress({ txn, address });
 
-	const isSender = address === txn.transaction?.data.sender;
+	const isSender = address === getTransactionSender(txn);
 
-	const error = txn.effects?.status.error;
+	const error = getExecutionStatusError(txn);
 
 	// Transition label - depending on the transaction type and amount
 	// Epoch change without amount is delegation object
@@ -52,58 +63,56 @@ export function TransactionCard({
 		<Link
 			data-testid="link-to-txn"
 			to={`/receipt?${new URLSearchParams({
-				txdigest: txn.digest,
+				txdigest: getTransactionDigest(txn),
 			}).toString()}`}
-			className="flex items-center w-full flex-col gap-2 py-4 no-underline"
+			className="flex items-center w-full gap-1.25 p-2.5 no-underline"
 		>
-			<div className="flex items-start w-full justify-between gap-3">
-				<div className="w-7.5">
-					<TxnIcon
-						txnFailed={executionStatus !== 'success' || !!error}
-						// TODO: Support programmable transactions variable icons here:
-						variant={getLabel(txn, address)}
-					/>
-				</div>
-				<div className="flex flex-col w-full gap-1.5">
-					{error ? (
-						<div className="flex w-full justify-between">
-							<div className="flex flex-col w-full gap-1.5">
-								<Text color="gray-90" weight="medium">
-									Transaction Failed
-								</Text>
+			<div className="w-6 h-6">
+				<TxnIcon
+					txnFailed={executionStatus !== 'success' || !!error}
+					// TODO: Support programmable transactions variable icons here:
+					variant={getLabel(txn, address)}
+				/>
+			</div>
+			<div className="flex flex-col w-full">
+				{error ? (
+					<div className="flex w-full justify-between">
+						<div className="flex flex-col w-full gap-1.5">
+							<Text color="obc-text1" weight="medium">
+								Transaction Failed
+							</Text>
 
-								<div className="flex break-all">
-									<Text variant="pSubtitle" weight="normal" color="issue-dark">
-										{error}
+							<div className="flex break-all">
+								<Text variant="body" weight="medium" color="obc-text1">
+									{error}
+								</Text>
+							</div>
+						</div>
+						{/* {transferAmountComponent} */}
+					</div>
+				) : (
+					<>
+						<div className="flex w-full justify-between">
+							<div className="flex gap-1 align-middle items-baseline">
+								<Text color="obc-text1" weight="medium" variant="body">
+									{summary?.label}
+								</Text>
+								{showSuiSymbol && (
+									<Text color="obc-text1" weight="medium" variant="body">
+										OBC
 									</Text>
-								</div>
+								)}
 							</div>
 							{/* {transferAmountComponent} */}
 						</div>
-					) : (
-						<>
-							<div className="flex w-full justify-between">
-								<div className="flex gap-1 align-middle items-baseline">
-									<Text color="gray-90" weight="semibold">
-										{summary?.label}
-									</Text>
-									{showSuiSymbol && (
-										<Text color="gray-90" weight="normal" variant="subtitleSmall">
-											SUI
-										</Text>
-									)}
-								</div>
-								{/* {transferAmountComponent} */}
-							</div>
 
-							{/* TODO: Support programmable tx: */}
-							<TxnTypeLabel address={recipientAddress!} isSender={isSender} isTransfer={false} />
-							{/* {objectId && <TxnImage id={objectId} />} */}
-						</>
-					)}
+						{/* TODO: Support programmable tx: */}
+						<TxnTypeLabel address={recipientAddress!} isSender={isSender} isTransfer={false} />
+						{/* {objectId && <TxnImage id={objectId} />} */}
+					</>
+				)}
 
-					{timestamp && <DateCard timestamp={Number(timestamp)} size="sm" />}
-				</div>
+				{timestamp && <DateCard timestamp={Number(timestamp)} size="sm" />}
 			</div>
 		</Link>
 	);

@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CoinFormat, useFormatCoin } from '@mysten/core';
-<<<<<<< HEAD
 import { SUI_TYPE_ARG } from '@mysten/sui.js';
-=======
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
->>>>>>> heads/mainnet-v1.9.1
 import { Text } from '@mysten/ui';
 
 export function SuiAmount({
@@ -29,11 +25,7 @@ export function SuiAmount({
 				{formattedAmount}
 			</Text>
 			<Text variant="captionSmall/normal" color="steel-dark">
-<<<<<<< HEAD
 				{coinType === 'SUI' ? 'OBC' : 'MIST'}
-=======
-				{coinType}
->>>>>>> heads/mainnet-v1.9.1
 			</Text>
 		</div>
 	);

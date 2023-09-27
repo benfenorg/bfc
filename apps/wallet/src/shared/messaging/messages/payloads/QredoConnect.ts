@@ -3,7 +3,11 @@
 
 import { type BasePayload, isBasePayload } from './BasePayload';
 import { type Payload } from './Payload';
-import { type UIQredoInfo, type UIQredoPendingRequest } from '_src/background/qredo/types';
+import {
+	type QredoConnectIdentity,
+	type UIQredoInfo,
+	type UIQredoPendingRequest,
+} from '_src/background/qredo/types';
 import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
 import { type Wallet } from '_src/shared/qredo-api';
 
@@ -13,7 +17,7 @@ type Methods = {
 	getPendingRequest: { requestID: string };
 	getPendingRequestResponse: { request: UIQredoPendingRequest | null };
 	getQredoInfo: {
-		qredoID: string;
+		filter: { qredoID: string } | { identity: QredoConnectIdentity };
 		refreshAccessToken: boolean;
 	};
 	getQredoInfoResponse: { qredoInfo: UIQredoInfo | null };

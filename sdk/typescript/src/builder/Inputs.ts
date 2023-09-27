@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Infer } from 'superstruct';
+
 import { array, boolean, integer, object, string, union } from 'superstruct';
-import type { SharedObjectRef } from '../bcs/index.js';
+import type { SharedObjectRef } from '../types/index.js';
 import { SuiObjectRef } from '../types/index.js';
-import { builder } from './bcs.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { builder } from './bcs.js';
 
 const ObjectArg = union([
 	object({ ImmOrOwned: SuiObjectRef }),

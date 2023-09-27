@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetKioskContents, isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useGetKioskContents, isSuiNSName, useRpcClient, useSuiNSEnabled } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
+import { getTransactionDigest } from '@mysten/sui.js';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field, Formik } from 'formik';
@@ -12,34 +12,33 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTransferKioskItem } from './useTransferKioskItem';
 import { createValidationSchema } from './validation';
+import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import { Button } from '_app/shared/ButtonUI';
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Text } from '_app/shared/text';
 import { AddressInput } from '_components/address-input';
+import { useSigner } from '_hooks';
 import { ampli } from '_src/shared/analytics/ampli';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useActiveAddress } from '_src/ui/app/hooks';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
 
 export function TransferNFTForm({
 	objectId,
 	objectType,
 }: {
 	objectId: string;
-	objectType?: string | null;
+	objectType?: string;
 }) {
 	const activeAddress = useActiveAddress();
-	const rpc = useSuiClient();
+	const rpc = useRpcClient();
 	const suiNSEnabled = useSuiNSEnabled();
 	const validationSchema = createValidationSchema(rpc, suiNSEnabled, activeAddress || '', objectId);
-	const activeAccount = useActiveAccount();
-	const signer = useSigner(activeAccount);
+	const signer = useSigner();
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
+
 	const { data: kiosk } = useGetKioskContents(activeAddress);
 	const transferKioskItem = useTransferKioskItem({ objectId, objectType });
 	const isContainedInKiosk = kiosk?.list.some((kioskItem) => kioskItem.data?.objectId === objectId);
@@ -88,7 +87,7 @@ export function TransferNFTForm({
 
 			return navigate(
 				`/receipt?${new URLSearchParams({
-					txdigest: response.digest,
+					txdigest: getTransactionDigest(response),
 					from: 'nfts',
 				}).toString()}`,
 			);

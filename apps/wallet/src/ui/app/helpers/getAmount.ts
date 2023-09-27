@@ -1,7 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiTransactionBlockKind, TransactionEffects, SuiEvent } from '@mysten/sui.js/client';
+import type {
+	SuiTransactionBlockKind,
+	TransactionEffects,
+	TransactionEvents,
+} from '@mysten/sui.js';
 
 type FormattedBalance = {
 	amount?: number | null;
@@ -12,7 +16,7 @@ type FormattedBalance = {
 export function getAmount(
 	_txnData: SuiTransactionBlockKind,
 	_txnEffect: TransactionEffects,
-	_events: SuiEvent[],
+	_events: TransactionEvents,
 ): FormattedBalance | null {
 	// TODO: Support programmable transactions:
 	return null;

@@ -1,21 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js';
 import type {
 	SuiObjectResponse,
 	SuiMoveObject,
 	SuiObjectInfo,
 	SuiObjectData,
 } from '../types/objects.js';
-import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js';
 
 import type { Option } from '../types/option.js';
 import { getOption } from '../types/option.js';
 import type { CoinStruct } from '../types/coin.js';
-import type { StructTag } from '../bcs/index.js';
+import type { StructTag } from '../types/sui-bcs.js';
 import type { Infer } from 'superstruct';
 import { nullable, number, object, string } from 'superstruct';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 export const SUI_SYSTEM_ADDRESS = '0x3';
 export const SUI_FRAMEWORK_ADDRESS = '0x2';
@@ -23,10 +23,10 @@ export const MOVE_STDLIB_ADDRESS = '0x1';
 export const OBJECT_MODULE_NAME = 'object';
 export const UID_STRUCT_NAME = 'UID';
 export const ID_STRUCT_NAME = 'ID';
-export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::sui::SUI`;
+export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
 export const VALIDATORS_EVENTS_QUERY = '0x3::validator_set::ValidatorEpochInfoEventV2';
 
-export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
+export const SUI_CLOCK_OBJECT_ID = sui2ObcAddress('0x6');
 
 // `sui::pay` module is used for Coin management (split, join, join_and_transfer etc);
 export const PAY_MODULE_NAME = 'pay';
@@ -76,13 +76,18 @@ export class Coin {
 		return arg ? Coin.getCoinSymbol(arg) === 'SUI' : false;
 	}
 
+	static isOBC(obj: ObjectData) {
+		const arg = Coin.getCoinTypeArg(obj);
+		return arg ? Coin.getCoinSymbol(arg) === 'OBC' : false;
+	}
+
 	static getCoinSymbol(coinTypeArg: string) {
 		return coinTypeArg.substring(coinTypeArg.lastIndexOf(':') + 1);
 	}
 
 	static getCoinStructTag(coinTypeArg: string): StructTag {
 		return {
-			address: normalizeSuiObjectId(coinTypeArg.split('::')[0]),
+			address: sui2ObcAddress(coinTypeArg.split('::')[0]),
 			module: coinTypeArg.split('::')[1],
 			name: coinTypeArg.split('::')[2],
 			typeParams: [],
@@ -128,7 +133,7 @@ export class Coin {
 		return BigInt(balance);
 	}
 
-	private static getType(data: ObjectData): string | null | undefined {
+	private static getType(data: ObjectData): string | undefined {
 		if (isObjectDataFull(data)) {
 			return getObjectType(data);
 		}

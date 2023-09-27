@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { Coin } from '../../src';
-import { normalizeSuiObjectId } from '../../src/utils';
+import { Coin, sui2ObcAddress } from '../../src';
 
 import { setup } from './utils/setup';
 
@@ -13,16 +12,16 @@ describe('Coin related API', () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
 		coins.forEach((c) => {
 			expect(Coin.isCoin(c)).toBeTruthy();
-			expect(Coin.isSUI(c)).toBeTruthy();
+			expect(Coin.isOBC(c)).toBeTruthy();
 		});
 	});
 
 	it('test getCoinStructTag', async () => {
 		const toolbox = await setup();
 		const exampleStructTag = {
-			address: normalizeSuiObjectId('0x2'),
-			module: 'sui',
-			name: 'SUI',
+			address: sui2ObcAddress('0x2'),
+			module: 'obc',
+			name: 'OBC',
 			typeParams: [],
 		};
 		const coins = await toolbox.getGasObjectsOwnedByAddress();

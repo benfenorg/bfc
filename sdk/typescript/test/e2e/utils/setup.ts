@@ -5,12 +5,19 @@ import { expect } from 'vitest';
 import { execSync } from 'child_process';
 import tmp from 'tmp';
 
-import { Coin } from '../../../src';
-import { TransactionBlock, UpgradePolicy } from '../../../src/builder';
+import {
+	getPublishedObjectChanges,
+	getExecutionStatusType,
+	Coin,
+	UpgradePolicy,
+	sui2ObcAddress,
+	obc2SuiAddress,
+} from '../../../src';
+import { TransactionBlock } from '../../../src/builder';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
 import { retry } from 'ts-retry-promise';
 import { FaucetRateLimitError, getFaucetHost, requestSuiFromFaucetV0 } from '../../../src/faucet';
-import { SuiClient, SuiObjectChangePublished, getFullnodeUrl } from '../../../src/client';
+import { SuiClient, getFullnodeUrl } from '../../../src/client';
 import { Keypair } from '../../../src/cryptography';
 
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
@@ -34,7 +41,7 @@ export class TestToolbox {
 	}
 
 	address() {
-		return this.keypair.getPublicKey().toSuiAddress();
+		return sui2ObcAddress(this.keypair.getPublicKey().toSuiAddress());
 	}
 
 	// TODO(chris): replace this with provider.getCoins instead
@@ -47,7 +54,7 @@ export class TestToolbox {
 				showOwner: true,
 			},
 		});
-		return objects.data.filter((obj) => Coin.isSUI(obj));
+		return objects.data.filter((obj) => Coin.isOBC(obj));
 	}
 
 	public async getActiveValidators() {
@@ -110,11 +117,12 @@ export async function publishPackage(packagePath: string, toolbox?: TestToolbox)
 			showObjectChanges: true,
 		},
 	});
-	expect(publishTxn.effects?.status.status).toEqual('success');
+	expect(getExecutionStatusType(publishTxn)).toEqual('success');
 
-	const packageId = ((publishTxn.objectChanges?.filter(
-		(a) => a.type === 'published',
-	) as SuiObjectChangePublished[]) ?? [])[0].packageId.replace(/^(0x)(0+)/, '0x') as string;
+	const packageId = obc2SuiAddress(getPublishedObjectChanges(publishTxn)[0].packageId).replace(
+		/^(0x)(0+)/,
+		'0x',
+	) as string;
 
 	expect(packageId).toBeTypeOf('string');
 
@@ -175,7 +183,7 @@ export async function upgradePackage(
 		},
 	});
 
-	expect(result.effects?.status.status).toEqual('success');
+	expect(getExecutionStatusType(result)).toEqual('success');
 }
 
 export function getRandomAddresses(n: number): string[] {
@@ -207,7 +215,7 @@ export async function paySui(
 		(
 			await client.getCoins({
 				owner: signer.getPublicKey().toSuiAddress(),
-				coinType: '0x2::sui::SUI',
+				coinType: '0x2::obc::OBC',
 			})
 		).data[0].coinObjectId;
 
@@ -224,7 +232,7 @@ export async function paySui(
 			showObjectChanges: true,
 		},
 	});
-	expect(txn.effects?.status.status).toEqual('success');
+	expect(getExecutionStatusType(txn)).toEqual('success');
 	return txn;
 }
 

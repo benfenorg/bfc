@@ -5,17 +5,14 @@ import { Ed25519PublicKey } from '@mysten/sui.js/keypairs/ed25519';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
 import { useSuiLedgerClient } from './SuiLedgerClientProvider';
-import { type LedgerAccountSerializedUI } from '_src/background/accounts/LedgerAccount';
+import { AccountType } from '_src/background/keyring/Account';
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
 
 import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
 
-export type DerivedLedgerAccount = Pick<
-	LedgerAccountSerializedUI,
-	'address' | 'publicKey' | 'type' | 'derivationPath'
->;
 type UseDeriveLedgerAccountOptions = {
 	numAccountsToDerive: number;
-} & Pick<UseQueryOptions<DerivedLedgerAccount[], unknown>, 'select' | 'onSuccess' | 'onError'>;
+} & Pick<UseQueryOptions<SerializedLedgerAccount[], unknown>, 'select' | 'onSuccess' | 'onError'>;
 
 export function useDeriveLedgerAccounts(options: UseDeriveLedgerAccountOptions) {
 	const { numAccountsToDerive, ...useQueryOptions } = options;
@@ -26,7 +23,7 @@ export function useDeriveLedgerAccounts(options: UseDeriveLedgerAccountOptions) 
 		queryKey: ['derive-ledger-accounts'],
 		queryFn: () => {
 			if (!suiLedgerClient) {
-				throw new Error("The Sui application isn't open on a connected Ledger device");
+				throw new Error("The OBC application isn't open on a connected Ledger device");
 			}
 			return deriveAccountsFromLedger(suiLedgerClient, numAccountsToDerive);
 		},
@@ -39,7 +36,7 @@ async function deriveAccountsFromLedger(
 	suiLedgerClient: SuiLedgerClient,
 	numAccountsToDerive: number,
 ) {
-	const ledgerAccounts: DerivedLedgerAccount[] = [];
+	const ledgerAccounts: SerializedLedgerAccount[] = [];
 	const derivationPaths = getDerivationPathsForLedger(numAccountsToDerive);
 
 	for (const derivationPath of derivationPaths) {
@@ -47,7 +44,7 @@ async function deriveAccountsFromLedger(
 		const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
 		const suiAddress = publicKey.toSuiAddress();
 		ledgerAccounts.push({
-			type: 'ledger',
+			type: AccountType.LEDGER,
 			address: suiAddress,
 			derivationPath,
 			publicKey: publicKey.toBase64(),

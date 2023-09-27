@@ -4,7 +4,7 @@
 import { isBasePayload } from '_payloads';
 
 import type { BasePayload, Payload } from '_payloads';
-import type { NetworkEnvType } from '_src/shared/api-env';
+import type { NetworkEnvType } from '_src/background/NetworkEnv';
 
 export type WalletStatusChange = {
 	network?: NetworkEnvType;

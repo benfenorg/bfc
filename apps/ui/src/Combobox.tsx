@@ -32,7 +32,8 @@ type ComboboxItemProps = {
 function ComboboxItem({ item, onSelect }: ComboboxItemProps) {
 	return (
 		<Command.Item
-			value={item.value}
+			value={'item.value'}
+			key={item.value}
 			className="group mb-2 cursor-pointer rounded-md px-2 py-1.5 last:mb-0 data-[selected]:bg-sui/10 data-[selected]:shadow-sm"
 			onSelect={() => onSelect()}
 		>
@@ -97,6 +98,8 @@ export function ComboboxList<T extends ComboboxItem = ComboboxItem>({
 	if (!visible || !value) {
 		return null;
 	}
+
+	console.log('optionsoptions',showResultsCount,options)
 
 	return (
 		<Command.List

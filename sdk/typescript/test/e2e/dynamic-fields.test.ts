@@ -3,7 +3,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
-import { SuiObjectData } from '../../src/client';
+import { SuiObjectData, obc2SuiAddress } from '../../src';
 
 describe('Dynamic Fields Reading API', () => {
 	let toolbox: TestToolbox;
@@ -60,9 +60,12 @@ describe('Dynamic Fields Reading API', () => {
 		});
 		for (const data of dynamicFields.data) {
 			const objName = data.name;
+			if (objName.type === '0x2::object::ID') {
+				objName.value = obc2SuiAddress(objName.value);
+			}
 
 			const object = await toolbox.client.getDynamicFieldObject({
-				parentId: parentObjectId,
+				parentId: obc2SuiAddress(parentObjectId),
 				name: objName,
 			});
 

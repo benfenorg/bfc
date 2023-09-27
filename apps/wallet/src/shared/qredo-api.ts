@@ -37,7 +37,7 @@ export type AccessTokenResponse = {
 
 export type Wallet = {
 	walletID: string;
-	readonly address: string;
+	address: string;
 	network: string;
 	// the key schema is always ED25519 and qredo is not planning to change it
 	publicKey: string;

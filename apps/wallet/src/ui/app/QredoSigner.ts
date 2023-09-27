@@ -11,7 +11,7 @@ import { toB64 } from '@mysten/sui.js/utils';
 import mitt from 'mitt';
 
 import { WalletSigner } from './WalletSigner';
-import { type QredoSerializedUiAccount } from '_src/background/accounts/QredoAccount';
+import { type SerializedQredoAccount } from '_src/background/keyring/QredoAccount';
 import { API_ENV, networkNames } from '_src/shared/api-env';
 import {
 	type TransactionInfoResponse,
@@ -33,14 +33,14 @@ export const API_ENV_TO_QREDO_NETWORK: Partial<Record<API_ENV, NetworkType>> = {
 	[API_ENV.devNet]: 'devnet',
 };
 export class QredoSigner extends WalletSigner {
-	#qredoAccount: QredoSerializedUiAccount;
+	#qredoAccount: SerializedQredoAccount;
 	#qredoAPI: QredoAPI;
 	#network: NetworkType | null;
 	#apiEnv: API_ENV;
 
 	constructor(
 		client: SuiClient,
-		account: QredoSerializedUiAccount,
+		account: SerializedQredoAccount,
 		qredoAPI: QredoAPI,
 		apiEnv: API_ENV,
 	) {
@@ -149,7 +149,7 @@ export class QredoSigner extends WalletSigner {
 		if (!txInfo.txHash) {
 			throw new Error(`Digest is not set in Qredo transaction ${txInfo.txID}`);
 		}
-		return this.client.waitForTransactionBlock({
+		return this.provider.waitForTransactionBlock({
 			digest: txInfo.txHash,
 			options: options,
 		});

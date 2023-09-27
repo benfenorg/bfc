@@ -1,18 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SignedTransaction, type SignedMessage } from '@mysten/sui.js';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import {
+	type SignedTransaction,
+	type SignedMessage,
+	type SuiTransactionBlockResponse,
+} from '@mysten/sui.js';
 
 import { type SerializedSignature, type ExportedKeypair } from '@mysten/sui.js/cryptography';
 import { toB64 } from '@mysten/sui.js/utils';
-import { type QueryKey } from '@tanstack/react-query';
 import { lastValueFrom, map, take } from 'rxjs';
 
 import { growthbook } from '../experimentation/feature-gating';
-import { accountsQueryKey } from '../helpers/query-client-keys';
-import { queryClient } from '../helpers/queryClient';
-import { accountSourcesQueryKey } from '../hooks/useAccountSources';
 import { createMessage } from '_messages';
 import { PortStream } from '_messaging/PortStream';
 import { type BasePayload } from '_payloads';
@@ -22,15 +21,13 @@ import { isSetNetworkPayload, type SetNetworkPayload } from '_payloads/network';
 import { isPermissionRequests } from '_payloads/permissions';
 import { isUpdateActiveOrigin } from '_payloads/tabs/updateActiveOrigin';
 import { isGetTransactionRequestsResponse } from '_payloads/transactions/ui/GetTransactionRequestsResponse';
+import { setKeyringStatus } from '_redux/slices/account';
 import { setActiveOrigin, changeActiveNetwork } from '_redux/slices/app';
 import { setPermissions } from '_redux/slices/permissions';
 import { setTransactionRequests } from '_redux/slices/transaction-requests';
-import { type MnemonicSerializedUiAccount } from '_src/background/accounts/MnemonicAccount';
-import {
-	type MethodPayload,
-	isMethodPayload,
-	type UIAccessibleEntityType,
-} from '_src/shared/messaging/messages/payloads/MethodPayload';
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
+import { type AccountsPublicInfoUpdates } from '_src/background/keyring/accounts';
+import { type QredoConnectIdentity } from '_src/background/qredo/types';
 import {
 	isQredoConnectPayload,
 	type QredoConnectPayload,
@@ -42,13 +39,8 @@ import type { GetPermissionRequests, PermissionResponse } from '_payloads/permis
 import type { DisconnectApp } from '_payloads/permissions/DisconnectApp';
 import type { GetTransactionRequests } from '_payloads/transactions/ui/GetTransactionRequests';
 import type { TransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
-import type { NetworkEnvType } from '_src/shared/api-env';
+import type { NetworkEnvType } from '_src/background/NetworkEnv';
 import type { AppDispatch } from '_store';
-
-const entitiesToClientQueryKeys: Record<UIAccessibleEntityType, QueryKey> = {
-	accounts: accountsQueryKey,
-	accountSources: accountSourcesQueryKey,
-};
 
 /**
  * The duration in milliseconds that the UI sends status updates (active/inactive) to the background service.
@@ -73,6 +65,7 @@ export class BackgroundClient {
 		return Promise.all([
 			this.sendGetPermissionRequests(),
 			this.sendGetTransactionRequests(),
+			this.getWalletStatus(),
 			this.loadFeatures(),
 			this.getNetwork(),
 		]).then(() => undefined);
@@ -232,19 +225,19 @@ export class BackgroundClient {
 		);
 	}
 
-	public signData(addressOrID: string, data: Uint8Array): Promise<SerializedSignature> {
+	public signData(address: string, data: Uint8Array): Promise<SerializedSignature> {
 		return lastValueFrom(
 			this.sendMessage(
-				createMessage<MethodPayload<'signData'>>({
-					type: 'method-payload',
+				createMessage<KeyringPayload<'signData'>>({
+					type: 'keyring',
 					method: 'signData',
-					args: { data: toB64(data), id: addressOrID },
+					args: { data: toB64(data), address },
 				}),
 			).pipe(
 				take(1),
 				map(({ payload }) => {
-					if (isMethodPayload(payload, 'signDataResponse')) {
-						return payload.args.signature;
+					if (isKeyringPayload(payload, 'signData') && payload.return) {
+						return payload.return;
 					}
 					throw new Error('Error unknown response for signData message');
 				}),
@@ -263,13 +256,13 @@ export class BackgroundClient {
 		);
 	}
 
-	public selectAccount(accountID: string) {
+	public selectAccount(address: string) {
 		return lastValueFrom(
 			this.sendMessage(
-				createMessage<MethodPayload<'switchAccount'>>({
-					type: 'method-payload',
+				createMessage<KeyringPayload<'switchAccount'>>({
+					type: 'keyring',
 					method: 'switchAccount',
-					args: { accountID },
+					args: { address },
 				}),
 			).pipe(take(1)),
 		);
@@ -294,20 +287,26 @@ export class BackgroundClient {
 		);
 	}
 
-	public verifyPassword(password: string, legacyAccounts: boolean = false) {
+	importLedgerAccounts(ledgerAccounts: SerializedLedgerAccount[]) {
 		return lastValueFrom(
 			this.sendMessage(
-				legacyAccounts
-					? createMessage<KeyringPayload<'verifyPassword'>>({
-							type: 'keyring',
-							method: 'verifyPassword',
-							args: { password },
-					  })
-					: createMessage<MethodPayload<'verifyPassword'>>({
-							type: 'method-payload',
-							method: 'verifyPassword',
-							args: { password },
-					  }),
+				createMessage<KeyringPayload<'importLedgerAccounts'>>({
+					type: 'keyring',
+					method: 'importLedgerAccounts',
+					args: { ledgerAccounts },
+				}),
+			).pipe(take(1)),
+		);
+	}
+
+	public verifyPassword(password: string) {
+		return lastValueFrom(
+			this.sendMessage(
+				createMessage<KeyringPayload<'verifyPassword'>>({
+					type: 'keyring',
+					method: 'verifyPassword',
+					args: { password },
+				}),
 			).pipe(take(1)),
 		);
 	}
@@ -364,13 +363,16 @@ export class BackgroundClient {
 		);
 	}
 
-	public getQredoConnectionInfo(qredoID: string, refreshAccessToken = false) {
+	public getQredoConnectionInfo(
+		filter: { qredoID: string } | { identity: QredoConnectIdentity },
+		refreshAccessToken = false,
+	) {
 		return lastValueFrom(
 			this.sendMessage(
 				createMessage<QredoConnectPayload<'getQredoInfo'>>({
 					type: 'qredo-connect',
 					method: 'getQredoInfo',
-					args: { qredoID, refreshAccessToken },
+					args: { filter, refreshAccessToken },
 				}),
 			).pipe(
 				take(1),
@@ -408,160 +410,13 @@ export class BackgroundClient {
 		);
 	}
 
-	public getStoredEntities<R>(type: UIAccessibleEntityType): Promise<R[]> {
+	public updateAccountsPublicInfo(updates: AccountsPublicInfoUpdates) {
 		return lastValueFrom(
 			this.sendMessage(
-				createMessage<MethodPayload<'getStoredEntities'>>({
-					method: 'getStoredEntities',
-					type: 'method-payload',
-					args: { type },
-				}),
-			).pipe(
-				take(1),
-				map(({ payload }) => {
-					if (!isMethodPayload(payload, 'storedEntitiesResponse')) {
-						throw new Error('Unknown response');
-					}
-					if (type !== payload.args.type) {
-						throw new Error(`unexpected entity type response ${payload.args.type}`);
-					}
-					return payload.args.entities;
-				}),
-			),
-		);
-	}
-
-	public createMnemonicAccountSource(inputs: { password: string; entropy?: string }) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'createAccountSource'>>({
-					method: 'createAccountSource',
-					type: 'method-payload',
-					args: { type: 'mnemonic', params: inputs },
-				}),
-			).pipe(
-				take(1),
-				map(({ payload }) => {
-					if (!isMethodPayload(payload, 'accountSourceCreationResponse')) {
-						throw new Error('Unknown response');
-					}
-					if ('mnemonic' !== payload.args.accountSource.type) {
-						throw new Error(
-							`Unexpected account source type response ${payload.args.accountSource.type}`,
-						);
-					}
-					return payload.args.accountSource as unknown as MnemonicSerializedUiAccount;
-				}),
-			),
-		);
-	}
-
-	public createAccounts(inputs: MethodPayload<'createAccounts'>['args']) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'createAccounts'>>({
-					method: 'createAccounts',
-					type: 'method-payload',
-					args: inputs,
-				}),
-			).pipe(
-				take(1),
-				map(({ payload }) => {
-					if (!isMethodPayload(payload, 'accountsCreatedResponse')) {
-						throw new Error('Unknown response');
-					}
-					if (inputs.type !== payload.args.accounts[0]?.type) {
-						throw new Error(`Unexpected accounts type response ${payload.args.accounts[0]?.type}`);
-					}
-					return payload.args.accounts;
-				}),
-			),
-		);
-	}
-
-	public unlockAccountSourceOrAccount(
-		inputs: MethodPayload<'unlockAccountSourceOrAccount'>['args'],
-	) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'unlockAccountSourceOrAccount'>>({
-					type: 'method-payload',
-					method: 'unlockAccountSourceOrAccount',
-					args: inputs,
-				}),
-			).pipe(take(1)),
-		);
-	}
-
-	public lockAccountSourceOrAccount({ id }: MethodPayload<'lockAccountSourceOrAccount'>['args']) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'lockAccountSourceOrAccount'>>({
-					type: 'method-payload',
-					method: 'lockAccountSourceOrAccount',
-					args: { id },
-				}),
-			).pipe(take(1)),
-		);
-	}
-
-	public setAccountNickname({ id, nickname }: MethodPayload<'setAccountNickname'>['args']) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'setAccountNickname'>>({
-					type: 'method-payload',
-					method: 'setAccountNickname',
-					args: { id, nickname },
-				}),
-			).pipe(take(1)),
-		);
-	}
-
-	public getStorageMigrationStatus() {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'getStorageMigrationStatus'>>({
-					method: 'getStorageMigrationStatus',
-					type: 'method-payload',
-					args: null,
-				}),
-			).pipe(
-				take(1),
-				map(({ payload }) => {
-					if (!isMethodPayload(payload, 'storageMigrationStatus')) {
-						throw new Error('Unknown response');
-					}
-					return payload.args.status;
-				}),
-			),
-		);
-	}
-
-	public doStorageMigration(inputs: MethodPayload<'doStorageMigration'>['args']) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'doStorageMigration'>>({
-					type: 'method-payload',
-					method: 'doStorageMigration',
-					args: inputs,
-				}),
-			).pipe(take(1)),
-		);
-	}
-
-	/**
-	 * Wallet wasn't storing the public key of ledger accounts, but we need it to send it to the dapps.
-	 * Use this function to update the public keys whenever wallet has access to them.
-	 */
-	public storeLedgerAccountsPublicKeys(
-		args: MethodPayload<'storeLedgerAccountsPublicKeys'>['args'],
-	) {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<MethodPayload<'storeLedgerAccountsPublicKeys'>>({
-					type: 'method-payload',
-					method: 'storeLedgerAccountsPublicKeys',
-					args,
+				createMessage<KeyringPayload<'updateAccountPublicInfo'>>({
+					type: 'keyring',
+					method: 'updateAccountPublicInfo',
+					args: { updates },
 				}),
 			).pipe(take(1)),
 		);
@@ -581,6 +436,17 @@ export class BackgroundClient {
 				method: 'appStatusUpdate',
 				args: { active },
 			}),
+		);
+	}
+
+	private getWalletStatus() {
+		return lastValueFrom(
+			this.sendMessage(
+				createMessage<KeyringPayload<'walletStatusUpdate'>>({
+					type: 'keyring',
+					method: 'walletStatusUpdate',
+				}),
+			).pipe(take(1)),
 		);
 	}
 
@@ -616,6 +482,11 @@ export class BackgroundClient {
 			action = setTransactionRequests(payload.txRequests);
 		} else if (isUpdateActiveOrigin(payload)) {
 			action = setActiveOrigin(payload);
+		} else if (
+			isKeyringPayload<'walletStatusUpdate'>(payload, 'walletStatusUpdate') &&
+			payload.return
+		) {
+			action = setKeyringStatus(payload.return);
 		} else if (isLoadedFeaturesPayload(payload)) {
 			growthbook.setAttributes(payload.attributes);
 			growthbook.setFeatures(payload.features);
@@ -623,11 +494,6 @@ export class BackgroundClient {
 			action = changeActiveNetwork({
 				network: payload.network,
 			});
-		} else if (isMethodPayload(payload, 'entitiesUpdated')) {
-			const entitiesQueryKey = entitiesToClientQueryKeys[payload.args.type];
-			if (entitiesQueryKey) {
-				queryClient.invalidateQueries(entitiesQueryKey);
-			}
 		}
 		if (action) {
 			this._dispatch(action);
@@ -635,7 +501,7 @@ export class BackgroundClient {
 	}
 
 	private createPortStream() {
-		this._portStream = PortStream.connectToBackgroundService('sui_ui<->background');
+		this._portStream = PortStream.connectToBackgroundService('obc_ui<->background');
 		this._portStream.onDisconnect.subscribe(() => {
 			this.createPortStream();
 		});

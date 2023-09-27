@@ -41,11 +41,7 @@ function Search() {
 				queryValue={query}
 				onChange={(value) => setQuery(value?.trim() ?? '')}
 				onSelectResult={handleSelectResult}
-<<<<<<< HEAD
 				placeholder="Search by Tx Hash / Address / Object / Checkpoint"
-=======
-				placeholder="Search"
->>>>>>> heads/mainnet-v1.9.1
 				isLoading={isLoading || debouncedQuery !== query}
 				options={results}
 			/>

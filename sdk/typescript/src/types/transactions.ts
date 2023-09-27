@@ -20,6 +20,7 @@ import {
 import { ObjectOwner, SuiJsonValue } from './common.js';
 import { SuiEvent } from './events.js';
 import { SuiGasData, SuiMovePackage, SuiObjectRef } from './objects.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 /** @deprecated Use `string` instead. */
 export const EpochId = string();
@@ -228,7 +229,7 @@ export const TransactionEffects = object({
 	 */
 	gasObject: OwnedObjectRef,
 	/** The events emitted during execution. Note that only successful transactions emit events */
-	eventsDigest: nullable(optional(string())),
+	eventsDigest: optional(string()),
 	/** The set of transaction digests this transaction depends on */
 	dependencies: optional(array(string())),
 });
@@ -430,7 +431,8 @@ export function getTransactionSignature(tx: SuiTransactionBlockResponse): string
 /* ----------------------------- TransactionData ---------------------------- */
 
 export function getTransactionSender(tx: SuiTransactionBlockResponse): string | undefined {
-	return tx.transaction?.data.sender;
+	let sender = tx.transaction?.data.sender;
+	return sender ? sui2ObcAddress(sender) : undefined;
 }
 
 export function getGasData(tx: SuiTransactionBlockResponse): SuiGasData | undefined {

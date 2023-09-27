@@ -6,9 +6,12 @@ import { createBrowserRouter, Navigate, useLocation, useParams } from 'react-rou
 
 import AddressResult from './address-result/AddressResult';
 import CheckpointDetail from './checkpoints/CheckpointDetail';
+import Dao from './dao';
+import DaoDetail from './dao/detail';
 import EpochDetail from './epochs/EpochDetail';
 import Home from './home/Home';
 import { ObjectResult } from './object-result/ObjectResult';
+import Packages from './packages/index';
 import { Recent } from './recent';
 import TransactionResult from './transaction-result/TransactionResult';
 import { ValidatorDetails } from './validator/ValidatorDetails';
@@ -38,6 +41,9 @@ export const router = sentryCreateBrowserRouter([
 			{ path: 'address/:id', element: <AddressResult /> },
 			{ path: 'validators', element: <ValidatorPageResult /> },
 			{ path: 'validator/:id', element: <ValidatorDetails /> },
+			{ path: 'packages', element: <Packages /> },
+			{ path: 'dao', element: <Dao /> },
+			{ path: 'dao/detail/:id', element: <DaoDetail /> },
 		],
 	},
 	{

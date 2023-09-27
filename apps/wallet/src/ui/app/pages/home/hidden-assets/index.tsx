@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getKioskIdFromOwnerCap, isKioskOwnerToken, useMultiGetObjects } from '@mysten/core';
-import { EyeClose16 } from '@mysten/icons';
-
-import { useMemo } from 'react';
+import { Check12, EyeClose16 } from '@mysten/icons';
+import { getObjectDisplay } from '@mysten/sui.js';
+import { get, set } from 'idb-keyval';
+import { useEffect, useCallback, useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
-import { useHiddenAssets } from './HiddenAssetsProvider';
+import { Link as InlineLink } from '../../../shared/Link';
+import { Text } from '../../../shared/text';
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';
@@ -17,16 +20,16 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
 
+const HIDDEN_ASSET_IDS = 'hidden-asset-ids';
+
 function HiddenNftsPage() {
-	const { hiddenAssetIds, showAsset } = useHiddenAssets();
+	const [hiddenAssetIds, setHiddenAssetIds] = useState<string[]>([]);
+	const [internalHiddenAssetIds, setInternalHiddenAssetIds] = useState<string[]>([]);
 
 	const { data, isInitialLoading, isLoading, isError, error } = useMultiGetObjects(
-		hiddenAssetIds,
-		{
-			showDisplay: true,
-			showType: true,
-		},
-		{ keepPreviousData: true },
+		// Prevents dupes
+		Array.from(new Set(hiddenAssetIds))!,
+		{ showContent: true, showDisplay: true, showType: true },
 	);
 
 	const filteredAndSortedNfts = useMemo(() => {
@@ -34,12 +37,12 @@ function HiddenNftsPage() {
 			data?.flatMap((data) => {
 				return {
 					data: data.data,
-					display: data.data?.display?.data,
+					display: getObjectDisplay(data).data,
 				};
 			}) || [];
 
 		return hiddenNfts
-			?.filter((nft) => nft.data && hiddenAssetIds.includes(nft?.data?.objectId))
+			?.filter((nft) => nft.data && internalHiddenAssetIds.includes(nft?.data?.objectId))
 			.sort((nftA, nftB) => {
 				let nameA = nftA.display?.name || '';
 				let nameB = nftB.display?.name || '';
@@ -51,7 +54,101 @@ function HiddenNftsPage() {
 				}
 				return 0;
 			});
-	}, [hiddenAssetIds, data]);
+	}, [internalHiddenAssetIds, data]);
+
+	useEffect(() => {
+		(async () => {
+			const hiddenAssets = await get<string[]>(HIDDEN_ASSET_IDS);
+			if (hiddenAssets) {
+				setHiddenAssetIds(hiddenAssets);
+				setInternalHiddenAssetIds(hiddenAssets);
+			}
+		})();
+	}, []);
+
+	const showAssetId = useCallback(
+		async (newAssetId: string) => {
+			if (!internalHiddenAssetIds.includes(newAssetId)) return;
+
+			try {
+				const updatedHiddenAssetIds = internalHiddenAssetIds.filter((id) => id !== newAssetId);
+				setInternalHiddenAssetIds(updatedHiddenAssetIds);
+				await set(HIDDEN_ASSET_IDS, updatedHiddenAssetIds);
+			} catch (error) {
+				// Handle any error that occurred during the unhide process
+				toast.error('Failed to show asset.');
+				// Restore the asset ID back to the hidden asset IDs list
+				setInternalHiddenAssetIds([...internalHiddenAssetIds, newAssetId]);
+				await set(HIDDEN_ASSET_IDS, internalHiddenAssetIds);
+			}
+
+			const undoShowAsset = async (assetId: string) => {
+				let newHiddenAssetIds;
+				setInternalHiddenAssetIds((prevIds) => {
+					return (newHiddenAssetIds = [...prevIds, assetId]);
+				});
+				await set(HIDDEN_ASSET_IDS, newHiddenAssetIds);
+			};
+
+			const assetShownToast = async (objectId: string) => {
+				toast.custom(
+					(t) => (
+						<div
+							className="flex items-center justify-between gap-2 bg-white w-full shadow-notification border-solid border-gray-45 rounded-full px-3 py-2"
+							style={{
+								animation: 'fade-in-up 200ms ease-in-out',
+							}}
+						>
+							<div className="flex gap-1 items-center">
+								<Check12 className="text-gray-90" />
+								<div
+									onClick={() => {
+										toast.dismiss(t.id);
+									}}
+								>
+									<InlineLink
+										to="/nfts"
+										color="hero"
+										weight="medium"
+										before={
+											<Text variant="body" color="gray-80">
+												Moved to
+											</Text>
+										}
+										text="Visual Assets"
+										onClick={() => toast.dismiss(t.id)}
+									/>
+								</div>
+							</div>
+
+							<div className="w-auto">
+								<InlineLink
+									size="bodySmall"
+									onClick={() => {
+										undoShowAsset(objectId);
+										toast.dismiss(t.id);
+									}}
+									color="hero"
+									weight="medium"
+									text="UNDO"
+								/>
+							</div>
+						</div>
+					),
+					{
+						duration: 4000,
+					},
+				);
+			};
+
+			assetShownToast(newAssetId);
+		},
+		[internalHiddenAssetIds],
+	);
+
+	const showAsset = (objectId: string) => {
+		showAssetId(objectId);
+	};
 
 	if (isInitialLoading) {
 		return (
@@ -64,7 +161,7 @@ function HiddenNftsPage() {
 	return (
 		<div className="flex flex-1 flex-col flex-nowrap items-center gap-4">
 			<PageTitle title="Hidden Assets" back="/nfts" />
-			<Loading loading={isLoading && Boolean(hiddenAssetIds.length)}>
+			<Loading loading={isLoading && Boolean(internalHiddenAssetIds.length)}>
 				{isError ? (
 					<Alert>
 						<div>
@@ -122,7 +219,7 @@ function HiddenNftsPage() {
 					</div>
 				) : (
 					<div className="flex flex-1 items-center self-center text-caption font-semibold text-steel-darker">
-						No Assets found
+						No NFTs found
 					</div>
 				)}
 			</Loading>

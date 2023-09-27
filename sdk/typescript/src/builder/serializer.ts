@@ -75,7 +75,7 @@ export function getPureSerializationType(
 		} else if (normalizedType === 'Address') {
 			expectType('string', argVal);
 			if (argVal && !isValidSuiAddress(argVal as string)) {
-				throw new Error('Invalid Sui Address');
+				throw new Error('Invalid obc Address');
 			}
 		}
 		return normalizedType.toLowerCase();

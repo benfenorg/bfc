@@ -1,11 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import type {
+	ExecuteTransactionRequestType,
+	SuiEventFilter,
 	SuiTransactionBlockResponseQuery,
 	Order,
 	CoinMetadata,
+	SuiObjectDataOptions,
+	SuiTransactionBlockResponseOptions,
 	SuiEvent,
 	SuiObjectResponseQuery,
+	TransactionFilter,
 	TransactionEffects,
 	Unsubscribe,
 	PaginatedTransactionResponse,
@@ -35,44 +40,12 @@ import type {
 	EpochInfo,
 	EpochPage,
 	CheckpointPage,
+	DynamicFieldName,
 	DynamicFieldPage,
 	NetworkMetrics,
 	AddressMetrics,
 	AllEpochsAddressMetrics,
-	DevInspectTransactionBlockParams,
-	DryRunTransactionBlockParams,
-	ExecuteTransactionBlockParams,
-	GetAllBalancesParams,
-	GetAllCoinsParams,
-	GetBalanceParams,
-	GetCheckpointParams,
-	GetCheckpointsParams,
-	GetCoinMetadataParams,
-	GetCoinsParams,
-	GetCommitteeInfoParams,
-	GetDynamicFieldObjectParams,
-	GetDynamicFieldsParams,
-	GetMoveFunctionArgTypesParams,
-	GetNormalizedMoveFunctionParams,
-	GetNormalizedMoveModuleParams,
-	GetNormalizedMoveModulesByPackageParams,
-	GetNormalizedMoveStructParams,
-	GetObjectParams,
-	GetOwnedObjectsParams,
-	GetProtocolConfigParams,
-	GetStakesByIdsParams,
-	GetStakesParams,
-	GetTotalSupplyParams,
-	GetTransactionBlockParams,
-	MultiGetObjectsParams,
-	MultiGetTransactionBlocksParams,
-	QueryEventsParams,
-	QueryTransactionBlocksParams,
-	ResolveNameServiceAddressParams,
-	ResolveNameServiceNamesParams,
-	SubscribeEventParams,
-	SubscribeTransactionParams,
-	TryGetPastObjectParams,
+	ObcDao,
 } from './types/index.js';
 import {
 	isValidTransactionDigest,
@@ -82,11 +55,12 @@ import {
 	normalizeSuiObjectId,
 } from '../utils/sui-types.js';
 import { fromB58, toB64, toHEX } from '@mysten/bcs';
-import type { TransactionBlock } from '../builder/index.js';
-import { isTransactionBlock } from '../builder/index.js';
+import type { SerializedSignature } from '../cryptography/signature.js';
+import { TransactionBlock } from '../builder/index.js';
 import { SuiHTTPTransport } from './http-transport.js';
 import type { SuiTransport } from './http-transport.js';
 import type { Keypair } from '../cryptography/index.js';
+import { sui2ObcAddress } from '../utils/format.js';
 
 export interface PaginationArguments<Cursor> {
 	/** Optional paging cursor */
@@ -115,23 +89,8 @@ export type NetworkOrTransport =
 			url?: never;
 	  };
 
-export const SUI_CLIENT_BRAND = Symbol.for('@mysten/SuiClient');
-
-export function isSuiClient(client: unknown): client is SuiClient {
-	return (
-		typeof client === 'object' &&
-		client !== null &&
-		(client as { [SUI_CLIENT_BRAND]: unknown })[SUI_CLIENT_BRAND] === true
-	);
-}
-
 export class SuiClient {
 	protected transport: SuiTransport;
-
-	get [SUI_CLIENT_BRAND]() {
-		return true;
-	}
-
 	/**
 	 * Establish a connection to a Sui RPC endpoint
 	 *
@@ -153,7 +112,12 @@ export class SuiClient {
 	/**
 	 * Get all Coin<`coin_type`> objects owned by an address.
 	 */
-	async getCoins(input: GetCoinsParams): Promise<PaginatedCoins> {
+	async getCoins(
+		input: {
+			owner: string;
+			coinType?: string | null;
+		} & PaginationArguments<PaginatedCoins['nextCursor']>,
+	): Promise<PaginatedCoins> {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
@@ -167,7 +131,11 @@ export class SuiClient {
 	/**
 	 * Get all Coin objects owned by an address.
 	 */
-	async getAllCoins(input: GetAllCoinsParams): Promise<PaginatedCoins> {
+	async getAllCoins(
+		input: {
+			owner: string;
+		} & PaginationArguments<PaginatedCoins['nextCursor']>,
+	): Promise<PaginatedCoins> {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
@@ -181,7 +149,11 @@ export class SuiClient {
 	/**
 	 * Get the total coin balance for one coin type, owned by the address owner.
 	 */
-	async getBalance(input: GetBalanceParams): Promise<CoinBalance> {
+	async getBalance(input: {
+		owner: string;
+		/** optional fully qualified type names for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC), default to 0x2::sui::SUI if not specified. */
+		coinType?: string | null;
+	}): Promise<CoinBalance> {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
@@ -194,7 +166,7 @@ export class SuiClient {
 	/**
 	 * Get the total coin balance for all coin types, owned by the address owner.
 	 */
-	async getAllBalances(input: GetAllBalancesParams): Promise<CoinBalance[]> {
+	async getAllBalances(input: { owner: string }): Promise<CoinBalance[]> {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
@@ -204,7 +176,7 @@ export class SuiClient {
 	/**
 	 * Fetch CoinMetadata for a given coin type
 	 */
-	async getCoinMetadata(input: GetCoinMetadataParams): Promise<CoinMetadata | null> {
+	async getCoinMetadata(input: { coinType: string }): Promise<CoinMetadata | null> {
 		return await this.transport.request({
 			method: 'suix_getCoinMetadata',
 			params: [input.coinType],
@@ -214,7 +186,7 @@ export class SuiClient {
 	/**
 	 *  Fetch total supply for a coin
 	 */
-	async getTotalSupply(input: GetTotalSupplyParams): Promise<CoinSupply> {
+	async getTotalSupply(input: { coinType: string }): Promise<CoinSupply> {
 		return await this.transport.request({
 			method: 'suix_getTotalSupply',
 			params: [input.coinType],
@@ -233,9 +205,11 @@ export class SuiClient {
 	/**
 	 * Get Move function argument types like read, write and full access
 	 */
-	async getMoveFunctionArgTypes(
-		input: GetMoveFunctionArgTypesParams,
-	): Promise<SuiMoveFunctionArgType[]> {
+	async getMoveFunctionArgTypes(input: {
+		package: string;
+		module: string;
+		function: string;
+	}): Promise<SuiMoveFunctionArgType[]> {
 		return await this.transport.request({
 			method: 'sui_getMoveFunctionArgTypes',
 			params: [input.package, input.module, input.function],
@@ -246,9 +220,9 @@ export class SuiClient {
 	 * Get a map from module name to
 	 * structured representations of Move modules
 	 */
-	async getNormalizedMoveModulesByPackage(
-		input: GetNormalizedMoveModulesByPackageParams,
-	): Promise<SuiMoveNormalizedModules> {
+	async getNormalizedMoveModulesByPackage(input: {
+		package: string;
+	}): Promise<SuiMoveNormalizedModules> {
 		return await this.transport.request({
 			method: 'sui_getNormalizedMoveModulesByPackage',
 			params: [input.package],
@@ -258,9 +232,10 @@ export class SuiClient {
 	/**
 	 * Get a structured representation of Move module
 	 */
-	async getNormalizedMoveModule(
-		input: GetNormalizedMoveModuleParams,
-	): Promise<SuiMoveNormalizedModule> {
+	async getNormalizedMoveModule(input: {
+		package: string;
+		module: string;
+	}): Promise<SuiMoveNormalizedModule> {
 		return await this.transport.request({
 			method: 'sui_getNormalizedMoveModule',
 			params: [input.package, input.module],
@@ -270,9 +245,11 @@ export class SuiClient {
 	/**
 	 * Get a structured representation of Move function
 	 */
-	async getNormalizedMoveFunction(
-		input: GetNormalizedMoveFunctionParams,
-	): Promise<SuiMoveNormalizedFunction> {
+	async getNormalizedMoveFunction(input: {
+		package: string;
+		module: string;
+		function: string;
+	}): Promise<SuiMoveNormalizedFunction> {
 		return await this.transport.request({
 			method: 'sui_getNormalizedMoveFunction',
 			params: [input.package, input.module, input.function],
@@ -282,9 +259,11 @@ export class SuiClient {
 	/**
 	 * Get a structured representation of Move struct
 	 */
-	async getNormalizedMoveStruct(
-		input: GetNormalizedMoveStructParams,
-	): Promise<SuiMoveNormalizedStruct> {
+	async getNormalizedMoveStruct(input: {
+		package: string;
+		module: string;
+		struct: string;
+	}): Promise<SuiMoveNormalizedStruct> {
 		return await this.transport.request({
 			method: 'sui_getNormalizedMoveStruct',
 			params: [input.package, input.module, input.struct],
@@ -294,7 +273,12 @@ export class SuiClient {
 	/**
 	 * Get all objects owned by an address
 	 */
-	async getOwnedObjects(input: GetOwnedObjectsParams): Promise<PaginatedObjectsResponse> {
+	async getOwnedObjects(
+		input: {
+			owner: string;
+		} & PaginationArguments<PaginatedObjectsResponse['nextCursor']> &
+			SuiObjectResponseQuery,
+	): Promise<PaginatedObjectsResponse> {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
@@ -316,8 +300,11 @@ export class SuiClient {
 	/**
 	 * Get details about an object
 	 */
-	async getObject(input: GetObjectParams): Promise<SuiObjectResponse> {
-		if (!input.id || !isValidSuiObjectId(normalizeSuiObjectId(input.id))) {
+	async getObject(input: {
+		id: string;
+		options?: SuiObjectDataOptions;
+	}): Promise<SuiObjectResponse> {
+		if (!input.id || !isValidSuiObjectId(sui2ObcAddress(input.id))) {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({
@@ -326,7 +313,11 @@ export class SuiClient {
 		});
 	}
 
-	async tryGetPastObject(input: TryGetPastObjectParams): Promise<ObjectRead> {
+	async tryGetPastObject(input: {
+		id: string;
+		version: number;
+		options?: SuiObjectDataOptions;
+	}): Promise<ObjectRead> {
 		return await this.transport.request({
 			method: 'sui_tryGetPastObject',
 			params: [input.id, input.version, input.options],
@@ -336,7 +327,10 @@ export class SuiClient {
 	/**
 	 * Batch get details about a list of objects. If any of the object ids are duplicates the call will fail
 	 */
-	async multiGetObjects(input: MultiGetObjectsParams): Promise<SuiObjectResponse[]> {
+	async multiGetObjects(input: {
+		ids: string[];
+		options?: SuiObjectDataOptions;
+	}): Promise<SuiObjectResponse[]> {
 		input.ids.forEach((id) => {
 			if (!id || !isValidSuiObjectId(normalizeSuiObjectId(id))) {
 				throw new Error(`Invalid Sui Object id ${id}`);
@@ -357,7 +351,9 @@ export class SuiClient {
 	 * Get transaction blocks for a given query criteria
 	 */
 	async queryTransactionBlocks(
-		input: QueryTransactionBlocksParams,
+		input: SuiTransactionBlockResponseQuery &
+			PaginationArguments<PaginatedTransactionResponse['nextCursor']> &
+			OrderArguments,
 	): Promise<PaginatedTransactionResponse> {
 		return await this.transport.request({
 			method: 'suix_queryTransactionBlocks',
@@ -373,9 +369,10 @@ export class SuiClient {
 		});
 	}
 
-	async getTransactionBlock(
-		input: GetTransactionBlockParams,
-	): Promise<SuiTransactionBlockResponse> {
+	async getTransactionBlock(input: {
+		digest: string;
+		options?: SuiTransactionBlockResponseOptions;
+	}): Promise<SuiTransactionBlockResponse> {
 		if (!isValidTransactionDigest(input.digest)) {
 			throw new Error('Invalid Transaction digest');
 		}
@@ -385,9 +382,10 @@ export class SuiClient {
 		});
 	}
 
-	async multiGetTransactionBlocks(
-		input: MultiGetTransactionBlocksParams,
-	): Promise<SuiTransactionBlockResponse[]> {
+	async multiGetTransactionBlocks(input: {
+		digests: string[];
+		options?: SuiTransactionBlockResponseOptions;
+	}): Promise<SuiTransactionBlockResponse[]> {
 		input.digests.forEach((d) => {
 			if (!isValidTransactionDigest(d)) {
 				throw new Error(`Invalid Transaction digest ${d}`);
@@ -405,9 +403,12 @@ export class SuiClient {
 		});
 	}
 
-	async executeTransactionBlock(
-		input: ExecuteTransactionBlockParams,
-	): Promise<SuiTransactionBlockResponse> {
+	async executeTransactionBlock(input: {
+		transactionBlock: Uint8Array | string;
+		signature: SerializedSignature | SerializedSignature[];
+		options?: SuiTransactionBlockResponseOptions;
+		requestType?: ExecuteTransactionRequestType;
+	}): Promise<SuiTransactionBlockResponse> {
 		return await this.transport.request({
 			method: 'sui_executeTransactionBlock',
 			params: [
@@ -428,10 +429,9 @@ export class SuiClient {
 	}: {
 		transactionBlock: Uint8Array | TransactionBlock;
 		signer: Keypair;
-	} & Omit<
-		ExecuteTransactionBlockParams,
-		'transactionBlock' | 'signature'
-	>): Promise<SuiTransactionBlockResponse> {
+		options?: SuiTransactionBlockResponseOptions;
+		requestType?: ExecuteTransactionRequestType;
+	}): Promise<SuiTransactionBlockResponse> {
 		let transactionBytes;
 
 		if (transactionBlock instanceof Uint8Array) {
@@ -476,7 +476,7 @@ export class SuiClient {
 	/**
 	 * Return the delegated stakes for an address
 	 */
-	async getStakes(input: GetStakesParams): Promise<DelegatedStake[]> {
+	async getStakes(input: { owner: string }): Promise<DelegatedStake[]> {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
@@ -486,7 +486,7 @@ export class SuiClient {
 	/**
 	 * Return the delegated stakes queried by id.
 	 */
-	async getStakesByIds(input: GetStakesByIdsParams): Promise<DelegatedStake[]> {
+	async getStakesByIds(input: { stakedSuiIds: string[] }): Promise<DelegatedStake[]> {
 		input.stakedSuiIds.forEach((id) => {
 			if (!id || !isValidSuiObjectId(normalizeSuiObjectId(id))) {
 				throw new Error(`Invalid Sui Stake id ${id}`);
@@ -506,9 +506,36 @@ export class SuiClient {
 	}
 
 	/**
+	 * Getting the overview for the network
+	 */
+	async getNetworkOverview(): Promise<any> {
+		const resp = await this.transport.request<string>({
+			method: 'suix_getNetworkOverview',
+			params: [],
+		});
+		return resp;
+	}
+
+	/**
+	 * Getting inner dao info
+	 */
+	async getInnerDao(): Promise<ObcDao> {
+		return await this.transport.request({
+			method: 'sui_getInnerDaoInfo',
+			params: [],
+		});
+	}
+
+	/**
 	 * Get events for a given query criteria
 	 */
-	async queryEvents(input: QueryEventsParams): Promise<PaginatedEvents> {
+	async queryEvents(
+		input: {
+			/** the event query criteria. */
+			query: SuiEventFilter;
+		} & PaginationArguments<PaginatedEvents['nextCursor']> &
+			OrderArguments,
+	): Promise<PaginatedEvents> {
 		return await this.transport.request({
 			method: 'suix_queryEvents',
 			params: [
@@ -523,12 +550,12 @@ export class SuiClient {
 	/**
 	 * Subscribe to get notifications whenever an event matching the filter occurs
 	 */
-	async subscribeEvent(
-		input: SubscribeEventParams & {
-			/** function to run when we receive a notification of a new event matching the filter */
-			onMessage: (event: SuiEvent) => void;
-		},
-	): Promise<Unsubscribe> {
+	async subscribeEvent(input: {
+		/** filter describing the subset of events to follow */
+		filter: SuiEventFilter;
+		/** function to run when we receive a notification of a new event matching the filter */
+		onMessage: (event: SuiEvent) => void;
+	}): Promise<Unsubscribe> {
 		return this.transport.subscribe({
 			method: 'suix_subscribeEvent',
 			unsubscribe: 'suix_unsubscribeEvent',
@@ -537,12 +564,12 @@ export class SuiClient {
 		});
 	}
 
-	async subscribeTransaction(
-		input: SubscribeTransactionParams & {
-			/** function to run when we receive a notification of a new event matching the filter */
-			onMessage: (event: TransactionEffects) => void;
-		},
-	): Promise<Unsubscribe> {
+	async subscribeTransaction(input: {
+		/** filter describing the subset of events to follow */
+		filter: TransactionFilter;
+		/** function to run when we receive a notification of a new event matching the filter */
+		onMessage: (event: TransactionEffects) => void;
+	}): Promise<Unsubscribe> {
 		return this.transport.subscribe({
 			method: 'suix_subscribeTransaction',
 			unsubscribe: 'suix_unsubscribeTransaction',
@@ -556,11 +583,16 @@ export class SuiClient {
 	 * transaction (or Move call) with any arguments. Detailed results are
 	 * provided, including both the transaction effects and any return values.
 	 */
-	async devInspectTransactionBlock(
-		input: DevInspectTransactionBlockParams,
-	): Promise<DevInspectResults> {
+	async devInspectTransactionBlock(input: {
+		transactionBlock: TransactionBlock | string | Uint8Array;
+		sender: string;
+		/** Default to use the network reference gas price stored in the Sui System State object */
+		gasPrice?: bigint | number | null;
+		/** optional. Default to use the current epoch number stored in the Sui System State object */
+		epoch?: string | null;
+	}): Promise<DevInspectResults> {
 		let devInspectTxBytes;
-		if (isTransactionBlock(input.transactionBlock)) {
+		if (TransactionBlock.is(input.transactionBlock)) {
 			input.transactionBlock.setSenderIfNotSet(input.sender);
 			devInspectTxBytes = toB64(
 				await input.transactionBlock.build({
@@ -585,9 +617,9 @@ export class SuiClient {
 	/**
 	 * Dry run a transaction block and return the result.
 	 */
-	async dryRunTransactionBlock(
-		input: DryRunTransactionBlockParams,
-	): Promise<DryRunTransactionBlockResponse> {
+	async dryRunTransactionBlock(input: {
+		transactionBlock: Uint8Array | string;
+	}): Promise<DryRunTransactionBlockResponse> {
 		return await this.transport.request({
 			method: 'sui_dryRunTransactionBlock',
 			params: [
@@ -601,7 +633,12 @@ export class SuiClient {
 	/**
 	 * Return the list of dynamic field objects owned by an object
 	 */
-	async getDynamicFields(input: GetDynamicFieldsParams): Promise<DynamicFieldPage> {
+	async getDynamicFields(
+		input: {
+			/** The id of the parent object */
+			parentId: string;
+		} & PaginationArguments<DynamicFieldPage['nextCursor']>,
+	): Promise<DynamicFieldPage> {
 		if (!input.parentId || !isValidSuiObjectId(normalizeSuiObjectId(input.parentId))) {
 			throw new Error('Invalid Sui Object id');
 		}
@@ -614,7 +651,12 @@ export class SuiClient {
 	/**
 	 * Return the dynamic field object information for a specified object
 	 */
-	async getDynamicFieldObject(input: GetDynamicFieldObjectParams): Promise<SuiObjectResponse> {
+	async getDynamicFieldObject(input: {
+		/** The ID of the quered parent object */
+		parentId: string;
+		/** The name of the dynamic field */
+		name: string | DynamicFieldName;
+	}): Promise<SuiObjectResponse> {
 		return await this.transport.request({
 			method: 'suix_getDynamicFieldObject',
 			params: [input.parentId, input.name],
@@ -635,7 +677,10 @@ export class SuiClient {
 	/**
 	 * Returns information about a given checkpoint
 	 */
-	async getCheckpoint(input: GetCheckpointParams): Promise<Checkpoint> {
+	async getCheckpoint(input: {
+		/** The checkpoint digest or sequence number */
+		id: string;
+	}): Promise<Checkpoint> {
 		return await this.transport.request({ method: 'sui_getCheckpoint', params: [input.id] });
 	}
 
@@ -643,7 +688,10 @@ export class SuiClient {
 	 * Returns historical checkpoints paginated
 	 */
 	async getCheckpoints(
-		input: PaginationArguments<CheckpointPage['nextCursor']> & GetCheckpointsParams,
+		input: {
+			/** query result ordering, default to false (ascending order), oldest record first */
+			descendingOrder: boolean;
+		} & PaginationArguments<CheckpointPage['nextCursor']>,
 	): Promise<CheckpointPage> {
 		return await this.transport.request({
 			method: 'sui_getCheckpoints',
@@ -654,7 +702,10 @@ export class SuiClient {
 	/**
 	 * Return the committee information for the asked epoch
 	 */
-	async getCommitteeInfo(input?: GetCommitteeInfoParams): Promise<CommitteeInfo> {
+	async getCommitteeInfo(input?: {
+		/** The epoch of interest. If null, default to the latest epoch */
+		epoch?: string | null;
+	}): Promise<CommitteeInfo> {
 		return await this.transport.request({
 			method: 'suix_getCommitteeInfo',
 			params: [input?.epoch],
@@ -720,7 +771,7 @@ export class SuiClient {
 		return toHEX(bytes.slice(0, 4));
 	}
 
-	async resolveNameServiceAddress(input: ResolveNameServiceAddressParams): Promise<string | null> {
+	async resolveNameServiceAddress(input: { name: string }): Promise<string | null> {
 		return await this.transport.request({
 			method: 'suix_resolveNameServiceAddress',
 			params: [input.name],
@@ -728,15 +779,17 @@ export class SuiClient {
 	}
 
 	async resolveNameServiceNames(
-		input: ResolveNameServiceNamesParams,
+		input: {
+			address: string;
+		} & PaginationArguments<ResolvedNameServiceNames['nextCursor']>,
 	): Promise<ResolvedNameServiceNames> {
 		return await this.transport.request({
 			method: 'suix_resolveNameServiceNames',
-			params: [input.address, input.cursor, input.limit],
+			params: [input.address],
 		});
 	}
 
-	async getProtocolConfig(input?: GetProtocolConfigParams): Promise<ProtocolConfig> {
+	async getProtocolConfig(input?: { version?: string }): Promise<ProtocolConfig> {
 		return await this.transport.request({
 			method: 'sui_getProtocolConfig',
 			params: [input?.version],

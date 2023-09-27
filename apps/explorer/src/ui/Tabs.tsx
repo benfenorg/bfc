@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import clsx from 'clsx';
 import {
 	type ComponentPropsWithoutRef,
@@ -17,21 +17,25 @@ import { Tooltip } from './Tooltip';
 import { ReactComponent as InfoSvg } from './icons/info_10x10.svg';
 import { ampli } from '~/utils/analytics/ampli';
 
-type TabSize = 'md' | 'lg' | 'sm';
+type TabSize = 'md' | 'lg' | 'sm' | 'lineMd' | 'lineMdOne';
 
 const TabSizeContext = createContext<TabSize | null | undefined>(null);
 
 const tabStyles = cva(
 	[
 		'flex items-center gap-1 border-b border-transparent -mb-px',
-		'font-semibold text-steel-dark disabled:text-steel-dark disabled:pointer-events-none hover:text-steel-darker data-[state=active]:border-gray-65',
+		'text-obc-text2 disabled:text-steel-dark disabled:pointer-events-none hover:text-steel-darker',
 	],
 	{
 		variants: {
 			size: {
-				lg: 'text-heading4 data-[state=active]:text-steel-darker pb-2',
-				md: 'text-body data-[state=active]:text-steel-darker pb-2',
-				sm: 'text-captionSmall font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-steel-darker',
+				lg: 'text-heading4 data-[state=active]:text-obc-white',
+				md: 'text-heading6 data-[state=active]:bg-obc data-[state=active]:text-obc-white px-3.5 py-2 rounded-md',
+				sm: 'text-captionSmall font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
+				lineMd:
+					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1 data-[state=active]:border-obc-text1',
+				lineMdOne:
+					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
 			},
 		},
 		defaultVariants: {
@@ -39,27 +43,6 @@ const tabStyles = cva(
 		},
 	},
 );
-const tabListStyles = cva(['flex items-center border-gray-45'], {
-	variants: {
-		fullWidth: {
-			true: 'flex-1',
-		},
-		disableBottomBorder: {
-			true: '',
-			false: 'border-b',
-		},
-		gap: {
-			3: 'gap-3',
-			6: 'gap-4 sm:gap-6',
-		},
-	},
-	defaultVariants: {
-		gap: 6,
-		disableBottomBorder: false,
-	},
-});
-
-type TabListStylesProps = VariantProps<typeof tabListStyles>;
 
 const Tabs = forwardRef<
 	ElementRef<typeof TabsPrimitive.Root>,
@@ -72,11 +55,20 @@ const Tabs = forwardRef<
 
 const TabsList = forwardRef<
 	ElementRef<typeof TabsPrimitive.List>,
-	ComponentPropsWithoutRef<typeof TabsPrimitive.List> & TabListStylesProps
->(({ fullWidth, disableBottomBorder, gap, ...props }, ref) => (
+	ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
+		fullWidth?: boolean;
+		disableBottomBorder?: boolean;
+		lessSpacing?: boolean;
+	}
+>(({ fullWidth, disableBottomBorder, lessSpacing, ...props }, ref) => (
 	<TabsPrimitive.List
 		ref={ref}
-		className={tabListStyles({ fullWidth, disableBottomBorder, gap })}
+		className={clsx(
+			'flex items-center border-gray-45',
+			lessSpacing ? 'gap-3' : 'gap-6',
+			fullWidth && 'flex-1',
+			!disableBottomBorder && 'border-b',
+		)}
 		{...props}
 	/>
 ));
@@ -86,7 +78,6 @@ const TabsTrigger = forwardRef<
 	ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >((props, ref) => {
 	const size = useContext(TabSizeContext);
-
 	return <TabsPrimitive.Trigger ref={ref} className={tabStyles({ size })} {...props} />;
 });
 
@@ -98,7 +89,7 @@ const TabsContent = forwardRef<
 		ref={ref}
 		className={clsx(
 			'ring-offset-background focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-			!noGap && 'my-4',
+			!noGap && 'my-5',
 		)}
 		{...props}
 	/>

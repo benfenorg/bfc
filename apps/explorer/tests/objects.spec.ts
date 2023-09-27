@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getCreatedObjects } from '@mysten/sui.js';
 import { test, expect } from '@playwright/test';
 
 import { faucet, split_coin } from './utils/localnet';
@@ -9,7 +10,7 @@ test('can be reached through URL', async ({ page }) => {
 	const address = await faucet();
 	const tx = await split_coin(address);
 
-	const { objectId } = tx.effects!.created![0].reference;
+	const { objectId } = getCreatedObjects(tx)![0].reference;
 	await page.goto(`/object/${objectId}`);
 	await expect(page.getByRole('heading', { name: objectId })).toBeVisible();
 });
@@ -19,7 +20,7 @@ test.describe('Owned Objects', () => {
 		const address = await faucet();
 		const tx = await split_coin(address);
 
-		const [new_coin] = tx.effects!.created!;
+		const [new_coin] = getCreatedObjects(tx)!;
 		await page.goto(`/address/${address}`);
 
 		// Find a reference to the Coin:

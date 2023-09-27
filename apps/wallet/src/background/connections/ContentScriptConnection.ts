@@ -1,14 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SignedTransaction } from '@mysten/sui.js';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import { type SignedTransaction, type SuiTransactionBlockResponse } from '@mysten/sui.js';
 import Browser from 'webextension-polyfill';
 
 import { Connection } from './Connection';
 import NetworkEnv from '../NetworkEnv';
 import { Window } from '../Window';
-import { getAccountsStatusData } from '../accounts';
+import { getStoredAccountsPublicInfo } from '../keyring/accounts';
 import { requestUserApproval } from '../qredo';
 import { createMessage } from '_messages';
 import { type ErrorPayload, isBasePayload } from '_payloads';
@@ -44,7 +43,7 @@ import type { SetNetworkPayload } from '_payloads/network';
 import type { Runtime } from 'webextension-polyfill';
 
 export class ContentScriptConnection extends Connection {
-	public static readonly CHANNEL: PortChannelName = 'sui_content<->background';
+	public static readonly CHANNEL: PortChannelName = 'obc_content<->background';
 	public readonly origin: string;
 	public readonly pagelink?: string | undefined;
 	public readonly originFavIcon: string | undefined;
@@ -226,11 +225,15 @@ export class ContentScriptConnection extends Connection {
 	}
 
 	private async sendAccounts(accounts: string[], responseForID?: string) {
+		const allAccountsPublicInfo = await getStoredAccountsPublicInfo();
 		this.send(
 			createMessage<GetAccountResponse>(
 				{
 					type: 'get-account-response',
-					accounts: await getAccountsStatusData(accounts),
+					accounts: accounts.map((anAddress) => ({
+						address: anAddress,
+						publicKey: allAccountsPublicInfo[anAddress]?.publicKey || null,
+					})),
 				},
 				responseForID,
 			),

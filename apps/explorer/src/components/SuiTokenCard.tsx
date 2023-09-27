@@ -28,11 +28,7 @@ export function SuiTokenCard() {
 					</div>
 					<div className="flex w-full flex-col gap-0.5">
 						<Text variant="body/semibold" color="steel-darker">
-<<<<<<< HEAD
 							1 OBC = {formattedPrice}
-=======
-							1 SUI = {formattedPrice}
->>>>>>> heads/mainnet-v1.9.1
 						</Text>
 						<Text variant="subtitleSmallExtra/medium" color="steel">
 							via CoinGecko

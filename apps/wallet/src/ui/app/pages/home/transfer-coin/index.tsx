@@ -3,6 +3,7 @@
 
 import { useCoinMetadata } from '@mysten/core';
 import { ArrowRight16, ArrowLeft16 } from '@mysten/icons';
+import { getTransactionDigest } from '@mysten/sui.js';
 import * as Sentry from '@sentry/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -20,9 +21,9 @@ import Overlay from '_components/overlay';
 import { ampli } from '_src/shared/analytics/ampli';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
+import { useSigner } from '_src/ui/app/hooks';
+import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
 
 import type { SubmitProps } from './SendTokenForm';
 
@@ -33,9 +34,8 @@ function TransferCoinPage() {
 	const [formData, setFormData] = useState<SubmitProps>();
 	const navigate = useNavigate();
 	const { data: coinMetadata } = useCoinMetadata(coinType);
-	const activeAccount = useActiveAccount();
-	const signer = useSigner(activeAccount);
-	const address = activeAccount?.address;
+	const signer = useSigner();
+	const address = useActiveAddress();
 	const queryClient = useQueryClient();
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
 
@@ -88,7 +88,7 @@ function TransferCoinPage() {
 			});
 
 			const receiptUrl = `/receipt?txdigest=${encodeURIComponent(
-				response.digest,
+				getTransactionDigest(response),
 			)}&from=transactions`;
 			return navigate(receiptUrl);
 		},
@@ -117,7 +117,7 @@ function TransferCoinPage() {
 			title={showTransactionPreview ? 'Review & Send' : 'Send Coins'}
 			closeOverlay={() => navigate('/')}
 		>
-			<div className="flex flex-col w-full mt-2.5">
+			<div className="flex flex-col w-full">
 				{showTransactionPreview && formData ? (
 					<BottomMenuLayout>
 						<Content>
@@ -151,12 +151,10 @@ function TransferCoinPage() {
 					</BottomMenuLayout>
 				) : (
 					<>
-						<div className="mb-7 flex flex-col gap-2.5">
-							<div className="pl-1.5">
-								<Text variant="caption" color="steel" weight="semibold">
-									Select all Coins
-								</Text>
-							</div>
+						<div className="mb-7.5 flex flex-col gap-1.25">
+							<Text variant="body" color="obc-text2" weight="normal">
+								Select all Coins
+							</Text>
 							<ActiveCoinsCard activeCoinType={coinType} />
 						</div>
 

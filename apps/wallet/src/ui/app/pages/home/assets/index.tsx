@@ -3,16 +3,13 @@
 
 import { Routes, Route } from 'react-router-dom';
 import { HiddenAssetsPage, NftsPage } from '..';
-import { HiddenAssetsProvider } from '../hidden-assets/HiddenAssetsProvider';
 
 function AssetsPage() {
 	return (
-		<HiddenAssetsProvider>
-			<Routes>
-				<Route path="/hidden-assets" element={<HiddenAssetsPage />} />
-				<Route path="/:filterType?/*" element={<NftsPage />} />
-			</Routes>
-		</HiddenAssetsProvider>
+		<Routes>
+			<Route path="/hidden-assets" element={<HiddenAssetsPage />} />
+			<Route path="/*" element={<NftsPage />} />
+		</Routes>
 	);
 }
 

@@ -1,10 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useRpcClient } from '../api/RpcClientContext';
 import { useQuery } from '@tanstack/react-query';
 
 import { roundFloat } from '../utils/roundFloat';
-import { useSuiClient, useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useGetSystemState } from './useGetSystemState';
 
 // recentEpochRewards is list of the last 30 epoch rewards for a specific validator
 // APY_e = (1 + epoch_rewards / stake)^365-1
@@ -23,11 +24,11 @@ export interface ApyByValidator {
 const MINIMUM_THRESHOLD = 0.001;
 
 export function useGetValidatorsApy() {
-	const client = useSuiClient();
-	const { data: systemStateResponse, isFetched } = useLatestSuiSystemState();
+	const rpc = useRpcClient();
+	const { data: systemStateResponse, isFetched } = useGetSystemState();
 	return useQuery({
 		queryKey: ['get-rolling-average-apys'],
-		queryFn: () => client.getValidatorsApy(),
+		queryFn: () => rpc.getValidatorsApy(),
 		enabled: isFetched,
 		select: (validatorApys) => {
 			// check if stakeSubsidyStartEpoch is greater than current epoch, flag for UI to show ~0% instead of 0%

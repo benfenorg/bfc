@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getObjectDisplay, getObjectOwner } from '@mysten/sui.js';
 import { SuiClient } from '@mysten/sui.js/client';
 
 import { DataFields, NetworkType, NameObject, SuiNSContract } from './types/objects';
@@ -77,7 +78,7 @@ class SuinsClient {
 
         const filteredFields = new Set(fields);
         const filteredDynamicFields = dynamicFields.filter(({ name: { value } }) =>
-            filteredFields.has(value as DataFields),
+            filteredFields.has(value),
         );
 
         const data = await Promise.allSettled(
@@ -152,8 +153,8 @@ class SuinsClient {
             if (includeAvatar && avatarNft) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore-next-line
-                if (avatarNft.data?.owner?.AddressOwner === nameObject.owner) {
-                    const display = avatarNft.data?.display;
+                if (getObjectOwner(avatarNft)?.AddressOwner === nameObject.owner) {
+                    const display = getObjectDisplay(avatarNft);
                     nameObject.avatar = display?.data?.image_url || null;
                 } else {
                     nameObject.avatar = AVATAR_NOT_OWNED;

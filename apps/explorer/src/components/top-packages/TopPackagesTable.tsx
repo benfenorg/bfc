@@ -1,10 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
 import { type MoveCallMetric } from '@mysten/sui.js';
-=======
-import { type MoveCallMetric } from '@mysten/sui.js/client';
->>>>>>> heads/mainnet-v1.9.1
 import { Text } from '@mysten/ui';
 import { useMemo } from 'react';
 
@@ -15,17 +11,6 @@ import { TableCard } from '~/ui/TableCard';
 interface TopPackagesTableProps {
 	data: MoveCallMetric[];
 	isLoading: boolean;
-<<<<<<< HEAD
-=======
-}
-
-function TxnCountHeader() {
-	return (
-		<div className="w-full text-right">
-			<Text variant="bodySmall/medium">Transactions</Text>
-		</div>
-	);
->>>>>>> heads/mainnet-v1.9.1
 }
 
 export function TopPackagesTable({ data, isLoading }: TopPackagesTableProps) {
@@ -37,17 +22,7 @@ export function TopPackagesTable({ data, isLoading }: TopPackagesTableProps) {
 				),
 				function: <Text variant="bodySmall/medium">{item.function}</Text>,
 				package: <ObjectLink objectId={item.package} />,
-<<<<<<< HEAD
 				count: <Text variant="bodySmall/medium">{count}</Text>,
-=======
-				count: (
-					<div className="text-right">
-						<Text mono variant="body/medium">
-							{Number(count).toLocaleString()}
-						</Text>
-					</div>
-				),
->>>>>>> heads/mainnet-v1.9.1
 			})),
 			columns: [
 				{
@@ -63,11 +38,7 @@ export function TopPackagesTable({ data, isLoading }: TopPackagesTableProps) {
 					accessorKey: 'function',
 				},
 				{
-<<<<<<< HEAD
 					header: 'Transactions',
-=======
-					header: TxnCountHeader,
->>>>>>> heads/mainnet-v1.9.1
 					accessorKey: 'count',
 				},
 			],

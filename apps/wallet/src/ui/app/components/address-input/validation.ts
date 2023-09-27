@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { isSuiNSName, useRpcClient, useSuiNSEnabled } from '@mysten/core';
 import { type SuiClient } from '@mysten/sui.js/client';
 import { isValidSuiAddress } from '@mysten/sui.js/utils';
 import { useMemo } from 'react';
@@ -36,7 +35,7 @@ export function createSuiAddressValidation(client: SuiClient, suiNSEnabled: bool
 }
 
 export function useSuiAddressValidation() {
-	const client = useSuiClient();
+	const client = useRpcClient();
 	const suiNSEnabled = useSuiNSEnabled();
 
 	return useMemo(() => {

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useRpcClient } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
 import { Text } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -26,25 +26,14 @@ interface Props {
 
 export function TransactionsActivityTable({
 	disablePagination,
-<<<<<<< HEAD
-=======
-	refetchInterval,
->>>>>>> heads/mainnet-v1.9.1
 	initialLimit = DEFAULT_TRANSACTIONS_LIMIT,
 	transactionKindFilter,
 }: Props) {
 	const [limit, setLimit] = useState(initialLimit);
-<<<<<<< HEAD
 	const rpc = useRpcClient();
 	const { data: count } = useQuery({
 		queryKey: ['transactions', 'count'],
 		queryFn: () => rpc.getTotalTransactionBlocks(),
-=======
-	const client = useSuiClient();
-	const { data: count } = useQuery({
-		queryKey: ['transactions', 'count'],
-		queryFn: () => client.getTotalTransactionBlocks(),
->>>>>>> heads/mainnet-v1.9.1
 		cacheTime: 24 * 60 * 60 * 1000,
 		staleTime: Infinity,
 		retry: false,
@@ -52,10 +41,6 @@ export function TransactionsActivityTable({
 	const transactions = useGetTransactionBlocks(
 		transactionKindFilter ? { TransactionKind: transactionKindFilter } : undefined,
 		limit,
-<<<<<<< HEAD
-=======
-		refetchInterval,
->>>>>>> heads/mainnet-v1.9.1
 	);
 	const { data, isFetching, pagination, isLoading, isError } = useCursorPagination(transactions);
 	const goToFirstPageRef = useRef(pagination.onFirst);
@@ -66,15 +51,9 @@ export function TransactionsActivityTable({
 		goToFirstPageRef.current();
 	}, [transactionKindFilter]);
 	return (
-<<<<<<< HEAD
 		<div data-testid="tx" className="obc-table-container">
 			{isError && (
 				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
-=======
-		<div data-testid="tx">
-			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark">
->>>>>>> heads/mainnet-v1.9.1
 					Failed to load Transactions
 				</div>
 			)}
@@ -92,11 +71,7 @@ export function TransactionsActivityTable({
 					</div>
 				)}
 
-<<<<<<< HEAD
 				<div className="flex justify-between bg-obc-card p-3.5">
-=======
-				<div className="flex justify-between">
->>>>>>> heads/mainnet-v1.9.1
 					{!disablePagination ? (
 						<Pagination {...pagination} />
 					) : (
@@ -106,21 +81,13 @@ export function TransactionsActivityTable({
 					)}
 
 					<div className="flex items-center space-x-3">
-<<<<<<< HEAD
 						<Text variant="body/normal" color="steel-darker">
-=======
-						<Text variant="body/medium" color="steel-dark">
->>>>>>> heads/mainnet-v1.9.1
 							{count ? numberSuffix(Number(count)) : '-'}
 							{` Total`}
 						</Text>
 						{!disablePagination && (
 							<select
-<<<<<<< HEAD
 								className="obc-form-select form-select rounded-md border border-obc-border px-3 py-2 pr-8 text-bodySmall font-normal leading-[1.2] text-steel-darker shadow-button"
-=======
-								className="form-select rounded-md border border-gray-45 px-3 py-2 pr-8 text-bodySmall font-medium leading-[1.2] text-steel-dark shadow-button"
->>>>>>> heads/mainnet-v1.9.1
 								value={limit}
 								onChange={(e) => {
 									setLimit(Number(e.target.value));

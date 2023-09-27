@@ -12,8 +12,10 @@ import { useLockedGuard } from '_app/wallet/hooks';
 import Alert from '_components/alert';
 import Loading from '_components/loading';
 import { useAppDispatch } from '_hooks';
+import { loadEntropyFromKeyring } from '_redux/slices/account';
+import { entropyToMnemonic, toEntropy } from '_shared/utils/bip39';
 import { HideShowDisplayBox } from '_src/ui/app/components/HideShowDisplayBox';
-import { PasswordInputDialog } from '_src/ui/app/components/PasswordInputDialog';
+import { PasswordInputDialog } from '_src/ui/app/components/menu/content/PasswordInputDialog';
 
 export type BackupPageProps = {
 	mode?: 'created' | 'imported';
@@ -22,7 +24,7 @@ export type BackupPageProps = {
 const BackupPage = ({ mode = 'created' }: BackupPageProps) => {
 	const guardsLoading = useLockedGuard(false);
 	const [loading, setLoading] = useState(true);
-	const [mnemonic, _setLocalMnemonic] = useState<string[] | null>(null);
+	const [mnemonic, setLocalMnemonic] = useState<string[] | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [passwordCopied, setPasswordCopied] = useState(false);
 	const { state } = useLocation();
@@ -36,8 +38,17 @@ const BackupPage = ({ mode = 'created' }: BackupPageProps) => {
 				return;
 			}
 			setLoading(true);
-			setError('Not implemented yet');
-			setLoading(false);
+			try {
+				setLocalMnemonic(
+					entropyToMnemonic(toEntropy(await dispatch(loadEntropyFromKeyring({})).unwrap())).split(
+						' ',
+					),
+				);
+			} catch (e) {
+				setError((e as Error).message || 'Something is wrong, Recovery Phrase is empty.');
+			} finally {
+				setLoading(false);
+			}
 		})();
 	}, [dispatch, mode, guardsLoading, isOnboardingFlow, passwordConfirmed]);
 	useEffect(() => {
@@ -62,7 +73,6 @@ const BackupPage = ({ mode = 'created' }: BackupPageProps) => {
 							setShowPasswordDialog(false);
 						}}
 						continueLabel="Confirm"
-						showBackButton
 					/>
 				</CardLayout>
 			) : (
@@ -137,7 +147,7 @@ const BackupPage = ({ mode = 'created' }: BackupPageProps) => {
 							variant="primary"
 							disabled={mode === 'created' && !passwordCopied && isOnboardingFlow}
 							to="/"
-							text="Open Sui Wallet"
+							text="Open OBC Wallet"
 							after={<ArrowLeft16 className="text-pBodySmall font-normal rotate-135" />}
 						/>
 					</div>

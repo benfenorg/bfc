@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { roundFloat, useGetValidatorsApy } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { roundFloat, useGetValidatorsApy, useGetSystemState } from '@mysten/core';
 import { useMemo } from 'react';
 
 import { Text } from '_app/shared/text';
@@ -16,7 +15,7 @@ type DelegatedAPYProps = {
 };
 
 export function DelegatedAPY({ stakedValidators }: DelegatedAPYProps) {
-	const { data, isLoading } = useLatestSuiSystemState();
+	const { data, isLoading } = useGetSystemState();
 	const { data: rollingAverageApys } = useGetValidatorsApy();
 
 	const averageNetworkAPY = useMemo(() => {
@@ -55,7 +54,7 @@ export function DelegatedAPY({ stakedValidators }: DelegatedAPYProps) {
 					</Text>
 					<div className="text-steel items-baseline text-body flex">
 						<IconTooltip
-							tip="The average APY of all validators you are currently staking your SUI on."
+							tip="The average APY of all validators you are currently staking your OBC on."
 							placement="top"
 						/>
 					</div>

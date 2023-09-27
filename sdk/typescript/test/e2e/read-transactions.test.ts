@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll, vi, afterEach } from 'vitest';
-import { SuiTransactionBlockResponse } from '../../src/client';
+import { getTransactionDigest, getTransactionKind, SuiTransactionBlockResponse } from '../../src';
 import { TransactionBlock } from '../../src/builder';
 import { executePaySuiNTimes, setup, TestToolbox } from './utils/setup';
 
@@ -91,7 +91,7 @@ describe('Transaction Reading API', () => {
 	it('Get Transaction', async () => {
 		const digest = transactions[0].digest;
 		const txn = await toolbox.client.getTransactionBlock({ digest });
-		expect(txn.digest).toEqual(digest);
+		expect(getTransactionDigest(txn)).toEqual(digest);
 	});
 
 	it('Multi Get Pay Transactions', async () => {
@@ -101,7 +101,7 @@ describe('Transaction Reading API', () => {
 			options: { showBalanceChanges: true },
 		});
 		txns.forEach((txn, i) => {
-			expect(txn.digest).toEqual(digests[i]);
+			expect(getTransactionDigest(txn)).toEqual(digests[i]);
 			expect(txn.balanceChanges?.length).toEqual(2);
 		});
 	});
@@ -142,7 +142,7 @@ describe('Transaction Reading API', () => {
 			digest: allTransactions.data[0].digest,
 			options: { showInput: true },
 		});
-		const txKind = resp.transaction?.data.transaction!;
+		const txKind = getTransactionKind(resp)!;
 		expect(txKind.kind === 'Genesis').toBe(true);
 	});
 });

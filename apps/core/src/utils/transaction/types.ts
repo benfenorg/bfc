@@ -8,7 +8,7 @@ import { ObjectChangeSummary } from './getObjectChangeSummary';
 export type TransactionSummary = {
 	digest?: string;
 	sender?: string;
-	timestamp?: string | null;
+	timestamp?: string;
 	balanceChanges: BalanceChangeSummary;
 	gas?: GasSummaryType;
 	objectSummary: ObjectChangeSummary | null;

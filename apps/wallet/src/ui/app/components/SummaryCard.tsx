@@ -29,28 +29,27 @@ export function SummaryCard({
 	return (
 		<div
 			className={clsx(
-				{ 'border border-solid border-gray-45': !noBorder, 'shadow-card-soft': boxShadow },
-				'bg-white flex flex-col flex-nowrap rounded-2xl w-full',
+				{ 'border border-solid border-obc-border': !noBorder, 'shadow-summary-card': boxShadow },
+				'bg-white flex flex-col flex-nowrap rounded-lg w-full',
 			)}
 		>
 			{header ? (
-				<div className="flex flex-row flex-nowrap items-center justify-center uppercase bg-gray-40 px-3.75 py-2.5 rounded-t-2xl">
-					<Text variant="captionSmall" weight="bold" color="steel-darker" truncate>
+				<div className="flex flex-row flex-nowrap items-center justify-center uppercase bg-obc-card p-2.5 rounded-t-lg">
+					<Text variant="body" weight="semibold" color="obc-text1" truncate>
 						{header}
 					</Text>
 				</div>
 			) : null}
 			<div
 				className={clsx(
-					'flex-1 flex flex-col items-stretch flex-nowrap px-4 overflow-y-auto',
-					minimalPadding ? 'py-2' : 'py-4',
-					showDivider ? 'divide-x-0 divide-y divide-gray-40 divide-solid' : '',
+					'flex-1 flex flex-col items-stretch flex-nowrap px-2.5 overflow-y-auto',
+					showDivider ? 'divide-x-0 divide-y divide-obc-border divide-solid' : '',
 				)}
 			>
 				{body}
 			</div>
 			{footer ? (
-				<div className="p-4 pt-3 border-x-0 border-b-0 border-t border-solid border-gray-40">
+				<div className="p-2.5 border-x-0 border-b-0 border-t border-solid border-obc-border">
 					{footer}
 				</div>
 			) : null}

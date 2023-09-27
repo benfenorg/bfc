@@ -5,6 +5,7 @@ import Browser from 'webextension-polyfill';
 
 import {
 	type QredoConnectIdentity,
+	type QredoConnection,
 	type QredoConnectPendingRequest,
 	type UIQredoPendingRequest,
 } from './types';
@@ -63,10 +64,10 @@ export function toUIQredoPendingRequest(stored: QredoConnectPendingRequest): UIQ
 	};
 }
 
-export function isSameQredoConnection<
-	T1 extends QredoConnectIdentity | string,
-	T2 extends QredoConnectIdentity & { id: string },
->(a: T1, b: T2) {
+export function isSameQredoConnection<T1 extends QredoConnectIdentity | string>(
+	a: T1,
+	b: QredoConnectPendingRequest | QredoConnection,
+) {
 	return (
 		(typeof a === 'string' && b.id === a) ||
 		(typeof a === 'object' &&

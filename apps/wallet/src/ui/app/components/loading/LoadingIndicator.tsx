@@ -9,13 +9,14 @@ const styles = cva('', {
 		color: {
 			inherit: 'text-inherit',
 			sui: 'text-sui',
+			obc: 'text-obc',
 		},
 	},
 });
 
 export type LoadingIndicatorProps = VariantProps<typeof styles>;
 
-const LoadingIndicator = ({ color = 'sui' }: LoadingIndicatorProps) => {
+const LoadingIndicator = ({ color = 'obc' }: LoadingIndicatorProps) => {
 	return <Spinner16 className={styles({ className: 'animate-spin', color })} />;
 };
 

@@ -1,5 +1,8 @@
 {
-	"typescript": {
+	"index": {
+		"title": "Home"
+	},
+	"typescript-sdk": {
 		"title": "TypeScript SDK",
 		"type": "page"
 	},

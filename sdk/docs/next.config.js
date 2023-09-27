@@ -6,14 +6,4 @@ const withNextra = require('nextra')({
 	themeConfig: './theme.config.jsx',
 });
 
-module.exports = withNextra({
-	redirects: () => {
-		return [
-			{
-				source: '/',
-				destination: '/typescript',
-				statusCode: 302,
-			},
-		];
-	},
-});
+module.exports = withNextra();

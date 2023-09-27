@@ -2,17 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
-import { TypeTagSerializer, type TypeTag } from '@mysten/sui.js';
-import { type TransactionArgument, type Transactions } from '@mysten/sui.js/transactions';
+import {
+	type TransactionType,
+	type MakeMoveVecTransaction,
+	type PublishTransaction,
+	TypeTagSerializer,
+	type TypeTag,
+} from '@mysten/sui.js';
+import { type TransactionArgument } from '@mysten/sui.js/transactions';
 import { formatAddress, normalizeSuiAddress, toB64 } from '@mysten/sui.js/utils';
 
 import { useState } from 'react';
 
 import { Text } from '_src/ui/app/shared/text';
-
-type TransactionType = ReturnType<(typeof Transactions)[keyof typeof Transactions]>;
-type MakeMoveVecTransaction = ReturnType<(typeof Transactions)['MakeMoveVec']>;
-type PublishTransaction = ReturnType<(typeof Transactions)['Publish']>;
 
 function convertCommandArgumentToString(
 	arg:
@@ -106,12 +108,12 @@ export function Command({ command }: CommandProps) {
 				<Text variant="body" weight="semibold" color="steel-darker">
 					{command.kind}
 				</Text>
-				<div className="h-px bg-gray-40 flex-1" />
-				<div className="text-steel">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>
+				<div className="h-px bg-obc-card flex-1" />
+				<div className="text-obc-text3">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>
 			</button>
 
 			{expanded && (
-				<div className="mt-2 text-pBodySmall font-medium text-steel">
+				<div className="mt-2 text-body font-medium text-obc-text3">
 					({convertCommandToString(command)})
 				</div>
 			)}

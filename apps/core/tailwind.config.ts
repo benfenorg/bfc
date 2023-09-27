@@ -39,15 +39,33 @@ export default {
 				DEFAULT: '#6fbcf0',
 				bright: '#2A38EB',
 				light: '#E1F3FF',
-				primaryBlue2023: '#4CA3FF',
 				lightest: '#F1F8FD',
 				dark: '#1F6493',
 			},
 
+			obc: {
+				DEFAULT: '#171719',
+				white: '#ffffff',
+				orange: '#E18416',
+				orange_10p: '#E184161A',
+				green: '#32BA89',
+				green_10p: '#32BA891A',
+				red: '#EB362A',
+				red_10p: '#EB362A1A',
+				link: '#22367B',
+				hover: '#FFFFFF14',
+				text1: '#171719',
+				text2: '#5A6070',
+				text3: '#A3A8B5',
+				border: '#E1E1E9',
+				card: '#F8F8FA',
+				press: '#FFFFFF24',
+			},
+
 			steel: {
-				DEFAULT: '#A0B6C3',
-				dark: '#758F9E',
-				darker: '#566873',
+				DEFAULT: '#A3A8B5',
+				dark: '#5A6070',
+				darker: '#171719',
 			},
 
 			issue: {
@@ -83,19 +101,10 @@ export default {
 			scale: {
 				'101': '1.01',
 			},
-			// backdrop-blur values that are found in the design:
-			backdropBlur: {
-				sm: '8px',
-				md: '12px',
-				DEFAULT: '20px',
-				lg: '24px',
-				xl: '32px',
-			},
 			colors: {
 				'gradient-blue-start': '#589AEA',
 				'gradient-blue-end': '#4C75A6',
-				'gradients-graph-cards-start': '#D2EBFA',
-				'gradients-failure-start': '#FBF0FF',
+				'gradient-graph-bg-01-start': '#D2EBFA',
 			},
 			// Line-heights that are found in the design:
 			lineHeight: {
@@ -115,14 +124,12 @@ export default {
 				drop: '0px 0px 10px rgba(111, 188, 240, 0.2)',
 				mistyEdge:
 					'0px 0px 0px 1px rgba(160, 182, 195, 0.08), 0px 5px 30px 0px rgba(86, 104, 115, 0.20)',
-				cardSoft: '1px 2px 8px 2px rgba(21, 82, 123, 0.05)',
-				panel: '0px 2px 7px 0px rgba(160, 182, 195, 0.32)',
-				dropdownContent: '0px 1px 2px 0px rgba(21, 82, 123, 0.08)',
 			},
 			fontSize: {
 				// Text sizes:
-				body: ['14px', MIN_LINE_HEIGHT],
+				body: ['12px', MIN_LINE_HEIGHT],
 				bodySmall: ['13px', MIN_LINE_HEIGHT],
+				bodyLarge: ['14px', MIN_LINE_HEIGHT],
 				subtitle: ['12px', MIN_LINE_HEIGHT],
 				subtitleSmall: ['11px', MIN_LINE_HEIGHT],
 				subtitleSmallExtra: ['10px', MIN_LINE_HEIGHT],
@@ -135,13 +142,14 @@ export default {
 				heading1: ['28px', MIN_LINE_HEIGHT],
 				heading2: ['24px', MIN_LINE_HEIGHT],
 				heading3: ['20px', MIN_LINE_HEIGHT],
-				heading4: ['18px', MIN_LINE_HEIGHT],
-				heading5: ['17px', MIN_LINE_HEIGHT],
-				heading6: ['16px', MIN_LINE_HEIGHT],
+				heading4: ['16px', MIN_LINE_HEIGHT],
+				heading5: ['15px', MIN_LINE_HEIGHT],
+				heading6: ['14px', MIN_LINE_HEIGHT],
 
 				// Paragraph sizes:
-				pHeading6: ['16px', '1.4'],
-				pBody: ['14px', '1.4'],
+				pHeading4: ['16px', '1.4'],
+				pHeading6: ['14px', '1.4'],
+				pBody: ['12px', '1.4'],
 				pBodySmall: ['13px', '1.4'],
 				pSubtitle: ['12px', '1.4'],
 				pSubtitleSmall: ['11px', '1.4'],
@@ -165,43 +173,21 @@ export default {
 				3.75: '0.9375rem',
 				4.5: '1.125rem',
 				7.5: '1.875rem',
-				17: '4.25rem',
-				18: '4.5rem',
-				19: '4.75rem',
 				50: '12.5rem',
 				verticalListShort: '13.0625rem',
 				verticalListLong: '35.6875rem',
 				600: '37.5rem',
-				header: '68px',
 			},
 			height: {
+				header: '68px',
 				31.5: '7.5rem',
-				120: '30rem',
-				300: '75rem',
-				coinsAndAssetsContainer: '31.25rem',
-			},
-			maxHeight: {
-				coinsAndAssetsContainer: '31.25rem',
-				ownCoinsPanel: '14.375rem',
 			},
 			width: {
 				31.5: '7.5rem',
 				walletLogo: '4.813rem',
 			},
-			maxWidth: {
-				80: '20rem',
-			},
 			minWidth: {
-				10: '2.5rem',
-				18: '4.5rem',
-				50: '12.5rem',
 				transactionColumn: '31.875rem',
-				smallThumbNailsViewContainer: '13.125rem',
-				smallThumbNailsViewContainerMobile: '9.375rem',
-				coinItemContainer: '15.625rem',
-			},
-			minHeight: {
-				14: '3.5rem',
 			},
 			transitionTimingFunction: {
 				'ease-in-out-cubic': 'cubic-bezier(0.65, 0, 0.35, 1)',
@@ -214,8 +200,7 @@ export default {
 				placeholderGradient01: 'linear-gradient(165.96deg, #e6f5ff 10%, #ebecff 95%)',
 				placeholderShimmer:
 					'linear-gradient(90deg, #ecf1f4 -24.18%, rgba(237 242 245 / 40%) 73.61%, #f3f7f9 114.81%, #ecf1f4 114.82%)',
-				'gradients-graph-cards': 'linear-gradient(176deg, #D2EBFA 51.68%, #D5F7EE 100%)',
-				'gradients-failure': 'linear-gradient(166deg, #FBF0FF 0%, #FFF0F0 100%)',
+				main: 'linear-gradient(176deg, #D2EBFA 51.68%, #D5F7EE 100%)',
 			},
 			rotate: {
 				135: '135deg',

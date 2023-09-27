@@ -19,14 +19,12 @@ export const Default: StoryObj<typeof ButtonConnectedTo> = {
 export const LightGrey: StoryObj<typeof ButtonConnectedTo> = {
 	args: {
 		text: 'Button',
-		bgOnHover: 'grey',
 	},
 };
 
 export const Disabled: StoryObj<typeof ButtonConnectedTo> = {
 	args: {
 		text: 'Button',
-		bgOnHover: 'grey',
 		disabled: true,
 	},
 };
@@ -41,7 +39,6 @@ export const LongText: StoryObj<typeof ButtonConnectedTo> = {
 	},
 	args: {
 		text: 'Button with very long text',
-		bgOnHover: 'grey',
 		iconBefore: <StakeAdd16 />,
 		iconAfter: <StakeAdd16 />,
 	},

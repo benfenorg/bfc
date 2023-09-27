@@ -2,13 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { is } from 'superstruct';
 
 import {
+	getExecutionStatusType,
+	getObjectId,
+	getSharedObjectInitialVersion,
+	getTransactionDigest,
 	SuiTransactionBlockResponse,
+	SUI_SYSTEM_STATE_OBJECT_ID,
+	TransactionBlock,
 	SuiObjectData,
+	getCreatedObjects,
+	SUI_CLOCK_OBJECT_ID,
 	SuiObjectChangeCreated,
-} from '../../src/client';
-import { SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId } from '../../src/utils';
+} from '../../src';
 import type { Keypair } from '../../src/cryptography';
 import {
 	DEFAULT_RECIPIENT,
@@ -19,10 +27,6 @@ import {
 	upgradePackage,
 } from './utils/setup';
 import { SuiClient } from '../../src/client';
-import {} from '../../src/builder/TransactionBlockData';
-import { TransactionBlock } from '../../src/builder';
-
-export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
 
 describe('Transaction Builders', () => {
 	let toolbox: TestToolbox;
@@ -33,13 +37,10 @@ describe('Transaction Builders', () => {
 	beforeAll(async () => {
 		const packagePath = __dirname + '/./data/serializer';
 		({ packageId, publishTxn } = await publishPackage(packagePath));
-		const sharedObject = (publishTxn.effects?.created)!.filter(
-			(o) =>
-				typeof o.owner === 'object' &&
-				'Shared' in o.owner &&
-				o.owner.Shared.initial_shared_version !== undefined,
+		const sharedObject = getCreatedObjects(publishTxn)!.filter(
+			(o) => getSharedObjectInitialVersion(o.owner) !== undefined,
 		)[0];
-		sharedObjectId = sharedObject.reference.objectId;
+		sharedObjectId = getObjectId(sharedObject);
 	});
 
 	beforeEach(async () => {
@@ -71,7 +72,7 @@ describe('Transaction Builders', () => {
 		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: '0x2::pay::split',
-			typeArguments: ['0x2::sui::SUI'],
+			typeArguments: ['0x2::obc::OBC'],
 			arguments: [tx.object(coin_0.objectId), tx.pure(DEFAULT_GAS_BUDGET * 2)],
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
@@ -157,7 +158,7 @@ describe('Transaction Builders', () => {
 			const capId = (
 				publishTxn.objectChanges?.find(
 					(a) =>
-						a.type === 'created' &&
+						is(a, SuiObjectChangeCreated) &&
 						a.objectType.endsWith('UpgradeCap') &&
 						'Immutable' !== a.owner &&
 						'AddressOwner' in a.owner &&
@@ -167,12 +168,11 @@ describe('Transaction Builders', () => {
 
 			expect(capId).toBeTruthy();
 
-			const sharedObjectId = (publishTxn.effects?.created)!.filter(
-				(o) =>
-					typeof o.owner === 'object' &&
-					'Shared' in o.owner &&
-					o.owner.Shared.initial_shared_version !== undefined,
-			)[0].reference.objectId;
+			const sharedObjectId = getObjectId(
+				getCreatedObjects(publishTxn)!.filter(
+					(o) => getSharedObjectInitialVersion(o.owner) !== undefined,
+				)[0],
+			);
 
 			// Step 2. Confirm that its functions work as expected in its
 			// first version
@@ -211,6 +211,6 @@ async function validateTransaction(client: SuiClient, signer: Keypair, tx: Trans
 			showEffects: true,
 		},
 	});
-	expect(localDigest).toEqual(result.digest);
-	expect(result.effects?.status.status).toEqual('success');
+	expect(localDigest).toEqual(getTransactionDigest(result));
+	expect(getExecutionStatusType(result)).toEqual('success');
 }

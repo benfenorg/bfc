@@ -3,15 +3,14 @@
 
 import { type TransactionBlock } from '@mysten/sui.js/transactions';
 import { useQuery } from '@tanstack/react-query';
-import { useAccountByAddress } from './useAccountByAddress';
-import { useSigner } from './useSigner';
+
+import { useSigner } from '_hooks';
 
 export function useTransactionDryRun(
 	sender: string | undefined,
 	transactionBlock: TransactionBlock,
 ) {
-	const { data: account } = useAccountByAddress(sender);
-	const signer = useSigner(account || null);
+	const signer = useSigner(sender);
 	const response = useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: ['dryRunTransaction', transactionBlock.serialize()],

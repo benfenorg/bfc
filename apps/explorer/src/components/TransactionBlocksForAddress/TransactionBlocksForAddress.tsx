@@ -1,11 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import { type TransactionFilter } from '@mysten/sui.js';
-=======
-import { type TransactionFilter } from '@mysten/sui.js/client';
->>>>>>> heads/mainnet-v1.9.1
 import { Heading, RadioGroup, RadioGroupItem } from '@mysten/ui';
 import { useReducer, useState } from 'react';
 
@@ -114,11 +110,7 @@ function TransactionBlocksForAddress({
 				)}
 			</div>
 
-<<<<<<< HEAD
 			<div className="obc-table-container mt-5 flex flex-col space-y-5 text-left">
-=======
-			<div className="flex flex-col space-y-5 pt-5 text-left xl:pr-10">
->>>>>>> heads/mainnet-v1.9.1
 				{isLoading || isFetching || isFetchingNextPage || !cardData ? (
 					<PlaceholderTable
 						rowCount={DEFAULT_TRANSACTIONS_LIMIT}
@@ -132,7 +124,6 @@ function TransactionBlocksForAddress({
 					</div>
 				)}
 
-<<<<<<< HEAD
 				<div className="flex justify-between bg-obc-card p-3.5">
 					{(hasNextPage || (data && data?.pages.length > 1)) && (
 						<Pagination
@@ -177,50 +168,6 @@ function TransactionBlocksForAddress({
 						/>
 					)}
 				</div>
-=======
-				{(hasNextPage || (data && data?.pages.length > 1)) && (
-					<Pagination
-						onNext={() => {
-							if (isLoading || isFetching) {
-								return;
-							}
-
-							// Make sure we are at the end before fetching another page
-							if (
-								data &&
-								currentPageState[filterValue] === data?.pages.length - 1 &&
-								!isLoading &&
-								!isFetching
-							) {
-								fetchNextPage();
-							}
-							dispatch({
-								type: PAGE_ACTIONS.NEXT,
-
-								filterValue,
-							});
-						}}
-						hasNext={
-							(Boolean(hasNextPage) && Boolean(data?.pages[currentPage])) ||
-							currentPage < (data?.pages.length ?? 0) - 1
-						}
-						hasPrev={currentPageState[filterValue] !== 0}
-						onPrev={() =>
-							dispatch({
-								type: PAGE_ACTIONS.PREV,
-
-								filterValue,
-							})
-						}
-						onFirst={() =>
-							dispatch({
-								type: PAGE_ACTIONS.FIRST,
-								filterValue,
-							})
-						}
-					/>
-				)}
->>>>>>> heads/mainnet-v1.9.1
 			</div>
 		</div>
 	);

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useRpcClient } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
 import { Text } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -28,19 +28,11 @@ export function EpochsActivityTable({
 	initialLimit = DEFAULT_EPOCHS_LIMIT,
 }: Props) {
 	const [limit, setLimit] = useState(initialLimit);
-<<<<<<< HEAD
 	const rpc = useRpcClient();
 
 	const { data: count } = useQuery({
 		queryKey: ['epochs', 'current'],
 		queryFn: async () => rpc.getCurrentEpoch(),
-=======
-	const client = useSuiClient();
-
-	const { data: count } = useQuery({
-		queryKey: ['epochs', 'current'],
-		queryFn: async () => client.getCurrentEpoch(),
->>>>>>> heads/mainnet-v1.9.1
 		select: (epoch) => Number(epoch.epoch) + 1,
 	});
 
@@ -50,17 +42,11 @@ export function EpochsActivityTable({
 	const cardData = data ? genTableDataFromEpochsData(data) : undefined;
 
 	return (
-<<<<<<< HEAD
 		<div className="obc-table-container flex flex-col space-y-3 text-left">
 			{isError && (
 				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
 					Failed to load Epochs
 				</div>
-=======
-		<div className="flex flex-col space-y-3 text-left xl:pr-10">
-			{isError && (
-				<div className="pt-2 font-sans font-semibold text-issue-dark">Failed to load Epochs</div>
->>>>>>> heads/mainnet-v1.9.1
 			)}
 			{isLoading || isFetching || !cardData ? (
 				<PlaceholderTable
@@ -82,11 +68,7 @@ export function EpochsActivityTable({
 				</div>
 			)}
 
-<<<<<<< HEAD
 			<div className="flex justify-between bg-obc-card p-3.5">
-=======
-			<div className="flex justify-between">
->>>>>>> heads/mainnet-v1.9.1
 				{!disablePagination ? (
 					<Pagination {...pagination} />
 				) : (
@@ -96,11 +78,7 @@ export function EpochsActivityTable({
 				)}
 
 				<div className="flex items-center space-x-3">
-<<<<<<< HEAD
 					<Text variant="body/normal" color="steel-darker">
-=======
-					<Text variant="body/medium" color="steel-dark">
->>>>>>> heads/mainnet-v1.9.1
 						{count ? numberSuffix(Number(count)) : '-'}
 						{` Total`}
 					</Text>

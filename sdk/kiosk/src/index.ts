@@ -3,7 +3,6 @@
 
 export * from './tx/kiosk';
 export * from './tx/transfer-policy';
-export * from './tx/rules';
 export * from './query/kiosk';
 export * from './bcs';
 export * from './utils';

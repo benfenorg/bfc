@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useRpcClient } from '@mysten/core';
 import { X12, QrCode } from '@mysten/icons';
-import { isValidSuiAddress } from '@mysten/sui.js/utils';
+import { isValidSuiAddress } from '@mysten/sui.js';
 import { useQuery } from '@tanstack/react-query';
 import { cx } from 'class-variance-authority';
 import { useField, useFormikContext } from 'formik';
@@ -34,7 +34,7 @@ export function AddressInput({
 }: AddressInputProps) {
 	const [field, meta] = useField(name);
 
-	const client = useSuiClient();
+	const rpc = useRpcClient();
 	const { data: warningData } = useQuery({
 		queryKey: ['address-input-warning', field.value],
 		queryFn: async () => {
@@ -43,18 +43,18 @@ export function AddressInput({
 				return null;
 			}
 
-			const object = await client.getObject({ id: field.value });
+			const object = await rpc.getObject({ id: field.value });
 
 			if (object && 'data' in object) {
 				return RecipientWarningType.OBJECT;
 			}
 
 			const [fromAddr, toAddr] = await Promise.all([
-				client.queryTransactionBlocks({
+				rpc.queryTransactionBlocks({
 					filter: { FromAddress: field.value },
 					limit: 1,
 				}),
-				client.queryTransactionBlocks({
+				rpc.queryTransactionBlocks({
 					filter: { ToAddress: field.value },
 					limit: 1,
 				}),
@@ -93,17 +93,14 @@ export function AddressInput({
 		setFieldValue('to', '');
 	}, [setFieldValue]);
 
-	const hasWarningOrError = meta.touched && (meta.error || warningData);
-
 	return (
 		<>
 			<div
 				className={cx(
-					'flex h-max w-full rounded-2lg bg-white border border-solid box-border focus-within:border-steel transition-all overflow-hidden',
-					hasWarningOrError ? 'border-issue' : 'border-gray-45',
+					'flex h-max w-full overflow-hidden border border-solid border-obc-border rounded-lg bg-obc-card text-obc-text3 focus-within:bg-white focus-within:border-obc-text1',
 				)}
 			>
-				<div className="min-h-[42px] w-full flex items-center pl-3 py-2">
+				<div className="h-10 w-full flex items-center pl-2.5">
 					<TextareaAutosize
 						data-testid="address-input"
 						maxRows={3}
@@ -114,8 +111,7 @@ export function AddressInput({
 						onChange={handleOnChange}
 						onBlur={field.onBlur}
 						className={cx(
-							'w-full text-bodySmall leading-100 font-medium font-mono bg-white placeholder:text-steel-dark placeholder:font-normal placeholder:font-mono border-none resize-none',
-							hasWarningOrError ? 'text-issue' : 'text-gray-90',
+							'address bg-transparent w-full text-body/[18px] leading-100 font-normal placeholder:text-obc-text3 border-none resize-none focus:text-obc',
 						)}
 						name={name}
 					/>
@@ -123,12 +119,12 @@ export function AddressInput({
 
 				<div
 					onClick={clearAddress}
-					className="flex bg-gray-40 items-center justify-center w-11 right-0 max-w-[20%] ml-4 cursor-pointer"
+					className="flex bg-obc-border items-center justify-center w-11 right-0 ml-1.25 cursor-pointer"
 				>
 					{meta.touched && field.value ? (
-						<X12 className="h-3 w-3 text-steel-darker" />
+						<X12 className="h-3 w-3 text-obc" />
 					) : (
-						<QrCode className="h-5 w-5 text-steel-darker" />
+						<QrCode className="h-5 w-5 text-obc-text3" />
 					)}
 				</div>
 			</div>
@@ -138,25 +134,25 @@ export function AddressInput({
 					<Alert noBorder rounded="lg" mode={meta.error || warningData ? 'issue' : 'success'}>
 						{warningData === RecipientWarningType.OBJECT ? (
 							<>
-								<Text variant="pBody" weight="semibold">
+								<Text variant="body" weight="normal">
 									This address is an Object
 								</Text>
-								<Text variant="pBodySmall" weight="medium">
+								<Text variant="body" weight="normal">
 									Once sent, the funds cannot be recovered. Please make sure you want to send coins
 									to this address.
 								</Text>
 							</>
 						) : warningData === RecipientWarningType.EMPTY ? (
 							<>
-								<Text variant="pBody" weight="semibold">
+								<Text variant="body" weight="normal">
 									This address has no prior transactions
 								</Text>
-								<Text variant="pBodySmall" weight="medium">
+								<Text variant="body" weight="normal">
 									Please make sure you want to send coins to this address.
 								</Text>
 							</>
 						) : (
-							<Text variant="pBodySmall" weight="medium">
+							<Text variant="body" weight="normal">
 								{meta.error || 'Valid address'}
 							</Text>
 						)}

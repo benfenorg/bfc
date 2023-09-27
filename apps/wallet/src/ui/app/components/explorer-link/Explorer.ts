@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { sui2ObcAddress } from '@mysten/sui.js';
 import { DEFAULT_API_ENV } from '_app/ApiProvider';
 import { getUrlWithDeviceId } from '_src/shared/analytics/amplitude';
 import { API_ENV } from '_src/shared/api-env';
@@ -13,7 +14,7 @@ const API_ENV_TO_EXPLORER_ENV: Record<API_ENV, string | undefined> = {
 	[API_ENV.customRPC]: '',
 };
 
-const EXPLORER_LINK = 'https://suiexplorer.com/';
+const EXPLORER_LINK = 'https://obc.openblock.vip/';
 
 //TODO - this is a temporary solution, we should have a better way to get the explorer url
 function getExplorerUrl(path: string, apiEnv: API_ENV = DEFAULT_API_ENV, customRPC: string) {
@@ -34,7 +35,7 @@ export function getObjectUrl(
 	moduleName?: string | null,
 ) {
 	return getExplorerUrl(
-		`/object/${objectID}${moduleName ? `?module=${moduleName}` : ''}`,
+		`/object/${sui2ObcAddress(objectID)}${moduleName ? `?module=${moduleName}` : ''}`,
 		apiEnv,
 		customRPC,
 	);
@@ -45,9 +46,9 @@ export function getTransactionUrl(txDigest: string, apiEnv: API_ENV, customRPC: 
 }
 
 export function getAddressUrl(address: string, apiEnv: API_ENV, customRPC: string) {
-	return getExplorerUrl(`/address/${address}`, apiEnv, customRPC);
+	return getExplorerUrl(`/address/${sui2ObcAddress(address)}`, apiEnv, customRPC);
 }
 
 export function getValidatorUrl(address: string, apiEnv: API_ENV, customRPC: string) {
-	return getExplorerUrl(`/validator/${address}`, apiEnv, customRPC);
+	return getExplorerUrl(`/validator/${sui2ObcAddress(address)}`, apiEnv, customRPC);
 }

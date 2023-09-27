@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import {
 	LockUnlocked16 as UnlockedLockIcon,
 	Spinner16 as SpinnerIcon,
@@ -14,14 +15,13 @@ import {
 	type SelectableLedgerAccount,
 	LedgerAccountList,
 } from '../../components/ledger/LedgerAccountList';
-import {
-	type DerivedLedgerAccount,
-	useDeriveLedgerAccounts,
-} from '../../components/ledger/useDeriveLedgerAccounts';
+import { useDeriveLedgerAccounts } from '../../components/ledger/useDeriveLedgerAccounts';
 import { useImportLedgerAccountsMutation } from '../../components/ledger/useImportLedgerAccountsMutation';
+import { useNextMenuUrl } from '../../components/menu/hooks';
 import Overlay from '../../components/overlay';
 import { getSuiApplicationErrorMessage } from '../../helpers/errorMessages';
 import { useAccounts } from '../../hooks/useAccounts';
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
 import { ampli } from '_src/shared/analytics/ampli';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import { Link } from '_src/ui/app/shared/Link';
@@ -29,22 +29,17 @@ import { Text } from '_src/ui/app/shared/text';
 
 const numLedgerAccountsToDeriveByDefault = 10;
 
-export function ImportLedgerAccountsPage({
-	onClose,
-	onConfirmed,
-	password = '',
-}: {
-	onConfirmed?: () => void;
-	onClose?: () => void;
-	// TODO: remove, this is temporary for testing new accounts
-	password?: string;
-}) {
-	const closeRedirectUrl = '/accounts/add-account';
-	const successRedirectUrl = '/tokens';
+export function ImportLedgerAccountsPage() {
+	const accountMenuUrl = useNextMenuUrl(true, `/accounts`);
+	const shouldUseNewRedirectUrls = useFeatureIsOn('enoki-social-sign-in');
+	const closeRedirectUrl = shouldUseNewRedirectUrls ? '/accounts/add-account' : accountMenuUrl;
+	const successRedirectUrl = shouldUseNewRedirectUrls ? '/tokens' : accountMenuUrl;
 	const navigate = useNavigate();
 
-	const { data: existingAccounts } = useAccounts();
-	const [selectedLedgerAccounts, setSelectedLedgerAccounts] = useState<DerivedLedgerAccount[]>([]);
+	const existingAccounts = useAccounts();
+	const [selectedLedgerAccounts, setSelectedLedgerAccounts] = useState<SerializedLedgerAccount[]>(
+		[],
+	);
 
 	const {
 		data: ledgerAccounts,
@@ -54,31 +49,22 @@ export function ImportLedgerAccountsPage({
 		numAccountsToDerive: numLedgerAccountsToDeriveByDefault,
 		select: (ledgerAccounts) => {
 			return ledgerAccounts.filter(
-				({ address }) => !existingAccounts?.some((account) => account.address === address),
+				({ address }) => !existingAccounts.some((account) => account.address === address),
 			);
 		},
 		onError: (error) => {
 			toast.error(getSuiApplicationErrorMessage(error) || 'Something went wrong.');
-			if (onClose) {
-				onClose();
-			} else {
-				navigate(closeRedirectUrl, { replace: true });
-			}
+			navigate(closeRedirectUrl, { replace: true });
 		},
 	});
 
 	const importLedgerAccountsMutation = useImportLedgerAccountsMutation({
-		password,
 		onSuccess: (_, importedAccounts) => {
 			ampli.addedAccounts({
 				accountType: 'Ledger',
 				numberOfAccounts: importedAccounts.length,
 			});
-			if (onConfirmed) {
-				onConfirmed();
-			} else {
-				navigate(successRedirectUrl);
-			}
+			navigate(successRedirectUrl);
 		},
 		onError: () => {
 			toast.error('There was an issue importing your Ledger accounts.');
@@ -148,11 +134,7 @@ export function ImportLedgerAccountsPage({
 			showModal
 			title="Import Accounts"
 			closeOverlay={() => {
-				if (onClose) {
-					onClose();
-				} else {
-					navigate(closeRedirectUrl);
-				}
+				navigate(closeRedirectUrl);
 			}}
 		>
 			<div className="w-full flex flex-col gap-5">

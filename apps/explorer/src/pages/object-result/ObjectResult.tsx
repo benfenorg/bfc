@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetObject } from '@mysten/core';
+import { sui2ObcAddress } from '@mysten/sui.js';
 import { LoadingIndicator } from '@mysten/ui';
 import { useParams } from 'react-router-dom';
 
@@ -16,14 +17,12 @@ import { PageHeader } from '~/ui/PageHeader';
 const PACKAGE_TYPE_NAME = 'Move Package';
 
 function Fail({ objID }: { objID: string | undefined }) {
+	//TODO to be check
 	return (
-		<PageLayout
-			content={
-				<Banner variant="error" spacing="lg" fullWidth>
-					Data could not be extracted on the following specified object ID: {objID}
-				</Banner>
-			}
-		/>
+		<Banner variant="error" spacing="lg" fullWidth>
+			Data could not be extracted on the following specified object ID:{' '}
+			{objID ? sui2ObcAddress(objID) : ''}
+		</Banner>
 	);
 }
 

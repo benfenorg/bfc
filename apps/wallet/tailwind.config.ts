@@ -3,7 +3,6 @@
 
 import preset from '@mysten/core/tailwind.config';
 import { type Config } from 'tailwindcss';
-import animatePlugin from 'tailwindcss-animate';
 
 export default {
 	presets: [preset],
@@ -31,14 +30,16 @@ export default {
 				8: '2rem',
 				15: '3.75rem',
 				'popup-height': '600px',
-				'popup-width': '360px',
+				'popup-height-v2': '680px',
+				'popup-width': '340px',
 			},
 			boxShadow: {
 				'wallet-content': '0px -5px 20px 5px rgba(160, 182, 195, 0.15)',
 				button: '0px 1px 2px rgba(16, 24, 40, 0.05)',
 				notification: '0px 0px 20px rgba(29, 55, 87, 0.11)',
 				'wallet-modal': '0px 0px 44px 0px rgba(0, 0, 0, 0.15)',
-				'card-soft': '1px 2px 8px 2px rgba(21, 82, 123, 0.05)',
+				'summary-card':
+					'0px 5px 30px rgba(86, 104, 115, 0.2), 0px 0px 0px 1px rgba(160, 182, 195, 0.08)',
 			},
 			borderRadius: {
 				20: '1.25rem',
@@ -55,7 +56,7 @@ export default {
 				'nav-height': '76px',
 			},
 			maxWidth: {
-				'popup-width': '360px',
+				'popup-width': '340px',
 			},
 			dropShadow: {
 				accountModal: ['0px 10px 30px rgba(0, 0, 0, 0.15)', '0px 10px 50px rgba(0, 0, 0, 0.15)'],
@@ -65,5 +66,4 @@ export default {
 			},
 		},
 	},
-	plugins: [animatePlugin],
 } satisfies Partial<Config>;

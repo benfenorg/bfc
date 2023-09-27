@@ -14,6 +14,7 @@
 import { toB64, fromB64 } from './b64';
 import { toHEX, fromHEX } from './hex';
 import bs58 from 'bs58';
+import sha256 from 'fast-sha256';
 
 const SUI_ADDRESS_LENGTH = 32;
 
@@ -823,7 +824,9 @@ export class BCS {
 						return fromHEX(data).reduce((writer, el) => writer.write8(el), writer);
 					},
 					function decodeAddress(reader) {
-						return toHEX(reader.readBytes(length));
+						const hex = toHEX(reader.readBytes(length)).padStart(2 * length, '0');
+						const hash = toHEX(sha256(new TextEncoder().encode(hex)));
+						return `OBC${hex}${hash.slice(0, 4)}`;
 					},
 				);
 			default:

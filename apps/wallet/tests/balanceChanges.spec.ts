@@ -5,8 +5,6 @@ import { expect, test } from './fixtures';
 import { createWallet, importWallet } from './utils/auth';
 import { generateKeypairFromMnemonic, requestSuiFromFaucet } from './utils/localnet';
 
-test.skip();
-
 const receivedAddressMnemonic = [
 	'beef',
 	'beef',
@@ -89,5 +87,5 @@ test('check balance changes in Activity', async ({ page, extensionUrl }) => {
 		.getByText(/Transaction/i)
 		.first()
 		.click();
-	await expect(page.getByText(`${COIN_TO_SEND} SUI`, { exact: false })).toBeVisible();
+	await expect(page.getByText(`Amount+${COIN_TO_SEND} SUI`)).toBeVisible();
 });

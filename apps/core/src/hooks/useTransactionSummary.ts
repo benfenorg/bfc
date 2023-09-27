@@ -3,7 +3,11 @@
 import {
 	DryRunTransactionBlockResponse,
 	type SuiTransactionBlockResponse,
-} from '@mysten/sui.js/client';
+	getExecutionStatusType,
+	getTransactionDigest,
+	getTransactionSender,
+} from '@mysten/sui.js';
+import { is } from '@mysten/sui.js/utils';
 import { useMemo } from 'react';
 
 import { getBalanceChangeSummary } from '../utils/transaction/getBalanceChangeSummary';
@@ -19,11 +23,9 @@ import { getObjectDisplayLookup } from '../utils/transaction/getObjectDisplayLoo
 export function useTransactionSummary({
 	transaction,
 	currentAddress,
-	recognizedPackagesList,
 }: {
 	transaction?: SuiTransactionBlockResponse | DryRunTransactionBlockResponse;
 	currentAddress?: string;
-	recognizedPackagesList: string[];
 }) {
 	const { objectChanges } = transaction ?? {};
 
@@ -46,33 +48,28 @@ export function useTransactionSummary({
 	const summary = useMemo(() => {
 		if (!transaction) return null;
 		const objectSummary = getObjectChangeSummary(objectChangesWithDisplay);
-		const balanceChangeSummary = getBalanceChangeSummary(transaction, recognizedPackagesList);
+		const balanceChangeSummary = getBalanceChangeSummary(transaction);
 		const gas = getGasSummary(transaction);
 
-		if ('digest' in transaction) {
-			// Non-dry-run transaction:
+		if (is(transaction, DryRunTransactionBlockResponse)) {
 			return {
 				gas,
-				sender: transaction.transaction?.data.sender,
-				balanceChanges: balanceChangeSummary,
-				digest: transaction.digest,
-				label: getLabel(transaction, currentAddress),
 				objectSummary,
-				status: transaction.effects?.status.status,
-				timestamp: transaction.timestampMs,
-				upgradedSystemPackages: transaction.effects?.mutated?.filter(
-					({ owner }) => owner === 'Immutable',
-				),
+				balanceChanges: balanceChangeSummary,
 			};
 		} else {
-			// Dry run transaction:
 			return {
 				gas,
-				objectSummary,
+				sender: getTransactionSender(transaction),
 				balanceChanges: balanceChangeSummary,
+				digest: getTransactionDigest(transaction),
+				label: getLabel(transaction, currentAddress),
+				objectSummary,
+				status: getExecutionStatusType(transaction),
+				timestamp: transaction.timestampMs,
 			};
 		}
-	}, [transaction, objectChangesWithDisplay, recognizedPackagesList, currentAddress]);
+	}, [transaction, currentAddress, objectChangesWithDisplay]);
 
 	return summary;
 }

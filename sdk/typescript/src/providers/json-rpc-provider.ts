@@ -52,8 +52,7 @@ import { fromB58, toB64, toHEX } from '@mysten/bcs';
 import type { SerializedSignature } from '../cryptography/signature.js';
 import type { Connection } from '../rpc/connection.js';
 import { devnetConnection } from '../rpc/connection.js';
-import type { TransactionBlock } from '../builder/index.js';
-import { isTransactionBlock } from '../builder/index.js';
+import { TransactionBlock } from '../builder/index.js';
 import { CheckpointPage } from '../types/checkpoints.js';
 import { NetworkMetrics, AddressMetrics, AllEpochsAddressMetrics } from '../types/metrics.js';
 import { EpochInfo, EpochPage } from '../types/epochs.js';
@@ -612,7 +611,7 @@ export class JsonRpcProvider {
 		epoch?: string | null;
 	}): Promise<DevInspectResults> {
 		let devInspectTxBytes;
-		if (isTransactionBlock(input.transactionBlock)) {
+		if (TransactionBlock.is(input.transactionBlock)) {
 			input.transactionBlock.setSenderIfNotSet(input.sender);
 			devInspectTxBytes = toB64(
 				await input.transactionBlock.build({

@@ -21,36 +21,36 @@
 
 .network-item {
 	list-style: none;
-	padding: 0 10px;
-	height: 56px;
+	padding: 20x 10px;
+	height: 58px;
 	cursor: pointer;
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
-	border-bottom: 1px solid colors.$gray-45;
-
-	@include utils.typography('table/title-sm');
+	border-bottom: 1px solid colors.$obc-border;
 
 	line-height: 100%;
 
 	.network-selector {
 		background: transparent;
 		border: none;
-		padding: 15px 0;
-		margin: 0;
 		text-decoration: none;
 		display: flex;
+		align-items: center;
 		width: 100%;
 		cursor: pointer;
-
-		@include utils.typography('table/title-sm');
-
-		line-height: 100%;
+		font-size: 12px;
+		line-height: 18px;
+		font-weight: 400;
+		color: colors.$obc-text1;
 	}
 
 	.network-icon {
-		font-size: 16px;
-		color: colors.$gray-45;
+		width: 14px;
+		height: 14px;
+		color: white;
+		border-radius: 100%;
+		background-color: colors.$obc-text3;
 		line-height: 100%;
 		transition: color 0.2s ease-in-out;
 	}
@@ -60,15 +60,15 @@
 	}
 
 	.network-active {
-		color: colors.$success;
+		background-color: colors.$obc-text1;
 
 		&.custom-rpc-active {
-			color: colors.$success;
+			background-color: colors.$obc-text1;
 		}
 	}
 
 	.custom-rpc-active {
-		color: colors.$gray-60;
+		background-color: colors.$obc-text2;
 	}
 }
 

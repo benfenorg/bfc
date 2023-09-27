@@ -1,7 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ObjectOwner, type SuiObjectResponse } from '@mysten/sui.js/client';
+import {
+	getObjectType,
+	sui2ObcAddress,
+	type ObjectOwner,
+	type SuiObjectResponse,
+} from '@mysten/sui.js';
 
 import { findIPFSvalue } from './stringUtils';
 
@@ -21,19 +26,30 @@ export function parseImageURL(display?: Record<string, string> | null) {
 }
 
 export function parseObjectType(data: SuiObjectResponse): string {
-	if (data.data?.content?.dataType === 'package') {
+	// TODO: define better naming and typing here
+	const dataType = getObjectType(data);
+	if (dataType === 'package') {
 		return 'Move Package';
 	}
-	return data.data?.type ?? data?.data?.content?.type ?? 'unknown';
+	return dataType ?? 'unknown';
 }
 
 export function getOwnerStr(owner: ObjectOwner | string): string {
+	let address: string;
 	if (typeof owner === 'object') {
-		if ('AddressOwner' in owner) return owner.AddressOwner;
-		if ('ObjectOwner' in owner) return owner.ObjectOwner;
-		if ('Shared' in owner) return 'Shared';
+		if ('AddressOwner' in owner) {
+			address = owner.AddressOwner;
+		} else if ('ObjectOwner' in owner) {
+			address = owner.ObjectOwner;
+		} else if ('Shared' in owner) {
+			address = 'Shared';
+		} else {
+			address = '';
+		}
+	} else {
+		address = owner;
 	}
-	return owner;
+	return sui2ObcAddress(address);
 }
 
 export const checkIsPropertyType = (value: any) => ['number', 'string'].includes(typeof value);

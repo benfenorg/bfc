@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiValidatorSummary } from '@mysten/sui.js/client';
+import { type SuiValidatorSummary } from '@mysten/sui.js';
 import { Heading } from '@mysten/ui';
 
 import { DelegationAmount } from './DelegationAmount';
-import { Card } from '~/ui/Card';
+import { Divider } from '~/ui/Divider';
 import { Stats } from '~/ui/Stats';
 
 type StatsCardProps = {
@@ -33,114 +33,118 @@ export function ValidatorStats({
 	const rewardsPoolBalance = Number(validatorData.rewardsPool);
 
 	return (
-		<div className="flex flex-col items-stretch gap-5 md:flex-row">
+		<div className="flex flex-col gap-14">
 			<div className="flex-grow">
-				<Card spacing="lg" height="full">
-					<div className="flex basis-full flex-col gap-8 md:basis-1/3">
-						<Heading as="div" variant="heading4/semibold" color="steel-darker">
-							SUI Staked on Validator
-						</Heading>
-						<div className="flex flex-col gap-8 lg:flex-row">
-							<Stats
-								label="Staking APY"
-								tooltip="This is the Annualized Percentage Yield of the a specific validator’s past operations. Note there is no guarantee this APY will be true in the future."
-								unavailable={apy === null}
-							>
-								{apy}%
-							</Stats>
-							<Stats
-								label="Total SUI Staked"
-								tooltip="The total SUI staked on the network by validators and delegators to validate the network and earn rewards."
-								unavailable={totalStake <= 0}
-							>
-								<DelegationAmount amount={totalStake} isStats />
-							</Stats>
-						</div>
-						<div className="flex flex-col gap-8 lg:flex-row">
-							<Stats label="Commission" tooltip="Fee charged by the validator for staking services">
-								<Heading as="h3" variant="heading2/semibold" color="steel-darker">
-									{commission}%
-								</Heading>
-							</Stats>
-							<Stats label="Delegators" tooltip="The number of active delegators" unavailable />
-						</div>
+				<div className="flex basis-full flex-col gap-5 md:basis-1/3">
+					<Heading as="div" variant="heading4/semibold" color="steel-darker">
+						OBC Staked on Validator
+					</Heading>
+					<Divider />
+					<div className="grid grid-cols-2">
+						<Stats
+							label="Staking APY"
+							tooltip="This is the Annualized Percentage Yield of the a specific validator’s past operations. Note there is no guarantee this APY will be true in the future."
+							unavailable={apy === null}
+						>
+							{apy}%
+						</Stats>
+						<Stats
+							label="Total OBC Staked"
+							tooltip="The total OBC staked on the network by validators and delegators to validate the network and earn rewards."
+							unavailable={totalStake <= 0}
+						>
+							<DelegationAmount amount={totalStake} isStats />
+						</Stats>
 					</div>
-				</Card>
+					<div className="grid grid-cols-2">
+						<Stats label="Commission" tooltip="Fee charged by the validator for staking services">
+							<Heading as="h3" variant="heading2/semibold" color="steel-darker">
+								{commission}%
+							</Heading>
+						</Stats>
+						<Stats label="Delegators" tooltip="The number of active delegators" unavailable />
+					</div>
+				</div>
 			</div>
 
 			<div className="flex-grow">
-				<Card spacing="lg" height="full">
-					<div className="flex basis-full flex-col items-stretch gap-8 md:basis-80">
-						<Heading as="div" variant="heading4/semibold" color="steel-darker">
-							Validator Staking Rewards
-						</Heading>
-						<div className="flex flex-col gap-8">
-							<Stats
-								label="Last Epoch Rewards"
-								tooltip="The stake rewards collected during the last epoch."
-								unavailable={epochRewards === null}
-							>
-								<DelegationAmount
-									amount={typeof epochRewards === 'number' ? epochRewards : 0n}
-									isStats
-								/>
-							</Stats>
+				<div className="flex basis-full flex-col items-stretch gap-5">
+					<Heading as="div" variant="heading4/semibold" color="steel-darker">
+						Validator Staking Rewards
+					</Heading>
+					<Divider />
+					<div className="grid grid-cols-2">
+						<Stats
+							label="Last Epoch Rewards"
+							tooltip="The stake rewards collected during the last epoch."
+							unavailable={epochRewards === null}
+						>
+							<DelegationAmount
+								amount={typeof epochRewards === 'number' ? epochRewards : 0n}
+								isStats
+							/>
+						</Stats>
 
-							<Stats
-								label="Reward Pool"
-								tooltip="Amount currently in this validator’s reward pool"
-								unavailable={Number(rewardsPoolBalance) <= 0}
-							>
-								<DelegationAmount amount={rewardsPoolBalance} isStats />
-							</Stats>
-						</div>
+						<Stats
+							label="Reward Pool"
+							tooltip="Amount currently in this validator’s reward pool"
+							unavailable={Number(rewardsPoolBalance) <= 0}
+						>
+							<DelegationAmount amount={rewardsPoolBalance} isStats />
+						</Stats>
 					</div>
-				</Card>
+				</div>
 			</div>
 
 			<div className="flex-grow">
-				<Card spacing="lg" height="full">
-					<div className="flex max-w-full flex-col gap-8">
-						<Heading as="div" variant="heading4/semibold" color="steel-darker">
-							Network Participation
-						</Heading>
-						<div className="flex flex-col gap-8">
-							<div className="flex flex-col gap-8 lg:flex-row">
-								<Stats
-									label="Checkpoint Participation"
-									tooltip="The percentage of checkpoints certified thus far by this validator."
-									unavailable
-								/>
+				<div className="flex max-w-full flex-col gap-5">
+					<Heading as="div" variant="heading4/semibold" color="steel-darker">
+						Network Participation
+					</Heading>
+					<Divider />
+					<div className="flex flex-col gap-5">
+						<div className="grid grid-cols-2">
+							<Stats
+								label="Checkpoint Participation"
+								tooltip="The percentage of checkpoints certified thus far by this validator."
+								unavailable
+							/>
 
-								<Stats
-									label="Voted Last Round"
-									tooltip="Did this validator vote in the latest round."
-									unavailable
-								/>
-							</div>
-							<div className="flex flex-col gap-8 lg:flex-row">
-								<Stats
-									label="Tallying Score"
-									tooltip="A score generated by validators to evaluate each other’s performance throughout Sui’s regular operations."
-									unavailable={!tallyingScore}
-								>
-									{tallyingScore}
-								</Stats>
-								<Stats
-									label="Last Narwhal Round"
-									tooltip="Latest Narwhal round for this epoch."
-									unavailable
-								/>
-								<Stats
-									label="Proposed Next Epoch Gas Price"
-									tooltip="This validator's gas price quote for the next epoch."
-								>
-									<DelegationAmount amount={validatorData.nextEpochGasPrice} isStats inMIST />
-								</Stats>
-							</div>
+							<Stats
+								label="Voted Last Round"
+								tooltip="Did this validator vote in the latest round."
+								unavailable
+							/>
+						</div>
+						<div className="grid grid-cols-2">
+							<Stats
+								label="Voted Last Round"
+								tooltip="Did this validator vote in the latest round."
+								unavailable
+							/>
+							<Stats
+								label="Tallying Score"
+								tooltip="A score generated by validators to evaluate each other’s performance throughout OBC’s regular operations."
+								unavailable={!tallyingScore}
+							>
+								{tallyingScore}
+							</Stats>
+						</div>
+						<div className="grid grid-cols-2">
+							<Stats
+								label="Last Narwhal Round"
+								tooltip="Latest Narwhal round for this epoch."
+								unavailable
+							/>
+							<Stats
+								label="Proposed Next Epoch Gas Price"
+								tooltip="This validator's gas price quote for the next epoch."
+							>
+								<DelegationAmount amount={validatorData.nextEpochGasPrice} isStats inMIST />
+							</Stats>
 						</div>
 					</div>
-				</Card>
+				</div>
 			</div>
 		</div>
 	);

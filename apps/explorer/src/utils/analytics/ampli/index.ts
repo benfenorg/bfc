@@ -178,7 +178,7 @@ export class CompletedSearch implements BaseEvent {
 }
 
 export class OpenedSuiExplorer implements BaseEvent {
-	event_type = 'opened sui explorer';
+	event_type = 'opened OBC explorer';
 }
 
 export class SwitchedNetwork implements BaseEvent {

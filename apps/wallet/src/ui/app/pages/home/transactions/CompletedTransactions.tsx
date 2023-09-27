@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getTransactionDigest } from '@mysten/sui.js';
+
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';
@@ -19,12 +21,12 @@ export function CompletedTransactions() {
 		<Loading loading={isLoading}>
 			{txns?.length && activeAddress ? (
 				txns.map((txn) => (
-					<ErrorBoundary key={txn.digest}>
+					<ErrorBoundary key={getTransactionDigest(txn)}>
 						<TransactionCard txn={txn} address={activeAddress} />
 					</ErrorBoundary>
 				))
 			) : (
-				<NoActivityCard message="When available, your Sui network transactions will show up here." />
+				<NoActivityCard message="When available, your OBC network transactions will show up here." />
 			)}
 		</Loading>
 	);

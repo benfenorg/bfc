@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import { appDisconnect } from './actions';
+import { useAccounts } from '../../hooks/useAccounts';
 import { useActiveAddress } from '../../hooks/useActiveAddress';
 import { ButtonConnectedTo } from '../ButtonConnectedTo';
 import Loading from '_components/loading';
@@ -34,12 +35,13 @@ function DappStatus() {
 		}
 	}, [activeOriginUrl]);
 	const activeOriginFavIcon = useAppSelector(({ app }) => app.activeOriginFavIcon);
-	const activeAddress = useActiveAddress();
 	const dappStatusSelector = useMemo(
-		() => createDappStatusSelector(activeOriginUrl, activeAddress),
-		[activeOriginUrl, activeAddress],
+		() => createDappStatusSelector(activeOriginUrl),
+		[activeOriginUrl],
 	);
 	const isConnected = useAppSelector(dappStatusSelector);
+	const allAccounts = useAccounts();
+	const activeAddress = useActiveAddress();
 	const [disconnecting, setDisconnecting] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const onHandleClick = useCallback(
@@ -78,7 +80,7 @@ function DappStatus() {
 				await dispatch(
 					appDisconnect({
 						origin: activeOriginUrl,
-						accounts: [activeAddress],
+						accounts: allAccounts.map((i) => i.address),
 					}),
 				).unwrap();
 				ampli.disconnectedApplication({
@@ -93,7 +95,7 @@ function DappStatus() {
 				setDisconnecting(false);
 			}
 		}
-	}, [disconnecting, isConnected, activeOriginUrl, activeAddress, dispatch]);
+	}, [disconnecting, isConnected, activeOriginUrl, activeAddress, dispatch, allAccounts]);
 	if (!isConnected) {
 		return null;
 	}
@@ -101,7 +103,7 @@ function DappStatus() {
 		<>
 			<ButtonConnectedTo
 				truncate
-				iconBefore={<Dot12 className="text-success" />}
+				iconBefore={<Dot12 className="text-obc-green" />}
 				text={activeOrigin || ''}
 				iconAfter={<ChevronDown12 />}
 				ref={reference}

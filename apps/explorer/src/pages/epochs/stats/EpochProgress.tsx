@@ -7,6 +7,7 @@ import clsx from 'clsx';
 
 import { getElapsedTime, useEpochProgress } from '~/pages/epochs/utils';
 import { Card } from '~/ui/Card';
+import { Divider } from '~/ui/Divider';
 import { ProgressBar } from '~/ui/ProgressBar';
 
 export interface EpochProgressProps {
@@ -23,43 +24,56 @@ export function EpochProgress({ epoch, start, end, inProgress }: EpochProgressPr
 
 	return (
 		<Card bg={inProgress ? 'highlight' : 'default'} spacing="lg" rounded="2xl">
-			<div className="flex flex-col space-y-12">
-				<div className={clsx(inProgress ? 'space-y-4' : 'space-y-6')}>
-					<div className="flex flex-col gap-2">
-						<Heading color="steel-darker" variant="heading3/semibold">
-							{inProgress ? `Epoch ${epoch} in progress` : `Epoch ${epoch}`}
+			<div className="flex flex-col space-y-5">
+				<div className={clsx(inProgress ? 'space-y-4' : 'space-y-5')}>
+					<div className="flex items-center justify-between">
+						<Heading color="steel-darker" variant="heading4/semibold">
+							{inProgress ? `Epoch ${epoch}` : `Epoch ${epoch}`}
 						</Heading>
-						{elapsedTime && (
-							<Heading variant="heading6/medium" color="steel-darker">
+						{elapsedTime ? (
+							<Heading variant="heading6/medium" color="steel">
 								{elapsedTime}
+							</Heading>
+						) : (
+							<Heading variant="heading6/medium" color="steel">
+								in progress
 							</Heading>
 						)}
 					</div>
-					<div>
-						<Text variant="pSubtitleSmall/normal" uppercase color="steel-darker">
+					<Divider />
+					<div className="space-y-1.5">
+						<Text variant="body/normal" uppercase color="steel-dark">
 							Start
 						</Text>
-						<Text variant="pSubtitle/semibold" color="steel-darker">
+						<Text variant="pHeading4/semibold" color="steel-darker">
 							{formatDate(start)}
 						</Text>
 					</div>
 					{!inProgress && end ? (
 						<div>
-							<Text variant="pSubtitleSmall/normal" uppercase color="steel-darker">
+							<Text variant="body/normal" uppercase color="steel-dark">
 								End
 							</Text>
-							<Text variant="pSubtitle/semibold" color="steel-darker">
+							<Text variant="pHeading4/semibold" color="steel-darker">
 								{formatDate(end)}
 							</Text>
 						</div>
 					) : null}
 				</div>
 				{inProgress ? (
-					<div className="space-y-2">
-						<Heading variant="heading6/medium" color="steel-darker">
-							{label}
-						</Heading>
-						<ProgressBar animate progress={progress || 0} />
+					<div className="space-y-1.5">
+						<Text variant="body/normal" color="steel-dark">
+							End
+						</Text>
+						<div className="flex items-center gap-2">
+							<div className="whitespace-nowrap">
+								<Text variant="pHeading4/semibold" color="steel-darker">
+									{label}
+								</Text>
+							</div>
+
+							<ProgressBar animate progress={progress || 0} />
+						</div>
 					</div>
 				) : null}
 			</div>

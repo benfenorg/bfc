@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiMoveNormalizedType } from '@mysten/sui.js/client';
+import { type SuiMoveNormalizedType } from '@mysten/sui.js';
 
 type TypeReference =
 	| {
@@ -23,11 +23,7 @@ function splitByCommaExcludingBrackets(input: string) {
 	return input.split(regex).map((part) => part.trim());
 }
 
-<<<<<<< HEAD
 export function extractSerializationType(type: SuiMoveNormalizedType): TypeReference {
-=======
-export function extractSerializationType(type: SuiMoveNormalizedType | ''): TypeReference {
->>>>>>> heads/mainnet-v1.9.1
 	if (typeof type === 'string') {
 		return type;
 	}
@@ -55,11 +51,7 @@ export function extractSerializationType(type: SuiMoveNormalizedType | ''): Type
 	return type;
 }
 
-<<<<<<< HEAD
 export function getFieldTypeValue(type: SuiMoveNormalizedType, objectType: string) {
-=======
-export function getFieldTypeValue(type: SuiMoveNormalizedType | '', objectType: string) {
->>>>>>> heads/mainnet-v1.9.1
 	const normalizedType = extractSerializationType(type);
 	if (typeof normalizedType === 'string') {
 		return {

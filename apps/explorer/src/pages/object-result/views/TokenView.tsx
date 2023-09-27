@@ -2,8 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin, CoinFormat } from '@mysten/core';
-import { type SuiObjectResponse } from '@mysten/sui.js/client';
-import { normalizeSuiAddress, SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+import {
+	normalizeSuiAddress,
+	type SuiObjectResponse,
+	getObjectDisplay,
+	getObjectOwner,
+	getObjectId,
+	getObjectVersion,
+	getObjectPreviousTransactionDigest,
+	getSuiObjectData,
+	SUI_TYPE_ARG,
+} from '@mysten/sui.js';
 import { Text } from '@mysten/ui';
 import { useState, useEffect } from 'react';
 
@@ -21,13 +30,13 @@ import { TabHeader } from '~/ui/Tabs';
 import { extractName, parseImageURL, parseObjectType } from '~/utils/objectUtils';
 
 export function TokenView({ data }: { data: SuiObjectResponse }) {
-	const display = data.data?.display?.data;
+	const display = getObjectDisplay(data)?.data;
 	const imgUrl = parseImageURL(display);
-	const objOwner = data.data?.owner;
+	const objOwner = getObjectOwner(data);
 	const name = extractName(display);
-	const objectId = data.data?.objectId!;
+	const objectId = getObjectId(data);
 	const objectType = parseObjectType(data);
-	const storageRebate = data.data?.storageRebate;
+	const storageRebate = getSuiObjectData(data)?.storageRebate;
 	const [storageRebateFormatted, symbol] = useFormatCoin(
 		storageRebate,
 		SUI_TYPE_ARG,
@@ -56,7 +65,7 @@ export function TokenView({ data }: { data: SuiObjectResponse }) {
 
 	return (
 		<div className="flex flex-col flex-nowrap gap-14">
-			<TabHeader title="Details" noGap>
+			<TabHeader size="lineMdOne" title="Details" noGap>
 				<div className="flex flex-col md:flex-row md:divide-x md:divide-gray-45">
 					<div className="flex-1 divide-y divide-gray-45 pb-6 md:basis-2/3 md:pb-0 md:pr-10">
 						<div className="py-4 pb-7">
@@ -75,7 +84,7 @@ export function TokenView({ data }: { data: SuiObjectResponse }) {
 									</DescriptionItem>
 								) : null}
 								<DescriptionItem title="Object ID">
-									<ObjectLink objectId={data.data?.objectId!} noTruncate />
+									<ObjectLink objectId={getObjectId(data)} noTruncate />
 								</DescriptionItem>
 								<DescriptionItem title="Type">
 									{/* TODO: Support module links on `ObjectLink` */}
@@ -85,11 +94,11 @@ export function TokenView({ data }: { data: SuiObjectResponse }) {
 								</DescriptionItem>
 								<DescriptionItem title="Version">
 									<Text variant="body/medium" color="steel-darker">
-										{data.data?.version}
+										{getObjectVersion(data)}
 									</Text>
 								</DescriptionItem>
 								<DescriptionItem title="Last Transaction Block Digest">
-									<TransactionLink digest={data.data?.previousTransaction!} noTruncate />
+									<TransactionLink digest={getObjectPreviousTransactionDigest(data)!} noTruncate />
 								</DescriptionItem>
 							</DescriptionList>
 						</div>

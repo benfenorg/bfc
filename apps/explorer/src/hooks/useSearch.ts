@@ -1,15 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useLatestSuiSystemState, useSuiClient } from '@mysten/dapp-kit';
-import { type SuiClient, type SuiSystemStateSummary } from '@mysten/sui.js/client';
+import { useRpcClient, useGetSystemState, isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import {
 	isValidTransactionDigest,
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	normalizeSuiObjectId,
-} from '@mysten/sui.js/utils';
+	is,
+	SuiObjectData,
+	getTransactionDigest,
+	formatAddress,
+	type SuiSystemStateSummary,
+} from '@mysten/sui.js';
+import { type SuiClient } from '@mysten/sui.js/client';
 import { useQuery } from '@tanstack/react-query';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
@@ -21,8 +25,8 @@ const getResultsForTransaction = async (client: SuiClient, query: string) => {
 	const txdata = await client.getTransactionBlock({ digest: query });
 	return [
 		{
-			id: txdata.digest,
-			label: txdata.digest,
+			id: getTransactionDigest(txdata),
+			label: getTransactionDigest(txdata),
 			type: 'transaction',
 		},
 	];
@@ -33,7 +37,7 @@ const getResultsForObject = async (client: SuiClient, query: string) => {
 	if (!isValidSuiObjectId(normalized)) return null;
 
 	const { data, error } = await client.getObject({ id: normalized });
-	if (!data || error) return null;
+	if (!is(data, SuiObjectData) || error) return null;
 
 	return [
 		{
@@ -62,7 +66,7 @@ const getResultsForCheckpoint = async (client: SuiClient, query: string) => {
 
 const getResultsForAddress = async (client: SuiClient, query: string, suiNSEnabled: boolean) => {
 	if (suiNSEnabled && isSuiNSName(query)) {
-		const resolved = await client.resolveNameServiceAddress({ name: query.toLowerCase() });
+		const resolved = await client.resolveNameServiceAddress({ name: query });
 		if (!resolved) return null;
 		return [
 			{
@@ -98,7 +102,7 @@ const getResultsForAddress = async (client: SuiClient, query: string, suiNSEnabl
 	];
 };
 
-// Query for validator by pool id or sui address.
+// Query for validator by pool id or token address.
 const getResultsForValidatorByPoolIdOrSuiAddress = async (
 	systemStateSummery: SuiSystemStateSummary | null,
 	query: string,
@@ -107,7 +111,7 @@ const getResultsForValidatorByPoolIdOrSuiAddress = async (
 	if ((!isValidSuiAddress(normalized) && !isValidSuiObjectId(normalized)) || !systemStateSummery)
 		return null;
 
-	// find validator by pool id or sui address
+	// find validator by pool id or token address
 	const validator = systemStateSummery.activeValidators?.find(
 		({ stakingPoolId, suiAddress }) => stakingPoolId === normalized || suiAddress === query,
 	);
@@ -124,8 +128,8 @@ const getResultsForValidatorByPoolIdOrSuiAddress = async (
 };
 
 export function useSearch(query: string) {
-	const client = useSuiClient();
-	const { data: systemStateSummery } = useLatestSuiSystemState();
+	const rpc = useRpcClient();
+	const { data: systemStateSummery } = useGetSystemState();
 	const suiNSEnabled = useSuiNSEnabled();
 
 	return useQuery({
@@ -134,15 +138,19 @@ export function useSearch(query: string) {
 		queryFn: async () => {
 			const results = (
 				await Promise.allSettled([
-					getResultsForTransaction(client, query),
-					getResultsForCheckpoint(client, query),
-					getResultsForAddress(client, query, suiNSEnabled),
-					getResultsForObject(client, query),
+					getResultsForTransaction(rpc, query),
+					getResultsForCheckpoint(rpc, query),
+					getResultsForAddress(rpc, query, suiNSEnabled),
+					getResultsForObject(rpc, query),
 					getResultsForValidatorByPoolIdOrSuiAddress(systemStateSummery || null, query),
 				])
 			).filter((r) => r.status === 'fulfilled' && r.value) as PromiseFulfilledResult<Results>[];
 
-			return results.map(({ value }) => value).flat();
+			const resultsEnd = results.map(({ value }) => value).flat();
+			return resultsEnd.map((item) => {
+				item.label = formatAddress(item.label) || '';
+				return item;
+			});
 		},
 		enabled: !!query,
 		cacheTime: 10000,

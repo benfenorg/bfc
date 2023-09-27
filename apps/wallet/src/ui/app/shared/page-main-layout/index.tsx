@@ -4,14 +4,13 @@
 import cl from 'classnames';
 import { createContext, type ReactNode, useState } from 'react';
 
-import { WalletSettingsButton } from '../../components/menu/button/WalletSettingsButton';
 import { useAppSelector } from '../../hooks';
 import { AppType } from '../../redux/slices/app/AppType';
 import DappStatus from '../dapp-status';
 import { Header } from '../header/Header';
 import { Toaster } from '../toaster';
 import { ErrorBoundary } from '_components/error-boundary';
-import { MenuContent } from '_components/menu';
+import { MenuButton, MenuContent } from '_components/menu';
 import Navigation from '_components/navigation';
 
 import st from './PageMainLayout.module.scss';
@@ -37,7 +36,6 @@ export default function PageMainLayout({
 	const appType = useAppSelector((state) => state.app.appType);
 	const isFullScreen = appType === AppType.fullscreen;
 	const [titlePortalContainer, setTitlePortalContainer] = useState<HTMLDivElement | null>(null);
-
 	return (
 		<div
 			className={cl(st.container, {
@@ -47,7 +45,7 @@ export default function PageMainLayout({
 			<Header
 				networkName={networkName}
 				middleContent={dappStatusEnabled ? <DappStatus /> : <div ref={setTitlePortalContainer} />}
-				rightContent={topNavMenuEnabled ? <WalletSettingsButton /> : undefined}
+				rightContent={topNavMenuEnabled ? <MenuButton /> : undefined}
 			/>
 			<div
 				className={cl(st.content, {

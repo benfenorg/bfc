@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin, CoinFormat, formatBalance } from '@mysten/core';
-<<<<<<< HEAD
 import { SUI_TYPE_ARG } from '@mysten/sui.js';
-=======
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
->>>>>>> heads/mainnet-v1.9.1
 import { Text } from '@mysten/ui';
 
 type StakeColumnProps = {
@@ -20,19 +16,11 @@ export function StakeColumn({ stake, hideCoinSymbol, inMIST = false }: StakeColu
 	const [amount, symbol] = useFormatCoin(stake, SUI_TYPE_ARG, coinFormat);
 	return (
 		<div className="flex items-end gap-0.5">
-<<<<<<< HEAD
 			<Text variant="pBody/normal" color="steel-darker">
 				{inMIST ? formatBalance(stake, 0, coinFormat) : amount}
 			</Text>
 			{!hideCoinSymbol && (
 				<Text variant="pBody/normal" color="steel-dark">
-=======
-			<Text variant="bodySmall/medium" color="steel-darker">
-				{inMIST ? formatBalance(stake, 0, coinFormat) : amount}
-			</Text>
-			{!hideCoinSymbol && (
-				<Text variant="captionSmall/medium" color="steel-dark">
->>>>>>> heads/mainnet-v1.9.1
 					{inMIST ? 'MIST' : symbol}
 				</Text>
 			)}
