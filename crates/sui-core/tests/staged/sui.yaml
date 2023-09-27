@@ -57,6 +57,9 @@ ChangeEpoch:
                 SEQ: U8
             - SEQ:
                 TYPENAME: ObjectID
+ChangeObcRound:
+  STRUCT:
+    - obc_round: U64
 CheckpointCommitment:
   ENUM:
     0:
@@ -474,7 +477,9 @@ MoveObjectType_:
         NEWTYPE:
           TYPENAME: StructTag
     1:
-      GasCoin: UNIT
+      GasCoin:
+        NEWTYPE:
+          TYPENAME: TypeTag
     2:
       StakedSui: UNIT
     3:
@@ -846,6 +851,10 @@ TransactionKind:
       ConsensusCommitPrologue:
         NEWTYPE:
           TYPENAME: ConsensusCommitPrologue
+    4:
+      ChangeObcRound:
+        NEWTYPE:
+          TYPENAME: ChangeObcRound
 TypeArgumentError:
   ENUM:
     0:
