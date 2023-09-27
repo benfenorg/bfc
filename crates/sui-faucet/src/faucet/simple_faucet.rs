@@ -1384,7 +1384,7 @@ mod tests {
         let res = SuiClientCommands::PayAllSui {
             input_coins: vec![*bad_gas.id()],
             recipient: SuiAddress::random_for_testing_only(),
-            gas_budget: 2_000_000,
+            gas_budget: 200_000_000,
             serialize_unsigned_transaction: false,
             serialize_signed_transaction: false,
         }

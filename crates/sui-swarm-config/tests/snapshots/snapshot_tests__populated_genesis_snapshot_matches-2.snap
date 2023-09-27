@@ -3,7 +3,7 @@ source: crates/sui-swarm-config/tests/snapshot_tests.rs
 expression: genesis.sui_system_object().into_genesis_version_for_tooling()
 ---
 epoch: 0
-protocol_version: 19
+protocol_version: 23
 system_state_version: 1
 validators:
   total_stake: 2000000000000000
@@ -240,13 +240,13 @@ validators:
         next_epoch_worker_address: ~
         extra_fields:
           id:
-            id: OBC9df281226a4a30312df64c2b3247a51726cd63f45ce66f581f21fe3b28a5328f45c1
+            id: OBC9d61e4102937f96c718574688c550dc521864f4a311d8246953898c622ffabe3f299
           size: 0
       voting_power: 10000
-      operation_cap_id: OBCce9bf76230cdfe47dde7d4749e7960fdd4607e0e39874f612a06efb639fe14feddc5
+      operation_cap_id: OBC79d57bde25dd917d1ae9784d8c29b242f5dfdffae0830ed1453a5eb97bfa7db6b4b7
       gas_price: 1000
       staking_pool:
-        id: OBC84fb7e99021212eb5f4991312d3370b892143727e476b34fb6ee29e214d58ee8f3ea
+        id: OBCb304562c52fdfdcee5f7a25e561013a39b1466b72be77589fac26a3bfc08107f1e41
         activation_epoch: 0
         deactivation_epoch: ~
         sui_balance: 2000000000000000
@@ -254,14 +254,14 @@ validators:
           value: 0
         pool_token_balance: 2000000000000000
         exchange_rates:
-          id: OBCad755acd8c1e961953404593e2ff00fdce73c8c05534a4545c1fed0fc5fe86b6a84f
+          id: OBC0ecbc840a0dc9ded52e8cd374657a3d77f42de2ef237c2116951c44c459b93a7a380
           size: 1
         pending_stake: 0
         pending_total_sui_withdraw: 0
         pending_pool_token_withdraw: 0
         extra_fields:
           id:
-            id: OBC5df1ae4346bf657705a48791abef8174b52880a516dd69ac99cbd1df1f1e9d2fb80b
+            id: OBCe18d7cd17676442ad058f6960767b96a69db80e851df439c4d2d57e77c2753a14f14
           size: 0
       commission_rate: 200
       next_epoch_stake: 2000000000000000
@@ -269,27 +269,27 @@ validators:
       next_epoch_commission_rate: 200
       extra_fields:
         id:
-          id: OBCb11fb91b494b17391c10b0c856831ba651b6863dec2ce4dd087fbbf6643c47ab9415
+          id: OBC7eebed18dfdc97c64b84fb9f02a6c5ce8298f7b3a04e03152fa06d62c6e85b7920f6
         size: 0
   pending_active_validators:
     contents:
-      id: OBC686b7bf4ef38d14e4b74196ff489db81dd2450b7e05916767c98faf00e8f375cd9f8
+      id: OBCf2c1f5943235e2155d239d62a630bee03b4b1f47923789f54b33bb688601257c8c85
       size: 0
   pending_removals: []
   staking_pool_mappings:
-    id: OBC0ce0174f6c0e692cdd9ab2278ad0838c971c792a2db000a89b4cce78c96706fc5a02
+    id: OBCd84939c7481df1da302001e41e06b4b820789c62bfed64c53b1e246d09ec31dff496
     size: 1
   inactive_validators:
-    id: OBCfd5e43cd2de32e823c7d8a377fed34f6b4a9fca4ee81147de203deafe14039adc8df
+    id: OBC42206aecb31bafbc86c1256bcdf0306aaca50d783ac02ba1b0fee076aa3f3fb64141
     size: 0
   validator_candidates:
-    id: OBCbb8d3e3931476f73964e655079274680994b090a7ef174325563f7ed41e57e96462c
+    id: OBC6f50fe801071c729bdbd67a65a4b98c176a5cae5723094670dd0875356dfd9efdfa5
     size: 0
   at_risk_validators:
     contents: []
   extra_fields:
     id:
-      id: OBC00528f853f0c81e37580ed5304dd8f5c798e30cc8a119f977995e5cbce0253c908e9
+      id: OBC59461ebabd0abe980f77c64150db9d7b6ae302c123e7f58fc9216036a1a013c43a6e
     size: 0
 storage_fund:
   total_object_storage_rebates:
@@ -306,7 +306,7 @@ parameters:
   validator_low_stake_grace_period: 7
   extra_fields:
     id:
-      id: OBC7a8b77730d7c6d2e3f36f2c3b56c672d57600f817a42a5c2c04ab0ee62f64b6103bf
+      id: OBC18b8ded9d0a7e6e96573b8ffc879c2f03da6a2adda6c2638f19afb09cca1c6627839
     size: 0
 reference_gas_price: 1000
 validator_report_records:
@@ -320,7 +320,7 @@ stake_subsidy:
   stake_subsidy_decrease_rate: 1000
   extra_fields:
     id:
-      id: OBC52841255c6e746ecd4c213f437320d111229b9f4e4f5a59a0ddc492e70102c79c6bb
+      id: OBC1f9d28f3ed7c9f0d69f6187879fb700c6fe378b5b4c16eb85ca6b93e2cf48a8435cb
     size: 0
 safe_mode: false
 safe_mode_storage_rewards:
@@ -332,6 +332,6 @@ safe_mode_non_refundable_storage_fee: 0
 epoch_start_timestamp_ms: 10
 extra_fields:
   id:
-    id: OBC8d2655bc42cb486f6b79daa376364b7d2e1004f6879540781fa33c9b1a6d17181f0e
+    id: OBC56f73175c9e164a65178e8af08c784f2fc448cee4ac50c77801ab9fd1152454f8d70
   size: 0
 
