@@ -24,7 +24,7 @@ use tracing::info;
 
 use sui_json_rpc_types::{
     CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics, MoveFunctionName,
-    NetworkMetrics, SuiEvent, SuiObjectDataFilter,
+    NetworkMetrics, NetworkOverview, SuiEvent, SuiObjectDataFilter,
 };
 use sui_json_rpc_types::{
     SuiTransactionBlock, SuiTransactionBlockEffects, SuiTransactionBlockEvents,
@@ -50,6 +50,7 @@ use crate::models::checkpoints::Checkpoint;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::events::Event;
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
+use crate::models::network_overview::DBNetworkOverview;
 use crate::models::objects::{
     compose_object_bulk_insert_update_query, filter_latest_objects, Object,
 };
@@ -1205,6 +1206,10 @@ impl PgIndexerStore {
         get_network_metrics_cached(&self.blocking_cp)
     }
 
+    fn get_network_overview(&self) -> Result<NetworkOverview, IndexerError> {
+        get_network_overview_cached(&self.blocking_cp)
+    }
+
     fn get_move_call_metrics(&self) -> Result<MoveCallMetrics, IndexerError> {
         let metrics = read_only_blocking!(&self.blocking_cp, |conn| {
             diesel::sql_query("SELECT
@@ -2275,6 +2280,11 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn get_network_overview(&self) -> Result<NetworkOverview, IndexerError> {
+        self.spawn_blocking(move |this| this.get_network_overview())
+            .await
+    }
+
     async fn persist_checkpoint_transactions(
         &self,
         checkpoints: &[Checkpoint],
@@ -2628,5 +2638,15 @@ fn get_network_metrics_cached(cp: &PgConnectionPool) -> Result<NetworkMetrics, I
         "SELECT * FROM network_metrics;"
     )
     .get_result::<DBNetworkMetrics>(conn))?;
+    Ok(metrics.into())
+}
+
+// Run this function only once every `time` seconds
+#[once(time = 20, result = true)]
+fn get_network_overview_cached(cp: &PgConnectionPool) -> Result<NetworkOverview, IndexerError> {
+    let metrics = read_only_blocking!(cp, |conn| diesel::sql_query(
+        "SELECT * FROM network_overviews;"
+    )
+    .get_result::<DBNetworkOverview>(conn))?;
     Ok(metrics.into())
 }
