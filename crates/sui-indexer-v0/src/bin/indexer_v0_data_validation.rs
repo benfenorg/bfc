@@ -5,7 +5,7 @@ use anyhow::Result;
 use clap::Parser;
 use tracing::{error, info, warn};
 
-use sui_indexer::new_rpc_client;
+use sui_indexer_v0::new_rpc_client;
 use sui_json_rpc_types::{
     CheckpointId, ObjectChange, SuiObjectDataOptions, SuiTransactionBlockResponseOptions,
 };
@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
             check_checkpoint(&config, &fn_rpc_client, &indexer_rpc_client, checkpoint).await?;
         }
     } else {
-        error!("Start checkpoint is not available in both FN and Indexer, start: {}, FN latest: {}, indexer latest: {}", 
+        error!("Start checkpoint is not available in both FN and Indexer, start: {}, FN latest: {}, indexer latest: {}",
         end_checkpoint, fn_latest_checkpoint, indexer_latest_checkpoint);
     }
     Ok(())

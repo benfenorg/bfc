@@ -216,7 +216,6 @@ pub trait IndexerStore {
 
     async fn get_network_metrics(&self) -> Result<NetworkMetrics, IndexerError>;
     async fn get_move_call_metrics(&self) -> Result<MoveCallMetrics, IndexerError>;
-    async fn get_network_overview(&self) -> Result<NetworkOverview, IndexerError>;
 
     async fn persist_checkpoint_transactions(
         &self,

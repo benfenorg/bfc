@@ -4,12 +4,12 @@
 use clap::Parser;
 use tracing::{error, info};
 
-use sui_indexer::errors::IndexerError;
-use sui_indexer::metrics::IndexerMetrics;
-use sui_indexer::start_prometheus_server;
-use sui_indexer::store::PgIndexerStore;
-use sui_indexer::utils::reset_database;
-use sui_indexer::{get_pg_pool_connection, new_pg_connection_pool, Indexer, IndexerConfig};
+use sui_indexer_v0::errors::IndexerError;
+use sui_indexer_v0::metrics::IndexerMetrics;
+use sui_indexer_v0::start_prometheus_server;
+use sui_indexer_v0::store::PgIndexerStore;
+use sui_indexer_v0::utils::reset_database;
+use sui_indexer_v0::{get_pg_pool_connection, new_pg_connection_pool, Indexer, IndexerConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), IndexerError> {

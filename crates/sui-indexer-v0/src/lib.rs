@@ -98,7 +98,7 @@ pub struct IndexerConfig {
     pub rpc_server_url: String,
     #[clap(long, default_value = "9000", global = true)]
     pub rpc_server_port: u16,
-    #[clap(long, multiple_occurrences = false, multiple_values = true)]
+    #[clap(long, num_args(1..))]
     pub migrated_methods: Vec<String>,
     #[clap(long)]
     pub reset_db: bool,
@@ -407,7 +407,9 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         config.rpc_server_url.as_str().parse().unwrap(),
         config.rpc_server_port,
     );
-    Ok(builder.start(default_socket_addr, custom_runtime).await?)
+    Ok(builder
+        .start(default_socket_addr, custom_runtime, None)
+        .await?)
 }
 
 fn convert_url(url_str: &str) -> Option<String> {

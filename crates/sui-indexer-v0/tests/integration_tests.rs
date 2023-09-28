@@ -19,16 +19,16 @@ pub mod pg_integration_test {
     };
     use tokio::task::JoinHandle;
 
-    use sui_indexer::errors::IndexerError;
-    use sui_indexer::models::objects::{
+    use sui_indexer_v0::errors::IndexerError;
+    use sui_indexer_v0::models::objects::{
         compose_object_bulk_insert_query, compose_object_bulk_insert_update_query,
         group_and_sort_objects, NamedBcsBytes, Object, ObjectStatus,
     };
-    use sui_indexer::models::owners::OwnerType;
-    use sui_indexer::schema::objects;
-    use sui_indexer::store::{IndexerStore, PgIndexerStore};
-    use sui_indexer::test_utils::{start_test_indexer, SuiTransactionBlockResponseBuilder};
-    use sui_indexer::{get_pg_pool_connection, new_pg_connection_pool, IndexerConfig};
+    use sui_indexer_v0::models::owners::OwnerType;
+    use sui_indexer_v0::schema::objects;
+    use sui_indexer_v0::store::{IndexerStore, PgIndexerStore};
+    use sui_indexer_v0::test_utils::{start_test_indexer, SuiTransactionBlockResponseBuilder};
+    use sui_indexer_v0::{get_pg_pool_connection, new_pg_connection_pool, IndexerConfig};
     use sui_json_rpc::api::ExtendedApiClient;
     use sui_json_rpc::api::IndexerApiClient;
     use sui_json_rpc::api::{ReadApiClient, TransactionBuilderClient, WriteApiClient};

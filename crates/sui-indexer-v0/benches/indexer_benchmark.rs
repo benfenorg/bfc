@@ -12,16 +12,16 @@ use criterion::Criterion;
 use prometheus::Registry;
 use tokio::runtime::Runtime;
 
-use sui_indexer::metrics::IndexerMetrics;
-use sui_indexer::models::checkpoints::Checkpoint;
-use sui_indexer::models::objects::{NamedBcsBytes, Object as DBObject, ObjectStatus};
-use sui_indexer::models::owners::OwnerType;
-use sui_indexer::models::transactions::Transaction;
-use sui_indexer::new_pg_connection_pool;
-use sui_indexer::store::{
+use sui_indexer_v0::metrics::IndexerMetrics;
+use sui_indexer_v0::models::checkpoints::Checkpoint;
+use sui_indexer_v0::models::objects::{NamedBcsBytes, Object as DBObject, ObjectStatus};
+use sui_indexer_v0::models::owners::OwnerType;
+use sui_indexer_v0::models::transactions::Transaction;
+use sui_indexer_v0::new_pg_connection_pool;
+use sui_indexer_v0::store::{
     IndexerStore, PgIndexerStore, TemporaryCheckpointStore, TransactionObjectChanges,
 };
-use sui_indexer::utils::reset_database;
+use sui_indexer_v0::utils::reset_database;
 use sui_json_rpc_types::CheckpointId;
 use sui_types::base_types::{ObjectDigest, ObjectID, SequenceNumber, SuiAddress};
 use sui_types::crypto::AggregateAuthoritySignature;

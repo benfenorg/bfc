@@ -5,12 +5,14 @@ use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 
-use sui_json_rpc::api::{validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS};
+use sui_json_rpc::api::{
+    validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS,
+};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, EpochInfo, EpochPage, MoveCallMetrics, NetworkMetrics,
-    NetworkOverview, Page, QueryObjectsPage, SuiObjectDataFilter, SuiObjectResponse,
-    SuiObjectResponseQuery,
+    NetworkOverview, Page, QueryObjectsPage, SuiDaoProposal, SuiObjectDataFilter,
+    SuiObjectResponse, SuiObjectResponseQuery,
 };
 use sui_open_rpc::Module;
 use sui_types::sui_serde::BigInt;
@@ -126,7 +128,11 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
     }
 
     async fn get_network_overview(&self) -> RpcResult<NetworkOverview> {
-        Ok(self.state.get_network_overview().await?)
+        todo!()
+    }
+
+    async fn get_dao_proposals(&self) -> RpcResult<Vec<SuiDaoProposal>> {
+        todo!()
     }
 
     async fn get_move_call_metrics(&self) -> RpcResult<MoveCallMetrics> {
