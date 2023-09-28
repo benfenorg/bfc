@@ -127,12 +127,12 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         Ok(self.state.get_network_metrics().await?)
     }
 
-    async fn get_network_overview(&self) -> RpcResult<NetworkOverview> {
-        todo!()
+    async fn get_dao_proposals(&self) -> RpcResult<Vec<SuiDaoProposal>> {
+        Ok(self.state.get_dao_proposals().await?)
     }
 
-    async fn get_dao_proposals(&self) -> RpcResult<Vec<SuiDaoProposal>> {
-        todo!()
+    async fn get_network_overview(&self) -> RpcResult<NetworkOverview> {
+        Ok(self.state.get_network_overview().await?)
     }
 
     async fn get_move_call_metrics(&self) -> RpcResult<MoveCallMetrics> {

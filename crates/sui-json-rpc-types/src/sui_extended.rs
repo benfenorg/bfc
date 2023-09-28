@@ -134,8 +134,8 @@ pub struct NetworkOverview {
 
     /// Avgerage gas cost in the last checkpoint.
     #[schemars(with = "String")]
-    #[serde_as(as = "DisplayFromStr")]
-    pub current_gas: String,
+    #[serde_as(as = "BigInt<u64>")]
+    pub current_gas: u64,
 }
 
 #[serde_as]
@@ -176,4 +176,58 @@ pub struct AddressMetrics {
     pub cumulative_addresses: u64,
     pub cumulative_active_addresses: u64,
     pub daily_active_addresses: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+pub struct SuiDaoProposal {
+    /// Proposal id
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub pid: u64,
+
+    /// The name of the DAO action
+    #[schemars(with = "String")]
+    #[serde_as(as = "DisplayFromStr")]
+    pub action_name: String,
+
+    /// Who propose this
+    #[schemars(with = "String")]
+    #[serde_as(as = "DisplayFromStr")]
+    pub proposer: String,
+
+    /// When it will be started
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub start_time: u64,
+
+    /// When it will be end
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub end_time: u64,
+
+    /// The count of agree votes
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub for_votes: u64,
+
+    /// The count of disagree votes
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub against_votes: u64,
+
+    /// Execute time at
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub eta: u64,
+
+    /// Action delay time
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub action_delay: u64,
+
+    /// The number of votes to pass
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub quorum_votes: u64,
 }

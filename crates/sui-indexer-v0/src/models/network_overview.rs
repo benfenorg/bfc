@@ -9,8 +9,8 @@ pub struct DBNetworkOverview {
     pub volume_24h: String,
     #[diesel(sql_type = BigInt)]
     pub total_addresses_24h: i64,
-    #[diesel(sql_type = Text)]
-    pub current_gas: String,
+    #[diesel(sql_type = BigInt)]
+    pub current_gas: i64,
 }
 
 impl From<DBNetworkOverview> for NetworkOverview {
@@ -18,7 +18,7 @@ impl From<DBNetworkOverview> for NetworkOverview {
         Self {
             volume_24h: db.volume_24h,
             total_addresses_24h: db.total_addresses_24h as u64,
-            current_gas: db.current_gas,
+            current_gas: db.current_gas as u64,
         }
     }
 }

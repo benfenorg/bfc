@@ -1,19 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
-
 use async_trait::async_trait;
 use prometheus::{Histogram, IntCounter};
 
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
     Checkpoint as RpcCheckpoint, CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics,
-    NetworkMetrics, NetworkOverview, SuiObjectData, SuiObjectDataFilter,
-    SuiTransactionBlockEffects, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
+    NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiObjectData, SuiObjectDataFilter,
+    SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
-use sui_types::digests::{CheckpointDigest, TransactionDigest};
+use sui_types::digests::CheckpointDigest;
 use sui_types::error::SuiError;
 use sui_types::event::EventID;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
@@ -25,6 +23,7 @@ use crate::metrics::IndexerMetrics;
 use crate::models::addresses::{ActiveAddress, Address, AddressStats};
 use crate::models::checkpoint_metrics::CheckpointMetrics;
 use crate::models::checkpoints::Checkpoint;
+use crate::models::dao_proposals::Proposal;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::events::Event;
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
@@ -209,26 +208,29 @@ pub trait IndexerStore {
         tx_digest: Option<String>,
         is_descending: bool,
     ) -> Result<Option<i64>, IndexerError>;
-    async fn get_recipients_data_by_checkpoint(
-        &self,
-        seq: u64,
-    ) -> Result<Vec<Recipient>, IndexerError>;
 
     async fn get_network_metrics(&self) -> Result<NetworkMetrics, IndexerError>;
+    async fn get_network_overview(&self) -> Result<NetworkOverview, IndexerError>;
     async fn get_move_call_metrics(&self) -> Result<MoveCallMetrics, IndexerError>;
+    async fn get_dao_proposals(&self) -> Result<Vec<SuiDaoProposal>, IndexerError>;
 
+    async fn persist_fast_path(
+        &self,
+        tx: Transaction,
+        tx_object_changes: TransactionObjectChanges,
+    ) -> Result<usize, IndexerError>;
     async fn persist_checkpoint_transactions(
         &self,
-        checkpoints: &[Checkpoint],
+        checkpoint: &Checkpoint,
         transactions: &[Transaction],
-        counter_committed_tx: IntCounter,
-    ) -> Result<(), IndexerError>;
+        total_transaction_chunk_committed_counter: IntCounter,
+    ) -> Result<usize, IndexerError>;
     async fn persist_object_changes(
         &self,
         tx_object_changes: &[TransactionObjectChanges],
+        total_object_change_chunk_committed_counter: IntCounter,
         object_mutation_latency: Histogram,
         object_deletion_latency: Histogram,
-        object_commit_chunk_counter: IntCounter,
     ) -> Result<(), IndexerError>;
     async fn persist_events(&self, events: &[Event]) -> Result<(), IndexerError>;
     async fn persist_addresses(
@@ -247,6 +249,7 @@ pub trait IndexerStore {
     ) -> Result<(), IndexerError>;
 
     async fn persist_epoch(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
+    async fn persist_proposals(&self, proposals: &[Proposal]) -> Result<(), IndexerError>;
     async fn get_network_total_transactions_previous_epoch(
         &self,
         epoch: i64,
@@ -302,26 +305,26 @@ pub trait IndexerStore {
 }
 
 #[derive(Clone, Debug)]
-pub struct CheckpointTxData {
+pub struct CheckpointData {
     pub checkpoint: RpcCheckpoint,
     pub transactions: Vec<CheckpointTransactionBlockResponse>,
-    // For epoch indexing, only populated in epoch change and genesis
-    // We use `Vec` here beacause the list is very small.
-    pub system_state_objects: Vec<sui_types::object::Object>,
+    pub changed_objects: Vec<(ObjectStatus, SuiObjectData)>,
 }
 
-// CheckpointTxData can ONLY be used as a ObjectStore
-// for SuiSystemState Object.
-impl ObjectStore for CheckpointTxData {
+impl ObjectStore for CheckpointData {
     fn get_object(
         &self,
         object_id: &ObjectID,
     ) -> Result<Option<sui_types::object::Object>, SuiError> {
         Ok(self
-            .system_state_objects
+            .changed_objects
             .iter()
-            .find(|o| o.id() == *object_id)
-            .cloned())
+            .find_map(|(status, o)| match status {
+                ObjectStatus::Created | ObjectStatus::Mutated if &o.object_id == object_id => {
+                    o.clone().try_into().ok()
+                }
+                _ => None,
+            }))
     }
 
     fn get_object_by_key(
@@ -330,29 +333,26 @@ impl ObjectStore for CheckpointTxData {
         version: VersionNumber,
     ) -> Result<Option<sui_types::object::Object>, SuiError> {
         Ok(self
-            .system_state_objects
+            .changed_objects
             .iter()
-            .find(|o| o.id() == *object_id && o.version() == version)
-            .cloned())
+            .find_map(|(status, o)| match status {
+                ObjectStatus::Created | ObjectStatus::Mutated
+                    if &o.object_id == object_id && o.version == version =>
+                {
+                    o.clone().try_into().ok()
+                }
+                _ => None,
+            }))
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct CheckpointObjectData {
-    pub epoch: EpochId,
-    pub checkpoint_seq: CheckpointSequenceNumber,
-    // SuiAddress is tx sender
-    pub transactions: Vec<(TransactionDigest, SuiTransactionBlockEffects)>,
-    pub transaction_senders: HashMap<TransactionDigest, SuiAddress>,
-    pub changed_objects: Vec<(ObjectStatus, SuiObjectData)>,
-}
-
 // Per checkpoint indexing
-#[derive(Debug)]
 pub struct TemporaryCheckpointStore {
     pub checkpoint: Checkpoint,
     pub transactions: Vec<Transaction>,
     pub events: Vec<Event>,
+    pub object_changes: Vec<TransactionObjectChanges>,
+    pub packages: Vec<Package>,
     pub input_objects: Vec<InputObject>,
     pub changed_objects: Vec<ChangedObject>,
     pub move_calls: Vec<MoveCall>,
