@@ -22,7 +22,7 @@ import { localStorageAdapter, StorageAdapter } from './storage';
 export * from './storage';
 
 export const DEFAULT_FEATURES: (keyof WalletWithSuiFeatures['features'])[] = [
-	'sui:signAndExecuteTransactionBlock',
+	'obc:signAndExecuteTransactionBlock',
 ];
 
 export interface WalletKitCoreOptions {
@@ -85,7 +85,7 @@ export interface WalletKitCore {
 export type SubscribeHandler = (state: WalletKitCoreState) => void;
 export type Unsubscribe = () => void;
 
-const SUI_WALLET_NAME = 'Sui Wallet';
+const SUI_WALLET_NAME = 'OBC Wallet';
 
 const RECENT_WALLET_STORAGE = 'wallet-kit:last-wallet';
 
@@ -306,11 +306,11 @@ export function createWalletKitCore({
 				throw new Error('No wallet is currently connected, cannot call `signMessage`.');
 			}
 
-			if (!internalState.currentWallet.features['sui:signMessage']) {
+			if (!internalState.currentWallet.features['obc:signMessage']) {
 				throw new Error('Wallet does not support deprecated `signMessage` method.');
 			}
 
-			return internalState.currentWallet.features['sui:signMessage'].signMessage({
+			return internalState.currentWallet.features['obc:signMessage'].signMessage({
 				...messageInput,
 				account: messageInput.account ?? internalState.currentAccount,
 			});
@@ -321,11 +321,11 @@ export function createWalletKitCore({
 				throw new Error('No wallet is currently connected, cannot call `signPersonalMessage`.');
 			}
 
-			if (!internalState.currentWallet.features['sui:signPersonalMessage']) {
+			if (!internalState.currentWallet.features['obc:signPersonalMessage']) {
 				throw new Error('Wallet does not support the new `signPersonalMessage` method.');
 			}
 
-			return internalState.currentWallet.features['sui:signPersonalMessage'].signPersonalMessage({
+			return internalState.currentWallet.features['obc:signPersonalMessage'].signPersonalMessage({
 				...messageInput,
 				account: messageInput.account ?? internalState.currentAccount,
 			});
@@ -342,7 +342,7 @@ export function createWalletKitCore({
 			if (!chain) {
 				throw new Error('Missing chain');
 			}
-			return internalState.currentWallet.features['sui:signTransactionBlock'].signTransactionBlock({
+			return internalState.currentWallet.features['obc:signTransactionBlock'].signTransactionBlock({
 				...transactionInput,
 				account,
 				chain,
@@ -365,7 +365,7 @@ export function createWalletKitCore({
 			}
 
 			return internalState.currentWallet.features[
-				'sui:signAndExecuteTransactionBlock'
+				'obc:signAndExecuteTransactionBlock'
 			].signAndExecuteTransactionBlock({
 				...transactionInput,
 				account,

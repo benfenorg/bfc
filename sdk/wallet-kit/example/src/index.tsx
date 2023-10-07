@@ -10,7 +10,7 @@ import { WalletKitProvider } from '@mysten/wallet-kit';
 export const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
 	<React.StrictMode>
-		<WalletKitProvider features={['sui:signTransactionBlock']} enableUnsafeBurner>
+		<WalletKitProvider features={['obc:signTransactionBlock']} enableUnsafeBurner>
 			<App />
 		</WalletKitProvider>
 	</React.StrictMode>,
