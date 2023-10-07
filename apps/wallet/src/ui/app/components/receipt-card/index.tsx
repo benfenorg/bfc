@@ -12,7 +12,7 @@ import { TransactionSummary } from '../../shared/transaction-summary';
 import { GasSummary } from '../../shared/transaction-summary/cards/GasSummary';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { useExplorerLink } from '_src/ui/app/hooks/useExplorerLink';
-
+import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
 type ReceiptCardProps = {
 	txn: SuiTransactionBlockResponse;
 	activeAddress: string;
@@ -38,9 +38,11 @@ function TransactionStatus({
 
 export function ReceiptCard({ txn, activeAddress }: ReceiptCardProps) {
 	const { events } = txn;
+	const recognizedPackagesList = useRecognizedPackages();
 	const summary = useTransactionSummary({
 		transaction: txn,
 		currentAddress: activeAddress,
+		recognizedPackagesList,
 	});
 
 	const explorerHref = useExplorerLink({

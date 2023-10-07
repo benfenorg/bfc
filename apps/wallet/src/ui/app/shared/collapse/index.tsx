@@ -3,11 +3,8 @@
 
 import { Disclosure } from '@headlessui/react';
 
+import { type ReactNode } from 'react';
 import { Heading } from '../heading';
-
-import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
-import cn from 'classnames';
-import { useState, type ReactNode } from 'react';
 
 type CollapseProps = {
 	title: string;

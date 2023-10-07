@@ -5,8 +5,6 @@ import cl from 'classnames';
 import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { useActiveAccount } from '../../hooks/useActiveAccount';
-import { useIsAccountReadLocked } from '../../hooks/useIsAccountReadLocked';
 import { useAppSelector } from '_hooks';
 import { getNavIsVisible } from '_redux/slices/app';
 

@@ -6,7 +6,6 @@ import {
 	useFormatCoin,
 	type BalanceChange,
 } from '@mysten/core';
-import { useMemo } from 'react';
 
 import { Card } from '../Card';
 import { OwnerFooter } from '../OwnerFooter';

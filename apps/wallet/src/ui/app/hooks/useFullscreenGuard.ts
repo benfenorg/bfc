@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import useAppSelector from './useAppSelector';
 import { AppType } from '_redux/slices/app/AppType';
