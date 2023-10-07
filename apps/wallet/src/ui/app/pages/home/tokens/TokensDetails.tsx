@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-// import { useFeature } from '@growthbook/growthbook-react';
 import { useGetCoinBalance, useGetAllBalances } from '@mysten/core';
 import { Unpin16, Pin16 } from '@mysten/icons';
 import { SUI_TYPE_ARG, Coin, type CoinBalance as CoinBalanceType } from '@mysten/sui.js';

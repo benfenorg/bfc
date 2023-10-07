@@ -1,17 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { useRpcClient } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { getObjectFields } from '@mysten/sui.js';
 import { type VotingObc } from '@mysten/sui.js/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetOBCDaoVotingObc(address: string) {
-	const rpc = useRpcClient();
+	const client = useSuiClient();
 	return useQuery({
 		queryKey: ['dao', 'votingobc', address],
 		enabled: Boolean(address),
 		queryFn: () =>
-			rpc
+			client
 				.getOwnedObjects({
 					owner: address,
 					filter: {

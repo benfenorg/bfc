@@ -1,7 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetValidatorsApy, useGetValidatorsEvents, useGetSystemState } from '@mysten/core';
+import { useGetValidatorsApy, useGetValidatorsEvents } from '@mysten/core';
+import { useLatestSuiSystemState } from '@mysten/dapp-kit';
 import { ArrowLeft12 } from '@mysten/icons';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +15,7 @@ import { PlaceholderTable } from '~/ui/PlaceholderTable';
 import { TableCard } from '~/ui/TableCard';
 
 function ValidatorPageResult() {
-	const { data, isLoading, isSuccess, isError } = useGetSystemState();
+	const { data, isLoading, isSuccess, isError } = useLatestSuiSystemState();
 
 	const numberOfValidators = data?.activeValidators.length || 0;
 

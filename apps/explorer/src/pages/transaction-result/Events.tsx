@@ -2,12 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ChevronRight12 } from '@mysten/icons';
-import {
-	formatAddress,
-	parseStructTag,
-	type SuiEvent,
-	type TransactionEvents,
-} from '@mysten/sui.js';
+import { type SuiEvent } from '@mysten/sui.js/client';
+import { parseStructTag, formatAddress } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import clsx from 'clsx';
@@ -71,14 +67,14 @@ function Event({ event, divider }: { event: SuiEvent; divider: boolean }) {
 }
 
 interface EventsProps {
-	events: TransactionEvents;
+	events: SuiEvent[];
 }
 
 export function Events({ events }: EventsProps) {
 	return (
 		<div>
 			{events.map((event, index) => (
-				<Event key={event.type} event={event} divider={false} />
+				<Event key={event.type} event={event} divider={index !== events.length - 1} />
 			))}
 		</div>
 	);

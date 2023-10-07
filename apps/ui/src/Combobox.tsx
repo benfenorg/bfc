@@ -99,8 +99,6 @@ export function ComboboxList<T extends ComboboxItem = ComboboxItem>({
 		return null;
 	}
 
-	console.log('optionsoptions',showResultsCount,options)
-
 	return (
 		<Command.List
 			ref={listRef}

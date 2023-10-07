@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiTransaction } from '@mysten/sui.js';
+import { type SuiTransaction } from '@mysten/sui.js/client';
 
 import { Transaction } from './Transaction';
 import { ProgrammableTxnBlockCard } from '~/components/transactions/ProgTxnBlockCard';
@@ -14,8 +14,6 @@ interface TransactionsCardProps {
 }
 
 export function TransactionsCard({ transactions }: TransactionsCardProps) {
-	const defaultOpen = transactions.length < DEFAULT_ITEMS_TO_SHOW;
-
 	if (!transactions?.length) {
 		return null;
 	}
@@ -24,7 +22,7 @@ export function TransactionsCard({ transactions }: TransactionsCardProps) {
 		const [[type, data]] = Object.entries(transaction);
 
 		return (
-			<TransactionBlockCardSection key={index} title={type} defaultOpen={defaultOpen}>
+			<TransactionBlockCardSection defaultOpen key={index} title={type}>
 				<div data-testid="transactions-card-content">
 					<Transaction key={index} type={type} data={data} />
 				</div>
@@ -34,10 +32,12 @@ export function TransactionsCard({ transactions }: TransactionsCardProps) {
 
 	return (
 		<ProgrammableTxnBlockCard
+			initialClose
 			items={expandableItems}
-			itemsLabel="Transactions"
+			itemsLabel={transactions.length > 1 ? 'Transactions' : 'Transaction'}
+			count={transactions.length}
 			defaultItemsToShow={DEFAULT_ITEMS_TO_SHOW}
-			noExpandableList={defaultOpen}
+			noExpandableList={transactions.length < DEFAULT_ITEMS_TO_SHOW}
 		/>
 	);
 }

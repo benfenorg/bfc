@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type GasSummaryType, useFormatCoin } from '@mysten/core';
-import { formatAddress } from '@mysten/sui.js';
+import { formatAddress } from '@mysten/sui.js/utils';
 
 import { Heading } from '../../heading';
 import { Text } from '../../text';

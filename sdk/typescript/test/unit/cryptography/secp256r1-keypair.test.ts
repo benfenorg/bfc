@@ -24,6 +24,7 @@ export const VALID_SECP256R1_PUBLIC_KEY = [
 	64, 127, 95, 116, 31, 109, 239, 87, 98, 96, 154,
 ];
 
+const PRIVATE_KEY_SIZE = 32;
 // Invalid private key with incorrect length
 export const INVALID_SECP256R1_SECRET_KEY = Uint8Array.from(Array(PRIVATE_KEY_SIZE - 1).fill(1));
 

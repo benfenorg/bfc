@@ -1,21 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js';
 import type {
 	SuiObjectResponse,
 	SuiMoveObject,
 	SuiObjectInfo,
 	SuiObjectData,
 } from '../types/objects.js';
+import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js';
 
 import type { Option } from '../types/option.js';
 import { getOption } from '../types/option.js';
 import type { CoinStruct } from '../types/coin.js';
-import type { StructTag } from '../types/sui-bcs.js';
+import { sui2ObcAddress } from '../utils/format.js';
+import type { StructTag } from '../bcs/index.js';
 import type { Infer } from 'superstruct';
 import { nullable, number, object, string } from 'superstruct';
-import { sui2ObcAddress } from '../utils/format.js';
+import { normalizeSuiObjectId } from '../utils/sui-types.js';
 
 export const SUI_SYSTEM_ADDRESS = '0x3';
 export const SUI_FRAMEWORK_ADDRESS = '0x2';
@@ -87,7 +88,7 @@ export class Coin {
 
 	static getCoinStructTag(coinTypeArg: string): StructTag {
 		return {
-			address: sui2ObcAddress(coinTypeArg.split('::')[0]),
+			address: normalizeSuiObjectId(coinTypeArg.split('::')[0]),
 			module: coinTypeArg.split('::')[1],
 			name: coinTypeArg.split('::')[2],
 			typeParams: [],
@@ -133,7 +134,7 @@ export class Coin {
 		return BigInt(balance);
 	}
 
-	private static getType(data: ObjectData): string | undefined {
+	private static getType(data: ObjectData): string | null | undefined {
 		if (isObjectDataFull(data)) {
 			return getObjectType(data);
 		}

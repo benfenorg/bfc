@@ -5,12 +5,14 @@ import {
 	useCoinMetadata,
 	useFormatCoin,
 	CoinFormat,
-	useRpcClient,
 	isSuiNSName,
 	useSuiNSEnabled,
 } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
-import { SUI_TYPE_ARG, Coin as CoinAPI, type CoinStruct } from '@mysten/sui.js';
+import { Coin as CoinAPI } from '@mysten/sui.js';
+import { type CoinStruct } from '@mysten/sui.js/client';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { useQuery } from '@tanstack/react-query';
 import cl from 'classnames';
 import { Field, Form, useFormikContext, Formik } from 'formik';
@@ -66,7 +68,7 @@ function GasBudgetEstimation({
 	const { values, setFieldValue } = useFormikContext<FormValues>();
 	const suiNSEnabled = useSuiNSEnabled();
 
-	const rpc = useRpcClient();
+	const rpc = useSuiClient();
 	const { data: gasBudget } = useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [
@@ -140,7 +142,7 @@ export function SendTokenForm({
 	initialAmount = '',
 	initialTo = '',
 }: SendTokenFormProps) {
-	const rpc = useRpcClient();
+	const rpc = useSuiClient();
 	const activeAddress = useActiveAddress();
 	// Get all coins of the type
 	const { data: coinsData, isLoading: coinsIsLoading } = useGetAllCoins(coinType, activeAddress!);

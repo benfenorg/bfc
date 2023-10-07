@@ -19,6 +19,7 @@ export interface TableCardProps<DataType extends object> {
 	columns: ColumnDef<DataType>[];
 	sortTable?: boolean;
 	defaultSorting?: SortingState;
+	noBorderBottom?: boolean;
 }
 
 function AscDescIcon({ sorting }: { sorting: 'asc' | 'desc' }) {
@@ -36,6 +37,7 @@ export function TableCard<DataType extends object>({
 	columns,
 	sortTable,
 	defaultSorting,
+	noBorderBottom,
 }: TableCardProps<DataType>) {
 	const [sorting, setSorting] = useState<SortingState>(defaultSorting || []);
 
@@ -69,7 +71,13 @@ export function TableCard<DataType extends object>({
 	});
 
 	return (
-		<div className={clsx('w-full overflow-x-auto', refetching && 'opacity-50')}>
+		<div
+			className={clsx(
+				'w-full overflow-x-auto',
+				!noBorderBottom && 'border-b border-gray-45',
+				refetching && 'opacity-50',
+			)}
+		>
 			<table className="w-full min-w-max border-collapse text-left">
 				<thead>
 					{table.getHeaderGroups().map((headerGroup) => (

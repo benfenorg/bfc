@@ -1,9 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import { useCoinMetadata } from '@mysten/core';
 import { ArrowRight16, ArrowLeft16 } from '@mysten/icons';
-import { getTransactionDigest } from '@mysten/sui.js';
 import * as Sentry from '@sentry/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -24,7 +22,6 @@ import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessage
 import { useSigner } from '_src/ui/app/hooks';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-
 import type { SubmitProps } from './SendTokenForm';
 
 function TransferCoinPage() {
@@ -88,7 +85,7 @@ function TransferCoinPage() {
 			});
 
 			const receiptUrl = `/receipt?txdigest=${encodeURIComponent(
-				getTransactionDigest(response),
+				response.digest,
 			)}&from=transactions`;
 			return navigate(receiptUrl);
 		},

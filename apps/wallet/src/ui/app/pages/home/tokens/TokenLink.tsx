@@ -1,11 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type CoinBalance } from '@mysten/sui.js';
+import { MIST_PER_SUI, type CoinBalance } from '@mysten/sui.js';
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CoinItem } from '_components/active-coins-card/CoinItem';
+import { ampli } from '_src/shared/analytics/ampli';
 
 type Props = {
 	coinBalance: CoinBalance;

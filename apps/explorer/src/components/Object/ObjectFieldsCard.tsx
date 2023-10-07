@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetObject, useGetNormalizedMoveStruct } from '@mysten/core';
+import { useGetObject } from '@mysten/core';
+import { useNormalizedMoveStruct } from '@mysten/dapp-kit';
 import { Search24 } from '@mysten/icons';
-import { getObjectFields, getObjectType } from '@mysten/sui.js';
 import { Text, LoadingIndicator, Combobox, ComboboxInput, ComboboxList } from '@mysten/ui';
 import { useState } from 'react';
 
@@ -23,7 +23,10 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 	const { data, isLoading, isError } = useGetObject(id);
 	const [query, setQuery] = useState('');
 	const [activeFieldName, setActiveFieldName] = useState('');
-	const objectType = getObjectType(data!);
+	const objectType =
+		data?.data?.type ?? data?.data?.content?.dataType === 'package'
+			? data.data.type
+			: data?.data?.content?.type;
 
 	// Get the packageId, moduleName, functionName from the objectType
 	const [packageId, moduleName, functionName] = objectType?.split('<')[0]?.split('::') || [];
@@ -33,16 +36,21 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 		data: normalizedStruct,
 		isLoading: loadingNormalizedStruct,
 		isError: errorNormalizedMoveStruct,
-	} = useGetNormalizedMoveStruct({
-		packageId,
-		module: moduleName,
-		struct: functionName,
-		onSuccess: (data) => {
-			if (data?.fields && activeFieldName === '') {
-				setActiveFieldName(data.fields[0].name);
-			}
+	} = useNormalizedMoveStruct(
+		{
+			package: packageId,
+			module: moduleName,
+			struct: functionName,
 		},
-	});
+		{
+			enabled: !!packageId && !!moduleName && !!functionName,
+			onSuccess: (data) => {
+				if (data?.fields && activeFieldName === '') {
+					setActiveFieldName(data.fields[0].name);
+				}
+			},
+		},
+	);
 
 	if (isLoading || loadingNormalizedStruct) {
 		return (
@@ -59,7 +67,10 @@ export function ObjectFieldsCard({ id }: ObjectFieldsProps) {
 		);
 	}
 
-	const fieldsData = getObjectFields(data!);
+	const fieldsData =
+		data.data?.content?.dataType === 'moveObject'
+			? (data.data?.content?.fields as Record<string, string | number | object>)
+			: null;
 
 	const filteredFieldNames =
 		query === ''

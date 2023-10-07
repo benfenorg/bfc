@@ -88,6 +88,9 @@ export interface KeyringPayload<Method extends keyof MethodToPayloads> extends B
 	return?: MethodToPayloads[Method]['return'];
 }
 
+/**
+ * @deprecated
+ */
 export function isKeyringPayload<Method extends keyof MethodToPayloads>(
 	payload: Payload,
 	method: Method,

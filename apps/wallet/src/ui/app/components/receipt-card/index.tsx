@@ -3,7 +3,7 @@
 
 import { useTransactionSummary } from '@mysten/core';
 import { Handclap } from '@mysten/icons';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js';
+import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 
 import { StakeTxnCard } from './StakeTxnCard';
 import { UnStakeTxnCard } from './UnstakeTxnCard';
@@ -18,7 +18,13 @@ type ReceiptCardProps = {
 	activeAddress: string;
 };
 
-function TransactionStatus({ success, timestamp }: { success: boolean; timestamp?: string }) {
+function TransactionStatus({
+	success,
+	timestamp,
+}: {
+	success: boolean;
+	timestamp?: string | null;
+}) {
 	return (
 		<div className="flex flex-col gap-2.5 items-center justify-center mb-7.5">
 			<Handclap className="w-9 h-9" />

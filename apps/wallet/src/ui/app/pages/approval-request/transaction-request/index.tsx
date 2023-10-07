@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-// import { Transaction } from '@mysten/sui.js';
 import { useTransactionSummary } from '@mysten/core';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMemo, useState } from 'react';

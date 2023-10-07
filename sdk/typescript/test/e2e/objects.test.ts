@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getObjectType, normalizeSuiAddress, SUI_TYPE_ARG, SuiObjectData } from '../../src';
+import { getObjectType } from '../../src';
+import { normalizeSuiAddress } from '../../src/utils';
+import { SUI_TYPE_ARG } from '../../src/framework';
+import { SuiObjectData } from '../../src/client';
 import { TransactionBlock } from '../../src/builder';
 import { setup, TestToolbox } from './utils/setup';
 
@@ -33,7 +36,7 @@ describe('Object Reading API', () => {
 			}),
 		);
 		objectInfos.forEach((objectInfo) =>
-			expect(getObjectType(objectInfo)).to.equal('0x2::coin::Coin<0x2::obc::OBC>'),
+			expect(objectInfo.data?.type).to.equal('0x2::coin::Coin<0x2::obc::OBC>'),
 		);
 	});
 
@@ -54,7 +57,7 @@ describe('Object Reading API', () => {
 		expect(gasObjects.length).to.equal(objectInfos.length);
 
 		objectInfos.forEach((objectInfo) =>
-			expect(getObjectType(objectInfo)).to.equal('0x2::coin::Coin<0x2::obc::OBC>'),
+			expect(objectInfo.data?.type).to.equal('0x2::coin::Coin<0x2::obc::OBC>'),
 		);
 	});
 

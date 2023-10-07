@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiCallArg } from '@mysten/sui.js';
+import { type SuiCallArg } from '@mysten/sui.js/client';
 import { Text } from '@mysten/ui';
 
 import { ProgrammableTxnBlockCard } from '~/components/transactions/ProgTxnBlockCard';
@@ -67,8 +67,10 @@ export function InputsCard({ inputs }: InputsCardProps) {
 
 	return (
 		<ProgrammableTxnBlockCard
+			initialClose
 			items={expandableItems}
-			itemsLabel="Inputs"
+			itemsLabel={inputs.length > 1 ? 'Inputs' : 'Input'}
+			count={inputs.length}
 			defaultItemsToShow={DEFAULT_ITEMS_TO_SHOW}
 			noExpandableList={defaultOpen}
 		/>

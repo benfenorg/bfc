@@ -8,8 +8,8 @@ import {
 	getKioskIdFromOwnerCap,
 	useGetKioskContents,
 	useGetObject,
-	useRpcClient,
 } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { take } from '@mysten/kiosk';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMutation } from '@tanstack/react-query';
@@ -25,7 +25,7 @@ export function useTransferKioskItem({
 	objectId: string;
 	objectType?: string;
 }) {
-	const rpc = useRpcClient();
+	const rpc = useSuiClient();
 	const signer = useSigner();
 	const address = useActiveAddress();
 	const obPackageId = useFeatureValue('kiosk-originbyte-packageid', ORIGINBYTE_PACKAGE_ID);

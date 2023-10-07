@@ -1,6 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import { QredoTransaction } from './QredoTransaction';
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';

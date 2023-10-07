@@ -4,8 +4,9 @@
 import { useMemo } from 'react';
 
 import { UserApproveContainer } from '../../components/user-approve-container';
-import { useAppDispatch, useSigner } from '../../hooks';
+import { useAppDispatch } from '../../hooks';
 import { useQredoTransaction } from '../../hooks/useQredoTransaction';
+import { useSigner } from '../../hooks/useSigner';
 import { respondToTransactionRequest } from '../../redux/slices/transaction-requests';
 import { Heading } from '../../shared/heading';
 import { PageMainLayoutTitle } from '../../shared/page-main-layout/PageMainLayoutTitle';

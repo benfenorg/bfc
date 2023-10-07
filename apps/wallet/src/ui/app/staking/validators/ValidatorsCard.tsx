@@ -3,6 +3,7 @@
 
 import { useGetSystemState } from '@mysten/core';
 import { Plus12 } from '@mysten/icons';
+import { type StakeObject } from '@mysten/sui.js';
 import { useMemo } from 'react';
 
 import { useActiveAddress } from '../../hooks/useActiveAddress';
@@ -61,7 +62,8 @@ export function ValidatorsCard() {
 			delegatedStake.reduce(
 				(acc, curr) =>
 					curr.stakes.reduce(
-						(total, { estimatedReward }) => total + BigInt(estimatedReward || 0),
+						(total, { estimatedReward }: StakeObject & { estimatedReward?: string }) =>
+							total + BigInt(estimatedReward || 0),
 						acc,
 					),
 				0n,

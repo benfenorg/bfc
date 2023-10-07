@@ -1,10 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetValidatorsApy, useGetValidatorsEvents, useGetSystemState } from '@mysten/core';
-import { type SuiSystemStateSummary, sui2ObcAddress } from '@mysten/sui.js';
-import { LoadingIndicator } from '@mysten/ui';
-import { useMemo } from 'react';
+import { useGetValidatorsApy, useGetValidatorsEvents } from '@mysten/core';
+import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { sui2ObcAddress } from '@mysten/sui.js';
+import { type SuiSystemStateSummary } from '@mysten/sui.js/client';
+import { LoadingIndicator, Text } from '@mysten/ui';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { PageLayout } from '~/components/Layout/PageLayout';
@@ -25,7 +27,7 @@ const getAtRiskRemainingEpochs = (
 
 function ValidatorDetails() {
 	const { id } = useParams();
-	const { data, isLoading } = useGetSystemState();
+	const { data, isLoading } = useLatestSuiSystemState();
 
 	const validatorData = useMemo(() => {
 		if (!data) return null;
@@ -49,12 +51,25 @@ function ValidatorDetails() {
 
 	const validatorRewards = useMemo(() => {
 		if (!validatorEvents || !id) return 0;
-		const rewards = getValidatorMoveEvent(validatorEvents, id)?.pool_staking_reward;
+		const rewards = (getValidatorMoveEvent(validatorEvents, id) as { pool_staking_reward: string })
+			?.pool_staking_reward;
 
 		return rewards ? Number(rewards) : null;
 	}, [id, validatorEvents]);
 
 	if (isLoading || validatorsEventsLoading || validatorsApysLoading) {
+		return (
+			<PageLayout
+				content={
+					<div className="mb-10 flex items-center justify-center">
+						<LoadingIndicator />
+					</div>
+				}
+			/>
+		);
+	}
+
+	if (!validatorData || !data || !validatorEvents || !id) {
 		return (
 			<PageLayout
 				content={
@@ -82,16 +97,21 @@ function ValidatorDetails() {
 	const { apy, isApyApproxZero } = rollingAverageApys?.[id] ?? { apy: null };
 
 	const tallyingScore =
-		validatorEvents?.find(({ parsedJson }) => parsedJson?.validator_address === id)?.parsedJson
+		(
+			validatorEvents as {
+				parsedJson?: { tallying_rule_global_score?: string; validator_address?: string };
+			}[]
+		)?.find(({ parsedJson }) => parsedJson?.validator_address === id)?.parsedJson
 			?.tallying_rule_global_score || null;
+
 	return (
 		<PageLayout
 			content={
-				<div className="mb-10 grid grid-cols-2 gap-8">
-					<div className="flex flex-col gap-1 md:gap-0">
+				<div className="mb-10">
+					<div className="flex flex-col flex-nowrap gap-5 md:flex-row md:gap-0">
 						<ValidatorMeta validatorData={validatorData} />
 					</div>
-					<div className="mt-5 md:mt-0">
+					<div className="mt-5 md:mt-8">
 						<ValidatorStats
 							validatorData={validatorData}
 							epoch={data.epoch}
@@ -100,7 +120,7 @@ function ValidatorDetails() {
 							tallyingScore={tallyingScore}
 						/>
 					</div>
-					{/* {atRiskRemainingEpochs !== null && (
+					{atRiskRemainingEpochs !== null && (
 						<div className="mt-5">
 							<Banner
 								fullWidth
@@ -118,7 +138,7 @@ function ValidatorDetails() {
 								</Text>
 							</Banner>
 						</div>
-					)} */}
+					)}
 				</div>
 			}
 		/>

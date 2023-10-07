@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getTotalGasUsed } from '@mysten/core';
 import { X12, Dot12 } from '@mysten/icons';
-import {
-	getExecutionStatusType,
-	getTotalGasUsed,
-	getTransactionSender,
-	type SuiTransactionBlockResponse,
-} from '@mysten/sui.js';
-import { type SuiClient } from '@mysten/sui.js/client';
+import { type SuiClient, type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 
 import { SuiAmount } from '../Table/SuiAmount';
 import { TxTimeType } from '../tx-time/TxTimeType';
@@ -17,8 +12,8 @@ import { AddressLink, TransactionLink } from '~/ui/InternalLink';
 // Generate table data from the transaction data
 export const genTableDataFromTxData = (results: SuiTransactionBlockResponse[]) => ({
 	data: results.map((transaction) => {
-		const status = getExecutionStatusType(transaction);
-		const sender = getTransactionSender(transaction);
+		const status = transaction.effects?.status.status;
+		const sender = transaction.transaction?.data.sender;
 
 		return {
 			date: <TxTimeType timestamp={Number(transaction.timestampMs || 0)} />,
@@ -41,7 +36,7 @@ export const genTableDataFromTxData = (results: SuiTransactionBlockResponse[]) =
 						: '--'}
 				</div>
 			),
-			gas: <SuiAmount amount={getTotalGasUsed(transaction)} />,
+			gas: <SuiAmount amount={transaction.effects && getTotalGasUsed(transaction.effects!)} />,
 			sender: sender ? <AddressLink address={sender} /> : '-',
 		};
 	}),

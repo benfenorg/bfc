@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useOnScreen, useGetCoins } from '@mysten/core';
+import { useGetCoins, useOnScreen } from '@mysten/core';
 import { LoadingIndicator } from '@mysten/ui';
 import { useEffect, useRef } from 'react';
 

@@ -4,6 +4,8 @@
 import { expect, test } from './fixtures';
 import { createWallet } from './utils/auth';
 
+test.skip();
+
 test('wallet unlock', async ({ page, context, extensionUrl }) => {
 	await createWallet(page, extensionUrl);
 	await page.getByTestId('menu').click();

@@ -105,10 +105,16 @@ export async function updatePendingRequest(
 	await storePendingRequest(request);
 }
 
+/**
+ * @deprecated
+ */
 export async function getAllQredoConnections() {
 	return (await getFromLocalStorage<QredoConnection[]>(STORAGE_ACCEPTED_CONNECTIONS_KEY, [])) || [];
 }
 
+/**
+ * @deprecated
+ */
 export function storeAllQredoConnections(qredoConnections: QredoConnection[]) {
 	return setToLocalStorage<QredoConnection[]>(STORAGE_ACCEPTED_CONNECTIONS_KEY, qredoConnections);
 }
@@ -121,6 +127,9 @@ export async function getQredoConnection(identity: QredoConnectIdentity | string
 	);
 }
 
+/**
+ * @deprecated
+ */
 export async function storeQredoConnection(qredoConnection: QredoConnection) {
 	const allConnections = await getAllQredoConnections();
 	const newConnections = allConnections.filter(

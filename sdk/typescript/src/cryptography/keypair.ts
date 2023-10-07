@@ -7,7 +7,8 @@ import { toSerializedSignature } from './signature.js';
 import type { SignatureScheme } from './signature.js';
 import { IntentScope, messageWithIntent } from './intent.js';
 import { blake2b } from '@noble/hashes/blake2b';
-import { bcs } from '../types/sui-bcs.js';
+import { bcs } from '../bcs/index.js';
+import { toB64 } from '@mysten/bcs';
 
 export const PRIVATE_KEY_SIZE = 32;
 export const LEGACY_PRIVATE_KEY_SIZE = 64;
@@ -17,8 +18,8 @@ export type ExportedKeypair = {
 	privateKey: string;
 };
 
-interface SignedMessage {
-	bytes: Uint8Array;
+export interface SignatureWithBytes {
+	bytes: string;
 	signature: SerializedSignature;
 }
 
@@ -27,8 +28,11 @@ interface SignedMessage {
  */
 export abstract class BaseSigner {
 	abstract sign(bytes: Uint8Array): Promise<Uint8Array>;
-
-	async signWithIntent(bytes: Uint8Array, intent: IntentScope): Promise<SignedMessage> {
+	/**
+	 * Sign messages with a specific intent. By combining the message bytes with the intent before hashing and signing,
+	 * it ensures that a signed message is tied to a specific purpose and domain separator is provided
+	 */
+	async signWithIntent(bytes: Uint8Array, intent: IntentScope): Promise<SignatureWithBytes> {
 		const intentMessage = messageWithIntent(intent, bytes);
 		const digest = blake2b(intentMessage, { dkLen: 32 });
 
@@ -40,14 +44,18 @@ export abstract class BaseSigner {
 
 		return {
 			signature,
-			bytes,
+			bytes: toB64(bytes),
 		};
 	}
-
+	/**
+	 * Signs provided transaction block by calling `signWithIntent()` with a `TransactionData` provided as intent scope
+	 */
 	async signTransactionBlock(bytes: Uint8Array) {
 		return this.signWithIntent(bytes, IntentScope.TransactionData);
 	}
-
+	/**
+	 * Signs provided personal message by calling `signWithIntent()` with a `PersonalMessage` provided as intent scope
+	 */
 	async signPersonalMessage(bytes: Uint8Array) {
 		return this.signWithIntent(
 			bcs.ser(['vector', 'u8'], bytes).toBytes(),

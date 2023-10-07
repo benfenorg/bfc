@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-	Coin,
-	getCreatedObjects,
-	getExecutionStatusType,
-	SuiObjectData,
-	SUI_FRAMEWORK_ADDRESS,
-} from '../../src';
+import { Coin, SUI_FRAMEWORK_ADDRESS } from '../../src';
+import { SuiObjectData } from '../../src/client';
 import { TransactionBlock } from '../../src/builder';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
@@ -29,8 +24,8 @@ describe('Test Move call with a vector of objects as input', () => {
 				showEffects: true,
 			},
 		});
-		expect(getExecutionStatusType(result)).toEqual('success');
-		return getCreatedObjects(result)![0].reference.objectId;
+		expect(result.effects?.status.status).toEqual('success');
+		return result.effects?.created![0].reference.objectId!;
 	}
 
 	async function destroyObjects(objects: string[], withType = false) {
@@ -50,7 +45,7 @@ describe('Test Move call with a vector of objects as input', () => {
 				showEffects: true,
 			},
 		});
-		expect(getExecutionStatusType(result)).toEqual('success');
+		expect(result.effects?.status.status).toEqual('success');
 	}
 
 	beforeEach(async () => {
@@ -61,7 +56,7 @@ describe('Test Move call with a vector of objects as input', () => {
 	});
 
 	it('Test object vector', async () => {
-		await destroyObjects([await mintObject(7), await mintObject(42)], /* withType */ false);
+		await destroyObjects([(await mintObject(7))!, await mintObject(42)], /* withType */ false);
 	});
 
 	it(
@@ -96,6 +91,6 @@ describe('Test Move call with a vector of objects as input', () => {
 				showEffects: true,
 			},
 		});
-		expect(getExecutionStatusType(result)).toEqual('success');
+		expect(result.effects?.status.status).toEqual('success');
 	});
 });

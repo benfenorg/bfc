@@ -21,6 +21,11 @@ import { ObjectOwner, SuiJsonValue } from './common.js';
 import { SuiEvent } from './events.js';
 import { SuiGasData, SuiMovePackage, SuiObjectRef } from './objects.js';
 import { sui2ObcAddress } from '../utils/format.js';
+import type {
+	SuiTransactionBlockResponse as NewSuiTransactionBlockResponse,
+	SuiTransactionBlockKind as NewSuiTransactionBlockKind,
+	TransactionEffects as NewTransactionEffects,
+} from '../client/index.js';
 
 /** @deprecated Use `string` instead. */
 export const EpochId = string();
@@ -229,7 +234,7 @@ export const TransactionEffects = object({
 	 */
 	gasObject: OwnedObjectRef,
 	/** The events emitted during execution. Note that only successful transactions emit events */
-	eventsDigest: optional(string()),
+	eventsDigest: nullable(optional(string())),
 	/** The set of transaction digests this transaction depends on */
 	dependencies: optional(array(string())),
 });
@@ -420,17 +425,17 @@ export function getTransaction(tx: SuiTransactionBlockResponse): SuiTransactionB
 	return tx.transaction;
 }
 
-export function getTransactionDigest(tx: SuiTransactionBlockResponse): string {
+export function getTransactionDigest(tx: NewSuiTransactionBlockResponse): string {
 	return tx.digest;
 }
 
-export function getTransactionSignature(tx: SuiTransactionBlockResponse): string[] | undefined {
+export function getTransactionSignature(tx: NewSuiTransactionBlockResponse): string[] | undefined {
 	return tx.transaction?.txSignatures;
 }
 
 /* ----------------------------- TransactionData ---------------------------- */
 
-export function getTransactionSender(tx: SuiTransactionBlockResponse): string | undefined {
+export function getTransactionSender(tx: NewSuiTransactionBlockResponse): string | undefined {
 	let sender = tx.transaction?.data.sender;
 	return sender ? sui2ObcAddress(sender) : undefined;
 }
@@ -466,12 +471,12 @@ export function getConsensusCommitPrologueTransaction(
 }
 
 export function getTransactionKind(
-	data: SuiTransactionBlockResponse,
-): SuiTransactionBlockKind | undefined {
+	data: NewSuiTransactionBlockResponse,
+): NewSuiTransactionBlockKind | undefined {
 	return data.transaction?.data.transaction;
 }
 
-export function getTransactionKindName(data: SuiTransactionBlockKind): TransactionKindName {
+export function getTransactionKindName(data: NewSuiTransactionBlockKind): TransactionKindName {
 	return data.kind;
 }
 
@@ -484,21 +489,23 @@ export function getProgrammableTransaction(
 /* ----------------------------- ExecutionStatus ---------------------------- */
 
 export function getExecutionStatusType(
-	data: SuiTransactionBlockResponse,
+	data: NewSuiTransactionBlockResponse,
 ): ExecutionStatusType | undefined {
 	return getExecutionStatus(data)?.status;
 }
 
-export function getExecutionStatus(data: SuiTransactionBlockResponse): ExecutionStatus | undefined {
+export function getExecutionStatus(
+	data: NewSuiTransactionBlockResponse,
+): ExecutionStatus | undefined {
 	return getTransactionEffects(data)?.status;
 }
 
-export function getExecutionStatusError(data: SuiTransactionBlockResponse): string | undefined {
+export function getExecutionStatusError(data: NewSuiTransactionBlockResponse): string | undefined {
 	return getExecutionStatus(data)?.error;
 }
 
 export function getExecutionStatusGasSummary(
-	data: SuiTransactionBlockResponse | TransactionEffects,
+	data: NewSuiTransactionBlockResponse | TransactionEffects,
 ): GasCostSummary | undefined {
 	if (is(data, TransactionEffects)) {
 		return data.gasUsed;
@@ -507,7 +514,7 @@ export function getExecutionStatusGasSummary(
 }
 
 export function getTotalGasUsed(
-	data: SuiTransactionBlockResponse | TransactionEffects,
+	data: NewSuiTransactionBlockResponse | TransactionEffects,
 ): bigint | undefined {
 	const gasSummary = getExecutionStatusGasSummary(data);
 	return gasSummary
@@ -518,7 +525,7 @@ export function getTotalGasUsed(
 }
 
 export function getTotalGasUsedUpperBound(
-	data: SuiTransactionBlockResponse | TransactionEffects,
+	data: NewSuiTransactionBlockResponse | TransactionEffects,
 ): bigint | undefined {
 	const gasSummary = getExecutionStatusGasSummary(data);
 	return gasSummary
@@ -527,9 +534,9 @@ export function getTotalGasUsedUpperBound(
 }
 
 export function getTransactionEffects(
-	data: SuiTransactionBlockResponse,
-): TransactionEffects | undefined {
-	return data.effects;
+	data: NewSuiTransactionBlockResponse,
+): NewTransactionEffects | undefined {
+	return data.effects || undefined;
 }
 
 /* ---------------------------- Transaction Effects --------------------------- */
@@ -538,7 +545,9 @@ export function getEvents(data: SuiTransactionBlockResponse): SuiEvent[] | undef
 	return data.events;
 }
 
-export function getCreatedObjects(data: SuiTransactionBlockResponse): OwnedObjectRef[] | undefined {
+export function getCreatedObjects(
+	data: NewSuiTransactionBlockResponse,
+): OwnedObjectRef[] | undefined {
 	return getTransactionEffects(data)?.created;
 }
 
@@ -554,7 +563,7 @@ export function getTimestampFromTransactionResponse(
  * Get the newly created coin refs after a split.
  */
 export function getNewlyCreatedCoinRefsAfterSplit(
-	data: SuiTransactionBlockResponse,
+	data: NewSuiTransactionBlockResponse,
 ): SuiObjectRef[] | undefined {
 	return getTransactionEffects(data)?.created?.map((c) => c.reference);
 }

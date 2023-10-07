@@ -1,16 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { useRpcClient } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetOBCDaoManageKey(address: string) {
-	const rpc = useRpcClient();
+	const client = useSuiClient();
 
 	return useQuery({
 		queryKey: ['dao', 'manageKey', address],
 		enabled: Boolean(address),
 		queryFn: () =>
-			rpc
+			client
 				.getOwnedObjects({
 					owner: address,
 					filter: {

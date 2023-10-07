@@ -34,7 +34,7 @@ const cardStyles = cva('overflow-hidden', {
 			obcBorder: 'border border-obc-border',
 		},
 		shadow: {
-			true: 'shadow',
+			true: 'shadow-cardSoft',
 		},
 		growOnHover: {
 			true: 'hover:scale-101 ease-in-out duration-200',
