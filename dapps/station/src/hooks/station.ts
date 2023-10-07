@@ -9,8 +9,7 @@ import {
 	TANSTACK_OWNED_KIOSK_KEY,
 } from '../utils/constants';
 import { useRpc } from '../context/RpcClientContext';
-import { useRpcClient } from '@mysten/core';
-import { bcs, ObjectId, SuiAddress, SuiObjectResponse } from '@mysten/sui.js';
+import { bcs, ObjectId, SuiAddress, SuiObjectResponse, SUI_TYPE_ARG } from '@mysten/sui.js';
 import {
 	Kiosk,
 	KioskData,
@@ -24,7 +23,9 @@ import {
 import { parseObjectDisplays, processKioskListings } from '../utils/utils';
 import { OwnedObjectType } from '../components/Inventory/OwnedObjects';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
-import useDebounce from "./useDebounce";
+import useDebounce from './useDebounce';
+import { getAllCoins, normalizeSuiCoinType } from '~/utils/utils';
+import BigNumber from "bignumber.js";
 
 export type KioskFnType = (item: OwnedObjectType, price?: string) => Promise<void> | void;
 
@@ -139,12 +140,12 @@ export function useStationQuery(type: string, amount: string) {
 	const provider = useRpc();
 	const debouncedAmount = useDebounce(amount, 1000);
 
-	const isEnabled = Number(debouncedAmount) &&  Number(debouncedAmount) > 0 ? true : false
+	const isEnabled = Number(debouncedAmount) && Number(debouncedAmount) > 0 ? true : false;
 	return useQuery({
 		queryKey: ['get', type, debouncedAmount],
 		enabled: isEnabled,
 		refetchInterval: 60000,
-    	staleTime: 1000,
+		staleTime: 1000,
 		queryFn: async () => {
 			const txb = new TransactionBlock();
 			const currentAddress = '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -173,31 +174,31 @@ export function useStationQuery(type: string, amount: string) {
 	});
 }
 
-export function useBalance() {
-	const rpc = useRpcClient();
-	return '303';
-	// return useQuery({
-	// 	queryKey: ['get', 'last', '30', 'epoch', 'transactions'],
-	// 	queryFn: async () =>
-	// 		[
-	// 			...(
-	// 				await rpc.getEpochs({
-	// 					descendingOrder: true,
-	// 					limit: 31,
-	// 				})
-	// 			).data,
-	// 		]
-	// 			.reverse()
-	// 			.slice(0, -1),
-	// 	select: (data) =>
-	// 		data.map(({ epoch, epochTotalTransactions, epochStartTimestamp }) => ({
-	// 			epoch: Number(epoch),
-	// 			epochTotalTransactions: Number(epochTotalTransactions),
-	// 			epochStartTimestamp: Number(epochStartTimestamp),
-	// 		})),
-	// });
+export function useBalance(type: string, address: string) {
+	const provider = useRpc();
+	return useQuery({
+		queryKey: ['get', 'balance', type],
+		enabled: !!address,
+		queryFn: async () => {
+			const typeArg = type === 'mint' ? SUI_TYPE_ARG : '0xc8::usd::USD';
+
+			const coinType = normalizeSuiCoinType(typeArg);
+
+			const coinsData = await getAllCoins(provider, address, coinType);
+
+			const coins = coinsData?.filter(({ lockedUntilEpoch: lock }) => !lock);
+
+			return coins || []
+		},
+		select:(coins)=>{
+			let result:any = 0;
+			coins.forEach((item)=>{result = result + Number(item.balance)})
+			if(result > 0){
+				result = new BigNumber(result.toString()).shiftedBy(-9).toFixed();
+			}
+			console.log('resultresult',result)
+			return result
+		}
+	});
 }
 
-// const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
-// const coin = tx.splitCoins(primaryCoinInput, [tx.pure(amount)]);
-//     tx.transferObjects([coin], tx.pure(to));

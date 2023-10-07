@@ -38,5 +38,5 @@ export function useTransactionExecution() {
 		else throw new Error('Transaction execution failed.');
 	};
 
-	return { signAndExecute };
+	return { signAndExecute,provider };
 }
