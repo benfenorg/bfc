@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import classnames from 'classnames';
-import { useStationQuery } from '~/hooks/station';
+import { useStationQuery,useBalance } from '~/hooks/station';
 import { Button } from '../Base/Button';
 import { Spinner } from '../Base/Spinner';
 import { useSwapMutation } from '../../mutations/station';
 import { useWalletKit } from '@mysten/wallet-kit';
+import { toast } from 'react-hot-toast';
 
 function CoinSwap() {
 	const [type, setType] = useState<'mint' | 'withdraw'>('mint');
@@ -18,10 +19,13 @@ function CoinSwap() {
 		return 'OST';
 	}, [type]);
 
+    const { data:balance } = useBalance(type,currentAccount?.address ?? '')
+
 	const { data,isFetching: loading } = useStationQuery(type, amount);
 
     const swapCoin = useSwapMutation({
         onSuccess: () => {
+            toast.success('Swap 成功');
 			// onCreate();
 			// toast.success('Kiosk created successfully');
 		},
@@ -53,7 +57,7 @@ function CoinSwap() {
 			<div className="flex gap-9 items-center">
 				{token}
 				<div>
-					<div>Balance：1000 {token}</div>
+					<div>Balance：{balance} {token}</div>
 					<input
 						type="text"
 						id="search"
