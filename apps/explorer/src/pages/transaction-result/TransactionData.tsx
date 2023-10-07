@@ -32,7 +32,7 @@ export function TransactionData({ transaction }: Props) {
 
 	return (
 		<div className="flex flex-wrap gap-6">
-			<section className="flex w-96 flex-1 flex-col gap-6 max-md:min-w-[50%]">
+			<section className="flex w-96 flex-1 flex-col gap-6 min-w-[50%]">
 				<TransactionDetailCard
 					timestamp={summary?.timestamp}
 					sender={summary?.sender}

@@ -12,6 +12,7 @@ const cardStyles = cva('overflow-hidden', {
 			lightBlue: 'bg-sui/10',
 			white: 'bg-white',
 			'white/80': 'bg-white/80',
+			obcCard:'bg-obc-card'
 		},
 		height: {
 			full: 'h-full',

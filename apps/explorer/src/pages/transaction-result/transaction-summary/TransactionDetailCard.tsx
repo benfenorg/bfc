@@ -38,9 +38,9 @@ export function TransactionDetailCard({
 	const { data: domainName } = useResolveSuiNSName(sender);
 
 	return (
-		<TransactionBlockCard size={md ? 'md' : 'sm'}>
+		<div className="overflow-hidden bg-obc-card rounded-2xl px-6 py-7">
 			<TransactionBlockCardSection>
-				<div className="flex flex-col gap-6">
+				<div className="flex flex-col gap-6 ">
 					{timestamp && (
 						<Text variant="pHeading4/semibold" color="steel-darker">
 							{formatDate(Number(timestamp))}
@@ -74,6 +74,6 @@ export function TransactionDetailCard({
 					</div>
 				</div>
 			</TransactionBlockCardSection>
-		</TransactionBlockCard>
+		</div>
 	);
 }
