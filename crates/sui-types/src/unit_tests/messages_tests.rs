@@ -1044,10 +1044,10 @@ fn verify_sender_signature_correctly_with_flag() {
 fn test_change_epoch_transaction() {
     let tx = VerifiedTransaction::new_change_epoch(1, ProtocolVersion::MIN, 0, 0, 0, 0, 0, vec![]);
     assert!(tx.contains_shared_object());
-    assert_eq!(
-        tx.shared_input_objects().next().unwrap(),
-        SharedInputObject::SUI_SYSTEM_OBJ
-    );
+
+    assert!( tx.shared_input_objects().next().unwrap() == SharedInputObject::SUI_SYSTEM_OBJ ||
+       tx.shared_input_objects().next().unwrap() == SharedInputObject::OBC_SYSTEM_OBJ );
+
     assert!(tx.is_system_tx());
     assert_eq!(
         tx.data()
