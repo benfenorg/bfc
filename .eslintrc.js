@@ -206,7 +206,7 @@ module.exports = {
 						paths: [
 							{
 								name: 'react-router-dom',
-								importNames: ['Link', 'useNavigate', 'useSearchParams'],
+								importNames: ['Link', 'useSearchParams'],
 								message:
 									'Please use `LinkWithQuery`, `useSearchParamsMerged`, and `useNavigateWithQuery` from "~/ui/utils/LinkWithQuery" instead.',
 							},
