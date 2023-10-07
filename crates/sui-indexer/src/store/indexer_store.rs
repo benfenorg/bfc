@@ -9,7 +9,7 @@ use prometheus::{Histogram, IntCounter};
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
     Checkpoint as RpcCheckpoint, CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics,
-    NetworkMetrics, NetworkOverview, SuiObjectData, SuiObjectDataFilter,
+    NetworkMetrics, SuiObjectData, SuiObjectDataFilter,
     SuiTransactionBlockEffects, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
