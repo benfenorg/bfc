@@ -665,6 +665,7 @@ X treasury  init treasury
         <b>let</b> deposit_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> obc_balance, <a href="treasury.md#0xc8_treasury_next_epoch_obc_required">treasury::next_epoch_obc_required</a>(&t));
         <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(deposit_balance, ctx));
     };
+    <a href="treasury.md#0xc8_treasury_rebalance_first_init">treasury::rebalance_first_init</a>(&<b>mut</b> t, ctx);
     (t, obc_balance)
 }
 </code></pre>

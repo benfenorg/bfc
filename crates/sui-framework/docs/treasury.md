@@ -28,6 +28,7 @@
 -  [Function `next_epoch_obc_required`](#0xc8_treasury_next_epoch_obc_required)
 -  [Function `deposit`](#0xc8_treasury_deposit)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
+-  [Function `rebalance_first_init`](#0xc8_treasury_rebalance_first_init)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -919,6 +920,44 @@ Rebalance
     );
     <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(usd_mut_v);
 
+    <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
+        usd_mut_v,
+        &<b>mut</b> _treasury.obc_balance,
+        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;USD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()),
+        _ctx
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_rebalance_first_init"></a>
+
+## Function `rebalance_first_init`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_first_init">rebalance_first_init</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_first_init">rebalance_first_init</a>(
+    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _ctx: &<b>mut</b> TxContext
+)
+{
+    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
+        &<b>mut</b> _treasury.id,
+        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()
+    );
+    /// first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
     <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
         usd_mut_v,
         &<b>mut</b> _treasury.obc_balance,

@@ -398,4 +398,22 @@ module obc_system::treasury {
             _ctx
         );
     }
+
+    public(friend) fun rebalance_first_init(
+        _treasury: &mut Treasury,
+        _ctx: &mut TxContext
+    )
+    {
+        let usd_mut_v = dynamic_object_field::borrow_mut<String, Vault<USD>>(
+            &mut _treasury.id,
+            get_vault_key<USD>()
+        );
+        /// first rebalance just place liquidity not change vault state
+        vault::rebalance(
+            usd_mut_v,
+            &mut _treasury.obc_balance,
+            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, get_vault_key<USD>()),
+            _ctx
+        );
+    }
 }
