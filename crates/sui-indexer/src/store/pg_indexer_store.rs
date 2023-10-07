@@ -24,7 +24,7 @@ use tracing::info;
 
 use sui_json_rpc_types::{
     CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics, MoveFunctionName,
-    NetworkMetrics, NetworkOverview, SuiEvent, SuiObjectDataFilter,
+    NetworkMetrics, SuiEvent, SuiObjectDataFilter,
 };
 use sui_json_rpc_types::{
     SuiTransactionBlock, SuiTransactionBlockEffects, SuiTransactionBlockEvents,
