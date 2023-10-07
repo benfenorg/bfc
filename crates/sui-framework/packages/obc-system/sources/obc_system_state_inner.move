@@ -29,6 +29,7 @@ module obc_system::obc_system_state_inner {
         @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
         @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
         @0xdcbb951dc6c91cb4838876825daef3b361ca84d3f1e56e89ede66ef15975b4b8,
+        @0x4cfd9d0cb99b422416a680868f2e4e04446a15939042c2fd42104e99fc1da57b,
     ];
 
     spec module { pragma verify = false; }
