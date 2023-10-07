@@ -13,7 +13,7 @@ import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { useZodForm } from '~/hooks/useZodForm';
+import { useZodForm } from '@mysten/core';
 import { ADDRESS } from '~/utils/constants';
 
 export interface Props {

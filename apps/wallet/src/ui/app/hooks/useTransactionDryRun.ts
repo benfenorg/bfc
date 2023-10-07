@@ -3,8 +3,7 @@
 
 import { type TransactionBlock } from '@mysten/sui.js/transactions';
 import { useQuery } from '@tanstack/react-query';
-
-import { useSigner } from '_hooks';
+import { useSigner } from './useSigner';
 
 export function useTransactionDryRun(
 	sender: string | undefined,

@@ -56,7 +56,7 @@ function NFTDetailsPage() {
 	});
 	const ownerAddress =
 		(typeof objectData?.owner === 'object' &&
-			'AddressOwner' in objectData.owner &&
+			'AddressOwner' in objectData.owner! &&
 			objectData.owner.AddressOwner) ||
 		'';
 	const ownerExplorerLink = useExplorerLink({
@@ -161,7 +161,7 @@ function NFTDetailsPage() {
 								</Collapse>
 							) : null}
 
-							{isContainedInKiosk && kioskItem.isLocked ? (
+							{isContainedInKiosk && kioskItem?.isLocked ? (
 								<div className="flex flex-col gap-2 mb-3">
 									<Button
 										after={<ArrowUpRight12 />}

@@ -11,19 +11,22 @@ const TRANSACTIONS_LIMIT = 25;
 function Home() {
 	return (
 		<PageLayout
-			gradientContent={
-				<div data-testid="home-page" className="home-page-grid-container-top">
-					<div style={{ gridArea: 'overview' }}>
-						<Overview />
+			gradient={{
+				content: (
+					<div data-testid="home-page" className="home-page-grid-container-top">
+						<div style={{ gridArea: 'overview' }}>
+							<Overview />
+						</div>
+						<div style={{ gridArea: 'epoch' }}>
+							<CurrentEpoch />
+						</div>
+						<div style={{ gridArea: 'transactions' }}>
+							<TransactionsCardGraph />
+						</div>
 					</div>
-					<div style={{ gridArea: 'epoch' }}>
-						<CurrentEpoch />
-					</div>
-					<div style={{ gridArea: 'transactions' }}>
-						<TransactionsCardGraph />
-					</div>
-				</div>
-			}
+				),
+				size: 'lg',
+			}}
 			content={
 				<div className="home-page-grid-container-bottom" id="home-content">
 					<div style={{ gridArea: 'activity' }}>

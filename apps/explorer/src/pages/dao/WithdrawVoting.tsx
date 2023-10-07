@@ -15,7 +15,7 @@ import { useMemo } from 'react';
 import { z } from 'zod';
 
 import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
-import { useZodForm } from '~/hooks/useZodForm';
+import { useZodForm } from '@mysten/core';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 

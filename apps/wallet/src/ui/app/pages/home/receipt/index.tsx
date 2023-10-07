@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useRpcClient } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { Check24 } from '@mysten/icons';
 import { getExecutionStatusType } from '@mysten/sui.js';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +23,7 @@ function ReceiptPage() {
 	// get tx results from url params
 	const transactionId = searchParams.get('txdigest');
 	const fromParam = searchParams.get('from');
-	const rpc = useRpcClient();
+	const rpc = useSuiClient();
 
 	const { data, isLoading, isError } = useQuery({
 		queryKey: ['transactions-by-id', transactionId],

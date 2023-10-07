@@ -12,6 +12,26 @@ import { OwnedCoins } from '~/components/OwnedCoins';
 import { OwnedObjects } from '~/components/OwnedObjects';
 import { PageHeader } from '~/ui/PageHeader';
 
+// function AddressResultPageHeader({ address, loading }: { address: string; loading?: boolean }) {
+// 	const { data: domainName, isFetching } = useResolveSuiNSName(address);
+
+// 	return (
+// 		<PageHeader
+// 			loading={loading || isFetching}
+// 			type="Address"
+// 			title={address}
+// 			subtitle={domainName}
+// 			// before={<Domain32 className="h-6 w-6 text-steel-darker sm:h-10 sm:w-10" />}
+// 		/>
+// 	);
+// }
+
+// function SuiNSAddressResultPageHeader({ name }: { name: string }) {
+// 	const { data: address, isFetching } = useResolveSuiNSAddress(name);
+
+// 	return <AddressResultPageHeader address={address ?? name} loading={isFetching} />;
+// }
+
 function AddressResult({ address }: { address: string }) {
 	const { data: domainName } = useResolveSuiNSName(address);
 

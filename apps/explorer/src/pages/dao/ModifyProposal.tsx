@@ -14,7 +14,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useZodForm } from '~/hooks/useZodForm';
+import { useZodForm } from '@mysten/core';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 

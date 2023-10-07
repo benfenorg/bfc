@@ -21,6 +21,7 @@ export interface PageHeaderProps {
 	subtitle?: string | null;
 	type: PageHeaderType;
 	status?: 'success' | 'failure';
+	loading?: boolean;
 }
 
 const TYPE_TO_COPY: Partial<Record<PageHeaderType, string>> = {
@@ -33,7 +34,7 @@ const STATUS_TO_TEXT = {
 	failure: 'Failure',
 };
 
-export function PageHeader({ title, subtitle, type, status }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, type, status, loading }: PageHeaderProps) {
 	const navigate = useNavigate();
 	const pageBack = () => {
 		navigate(-1);

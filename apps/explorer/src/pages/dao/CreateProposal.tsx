@@ -15,7 +15,7 @@ import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { useZodForm } from '~/hooks/useZodForm';
+import { useZodForm } from '@mysten/core';
 import { Input } from '~/ui/Input';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';

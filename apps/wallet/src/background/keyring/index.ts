@@ -42,10 +42,10 @@ import type { ErrorPayload } from '_payloads';
 import type { KeyringPayload } from '_payloads/keyring';
 
 /** The key for the extension's storage, that holds the index of the last derived account (zero based) */
-const STORAGE_LAST_ACCOUNT_INDEX_KEY = 'last_account_index';
+export const STORAGE_LAST_ACCOUNT_INDEX_KEY = 'last_account_index';
 const STORAGE_ACTIVE_ACCOUNT = 'active_account';
 
-const STORAGE_IMPORTED_LEDGER_ACCOUNTS = 'imported_ledger_accounts';
+export const STORAGE_IMPORTED_LEDGER_ACCOUNTS = 'imported_ledger_accounts';
 
 type KeyringEvents = {
 	lockedStatusUpdate: boolean;

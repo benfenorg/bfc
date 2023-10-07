@@ -53,7 +53,7 @@ import type {
 	SignTransactionRequest,
 	SignTransactionResponse,
 } from '_payloads/transactions';
-import type { NetworkEnvType } from '_src/background/NetworkEnv';
+import type { NetworkEnvType } from '_src/shared/api-env';
 
 type WalletEventsMap = {
 	[E in keyof StandardEventsListeners]: Parameters<StandardEventsListeners[E]>[0];
@@ -147,6 +147,13 @@ export class SuiWallet implements Wallet {
 			'qredo:connect': {
 				version: '0.0.1',
 				qredoConnect: this.#qredoConnect,
+			},
+			'obc:signPersonalMessage': {
+				version: '1.0.0',
+				signPersonalMessage: async () => {
+					// TODO: Implement
+					return { bytes: '', signature: '' };
+				},
 			},
 		};
 	}

@@ -3,21 +3,24 @@
 
 import { useFormatCoin } from '@mysten/core';
 import { ArrowShowAndHideRight12 } from '@mysten/icons';
-import { type CoinBalance } from '@mysten/sui.js';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import clsx from 'clsx';
 import { useState } from 'react';
 
+import { type CoinBalanceVerified } from '.';
 import CoinsPanel from './OwnedCoinsPanel';
 
+
 type OwnedCoinViewProps = {
-	coin: CoinBalance;
+	coin: CoinBalanceVerified;
 	id: string;
 };
 
 export default function OwnedCoinView({ coin, id }: OwnedCoinViewProps) {
-	const [open, setOpen] = useState(false);
+	const isSuiCoin = coin.coinType === SUI_TYPE_ARG;
+	const [open, setOpen] = useState(isSuiCoin);
 	const [formattedTotalBalance, symbol] = useFormatCoin(coin.totalBalance, coin.coinType);
 
 	return (

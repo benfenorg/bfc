@@ -1,6 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import { useTransactionSummary, getLabel } from '@mysten/core';
 import {
 	getExecutionStatusError,
@@ -18,11 +17,7 @@ import { DateCard } from '_app/shared/date-card';
 import { Text } from '_app/shared/text';
 import { useGetTxnRecipientAddress } from '_hooks';
 
-import type {
-	// SuiEvent,
-	SuiTransactionBlockResponse,
-	// TransactionEvents,
-} from '@mysten/sui.js';
+import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 
 export function TransactionCard({
 	txn,

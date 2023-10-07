@@ -1,6 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
 
 import { useBackgroundClient } from '../../hooks/useBackgroundClient';

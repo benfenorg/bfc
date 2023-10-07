@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin } from '@mysten/core';
-import { memo } from 'react';
 
 export type CoinProps = {
 	type: string;
 	balance: bigint;
 };
 
-function CoinBalance({ type, balance }: CoinProps) {
+export default function CoinBalance({ type, balance }: CoinProps) {
 	const [formatted, symbol] = useFormatCoin(balance, type);
 
 	return (
@@ -19,5 +18,3 @@ function CoinBalance({ type, balance }: CoinProps) {
 		</div>
 	);
 }
-
-export default memo(CoinBalance);

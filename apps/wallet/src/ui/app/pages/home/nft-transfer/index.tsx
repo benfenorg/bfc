@@ -1,6 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import { hasPublicTransfer } from '@mysten/sui.js';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
@@ -27,7 +26,7 @@ function NftTransferPage() {
 							<div className="mb-7.5">
 								<NFTDisplayCard objectId={nftId} wideView size="sm" />
 							</div>
-							<TransferNFTForm objectId={nftId} objectType={ownedNFT.type} />
+							<TransferNFTForm objectId={nftId} objectType={ownedNFT.type || undefined} />
 						</>
 					) : (
 						<Navigate to="/" replace />

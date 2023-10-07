@@ -21,7 +21,7 @@ import {
 import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeSuiObjectId } from '../utils/sui-types.js';
 
 const option = <T extends Struct<any, any>>(some: T) =>
 	union([object({ None: union([literal(true), literal(null)]) }), object({ Some: some })]);
@@ -193,7 +193,7 @@ export const Transactions = {
 				modules: modules.map((module) =>
 					typeof module === 'string' ? Array.from(fromB64(module)) : module,
 				),
-				dependencies: dependencies.map((dep) => normalizeSuiAddress(dep)),
+				dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
 			},
 			PublishTransaction,
 		);
@@ -215,7 +215,7 @@ export const Transactions = {
 				modules: modules.map((module) =>
 					typeof module === 'string' ? Array.from(fromB64(module)) : module,
 				),
-				dependencies: dependencies.map((dep) => normalizeSuiAddress(dep)),
+				dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
 				packageId,
 				ticket,
 			},

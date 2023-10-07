@@ -88,7 +88,7 @@ const iconStyles = cva(['transition flex'], {
 	},
 });
 
-interface LinkProps
+export interface LinkProps
 	extends VariantProps<typeof styles>,
 		VariantProps<typeof iconStyles>,
 		Omit<ButtonOrLinkProps, 'className' | 'color'> {

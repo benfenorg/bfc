@@ -79,6 +79,8 @@ export default class ApiProvider {
 		queryClient.clear();
 	}
 
+	apiEnv: API_ENV = DEFAULT_API_ENV;
+
 	public get instance() {
 		if (!this._apiFullNodeProvider) {
 			this.setNewJsonRpcProvider();

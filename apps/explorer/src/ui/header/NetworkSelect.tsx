@@ -10,6 +10,7 @@
 
 import { autoUpdate, flip, FloatingPortal, offset, shift, useFloating } from '@floating-ui/react';
 import { Popover } from '@headlessui/react';
+import { useZodForm } from '@mysten/core';
 import { Text } from '@mysten/ui';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -20,7 +21,6 @@ import { NavItem } from './NavItem';
 import { ReactComponent as CheckIcon } from '../icons/check_16x16.svg';
 import { ReactComponent as ChevronDownIcon } from '../icons/chevron_down.svg';
 import { ReactComponent as MenuIcon } from '../icons/menu.svg';
-import { useZodForm } from '~/hooks/useZodForm';
 
 import type { ComponentProps, ReactNode } from 'react';
 
@@ -68,7 +68,14 @@ function SelectableNetwork({ state, children, onClick, ...props }: SelectableNet
 					'text-gray-45': state === NetworkState.UNSELECTED,
 				})}
 			/>
-			<div className="mt-px">{children}</div>
+			<div className="mt-px">
+				<Text
+					variant="body/semibold"
+					color={state === NetworkState.SELECTED ? 'steel-darker' : 'steel-dark'}
+				>
+					{children}
+				</Text>
+			</div>
 		</div>
 	);
 }
@@ -224,7 +231,11 @@ export function NetworkSelect({
 						isDarker={isDarker}
 						afterIcon={<ResponsiveIcon />}
 					>
-						<span className="hidden md:block">{selected?.label || 'Custom'}</span>
+						<div className="hidden md:block">
+							<Text variant="body/semibold" color="steel-dark">
+								{selected?.label || 'Custom'}
+							</Text>
+						</div>
 					</Popover.Button>
 					<FloatingPortal>
 						<AnimatePresence>

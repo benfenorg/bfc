@@ -4,6 +4,7 @@
 import { type SuiClient } from '@mysten/sui.js/client';
 import { WalletSigner } from '../WalletSigner';
 
+import { type SerializedUIAccount } from '_src/background/accounts/Account';
 import type { BackgroundClient } from '.';
 import type { SerializedSignature } from '@mysten/sui.js/cryptography';
 

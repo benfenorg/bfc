@@ -3,6 +3,7 @@
 
 import preset from '@mysten/core/tailwind.config';
 import { type Config } from 'tailwindcss';
+import animatePlugin from 'tailwindcss-animate';
 
 export default {
 	presets: [preset],

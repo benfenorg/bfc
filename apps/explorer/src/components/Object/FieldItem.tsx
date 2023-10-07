@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiMoveNormalizedType } from '@mysten/sui.js';
+import { type SuiMoveNormalizedType } from '@mysten/sui.js/client';
 import { Text } from '@mysten/ui';
 
 import { getFieldTypeValue } from './utils';
@@ -11,7 +11,7 @@ import { Link } from '~/ui/Link';
 
 interface FieldItemProps {
 	value: string | number | object | boolean;
-	type: SuiMoveNormalizedType;
+	type: SuiMoveNormalizedType | '';
 	objectType: string;
 	truncate?: boolean;
 }

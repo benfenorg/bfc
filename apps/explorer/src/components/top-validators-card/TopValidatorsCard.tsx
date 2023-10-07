@@ -1,9 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetSystemState, useGetValidatorsEvents, useGetValidatorsApy } from '@mysten/core';
+import { useGetValidatorsEvents, useGetValidatorsApy } from '@mysten/core';
+import { useLatestSuiSystemState } from '@mysten/dapp-kit';
 import { ArrowRight12 } from '@mysten/icons';
-import { type SuiValidatorSummary } from '@mysten/sui.js';
+import { type SuiValidatorSummary } from '@mysten/sui.js/client';
 import { Text } from '@mysten/ui';
 import { useMemo } from 'react';
 
@@ -29,7 +30,7 @@ type TopValidatorsCardProps = {
 };
 
 export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
-	const { data, isLoading, isSuccess, isError } = useGetSystemState();
+	const { data, isLoading, isSuccess, isError } = useLatestSuiSystemState();
 
 	const numberOfValidators = data?.activeValidators.length || 0;
 

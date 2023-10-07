@@ -8,16 +8,15 @@ import tmp from 'tmp';
 import {
 	getPublishedObjectChanges,
 	getExecutionStatusType,
-	Coin,
-	UpgradePolicy,
 	sui2ObcAddress,
 	obc2SuiAddress,
 } from '../../../src';
-import { TransactionBlock } from '../../../src/builder';
+import { Coin } from '../../../src';
+import { TransactionBlock, UpgradePolicy } from '../../../src/builder';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
 import { retry } from 'ts-retry-promise';
 import { FaucetRateLimitError, getFaucetHost, requestSuiFromFaucetV0 } from '../../../src/faucet';
-import { SuiClient, getFullnodeUrl } from '../../../src/client';
+import { SuiClient, SuiObjectChangePublished, getFullnodeUrl } from '../../../src/client';
 import { Keypair } from '../../../src/cryptography';
 
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');

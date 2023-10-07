@@ -1,14 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import {
 	type BalanceChangeSummary,
 	CoinFormat,
 	useFormatCoin,
 	type BalanceChange,
 	useResolveSuiNSName,
+	getRecognizedUnRecognizedTokenChanges,
 } from '@mysten/core';
 import { Heading, Text } from '@mysten/ui';
+import { useMemo } from 'react';
 
 import { AddressLink } from '~/ui/InternalLink';
 import { TransactionBlockCard, TransactionBlockCardSection } from '~/ui/TransactionBlockCard';
@@ -57,8 +58,11 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 }
 
 function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner: string }) {
-	// const coinTypesSet = new Set(changes.map((change) => change.coinType));
 	const { data: suinsDomainName } = useResolveSuiNSName(owner);
+	const { recognizedTokenChanges, unRecognizedTokenChanges } = useMemo(
+		() => getRecognizedUnRecognizedTokenChanges(changes),
+		[changes],
+	);
 
 	return (
 		<TransactionBlockCard
@@ -67,10 +71,9 @@ function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner
 					<Heading variant="heading6/semibold" color="steel-darker">
 						Balance Changes
 					</Heading>
-
-					{/* <CoinsStack coinTypes={Array.from(coinTypesSet)} /> */}
 				</div>
 			}
+			shadow
 			size="sm"
 			footer={
 				owner ? (
@@ -86,11 +89,20 @@ function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner
 			}
 		>
 			<div className="flex flex-col gap-2">
-				{changes.map((change, index) => (
-					<TransactionBlockCardSection key={index}>
+				{recognizedTokenChanges.map((change, index) => (
+					<TransactionBlockCardSection key={index + change.coinType}>
 						<BalanceChangeEntry change={change} />
 					</TransactionBlockCardSection>
 				))}
+				{unRecognizedTokenChanges.length > 0 && (
+					<div className="flex flex-col gap-2 border-t border-gray-45 pt-2">
+						{unRecognizedTokenChanges.map((change, index) => (
+							<TransactionBlockCardSection key={index + change.coinType}>
+								<BalanceChangeEntry change={change} />
+							</TransactionBlockCardSection>
+						))}
+					</div>
+				)}
 			</div>
 		</TransactionBlockCard>
 	);

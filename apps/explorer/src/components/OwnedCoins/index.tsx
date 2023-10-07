@@ -1,18 +1,25 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetAllBalances } from '@mysten/core';
+import { useAllBalances } from '@mysten/dapp-kit';
+
+import { type CoinBalance } from '@mysten/sui.js/client';
+import { normalizeSuiAddress } from '@mysten/sui.js/utils';
 import { Heading, Text, LoadingIndicator } from '@mysten/ui';
 import { useState } from 'react';
 
 import OwnedCoinView from './OwnedCoinView';
 import { Pagination } from '~/ui/Pagination';
 
-export const COINS_PER_PAGE: number = 6;
+export type CoinBalanceVerified = CoinBalance & {
+	isRecognized?: boolean;
+};
 
+export const COINS_PER_PAGE: number = 6;
 export function OwnedCoins({ id }: { id: string }) {
 	const [currentSlice, setCurrentSlice] = useState(1);
-	const { isLoading, data, isError } = useGetAllBalances(id);
+	const { isLoading, data, isError } = useAllBalances({ owner: normalizeSuiAddress(id) });
+
 
 	if (isError) {
 		return <div className="pt-2 font-sans font-semibold text-issue-dark">Failed to load Coins</div>;

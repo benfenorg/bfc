@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useFormatCoin, useGetSystemState } from '@mysten/core';
-import { SUI_TYPE_ARG } from '@mysten/sui.js';
+import { useFormatCoin } from '@mysten/core';
+import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { LoadingIndicator } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -41,7 +42,7 @@ function SuiStats({
 export default function EpochDetail() {
 	const { id } = useParams();
 	const enhancedRpc = useEnhancedRpcClient();
-	const { data: systemState } = useGetSystemState();
+	const { data: systemState } = useLatestSuiSystemState();
 	const { data, isLoading, isError } = useQuery({
 		queryKey: ['epoch', id],
 		queryFn: async () =>

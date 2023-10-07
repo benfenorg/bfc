@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { sui2ObcAddress } from '@mysten/sui.js';
-import { useRpcClient } from '../api/RpcClientContext';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 const defaultOptions = {
@@ -15,12 +15,12 @@ const defaultOptions = {
 };
 
 export function useGetObject(objectId?: string | null) {
-	const rpc = useRpcClient();
+	const client = useSuiClient();
 	const normalizedObjId = objectId && sui2ObcAddress(objectId);
 	return useQuery({
 		queryKey: ['object', normalizedObjId],
 		queryFn: () =>
-			rpc.getObject({
+			client.getObject({
 				id: normalizedObjId!,
 				options: defaultOptions,
 			}),

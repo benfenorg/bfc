@@ -127,14 +127,15 @@ function DaoList() {
 function Dao() {
 	return (
 		<PageLayout
-			gradientContent={
-				<div
+			gradient={{
+				content:(<div
 					data-testid="home-page"
 					className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
 				>
 					DAO Proposals
-				</div>
-			}
+				</div>),
+				size: 'lg',
+			}}
 			content={
 				<div id="home-content">
 					<div>

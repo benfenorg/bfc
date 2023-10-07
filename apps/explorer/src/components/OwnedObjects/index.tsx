@@ -5,12 +5,17 @@ import { useGetKioskContents, useGetOwnedObjects } from '@mysten/core';
 import { LoadingIndicator, RadioGroup, RadioGroupItem } from '@mysten/ui';
 import { useMemo, useState } from 'react';
 
-import OwnedObject from './OwnedObject';
 import { Pagination, useCursorPagination } from '~/ui/Pagination';
+import OwnedObject from './OwnedObject';
+
+enum FILTER_VALUES {
+	ALL = 'all',
+	KIOSKS = 'kiosks',
+}
 
 const FILTER_OPTIONS = [
-	{ label: 'NFTs', value: 'all' },
-	{ label: 'Kiosks', value: 'kiosks' },
+	{ label: 'NFTS', value: FILTER_VALUES.ALL },
+	{ label: 'KIOSKS', value: FILTER_VALUES.KIOSKS },
 ];
 
 export function OwnedObjects({ id }: { id: string }) {

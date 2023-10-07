@@ -7,7 +7,6 @@ import { type AccountSourceSerializedUI } from '_src/background/account-sources/
 import { type SerializedUIAccount } from '_src/background/accounts/Account';
 
 import { type ZkProvider } from '_src/background/accounts/zk/providers';
-import { type Status } from '_src/background/storage-migration';
 import type { Payload } from './Payload';
 
 export type UIAccessibleEntityType = 'accountSources' | 'accounts';
@@ -45,8 +44,6 @@ type MethodPayloads = {
 	signData: { data: string; id: string };
 	signDataResponse: { signature: SerializedSignature };
 	entitiesUpdated: { type: UIAccessibleEntityType };
-	getStorageMigrationStatus: null;
-	storageMigrationStatus: { status: Status };
 	doStorageMigration: { password: string };
 	switchAccount: { accountID: string };
 	setAccountNickname: { id: string; nickname: string | null };

@@ -3,7 +3,6 @@
 
 // import { Filter16 } from '@mysten/icons';
 import { useState } from 'react';
-// import toast from 'react-hot-toast';
 
 import { EpochsActivityTable } from './EpochsActivityTable';
 import { TransactionsActivityTable } from './TransactionsActivityTable';
@@ -23,7 +22,6 @@ type Props = {
 	disablePagination?: boolean;
 };
 
-// const AUTO_REFRESH_ID = 'auto-refresh';
 const REFETCH_INTERVAL_SECONDS = 10;
 const REFETCH_INTERVAL = REFETCH_INTERVAL_SECONDS * 1000;
 

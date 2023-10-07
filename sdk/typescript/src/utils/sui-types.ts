@@ -35,6 +35,7 @@ export function isValidSuiAddress(value: string): value is string {
 export function isValidSuiObjectId(value: string): boolean {
 	return isValidSuiAddress(value);
 }
+
 type StructTag = {
 	address: string;
 	module: string;

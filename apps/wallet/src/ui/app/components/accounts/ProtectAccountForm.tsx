@@ -87,7 +87,6 @@ export function ProtectAccountForm({
 						label={
 							<Link
 								href={ToS_LINK}
-								beforeColor="steelDarker"
 								color="suiDark"
 								text="Terms of Services"
 								before="I read and agreed to the"

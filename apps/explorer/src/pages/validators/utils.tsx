@@ -1,7 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type ApyByValidator, formatPercentageDisplay } from '@mysten/core';
-import { type SuiEvent, type SuiValidatorSummary, sui2ObcAddress } from '@mysten/sui.js';
+import { sui2ObcAddress } from '@mysten/sui.js';
+import { type SuiEvent, type SuiValidatorSummary } from '@mysten/sui.js/client';
 import { Text } from '@mysten/ui';
 
 import { StakeColumn } from '~/components/top-validators-card/StakeColumn';
@@ -26,7 +27,9 @@ export function validatorsTableData(
 				const totalStake = validator.stakingPoolSuiBalance;
 				const img = validator.imageUrl;
 
-				const event = getValidatorMoveEvent(validatorEvents, validator.suiAddress);
+				const event = getValidatorMoveEvent(validatorEvents, validator.suiAddress) as {
+					pool_staking_reward?: string;
+				};
 
 				const atRiskValidator = atRiskValidators.find(
 					([address]) => address === validator.suiAddress,
@@ -183,7 +186,9 @@ export function validatorsSortTableData(
 				const totalStake = validator.stakingPoolSuiBalance;
 				const img = validator.imageUrl;
 
-				const event = getValidatorMoveEvent(validatorEvents, validator.suiAddress);
+				const event = getValidatorMoveEvent(validatorEvents, validator.suiAddress) as {
+					pool_staking_reward?: string;
+				};
 
 				const atRiskValidator = atRiskValidators.find(
 					([address]) => address === validator.suiAddress,
