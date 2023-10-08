@@ -314,6 +314,7 @@ mod checked {
         advance_epoch_gas_summary: Option<(u64, u64)>,
     ) -> Result<(), ExecutionError> {
         let mut result: std::result::Result<(), sui_types::error::ExecutionError> = Ok(());
+        temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
 
         if !is_genesis_tx && !Mode::allow_arbitrary_values() {
             // ensure that this transaction did not create or destroy SUI, try to recover if the check fails

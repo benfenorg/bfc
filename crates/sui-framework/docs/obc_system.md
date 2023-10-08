@@ -10,6 +10,7 @@
 -  [Function `create_stake_manager_key`](#0xc8_obc_system_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_obc_system_unstake_manager_key)
 -  [Function `create`](#0xc8_obc_system_create)
+-  [Function `change_round`](#0xc8_obc_system_change_round)
 -  [Function `obc_round`](#0xc8_obc_system_obc_round)
 -  [Function `update_round`](#0xc8_obc_system_update_round)
 -  [Function `load_system_state`](#0xc8_obc_system_load_system_state)
@@ -204,6 +205,31 @@
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="obc_system.md#0xc8_obc_system_OBC_SYSTEM_STATE_VERSION_V1">OBC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
 
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(self);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_change_round"></a>
+
+## Function `change_round`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_change_round">change_round</a>(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, round: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_change_round">change_round</a>( wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>, round: u64) {
+    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_update_round">obc_system_state_inner::update_round</a>(inner_state, round);
 }
 </code></pre>
 
