@@ -68,6 +68,11 @@ module obc_system::obc_system {
         transfer::share_object(self);
     }
 
+    public entry fun change_round( wrapper: &mut ObcSystemState, round: u64) {
+        let inner_state = load_system_state_mut(wrapper);
+        obc_system_state_inner::update_round(inner_state, round);
+    }
+
     public fun obc_round(
         wrapper: &mut ObcSystemState,
         clock: &Clock,
