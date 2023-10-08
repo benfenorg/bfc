@@ -1251,14 +1251,16 @@ impl AuthorityState {
 
         let mut is_stable_gas = false;
         // make a gas object if one was not provided
-        let mut gas_object_refs = if !transaction.gas().is_empty() &&
-            !(transaction.gas_owner() == SuiAddress::from(SUI_FRAMEWORK_ADDRESS)) {
-            is_stable_gas = true;
-            vec![]
-        }else {
-            transaction.gas().to_vec()
-        };
-        let ((gas_status, input_objects), mock_gas) = if gas_object_refs.is_empty() {
+        // let mut gas_object_refs = if !transaction.gas().is_empty() &&
+        //     !(transaction.gas_owner() == SuiAddress::from(SUI_FRAMEWORK_ADDRESS)) {
+        //     is_stable_gas = true;
+        //     vec![]
+        // }else {
+        //     transaction.gas().to_vec()
+        // };
+        // let ((gas_status, input_objects), mock_gas) = if gas_object_refs.is_empty() {
+        let mut gas_object_refs = transaction.gas().to_vec();
+        let ((gas_status, input_objects), mock_gas) = if transaction.gas().is_empty() {
             let sender = transaction.sender();
             // use a 1B sui coin
             const MIST_TO_SUI: u64 = 1_000_000_000;
@@ -1362,8 +1364,9 @@ impl AuthorityState {
             let gas = transaction.gas()[0].0;
             //get exchange rate
             let rate = self.exchange_rates(gas).await?;
+            let mut mut_effects = response_effects.clone();
             if rate > 0 {
-                let mut gas_cost = response_effects.mut_gas_cost_summary();
+                let mut gas_cost = mut_effects.mut_gas_cost_summary();
                 let real_rate = rate / MIST_PER_SUI;
                 gas_cost.computation_cost = gas_cost.computation_cost * real_rate;
                 gas_cost.storage_cost = gas_cost.storage_cost * real_rate;
@@ -1371,30 +1374,54 @@ impl AuthorityState {
                 gas_cost.non_refundable_storage_fee = gas_cost.non_refundable_storage_fee * real_rate;
                 info!("stable gas coin exchange: {}", gas_cost);
             }
+            Ok((
+                DryRunTransactionBlockResponse {
+                    input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
+                        .map_err(|e| SuiError::TransactionSerializationError {
+                            error: format!(
+                                "Failed to convert transaction to SuiTransactionBlockData: {}",
+                                e
+                            ),
+                        })?,
+                    effects: mut_effects,
+                    events: SuiTransactionBlockEvents::try_from(
+                        inner_temp_store.events.clone(),
+                        tx_digest,
+                        None,
+                        &module_cache,
+                    )?,
+                    object_changes,
+                    balance_changes,
+                },
+                inner_temp_store.written,
+                effects,
+                mock_gas,
+            ))
+        } else {
+            Ok((
+                DryRunTransactionBlockResponse {
+                    input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
+                        .map_err(|e| SuiError::TransactionSerializationError {
+                            error: format!(
+                                "Failed to convert transaction to SuiTransactionBlockData: {}",
+                                e
+                            ),
+                        })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
+                    effects: response_effects,
+                    events: SuiTransactionBlockEvents::try_from(
+                        inner_temp_store.events.clone(),
+                        tx_digest,
+                        None,
+                        &module_cache,
+                    )?,
+                    object_changes,
+                    balance_changes,
+                },
+                inner_temp_store.written,
+                effects,
+                mock_gas,
+            ))
         }
-        Ok((
-            DryRunTransactionBlockResponse {
-                input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
-                    .map_err(|e| SuiError::TransactionSerializationError {
-                        error: format!(
-                            "Failed to convert transaction to SuiTransactionBlockData: {}",
-                            e
-                        ),
-                    })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
-                effects: response_effects,
-                events: SuiTransactionBlockEvents::try_from(
-                    inner_temp_store.events.clone(),
-                    tx_digest,
-                    None,
-                    &module_cache,
-                )?,
-                object_changes,
-                balance_changes,
-            },
-            inner_temp_store.written,
-            effects,
-            mock_gas,
-        ))
     }
 
     #[allow(unused)]
