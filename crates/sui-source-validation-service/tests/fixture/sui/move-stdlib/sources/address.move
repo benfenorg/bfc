@@ -3,5 +3,4 @@
 
 /// Dummy module for testing
 module std::address {}
-pub mod client;
-pub mod writer;
+
