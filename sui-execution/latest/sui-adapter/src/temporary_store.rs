@@ -950,6 +950,7 @@ impl<'backing> TemporaryStore<'backing> {
                             total_input_sui,
                             total_output_sui))
                 );
+                //return  Ok(());
             }
         }
 

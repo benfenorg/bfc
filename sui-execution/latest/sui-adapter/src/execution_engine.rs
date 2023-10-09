@@ -283,6 +283,14 @@ mod checked {
         });
 
         let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
+        // For advance epoch transaction, we need to provide epoch rewards and rebates as extra
+        // information provided to check_sui_conserved, because we mint rewards, and burn
+        // the rebates. We also need to pass in the unmetered_storage_rebate because storage
+        // rebate is not reflected in the storage_rebate of gas summary. This is a bit confusing.
+        // We could probably clean up the code a bit.
+        // Put all the storage rebate accumulated in the system transaction
+        // to the 0x5 object so that it's not lost.
+        temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
 
         if let Err(e) = run_conservation_checks::<Mode>(
             temporary_store,
@@ -314,7 +322,6 @@ mod checked {
         advance_epoch_gas_summary: Option<(u64, u64)>,
     ) -> Result<(), ExecutionError> {
         let mut result: std::result::Result<(), sui_types::error::ExecutionError> = Ok(());
-
         if !is_genesis_tx && !Mode::allow_arbitrary_values() {
             // ensure that this transaction did not create or destroy SUI, try to recover if the check fails
             let conservation_result = {

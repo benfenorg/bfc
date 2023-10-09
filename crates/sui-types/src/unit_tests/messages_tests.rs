@@ -27,6 +27,7 @@ use roaring::RoaringBitmap;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeMap;
 use std::hash::Hasher;
+use sui_macros::sim_test;
 
 #[test]
 fn test_signed_values() {
@@ -1049,16 +1050,21 @@ fn test_change_epoch_transaction() {
        tx.shared_input_objects().next().unwrap() == SharedInputObject::OBC_SYSTEM_OBJ );
 
     assert!(tx.is_system_tx());
+
+    let objects_length = tx.data()
+        .intent_message()
+        .value
+        .input_objects()
+        .unwrap()
+        .len();
+
+    //0x05, 0x06, 0xc0[201]
     assert_eq!(
-        tx.data()
-            .intent_message()
-            .value
-            .input_objects()
-            .unwrap()
-            .len(),
-        1
+        objects_length,
+        3
     );
 }
+
 
 #[test]
 fn test_consensus_commit_prologue_transaction() {

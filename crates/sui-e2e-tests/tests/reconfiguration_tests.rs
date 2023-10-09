@@ -489,6 +489,51 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
     Ok(objects)
 }
 
+#[sim_test]
+async fn test_obc_dao_change_round() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000)
+        .build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    // now do the call
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let module = "obc_system".to_string();
+    let function = "change_round".to_string();
+    let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&obc_status_address.to_string())?,
+        SuiJsonValue::new(json!("5"))?,
+    ];
+
+    do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+
+    // it will be timeout, if change round transaction is unsuccessful.
+    cluster
+        .wait_for_epoch_with_timeout(None, Duration::from_secs(360))
+        .await;
+    Ok(())
+}
 
 #[sim_test]
 async fn test_obc_dao_create_action() -> Result<(), anyhow::Error>{
