@@ -1,5 +1,4 @@
 ---
-'@mysten/wallet-adapter-unsafe-burner': minor
 '@mysten/wallet-kit': minor
 '@mysten/suins-toolkit': minor
 '@mysten/deepbook': minor
