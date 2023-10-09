@@ -111,7 +111,7 @@ use sui_types::storage::{ObjectKey, ObjectStore, WriteKind};
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, OBC_SYSTEM_ADDRESS};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, OBC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::gas_coin::MIST_PER_SUI;
@@ -1249,7 +1249,7 @@ impl AuthorityState {
             }
         }
 
-        let mut is_stable_gas = false;
+        let is_stable_gas = false;
         // make a gas object if one was not provided
         // let mut gas_object_refs = if !transaction.gas().is_empty() &&
         //     !(transaction.gas_owner() == SuiAddress::from(SUI_FRAMEWORK_ADDRESS)) {
@@ -1359,7 +1359,7 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
-        let mut response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
+        let response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
         if is_stable_gas {
             let gas = transaction.gas()[0].0;
             //get exchange rate
