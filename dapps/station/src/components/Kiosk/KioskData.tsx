@@ -66,8 +66,8 @@ export function KioskData({ kioskId }: { kioskId: ObjectId }) {
 
 			<Tab.Group vertical defaultIndex={0}>
 				<Tab.List>
-					<Tab className="tab-title">My Kiosk</Tab>
-					<Tab className="tab-title">My Wallet</Tab>
+					<Tab >My Kiosk</Tab>
+					<Tab >My Wallet</Tab>
 				</Tab.List>
 				<Tab.Panels>
 					<Tab.Panel>{kioskId && <KioskItems kioskId={kioskId}></KioskItems>}</Tab.Panel>
