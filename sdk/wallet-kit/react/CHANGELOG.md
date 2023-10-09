@@ -1,5 +1,28 @@
 # @mysten/wallet-kit
 
+## 0.8.0
+
+### Minor Changes
+
+- 1696f3e5f: Update to use modular imports from @mysten/sui.js
+
+  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a `JsonRpcProvider`
+
+### Patch Changes
+
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+  - @mysten/sui.js@0.42.0
+  - @mysten/wallet-kit-core@0.6.2
+  - @mysten/wallet-standard@0.7.2
+
 ## 0.7.1
 
 ### Patch Changes

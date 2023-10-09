@@ -1,5 +1,20 @@
 # @mysten/dapp-kit
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+  - @mysten/sui.js@0.42.0
+
 ## 0.0.3
 
 ### Patch Changes

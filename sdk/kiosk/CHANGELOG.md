@@ -1,5 +1,26 @@
 # @mysten/kiosk
 
+## 0.6.0
+
+### Minor Changes
+
+- 1696f3e5f: Update to use modular imports from @mysten/sui.js
+
+  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a `JsonRpcProvider`
+
+### Patch Changes
+
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+  - @mysten/sui.js@0.42.0
+
 ## 0.5.2
 
 ### Patch Changes
