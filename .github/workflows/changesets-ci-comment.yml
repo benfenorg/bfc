@@ -3,6 +3,7 @@ name: Changesets CI Comment
 # NOTE: This workflow run indirection is used to securely comment on PRs when
 # changeset CI runs are completed.
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Changesets CI"]
     types:
