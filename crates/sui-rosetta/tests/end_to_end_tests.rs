@@ -248,7 +248,7 @@ async fn test_stake_all() {
 #[tokio::test]
 async fn test_withdraw_stake() {
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5)
+        .with_epoch_duration_ms(10000)
         .build()
         .await;
     let sender = test_cluster.get_address_0();
@@ -311,6 +311,7 @@ async fn test_withdraw_stake() {
         )
         .await;
 
+    println!("response is {:?}",response);
     assert_eq!(1, response.balances.len());
     assert_eq!(1000000000, response.balances[0].value);
 
