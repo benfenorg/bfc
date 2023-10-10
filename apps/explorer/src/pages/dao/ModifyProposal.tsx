@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useZodForm } from '@mysten/core';
 import {
 	TransactionBlock,
 	getExecutionStatusError,
@@ -14,7 +15,6 @@ import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useZodForm } from '@mysten/core';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 

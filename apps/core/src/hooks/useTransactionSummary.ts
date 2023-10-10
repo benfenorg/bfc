@@ -73,7 +73,7 @@ export function useTransactionSummary({
 				balanceChanges: balanceChangeSummary,
 			};
 		}
-	}, [transaction, currentAddress, objectChangesWithDisplay]);
+	}, [transaction, currentAddress, objectChangesWithDisplay, recognizedPackagesList]);
 
 	return summary;
 }

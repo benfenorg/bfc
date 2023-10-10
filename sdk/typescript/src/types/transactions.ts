@@ -573,7 +573,7 @@ export function getObjectChanges(data: SuiTransactionBlockResponse): SuiObjectCh
 }
 
 export function getPublishedObjectChanges(
-	data: SuiTransactionBlockResponse,
+	data: NewSuiTransactionBlockResponse,
 ): SuiObjectChangePublished[] {
 	return (
 		(data.objectChanges?.filter((a) =>

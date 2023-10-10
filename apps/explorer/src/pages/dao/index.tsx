@@ -128,12 +128,14 @@ function Dao() {
 	return (
 		<PageLayout
 			gradient={{
-				content:(<div
-					data-testid="home-page"
-					className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
-				>
-					DAO Proposals
-				</div>),
+				content: (
+					<div
+						data-testid="home-page"
+						className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
+					>
+						DAO Proposals
+					</div>
+				),
 				size: 'lg',
 			}}
 			content={

@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-} from '../../../src';
+import {} from '../../../src';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { parseSerializedSignature } from '../../../src/cryptography';
 import {

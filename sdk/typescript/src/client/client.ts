@@ -1,11 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import type {
-	ExecuteTransactionRequestType,
-	SuiEventFilter,
-	SuiObjectDataOptions,
-	SuiTransactionBlockResponseOptions,
-	TransactionFilter,
 	SuiTransactionBlockResponseQuery,
 	Order,
 	CoinMetadata,
@@ -40,7 +35,6 @@ import type {
 	EpochInfo,
 	EpochPage,
 	CheckpointPage,
-	DynamicFieldName,
 	DynamicFieldPage,
 	NetworkMetrics,
 	AddressMetrics,
@@ -89,7 +83,6 @@ import {
 	normalizeSuiObjectId,
 } from '../utils/sui-types.js';
 import { fromB58, toB64, toHEX } from '@mysten/bcs';
-import type { SerializedSignature } from '../cryptography/signature.js';
 import { sui2ObcAddress } from '../utils/format.js';
 import type { TransactionBlock } from '../builder/index.js';
 import { isTransactionBlock } from '../builder/index.js';

@@ -17,7 +17,7 @@ import {
 	is,
 	nullable,
 	tuple,
-	unknown
+	unknown,
 } from 'superstruct';
 import { sui2ObcAddress } from '../utils/format.js';
 import { ObjectOwner } from './common.js';
@@ -86,7 +86,7 @@ export const SuiRawMoveObject = object({
 	/** Move type (e.g., "0x2::coin::Coin<0x2::obc::OBC>") */
 	type: string(),
 	hasPublicTransfer: boolean(),
-	version:string(),
+	version: string(),
 	bcsBytes: string(),
 });
 export type SuiRawMoveObject = Infer<typeof SuiRawMoveObject>;

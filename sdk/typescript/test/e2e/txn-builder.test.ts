@@ -4,13 +4,6 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 
 import {
-	getExecutionStatusType,
-	getObjectId,
-	getSharedObjectInitialVersion,
-	getTransactionDigest,
-	getCreatedObjects,
-} from '../../src';
-import {
 	SuiTransactionBlockResponse,
 	SuiObjectData,
 	SuiObjectChangeCreated,

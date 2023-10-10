@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useZodForm } from '@mysten/core';
 import {
 	TransactionBlock,
 	getExecutionStatusError,
@@ -13,7 +14,6 @@ import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { useZodForm } from '@mysten/core';
 import { Input } from '~/ui/Input';
 import { ADDRESS } from '~/utils/constants';
 

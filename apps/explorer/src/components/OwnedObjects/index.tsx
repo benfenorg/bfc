@@ -5,8 +5,8 @@ import { useGetKioskContents, useGetOwnedObjects } from '@mysten/core';
 import { LoadingIndicator, RadioGroup, RadioGroupItem } from '@mysten/ui';
 import { useMemo, useState } from 'react';
 
-import { Pagination, useCursorPagination } from '~/ui/Pagination';
 import OwnedObject from './OwnedObject';
+import { Pagination, useCursorPagination } from '~/ui/Pagination';
 
 enum FILTER_VALUES {
 	ALL = 'all',

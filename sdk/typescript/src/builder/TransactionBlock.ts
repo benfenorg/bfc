@@ -9,10 +9,8 @@ import {
 	extractMutableReference,
 	extractStructTag,
 	getObjectReference,
-	getSharedObjectInitialVersion,
 	SuiObjectRef,
 } from '../types/index.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
 import type { TransactionArgument, TransactionType, MoveCallTransaction } from './Transactions.js';
 import { Transactions, TransactionBlockInput, getTransactionType } from './Transactions.js';
 import type { ObjectCallArg } from './Inputs.js';

@@ -12,7 +12,6 @@ import { useState } from 'react';
 import { type CoinBalanceVerified } from '.';
 import CoinsPanel from './OwnedCoinsPanel';
 
-
 type OwnedCoinViewProps = {
 	coin: CoinBalanceVerified;
 	id: string;

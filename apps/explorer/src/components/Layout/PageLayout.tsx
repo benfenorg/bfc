@@ -3,13 +3,11 @@
 
 import { useElementDimensions } from '@mysten/core';
 import { LoadingIndicator } from '@mysten/ui';
-
 import clsx from 'clsx';
 import { type ReactNode, useRef } from 'react';
 
 import Footer from '../footer/Footer';
 import Header from '../header/Header';
-
 
 export type PageLayoutProps = {
 	gradient?: {

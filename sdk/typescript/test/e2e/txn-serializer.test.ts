@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import {
-	getCreatedObjects,
-	getObjectId,
-	getSharedObjectInitialVersion,
-} from '../../src';
 
 import { SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/framework';
 
