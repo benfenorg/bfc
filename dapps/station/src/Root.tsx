@@ -18,7 +18,7 @@ export default function Root() {
 			<QueryClientProvider client={queryClient}>
 				<RpcClientContext.Provider value={suiClient}>
 					<Header></Header>
-					<div className="min-h-[80vh]">
+					<div className="min-h-[80vh] px-10 py-5">
 						<Outlet />
 					</div>
 					<div className="mt-6 border-t border-primary text-center py-6">

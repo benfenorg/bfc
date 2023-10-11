@@ -26,7 +26,7 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 
 			const coinsData = await getAllCoins(provider, address, coinType);
 
-			const coins = coinsData?.filter(({ lockedUntilEpoch: lock }) => !lock);
+			// const coins = coinsData?.filter(({ lockedUntilEpoch: lock }) => !lock);
             
 			// 3000000000
 
@@ -36,7 +36,7 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 			if (type === 'mint') {
 				coin = tx.splitCoins(tx.gas, [tx.pure(amount)]);
 			} else {
-				const [primaryCoin, ...mergeCoins] = coins.filter(
+				const [primaryCoin, ...mergeCoins] = coinsData.filter(
 					(coin) => normalizeSuiCoinType(coin.coinType) === normalizeSuiCoinType(coinType),
 				);
 				const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
@@ -47,7 +47,6 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 					);
 				}
 				coin = tx.splitCoins(primaryCoinInput, [tx.pure(amount)]);
-				//coin = tx.splitCoins(tx.object('0xc8::usd::USD'), [tx.pure(amount)]);
 			}
 
 			const functionName = type === 'mint' ? 'swap_obc_to_stablecoin' : 'swap_stablecoin_to_obc';

@@ -22,11 +22,11 @@ export function Button({
 	return (
 		<button
 			className={classNames(
-				'ease-in-out duration-300 disabled:opacity-30 rounded border py-2 px-4 bg-gray-200',
+				'h-10 flex w-full items-center justify-center bg-bf text-white rounded-md font-semibold',
 				className,
 			)}
 			onClick={onClick}
-			disabled={!!disabled}
+			disabled={!!disabled || !!loading}
 			{...props}
 		>
 			{loading ? <Spinner /> : children}

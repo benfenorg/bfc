@@ -1,17 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { KioskListing, KioskOwnerCap } from '@mysten/kiosk';
+import { type SuiClient } from '@mysten/sui.js/client';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import {
 	MIST_PER_SUI,
 	ObjectId,
 	SuiObjectResponse,
 	getObjectDisplay,
 	getObjectId,
-	SUI_TYPE_ARG,
-    SuiAddress,
     CoinStruct,
-    JsonRpcProvider,
     PaginatedCoins,
 } from '@mysten/sui.js';
 
@@ -33,17 +31,6 @@ export const parseObjectDisplays = (
 	);
 };
 
-export const processKioskListings = (data: KioskListing[]): Record<ObjectId, KioskListing> => {
-	const results: Record<ObjectId, KioskListing> = {};
-
-	data
-		.filter((x) => !!x)
-		.map((x: KioskListing) => {
-			results[x.objectId || ''] = x;
-			return x;
-		});
-	return results;
-};
 
 export const mistToSui = (mist: bigint | string | undefined) => {
 	if (!mist) return 0;
@@ -57,26 +44,11 @@ export const formatSui = (amount: number) => {
 	}).format(amount);
 };
 
-/**
- * Finds an active owner cap for a kioskId based on the
- * address owned kiosks.
- */
-export const findActiveCap = (
-	caps: KioskOwnerCap[] = [],
-	kioskId: ObjectId,
-): KioskOwnerCap | undefined => {
-	return caps.find((x) => normalizeSuiAddress(x.kioskId) === normalizeSuiAddress(kioskId));
-};
-
-
-
-
-
 const MAX_COINS_PER_REQUEST = 50;
 
 export async function getAllCoins(
-    client: JsonRpcProvider,
-    address: SuiAddress,
+    client: SuiClient,
+    address: string,
     coinType: string | null,
   ): Promise<CoinStruct[]> {
     let cursor: string | null = null;

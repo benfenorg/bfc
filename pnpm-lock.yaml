@@ -1129,15 +1129,15 @@ importers:
       '@headlessui/tailwindcss':
         specifier: ^0.1.3
         version: 0.1.3(tailwindcss@3.3.3)
-      '@mysten/kiosk':
-        specifier: workspace:*
-        version: link:../../sdk/kiosk
       '@mysten/sui.js':
         specifier: workspace:*
         version: link:../../sdk/typescript
       '@mysten/wallet-kit':
         specifier: workspace:*
         version: link:../../sdk/wallet-kit/react
+      '@stitches/react':
+        specifier: ^1.2.8
+        version: 1.2.8(react@18.2.0)
       '@tanstack/react-query':
         specifier: ^4.29.25
         version: 4.29.25(react-dom@18.2.0)(react@18.2.0)
@@ -1147,6 +1147,9 @@ importers:
       classnames:
         specifier: ^2.3.2
         version: 2.3.2
+      clsx:
+        specifier: ^2.0.0
+        version: 2.0.0
       react:
         specifier: ^18.2.0
         version: 18.2.0

@@ -1,43 +1,41 @@
 import { useMemo, useState } from 'react';
 import classnames from 'classnames';
-import { useStationQuery,useBalance } from '~/hooks/station';
-import { Button } from '../Base/Button';
-import { Spinner } from '../Base/Spinner';
-import { useSwapMutation } from '../../mutations/station';
-import { useWalletKit } from '@mysten/wallet-kit';
-import { toast } from 'react-hot-toast';
+import { StationCoinCard } from './StationCoinCard';
 
-function CoinSwap() {
+function StationMint() {
+	return (
+		<div className="grid grid-cols-2 gap-5">
+			<StationCoinCard type="mint"/>
+			<div>asdsd</div>
+		</div>
+	);
+}
+
+function StationWithdraw() {
+	return(
+		<div className="grid grid-cols-2 gap-5">
+			<StationCoinCard type="withdraw"/>
+			<div>asdsd</div>
+		</div>
+	);
+}
+
+export function CoinSwap() {
 	const [type, setType] = useState<'mint' | 'withdraw'>('mint');
-	const [amount, setAmount] = useState('');
-	const selectTabCss = 'font-medium';
-
-    const { currentAccount } = useWalletKit();
 
 	const token = useMemo(() => {
 		if (type === 'mint') return 'OBC';
 		return 'OST';
 	}, [type]);
 
-    const { data:balance } = useBalance(type,currentAccount?.address ?? '')
+	const selectTabCss = 'text-bf-text1 font-semibold bg-white border rounded-md';
 
-	const { data,isFetching: loading } = useStationQuery(type, amount);
-
-    const swapCoin = useSwapMutation({
-        onSuccess: () => {
-            toast.success('Swap 成功');
-			// onCreate();
-			// toast.success('Kiosk created successfully');
-		},
-    });
-
-	console.log('estimateestimate', data);
 	return (
-		<div className="">
-			<div className="flex gap-3">
+		<div className="mt-5">
+			<div className="flex">
 				<div
 					className={classnames(
-						'border rounded-md px-3 py-1 cursor-pointer',
+						'text-sm px-4 py-1 cursor-pointer',
 						type === 'mint' && selectTabCss,
 					)}
 					onClick={() => setType('mint')}
@@ -46,7 +44,7 @@ function CoinSwap() {
 				</div>
 				<div
 					className={classnames(
-						'border rounded-md px-3 py-1 cursor-pointer',
+						'text-sm px-4 py-1 cursor-pointer',
 						type === 'withdraw' && selectTabCss,
 					)}
 					onClick={() => setType('withdraw')}
@@ -54,7 +52,7 @@ function CoinSwap() {
 					赎回
 				</div>
 			</div>
-			<div className="flex gap-9 items-center">
+			{/* <div className="flex gap-9 items-center">
 				{token}
 				<div>
 					<div>Balance：{balance} {token}</div>
@@ -87,9 +85,8 @@ function CoinSwap() {
 				>
 					执行
 				</Button>
-			</div>
+			</div> */}
+			<div className="mt-5">{type === 'mint' ? <StationMint /> : <StationWithdraw />}</div>
 		</div>
 	);
 }
-
-export default CoinSwap;

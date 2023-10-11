@@ -60,9 +60,7 @@ export function useBalance(type: string, address: string) {
 
 			const coinType = normalizeSuiCoinType(typeArg);
 
-			const coinsData = await getAllCoins(provider, address, coinType);
-
-			const coins = coinsData?.filter(({ lockedUntilEpoch: lock }) => !lock);
+			const coins = await getAllCoins(provider, address, coinType);
 
 			return coins || []
 		},
