@@ -2,27 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useNavigate } from 'react-router-dom';
-import { SuiConnectButton } from './SuiConnectButton';
+import { ConnectButton } from './ConnectButton';
 import { ReactComponent as BenfenHeaderLogo } from '../../assets/benfen_header_logo.svg';
-
+import {HeaderTab} from './HeaderTab'
 export function Header() {
 	const navigate = useNavigate();
 
 	return (
 		<div className="">
 			<div className="flex px-10 py-5 items-center gap-7 border-b border-bf-hover">
-				<BenfenHeaderLogo />
-				<div className="font-semibold">BenFen Station</div>
-				{/* <button
-					className="text-lg font-bold text-center mr-3 bg-transparent ease-in-out duration-300 rounded border border-transparent py-2 px-4 bg-gray-200"
-					onClick={() => navigate('/')}
-				>
-					Station demo
-				</button> */}
+				<div onClick={() => navigate('/')}>
+					<BenfenHeaderLogo />
+				</div>
+				<div className="font-semibold text-xs">BenFen Station</div>
 			</div>
-			<div className="ml-auto my-3 md:my-1">
-				<SuiConnectButton></SuiConnectButton>
+			<div className="flex px-10 pt-10 pb-5">
+				<div className="text-xl font-bold">BenFen Station</div>
+				<div className="ml-auto my-3 md:my-1">
+					<ConnectButton />
+				</div>
 			</div>
+			<div className="flex px-10">
+				<HeaderTab />
+			</div>
+			
 		</div>
 	);
 }

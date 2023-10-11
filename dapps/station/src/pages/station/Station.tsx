@@ -1,12 +1,12 @@
-// import SwapObcToStablecoin from '../../components/Station/SwapObcToStablecoin';
-// import SwapStablecoinToObc from '../../components/Station/SwapStablecoinToObc';
-import CoinSwap from '../../components/Station/CoinSwap'
+import { CoinSwap } from '../../components/Station/CoinSwap';
+import { Overview } from '../../components/Station/Overview';
 function Station() {
-    return (<div>
-        {/* <SwapObcToStablecoin/>
-        <SwapStablecoinToObc /> */}
-        <CoinSwap />
-    </div>)
+	return (
+		<div>
+			<Overview />
+			<CoinSwap />
+		</div>
+	);
 }
 
-export default Station
+export default Station;

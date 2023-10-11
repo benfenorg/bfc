@@ -4,8 +4,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import Root from '../Root';
-import Home from './Home';
-import SingleKiosk from './SingleKiosk';
 import Station from '../pages/station/Station';
 
 export const router = createBrowserRouter([
@@ -14,12 +12,16 @@ export const router = createBrowserRouter([
 		element: <Root />,
 		children: [
 			{
-				path: '',
+				path: '/',
 				element: <Station />,
 			},
 			{
-				path: '/kiosk/:id',
-				element: <SingleKiosk />,
+				path: '/swap',
+				element: <div>swap</div>,
+			},
+			{
+				path: '/pools',
+				element:  <div>pools</div>,
 			},
 		],
 	},
