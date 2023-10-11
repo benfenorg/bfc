@@ -27,7 +27,7 @@
 	"scripts": {
 		"clean": "rm -rf tsconfig.tsbuildinfo ./dist",
 		"build": "build-package",
-		"test": "pnpm test:typecheck && pnpm vitest",
+		"test": "pnpm test:typecheck && pnpm vitest run",
 		"test:typecheck": "tsc -p ./test",
 		"prepublishOnly": "pnpm build",
 		"size": "size-limit",
