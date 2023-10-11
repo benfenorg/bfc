@@ -78,6 +78,8 @@ fn create_checkpoint(sequence_number: i64) -> TemporaryCheckpointStore {
             total_successful_transactions: 1000,
             network_total_transactions: 0,
             timestamp_ms: Utc::now().timestamp_millis(),
+            system_tick: false,
+            total_transact_obc: 0,
         },
         transactions: (1..1000)
             .map(|_| create_transaction(sequence_number))
@@ -134,6 +136,7 @@ fn create_transaction(sequence_number: i64) -> Transaction {
         raw_transaction: bcs::to_bytes(&tx).unwrap(),
         transaction_effects_content: "".to_string(),
         confirmed_local_execution: None,
+        transact_obc: 0,
     }
 }
 

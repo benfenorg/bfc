@@ -11,9 +11,10 @@ import { useBreakpoint } from '~/hooks/useBreakpoint';
 import { Events } from '~/pages/transaction-result/Events';
 import { TransactionData } from '~/pages/transaction-result/TransactionData';
 import { TransactionSummary } from '~/pages/transaction-result/transaction-summary';
+import { PageHeader } from '~/ui/PageHeader';
 import { LOCAL_STORAGE_SPLIT_PANE_KEYS, SplitPanes } from '~/ui/SplitPanes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui/Tabs';
-import { PageHeader } from '~/ui/PageHeader';
+
 import styles from './TransactionResult.module.css';
 
 function TabsContentContainer({ value, children }: { value: string; children: ReactNode }) {
@@ -80,7 +81,7 @@ export function TransactionView({ transaction }: { transaction: SuiTransactionBl
 		defaultSize: isProgrammableTransaction ? 65 : 50,
 	};
 
-	console.log('transactiontransaction',transaction)
+	console.log('transactiontransaction', transaction);
 
 	return (
 		<div className={clsx(styles.txdetailsbg)}>

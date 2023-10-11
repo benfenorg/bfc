@@ -9,7 +9,7 @@ import {
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	normalizeSuiObjectId,
-	formatAddress
+	formatAddress,
 } from '@mysten/sui.js/utils';
 import { useQuery } from '@tanstack/react-query';
 

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getObjectType } from '../../src';
 import { normalizeSuiAddress } from '../../src/utils';
 import { SUI_TYPE_ARG } from '../../src/framework';
 import { SuiObjectData } from '../../src/client';

@@ -4,9 +4,8 @@ import { formatDate, useResolveSuiNSName } from '@mysten/core';
 import { Text } from '@mysten/ui';
 import { type ReactNode } from 'react';
 
-import { useBreakpoint } from '~/hooks/useBreakpoint';
 import { AddressLink, CheckpointSequenceLink, EpochLink } from '~/ui/InternalLink';
-import { TransactionBlockCard, TransactionBlockCardSection } from '~/ui/TransactionBlockCard';
+import { TransactionBlockCardSection } from '~/ui/TransactionBlockCard';
 
 export function TransactionDetail({ label, value }: { label: string; value: ReactNode | string }) {
 	return (
@@ -34,11 +33,10 @@ export function TransactionDetailCard({
 	executedEpoch,
 	timestamp,
 }: TransactionDetailsProps) {
-	const md = useBreakpoint('md');
 	const { data: domainName } = useResolveSuiNSName(sender);
 
 	return (
-		<div className="overflow-hidden bg-obc-card rounded-2xl px-6 py-7">
+		<div className="overflow-hidden rounded-2xl bg-obc-card px-6 py-7">
 			<TransactionBlockCardSection>
 				<div className="flex flex-col gap-6 ">
 					{timestamp && (

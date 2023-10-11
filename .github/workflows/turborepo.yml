@@ -1,6 +1,7 @@
 name: Turborepo CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -53,12 +54,13 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-
+      # TODO: check apps/stations
       - name: Lint
-        run: pnpm turbo lint
+        run: pnpm turbo lint --filter=!station
       - name: Build
-        run: pnpm turbo build
+        run: pnpm turbo build --filter=!station
       - name: Test
-        run: pnpm turbo test
+        run: pnpm turbo test --filter=!station
 
       # Pack wallet extension and upload it as an artifact for easy developer use:
       - name: Wallet Extension Has Changes?

@@ -1,6 +1,7 @@
 name: External crates
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, extensions, devnet]
   pull_request:

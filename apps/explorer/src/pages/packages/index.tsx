@@ -9,13 +9,15 @@ function Home() {
 	return (
 		<PageLayout
 			gradient={{
-				content:(<div
-					data-testid="home-page"
-					className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
-				>
-					Packages
-				</div>),
-				size:'lg'
+				content: (
+					<div
+						data-testid="home-page"
+						className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
+					>
+						Packages
+					</div>
+				),
+				size: 'lg',
 			}}
 			content={
 				<div data-testid="packages-page" id="home-content" className="mx-auto">

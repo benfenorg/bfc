@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { TypeTag } from '../../types/index.js';
+import type { TypeTag } from '../../bcs/index.js';
 import { normalizeSuiAddress } from '../../utils/sui-types.js';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;

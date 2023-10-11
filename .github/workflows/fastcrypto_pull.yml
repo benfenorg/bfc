@@ -23,7 +23,7 @@ jobs:
           locked: true
       - name: Update the Narwhal pointer
         run: |
-          scripts/update_fastcrypto.sh
+          bash -x scripts/update_fastcrypto.sh
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:

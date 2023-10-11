@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useZodForm } from '@mysten/core';
 import {
 	TransactionBlock,
 	getExecutionStatusError,
@@ -15,7 +16,6 @@ import BigNumber from 'bignumber.js';
 import { z } from 'zod';
 
 import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
-import { useZodForm } from '@mysten/core';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 

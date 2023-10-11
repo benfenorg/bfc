@@ -38,8 +38,8 @@ export function Layout() {
 		<Fragment key={network}>
 			<ScrollRestoration />
 			<WalletKitProvider
-				/*autoConnect={false}*/
-				// enableUnsafeBurner={import.meta.env.DEV}
+			/*autoConnect={false}*/
+			// enableUnsafeBurner={import.meta.env.DEV}
 			>
 				<SuiClientProvider
 					networks={NetworkConfigs}
