@@ -2984,8 +2984,8 @@ async fn test_authority_persist() {
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
     // Reopen the same authority with the same path
-    // let seed = [1u8; 32];
-    // let (genesis, authority_key) = init_state_parameters_from_rng(&mut StdRng::from_seed(seed));
+    let seed = [1u8; 32];
+    let (genesis, authority_key) = init_state_parameters_from_rng(&mut StdRng::from_seed(seed));
     let committee = genesis.committee().unwrap();
     let perpetual_tables = Arc::new(AuthorityPerpetualTables::open(&path, None));
     let store =
