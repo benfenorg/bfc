@@ -61,6 +61,10 @@ describe('Dynamic Fields Reading API', () => {
 		for (const data of dynamicFields.data) {
 			const objName = data.name;
 
+			if (objName.type === '0x2::object::ID') {
+				objName.value = obc2SuiAddress(objName.value as string);
+			}
+
 			const object = await toolbox.client.getDynamicFieldObject({
 				parentId: obc2SuiAddress(parentObjectId),
 				name: objName,
