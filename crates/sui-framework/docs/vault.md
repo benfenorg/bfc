@@ -6,6 +6,7 @@
 
 
 -  [Resource `Vault`](#0xc8_vault_Vault)
+-  [Struct `VaultInfo`](#0xc8_vault_VaultInfo)
 -  [Struct `AddLiquidityReceipt`](#0xc8_vault_AddLiquidityReceipt)
 -  [Struct `SwapStepResult`](#0xc8_vault_SwapStepResult)
 -  [Struct `CalculatedSwapResult`](#0xc8_vault_CalculatedSwapResult)
@@ -38,6 +39,7 @@
 -  [Function `get_position_tick_range_and_price`](#0xc8_vault_get_position_tick_range_and_price)
 -  [Function `fetch_ticks`](#0xc8_vault_fetch_ticks)
 -  [Function `fetch_positions`](#0xc8_vault_fetch_positions)
+-  [Function `vault_info`](#0xc8_vault_vault_info)
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
@@ -192,6 +194,123 @@
 </dt>
 <dd>
  The vault index
+</dd>
+<dt>
+<code>base_point: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_vault_VaultInfo"></a>
+
+## Struct `VaultInfo`
+
+
+
+<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_VaultInfo">VaultInfo</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>position_number: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>state: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>state_counter: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>max_counter_times: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>last_sqrt_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>coin_a_balance: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>coin_b_balance: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>tick_spacing: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>spacing_times: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>liquidity: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>current_sqrt_price: u128</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>current_tick_index: u32</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>is_pause: bool</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>index: u64</code>
+</dt>
+<dd>
+
 </dd>
 <dt>
 <code>base_point: u64</code>
@@ -1791,11 +1910,51 @@ Returns
 
 </details>
 
+<a name="0xc8_vault_vault_info"></a>
+
+## Function `vault_info`
+
+vault info
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_info">vault_info</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="vault.md#0xc8_vault_VaultInfo">vault::VaultInfo</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_info">vault_info</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="vault.md#0xc8_vault_VaultInfo">VaultInfo</a> {
+    <a href="vault.md#0xc8_vault_VaultInfo">VaultInfo</a> {
+        vault_id: <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
+        position_number: _vault.position_number,
+        state: _vault.state,
+        state_counter: _vault.state_counter,
+        max_counter_times: _vault.max_counter_times,
+        last_sqrt_price: _vault.last_sqrt_price,
+        coin_a_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_a),
+        coin_b_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b),
+        tick_spacing: _vault.tick_spacing,
+        spacing_times: _vault.spacing_times,
+        liquidity: _vault.liquidity,
+        current_sqrt_price: _vault.current_sqrt_price,
+        current_tick_index: <a href="i32.md#0xc8_i32_abs_u32">i32::abs_u32</a>(_vault.current_tick_index),
+        is_pause: _vault.is_pause,
+        index: _vault.index,
+        base_point: _vault.base_point,
+    } }
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_vault_id"></a>
 
 ## Function `vault_id`
 
-vault info
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>

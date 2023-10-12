@@ -16,6 +16,7 @@ module obc_system::obc_system {
     use sui::tx_context::TxContext;
 
     use obc_system::usd::{USD};
+    use obc_system::vault::VaultInfo;
     use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use obc_system::obc_dao::{Proposal, Vote};
     use obc_system::obc_system_state_inner;
@@ -335,6 +336,11 @@ module obc_system::obc_system {
     {
         let system_state = load_system_state(wrapper);
         obc_system_state_inner::get_obc_by_stablecoin<StableCoinType>(system_state, amount)
+    }
+
+    public fun vault_info<StableCoinType>(wrapper: &ObcSystemState): VaultInfo {
+        let inner_state = load_system_state(wrapper);
+        obc_system_state_inner::vault_info<StableCoinType>(inner_state)
     }
 
     public fun next_epoch_obc_required(wrapper: &ObcSystemState): u64 {

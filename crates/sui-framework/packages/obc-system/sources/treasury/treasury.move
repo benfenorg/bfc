@@ -7,7 +7,7 @@ module obc_system::treasury {
     use sui::coin::{Self, Coin};
     use sui::bag::{Self, Bag};
     use sui::balance::{Self, Balance, Supply};
-    use sui::dynamic_object_field;
+    use sui::dynamic_field;
     use sui::obc::OBC;
     use sui::clock::{Self, Clock};
     use sui::object::{Self, UID};
@@ -15,7 +15,7 @@ module obc_system::treasury {
 
     use obc_system::usd::USD;
     use obc_system::event;
-    use obc_system::vault::{Self, Vault};
+    use obc_system::vault::{Self, Vault, VaultInfo};
     use obc_system::tick_math;
 
     friend obc_system::obc_system_state_inner;
@@ -75,7 +75,7 @@ module obc_system::treasury {
 
     fun check_vault<StableCoinType>(_treasury: &Treasury, _vault_key: String) {
         assert!(
-            dynamic_object_field::exists_(
+            dynamic_field::exists_(
                 &_treasury.id,
                 _vault_key
             ),
@@ -87,20 +87,26 @@ module obc_system::treasury {
         type_name::into_string(type_name::get<StableCoinType>())
     }
 
-    public fun borrow_vault<StableCoinType>(
+    public(friend) fun borrow_vault<StableCoinType>(
         _treasury: &Treasury,
         _vault_key: String
     ): &Vault<StableCoinType> {
         check_vault<StableCoinType>(_treasury, _vault_key);
-        dynamic_object_field::borrow<String, Vault<StableCoinType>>(&_treasury.id, _vault_key)
+        dynamic_field::borrow<String, Vault<StableCoinType>>(&_treasury.id, _vault_key)
     }
 
-    public fun borrow_mut_vault<StableCoinType>(
+    public(friend) fun borrow_mut_vault<StableCoinType>(
         _treasury: &mut Treasury,
         _vault_key: String
     ): &mut Vault<StableCoinType> {
         check_vault<StableCoinType>(_treasury, _vault_key);
-        dynamic_object_field::borrow_mut<String, Vault<StableCoinType>>(&mut _treasury.id, _vault_key)
+        dynamic_field::borrow_mut<String, Vault<StableCoinType>>(&mut _treasury.id, _vault_key)
+    }
+
+    public fun vault_info<StableCoinType>(_treasury: &Treasury): VaultInfo {
+        vault::vault_info(
+            borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
+        )
     }
 
     public(friend) fun create_vault<StableCoinType>(
@@ -174,7 +180,7 @@ module obc_system::treasury {
         _ctx: &mut TxContext
     ): String {
         let vault_key = get_vault_key<StableCoinType>();
-        assert!(!dynamic_object_field::exists_<String>(&_treasury.id, vault_key), ERR_POOL_HAS_REGISTERED);
+        assert!(!dynamic_field::exists_<String>(&_treasury.id, vault_key), ERR_POOL_HAS_REGISTERED);
 
         // index increased
         _treasury.index = _treasury.index + 1;
@@ -191,7 +197,7 @@ module obc_system::treasury {
         );
         let vault_id = object::id(&new_vault);
 
-        dynamic_object_field::add(
+        dynamic_field::add(
             &mut _treasury.id,
             vault_key,
             new_vault,
@@ -339,7 +345,7 @@ module obc_system::treasury {
 
         // USD obc required
         let usd_vault_key = get_vault_key<USD>();
-        if (dynamic_object_field::exists_(&_treasury.id, usd_vault_key)) {
+        if (dynamic_field::exists_(&_treasury.id, usd_vault_key)) {
             let usd_v = borrow_vault<USD>(_treasury, usd_vault_key);
             let obc_required_per_time = vault::obc_required(usd_v);
             total = total + obc_required_per_time * times_per_day;
@@ -379,7 +385,7 @@ module obc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        let usd_mut_v = dynamic_object_field::borrow_mut<String, Vault<USD>>(
+        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<USD>>(
             &mut _treasury.id,
             get_vault_key<USD>()
         );

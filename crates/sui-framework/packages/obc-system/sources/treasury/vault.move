@@ -88,6 +88,24 @@ module obc_system::vault {
         base_point: u64,
     }
 
+    struct VaultInfo has copy, drop {
+        vault_id: ID,
+        position_number: u32,
+        state: u8,
+        state_counter: u32,
+        max_counter_times: u32,
+        last_sqrt_price: u128,
+        coin_a_balance: u64,
+        coin_b_balance: u64,
+        tick_spacing: u32,
+        spacing_times: u32,
+        liquidity: u128,
+        current_sqrt_price: u128,
+        current_tick_index: u32,
+        is_pause: bool,
+        index: u64,
+        base_point: u64,
+    }
 
     spec create_vault {
         pragma opaque;
@@ -791,6 +809,26 @@ module obc_system::vault {
     }
 
     /// vault info
+    public fun vault_info<StableCoinType>(_vault: &Vault<StableCoinType>): VaultInfo {
+        VaultInfo {
+            vault_id: vault_id(_vault),
+            position_number: _vault.position_number,
+            state: _vault.state,
+            state_counter: _vault.state_counter,
+            max_counter_times: _vault.max_counter_times,
+            last_sqrt_price: _vault.last_sqrt_price,
+            coin_a_balance: balance::value(&_vault.coin_a),
+            coin_b_balance: balance::value(&_vault.coin_b),
+            tick_spacing: _vault.tick_spacing,
+            spacing_times: _vault.spacing_times,
+            liquidity: _vault.liquidity,
+            current_sqrt_price: _vault.current_sqrt_price,
+            current_tick_index: i32::abs_u32(_vault.current_tick_index),
+            is_pause: _vault.is_pause,
+            index: _vault.index,
+            base_point: _vault.base_point,
+        } }
+
     public fun vault_id<StableCoinType>(_vault: &Vault<StableCoinType>): ID {
         object::id(_vault)
     }
