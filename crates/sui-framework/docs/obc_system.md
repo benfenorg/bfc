@@ -39,6 +39,7 @@
 -  [Function `swap_stablecoin_to_obc`](#0xc8_obc_system_swap_stablecoin_to_obc)
 -  [Function `get_stablecoin_by_obc`](#0xc8_obc_system_get_stablecoin_by_obc)
 -  [Function `get_obc_by_stablecoin`](#0xc8_obc_system_get_obc_by_stablecoin)
+-  [Function `vault_info`](#0xc8_obc_system_vault_info)
 -  [Function `next_epoch_obc_required`](#0xc8_obc_system_next_epoch_obc_required)
 -  [Function `treasury_balance`](#0xc8_obc_system_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_obc_system_deposit_to_treasury)
@@ -66,6 +67,7 @@
 <b>use</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager">0xc8::obc_dao_manager</a>;
 <b>use</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner">0xc8::obc_system_state_inner</a>;
 <b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
+<b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
 
@@ -1053,6 +1055,31 @@ X treasury  swap stablecoin to obc
 {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_obc_by_stablecoin">obc_system_state_inner::get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(system_state, amount)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_vault_info"></a>
+
+## Function `vault_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_vault_info">vault_info</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): <a href="vault.md#0xc8_vault_VaultInfo">vault::VaultInfo</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_vault_info">vault_info</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): VaultInfo {
+    <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_vault_info">obc_system_state_inner::vault_info</a>&lt;StableCoinType&gt;(inner_state)
 }
 </code></pre>
 
