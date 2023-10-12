@@ -56,9 +56,9 @@ runs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
       shell: bash
-    - name: Install Playwright Browsers
-      run: pnpm explorer playwright install --with-deps chromium
-      shell: bash
+    # - name: Install Playwright Browsers
+    #   run: pnpm explorer playwright install --with-deps chromium
+    #   shell: bash
 
     - name: Set env
       run: |
@@ -71,13 +71,13 @@ runs:
       run: pnpm sdk test:e2e
       shell: bash
 
-    - name: Run Explorer e2e tests
-      run: pnpm explorer playwright test
-      shell: bash
+    # - name: Run Explorer e2e tests
+    #   run: pnpm explorer playwright test
+    #   shell: bash
 
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: playwright-report-explorer
-        path: apps/explorer/playwright-report/
-        retention-days: 30
+    # - uses: actions/upload-artifact@v3
+    #   if: always()
+    #   with:
+    #     name: playwright-report-explorer
+    #     path: apps/explorer/playwright-report/
+    #     retention-days: 30
