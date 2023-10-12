@@ -56,7 +56,8 @@ jobs:
           echo "E2E_RUN_LOCAL_NET_CMD=(RUST_LOG=info RUST_BACKTRACE=1 $(echo $PWD/target/debug/sui-test-validator))" >> $GITHUB_ENV
 
       - name: Run TS SDK e2e tests
-        if: ${{ needs.diff.outputs.isTypescriptSDK == 'true' || needs.diff.outputs.isRust == 'true'}}
+        # FIXME: comment for debug
+        # if: ${{ needs.diff.outputs.isTypescriptSDK == 'true' || needs.diff.outputs.isRust == 'true'}}
         run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm sdk test:e2e'
 
       # - name: Run Explorer e2e tests
