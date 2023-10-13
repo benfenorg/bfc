@@ -517,12 +517,6 @@ module obc_system::skip_list {
         transfer::transfer(list, tx_context::sender(ctx));
     }
 
-    struct Item has drop, store {
-        n: u64,
-        score: u64,
-        finded: OptionU64
-    }
-
     #[test]
     fun test_find() {
         let ctx = &mut tx_context::dummy();

@@ -5,13 +5,16 @@ use futures::future::join_all;
 use rand::rngs::OsRng;
 use std::collections::{BTreeSet, HashSet};
 
-
+use fastcrypto::encoding::Base64;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use jsonrpsee::http_client::HttpClient;
+use move_core_types::ident_str;
+use move_core_types::identifier::Identifier;
+use move_core_types::language_storage::TypeTag;
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, TransactionBlockBytes};
+use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
@@ -34,16 +37,19 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::info;
 use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID, parse_sui_struct_tag};
+use sui_types::{OBC_SYSTEM_PACKAGE_ID, parse_sui_struct_tag, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_PACKAGE_ID};
 use serde_json::json;
+use sui_json_rpc_types::SuiObjectDataFilter::StructType;
+use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
+use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 
 
 #[sim_test]
@@ -2245,4 +2251,280 @@ async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_vali
             address
         );
     });
+}
+
+#[sim_test]
+async fn test_obc_treasury_basic_creation() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let obc_system_state = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .inner()
+        .state()
+        .get_obc_system_state_object_for_testing().unwrap();
+    let treasury = obc_system_state.clone().inner_state().treasury.clone();
+    assert_eq!(treasury.obc_balance, Balance::new(21001799655057));
+    Ok(())
+}
+
+async fn swap_obc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+    let objects = http_client
+        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
+            SuiObjectDataOptions::full_content()
+        )), None, None).await?.data;
+    let gas = objects.last().unwrap().object().unwrap();
+    let coin = objects.first().unwrap().object().unwrap();
+
+    let obc_system_address: SuiAddress = OBC_SYSTEM_STATE_OBJECT_ID.into();
+    let module = "obc_system".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let function = "swap_obc_to_stablecoin".to_string();
+
+    let args = vec![
+        SuiJsonValue::from_str(&obc_system_address.to_string())?,
+        SuiJsonValue::from_str(&coin.object_id.to_string())?,
+        SuiJsonValue::new(json!("100000000000"))?,
+    ];
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            vec![SuiTypeTag::new("0xc8::usd::USD".to_string())],
+            args,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let effects = tx_response.effects.unwrap().clone();
+    match effects {
+        SuiTransactionBlockEffects::V1(_effects) => {
+            assert!(_effects.status.is_ok());
+        },
+        _ => {
+            panic!("unexpected effects type");
+        }
+    };
+    Ok(())
+}
+
+async fn swap_stablecoin_to_obc(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+    let gas_objects = http_client
+        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
+            SuiObjectDataOptions::full_content()
+        )), None, None).await?.data;
+    let gas = gas_objects.last().unwrap().object().unwrap();
+    let usd_objects =  do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::usd::USD>", http_client, address).await?;
+    let coin = usd_objects.first().unwrap().object().unwrap();
+
+    let obc_system_address: SuiAddress = OBC_SYSTEM_STATE_OBJECT_ID.into();
+    let module = "obc_system".to_string();
+    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let function = "swap_stablecoin_to_obc".to_string();
+
+    let args = vec![
+        SuiJsonValue::from_str(&obc_system_address.to_string())?,
+        SuiJsonValue::from_str(&coin.object_id.to_string())?,
+        SuiJsonValue::new(json!("80000000000"))?,
+    ];
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            vec![SuiTypeTag::new("0xc8::usd::USD".to_string())],
+            args,
+            Some(gas.object_id),
+            1_000_000_000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let effects = tx_response.effects.unwrap().clone();
+    match effects {
+        SuiTransactionBlockEffects::V1(_effects) => {
+            assert!(_effects.status.is_ok());
+        },
+        _ => {
+            panic!("unexpected effects type");
+        }
+    };
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_treasury_swap_obc_to_stablecoin() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 100;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let mut objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::usd::USD>", http_client, address).await?;
+    assert!(objects.len() == 0);
+
+    swap_obc_to_stablecoin(&test_cluster, http_client, address).await?;
+
+    objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::usd::USD>", http_client, address).await?;
+    assert!(objects.len() == 1);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_treasury_swap_stablecoin_to_obc() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 100;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    swap_obc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let mut obc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::obc::OBC>", http_client, address).await?;
+    let swap_before_obc_objects_length = obc_objects.len();
+    swap_stablecoin_to_obc(&test_cluster, http_client, address).await?;
+    obc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::obc::OBC>", http_client, address).await?;
+    let swap_after_obc_objects_length = obc_objects.len();
+    assert!(swap_after_obc_objects_length > swap_before_obc_objects_length);
+    Ok(())
+}
+
+async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) -> u64 {
+    let client = cluster.rpc_client();
+    let sender = cluster.get_address_0();
+    let txn = TransactionKind::programmable(pt);
+    let response = client
+        .dev_inspect_transaction_block(
+            sender,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            /* gas_price */ None,
+            /* epoch_id */ None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
+
+    bcs::from_bytes(&return_).unwrap()
+}
+#[sim_test]
+async fn test_obc_treasury_get_stablecoin_by_obc() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::OBC_SYSTEM_MUT,
+            CallArg::Pure(bcs::to_bytes(&(100000_u64)).unwrap()),
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: OBC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("obc_system").unwrap(),
+            function: Identifier::new("get_stablecoin_by_obc").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::usd::USD")?],
+            arguments: vec![Argument::Input(0), Argument::Input(1)],
+        }))],
+    };
+
+    assert_eq!(dev_inspect_call(&test_cluster, pt.clone()).await, 99999);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_obc_treasury_get_obc_by_stablecoin() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::OBC_SYSTEM_MUT,
+            CallArg::Pure(bcs::to_bytes(&(100000_u64)).unwrap()),
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: OBC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("obc_system").unwrap(),
+            function: Identifier::new("get_obc_by_stablecoin").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::usd::USD")?],
+            arguments: vec![Argument::Input(0), Argument::Input(1)],
+        }))],
+    };
+
+    assert_eq!(dev_inspect_call(&test_cluster, pt.clone()).await, 99999);
+    Ok(())
 }

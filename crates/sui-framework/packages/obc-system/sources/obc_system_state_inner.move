@@ -217,6 +217,7 @@ module obc_system::obc_system_state_inner {
         if (balance::value<OBC>(&obc_balance) > 0) {
             let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
+            treasury::rebalance_first_init(&mut t, ctx);
         };
         (t, obc_balance)
     }

@@ -73,7 +73,7 @@ module obc_system::treasury {
         balance::value(&_treasury.obc_balance)
     }
 
-    fun check_vault<StableCoinType>(_treasury: &Treasury, _vault_key: String) {
+    fun check_vault(_treasury: &Treasury, _vault_key: String) {
         assert!(
             dynamic_field::exists_(
                 &_treasury.id,
@@ -91,7 +91,7 @@ module obc_system::treasury {
         _treasury: &Treasury,
         _vault_key: String
     ): &Vault<StableCoinType> {
-        check_vault<StableCoinType>(_treasury, _vault_key);
+        check_vault(_treasury, _vault_key);
         dynamic_field::borrow<String, Vault<StableCoinType>>(&_treasury.id, _vault_key)
     }
 
@@ -99,7 +99,7 @@ module obc_system::treasury {
         _treasury: &mut Treasury,
         _vault_key: String
     ): &mut Vault<StableCoinType> {
-        check_vault<StableCoinType>(_treasury, _vault_key);
+        check_vault(_treasury, _vault_key);
         dynamic_field::borrow_mut<String, Vault<StableCoinType>>(&mut _treasury.id, _vault_key)
     }
 
@@ -391,6 +391,24 @@ module obc_system::treasury {
         );
         vault::update_state(usd_mut_v);
 
+        vault::rebalance(
+            usd_mut_v,
+            &mut _treasury.obc_balance,
+            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, get_vault_key<USD>()),
+            _ctx
+        );
+    }
+
+    public(friend) fun rebalance_first_init(
+        _treasury: &mut Treasury,
+        _ctx: &mut TxContext
+    )
+    {
+        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<USD>>(
+            &mut _treasury.id,
+            get_vault_key<USD>()
+        );
+        // first rebalance just place liquidity not change vault state
         vault::rebalance(
             usd_mut_v,
             &mut _treasury.obc_balance,
