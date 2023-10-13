@@ -586,7 +586,7 @@ async fn test_obc_dao_create_action() -> Result<(), anyhow::Error>{
 }
 
 async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::obc::OBC>").unwrap());
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()
@@ -660,7 +660,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 }
 
 async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::obc::OBC>").unwrap());
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()
@@ -2441,10 +2441,10 @@ async fn test_obc_treasury_swap_stablecoin_to_obc() -> Result<(), anyhow::Error>
         .unwrap();
 
     swap_obc_to_stablecoin(&test_cluster, http_client, address).await?;
-    let mut obc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::obc::OBC>", http_client, address).await?;
+    let mut obc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_before_obc_objects_length = obc_objects.len();
     swap_stablecoin_to_obc(&test_cluster, http_client, address).await?;
-    obc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::obc::OBC>", http_client, address).await?;
+    obc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_after_obc_objects_length = obc_objects.len();
     assert!(swap_after_obc_objects_length > swap_before_obc_objects_length);
     Ok(())

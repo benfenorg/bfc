@@ -1065,7 +1065,7 @@ pub fn generate_genesis_system_object(
         // Step 3: Mint the supply of SUI.
         let sui_supply = builder.programmable_move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
-            ident_str!("obc").to_owned(),
+            ident_str!("bfc").to_owned(),
             ident_str!("new").to_owned(),
             vec![],
             vec![],

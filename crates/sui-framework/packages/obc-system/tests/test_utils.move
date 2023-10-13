@@ -2,7 +2,7 @@
 module obc_system::test_utils {
     use sui::balance;
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
     use sui::transfer;
     use sui::clock;
@@ -90,7 +90,7 @@ module obc_system::test_utils {
         test_scenario::next_tx(scenario_val, owner);
 
         {
-            let obc = balance::create_for_testing<OBC>(300000000000000000);
+            let obc = balance::create_for_testing<BFC>(300000000000000000);
             let t = test_scenario::take_shared<Treasury>(scenario_val);
             treasury::deposit(&mut t, coin::from_balance(obc, test_scenario::ctx(scenario_val)));
             test_scenario::return_shared(t);

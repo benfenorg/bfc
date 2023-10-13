@@ -30,7 +30,7 @@
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -142,7 +142,7 @@ A self-custodial object holding the Voting Obc tokens.
  ID of the staking pool we are staking with.
 </dd>
 <dt>
-<code>principal: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>principal: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
  The voting OBC tokens.
@@ -288,7 +288,7 @@ Create a new, empty voting pool.
 Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>
 </code></pre>
 
 
@@ -299,7 +299,7 @@ Request to voting to a staking pool. The voting starts counting at the beginning
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(
     pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
-    voting: Balance&lt;OBC&gt;,
+    voting: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext
 ) : <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a> {
     <b>let</b> obc_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&voting);
@@ -340,7 +340,7 @@ Both the principal and corresponding rewards in OBC are withdrawn.
 A proportional amount of pool token withdraw is recorded and processed at epoch change time.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -352,7 +352,7 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(
     pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>,
-) : Balance&lt;OBC&gt; {
+) : Balance&lt;BFC&gt; {
     <b>let</b> (_, principal_withdraw) =
         <a href="obc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool, voting_obc);
     <b>let</b> principal_withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&principal_withdraw);
@@ -391,7 +391,7 @@ tokens using exchange rate at staking epoch.
 Returns values are amount of pool tokens withdrawn and withdrawn principal portion of OBC.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>): (u64, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>): (u64, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -403,7 +403,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(
     pool: &<b>mut</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>,
-) : (u64, Balance&lt;OBC&gt;) {
+) : (u64, Balance&lt;BFC&gt;) {
 
     // Check that the voting information matches the pool.
     <b>assert</b>!(voting_obc.pool_id == <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool), <a href="obc_dao_voting_pool.md#0xc8_voting_pool_EWrongPool">EWrongPool</a>);
@@ -442,7 +442,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_obc">unwrap_voting_obc</a>(voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_obc">unwrap_voting_obc</a>(voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">voting_pool::VotingObc</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -451,7 +451,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_obc">unwrap_voting_obc</a>(voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>): Balance&lt;OBC&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_obc">unwrap_voting_obc</a>(voting_obc: <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a>): Balance&lt;BFC&gt; {
 
     <b>let</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool_VotingObc">VotingObc</a> {
         id,

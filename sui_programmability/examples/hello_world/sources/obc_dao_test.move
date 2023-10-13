@@ -16,7 +16,7 @@ module hello_world::obc_dao_test {
     #[test_only]
     use sui::coin;
     #[test_only]
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     #[test_only]
     use hello_world::voting_pool::VotingObc;
     //#[test_only]

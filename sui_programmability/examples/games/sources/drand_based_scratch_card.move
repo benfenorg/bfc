@@ -31,7 +31,7 @@ module games::drand_based_scratch_card {
     use sui::hmac::hmac_sha3_256;
     use sui::object::{Self, ID, UID};
 
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 

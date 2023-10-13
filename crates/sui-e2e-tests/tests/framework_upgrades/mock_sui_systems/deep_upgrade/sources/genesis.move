@@ -5,7 +5,7 @@ module sui_system::genesis {
     use std::vector;
     use sui::balance::{Self, Balance};
     use sui::object::UID;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
     use std::option::Option;
 

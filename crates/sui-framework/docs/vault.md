@@ -60,8 +60,8 @@
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="clmm_math.md#0xc8_clmm_math">0xc8::clmm_math</a>;
@@ -136,7 +136,7 @@
 
 </dd>
 <dt>
-<code>coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -715,7 +715,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         state_counter: 0,
         last_sqrt_price: current_sqrt_price,
         coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;(),
-        coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;(),
+        coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;(),
         tick_spacing: _tick_spacing,
         spacing_times: _spacing_times,
         liquidity: 0,
@@ -1017,7 +1017,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _delta_liquidity: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _delta_liquidity: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1030,7 +1030,7 @@ open <code>position_number</code> positions
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _index: u64,
     _delta_liquidity: u128
-): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;) {
+): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;) {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
     <b>let</b> expect_vault_id = <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
     <b>let</b> mut_position = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
@@ -1140,7 +1140,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1152,7 +1152,7 @@ open <code>position_number</code> positions
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _balance_a: Balance&lt;StableCoinType&gt;,
-    _balance_b: Balance&lt;OBC&gt;,
+    _balance_b: Balance&lt;BFC&gt;,
     _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 )
 {
@@ -1481,7 +1481,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1493,14 +1493,14 @@ open <code>position_number</code> positions
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _coin_a: Coin&lt;StableCoinType&gt;,
-    _coin_b: Coin&lt;OBC&gt;,
+    _coin_b: Coin&lt;BFC&gt;,
     _a2b: bool,
     _by_amount_in: bool,
     _amount: u64,
     _amount_limit: u64,
     _sqrt_price_limit: u128,
     _ctx: &<b>mut</b> TxContext
-): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;) {
+): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;) {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
     <b>let</b> (
         receive_a,
@@ -1520,7 +1520,7 @@ open <code>position_number</code> positions
 
     <b>if</b> (_a2b) {
         pay_coin_a = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> _coin_a, pay_amount, _ctx));
-        pay_coin_b = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;();
+        pay_coin_b = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
     } <b>else</b> {
         pay_coin_a = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
         pay_coin_b = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> _coin_b, pay_amount, _ctx));
@@ -1549,7 +1549,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, balance_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, balance_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1561,7 +1561,7 @@ open <code>position_number</code> positions
 <pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
     <a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     balance_a: Balance&lt;StableCoinType&gt;,
-    balance_b: Balance&lt;OBC&gt;,
+    balance_b: Balance&lt;BFC&gt;,
     receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
 ) {
     <b>let</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
@@ -1595,7 +1595,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _sqrt_price_limit: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _sqrt_price_limit: u128): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1610,7 +1610,7 @@ open <code>position_number</code> positions
     _by_amount_in: bool,
     _amount: u64,
     _sqrt_price_limit: u128
-): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;)
+): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 {
     <b>let</b> min_price = <a href="tick_math.md#0xc8_tick_math_min_sqrt_price">tick_math::min_sqrt_price</a>();
     <b>let</b> max_price = <a href="tick_math.md#0xc8_tick_math_max_sqrt_price">tick_math::max_sqrt_price</a>();
@@ -1630,11 +1630,11 @@ open <code>position_number</code> positions
     <b>let</b> balance_a_ret;
     <b>let</b> balance_b_ret;
     <b>if</b> (_a2b) {
-        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;OBC&gt;(&<b>mut</b> _vault.coin_b, swap_res.amount_out);
+        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;BFC&gt;(&<b>mut</b> _vault.coin_b, swap_res.amount_out);
         balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
     } <b>else</b> {
         balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;StableCoinType&gt;(&<b>mut</b> _vault.coin_a, swap_res.amount_out);
-        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;();
+        balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
     };
     event::swap(
         <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
@@ -2041,7 +2041,7 @@ vault info
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): (u64, u64) {
     (
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;StableCoinType&gt;(&_vault.coin_a),
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&_vault.coin_b)
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;BFC&gt;(&_vault.coin_b)
     )
 }
 </code></pre>
@@ -2259,7 +2259,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, <a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="">vector</a>&lt;<a href="">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;)
 </code></pre>
 
 
@@ -2271,12 +2271,12 @@ State checker
 <pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ctx: &<b>mut</b> TxContext
-): (Balance&lt;StableCoinType&gt;, Balance&lt;OBC&gt;, <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;)
+): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;)
 {
     <b>let</b> position_index = 1u64;
     <b>let</b> position_number = (_vault.position_number <b>as</b> u64);
     <b>let</b> balance0 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
-    <b>let</b> balance1 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;OBC&gt;();
+    <b>let</b> balance1 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
     <b>let</b> spacing_times = _vault.spacing_times;
     <b>while</b> (position_index &lt;= position_number) {
         <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(&<b>mut</b> _vault.position_manager, position_index);
@@ -2398,7 +2398,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _obc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _balance0: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance1: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _liquidities: <a href="">vector</a>&lt;u128&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _obc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _balance0: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance1: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _liquidities: <a href="">vector</a>&lt;u128&gt;)
 </code></pre>
 
 
@@ -2409,10 +2409,10 @@ State checker
 
 <pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _obc_balance: &<b>mut</b> Balance&lt;OBC&gt;,
+    _obc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
     _balance0: Balance&lt;StableCoinType&gt;,
-    _balance1: Balance&lt;OBC&gt;,
+    _balance1: Balance&lt;BFC&gt;,
     _liquidities: <a href="">vector</a>&lt;u128&gt;
 )
 {
@@ -2466,7 +2466,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _obc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _obc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2477,7 +2477,7 @@ State checker
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _obc_balance: &<b>mut</b> Balance&lt;OBC&gt;,
+    _obc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
     _ctx: &<b>mut</b> TxContext
 ) {

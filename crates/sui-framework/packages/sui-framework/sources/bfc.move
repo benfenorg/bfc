@@ -3,7 +3,7 @@
 
 /// Coin<OBC> is the token used to pay for gas in Sui.
 /// It has 9 decimals, and the smallest unit (10^-9) is called "mist".
-module sui::obc {
+module sui::bfc {
     use std::option;
     use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};
@@ -25,20 +25,20 @@ module sui::obc {
     const TOTAL_SUPPLY_MIST: u64 = 10_000_000_000_000_000_000;
 
     /// Name of the coin
-    struct OBC has drop {}
+    struct BFC has drop {}
 
     #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
-    fun new(ctx: &mut TxContext): Balance<OBC> {
+    fun new(ctx: &mut TxContext): Balance<BFC> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
         let (treasury, metadata) = coin::create_currency(
-            OBC{},
+            BFC{},
             9,
-            b"OBC",
-            b"Obc",
+            b"BFC",
+            b"Bfc",
             // TODO: add appropriate description and logo url
             b"",
             option::none(),
@@ -51,7 +51,7 @@ module sui::obc {
         total_sui
     }
 
-    public entry fun transfer(c: coin::Coin<OBC>, recipient: address) {
+    public entry fun transfer(c: coin::Coin<BFC>, recipient: address) {
         transfer::public_transfer(c, recipient)
     }
 }

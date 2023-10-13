@@ -8,7 +8,7 @@ module obc_system::treasury_test {
     use obc_system::i32;
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::clock;
     use sui::transfer;
     use obc_system::treasury::{Self, Treasury};
@@ -131,7 +131,7 @@ module obc_system::treasury_test {
                 false,
             );
             let balance_a = balance::create_for_testing<USD>(amount_a);
-            let balance_b = balance::create_for_testing<OBC>(amount_b);
+            let balance_b = balance::create_for_testing<BFC>(amount_b);
 
             let receipt = vault::add_liquidity<USD>(
                 usd_mut_vault,
@@ -193,7 +193,7 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let input_obc = balance::create_for_testing<OBC>(total_amount_obc);
+            let input_obc = balance::create_for_testing<BFC>(total_amount_obc);
             let coin_obc = coin::from_balance(
                 input_obc,
                 test_scenario::ctx(&mut scenario_val),
@@ -215,7 +215,7 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
-            let coin_obc = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
+            let coin_obc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after mint ..."));
                 debug::print(&coin_usd);
@@ -268,8 +268,8 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
-            let coin_obc = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
-            let coin_obc_1 = test_scenario::take_from_sender<Coin<OBC>>(&scenario_val);
+            let coin_obc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
+            let coin_obc_1 = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after redeem ..."));
                 debug::print(&coin_usd);

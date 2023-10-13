@@ -6,7 +6,7 @@ module obc_system::gas_coin_map_tests {
     use obc_system::gas_coin_map::GasCoinEntity;
     use sui::test_scenario;
     use sui::balance;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::url;
     use sui::coin;
     use sui::object;
@@ -26,7 +26,7 @@ module obc_system::gas_coin_map_tests {
         let ctx = test_scenario::ctx(scenario);
         //init gas coin map
         let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
-        let dummy_coin = balance::zero<OBC>();
+        let dummy_coin = balance::zero<BFC>();
         let init_coin = coin::from_balance(dummy_coin, ctx);
         let coin_id_address = object::id_address(&init_coin);
         vec_map::insert(&mut init_gas_coins_map, coin_id_address, gas_coin_map::new_default_entity(coin_id_address));

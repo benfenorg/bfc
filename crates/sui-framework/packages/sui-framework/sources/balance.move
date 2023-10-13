@@ -7,7 +7,7 @@
 module sui::balance {
     use sui::tx_context::{Self, TxContext};
 
-    friend sui::obc;
+    friend sui::bfc;
     friend sui::stable;
 
     /// For when trying to destroy a non-zero balance.
@@ -160,12 +160,12 @@ module sui::balance {
 #[test_only]
 module sui::balance_tests {
     use sui::balance;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_utils;
 
     #[test]
     fun test_balance() {
-        let balance = balance::zero<OBC>();
+        let balance = balance::zero<BFC>();
         let another = balance::create_for_testing(1000);
 
         balance::join(&mut balance, another);

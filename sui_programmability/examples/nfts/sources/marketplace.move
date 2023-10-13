@@ -171,7 +171,7 @@ module nfts::marketplaceTests {
     use sui::object::{Self, UID};
     use sui::transfer;
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
     use nfts::marketplace;
 

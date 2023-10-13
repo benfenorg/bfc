@@ -4,7 +4,7 @@ module obc_system::exchange_inner_tests {
     use obc_system::usd::USD;
     use sui::test_scenario;
     use obc_system::exchange_inner;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::balance;
     use sui::coin;
     use sui::test_utils;
@@ -18,7 +18,7 @@ module obc_system::exchange_inner_tests {
         // new exchange pool
         let exchange_pool = exchange_inner::new_exchange_pool(ctx, 0);
         // init obc balance
-        let obc = balance::create_for_testing<OBC>(10);
+        let obc = balance::create_for_testing<BFC>(10);
         exchange_inner::add_obc_to_pool(&mut exchange_pool, coin::from_balance(obc, ctx));
         assert!(exchange_inner::get_obc_amount(&exchange_pool) == 10, 100);
         // exchange where rate = 10000

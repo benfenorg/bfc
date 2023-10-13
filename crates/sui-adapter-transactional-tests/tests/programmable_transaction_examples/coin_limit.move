@@ -9,7 +9,7 @@ module test::m1 {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
 
     struct CoolMarker has key, store { id: UID }
 

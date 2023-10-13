@@ -1,7 +1,7 @@
 
 module hello_world::voting_pool {
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::object::{Self, ID, UID};

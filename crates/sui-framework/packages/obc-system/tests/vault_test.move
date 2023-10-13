@@ -7,7 +7,7 @@ module obc_system::vault_test {
     use sui::balance;
     use sui::clock;
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario;
 
     use obc_system::treasury;
@@ -100,7 +100,7 @@ module obc_system::vault_test {
         };
         assert!(vault::get_vault_state(usd_mut_vault) == 0, 102);
 
-        let balance_alice = balance::create_for_testing<OBC>(2_000_000_000);
+        let balance_alice = balance::create_for_testing<BFC>(2_000_000_000);
         let alice_coin_to_mint = coin::from_balance(balance_alice, test_scenario::ctx(&mut scenario));
 
         treasury::mint<USD>(&mut t, alice_coin_to_mint, 1_000_000_000, test_scenario::ctx(&mut scenario));

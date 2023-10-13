@@ -5,7 +5,7 @@ module obc_system::exchange_inner {
     use sui::object::UID;
     use std::option::Option;
     use sui::balance::Balance;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use std::option;
     use sui::balance;
     use sui::coin;
@@ -32,7 +32,7 @@ module obc_system::exchange_inner {
         /// The total number of SUI coins in this pool
         obc_balance: u64,
         /// The epoch stake rewards will be added here at the end of each epoch.
-        obc_pool: Balance<OBC>,
+        obc_pool: Balance<BFC>,
         /// Total number of pool stable coins issued by the pool.
         stable_token_balance: u64,
         /// The epoch stable gas coins
@@ -59,7 +59,7 @@ module obc_system::exchange_inner {
     }
 
     /// Add obc to pool for gas exchange.
-    public(friend) fun add_obc_to_pool<STABLE_COIN>(pool: &mut ExchangePool<STABLE_COIN>, coin: Coin<OBC>) {
+    public(friend) fun add_obc_to_pool<STABLE_COIN>(pool: &mut ExchangePool<STABLE_COIN>, coin: Coin<BFC>) {
         let amount = coin::value(&coin);
         assert!( amount > 0, EZeroAmount);
         pool.obc_balance = pool.obc_balance + amount;
@@ -103,7 +103,7 @@ module obc_system::exchange_inner {
         pool: &mut ExchangePool<STABLE_COIN>,
         stable_coin: Coin<STABLE_COIN>,
         ctx: &mut TxContext
-    ): Balance<OBC> {
+    ): Balance<BFC> {
         assert!(coin::value(&stable_coin) > 0, EZeroAmount);
         let tok_balance = coin::into_balance(stable_coin);
         let stable_amount = balance::value(&tok_balance);
@@ -119,13 +119,13 @@ module obc_system::exchange_inner {
 
     public(friend) fun get_obc_for_exchange_all<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
-    ): Balance<OBC> {
+    ): Balance<BFC> {
         if(pool.obc_balance > 0) {
             //set pool active is false
             pool.obc_balance = 0;
            balance::withdraw_all(&mut pool.obc_pool)
         }else {
-            balance::zero<OBC>()
+            balance::zero<BFC>()
         }
     }
     /// Exchange all stable gas coins to default coins
@@ -149,7 +149,7 @@ module obc_system::exchange_inner {
 
     public(friend) fun request_deposit_obc_balance<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
-        obc_balance: Balance<OBC>,
+        obc_balance: Balance<BFC>,
     ) {
         assert!(!is_active(pool), ENotAllowDeposit);
         pool.obc_balance = pool.obc_balance + balance::value(&obc_balance);

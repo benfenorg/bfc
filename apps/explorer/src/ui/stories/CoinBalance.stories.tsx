@@ -28,7 +28,7 @@ export default {
 export const Default: StoryObj<CoinBalanceProps> = {
 	args: {
 		amount: 1000,
-		coinType: '0x2::obc::OBC',
+		coinType: '0x2::bfc::BFC',
 	},
 };
 

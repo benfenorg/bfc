@@ -6,7 +6,7 @@ module nfts::auction_tests {
     use std::vector;
 
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object::{Self, UID};
     use sui::test_scenario::Self;
     use sui::transfer;

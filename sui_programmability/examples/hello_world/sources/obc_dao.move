@@ -15,7 +15,7 @@ module hello_world::obc_dao {
     use hello_world::obc_dao_manager::{OBCDaoManageKey};
     use std::vector;
     use hello_world::obc_dao_manager;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::balance;
     //use sui::balance::Balance;
 

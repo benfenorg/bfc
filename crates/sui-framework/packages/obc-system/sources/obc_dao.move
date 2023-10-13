@@ -14,7 +14,7 @@ module obc_system::obc_dao {
     use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use std::vector;
     use obc_system::obc_dao_manager;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::balance;
     //use sui::balance::Balance;
 
@@ -241,7 +241,7 @@ module obc_system::obc_dao {
     //functions
     public(friend) fun create_obcdao_action(
         dao: &mut Dao,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
         actionName:vector<u8>,
         ctx: &mut TxContext): OBCDaoAction {
         //auth
@@ -409,7 +409,7 @@ module obc_system::obc_dao {
     public(friend) fun propose (
         dao: &mut Dao,
         version_id: u64,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         clock: &Clock,
@@ -1054,7 +1054,7 @@ module obc_system::obc_dao {
     }
 
 
-    public(friend) fun create_stake_manager_key( payment: Coin<OBC>,
+    public(friend) fun create_stake_manager_key( payment: Coin<BFC>,
                                   ctx: &mut TxContext){
 
         //convert proposal payment to voting_obc
@@ -1133,7 +1133,7 @@ module obc_system::obc_dao {
 
 
     public(friend) fun create_voting_obc(dao: &mut Dao,
-                                       coin: Coin<OBC>,
+                                       coin: Coin<BFC>,
                                        ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);

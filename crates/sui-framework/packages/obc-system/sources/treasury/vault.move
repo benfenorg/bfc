@@ -3,7 +3,7 @@ module obc_system::vault {
 
     use sui::balance::{Self, Balance, Supply};
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object;
     use sui::object::{ID, UID};
     use sui::tx_context::TxContext;
@@ -57,7 +57,7 @@ module obc_system::vault {
         last_sqrt_price: u128,
 
         coin_a: Balance<StableCoinType>,
-        coin_b: Balance<OBC>,
+        coin_b: Balance<BFC>,
 
         /// The tick spacing
         tick_spacing: u32,
@@ -134,7 +134,7 @@ module obc_system::vault {
             state_counter: 0,
             last_sqrt_price: current_sqrt_price,
             coin_a: balance::zero<StableCoinType>(),
-            coin_b: balance::zero<OBC>(),
+            coin_b: balance::zero<BFC>(),
             tick_spacing: _tick_spacing,
             spacing_times: _spacing_times,
             liquidity: 0,
@@ -320,7 +320,7 @@ module obc_system::vault {
         _vault: &mut Vault<StableCoinType>,
         _index: u64,
         _delta_liquidity: u128
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): (Balance<StableCoinType>, Balance<BFC>) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
         let expect_vault_id = vault_id(_vault);
         let mut_position = position::borrow_mut_position(
@@ -390,7 +390,7 @@ module obc_system::vault {
     public(friend) fun repay_add_liquidity<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _balance_a: Balance<StableCoinType>,
-        _balance_b: Balance<OBC>,
+        _balance_b: Balance<BFC>,
         _receipt: AddLiquidityReceipt<StableCoinType>
     )
     {
@@ -555,14 +555,14 @@ module obc_system::vault {
     public(friend) fun swap<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _coin_a: Coin<StableCoinType>,
-        _coin_b: Coin<OBC>,
+        _coin_b: Coin<BFC>,
         _a2b: bool,
         _by_amount_in: bool,
         _amount: u64,
         _amount_limit: u64,
         _sqrt_price_limit: u128,
         _ctx: &mut TxContext
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): (Balance<StableCoinType>, Balance<BFC>) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
         let (
             receive_a,
@@ -582,7 +582,7 @@ module obc_system::vault {
 
         if (_a2b) {
             pay_coin_a = coin::into_balance(coin::split(&mut _coin_a, pay_amount, _ctx));
-            pay_coin_b = balance::zero<OBC>();
+            pay_coin_b = balance::zero<BFC>();
         } else {
             pay_coin_a = balance::zero<StableCoinType>();
             pay_coin_b = coin::into_balance(coin::split(&mut _coin_b, pay_amount, _ctx));
@@ -603,7 +603,7 @@ module obc_system::vault {
     fun repay_flash_swap<StableCoinType>(
         vault: &mut Vault<StableCoinType>,
         balance_a: Balance<StableCoinType>,
-        balance_b: Balance<OBC>,
+        balance_b: Balance<BFC>,
         receipt: FlashSwapReceipt<StableCoinType>
     ) {
         let FlashSwapReceipt<StableCoinType> {
@@ -632,7 +632,7 @@ module obc_system::vault {
         _by_amount_in: bool,
         _amount: u64,
         _sqrt_price_limit: u128
-    ): (Balance<StableCoinType>, Balance<OBC>, FlashSwapReceipt<StableCoinType>)
+    ): (Balance<StableCoinType>, Balance<BFC>, FlashSwapReceipt<StableCoinType>)
     {
         let min_price = tick_math::min_sqrt_price();
         let max_price = tick_math::max_sqrt_price();
@@ -652,11 +652,11 @@ module obc_system::vault {
         let balance_a_ret;
         let balance_b_ret;
         if (_a2b) {
-            balance_b_ret = balance::split<OBC>(&mut _vault.coin_b, swap_res.amount_out);
+            balance_b_ret = balance::split<BFC>(&mut _vault.coin_b, swap_res.amount_out);
             balance_a_ret = balance::zero<StableCoinType>();
         } else {
             balance_a_ret = balance::split<StableCoinType>(&mut _vault.coin_a, swap_res.amount_out);
-            balance_b_ret = balance::zero<OBC>();
+            balance_b_ret = balance::zero<BFC>();
         };
         event::swap(
             vault_id(_vault),
@@ -844,7 +844,7 @@ module obc_system::vault {
     public fun balances<StableCoinType>(_vault: &Vault<StableCoinType>): (u64, u64) {
         (
             balance::value<StableCoinType>(&_vault.coin_a),
-            balance::value<OBC>(&_vault.coin_b)
+            balance::value<BFC>(&_vault.coin_b)
         )
     }
 
@@ -914,12 +914,12 @@ module obc_system::vault {
     fun rebuild_positions_after_clean_liquidities<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _ctx: &mut TxContext
-    ): (Balance<StableCoinType>, Balance<OBC>, vector<vector<I32>>)
+    ): (Balance<StableCoinType>, Balance<BFC>, vector<vector<I32>>)
     {
         let position_index = 1u64;
         let position_number = (_vault.position_number as u64);
         let balance0 = balance::zero<StableCoinType>();
-        let balance1 = balance::zero<OBC>();
+        let balance1 = balance::zero<BFC>();
         let spacing_times = _vault.spacing_times;
         while (position_index <= position_number) {
             let position = position::borrow_mut_position(&mut _vault.position_manager, position_index);
@@ -992,10 +992,10 @@ module obc_system::vault {
 
     fun rebalance_internal<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
-        _obc_balance: &mut Balance<OBC>,
+        _obc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,
         _balance0: Balance<StableCoinType>,
-        _balance1: Balance<OBC>,
+        _balance1: Balance<BFC>,
         _liquidities: vector<u128>
     )
     {
@@ -1040,7 +1040,7 @@ module obc_system::vault {
 
     public(friend) fun rebalance<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
-        _obc_balance: &mut Balance<OBC>,
+        _obc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,
         _ctx: &mut TxContext
     ) {

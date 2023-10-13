@@ -9,7 +9,7 @@ module obc_system::obc_system {
     use sui::dynamic_field;
     use sui::clock::{Self};
 
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object::UID;
     use sui::transfer;
     use sui::tx_context;
@@ -30,7 +30,7 @@ module obc_system::obc_system {
         version: u64
     }
 
-    public entry fun create_stake_manager_key( payment: Coin<OBC>,
+    public entry fun create_stake_manager_key( payment: Coin<BFC>,
                                                ctx: &mut TxContext) {
         obc_system_state_inner::create_stake_manager_key(payment, ctx);
     }
@@ -49,7 +49,7 @@ module obc_system::obc_system {
     public fun create(
         id: UID,
         usd_supply: Supply<USD>,
-        obc_balance: Balance<OBC>,
+        obc_balance: Balance<BFC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ) {
@@ -191,7 +191,7 @@ module obc_system::obc_system {
     /// Init exchange pool by add obc coin.
     public entry fun init_exchange_pool(
         self: &mut ObcSystemState,
-        coin: Coin<OBC>,
+        coin: Coin<BFC>,
     ) {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::init_exchange_pool(inner_state, coin)
@@ -232,7 +232,7 @@ module obc_system::obc_system {
     public entry fun propose(
         wrapper: &mut ObcSystemState,
         version_id : u64,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         clock: &Clock,
@@ -244,7 +244,7 @@ module obc_system::obc_system {
 
     public entry fun create_obcdao_action(
         wrapper: &mut ObcSystemState,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
         actionName: vector<u8>,
         ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
@@ -292,7 +292,7 @@ module obc_system::obc_system {
     }
 
     public entry fun create_voting_obc(wrapper: &mut ObcSystemState,
-                                 coin: Coin<OBC>,
+                                 coin: Coin<BFC>,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::create_voting_obc(system_state, coin, ctx);
@@ -301,7 +301,7 @@ module obc_system::obc_system {
     /// X treasury  swap obc to stablecoin
     public entry fun swap_obc_to_stablecoin<StableCoinType>(
         wrapper: &mut ObcSystemState,
-        coin_obc: Coin<OBC>,
+        coin_obc: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
@@ -353,7 +353,7 @@ module obc_system::obc_system {
         obc_system_state_inner::treasury_balance(system_state)
     }
 
-    public entry fun deposit_to_treasury(self: &mut ObcSystemState, coin: Coin<OBC>) {
+    public entry fun deposit_to_treasury(self: &mut ObcSystemState, coin: Coin<BFC>) {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::deposit_to_treasury(inner_state, coin)
     }

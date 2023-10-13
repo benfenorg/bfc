@@ -11,7 +11,7 @@ module test::m1 {
     use sui::object::{Self, UID};
     use sui::tx_context::TxContext;
     use sui::coin::Coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
 
     struct R has key, store { id: UID }
     public fun r(ctx: &mut TxContext): R { R { id: object::new(ctx) } }

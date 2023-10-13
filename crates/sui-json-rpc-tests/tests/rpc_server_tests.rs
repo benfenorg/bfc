@@ -370,14 +370,14 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     assert_eq!(0, result.data.len());
 
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::obc::OBC".into()), None, None)
+        .get_coins(address, Some("0x2::bfc::BFC".into()), None, None)
         .await?;
     assert_eq!(5, result.data.len());
     assert!(!result.has_next_page);
 
     // Test paging
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::obc::OBC".into()), None, Some(3))
+        .get_coins(address, Some("0x2::bfc::BFC".into()), None, Some(3))
         .await?;
     assert_eq!(3, result.data.len());
     assert!(result.has_next_page);
@@ -385,7 +385,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     let result: CoinPage = http_client
         .get_coins(
             address,
-            Some("0x2::obc::OBC".into()),
+            Some("0x2::bfc::BFC".into()),
             result.next_cursor,
             Some(3),
         )
@@ -396,7 +396,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     let result: CoinPage = http_client
         .get_coins(
             address,
-            Some("0x2::obc::OBC".into()),
+            Some("0x2::bfc::BFC".into()),
             result.next_cursor,
             None,
         )
@@ -415,7 +415,7 @@ async fn test_get_balance() -> Result<(), anyhow::Error> {
 
     let result: Balance = http_client.get_balance(address, None).await?;
     assert_eq!(
-        "0x2::sui::SUI" == result.coin_type || "0x2::obc::OBC" == result.coin_type,
+        "0x2::sui::SUI" == result.coin_type || "0x2::bfc::BFC" == result.coin_type,
         true
     );
     assert_eq!(

@@ -10,7 +10,7 @@ module nfts::auction_lib {
 
     use sui::coin;
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object::{Self, UID};
     use sui::transfer;
     use sui::tx_context::{Self,TxContext};

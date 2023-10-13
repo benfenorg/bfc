@@ -4,7 +4,7 @@
 #[test_only]
 module kiosk::royalty_rule_tests {
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::dummy as ctx;
     use sui::transfer_policy as policy;
     use sui::transfer_policy_tests as test;

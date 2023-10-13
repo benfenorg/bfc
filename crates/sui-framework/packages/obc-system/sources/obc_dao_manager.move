@@ -2,7 +2,7 @@ module obc_system::obc_dao_manager {
     use sui::balance;
     use sui::balance::Balance;
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object::UID;
     use sui::tx_context::TxContext;
     use sui::object;
@@ -42,12 +42,12 @@ module obc_system::obc_dao_manager {
 
     struct ManagerKeyObc has key, store {
         id: UID,
-        principal: Balance<OBC>,
+        principal: Balance<BFC>,
     }
 
     //create stake key
     public(friend) fun create_stake_key(sender: address,
-                                        payment: Balance<OBC>,
+                                        payment: Balance<BFC>,
                                         ctx: &mut TxContext)  {
         let key = OBCDaoManageKey {
             id: object::new(ctx),

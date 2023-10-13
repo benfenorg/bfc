@@ -4,7 +4,7 @@ module obc_system::position {
     use std::type_name;
     use std::type_name::TypeName;
 
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object::ID;
     use sui::tx_context::TxContext;
 
@@ -142,7 +142,7 @@ module obc_system::position {
             vault_id: _position_manager.vault_id,
             index: _position_manager.position_index,
             coin_type_a: type_name::get<StableCoinType>(),
-            coin_type_b: type_name::get<OBC>(),
+            coin_type_b: type_name::get<BFC>(),
             name: new_position_name(_position_manager.position_index, _vault_index),
             tick_lower_index: _tick_lower,
             tick_upper_index: _tick_upper,

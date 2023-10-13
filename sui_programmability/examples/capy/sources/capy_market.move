@@ -12,7 +12,7 @@ module capy::capy_market {
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::pay;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::event::emit;
     use sui::coin::{Self, Coin};
     use sui::dynamic_object_field as dof;

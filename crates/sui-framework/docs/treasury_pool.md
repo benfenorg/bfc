@@ -12,8 +12,8 @@
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
@@ -44,7 +44,7 @@
 
 </dd>
 <dt>
-<code><a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code><a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -75,7 +75,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>
 </code></pre>
 
 
@@ -85,7 +85,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: Balance&lt;OBC&gt;,
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext
 ): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>
 {
@@ -109,7 +109,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -122,7 +122,7 @@ The <code>withdraw</code> function only called by 0x0 address.
     self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
     amount: u64,
     ctx: &<b>mut</b> TxContext
-): Balance&lt;OBC&gt;
+): Balance&lt;BFC&gt;
 {
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>);
     // Take the minimum of the amount and the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> in

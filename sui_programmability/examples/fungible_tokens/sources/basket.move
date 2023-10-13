@@ -11,7 +11,7 @@ module fungible_tokens::basket {
     use sui::coin::{Self, Coin};
     use sui::balance::{Self, Balance, Supply};
     use sui::object::{Self, UID};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::TxContext;
 

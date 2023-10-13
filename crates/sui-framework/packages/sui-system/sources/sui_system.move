@@ -44,7 +44,7 @@ module sui_system::sui_system {
     use sui::coin::{Self, Coin};
     use sui::object::UID;
     use sui_system::staking_pool::StakedObc;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::object::ID;
@@ -84,7 +84,7 @@ module sui_system::sui_system {
     public(friend) fun create(
         id: UID,
         validators: vector<Validator>,
-        storage_fund: Balance<OBC>,
+        storage_fund: Balance<BFC>,
         protocol_version: u64,
         epoch_start_timestamp_ms: u64,
         parameters: SystemParameters,
@@ -236,7 +236,7 @@ module sui_system::sui_system {
     /// Add stake to a validator's staking pool.
     public entry fun request_add_stake(
         wrapper: &mut SuiSystemState,
-        stake: Coin<OBC>,
+        stake: Coin<BFC>,
         validator_address: address,
         ctx: &mut TxContext,
     ) {
@@ -247,7 +247,7 @@ module sui_system::sui_system {
     /// The non-entry version of `request_add_stake`, which returns the staked SUI instead of transferring it to the sender.
     public fun request_add_stake_non_entry(
         wrapper: &mut SuiSystemState,
-        stake: Coin<OBC>,
+        stake: Coin<BFC>,
         validator_address: address,
         ctx: &mut TxContext,
     ): StakedObc {
@@ -258,7 +258,7 @@ module sui_system::sui_system {
     /// Add stake to a validator's staking pool using multiple coins.
     public entry fun request_add_stake_mul_coin(
         wrapper: &mut SuiSystemState,
-        stakes: vector<Coin<OBC>>,
+        stakes: vector<Coin<BFC>>,
         stake_amount: option::Option<u64>,
         validator_address: address,
         ctx: &mut TxContext,
@@ -283,7 +283,7 @@ module sui_system::sui_system {
         wrapper: &mut SuiSystemState,
         staked_sui: StakedObc,
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<BFC> {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_withdraw_stake(self, staked_sui, ctx)
     }
@@ -542,8 +542,8 @@ module sui_system::sui_system {
     /// 4. Update all validators.
     #[allow(unused_function)]
     fun advance_epoch(
-        storage_reward: Balance<OBC>,
-        computation_reward: Balance<OBC>,
+        storage_reward: Balance<BFC>,
+        computation_reward: Balance<BFC>,
         wrapper: &mut SuiSystemState,
         new_epoch: u64,
         next_protocol_version: u64,
@@ -554,7 +554,7 @@ module sui_system::sui_system {
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<BFC> {
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
@@ -757,7 +757,7 @@ module sui_system::sui_system {
         reward_slashing_rate: u64,
         epoch_start_timestamp_ms: u64,
         ctx: &mut TxContext,
-    ): Balance<OBC> {
+    ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
         let storage_rebate = advance_epoch(

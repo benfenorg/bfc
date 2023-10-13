@@ -8,7 +8,7 @@ module obc_system::treasury {
     use sui::bag::{Self, Bag};
     use sui::balance::{Self, Balance, Supply};
     use sui::dynamic_field;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::clock::{Self, Clock};
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
@@ -37,7 +37,7 @@ module obc_system::treasury {
 
     struct Treasury has key, store {
         id: UID,
-        obc_balance: Balance<OBC>,
+        obc_balance: Balance<BFC>,
         /// stable coin supplies
         supplies: Bag,
         /// Vault index
@@ -53,7 +53,7 @@ module obc_system::treasury {
     public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {
             id: object::new(ctx),
-            obc_balance: balance::zero<OBC>(),
+            obc_balance: balance::zero<BFC>(),
             supplies: bag::new(ctx),
             index: 0,
             time_interval,
@@ -208,7 +208,7 @@ module obc_system::treasury {
             vault_id,
             vault_key,
             into_string(get<StableCoinType>()),
-            into_string(get<OBC>()),
+            into_string(get<BFC>()),
             _tick_spacing,
             _spacing_times,
             _treasury.index,
@@ -220,7 +220,7 @@ module obc_system::treasury {
     /// Mint swap obc to stablecoin
     public entry fun mint<StableCoinType>(
         _treasury: &mut Treasury,
-        _coin_obc: Coin<OBC>,
+        _coin_obc: Coin<BFC>,
         _amount: u64,
         _ctx: &mut TxContext,
     ) {
@@ -235,11 +235,11 @@ module obc_system::treasury {
 
     public(friend) fun mint_internal<StableCoinType>(
         _treasury: &mut Treasury,
-        _coin_obc: Coin<OBC>,
+        _coin_obc: Coin<BFC>,
         _amount: u64,
         _ctx: &mut TxContext,
     ): Balance<StableCoinType> {
-        assert!(coin::value<OBC>(&_coin_obc) > 0, ERR_ZERO_AMOUNT);
+        assert!(coin::value<BFC>(&_coin_obc) > 0, ERR_ZERO_AMOUNT);
         let (balance_a, balance_b) = swap_internal<StableCoinType>(
             _treasury,
             false,
@@ -275,13 +275,13 @@ module obc_system::treasury {
         _coin_sc: Coin<StableCoinType>,
         _amount: u64,
         _ctx: &mut TxContext,
-    ): Balance<OBC> {
+    ): Balance<BFC> {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
         let (balance_a, balance_b) = swap_internal<StableCoinType>(
             _treasury,
             true,
             _coin_sc,
-            coin::zero<OBC>(_ctx),
+            coin::zero<BFC>(_ctx),
             _amount,
             true,
             _ctx,
@@ -317,11 +317,11 @@ module obc_system::treasury {
         _treasury: &mut Treasury,
         _a2b: bool, // true a->b , false b->a
         _coin_a: Coin<StableCoinType>,
-        _coin_b: Coin<OBC>,
+        _coin_b: Coin<BFC>,
         _amount: u64,
         _by_amount_in: bool,
         _ctx: &mut TxContext,
-    ): (Balance<StableCoinType>, Balance<OBC>) {
+    ): (Balance<StableCoinType>, Balance<BFC>) {
         let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
         let sqrt_price_limit = tick_math::get_default_sqrt_price_limit(_a2b);
@@ -354,7 +354,7 @@ module obc_system::treasury {
         total - get_balance(_treasury)
     }
 
-    public(friend) fun deposit(_treasury: &mut Treasury, _coin_obc: Coin<OBC>) {
+    public(friend) fun deposit(_treasury: &mut Treasury, _coin_obc: Coin<BFC>) {
         let min_amount = next_epoch_obc_required(_treasury);
         let input = coin::into_balance(_coin_obc);
         let input_amount = balance::value(&input);

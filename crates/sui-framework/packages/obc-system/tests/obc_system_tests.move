@@ -9,7 +9,7 @@ module obc_system::obc_system_tests {
     use sui::clock::{Self};
     use sui::balance::{Self};
     use sui::coin::{Self};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
 
     use obc_system::obc_system;
@@ -58,7 +58,7 @@ module obc_system::obc_system_tests {
         obc_system::create(
             object::new(ctx),
             usd_supply,
-            balance::zero<OBC>(),
+            balance::zero<BFC>(),
             treasury_parameters,
             ctx,
         );
@@ -96,7 +96,7 @@ module obc_system::obc_system_tests {
     fun test_deposit_with_error() {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<ObcSystemState>(&mut scenario_val);
-        let obc = balance::create_for_testing<OBC>(100);
+        let obc = balance::create_for_testing<BFC>(100);
         let current_balance = obc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 1);
         obc_system::deposit_to_treasury(
@@ -116,7 +116,7 @@ module obc_system::obc_system_tests {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<ObcSystemState>(&mut scenario_val);
         let amount = obc_system::next_epoch_obc_required(&system_state);
-        let obc = balance::create_for_testing<OBC>(amount);
+        let obc = balance::create_for_testing<BFC>(amount);
         let current_balance = obc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);
 

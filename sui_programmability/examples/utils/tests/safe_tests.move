@@ -7,7 +7,7 @@ module utils::safe_tests {
     use sui::test_scenario::{Self as ts, Scenario, ctx};
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::test_utils;
 

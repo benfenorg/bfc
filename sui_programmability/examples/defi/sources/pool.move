@@ -14,7 +14,7 @@
 /// module me::my_pool {
 ///   use defi::pool;
 ///   use sui::coin::Coin;
-///   use sui::obc::OBC;
+///   use sui::bfc::BFC;
 ///   use sui::tx_context::TxContext;
 ///
 ///   struct POOL_TEAM has drop {}
@@ -36,7 +36,7 @@ module defi::pool {
     use sui::object::{Self, UID};
     use sui::coin::{Self, Coin};
     use sui::balance::{Self, Supply, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::math;
     use sui::tx_context::{Self, TxContext};
@@ -345,7 +345,7 @@ module defi::pool {
 /// |               +-- test_withdraw_all
 /// ```
 module defi::pool_tests {
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin, mint_for_testing as mint};
     use sui::test_scenario::{Self as test, Scenario, next_tx, ctx};
     use defi::pool::{Self, Pool, LSP};

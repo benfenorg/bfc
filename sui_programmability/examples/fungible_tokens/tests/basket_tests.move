@@ -7,7 +7,7 @@ module fungible_tokens::basket_tests {
     use fungible_tokens::managed::MANAGED;
     use sui::pay;
     use sui::coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario;
 
     #[test]

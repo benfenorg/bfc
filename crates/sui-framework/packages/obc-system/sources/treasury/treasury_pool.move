@@ -2,7 +2,7 @@ module obc_system::treasury_pool {
     use sui::balance;
     use sui::balance::Balance;
     use sui::math;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::object;
     use sui::object::UID;
     use sui::tx_context::{TxContext, Self};
@@ -16,11 +16,11 @@ module obc_system::treasury_pool {
 
     struct TreasuryPool has key, store {
         id: UID,
-        balance: Balance<OBC>
+        balance: Balance<BFC>
     }
 
     public(friend) fun create_treasury_pool(
-        balance: Balance<OBC>,
+        balance: Balance<BFC>,
         ctx: &mut TxContext
     ): TreasuryPool
     {
@@ -37,7 +37,7 @@ module obc_system::treasury_pool {
         self: &mut TreasuryPool,
         amount: u64,
         ctx: &mut TxContext
-    ): Balance<OBC>
+    ): Balance<BFC>
     {
         assert!(tx_context::sender(ctx) == @0x0, ERR_NOT_ZERO_ADDRESS);
         // Take the minimum of the amount and the remaining balance in

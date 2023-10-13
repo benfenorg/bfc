@@ -4,7 +4,7 @@
 #[test_only]
 module games::drand_based_scratch_card_tests {
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
     use sui::transfer;
 

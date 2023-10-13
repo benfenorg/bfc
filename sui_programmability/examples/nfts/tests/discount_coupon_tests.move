@@ -5,7 +5,7 @@
 module nfts::discount_coupon_tests {
     use nfts::discount_coupon::{Self, DiscountCoupon};
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::test_scenario::Self;
     use sui::transfer;
     use sui::tx_context::TxContext;

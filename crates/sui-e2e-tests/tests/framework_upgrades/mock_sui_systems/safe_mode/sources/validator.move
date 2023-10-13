@@ -8,7 +8,7 @@ module sui_system::validator {
     use std::string::{Self, String};
     use sui::bag::{Self, Bag};
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
 
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;

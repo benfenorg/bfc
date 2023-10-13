@@ -46,7 +46,7 @@ pub fn verify_module(
     // the module has no initializer). The reason for it is that the SUI coin is only instantiated
     // during genesis. It is easiest to simply special-case this module particularly that this is
     // framework code and thus deemed correct.
-    let obc_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("obc").to_owned());
+    let obc_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("bfc").to_owned());
     let stable_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("stable").to_owned());
     let usd_module = ModuleId::new(OBC_SYSTEM_ADDRESS, ident_str!("usd").to_owned());
     if obc_module == module.self_id() || stable_module == module.self_id() || usd_module == module.self_id() {

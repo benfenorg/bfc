@@ -4,7 +4,7 @@ module obc_system::obc_system_state_inner {
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::TxContext;
     use sui::vec_map;
 
@@ -66,7 +66,7 @@ module obc_system::obc_system_state_inner {
 
     public(friend) fun create_inner_state(
         usd_supply: Supply<USD>,
-        obc_balance: Balance<OBC>,
+        obc_balance: Balance<BFC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext,
     ): ObcSystemStateInner {
@@ -88,7 +88,7 @@ module obc_system::obc_system_state_inner {
         }
     }
 
-    public (friend) fun create_stake_manager_key( payment: Coin<OBC>,
+    public (friend) fun create_stake_manager_key( payment: Coin<BFC>,
                                                   ctx: &mut TxContext) {
         obc_dao::create_stake_manager_key(payment, ctx);
     }
@@ -110,7 +110,7 @@ module obc_system::obc_system_state_inner {
         inner: &mut ObcSystemStateInner,
         stable: Coin<USD>,
         ctx: &mut TxContext,
-    ): Balance<OBC> {
+    ): Balance<BFC> {
         //get exchange rate
         let rate = gas_coin_map::requst_get_exchange_rate<USD>(&inner.gas_coin_map, &stable);
         exchange_inner::request_exchange_stable<USD>(rate, &mut inner.exchange_pool, stable, ctx)
@@ -187,7 +187,7 @@ module obc_system::obc_system_state_inner {
     /// Init exchange pool by add obc coin.
     public fun init_exchange_pool(
         self: &mut ObcSystemStateInner,
-        coin: Coin<OBC>,
+        coin: Coin<BFC>,
     ) {
         exchange_inner::add_obc_to_pool(&mut self.exchange_pool, coin)
     }
@@ -195,10 +195,10 @@ module obc_system::obc_system_state_inner {
     /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<USD>,
-        obc_balance: Balance<OBC>,
+        obc_balance: Balance<BFC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
-    ): (Treasury, Balance<OBC>) {
+    ): (Treasury, Balance<BFC>) {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
 
@@ -214,7 +214,7 @@ module obc_system::obc_system_state_inner {
             parameters.chain_start_timestamp_ms,
             ctx,
         );
-        if (balance::value<OBC>(&obc_balance) > 0) {
+        if (balance::value<BFC>(&obc_balance) > 0) {
             let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
             treasury::rebalance_first_init(&mut t, ctx);
@@ -225,7 +225,7 @@ module obc_system::obc_system_state_inner {
     /// swap obc to stablecoin
     public(friend) fun swap_obc_to_stablecoin<StableCoinType>(
         self: &mut ObcSystemStateInner,
-        coin_obc: Coin<OBC>,
+        coin_obc: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
@@ -234,7 +234,7 @@ module obc_system::obc_system_state_inner {
 
     public(friend) fun swap_obc_to_stablecoin_balance<StableCoinType>(
         self: &mut ObcSystemStateInner,
-        coin_obc: Coin<OBC>,
+        coin_obc: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
     ): Balance<StableCoinType> {
@@ -255,7 +255,7 @@ module obc_system::obc_system_state_inner {
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
         ctx: &mut TxContext,
-    ): Balance<OBC> {
+    ): Balance<BFC> {
         let amount = coin::value(&coin_sc);
         treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx)
     }
@@ -285,7 +285,7 @@ module obc_system::obc_system_state_inner {
         treasury::get_balance(&self.treasury)
     }
 
-    public(friend) fun deposit_to_treasury(self: &mut ObcSystemStateInner, coin_obc: Coin<OBC>) {
+    public(friend) fun deposit_to_treasury(self: &mut ObcSystemStateInner, coin_obc: Coin<BFC>) {
         treasury::deposit(&mut self.treasury, coin_obc);
     }
 
@@ -337,7 +337,7 @@ module obc_system::obc_system_state_inner {
 
     public(friend) fun create_obcdao_action(
         self: &mut ObcSystemStateInner,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
 
         actionName: vector<u8>,
         ctx: &mut TxContext) {
@@ -347,7 +347,7 @@ module obc_system::obc_system_state_inner {
     public(friend) fun propose(
         self: &mut ObcSystemStateInner,
         version_id: u64,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         clock: &Clock,
@@ -464,7 +464,7 @@ module obc_system::obc_system_state_inner {
     }
 
     public(friend) fun create_voting_obc(system_state: &mut ObcSystemStateInner,
-                                         coin: Coin<OBC>,
+                                         coin: Coin<BFC>,
                                          ctx: &mut TxContext) {
         obc_dao::create_voting_obc(&mut system_state.dao, coin, ctx);
     }

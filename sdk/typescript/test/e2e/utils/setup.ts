@@ -214,7 +214,7 @@ export async function paySui(
 		(
 			await client.getCoins({
 				owner: signer.getPublicKey().toSuiAddress(),
-				coinType: '0x2::obc::OBC',
+				coinType: '0x2::bfc::BFC',
 			})
 		).data[0].coinObjectId;
 

@@ -3,7 +3,7 @@
 
 module sui_system::sui_system_state_inner {
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::TxContext;
     use sui::bag::{Self, Bag};
     use sui::table::{Self, Table};

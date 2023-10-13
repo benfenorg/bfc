@@ -55,11 +55,11 @@
 <b>use</b> <a href="">0x1::type_name</a>;
 <b>use</b> <a href="">0x1::vector</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/linked_table.md#0x2_linked_table">0x2::linked_table</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/table.md#0x2_table">0x2::table</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
@@ -756,7 +756,7 @@ Emitted when user withdraw asset from custodian
 
 </dd>
 <dt>
-<code>creation_fee: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>creation_fee: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -1175,7 +1175,7 @@ Emitted when user withdraw asset from custodian
 
 
 
-<pre><code><b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_">create_pool_</a>&lt;BaseAsset, QuoteAsset&gt;(taker_fee_rate: u64, maker_rebate_rate: u64, tick_size: u64, lot_size: u64, creation_fee: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_">create_pool_</a>&lt;BaseAsset, QuoteAsset&gt;(taker_fee_rate: u64, maker_rebate_rate: u64, tick_size: u64, lot_size: u64, creation_fee: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1189,7 +1189,7 @@ Emitted when user withdraw asset from custodian
     maker_rebate_rate: u64,
     tick_size: u64,
     lot_size: u64,
-    creation_fee: Balance&lt;OBC&gt;,
+    creation_fee: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> base_type_name = <a href="_get">type_name::get</a>&lt;BaseAsset&gt;();
@@ -1242,7 +1242,7 @@ Emitted when user withdraw asset from custodian
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1254,7 +1254,7 @@ Emitted when user withdraw asset from custodian
 <pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(
     tick_size: u64,
     lot_size: u64,
-    creation_fee: Coin&lt;OBC&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&creation_fee) == <a href="clob_v2.md#0xdee9_clob_v2_FEE_AMOUNT_FOR_CREATE_POOL">FEE_AMOUNT_FOR_CREATE_POOL</a>, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidFee">EInvalidFee</a>);
@@ -1279,7 +1279,7 @@ Emitted when user withdraw asset from custodian
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool">create_customized_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool">create_customized_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1293,7 +1293,7 @@ Emitted when user withdraw asset from custodian
     lot_size: u64,
     taker_fee_rate: u64,
     maker_rebate_rate: u64,
-    creation_fee: Coin&lt;OBC&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&creation_fee) == <a href="clob_v2.md#0xdee9_clob_v2_FEE_AMOUNT_FOR_CREATE_POOL">FEE_AMOUNT_FOR_CREATE_POOL</a>, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidFee">EInvalidFee</a>);

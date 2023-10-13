@@ -10,7 +10,7 @@
 ///
 /// Capy Post takes zero commission for gift parcels.
 module capy::capy_winter {
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID, UID};
     use sui::balance::{Self, Balance};

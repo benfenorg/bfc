@@ -11,7 +11,7 @@ module capy::capy_item {
     use sui::object::{Self, ID, UID};
     use sui::tx_context::{sender, TxContext};
     use std::string::{Self, String};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::balance::{Self, Balance};
     use std::option::{Self, Option};
     use sui::dynamic_object_field as dof;

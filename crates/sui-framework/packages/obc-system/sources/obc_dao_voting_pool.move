@@ -1,7 +1,7 @@
 module obc_system::voting_pool {
     //use obc_system::obc_dao::add_admin;
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::object::{Self, ID, UID};
@@ -53,7 +53,7 @@ module obc_system::voting_pool {
         /// ID of the staking pool we are staking with.
         pool_id: ID,
         /// The voting OBC tokens.
-        principal: Balance<OBC>,
+        principal: Balance<BFC>,
     }
 
     // ==== initializer ====
@@ -73,7 +73,7 @@ module obc_system::voting_pool {
     /// Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
     public(friend) fun request_add_voting(
         pool: &mut VotingPool,
-        voting: Balance<OBC>,
+        voting: Balance<BFC>,
         ctx: &mut TxContext
     ) : VotingObc {
         let obc_amount = balance::value(&voting);
@@ -92,7 +92,7 @@ module obc_system::voting_pool {
     public(friend) fun request_withdraw_voting(
         pool: &mut VotingPool,
         voting_obc: VotingObc,
-    ) : Balance<OBC> {
+    ) : Balance<BFC> {
         let (_, principal_withdraw) =
             withdraw_from_principal(pool, voting_obc);
         let principal_withdraw_amount = balance::value(&principal_withdraw);
@@ -110,7 +110,7 @@ module obc_system::voting_pool {
     public(friend) fun withdraw_from_principal(
         pool: &mut VotingPool,
         voting_obc: VotingObc,
-    ) : (u64, Balance<OBC>) {
+    ) : (u64, Balance<BFC>) {
 
         // Check that the voting information matches the pool.
         assert!(voting_obc.pool_id == object::id(pool), EWrongPool);
@@ -127,7 +127,7 @@ module obc_system::voting_pool {
 
 
 
-    public fun unwrap_voting_obc(voting_obc: VotingObc): Balance<OBC> {
+    public fun unwrap_voting_obc(voting_obc: VotingObc): Balance<BFC> {
 
         let VotingObc {
             id,

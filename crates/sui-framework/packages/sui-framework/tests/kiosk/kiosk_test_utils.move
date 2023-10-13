@@ -5,7 +5,7 @@
 module sui::kiosk_test_utils {
     use std::vector;
     //use sui::package;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID, UID};
     use sui::package::{Self, Publisher};
@@ -37,7 +37,7 @@ module sui::kiosk_test_utils {
     }
 
     /// Prepare: Get Sui
-    public fun get_sui(amount: u64, ctx: &mut TxContext): Coin<OBC> {
+    public fun get_sui(amount: u64, ctx: &mut TxContext): Coin<BFC> {
         coin::mint_for_testing(amount, ctx)
     }
 

@@ -3,7 +3,7 @@
 
 module examples::trade_in {
     use sui::transfer;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::tx_context::{TxContext};

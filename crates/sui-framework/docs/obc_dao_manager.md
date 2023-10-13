@@ -16,8 +16,8 @@
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -87,7 +87,7 @@
 
 </dd>
 <dt>
-<code>principal: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;</code>
+<code>principal: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -187,7 +187,7 @@ Create a new key.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>, payment: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>, payment: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -197,7 +197,7 @@ Create a new key.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>,
-                                    payment: Balance&lt;OBC&gt;,
+                                    payment: Balance&lt;BFC&gt;,
                                     ctx: &<b>mut</b> TxContext)  {
     <b>let</b> key = <a href="obc_dao_manager.md#0xc8_obc_dao_manager_OBCDaoManageKey">OBCDaoManageKey</a> {
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
@@ -250,11 +250,11 @@ Create a new key.
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(uid);
 
     <b>let</b> <a href="obc_dao_manager.md#0xc8_obc_dao_manager_ManagerKeyObc">ManagerKeyObc</a>{id:uid,
-        principal:<a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a>}= token;
+        principal:obc}= token;
 
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(uid);
 
-    <b>let</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(<a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a>, ctx);
+    <b>let</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(obc, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, sender);
 
 }

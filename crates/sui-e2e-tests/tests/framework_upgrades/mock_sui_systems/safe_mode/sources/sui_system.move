@@ -4,7 +4,7 @@
 module sui_system::sui_system {
     use sui::balance::Balance;
     use sui::object::UID;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::dynamic_field;
