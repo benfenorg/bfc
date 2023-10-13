@@ -953,7 +953,7 @@ Rebalance
     _ctx: &<b>mut</b> TxContext
 )
 {
-    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
+    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
         &<b>mut</b> _treasury.id,
         <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()
     );
