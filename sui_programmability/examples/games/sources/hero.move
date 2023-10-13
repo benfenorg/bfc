@@ -246,7 +246,7 @@ module games::hero {
     /// for it.
     public fun create_sword(
         game: &GameInfo,
-        payment: Coin<OBC>,
+        payment: Coin<BFC>,
         ctx: &mut TxContext
     ): Sword {
         let value = coin::value(&payment);
@@ -267,7 +267,7 @@ module games::hero {
     }
 
     public entry fun acquire_hero(
-        game: &GameInfo, payment: Coin<OBC>, ctx: &mut TxContext
+        game: &GameInfo, payment: Coin<BFC>, ctx: &mut TxContext
     ) {
         let sword = create_sword(game, payment, ctx);
         let hero = create_hero(game, sword, ctx);

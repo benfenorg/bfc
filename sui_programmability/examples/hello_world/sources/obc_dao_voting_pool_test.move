@@ -42,7 +42,7 @@ module hello_world::obc_dao_voting_pool_test{
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
-            let coin =  coin::mint_for_testing<OBC>(10000000000, test_scenario::ctx(&mut scenario_val));
+            let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             obc_dao::create_voting_obc(&mut dao,  coin, test_scenario::ctx(&mut scenario_val));
 
 

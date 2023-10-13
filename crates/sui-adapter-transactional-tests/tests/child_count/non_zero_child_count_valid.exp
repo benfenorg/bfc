@@ -14,7 +14,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 50-54:
-Owner: Shared
+Owner: Object ID: ( fake(2,0) )
 Version: 2
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,1)}}}
 
@@ -24,11 +24,12 @@ mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5 'run'. lines 58-58:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xd6237b8f2d738fdcc88df2982837d839e1cef58a617bef47223c102e06ad396f, parent_id: 0x0265402b3975e99677451be6f60649755166320dae9a716254cf6a45b820a302 }
+mutated: object(0,0), object(4,2)
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 6 'view-object'. lines 60-64:
-Owner: Object ID: ( fake(4,0) )
-Version: 3
+Owner: Account Address ( B )
+Version: 4
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(4,2)}}}
 
 task 7 'run'. lines 66-66:
@@ -37,9 +38,9 @@ mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8 'transfer-object'. lines 68-68:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x7748d2fa3b69efe2a5069c287b52e8f3478631284dc685868504932cf065ab57, parent_id: 0x79bf3776247112d863ad58301954ff782958b1474fbede4149eb2e7f1d78548f }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x6ecd00bc63b49b38dfedd0795d52882ff7161ba1aac7b55b7cd9ded8063a2b2c, parent_id: 0x8d089c745b8ce42a84f52c33a446d4b70fc4dafdf851bdcc05f90154fd246b08 }
 
 task 9 'view-object'. lines 70-70:
 Owner: Object ID: ( fake(7,0) )
-Version: 4
+Version: 5
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(7,1)}}}

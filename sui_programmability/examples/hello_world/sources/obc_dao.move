@@ -26,7 +26,7 @@ module hello_world::obc_dao {
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_VOTE_QUORUM_RATE: u8 = 50; // 50% default quorum rate
 
-    const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 OBC
+    const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 BFC
 
     /// Proposal state
     const PENDING: u8 = 1;
@@ -310,7 +310,7 @@ module hello_world::obc_dao {
     entry public fun propose (
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
-        payment: Coin<OBC>,
+        payment: CoinBFC>,
         action_id: u64,
         action_delay: u64,
         clock: &Clock,
@@ -825,7 +825,7 @@ module hello_world::obc_dao {
 
     /// Quorum votes to make proposal pass.
     public fun quorum_votes(dao: &mut Dao): u64 {
-        //let market_cap = total_supply(Coin<OBC>);
+        //let market_cap = total_supply(Coin<BFC>);
         //let balance_in_treasury = Treasury::balance<TokenT>();
         let total_supply_sui: u64 = 10000000000;
         let supply = total_supply_sui;
@@ -1028,7 +1028,7 @@ module hello_world::obc_dao {
 
 
     entry public fun create_voting_obc(dao: &mut Dao,
-                                       coin: Coin<OBC>,
+                                       coin: Coin<BFC>,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);

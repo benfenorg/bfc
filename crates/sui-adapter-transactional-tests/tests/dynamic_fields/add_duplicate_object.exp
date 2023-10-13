@@ -14,5 +14,4 @@ mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 35-35:
-Error: Transaction Effects Status: Move Runtime Abort. Location: sui::dynamic_field::add (function index 0) at offset 15, Abort Code: 0
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 0, instruction: 15, function_name: Some("add") }, 0), source: Some(VMError { major_status: ABORTED, sub_status: Some(0), message: Some("sui::dynamic_field::add at offset 15"), exec_state: None, location: Module(ModuleId { address: sui, name: Identifier("dynamic_field") }), indices: [], offsets: [(FunctionDefinitionIndex(0), 15)] }), command: Some(0) } }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x59166afd1568543b1fa337d03dfa10fd49a7c312074c901d32f9c40a177bb7c6, parent_id: 0xb6366aa44ac6ae475e47788c06dc10d6bd37d9317cbb5b53e0ffae365d4f68c7 }

@@ -199,7 +199,7 @@ async fn test_regression_6546() -> Result<(), anyhow::Error> {
         "--package",
         "0x2",
         "--module",
-        "obc",
+        "bfc",
         "--function",
         "transfer",
         "--args",

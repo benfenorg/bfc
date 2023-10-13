@@ -21,7 +21,7 @@ module tutorial::trusted_swap {
         id: UID,
         original_owner: address,
         to_swap: Object,
-        fee: Balance<OBC>,
+        fee: Balance<BFC>,
     }
 
     public entry fun create_object(scarcity: u8, style: u8, ctx: &mut TxContext) {
@@ -35,7 +35,7 @@ module tutorial::trusted_swap {
 
     /// Anyone owns an `Object` can request swapping their object. This object
     /// will be wrapped into `ObjectWrapper` and sent to `service_address`.
-    public entry fun request_swap(object: Object, fee: Coin<OBC>, service_address: address, ctx: &mut TxContext) {
+    public entry fun request_swap(object: Object, fee: Coin<BFC>, service_address: address, ctx: &mut TxContext) {
         assert!(coin::value(&fee) >= MIN_FEE, 0);
         let wrapper = ObjectWrapper {
             id: object::new(ctx),
