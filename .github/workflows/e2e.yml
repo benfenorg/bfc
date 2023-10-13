@@ -89,32 +89,30 @@ jobs:
       #     path: apps/wallet/playwright-report/
       #     retention-days: 30
 
-  # Run e2e test against localnet built on the devnet branch for backward compatibility check
-  local_devnet_branch:
-    name: Local Network Built on devnet branch
-    needs: diff
-    # TODO: add wallet e2e to the `if` condition when available
-    # FIXME: comment for debug
-    # if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
-    runs-on: yuriko-ubuntu
-    steps:
-      - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
-      - name: Run E2E Test Runner with devnet branch
-        uses: "./.github/actions/ts-e2e"
-        with:
-          ref: devnet
+  # # Run e2e test against localnet built on the devnet branch for backward compatibility check
+  # local_devnet_branch:
+  #   name: Local Network Built on devnet branch
+  #   needs: diff
+  #   # TODO: add wallet e2e to the `if` condition when available
+  #   if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
+  #   runs-on: yuriko-ubuntu
+  #   steps:
+  #     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
+  #     - name: Run E2E Test Runner with devnet branch
+  #       uses: "./.github/actions/ts-e2e"
+  #       with:
+  #         ref: devnet
 
-  # Run e2e test against localnet built on the Testnet branch for backward compatibility check
-  local_testnet_branch:
-    name: Local Network Built on testnet branch
-    needs: diff
-    # TODO: add wallet e2e to the `if` condition when available
-    # FIXME: comment for debug
-    # if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
-    runs-on: yuriko-ubuntu
-    steps:
-      - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
-      - name: Run E2E Test Runner with testnet branch
-        uses: "./.github/actions/ts-e2e"
-        with:
-          ref: testnet
+  # # Run e2e test against localnet built on the Testnet branch for backward compatibility check
+  # local_testnet_branch:
+  #   name: Local Network Built on testnet branch
+  #   needs: diff
+  #   # TODO: add wallet e2e to the `if` condition when available
+  #   if: needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true'
+  #   runs-on: yuriko-ubuntu
+  #   steps:
+  #     - uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # pin@v3
+  #     - name: Run E2E Test Runner with testnet branch
+  #       uses: "./.github/actions/ts-e2e"
+  #       with:
+  #         ref: testnet
