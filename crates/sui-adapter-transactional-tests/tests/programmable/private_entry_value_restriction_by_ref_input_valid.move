@@ -21,7 +21,7 @@ module test::m1 {
     public entry fun clean(_: &mut R, _extra_arg: u64) {}
     entry fun priv(_: &mut R) { }
 
-    entry fun coin(_: &mut Coin<OBC>) {}
+    entry fun coin(_: &mut Coin<BFC>) {}
 }
 
 //# programmable --sender A --inputs @A

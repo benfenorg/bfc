@@ -35,7 +35,7 @@ module sui_system::sui_system_state_inner {
         protocol_version: u64,
         system_state_version: u64,
         validators: ValidatorSet,
-        storage_fund: Balance<OBC>,
+        storage_fund: Balance<BFC>,
         parameters: SystemParameters,
         reference_gas_price: u64,
         safe_mode: bool,
@@ -45,7 +45,7 @@ module sui_system::sui_system_state_inner {
 
     public(friend) fun create(
         validators: vector<Validator>,
-        storage_fund: Balance<OBC>,
+        storage_fund: Balance<BFC>,
         protocol_version: u64,
         epoch_start_timestamp_ms: u64,
         epoch_duration_ms: u64,
@@ -76,11 +76,11 @@ module sui_system::sui_system_state_inner {
         self: &mut SuiSystemStateInner,
         new_epoch: u64,
         next_protocol_version: u64,
-        storage_reward: Balance<OBC>,
-        computation_reward: Balance<OBC>,
+        storage_reward: Balance<BFC>,
+        computation_reward: Balance<BFC>,
         storage_rebate_amount: u64,
         epoch_start_timestamp_ms: u64,
-    ) : Balance<OBC> {
+    ) : Balance<BFC> {
         self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
         self.epoch = self.epoch + 1;
         assert!(new_epoch == self.epoch, 0);

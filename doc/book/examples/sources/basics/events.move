@@ -25,7 +25,7 @@ module examples::donuts_with_events {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<OBC>
+        balance: Balance<BFC>
     }
 
     // ====== Events ======
@@ -57,7 +57,7 @@ module examples::donuts_with_events {
 
     /// Buy a donut.
     public entry fun buy_donut(
-        shop: &mut DonutShop, payment: &mut Coin<OBC>, ctx: &mut TxContext
+        shop: &mut DonutShop, payment: &mut Coin<BFC>, ctx: &mut TxContext
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 

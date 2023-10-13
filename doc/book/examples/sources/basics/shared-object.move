@@ -25,7 +25,7 @@ module examples::donuts {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<OBC>
+        balance: Balance<BFC>
     }
 
     #[allow(unused_function)]
@@ -48,7 +48,7 @@ module examples::donuts {
 
     /// Entry function available to everyone who owns a Coin.
     public entry fun buy_donut(
-        shop: &mut DonutShop, payment: &mut Coin<OBC>, ctx: &mut TxContext
+        shop: &mut DonutShop, payment: &mut Coin<BFC>, ctx: &mut TxContext
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 

@@ -68,7 +68,7 @@ module capy::capy_winter {
     }
 
     /// Every parcel must go through here!
-    struct CapyPost has key { id: UID, balance: Balance<OBC> }
+    struct CapyPost has key { id: UID, balance: Balance<BFC> }
 
     // ========= Events =========
 
@@ -105,7 +105,7 @@ module capy::capy_winter {
     }
 
     /// Buy a single `GiftBox` and keep it at the sender's address.
-    entry fun buy_gift(post: &mut CapyPost, type: u8, payment: vector<Coin<OBC>>, ctx: &mut TxContext) {
+    entry fun buy_gift(post: &mut CapyPost, type: u8, payment: vector<Coin<BFC>>, ctx: &mut TxContext) {
         assert!(type < GIFT_TYPES, 0);
 
         let (paid, remainder) = merge_and_split(payment, GIFT_PRICE, ctx);
@@ -159,7 +159,7 @@ module capy::capy_winter {
 
     /// Buy a premium box using a ticket!
     entry fun buy_premium(
-        post: &mut CapyPost, ticket: PremiumTicket, payment: vector<Coin<OBC>>, ctx: &mut TxContext
+        post: &mut CapyPost, ticket: PremiumTicket, payment: vector<Coin<BFC>>, ctx: &mut TxContext
     ) {
         let PremiumTicket { id: ticket_id } = ticket;
         let (paid, remainder) = merge_and_split(payment, GIFT_PRICE, ctx);
@@ -186,8 +186,8 @@ module capy::capy_winter {
     /// Merges a vector of Coin then splits the `amount` from it, returns the
     /// Coin with the amount and the remainder.
     fun merge_and_split(
-        coins: vector<Coin<OBC>>, amount: u64, ctx: &mut TxContext
-    ): (Coin<OBC>, Coin<OBC>) {
+        coins: vector<Coin<BFC>>, amount: u64, ctx: &mut TxContext
+    ): (Coin<BFC>, Coin<BFC>) {
         let base = vec::pop_back(&mut coins);
         pay::join_vec(&mut base, coins);
         assert!(coin::value(&base) > amount, 0);

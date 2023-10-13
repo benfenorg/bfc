@@ -29,7 +29,7 @@ module sui_system::validator {
     struct Validator has store {
         metadata: ValidatorMetadata,
         voting_power: u64,
-        stake: Balance<OBC>,
+        stake: Balance<BFC>,
         extra_fields: Bag,
     }
 
@@ -37,7 +37,7 @@ module sui_system::validator {
         new_dummy_field: u64,
         metadata: ValidatorMetadata,
         voting_power: u64,
-        stake: Balance<OBC>,
+        stake: Balance<BFC>,
         extra_fields: Bag,
     }
 
@@ -50,7 +50,7 @@ module sui_system::validator {
         p2p_address: vector<u8>,
         primary_address: vector<u8>,
         worker_address: vector<u8>,
-        init_stake: Balance<OBC>,
+        init_stake: Balance<BFC>,
         ctx: &mut TxContext
     ): Validator {
         let metadata = ValidatorMetadata {

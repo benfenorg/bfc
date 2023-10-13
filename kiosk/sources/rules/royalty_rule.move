@@ -77,7 +77,7 @@ module kiosk::royalty_rule {
     public fun pay<T>(
         policy: &mut TransferPolicy<T>,
         request: &mut TransferRequest<T>,
-        payment: Coin<OBC>
+        payment: Coin<BFC>
     ) {
         let paid = policy::paid(request);
         let amount = fee_amount(policy, paid);

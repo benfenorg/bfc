@@ -175,7 +175,7 @@ impl TestCaseImpl for CoinIndexTest {
         let balance_changes = &response.balance_changes.unwrap();
         let sui_balance_change = balance_changes
             .iter()
-            .find(|b| b.coin_type.to_string().contains("OBC"))
+            .find(|b| b.coin_type.to_string().contains("BFC"))
             .unwrap();
         let managed_balance_change = balance_changes
             .iter()

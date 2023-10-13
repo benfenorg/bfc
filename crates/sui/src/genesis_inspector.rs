@@ -16,12 +16,12 @@ use sui_types::{
 
 const STR_ALL: &str = "All";
 const STR_EXIT: &str = "Exit";
-const STR_SUI: &str = "OBC";
-const STR_STAKED_SUI: &str = "StakedOBC";
+const STR_SUI: &str = "BFC";
+const STR_STAKED_SUI: &str = "StakedBFC";
 const STR_PACKAGE: &str = "Package";
 const STR_COIN_METADATA: &str = "CoinMetadata";
 const STR_OTHER: &str = "Other";
-const STR_SUI_DISTRIBUTION: &str = "OBC Distribution";
+const STR_SUI_DISTRIBUTION: &str = "BFC Distribution";
 const STR_OBJECTS: &str = "Objects";
 const STR_VALIDATORS: &str = "Validators";
 

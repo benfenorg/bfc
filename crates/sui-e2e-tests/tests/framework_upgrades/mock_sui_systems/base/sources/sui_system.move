@@ -23,7 +23,7 @@ module sui_system::sui_system {
     public(friend) fun create(
         id: UID,
         validators: vector<Validator>,
-        storage_fund: Balance<OBC>,
+        storage_fund: Balance<BFC>,
         protocol_version: u64,
         epoch_start_timestamp_ms: u64,
         epoch_duration_ms: u64,
@@ -47,8 +47,8 @@ module sui_system::sui_system {
     }
 
     fun advance_epoch(
-        storage_reward: Balance<OBC>,
-        computation_reward: Balance<OBC>,
+        storage_reward: Balance<BFC>,
+        computation_reward: Balance<BFC>,
         wrapper: &mut SuiSystemState,
         new_epoch: u64,
         next_protocol_version: u64,
@@ -59,7 +59,7 @@ module sui_system::sui_system {
         _reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<BFC> {
         let self = load_system_state_mut(wrapper);
         assert!(tx_context::sender(ctx) == @0x0, 0);
         let storage_rebate = sui_system_state_inner::advance_epoch(

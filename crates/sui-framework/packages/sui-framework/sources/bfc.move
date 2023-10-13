@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-/// Coin<OBC> is the token used to pay for gas in Sui.
+/// Coin<BFC> is the token used to pay for gas in Sui.
 /// It has 9 decimals, and the smallest unit (10^-9) is called "mist".
 module sui::bfc {
     use std::option;
