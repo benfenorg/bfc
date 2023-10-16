@@ -3,6 +3,6 @@ source: crates/sui-swarm-config/tests/snapshot_tests.rs
 expression: genesis.sui_system_wrapper_object()
 ---
 id:
-  id: OBC0000000000000000000000000000000000000000000000000000000000000005f3ce
+  id: BFC0000000000000000000000000000000000000000000000000000000000000005f3ce
 version: 1
 

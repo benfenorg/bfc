@@ -310,7 +310,7 @@ module hello_world::obc_dao {
     entry public fun propose (
         dao: &mut Dao,
         manager_key: &OBCDaoManageKey,
-        payment: CoinBFC>,
+        payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         clock: &Clock,
