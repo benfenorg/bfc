@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import { useTransactionExecution } from '../hooks/useTransactionExecution';
 import { SUI_TYPE_ARG,TransactionBlock } from '@mysten/sui.js';
 import { normalizeSuiCoinType, getAllCoins } from '~/utils/utils';
+import BigNumber from 'bignumber.js';
 
 type MutationParams = {
 	onSuccess?: () => void;
@@ -20,6 +21,8 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 		mutationFn: async ({ address, type, amount }: any) => {
 			if (!address) throw new Error('You need to connect your wallet!');
 
+			const swapAmount =  new BigNumber(amount).shiftedBy(9).toFixed();
+
 			const typeArg = type === 'mint' ? SUI_TYPE_ARG : '0xc8::usd::USD';
 
 			const coinType = normalizeSuiCoinType(typeArg);
@@ -34,7 +37,7 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 			let coin;
 
 			if (type === 'mint') {
-				coin = tx.splitCoins(tx.gas, [tx.pure(amount)]);
+				coin = tx.splitCoins(tx.gas, [tx.pure(swapAmount)]);
 			} else {
 				const [primaryCoin, ...mergeCoins] = coinsData.filter(
 					(coin) => normalizeSuiCoinType(coin.coinType) === normalizeSuiCoinType(coinType),
@@ -46,7 +49,7 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 						mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
 					);
 				}
-				coin = tx.splitCoins(primaryCoinInput, [tx.pure(amount)]);
+				coin = tx.splitCoins(primaryCoinInput, [tx.pure(swapAmount)]);
 			}
 
 			const functionName = type === 'mint' ? 'swap_obc_to_stablecoin' : 'swap_stablecoin_to_obc';
@@ -54,7 +57,7 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 			tx.moveCall({
 				target: `0xc8::obc_system::${functionName}`,
 				typeArguments: ['0xc8::usd::USD'],
-				arguments: [tx.object('0xc9'), coin, tx.pure(Number.parseInt(amount))],
+				arguments: [tx.object('0xc9'), coin, tx.pure(Number.parseInt(swapAmount))],
 			});
 			return signAndExecute({ tx });
 		},

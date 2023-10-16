@@ -11,6 +11,7 @@ export function Button({
 	className,
 	disabled,
 	onClick,
+	ghost=false,
 	...props
 }: {
 	children: ReactNode;
@@ -18,12 +19,14 @@ export function Button({
 	className?: string;
 	onClick: () => Promise<void> | void;
 	disabled?: boolean;
+	ghost?: boolean;
 }) {
 	return (
 		<button
 			className={classNames(
-				'h-10 flex w-full items-center justify-center bg-bf text-white rounded-md font-semibold',
+				'h-10 flex w-full items-center justify-center bg-bf text-xs rounded-md font-semibold disabled:bg-bf-disabled',
 				className,
+				ghost ? 'bg-white text-bf-text1 border border-bf-text1' : 'text-white'
 			)}
 			onClick={onClick}
 			disabled={!!disabled || !!loading}
