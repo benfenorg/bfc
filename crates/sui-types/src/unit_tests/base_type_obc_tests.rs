@@ -64,7 +64,7 @@ mod tests {
 
         let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
         let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
-        let expected_json_address_obce = format!("\"OBC{}{}\"", SAMPLE_ADDRESS, check_sum);
+        let expected_json_address_obce = format!("\"BFC{}{}\"", SAMPLE_ADDRESS, check_sum);
 
         assert_eq!(
             expected_json_address == json_serialized
@@ -83,7 +83,7 @@ mod tests {
 
         let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
         let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
-        let expected_json_address_obce = format!("\"OBC{}{}\"", SAMPLE_ADDRESS, check_sum);
+        let expected_json_address_obce = format!("\"BFC{}{}\"", SAMPLE_ADDRESS, check_sum);
 
         assert_eq!(
             expected_json_address == json_serialized
