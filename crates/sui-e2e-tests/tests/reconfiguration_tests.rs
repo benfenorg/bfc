@@ -10,7 +10,6 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use jsonrpsee::http_client::HttpClient;
-use move_core_types::ident_str;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use sui_core::consensus_adapter::position_submit_certificate;
@@ -21,12 +20,6 @@ use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
 use sui_types::base_types::{ObjectID, SuiAddress};
-//use sui_macros::sim_test;
-//use sui_node::SuiNodeHandle;
-//use sui_protocol_config::ProtocolConfig;
-//use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-//use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
-//use sui_types::base_types::SuiAddress;
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -44,12 +37,10 @@ use tracing::info;
 use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID, parse_sui_struct_tag, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{OBC_SYSTEM_PACKAGE_ID, OBC_SYSTEM_STATE_OBJECT_ID, parse_sui_struct_tag};
 use serde_json::json;
-use sui_json_rpc_types::SuiObjectDataFilter::StructType;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
-use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 
 
 #[sim_test]
@@ -2331,9 +2322,6 @@ async fn swap_obc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
         SuiTransactionBlockEffects::V1(_effects) => {
             assert!(_effects.status.is_ok());
         },
-        _ => {
-            panic!("unexpected effects type");
-        }
     };
     Ok(())
 }
@@ -2389,9 +2377,6 @@ async fn swap_stablecoin_to_obc(test_cluster: &TestCluster, http_client: &HttpCl
         SuiTransactionBlockEffects::V1(_effects) => {
             assert!(_effects.status.is_ok());
         },
-        _ => {
-            panic!("unexpected effects type");
-        }
     };
     Ok(())
 }
