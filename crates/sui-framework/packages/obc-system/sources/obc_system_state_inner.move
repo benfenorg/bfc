@@ -18,6 +18,7 @@ module obc_system::obc_system_state_inner {
     use obc_system::treasury_pool;
     use obc_system::treasury_pool::TreasuryPool;
     use obc_system::usd::USD;
+    use obc_system::vault::VaultInfo;
     use obc_system::voting_pool::VotingObc;
 
     friend obc_system::obc_system;
@@ -216,6 +217,7 @@ module obc_system::obc_system_state_inner {
         if (balance::value<OBC>(&obc_balance) > 0) {
             let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
+            treasury::rebalance_first_init(&mut t, ctx);
         };
         (t, obc_balance)
     }
@@ -301,6 +303,11 @@ module obc_system::obc_system_state_inner {
             balance::destroy_zero(withdraw_balance);
         };
         treasury::rebalance(&mut self.treasury, clock, ctx);
+    }
+
+    /// X-vault
+    public fun vault_info<StableCoinType>(self: &ObcSystemStateInner): VaultInfo {
+        treasury::vault_info<StableCoinType>(&self.treasury)
     }
 
     public(friend) fun obc_system_stat_parameter(

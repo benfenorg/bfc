@@ -14,6 +14,7 @@
 -  [Function `get_vault_key`](#0xc8_treasury_get_vault_key)
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
+-  [Function `vault_info`](#0xc8_treasury_vault_info)
 -  [Function `create_vault`](#0xc8_treasury_create_vault)
 -  [Function `init_vault_with_positions`](#0xc8_treasury_init_vault_with_positions)
 -  [Function `create_vault_internal`](#0xc8_treasury_create_vault_internal)
@@ -27,6 +28,7 @@
 -  [Function `next_epoch_obc_required`](#0xc8_treasury_next_epoch_obc_required)
 -  [Function `deposit`](#0xc8_treasury_deposit)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
+-  [Function `rebalance_first_init`](#0xc8_treasury_rebalance_first_init)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -35,7 +37,7 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field">0x2::dynamic_object_field</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
@@ -262,7 +264,7 @@
 
 <pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
     <b>assert</b>!(
-        <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_exists_">dynamic_object_field::exists_</a>(
+        <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(
             &_treasury.id,
             _vault_key
         ),
@@ -305,7 +307,7 @@
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="_String">ascii::String</a>): &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="_String">ascii::String</a>): &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -314,12 +316,12 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(
     _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _vault_key: String
 ): &Vault&lt;StableCoinType&gt; {
     <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>&lt;StableCoinType&gt;(_treasury, _vault_key);
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow">dynamic_object_field::borrow</a>&lt;String, Vault&lt;StableCoinType&gt;&gt;(&_treasury.id, _vault_key)
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>&lt;String, Vault&lt;StableCoinType&gt;&gt;(&_treasury.id, _vault_key)
 }
 </code></pre>
 
@@ -333,7 +335,7 @@
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="_String">ascii::String</a>): &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="_String">ascii::String</a>): &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -342,12 +344,38 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _vault_key: String
 ): &<b>mut</b> Vault&lt;StableCoinType&gt; {
     <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>&lt;StableCoinType&gt;(_treasury, _vault_key);
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;String, Vault&lt;StableCoinType&gt;&gt;(&<b>mut</b> _treasury.id, _vault_key)
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;StableCoinType&gt;&gt;(&<b>mut</b> _treasury.id, _vault_key)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_vault_info"></a>
+
+## Function `vault_info`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_vault_info">vault_info</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="vault.md#0xc8_vault_VaultInfo">vault::VaultInfo</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_vault_info">vault_info</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): VaultInfo {
+    <a href="vault.md#0xc8_vault_vault_info">vault::vault_info</a>(
+        <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
+    )
 }
 </code></pre>
 
@@ -481,7 +509,7 @@ creat vault for ordered A & B
     _ctx: &<b>mut</b> TxContext
 ): String {
     <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
-    <b>assert</b>!(!<a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_exists_">dynamic_object_field::exists_</a>&lt;String&gt;(&_treasury.id, vault_key), <a href="treasury.md#0xc8_treasury_ERR_POOL_HAS_REGISTERED">ERR_POOL_HAS_REGISTERED</a>);
+    <b>assert</b>!(!<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>&lt;String&gt;(&_treasury.id, vault_key), <a href="treasury.md#0xc8_treasury_ERR_POOL_HAS_REGISTERED">ERR_POOL_HAS_REGISTERED</a>);
 
     // index increased
     _treasury.index = _treasury.index + 1;
@@ -498,7 +526,7 @@ creat vault for ordered A & B
     );
     <b>let</b> vault_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&new_vault);
 
-    <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_add">dynamic_object_field::add</a>(
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(
         &<b>mut</b> _treasury.id,
         vault_key,
         new_vault,
@@ -806,7 +834,7 @@ Rebalance
 
     // USD <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> required
     <b>let</b> usd_vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;();
-    <b>if</b> (<a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_exists_">dynamic_object_field::exists_</a>(&_treasury.id, usd_vault_key)) {
+    <b>if</b> (<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, usd_vault_key)) {
         <b>let</b> usd_v = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;USD&gt;(_treasury, usd_vault_key);
         <b>let</b> obc_required_per_time = <a href="vault.md#0xc8_vault_obc_required">vault::obc_required</a>(usd_v);
         total = total + obc_required_per_time * times_per_day;
@@ -886,12 +914,50 @@ Rebalance
 
     // <b>update</b> updated_at
     _treasury.updated_at = current_ts;
-    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_object_field.md#0x2_dynamic_object_field_borrow_mut">dynamic_object_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
+    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
         &<b>mut</b> _treasury.id,
         <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()
     );
     <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(usd_mut_v);
 
+    <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
+        usd_mut_v,
+        &<b>mut</b> _treasury.obc_balance,
+        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;USD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()),
+        _ctx
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_rebalance_first_init"></a>
+
+## Function `rebalance_first_init`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_first_init">rebalance_first_init</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_first_init">rebalance_first_init</a>(
+    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _ctx: &<b>mut</b> TxContext
+)
+{
+    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;USD&gt;&gt;(
+        &<b>mut</b> _treasury.id,
+        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;USD&gt;()
+    );
+    /// first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
     <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
         usd_mut_v,
         &<b>mut</b> _treasury.obc_balance,

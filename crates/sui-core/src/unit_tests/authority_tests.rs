@@ -2966,7 +2966,7 @@ async fn test_authority_persist() {
         AuthorityStore::open_with_committee_for_testing(perpetual_tables, &committee, &genesis, 0)
             .await
             .unwrap();
-    let authority = init_state(&genesis, authority_key, store).await;
+    let authority = init_state(&genesis, authority_key.copy(), store).await;
 
     // Create an object
     let recipient = dbg_addr(2);

@@ -16,7 +16,6 @@ import { sui2ObcAddress } from '../utils/format.js';
 import type { StructTag } from '../bcs/index.js';
 import type { Infer } from 'superstruct';
 import { nullable, number, object, string } from 'superstruct';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
 
 export const SUI_SYSTEM_ADDRESS = '0x3';
 export const SUI_FRAMEWORK_ADDRESS = '0x2';
@@ -88,7 +87,7 @@ export class Coin {
 
 	static getCoinStructTag(coinTypeArg: string): StructTag {
 		return {
-			address: normalizeSuiObjectId(coinTypeArg.split('::')[0]),
+			address: sui2ObcAddress(coinTypeArg.split('::')[0]),
 			module: coinTypeArg.split('::')[1],
 			name: coinTypeArg.split('::')[2],
 			typeParams: [],

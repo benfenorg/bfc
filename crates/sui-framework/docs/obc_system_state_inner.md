@@ -32,6 +32,7 @@
 -  [Function `treasury_balance`](#0xc8_obc_system_state_inner_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_obc_system_state_inner_deposit_to_treasury)
 -  [Function `rebalance`](#0xc8_obc_system_state_inner_rebalance)
+-  [Function `vault_info`](#0xc8_obc_system_state_inner_vault_info)
 -  [Function `obc_system_stat_parameter`](#0xc8_obc_system_state_inner_obc_system_stat_parameter)
 -  [Function `create_obcdao_action`](#0xc8_obc_system_state_inner_create_obcdao_action)
 -  [Function `propose`](#0xc8_obc_system_state_inner_propose)
@@ -64,6 +65,7 @@
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
 <b>use</b> <a href="treasury_pool.md#0xc8_treasury_pool">0xc8::treasury_pool</a>;
 <b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
+<b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="obc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
 
@@ -662,6 +664,7 @@ X treasury  init treasury
     <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;OBC&gt;(&obc_balance) &gt; 0) {
         <b>let</b> deposit_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> obc_balance, <a href="treasury.md#0xc8_treasury_next_epoch_obc_required">treasury::next_epoch_obc_required</a>(&t));
         <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(deposit_balance, ctx));
+        <a href="treasury.md#0xc8_treasury_rebalance_first_init">treasury::rebalance_first_init</a>(&<b>mut</b> t, ctx);
     };
     (t, obc_balance)
 }
@@ -947,6 +950,31 @@ X-treasury
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(withdraw_balance);
     };
     <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_obc_system_state_inner_vault_info"></a>
+
+## Function `vault_info`
+
+X-vault
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_vault_info">vault_info</a>&lt;StableCoinType&gt;(self: &<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">obc_system_state_inner::ObcSystemStateInner</a>): <a href="vault.md#0xc8_vault_VaultInfo">vault::VaultInfo</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_vault_info">vault_info</a>&lt;StableCoinType&gt;(self: &<a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemStateInner">ObcSystemStateInner</a>): VaultInfo {
+    <a href="treasury.md#0xc8_treasury_vault_info">treasury::vault_info</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
 }
 </code></pre>
 

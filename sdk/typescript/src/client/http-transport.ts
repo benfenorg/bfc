@@ -76,7 +76,6 @@ export class SuiHTTPTransport implements SuiTransport {
 	}
 
 	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
-		console.warn('test server');
 		const indexServer = [
 			'suix_getNetworkMetrics',
 			'suix_getEpochs',
