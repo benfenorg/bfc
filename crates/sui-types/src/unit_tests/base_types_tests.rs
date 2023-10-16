@@ -181,7 +181,7 @@ fn test_object_id_deserialize_from_json_value() {
 fn test_object_id_serde_json() {
     let hex = format!("0x{}", SAMPLE_ADDRESS);
     let json_hex = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let json_obc = format!("\"OBC{}53c5\"", SAMPLE_ADDRESS);
+    let json_obc = format!("\"BFC{}53c5\"", SAMPLE_ADDRESS);
 
     let obj_id = ObjectID::from_hex_literal(&hex).unwrap();
 
@@ -210,7 +210,7 @@ fn test_object_id_serde_with_expected_value() {
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
     let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
-    let expected_json_address_obce = format!("\"OBC{}{}\"", SAMPLE_ADDRESS, check_sum);
+    let expected_json_address_obce = format!("\"BFC{}{}\"", SAMPLE_ADDRESS, check_sum);
 
     assert_eq!(
         expected_json_address == json_serialized || expected_json_address_obce == json_serialized,
@@ -265,7 +265,7 @@ fn test_address_serde_human_readable() {
     let checksum = get_check_sum(Hex::encode(address));
     assert_eq!(
         format!("\"0x{}\"", Hex::encode(address)) == serialized
-            || format!("\"OBC{}{}\"", Hex::encode(address), checksum) == serialized,
+            || format!("\"BFC{}{}\"", Hex::encode(address), checksum) == serialized,
         true
     );
     let deserialized: SuiAddress = serde_json::from_str(&serialized).unwrap();
@@ -279,7 +279,7 @@ fn test_address_serde_with_expected_value() {
     let bcs_serialized = bcs::to_bytes(&address).unwrap();
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let expected_json_address_obc = format!("\"OBC{}53c5\"", SAMPLE_ADDRESS);
+    let expected_json_address_obc = format!("\"BFC{}53c5\"", SAMPLE_ADDRESS);
 
     assert_eq!(
         expected_json_address == json_serialized || expected_json_address_obc == json_serialized,
