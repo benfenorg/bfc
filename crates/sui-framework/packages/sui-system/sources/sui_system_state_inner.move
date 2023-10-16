@@ -5,7 +5,7 @@ module sui_system::sui_system_state_inner {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{ID};
-    use sui_system::staking_pool::{stake_activation_epoch, StakedObc};
+    use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
     use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
@@ -511,7 +511,7 @@ module sui_system::sui_system_state_inner {
         stake: Coin<BFC>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) : StakedObc {
+    ) : StakedBfc {
         validator_set::request_add_stake(
             &mut self.validators,
             validator_address,
@@ -527,7 +527,7 @@ module sui_system::sui_system_state_inner {
         stake_amount: option::Option<u64>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) : StakedObc {
+    ) : StakedBfc {
         let balance = extract_coin_balance(stakes, stake_amount, ctx);
         validator_set::request_add_stake(&mut self.validators, validator_address, balance, ctx)
     }
@@ -535,7 +535,7 @@ module sui_system::sui_system_state_inner {
     /// Withdraw some portion of a stake from a validator's staking pool.
     public(friend) fun request_withdraw_stake(
         self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedObc,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         assert!(

@@ -34,7 +34,7 @@ impl ParsedAddress {
         match self {
             Self::Named(n) => {
 
-                if n.as_str().starts_with("obc") || n.as_str().starts_with("OBC"){
+                if n.as_str().starts_with("bfc") || n.as_str().starts_with("BFC"){
                     let obc_str = convert_to_evm_address(n);
                     return mapping(obc_str.as_str()).ok_or_else(|| anyhow!("Unbound named address: '{}'", obc_str))
                 }

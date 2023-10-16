@@ -24,7 +24,7 @@ mod tests {
         println!("the evm convert result is {}", result);
 
         let sui_address = obc_address_util::convert_to_obc_address(
-            "OBC",
+            "BFC",
             "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857",
         );
         println!("the obc convert result is {}", sui_address);
@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn test_convert_sample() {
-        let prefix = "OBC";
+        let prefix = "BFC";
         let evm_address = "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
 
         let obc_address = local_convert_to_obaddress(prefix, evm_address);

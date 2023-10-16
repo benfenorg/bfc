@@ -38,8 +38,8 @@ use sui_types::move_package::MovePackage;
 use sui_types::MOVE_STDLIB_ADDRESS;
 
 const HEX_PREFIX: &str = "0x";
-const OBC_PREFIX_UPPER: &str = "OBC";
-const OBC_PREFIX_LOWER: &str = "obc";
+const OBC_PREFIX_UPPER: &str = "BFC";
+const OBC_PREFIX_LOWER: &str = "bfc";
 
 #[cfg(test)]
 mod tests;

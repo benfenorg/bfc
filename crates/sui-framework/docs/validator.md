@@ -880,7 +880,7 @@ Process pending stake and pending withdraws, and update the gas price.
 Request to add stake to the validator's staking pool, processed at the end of the epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_add_stake">request_add_stake</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stake: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, staker_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_add_stake">request_add_stake</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stake: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, staker_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>
 </code></pre>
 
 
@@ -894,7 +894,7 @@ Request to add stake to the validator's staking pool, processed at the end of th
     stake: Balance&lt;BFC&gt;,
     staker_address: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
-) : StakedObc {
+) : StakedBfc {
     <b>let</b> stake_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&stake);
     <b>assert</b>!(stake_amount &gt; 0, <a href="validator.md#0x3_validator_EInvalidStakeAmount">EInvalidStakeAmount</a>);
     <b>let</b> stake_epoch = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) + 1;
@@ -975,7 +975,7 @@ Request to add stake to the validator's staking pool at genesis
 Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stake">request_withdraw_stake</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stake">request_withdraw_stake</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -986,7 +986,7 @@ Request to withdraw stake from the validator's staking pool, processed at the en
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stake">request_withdraw_stake</a>(
     self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>,
-    staked_sui: StakedObc,
+    staked_sui: StakedBfc,
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
     <b>let</b> principal_amount = <a href="staking_pool.md#0x3_staking_pool_staked_sui_amount">staking_pool::staked_sui_amount</a>(&staked_sui);

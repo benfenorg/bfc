@@ -530,7 +530,7 @@ Add stake to a validator's staking pool.
 The non-entry version of <code>request_add_stake</code>, which returns the staked SUI instead of transferring it to the sender.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_stake_non_entry">request_add_stake_non_entry</a>(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, stake: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_stake_non_entry">request_add_stake_non_entry</a>(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, stake: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>
 </code></pre>
 
 
@@ -544,7 +544,7 @@ The non-entry version of <code>request_add_stake</code>, which returns the stake
     stake: Coin&lt;BFC&gt;,
     validator_address: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
-): StakedObc {
+): StakedBfc {
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_stake">sui_system_state_inner::request_add_stake</a>(self, stake, validator_address, ctx)
 }
@@ -594,7 +594,7 @@ Add stake to a validator's staking pool using multiple coins.
 Withdraw stake from a validator's staking pool.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_withdraw_stake">request_withdraw_stake</a>(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_withdraw_stake">request_withdraw_stake</a>(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -605,7 +605,7 @@ Withdraw stake from a validator's staking pool.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_withdraw_stake">request_withdraw_stake</a>(
     wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    staked_sui: StakedObc,
+    staked_sui: StakedBfc,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> withdrawn_stake = <a href="sui_system.md#0x3_sui_system_request_withdraw_stake_non_entry">request_withdraw_stake_non_entry</a>(wrapper, staked_sui, ctx);
@@ -624,7 +624,7 @@ Withdraw stake from a validator's staking pool.
 Non-entry version of <code>request_withdraw_stake</code> that returns the withdrawn SUI instead of transferring it to the sender.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_withdraw_stake_non_entry">request_withdraw_stake_non_entry</a>(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_withdraw_stake_non_entry">request_withdraw_stake_non_entry</a>(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -635,7 +635,7 @@ Non-entry version of <code>request_withdraw_stake</code> that returns the withdr
 
 <pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_withdraw_stake_non_entry">request_withdraw_stake_non_entry</a>(
     wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    staked_sui: StakedObc,
+    staked_sui: StakedBfc,
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);

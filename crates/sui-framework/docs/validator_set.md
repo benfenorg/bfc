@@ -883,7 +883,7 @@ of the epoch.
 Aborts in case the staking amount is smaller than MIN_STAKING_THRESHOLD
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_add_stake">request_add_stake</a>(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, validator_address: <b>address</b>, stake: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_add_stake">request_add_stake</a>(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, validator_address: <b>address</b>, stake: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>
 </code></pre>
 
 
@@ -897,7 +897,7 @@ Aborts in case the staking amount is smaller than MIN_STAKING_THRESHOLD
     validator_address: <b>address</b>,
     stake: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
-) : StakedObc {
+) : StakedBfc {
     <b>let</b> sui_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&stake);
     <b>assert</b>!(sui_amount &gt;= <a href="validator_set.md#0x3_validator_set_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>, <a href="validator_set.md#0x3_validator_set_EStakingBelowThreshold">EStakingBelowThreshold</a>);
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator_set.md#0x3_validator_set_get_candidate_or_active_validator_mut">get_candidate_or_active_validator_mut</a>(self, validator_address);
@@ -921,7 +921,7 @@ staking pool's pending stake withdraw entries, processed at the end of the epoch
 the stake and any rewards corresponding to it will be immediately processed.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_withdraw_stake">request_withdraw_stake</a>(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedObc">staking_pool::StakedObc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_withdraw_stake">request_withdraw_stake</a>(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, staked_sui: <a href="staking_pool.md#0x3_staking_pool_StakedBfc">staking_pool::StakedBfc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -932,7 +932,7 @@ the stake and any rewards corresponding to it will be immediately processed.
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_withdraw_stake">request_withdraw_stake</a>(
     self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>,
-    staked_sui: StakedObc,
+    staked_sui: StakedBfc,
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
     <b>let</b> staking_pool_id = pool_id(&staked_sui);

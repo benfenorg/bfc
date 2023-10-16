@@ -122,7 +122,7 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
             let result = sha256_string(&s.clone());
             let check_sum = result.get(0..4).unwrap();
 
-            let obc_address = String::from("OBC") + &s + check_sum;
+            let obc_address = String::from("BFC") + &s + check_sum;
 
             return obc_address.serialize(serializer);
         }
@@ -137,7 +137,7 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
         D: Deserializer<'de>,
     {
         let mut s = String::deserialize(deserializer)?;
-        if s.starts_with("obc") || s.starts_with("OBC") {
+        if s.starts_with("bfc") || s.starts_with("BFC") {
             let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0 {
                 s = String::from(sui);
@@ -176,7 +176,7 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
             hasher.update(s.as_bytes());
             let result = format!("{:x}", hasher.finalize());
             let check_sum = result.get(0..4).unwrap();
-            let obc_address = String::from("OBC") + &s + check_sum;
+            let obc_address = String::from("BFC") + &s + check_sum;
 
             return obc_address.serialize(serializer);
         }
@@ -193,7 +193,7 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
         let mut s = String::deserialize(deserializer)?;
 
         //obcAddress convert to suiAddress format...
-        if s.starts_with("obc") || s.starts_with("OBC") {
+        if s.starts_with("bfc") || s.starts_with("BFC") {
             let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0 {
                 s = String::from(sui);

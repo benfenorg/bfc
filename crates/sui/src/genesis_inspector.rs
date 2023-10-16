@@ -17,7 +17,7 @@ use sui_types::{
 const STR_ALL: &str = "All";
 const STR_EXIT: &str = "Exit";
 const STR_SUI: &str = "BFC";
-const STR_STAKED_SUI: &str = "StakedBFC";
+const STR_STAKED_SUI: &str = "StakedBfc";
 const STR_PACKAGE: &str = "Package";
 const STR_COIN_METADATA: &str = "CoinMetadata";
 const STR_OTHER: &str = "Other";
@@ -207,7 +207,7 @@ fn examine_object(
                 for gas_coin in sui_map.values() {
                     display_sui(gas_coin, owner_map);
                 }
-                print_divider("OBC");
+                print_divider("BFC");
             }
             Ok(name) if name == STR_STAKED_SUI => {
                 for staked_sui_coin in staked_sui_map.values() {
