@@ -9,7 +9,7 @@ const cardContentStyle = cva([], {
 	variants: {
 		variant: {
 			white: 'bg-white',
-			gray: 'bg-obc-card',
+			gray: 'bg-bfc-card',
 		},
 		padding: {
 			none: 'p-0',
@@ -43,7 +43,7 @@ export function Card({ header, footer, children, ...styleProps }: CardProps) {
 				{children}
 				{footer && (
 					<div className={'flex flex-col pt-0 justify-center w-full'}>
-						{children && <span className="h-px bg-obc-border w-full px-2.5 mb-2.5"></span>}
+						{children && <span className="h-px bg-bfc-border w-full px-2.5 mb-2.5"></span>}
 						<div className="flex justify-between">{footer}</div>
 					</div>
 				)}

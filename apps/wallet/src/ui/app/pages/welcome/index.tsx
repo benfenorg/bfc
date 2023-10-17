@@ -12,10 +12,10 @@ import { ampli } from '_src/shared/analytics/ampli';
 
 const VALUE_PROP = [
 	'Send, receive tokens and NFTs',
-	'Stake OBC to earn rewards. Help the OBC network remain decentralized.',
-	'Explore apps on OBC blockchain',
+	'Stake BFC to earn rewards. Help the BenFen network remain decentralized.',
+	'Explore apps on BenFen blockchain',
 	'Quickly revoke access connection given to apps',
-	'Track your OBC network activity',
+	'Track your BenFen network activity',
 ];
 
 const WelcomePage = () => {
@@ -27,7 +27,7 @@ const WelcomePage = () => {
 					<div className="rounded-20 bg-white shadow-wallet-content flex flex-col flex-nowrap items-center justify-center w-popup-width h-popup-height">
 						<BottomMenuLayout>
 							<Content className="flex flex-col flex-nowrap items-center pt-10 pb-0 px-5">
-								<div className="flex justify-center items-center rounded-lg bg-obc p-2">
+								<div className="flex justify-center items-center rounded-lg bg-bfc p-2">
 									<Logo />
 								</div>
 								<div className="mt-2.5 flex justify-center items-center gap-0.5">
@@ -37,11 +37,11 @@ const WelcomePage = () => {
 
 								<div className="mx-auto mt-7.5">
 									<div className="text-center">
-										<div className="text-xl/[26px] text-obc-text1 font-bold">
-											Welcome to <span className="text-obc-text2">XChain</span> Wallet
+										<div className="text-xl/[26px] text-bfc-text1 font-bold">
+											Welcome to <span className="text-bfc-text2">BenFen</span> Wallet
 										</div>
-										<div className="mt-2.5 text-xs/[18px] font-normal text-center text-obc-text2">
-											Connecting you to the decentralized web and OBC network.
+										<div className="mt-2.5 text-xs/[18px] font-normal text-center text-bfc-text2">
+											Connecting you to the decentralized web and BenFen network.
 										</div>
 									</div>
 
@@ -49,7 +49,7 @@ const WelcomePage = () => {
 										{VALUE_PROP.map((value) => (
 											<div
 												key={value}
-												className="flex gap-1.25 items-center rounded p-2.5 bg-obc-card border border-solid border-obc-border"
+												className="flex gap-1.25 items-center rounded p-2.5 bg-bfc-card border border-solid border-bfc-border"
 											>
 												<svg
 													className="w-3.5 h-3.5 shrink-0"
@@ -64,7 +64,7 @@ const WelcomePage = () => {
 														fill="#171719"
 													/>
 												</svg>
-												<div className="text-xs/[18px] font-normal text-obc-text2">{value}</div>
+												<div className="text-xs/[18px] font-normal text-bfc-text2">{value}</div>
 											</div>
 										))}
 									</div>

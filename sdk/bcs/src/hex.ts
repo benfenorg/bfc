@@ -3,7 +3,7 @@
 
 export function fromHEX(hexStr: string): Uint8Array {
 	// @ts-ignore
-	let intArr = (/^OBC/i.test(hexStr) ? hexStr.slice(3, -4) : hexStr.replace('0x', ''))
+	let intArr = (/^BFC/i.test(hexStr) ? hexStr.slice(3, -4) : hexStr.replace('0x', ''))
 		.match(/.{1,2}/g)
 		.map((byte) => parseInt(byte, 16));
 

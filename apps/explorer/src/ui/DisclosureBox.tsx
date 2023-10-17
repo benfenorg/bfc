@@ -10,9 +10,9 @@ import { useState, type ReactNode } from 'react';
 const disclosureBoxStyles = cva('group', {
 	variants: {
 		variant: {
-			primary: 'bg-obc-card rounded-lg',
+			primary: 'bg-bfc-card rounded-lg',
 			outline:
-				'bg-transparent border border-gray-45 hover:bg-obc-card hover:border-transparent rounded-2lg',
+				'bg-transparent border border-gray-45 hover:bg-bfc-card hover:border-transparent rounded-2lg',
 		},
 	},
 	defaultVariants: {

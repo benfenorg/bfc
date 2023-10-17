@@ -91,14 +91,14 @@ function PkgModuleViewWrapper({ id, modules, splitPanelOrientation }: Props) {
 			panel: (
 				<div
 					key="bytecode"
-					className="h-full grow overflow-auto rounded-md border border-obc-border px-4 py-5"
+					className="h-full grow overflow-auto rounded-md border border-bfc-border px-4 py-5"
 				>
 					<Heading variant="heading4/semibold" color="steel-darker">
 						Bytecode
 					</Heading>
 					<div
 						className={clsx(
-							'mt-5 overflow-auto rounded-md bg-obc-card p-4',
+							'mt-5 overflow-auto rounded-md bg-bfc-card p-4',
 							(splitPanelOrientation === 'horizontal' || !isMediumOrAbove) && 'h-verticalListLong',
 						)}
 					>
@@ -112,7 +112,7 @@ function PkgModuleViewWrapper({ id, modules, splitPanelOrientation }: Props) {
 			panel: (
 				<div
 					key="execute"
-					className="pb-15 h-full grow overflow-auto rounded-md border border-obc-border px-4 pt-5"
+					className="pb-15 h-full grow overflow-auto rounded-md border border-bfc-border px-4 pt-5"
 				>
 					<Heading variant="heading4/semibold" color="steel-darker">
 						Execute
@@ -140,12 +140,12 @@ function PkgModuleViewWrapper({ id, modules, splitPanelOrientation }: Props) {
 
 	return (
 		<div className="mt-5 flex flex-col gap-5 md:flex-row md:flex-nowrap">
-			<div className="w-full rounded-md border border-obc-border p-2 md:w-1/5">
+			<div className="w-full rounded-md border border-bfc-border p-2 md:w-1/5">
 				<Combobox value={query} onValueChange={setQuery}>
-					<div className="flex w-full justify-between overflow-hidden rounded-md border border-obc-border bg-obc-card pl-3 placeholder-obc-text3">
+					<div className="flex w-full justify-between overflow-hidden rounded-md border border-bfc-border bg-bfc-card pl-3 placeholder-bfc-text3">
 						<ComboboxInput
 							placeholder="Search"
-							className="w-full border-none bg-obc-card text-body leading-9 text-obc-text1 outline-none placeholder:text-xs placeholder:text-obc-text3"
+							className="w-full border-none bg-bfc-card text-body leading-9 text-bfc-text1 outline-none placeholder:text-xs placeholder:text-bfc-text3"
 						/>
 						<button onClick={submitSearch} className="border-none bg-inherit pr-2" type="submit">
 							<Search24 className="h-4.5 w-4.5 cursor-pointer fill-steel align-middle text-gray-60" />

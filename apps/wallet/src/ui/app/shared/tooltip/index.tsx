@@ -126,10 +126,10 @@ export function Tooltip({ tip, children, placement = 'top' }: TooltipProps) {
 							}}
 							{...getFloatingProps({ ref: floating })}
 						>
-							<div className="flex flex-col flex-nowrap gap-px rounded-md bg-obc p-2">{tip}</div>
+							<div className="flex flex-col flex-nowrap gap-px rounded-md bg-bfc p-2">{tip}</div>
 							<div
 								ref={arrowRef}
-								className="absolute z-[-1] h-[12px] w-[12px] rotate-45 transform bg-obc"
+								className="absolute z-[-1] h-[12px] w-[12px] rotate-45 transform bg-bfc"
 								style={arrowStyle}
 							/>
 						</motion.div>
@@ -145,7 +145,7 @@ export type IconTooltipProps = Omit<TooltipProps, 'children'>;
 export function IconTooltip(props: IconTooltipProps) {
 	return (
 		<Tooltip {...props}>
-			<Info16 className="shrink-0 font-normal text-obc-text2" />
+			<Info16 className="shrink-0 font-normal text-bfc-text2" />
 		</Tooltip>
 	);
 }

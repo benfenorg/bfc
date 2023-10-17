@@ -24,8 +24,8 @@ describe('parseFromStr', () => {
 								{
 									struct: {
 										address: '0x2',
-										module: 'obc',
-										name: 'OBC',
+										module: 'bfc',
+										name: 'BFC',
 										typeParams: [],
 									},
 								},
@@ -78,8 +78,8 @@ describe('tagToString', () => {
 								{
 									struct: {
 										address: '0x2',
-										module: 'obc',
-										name: 'OBC',
+										module: 'bfc',
+										name: 'BFC',
 										typeParams: [],
 									},
 								},

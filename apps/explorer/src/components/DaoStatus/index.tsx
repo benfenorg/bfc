@@ -5,7 +5,7 @@ import { ReactComponent as DaoReject } from '../../assets/DaoReject.svg';
 
 export function AgreeSpan() {
 	return (
-		<div className="flex h-5 items-center gap-0.5 rounded border border-obc-green bg-obc-green_10p px-1 text-body font-medium text-obc-green">
+		<div className="flex h-5 items-center gap-0.5 rounded border border-bfc-green bg-bfc-green_10p px-1 text-body font-medium text-bfc-green">
 			<DaoAgree />
 			同意
 		</div>
@@ -14,7 +14,7 @@ export function AgreeSpan() {
 
 export function RejectSpan() {
 	return (
-		<div className="flex h-5 items-center gap-0.5 rounded border border-obc-green bg-obc-green_10p px-1 text-body font-medium text-obc-green">
+		<div className="flex h-5 items-center gap-0.5 rounded border border-bfc-green bg-bfc-green_10p px-1 text-body font-medium text-bfc-green">
 			<DaoReject />
 			反对
 		</div>
@@ -23,7 +23,7 @@ export function RejectSpan() {
 
 export function StatusSpan() {
 	return (
-		<div className="flex h-5 items-center rounded border border-obc-border  px-1 text-body font-medium text-obc-text1">
+		<div className="flex h-5 items-center rounded border border-bfc-border  px-1 text-body font-medium text-bfc-text1">
 			asddsdsd
 		</div>
 	);

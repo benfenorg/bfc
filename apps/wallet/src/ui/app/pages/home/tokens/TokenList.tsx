@@ -18,9 +18,9 @@ export function TokenList({ title, defaultOpen, children }: Props) {
 				{({ open }) => (
 					<div className="w-full flex flex-col justify-start gap-2">
 						<Disclosure.Button className="flex items-center gap-2 w-full bg-transparent border-none p-0 cursor-pointer group">
-							<div className="text-body font-normal uppercase text-obc-text2">{title}</div>
-							<div className="h-px bg-obc-text2  group-hover:bg-obc flex-1" />
-							<div className="text-obc-text2 group-hover:text-obc inline-flex">
+							<div className="text-body font-normal uppercase text-bfc-text2">{title}</div>
+							<div className="h-px bg-bfc-text2  group-hover:bg-bfc flex-1" />
+							<div className="text-bfc-text2 group-hover:text-bfc inline-flex">
 								{open ? <ChevronDown12 /> : <ChevronRight12 />}
 							</div>
 						</Disclosure.Button>

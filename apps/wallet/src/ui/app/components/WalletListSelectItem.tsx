@@ -76,17 +76,17 @@ export function WalletListSelectItem({
 			{isSelect ? (
 				<CheckFill16
 					className={cx(
-						selected ? 'text-obc-text1' : 'text-obc-text3',
+						selected ? 'text-bfc-text1' : 'text-bfc-text3',
 						'transition text-body font-bold',
 					)}
 				/>
 			) : null}
-			{isDisconnect && selected ? <XFill16 className="text-obc-red text-base font-bold" /> : null}
+			{isDisconnect && selected ? <XFill16 className="text-bfc-red text-base font-bold" /> : null}
 			<Text mono variant="body" weight="medium">
 				{formatAddress(address)}
 			</Text>
 			{isDisconnect && !selected ? (
-				<div className="flex flex-1 justify-end text-obc-red">
+				<div className="flex flex-1 justify-end text-bfc-red">
 					<Text variant="subtitle" weight="normal">
 						Disconnect
 					</Text>
@@ -94,7 +94,7 @@ export function WalletListSelectItem({
 			) : null}
 			{isSelect && isNew ? (
 				<div className="flex-1 flex justify-end">
-					<Text variant="body" color="obc-text2">
+					<Text variant="body" color="bfc-text2">
 						NEW
 					</Text>
 				</div>

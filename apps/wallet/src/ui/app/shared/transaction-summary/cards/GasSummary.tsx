@@ -17,9 +17,9 @@ export function GasSummary({ gasSummary }: { gasSummary?: GasSummaryType }) {
 	if (!gasSummary) return null;
 
 	return (
-		<div className="flex flex-col justify-stretch rounded-lg border border-solid border-obc-border">
-			<div className="h-10 px-2.5 bg-obc-card flex items-center rounded-t-lg">
-				<Heading variant="heading4" color="obc-text1" weight="semibold">
+		<div className="flex flex-col justify-stretch rounded-lg border border-solid border-bfc-border">
+			<div className="h-10 px-2.5 bg-bfc-card flex items-center rounded-t-lg">
+				<Heading variant="heading4" color="bfc-text1" weight="semibold">
 					Gas Fees
 				</Heading>
 			</div>
@@ -27,27 +27,27 @@ export function GasSummary({ gasSummary }: { gasSummary?: GasSummaryType }) {
 				<div className="flex w-full items-center justify-start">
 					{address === gasSummary?.owner && (
 						<div className="mr-auto">
-							<Text color="obc-text2" variant="body" weight="normal">
+							<Text color="bfc-text2" variant="body" weight="normal">
 								You Paid
 							</Text>
 						</div>
 					)}
-					<Text color="obc-text1" variant="body" weight="medium">
+					<Text color="bfc-text1" variant="body" weight="medium">
 						{gasSummary?.isSponsored ? '0' : gas} {symbol}
 					</Text>
 				</div>
 				{gasSummary?.isSponsored && gasSummary.owner && (
 					<>
 						<div className="flex w-full justify-between">
-							<Text color="obc-text2" variant="body" weight="normal">
+							<Text color="bfc-text2" variant="body" weight="normal">
 								Paid by Sponsor
 							</Text>
-							<Text color="obc-text1" variant="body" weight="medium">
+							<Text color="bfc-text1" variant="body" weight="medium">
 								{gas} {symbol}
 							</Text>
 						</div>
 						<div className="flex w-full justify-between">
-							<Text color="obc-text2" variant="body" weight="normal">
+							<Text color="bfc-text2" variant="body" weight="normal">
 								Sponsor
 							</Text>
 							<ExplorerLink
@@ -55,7 +55,7 @@ export function GasSummary({ gasSummary }: { gasSummary?: GasSummaryType }) {
 								address={gasSummary.owner}
 								className="no-underline"
 							>
-								<Text variant="body" color="obc-text1" weight="medium" truncate>
+								<Text variant="body" color="bfc-text1" weight="medium" truncate>
 									{formatAddress(gasSummary.owner)}
 								</Text>
 							</ExplorerLink>

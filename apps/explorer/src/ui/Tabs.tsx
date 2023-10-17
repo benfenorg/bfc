@@ -24,18 +24,18 @@ const TabSizeContext = createContext<TabSize | null | undefined>(null);
 const tabStyles = cva(
 	[
 		'flex items-center gap-1 border-b border-transparent -mb-px',
-		'text-obc-text2 disabled:text-steel-dark disabled:pointer-events-none hover:text-steel-darker',
+		'text-bfc-text2 disabled:text-steel-dark disabled:pointer-events-none hover:text-steel-darker',
 	],
 	{
 		variants: {
 			size: {
-				lg: 'text-heading4 data-[state=active]:text-obc-white',
-				md: 'text-heading6 data-[state=active]:bg-obc data-[state=active]:text-obc-white px-3.5 py-2 rounded-md',
-				sm: 'text-captionSmall font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
+				lg: 'text-heading4 data-[state=active]:text-bfc-white',
+				md: 'text-heading6 data-[state=active]:bg-bfc data-[state=active]:text-bfc-white px-3.5 py-2 rounded-md',
+				sm: 'text-captionSmall font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-bfc-text1',
 				lineMd:
-					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1 data-[state=active]:border-obc-text1',
+					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-bfc-text1 data-[state=active]:border-bfc-text1',
 				lineMdOne:
-					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-obc-text1',
+					'text-heading6 h-12 font-medium pb-0.5 disabled:opacity-40 data-[state=active]:text-bfc-text1',
 			},
 		},
 		defaultVariants: {

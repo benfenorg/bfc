@@ -25,11 +25,11 @@ export function AccountAddress({ copyable, address }: AccountAddressProps) {
 
 	return addressToShow ? (
 		<div className="flex flex-nowrap flex-row items-center gap-1">
-			<Text variant="body" weight="normal" color="obc-link">
+			<Text variant="body" weight="normal" color="bfc-link">
 				{domainName ?? formatAddress(addressToShow)}
 			</Text>
 			{copyable ? (
-				<Copy12 className="text-obc-text2 cursor-pointer" onClick={copyCallback} />
+				<Copy12 className="text-bfc-text2 cursor-pointer" onClick={copyCallback} />
 			) : null}
 		</div>
 	) : null;

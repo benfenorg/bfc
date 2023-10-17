@@ -75,7 +75,7 @@ export function WithdrawVoting({ refetchDao }: Props) {
 		<form
 			onSubmit={handleSubmit((formData) => {
 				execute.mutateAsync(formData).catch((e) => {
-					console.error(`failed to withdraw voting obc`, e);
+					console.error(`failed to withdraw voting bfc`, e);
 				});
 			})}
 			autoComplete="off"

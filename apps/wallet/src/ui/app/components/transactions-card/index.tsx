@@ -77,12 +77,12 @@ export function TransactionCard({
 				{error ? (
 					<div className="flex w-full justify-between">
 						<div className="flex flex-col w-full gap-1.5">
-							<Text color="obc-text1" weight="medium">
+							<Text color="bfc-text1" weight="medium">
 								Transaction Failed
 							</Text>
 
 							<div className="flex break-all">
-								<Text variant="body" weight="medium" color="obc-text1">
+								<Text variant="body" weight="medium" color="bfc-text1">
 									{error}
 								</Text>
 							</div>
@@ -93,12 +93,12 @@ export function TransactionCard({
 					<>
 						<div className="flex w-full justify-between">
 							<div className="flex gap-1 align-middle items-baseline">
-								<Text color="obc-text1" weight="medium" variant="body">
+								<Text color="bfc-text1" weight="medium" variant="body">
 									{summary?.label}
 								</Text>
 								{showSuiSymbol && (
-									<Text color="obc-text1" weight="medium" variant="body">
-										OBC
+									<Text color="bfc-text1" weight="medium" variant="body">
+										BFC
 									</Text>
 								)}
 							</div>

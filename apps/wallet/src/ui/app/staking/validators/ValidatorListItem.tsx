@@ -17,8 +17,8 @@ export function ValidatorListItem({ selected, value, validatorAddress }: Validat
 		<AnimatePresence>
 			<div
 				className={cx(
-					selected ? 'bg-obc-card' : '',
-					'flex justify-between w-full hover:bg-obc-card/50 p-2.5 rounded-lg group items-center',
+					selected ? 'bg-bfc-card' : '',
+					'flex justify-between w-full hover:bg-bfc-card/50 p-2.5 rounded-lg group items-center',
 				)}
 				role="button"
 			>
@@ -33,7 +33,7 @@ export function ValidatorListItem({ selected, value, validatorAddress }: Validat
 				</div>
 				<div className="flex gap-0.5 items-center">
 					<div className="flex gap-0.5 leading-none">
-						<Text variant="body" weight="medium" color="obc-text1">
+						<Text variant="body" weight="medium" color="bfc-text1">
 							{value}
 						</Text>
 					</div>

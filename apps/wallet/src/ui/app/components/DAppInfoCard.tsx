@@ -22,23 +22,23 @@ export function DAppInfoCard({ name, url, iconUrl, connectedAddress }: DAppInfoC
 	const appHostname = validDAppUrl?.hostname ?? url;
 
 	return (
-		<div className="flex flex-col items-stretch p-2.5 pt-5 rounded-lg border border-solid border-obc-border">
+		<div className="flex flex-col items-stretch p-2.5 pt-5 rounded-lg border border-solid border-bfc-border">
 			<div className="flex flex-row flex-nowrap items-center gap-2.5 mb-2.5">
 				<div className="flex items-stretch h-12 w-12 rounded-full overflow-hidden bg-[#d9d9d9] shrink-0 grow-0">
 					{iconUrl ? <img className="flex-1" src={iconUrl} alt={name} /> : null}
 				</div>
 				<div className="flex flex-col flex-nowrap gap-1.5">
-					<Heading variant="heading4" weight="semibold" color="obc-text1">
+					<Heading variant="heading4" weight="semibold" color="bfc-text1">
 						{name}
 					</Heading>
-					<Text variant="body" weight="normal" color="obc-text3">
+					<Text variant="body" weight="normal" color="bfc-text3">
 						{appHostname}
 					</Text>
 				</div>
 			</div>
 			{connectedAddress ? (
 				<div className="p-2.5 flex flex-nowrap flex-row items-center gap-1.25">
-					<Text variant="body" weight="medium" color="obc-text1" truncate>
+					<Text variant="body" weight="medium" color="bfc-text1" truncate>
 						Connected account
 					</Text>
 					<div className="flex-1" />
@@ -47,7 +47,7 @@ export function DAppInfoCard({ name, url, iconUrl, connectedAddress }: DAppInfoC
 			) : null}
 			<div
 				className={cx(
-					'p-2.5 pb-0 flex justify-start border-0 border-t border-solid border-obc-border',
+					'p-2.5 pb-0 flex justify-start border-0 border-t border-solid border-bfc-border',
 				)}
 			>
 				<Link
@@ -56,7 +56,7 @@ export function DAppInfoCard({ name, url, iconUrl, connectedAddress }: DAppInfoC
 					size="body"
 					text="View Website"
 					after={<ArrowUpRight12 />}
-					color="obc-link"
+					color="bfc-link"
 					weight="medium"
 				/>
 			</div>

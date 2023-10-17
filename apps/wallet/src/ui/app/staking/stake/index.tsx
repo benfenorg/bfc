@@ -13,7 +13,7 @@ function StakePage() {
 	const unstake = searchParams.get('unstake') === 'true';
 
 	const navigate = useNavigate();
-	const stakingTitle = unstake ? 'Unstake OBC' : 'Stake OBC';
+	const stakingTitle = unstake ? 'Unstake BFC' : 'Stake BFC';
 
 	return (
 		<Overlay

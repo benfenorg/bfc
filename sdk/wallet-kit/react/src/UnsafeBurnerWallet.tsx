@@ -45,8 +45,8 @@ export function registerUnsafeBurnerWallet(
 
 	const account = new ReadonlyWalletAccount({
 		address: keypair.getPublicKey().toSuiAddress(),
-		chains: ['obc:unknown'],
-		features: ['obc:signAndExecuteTransactionBlock', 'obc:signTransactionBlock'],
+		chains: ['bfc:unknown'],
+		features: ['bfc:signAndExecuteTransactionBlock', 'bfc:signTransactionBlock'],
 		publicKey: keypair.getPublicKey().toBytes(),
 	});
 
@@ -82,15 +82,15 @@ export function registerUnsafeBurnerWallet(
 					version: '1.0.0',
 					on: this.#on,
 				},
-				'obc:signPersonalMessage': {
+				'bfc:signPersonalMessage': {
 					version: '1.0.0',
 					signPersonalMessage: this.#signPersonalMessage,
 				},
-				'obc:signTransactionBlock': {
+				'bfc:signTransactionBlock': {
 					version: '1.0.0',
 					signTransactionBlock: this.#signTransactionBlock,
 				},
-				'obc:signAndExecuteTransactionBlock': {
+				'bfc:signAndExecuteTransactionBlock': {
 					version: '1.0.0',
 					signAndExecuteTransactionBlock: this.#signAndExecuteTransactionBlock,
 				},

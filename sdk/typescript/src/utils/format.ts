@@ -7,16 +7,16 @@ import sha256 from 'fast-sha256';
 const ELLIPSIS = '\u{2026}';
 
 export function sui2ObcAddress(suiAddress: string): string {
-	if (suiAddress.startsWith('OBC')) {
+	if (/^BFC/i.test(suiAddress)) {
 		return suiAddress;
 	}
 	const hex = suiAddress.replace(/^0x/, '').padStart(64, '0').toLowerCase();
 	const hash = toHEX(sha256(new TextEncoder().encode(hex)));
-	return `OBC${hex}${hash.slice(0, 4)}`;
+	return `BFC${hex}${hash.slice(0, 4)}`;
 }
 
 export function obc2SuiAddress(obcAddress: string): string {
-	if (obcAddress.startsWith('0x') || !/^OBC/i.test(obcAddress)) {
+	if (obcAddress.startsWith('0x') || !/^BFC/i.test(obcAddress)) {
 		return obcAddress;
 	}
 	return `0x${obcAddress.slice(3, -4)}`;
@@ -24,7 +24,7 @@ export function obc2SuiAddress(obcAddress: string): string {
 
 export function formatAddress(address: string) {
 	let text = address;
-	if (!address.startsWith('OBC')) {
+	if (!/^BFC/i.test(address)) {
 		text = sui2ObcAddress(address);
 	}
 

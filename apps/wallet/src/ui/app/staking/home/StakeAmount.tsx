@@ -17,13 +17,13 @@ interface StakeAmountProps {
 export function StakeAmount({ balance, variant, isEarnedRewards }: StakeAmountProps) {
 	const [formatted, symbol] = useFormatCoin(balance, SUI_TYPE_ARG);
 	// Handle case of 0 balance
-	let colorAmount: 'obc-text1' | 'obc-text3' = 'obc-text1';
-	let colorSymbol: 'obc-text1' | 'obc-text3' = 'obc-text1';
+	let colorAmount: 'bfc-text1' | 'bfc-text3' = 'bfc-text1';
+	let colorSymbol: 'bfc-text1' | 'bfc-text3' = 'bfc-text1';
 	if (isEarnedRewards) {
-		colorSymbol = 'obc-text3';
+		colorSymbol = 'bfc-text3';
 	}
 	if (formatted === '0') {
-		colorAmount = 'obc-text3';
+		colorAmount = 'bfc-text3';
 	}
 
 	return (

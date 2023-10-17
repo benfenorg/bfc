@@ -81,13 +81,13 @@ export function TableCard<DataType extends object>({
 			<table className="w-full min-w-max border-collapse text-left">
 				<thead>
 					{table.getHeaderGroups().map((headerGroup) => (
-						<tr key={headerGroup.id} className="bg-obc-card">
+						<tr key={headerGroup.id} className="bg-bfc-card">
 							{headerGroup.headers.map(({ id, colSpan, column, isPlaceholder, getContext }) => (
 								<th
 									key={id}
 									colSpan={colSpan}
 									scope="col"
-									className="h-7.5 px-3.5 text-left text-subtitle uppercase text-obc-text3"
+									className="h-7.5 px-3.5 text-left text-subtitle uppercase text-bfc-text3"
 									onClick={
 										column.columnDef.enableSorting ? column.getToggleSortingHandler() : undefined
 									}

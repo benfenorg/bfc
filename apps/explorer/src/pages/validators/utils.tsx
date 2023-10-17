@@ -107,7 +107,7 @@ export function validatorsTableData(
 					atRisk:
 						atRisk !== null ? (
 							<Tooltip
-								tip="Staked OBC is below the minimum OBC stake threshold to remain a validator."
+								tip="Staked BFC is below the minimum BFC stake threshold to remain a validator."
 								onOpen={() =>
 									ampli.activatedTooltip({
 										tooltipLabel: label,
@@ -336,7 +336,7 @@ export function validatorsSortTableData(
 					const label = 'At Risk';
 					return atRisk !== null ? (
 						<Tooltip
-							tip="Staked OBC is below the minimum OBC stake threshold to remain a validator."
+							tip="Staked BFC is below the minimum BFC stake threshold to remain a validator."
 							onOpen={() =>
 								ampli.activatedTooltip({
 									tooltipLabel: label,

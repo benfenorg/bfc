@@ -34,36 +34,36 @@ function DaoContentDetail() {
 
 	return (
 		<div>
-			<div className="rounded-md border border-obc-border px-3 py-6">
+			<div className="rounded-md border border-bfc-border px-3 py-6">
 				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">详情</div>
 				<div className="mt-5 space-y-3">
 					<div className="flex justify-between">
-						<div className="text-pBody text-obc-text2">ID</div>
-						<div className="text-pBody text-obc-text1">{proposal.pid}</div>
+						<div className="text-pBody text-bfc-text2">ID</div>
+						<div className="text-pBody text-bfc-text1">{proposal.pid}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-obc-text2">状态</div>
-						<div className="text-pBody text-obc-text1">12345</div>
+						<div className="text-pBody text-bfc-text2">状态</div>
+						<div className="text-pBody text-bfc-text1">12345</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-obc-text2">创建者</div>
-						<div className="text-pBody text-obc-text1">{proposal.proposer}</div>
+						<div className="text-pBody text-bfc-text2">创建者</div>
+						<div className="text-pBody text-bfc-text1">{proposal.proposer}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-obc-text2">结束时间</div>
-						<div className="text-pBody text-obc-text1">{proposal.end_time}</div>
+						<div className="text-pBody text-bfc-text2">结束时间</div>
+						<div className="text-pBody text-bfc-text1">{proposal.end_time}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-obc-text2">留言板</div>
-						<div className="text-pBody text-obc-text1">12345</div>
+						<div className="text-pBody text-bfc-text2">留言板</div>
+						<div className="text-pBody text-bfc-text1">12345</div>
 					</div>
 				</div>
 			</div>
-			<div className="mt-5 rounded-md border border-obc-border px-3 py-6">
+			<div className="mt-5 rounded-md border border-bfc-border px-3 py-6">
 				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
 					Description
 				</div>
-				<div className="mt-5 text-pBody text-obc-text1">
+				<div className="mt-5 text-pBody text-bfc-text1">
 					Galaxy is a digital asset and blockchain leader helping institutions, startups, and
 					qualified individuals shape a changing economy. We provide platform solutions custom-made
 					for a digitally native ecosystem.
@@ -81,26 +81,26 @@ function PollDetail() {
 			<div className="flex justify-between">
 				<div className="flex items-baseline gap-1">
 					<div className="text-heading4 font-semibold">50.5%</div>
-					<div className="text-body text-obc-text2">同意</div>
+					<div className="text-body text-bfc-text2">同意</div>
 				</div>
 				<div className="flex items-baseline gap-1">
 					<div className="text-heading4 font-semibold">50.5%</div>
-					<div className="text-body text-obc-text2">同意</div>
+					<div className="text-body text-bfc-text2">同意</div>
 				</div>
 			</div>
-			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-obc-green">
-				<div className="absolute h-1 w-[50%] bg-obc-red" />
+			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
+				<div className="absolute h-1 w-[50%] bg-bfc-red" />
 			</div>
 
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
-					<span className="text-body text-obc-text2">已投票</span>
-					<span className="text-body font-medium text-obc-text1"> 55.5%</span>
+					<span className="text-body text-bfc-text2">已投票</span>
+					<span className="text-body font-medium text-bfc-text1"> 55.5%</span>
 				</div>
-				<div className="h-3 w-[1px] bg-obc-border" />
+				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
-					<span className="text-body text-obc-text2">法定门槛</span>
-					<span className="text-body font-medium text-obc-text1"> 51%</span>
+					<span className="text-body text-bfc-text2">法定门槛</span>
+					<span className="text-body font-medium text-bfc-text1"> 51%</span>
 				</div>
 			</div>
 			<div className="my-3 flex flex-col gap-2">
@@ -139,7 +139,7 @@ function PollDetail() {
 }
 function Poll() {
 	return (
-		<div className="h-max rounded-md border border-obc-border px-3 py-6">
+		<div className="h-max rounded-md border border-bfc-border px-3 py-6">
 			<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">投票</div>
 			<div className="mt-5">
 				<PollDetail />
@@ -172,14 +172,14 @@ function DaoContent() {
 	return (
 		<DaoDetailContext.Provider value={{ proposal: data, refetch, manageKey }}>
 			<div>
-				<div className="flex flex-col gap-2 rounded-md border-l-4 border-obc-border bg-obc-card p-5 lg:flex-row">
+				<div className="flex flex-col gap-2 rounded-md border-l-4 border-bfc-border bg-bfc-card p-5 lg:flex-row">
 					<div className="flex min-w-0 flex-col gap-1">
 						<div className="flex gap-1">
 							<AgreeSpan />
 							<StatusSpan />
 						</div>
 						<div className="min-w-0 break-words">
-							<Heading as="h2" variant="heading3/semibold" color="obc-text1" mono>
+							<Heading as="h2" variant="heading3/semibold" color="bfc-text1" mono>
 								asdasdasdsa
 							</Heading>
 						</div>

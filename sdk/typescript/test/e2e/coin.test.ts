@@ -20,8 +20,8 @@ describe('Coin related API', () => {
 		const toolbox = await setup();
 		const exampleStructTag = {
 			address: sui2ObcAddress('0x2'),
-			module: 'obc',
-			name: 'OBC',
+			module: 'bfc',
+			name: 'BFC',
 			typeParams: [],
 		};
 		const coins = await toolbox.getGasObjectsOwnedByAddress();

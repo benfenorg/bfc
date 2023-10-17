@@ -77,12 +77,12 @@ export function ValidatorLogo({
 			<div className="flex flex-col overflow-hidden">
 				<div className="flex">
 					{isTitle ? (
-						<Heading as="h4" variant="heading4" color="obc-text1" weight="semibold" truncate>
+						<Heading as="h4" variant="heading4" color="bfc-text1" weight="semibold" truncate>
 							{validatorName}
 						</Heading>
 					) : (
 						<div className="line-clamp-2 break-all">
-							<Text color="obc-text1" variant="body" weight="medium">
+							<Text color="bfc-text1" variant="body" weight="medium">
 								{validatorName}
 							</Text>
 						</div>
@@ -96,7 +96,7 @@ export function ValidatorLogo({
 					)}
 				</div>
 				{showAddress && (
-					<Text variant="body" color="obc-text3" mono>
+					<Text variant="body" color="bfc-text3" mono>
 						{formatAddress(validatorAddress)}
 					</Text>
 				)}

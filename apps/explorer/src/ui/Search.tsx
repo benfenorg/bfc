@@ -29,12 +29,12 @@ export function Search({
 	return (
 		<Combobox value={queryValue} onValueChange={onChange}>
 			<div className="relative flex items-center">
-				<div className="absolute left-0 ml-1.5 block items-center text-2xl text-obc-text3">
+				<div className="absolute left-0 ml-1.5 block items-center text-2xl text-bfc-text3">
 					<Search16 />
 				</div>
 
 				<ComboboxInput
-					className="w-full rounded-lg border border-transparent bg-obc-card pl-8 text-body leading-9 text-obc-text1 outline-none placeholder:text-xs placeholder:text-obc-text3"
+					className="w-full rounded-lg border border-transparent bg-bfc-card pl-8 text-body leading-9 text-bfc-text1 outline-none placeholder:text-xs placeholder:text-bfc-text3"
 					placeholder={placeholder}
 				/>
 			</div>

@@ -97,7 +97,7 @@ export function AddressInput({
 		<>
 			<div
 				className={cx(
-					'flex h-max w-full overflow-hidden border border-solid border-obc-border rounded-lg bg-obc-card text-obc-text3 focus-within:bg-white focus-within:border-obc-text1',
+					'flex h-max w-full overflow-hidden border border-solid border-bfc-border rounded-lg bg-bfc-card text-bfc-text3 focus-within:bg-white focus-within:border-bfc-text1',
 				)}
 			>
 				<div className="h-10 w-full flex items-center pl-2.5">
@@ -111,7 +111,7 @@ export function AddressInput({
 						onChange={handleOnChange}
 						onBlur={field.onBlur}
 						className={cx(
-							'address bg-transparent w-full text-body/[18px] leading-100 font-normal placeholder:text-obc-text3 border-none resize-none focus:text-obc',
+							'address bg-transparent w-full text-body/[18px] leading-100 font-normal placeholder:text-bfc-text3 border-none resize-none focus:text-bfc',
 						)}
 						name={name}
 					/>
@@ -119,12 +119,12 @@ export function AddressInput({
 
 				<div
 					onClick={clearAddress}
-					className="flex bg-obc-border items-center justify-center w-11 right-0 ml-1.25 cursor-pointer"
+					className="flex bg-bfc-border items-center justify-center w-11 right-0 ml-1.25 cursor-pointer"
 				>
 					{meta.touched && field.value ? (
-						<X12 className="h-3 w-3 text-obc" />
+						<X12 className="h-3 w-3 text-bfc" />
 					) : (
-						<QrCode className="h-5 w-5 text-obc-text3" />
+						<QrCode className="h-5 w-5 text-bfc-text3" />
 					)}
 				</div>
 			</div>

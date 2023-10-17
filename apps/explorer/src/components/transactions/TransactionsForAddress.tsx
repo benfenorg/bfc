@@ -88,7 +88,7 @@ export function TransactionsForAddress({ address, type }: Props) {
 	return (
 		<div data-testid="tx">
 			<TabHeader size="lineMdOne" title="Transaction Blocks">
-				<div className="obc-table-container">
+				<div className="bfc-table-container">
 					<TableCard data={tableData.data} columns={tableData.columns} />
 				</div>
 			</TabHeader>

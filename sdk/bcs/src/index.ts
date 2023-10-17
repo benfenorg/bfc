@@ -826,7 +826,7 @@ export class BCS {
 					function decodeAddress(reader) {
 						const hex = toHEX(reader.readBytes(length)).padStart(2 * length, '0');
 						const hash = toHEX(sha256(new TextEncoder().encode(hex)));
-						return `OBC${hex}${hash.slice(0, 4)}`;
+						return `BFC${hex}${hash.slice(0, 4)}`;
 					},
 				);
 			default:

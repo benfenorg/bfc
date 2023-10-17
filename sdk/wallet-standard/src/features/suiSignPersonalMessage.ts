@@ -12,7 +12,7 @@ export type SuiSignPersonalMessageVersion = '1.0.0';
  */
 export type SuiSignPersonalMessageFeature = {
 	/** Namespace for the feature. */
-	'obc:signPersonalMessage': {
+	'bfc:signPersonalMessage': {
 		/** Version of the feature API. */
 		version: SuiSignPersonalMessageVersion;
 		signPersonalMessage: SuiSignPersonalMessageMethod;

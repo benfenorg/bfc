@@ -63,7 +63,7 @@ export type SerializedTransactionDataBuilder = Infer<typeof SerializedTransactio
 
 function prepareSuiAddress(address: string) {
 	let value = address;
-	if (/^obc/i.test(address)) {
+	if (/^bfc/i.test(address)) {
 		value = obc2SuiAddress(address);
 	}
 	return normalizeSuiAddress(value).replace('0x', '');

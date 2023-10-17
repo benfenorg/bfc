@@ -20,7 +20,7 @@ const styles = cva(
 		variants: {
 			variant: {
 				primary: ['primary-button'],
-				secondary: ['bg-obc-card rounded-lg border-none text-obc-text2'],
+				secondary: ['bg-bfc-card rounded-lg border-none text-bfc-text2'],
 				secondarySui: [
 					'bg-transparent text-steel border-none',
 					'hover:bg-sui-light focus:bg-sui-light',
@@ -28,7 +28,7 @@ const styles = cva(
 					'active:text-steel-dark/70',
 					'disabled:bg-gray-40 disabled:text-steel/50',
 				],
-				outline: ['bg-obc-card text-obc-text2 border border-solid border-obc-border'],
+				outline: ['bg-bfc-card text-bfc-text2 border border-solid border-bfc-border'],
 				outlineWarning: [
 					'bg-white border-solid border border-steel text-issue-dark',
 					'hover:border-steel-dark focus:border-steel-dark',
@@ -36,7 +36,7 @@ const styles = cva(
 					'active:border-steel active:text-issue/70',
 					'disabled:border-gray-45 disabled:text-issue-dark/50',
 				],
-				warning: ['bg-obc-red_10p text-obc-red rounded-lg border-none'],
+				warning: ['bg-bfc-red_10p text-bfc-red rounded-lg border-none'],
 				plain: [
 					'bg-transparent text-steel-darker border-none',
 					'visited:text-steel-darker',
@@ -47,7 +47,7 @@ const styles = cva(
 					'bg-gray-45 bg-opacity-25 text-gray-60 hover:text-sui-dark hover:bg-gray-35 hover:bg-opacity-75 border-none h-full w-full backdrop-blur-md',
 				],
 				account: [
-					'flex gap-2.5 items-center justify-center bg-obc-card border border-solid border-obc-border rounded-lg text-bodySmall text-obc-text1 font-medium',
+					'flex gap-2.5 items-center justify-center bg-bfc-card border border-solid border-bfc-border rounded-lg text-bodySmall text-bfc-text1 font-medium',
 				],
 			},
 			size: {
@@ -63,14 +63,14 @@ const iconStyles = cva('flex', {
 	variants: {
 		variant: {
 			primary: ['text-white group-active:text-steel/70 group-disabled:text-white'],
-			secondary: ['text-obc-text2'],
+			secondary: ['text-bfc-text2'],
 			secondarySui: [
-				'text-obc',
+				'text-bfc',
 				'group-hover:text-hero group-focus:text-hero',
 				'group-active:text-hero/70',
 				'group-disabled:text-hero/50',
 			],
-			outline: ['text-obc-text1', '', '', ''],
+			outline: ['text-bfc-text1', '', '', ''],
 			outlineWarning: [
 				'text-issue-dark/80',
 				'group-hover:text-issue-dark group-focus:text-issue-dark',

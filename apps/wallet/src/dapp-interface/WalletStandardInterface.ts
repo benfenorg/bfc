@@ -60,11 +60,11 @@ type WalletEventsMap = {
 };
 
 // NOTE: Because this runs in a content script, we can't fetch the manifest.
-const name = process.env.APP_NAME || 'OBC Wallet';
+const name = process.env.APP_NAME || 'BenFen Wallet';
 
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
-	'obcWallet:stake': {
+	'benfenWallet:stake': {
 		version: '0.0.1';
 		stake: (input: StakeInput) => Promise<void>;
 	};
@@ -128,19 +128,19 @@ export class SuiWallet implements Wallet {
 				version: '1.0.0',
 				on: this.#on,
 			},
-			'obc:signTransactionBlock': {
+			'bfc:signTransactionBlock': {
 				version: '1.0.0',
 				signTransactionBlock: this.#signTransactionBlock,
 			},
-			'obc:signAndExecuteTransactionBlock': {
+			'bfc:signAndExecuteTransactionBlock': {
 				version: '1.0.0',
 				signAndExecuteTransactionBlock: this.#signAndExecuteTransactionBlock,
 			},
-			'obcWallet:stake': {
+			'benfenWallet:stake': {
 				version: '0.0.1',
 				stake: this.#stake,
 			},
-			'obc:signMessage': {
+			'bfc:signMessage': {
 				version: '1.0.0',
 				signMessage: this.#signMessage,
 			},
@@ -148,7 +148,7 @@ export class SuiWallet implements Wallet {
 				version: '0.0.1',
 				qredoConnect: this.#qredoConnect,
 			},
-			'obc:signPersonalMessage': {
+			'bfc:signPersonalMessage': {
 				version: '1.0.0',
 				signPersonalMessage: async () => {
 					// TODO: Implement
@@ -169,7 +169,7 @@ export class SuiWallet implements Wallet {
 					address,
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
-					features: ['obc:signAndExecuteTransaction'],
+					features: ['bfc:signAndExecuteTransaction'],
 				}),
 		);
 	}

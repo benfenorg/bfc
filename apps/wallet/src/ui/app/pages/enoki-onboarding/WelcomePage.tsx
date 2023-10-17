@@ -22,11 +22,11 @@ export function WelcomePage() {
 					</div>
 					<div className="text-center mx-auto mt-4">
 						<Heading variant="heading2" color="gray-90" as="h1" weight="bold">
-							Welcome to OBC Wallet
+							Welcome to BenFen Wallet
 						</Heading>
 						<div className="mt-2">
 							<Text variant="pBody" color="steel-dark" weight="medium">
-								Connecting you to the decentralized web and OBC network.
+								Connecting you to the decentralized web and BenFen network.
 							</Text>
 						</div>
 					</div>

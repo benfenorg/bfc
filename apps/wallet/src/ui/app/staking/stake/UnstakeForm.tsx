@@ -42,8 +42,8 @@ export function UnStakeForm({
 	return (
 		<Form className="flex flex-1 flex-col flex-nowrap" autoComplete="off" noValidate>
 			<Card>
-				<div className="h-10 px-2.5 w-full flex items-center bg-obc-card justify-between">
-					<Text variant="body" weight="medium" color="obc-text1">
+				<div className="h-10 px-2.5 w-full flex items-center bg-bfc-card justify-between">
+					<Text variant="body" weight="medium" color="bfc-text1">
 						Current Epoch Ends
 					</Text>
 					<div className="flex gap-0.5 ml-auto">
@@ -51,12 +51,12 @@ export function UnStakeForm({
 							<CountDownTimer
 								timestamp={currentEpochEndTime}
 								variant="body"
-								color="obc-text1"
+								color="bfc-text1"
 								weight="normal"
 								endLabel="--"
 							/>
 						) : (
-							<Text variant="body" weight="normal" color="obc-text1">
+							<Text variant="body" weight="normal" color="bfc-text1">
 								Epoch #{epoch}
 							</Text>
 						)}
@@ -64,42 +64,42 @@ export function UnStakeForm({
 				</div>
 				<div className="p-2.5 flex flex-col w-full gap-2.5">
 					<div className="flex gap-0.5 justify-between w-full">
-						<Text variant="body" weight="normal" color="obc-text2">
+						<Text variant="body" weight="normal" color="bfc-text2">
 							Your Stake
 						</Text>
-						<Text variant="body" weight="normal" color="obc-text2">
+						<Text variant="body" weight="normal" color="bfc-text2">
 							{tokenBalance} {GAS_SYMBOL}
 						</Text>
 					</div>
 					<div className="flex gap-0.5 justify-between w-full">
-						<Text variant="body" weight="normal" color="obc-text2">
+						<Text variant="body" weight="normal" color="bfc-text2">
 							Staking Rewards Earned
 						</Text>
-						<Text variant="body" weight="normal" color="obc-text2">
+						<Text variant="body" weight="normal" color="bfc-text2">
 							{rewards} {rewardSymbol}
 						</Text>
 					</div>
 				</div>
-				<div className="mx-2.5 h-px bg-obc-card"></div>
+				<div className="mx-2.5 h-px bg-bfc-card"></div>
 				<div className="h-10 px-2.5 flex items-center gap-0.5 justify-between w-full">
-					<Text variant="body" weight="normal" color="obc-text2">
-						Total unstaked OBC
+					<Text variant="body" weight="normal" color="bfc-text2">
+						Total unstaked BFC
 					</Text>
 					<div className="flex gap-0.5 ml-auto">
-						<Heading variant="heading4" weight="semibold" color="obc-text1" leading="none">
+						<Heading variant="heading4" weight="semibold" color="bfc-text1" leading="none">
 							{totalSui}
 						</Heading>
-						<Text variant="body" weight="normal" color="obc-text1">
+						<Text variant="body" weight="normal" color="bfc-text1">
 							{GAS_SYMBOL}
 						</Text>
 					</div>
 				</div>
 			</Card>
-			<div className="mt-5 p-2.5 flex justify-between w-full bg-obc-card border border-solid border-obc-border rounded-lg">
-				<Text variant="body" weight="normal" color="obc-text1">
+			<div className="mt-5 p-2.5 flex justify-between w-full bg-bfc-card border border-solid border-bfc-border rounded-lg">
+				<Text variant="body" weight="normal" color="bfc-text1">
 					Gas Fees
 				</Text>
-				<Text variant="body" weight="normal" color="obc-text1">
+				<Text variant="body" weight="normal" color="bfc-text1">
 					{gasBudget || '-'} {GAS_SYMBOL}
 				</Text>
 			</div>

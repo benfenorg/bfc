@@ -29,18 +29,18 @@ const SelectPage = () => {
 	return (
 		<>
 			<div className="text-xl/[26px] text-white font-bold">
-				New to <span className="text-obc-text3">XChain</span> Wallet?
+				New to <span className="text-bfc-text3">BenFen</span> Wallet?
 			</div>
 			<div className="flex flex-col flex-nowrap gap-5 mt-10">
 				{selections.map((aSelection) => (
 					<div
 						className={
-							'bg-obc-card flex flex-col flex-nowrap items-center text-center rounded-xl py-10 p-5 max-w-popup-width border border-obc-border'
+							'bg-bfc-card flex flex-col flex-nowrap items-center text-center rounded-xl py-10 p-5 max-w-popup-width border border-bfc-border'
 						}
 						key={aSelection.url}
 					>
-						<div className="text-base/[22px] font-semibold text-obc-text1">{aSelection.title}</div>
-						<div className="grow mt-2.5 text-xs/[18px] font-normal text-obc-text2 text-center">
+						<div className="text-base/[22px] font-semibold text-bfc-text1">{aSelection.title}</div>
+						<div className="grow mt-2.5 text-xs/[18px] font-normal text-bfc-text2 text-center">
 							{aSelection.desc}
 						</div>
 
@@ -48,7 +48,7 @@ const SelectPage = () => {
 							to={aSelection.url}
 							onClick={aSelection.onClick}
 							className={
-								'mt-[25px] flex flex-nowrap items-center justify-center w-full h-10 gap-2.5 rounded-lg bg-obc no-underline font-medium text-white text-xs'
+								'mt-[25px] flex flex-nowrap items-center justify-center w-full h-10 gap-2.5 rounded-lg bg-bfc no-underline font-medium text-white text-xs'
 							}
 						>
 							{aSelection.icon}

@@ -13,8 +13,8 @@ export default function CoinBalance({ type, balance }: CoinProps) {
 
 	return (
 		<div className="flex items-end gap-1.25" role="button">
-			<span className="text-[32px] text-obc font-bold">{formatted}</span>
-			<span className="text-[20px]/[32px] text-obc-text3 font-bold">{symbol}</span>
+			<span className="text-[32px] text-bfc font-bold">{formatted}</span>
+			<span className="text-[20px]/[32px] text-bfc-text3 font-bold">{symbol}</span>
 		</div>
 	);
 }

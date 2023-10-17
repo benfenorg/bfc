@@ -17,7 +17,7 @@ export type SuiSignMessageVersion = '1.0.0';
  */
 export type SuiSignMessageFeature = {
 	/** Namespace for the feature. */
-	'obc:signMessage': {
+	'bfc:signMessage': {
 		/** Version of the feature API. */
 		version: SuiSignMessageVersion;
 		signMessage: SuiSignMessageMethod;

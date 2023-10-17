@@ -13,7 +13,7 @@ export function DateCard({ timestamp }: DateCardProps) {
 	const txnDate = formatDate(timestamp, ['month', 'day', 'hour', 'minute']);
 
 	return (
-		<Text color="obc-text3" weight="normal" variant="body">
+		<Text color="bfc-text3" weight="normal" variant="body">
 			{txnDate}
 		</Text>
 	);

@@ -23,7 +23,7 @@ export const MOVE_STDLIB_ADDRESS = '0x1';
 export const OBJECT_MODULE_NAME = 'object';
 export const UID_STRUCT_NAME = 'UID';
 export const ID_STRUCT_NAME = 'ID';
-export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
+export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::bfc::BFC`;
 export const VALIDATORS_EVENTS_QUERY = '0x3::validator_set::ValidatorEpochInfoEventV2';
 
 export const SUI_CLOCK_OBJECT_ID = sui2ObcAddress('0x6');
@@ -78,7 +78,7 @@ export class Coin {
 
 	static isOBC(obj: ObjectData) {
 		const arg = Coin.getCoinTypeArg(obj);
-		return arg ? Coin.getCoinSymbol(arg) === 'OBC' : false;
+		return arg ? Coin.getCoinSymbol(arg) === 'BFC' : false;
 	}
 
 	static getCoinSymbol(coinTypeArg: string) {

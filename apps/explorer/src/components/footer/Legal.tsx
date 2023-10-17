@@ -9,7 +9,7 @@ export function LegalText() {
 		<div className="flex justify-center md:justify-start">
 			<Text color="steel-darker" variant="pSubtitleSmall/medium">
 				&copy;
-				{`${new Date().getFullYear()} X Chain Explorer. All
+				{`${new Date().getFullYear()} BenFen Explorer. All
   rights reserved.`}
 			</Text>
 		</div>

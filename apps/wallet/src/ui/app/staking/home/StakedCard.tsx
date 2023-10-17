@@ -78,14 +78,14 @@ function StakeCardContent({
 		<div className={cardStyle({ variant })}>
 			{children}
 			<div className="flex flex-col">
-				<div className="text-body/[18px] font-normal text-obc-text3">{statusLabel}</div>
-				<div className={cx('text-body/[18px] font-normal text-obc-text3')}>
+				<div className="text-body/[18px] font-normal text-bfc-text3">{statusLabel}</div>
+				<div className={cx('text-body/[18px] font-normal text-bfc-text3')}>
 					{earningRewardEpoch && rewardEpochTime > 0 ? (
 						<CountDownTimer
 							timestamp={rewardEpochTime}
 							variant="body"
 							label="in"
-							color="obc-text3"
+							color="bfc-text3"
 							weight="normal"
 						/>
 					) : (
@@ -155,7 +155,7 @@ export function StakeCard({
 				validator: validatorAddress,
 				staked: stakedSuiId,
 			}).toString()}`}
-			className="no-underline active:text-obc-border hover:text-obc-border visited:text-obc-border"
+			className="no-underline active:text-bfc-border hover:text-bfc-border visited:text-bfc-border"
 		>
 			<StakeCardContent
 				variant={STATUS_VARIANT[delegationState]}
@@ -174,10 +174,10 @@ export function StakeCard({
 					/>
 				</div>
 				<div className="flex-1 flex items-baseline gap-1.25">
-					<Text variant="body" weight="medium" color="obc-text1">
+					<Text variant="body" weight="medium" color="bfc-text1">
 						{principalStaked}
 					</Text>
-					<Text variant="body" weight="medium" color="obc-text2">
+					<Text variant="body" weight="medium" color="bfc-text2">
 						{symbol}
 					</Text>
 				</div>

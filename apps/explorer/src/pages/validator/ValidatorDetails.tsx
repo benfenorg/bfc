@@ -134,7 +134,7 @@ function ValidatorDetails() {
 								}
 							>
 								<Text variant="bodySmall/medium">
-									Staked OBC is below the minimum OBC stake threshold to remain a validator.
+									Staked BFC is below the minimum BFC stake threshold to remain a validator.
 								</Text>
 							</Banner>
 						</div>

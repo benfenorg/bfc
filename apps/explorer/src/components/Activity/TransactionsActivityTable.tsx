@@ -51,7 +51,7 @@ export function TransactionsActivityTable({
 		goToFirstPageRef.current();
 	}, [transactionKindFilter]);
 	return (
-		<div data-testid="tx" className="obc-table-container">
+		<div data-testid="tx" className="bfc-table-container">
 			{isError && (
 				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
 					Failed to load Transactions
@@ -71,7 +71,7 @@ export function TransactionsActivityTable({
 					</div>
 				)}
 
-				<div className="flex justify-between bg-obc-card p-3.5">
+				<div className="flex justify-between bg-bfc-card p-3.5">
 					{!disablePagination ? (
 						<Pagination {...pagination} />
 					) : (
@@ -87,7 +87,7 @@ export function TransactionsActivityTable({
 						</Text>
 						{!disablePagination && (
 							<select
-								className="obc-form-select form-select rounded-md border border-obc-border px-3 py-2 pr-8 text-bodySmall font-normal leading-[1.2] text-steel-darker shadow-button"
+								className="bfc-form-select form-select rounded-md border border-bfc-border px-3 py-2 pr-8 text-bodySmall font-normal leading-[1.2] text-steel-darker shadow-button"
 								value={limit}
 								onChange={(e) => {
 									setLimit(Number(e.target.value));

@@ -22,43 +22,43 @@ import type { ProposalRecord } from '@mysten/sui.js/client';
 
 function DaoItem({ data }: { data: ProposalRecord }) {
 	return (
-		<div className="rounded-md border border-obc-border p-5">
+		<div className="rounded-md border border-bfc-border p-5">
 			<div className="flex gap-1">
 				<AgreeSpan />
 				<StatusSpan />
 			</div>
-			<div className="mt-2 line-clamp-2 h-11 text-ellipsis text-heading4 font-semibold leading-6 text-obc-text1">
+			<div className="mt-2 line-clamp-2 h-11 text-ellipsis text-heading4 font-semibold leading-6 text-bfc-text1">
 				升级starcoin标准库到v11版本，将合约标准库升级到v10升级starcoin标准库到v11版本，将合约标准库升级到v10升级starcoin标准库到v11版本，将合约标准库升级到v10
 			</div>
 			<div className="mt-2.5">
-				<span className="text-body text-obc-text2">ID：</span>
-				<span className="text-body text-obc-text1">{data.pid}</span>
+				<span className="text-body text-bfc-text2">ID：</span>
+				<span className="text-body text-bfc-text1">{data.pid}</span>
 			</div>
 			<div className="mb-3">
-				<span className="text-body text-obc-text2">结束时间：</span>
-				<span className="text-body text-obc-text1">{data.end_time}</span>
+				<span className="text-body text-bfc-text2">结束时间：</span>
+				<span className="text-body text-bfc-text1">{data.end_time}</span>
 			</div>
 			<Divider type="dashed" />
 			<div className="mt-3 flex items-baseline gap-1">
 				<div className="text-heading4 font-semibold">{data.for_votes}</div>
-				<div className="text-body text-obc-text2">同意</div>
+				<div className="text-body text-bfc-text2">同意</div>
 			</div>
-			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-obc-green">
-				<div className="absolute h-1 w-[50%] bg-obc-red" />
+			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
+				<div className="absolute h-1 w-[50%] bg-bfc-red" />
 			</div>
 
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
-					<span className="text-body text-obc-text2">已投票</span>
-					<span className="text-body font-medium text-obc-text1">
+					<span className="text-body text-bfc-text2">已投票</span>
+					<span className="text-body font-medium text-bfc-text1">
 						{' '}
 						{data.for_votes + data.against_votes}
 					</span>
 				</div>
-				<div className="h-3 w-[1px] bg-obc-border" />
+				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
-					<span className="text-body text-obc-text2">法定门槛</span>
-					<span className="text-body font-medium text-obc-text1">{data.quorum_votes}</span>
+					<span className="text-body text-bfc-text2">法定门槛</span>
+					<span className="text-body font-medium text-bfc-text1">{data.quorum_votes}</span>
 				</div>
 			</div>
 		</div>
@@ -85,8 +85,8 @@ function DaoList() {
 					className={clsx(
 						'!rounded-md !text-bodySmall',
 						isConnected
-							? '!border !border-solid  !bg-obc !font-mono !text-white'
-							: '!flex !flex-nowrap !items-center !gap-1 !bg-obc !font-sans !text-white',
+							? '!border !border-solid  !bg-bfc !font-mono !text-white'
+							: '!flex !flex-nowrap !items-center !gap-1 !bg-bfc !font-sans !text-white',
 					)}
 				/>
 			</div>
@@ -100,10 +100,10 @@ function DaoList() {
 							<CreateProposal dao={data} refetchDao={refetch} />
 						</DisclosureBox>
 					)}
-					<DisclosureBox title="create voting obc" defaultOpen={false}>
+					<DisclosureBox title="create voting bfc" defaultOpen={false}>
 						<CreateVotingObc refetchDao={refetch} />
 					</DisclosureBox>
-					<DisclosureBox title="withdraw voting obc" defaultOpen={false}>
+					<DisclosureBox title="withdraw voting bfc" defaultOpen={false}>
 						<WithdrawVoting refetchDao={refetch} />
 					</DisclosureBox>
 				</div>

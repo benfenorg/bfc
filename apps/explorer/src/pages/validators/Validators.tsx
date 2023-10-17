@@ -70,7 +70,7 @@ function ValidatorPageResult() {
 							)}
 
 							{isSuccess && validatorsTable?.data && (
-								<div className="obc-table-container">
+								<div className="bfc-table-container">
 									<TableCard data={validatorsTable.data} columns={validatorsTable.columns} />
 								</div>
 							)}

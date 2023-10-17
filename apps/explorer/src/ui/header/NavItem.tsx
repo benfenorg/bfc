@@ -19,8 +19,8 @@ export const NavItem = forwardRef<HTMLButtonElement, NavItemProps>(
 			className={clsx(
 				'flex cursor-pointer items-center gap-1 rounded-md border-none bg-transparent px-3.5 py-2 text-body font-medium outline-none',
 				isDarker
-					? 'text-white hover:bg-obc-hover ui-open:bg-obc-hover'
-					: 'text-obc-text1 hover:bg-obc-card ui-open:bg-obc-card',
+					? 'text-white hover:bg-bfc-hover ui-open:bg-bfc-hover'
+					: 'text-bfc-text1 hover:bg-bfc-card ui-open:bg-bfc-card',
 			)}
 			{...props}
 		>

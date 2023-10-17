@@ -13,7 +13,7 @@ export interface ListItemProps {
 
 export function ListItem({ active, children, type, onClick }: ListItemProps) {
 	const rounded: string = type === 'borderLine' ? 'rounded-r-md border-l-2' : 'rounded-md border';
-	const border: string = type === 'borderLine' ? 'border-obc-text2' : 'border-obc-card';
+	const border: string = type === 'borderLine' ? 'border-bfc-text2' : 'border-bfc-card';
 	return (
 		<li className="list-none">
 			<button
@@ -21,8 +21,8 @@ export function ListItem({ active, children, type, onClick }: ListItemProps) {
 				className={clsx(
 					`block w-full cursor-pointer ${rounded} px-2.5 py-2 text-left text-body`,
 					active
-						? `${border} bg-obc-card font-semibold text-obc-text1`
-						: 'border-transparent bg-white font-medium text-obc-text2',
+						? `${border} bg-bfc-card font-semibold text-bfc-text1`
+						: 'border-transparent bg-white font-medium text-bfc-text2',
 				)}
 				onClick={onClick}
 			>

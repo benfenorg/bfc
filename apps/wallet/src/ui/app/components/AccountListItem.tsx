@@ -27,21 +27,21 @@ export function AccountListItem({ account, onAccountSelected }: AccountItemProps
 	return (
 		<li>
 			<button
-				className="appearance-none bg-transparent border-0 w-full flex gap-2.5 px-2.5 py-2 items-center hover:bg-obc-card cursor-pointer group text-left"
+				className="appearance-none bg-transparent border-0 w-full flex gap-2.5 px-2.5 py-2 items-center hover:bg-bfc-card cursor-pointer group text-left"
 				onClick={() => {
 					onAccountSelected(account);
 				}}
 			>
 				<div className="flex items-center gap-2 flex-1 min-w-0">
 					<div className="min-w-0">
-						<Text color="obc-text1" variant="body" truncate mono>
+						<Text color="bfc-text1" variant="body" truncate mono>
 							{domainName ?? formatAddress(address)}
 						</Text>
 					</div>
 					<AccountBadge accountType={type} />
 				</div>
-				{activeAddress === address ? <Check24 className="text-obc w-3.5 h-3.5" /> : null}
-				<Copy12 className="text-obc" onClick={copy} />
+				{activeAddress === address ? <Check24 className="text-bfc w-3.5 h-3.5" /> : null}
+				<Copy12 className="text-bfc" onClick={copy} />
 			</button>
 		</li>
 	);

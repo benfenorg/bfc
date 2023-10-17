@@ -55,8 +55,8 @@ function MenuList() {
 	return (
 		<>
 			<MenuLayout title="Wallet Settings">
-				<div className="flex flex-col divide-y divide-x-0 divide-solid divide-gray-45 border-b border-obc-border">
-					<div className="flex flex-col gap-2.5 mt-5 pt-5 px-2.5 pb-2.5 border-b border-obc-border">
+				<div className="flex flex-col divide-y divide-x-0 divide-solid divide-gray-45 border-b border-bfc-border">
+					<div className="flex flex-col gap-2.5 mt-5 pt-5 px-2.5 pb-2.5 border-b border-bfc-border">
 						<MenuListItem
 							to={accountUrl}
 							icon={<Account24 />}
@@ -69,15 +69,15 @@ function MenuList() {
 								size="narrow"
 								href={explorerAddress}
 								text={
-									<Text variant="bodySmall" weight="medium" color="obc-text2">
-										View account on OBC Explorer
+									<Text variant="bodySmall" weight="medium" color="bfc-text2">
+										View account on BenFen Explorer
 									</Text>
 								}
-								after={<ArrowUpRight16 className="text-obc-text2 w-3.5 h-3.5" />}
+								after={<ArrowUpRight16 className="text-bfc-text2 w-3.5 h-3.5" />}
 							/>
 						)}
 					</div>
-					<div className="py-5 px-2.5 border-b border-obc-border">
+					<div className="py-5 px-2.5 border-b border-bfc-border">
 						<MenuListItem
 							to={networkUrl}
 							icon={<Domain24 />}
@@ -85,7 +85,7 @@ function MenuList() {
 							subtitle={networkName}
 						/>
 					</div>
-					<div className="py-5 px-2.5 border-b border-obc-border">
+					<div className="py-5 px-2.5 border-b border-bfc-border">
 						<MenuListItem
 							to={autoLockUrl}
 							icon={<Version24 />}
@@ -93,7 +93,7 @@ function MenuList() {
 							subtitle={autoLockInterval ? `${autoLockInterval} min` : <LoadingIndicator />}
 						/>
 					</div>
-					<div className="py-5 px-2.5 border-b border-obc-border">
+					<div className="py-5 px-2.5 border-b border-bfc-border">
 						<MenuListItem
 							icon={<CopyArchiveDoNotUse24 />}
 							title={
@@ -112,7 +112,7 @@ function MenuList() {
 				<div className="flex-1" />
 				<div className="flex flex-nowrap flex-row items-stretch gap-3 mt-2.5">
 					<div
-						className="flex justify-center items-center h-10 w-full rounded-lg border border-solid border-obc-border text-bodySmall font-medium text-obc-text2 cursor-pointer"
+						className="flex justify-center items-center h-10 w-full rounded-lg border border-solid border-bfc-border text-bodySmall font-medium text-bfc-text2 cursor-pointer"
 						onClick={async () => {
 							try {
 								await dispatch(lockWallet()).unwrap();
@@ -125,7 +125,7 @@ function MenuList() {
 						Lock Wallet
 					</div>
 					<div
-						className="flex justify-center items-center h-10 w-full rounded-lg border border-solid border-obc-border text-bodySmall font-medium text-obc-text2 cursor-pointer"
+						className="flex justify-center items-center h-10 w-full rounded-lg border border-solid border-bfc-border text-bodySmall font-medium text-bfc-text2 cursor-pointer"
 						onClick={async () => {
 							if (logoutInProgress || isLogoutDialogOpen) {
 								return;
@@ -161,10 +161,10 @@ function MenuList() {
 								</defs>
 							</svg>
 						}
-						color="obc-text2"
+						color="bfc-text2"
 						weight="normal"
 					/>
-					<Text variant="bodySmall" weight="normal" color="obc-text3">
+					<Text variant="bodySmall" weight="normal" color="bfc-text3">
 						Wallet Version v{version}
 					</Text>
 				</div>

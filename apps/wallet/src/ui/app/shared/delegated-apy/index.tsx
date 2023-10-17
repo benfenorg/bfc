@@ -54,7 +54,7 @@ export function DelegatedAPY({ stakedValidators }: DelegatedAPYProps) {
 					</Text>
 					<div className="text-steel items-baseline text-body flex">
 						<IconTooltip
-							tip="The average APY of all validators you are currently staking your OBC on."
+							tip="The average APY of all validators you are currently staking your BFC on."
 							placement="top"
 						/>
 					</div>

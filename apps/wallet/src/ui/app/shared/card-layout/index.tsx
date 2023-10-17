@@ -12,7 +12,7 @@ export type CardLayoutProps = {
 	title?: string;
 	subtitle?: string;
 	headerCaption?: string;
-	icon?: 'success' | 'obc';
+	icon?: 'success' | 'bfc';
 	children: ReactNode | ReactNode[];
 };
 
@@ -24,13 +24,13 @@ export function CardLayout({ children, title, subtitle, headerCaption, icon }: C
 					<Handclap className="" />
 				</div>
 			) : null}
-			{icon === 'obc' ? (
+			{icon === 'bfc' ? (
 				<div className="flex flex-col flex-nowrap items-center justify-center rounded-full w-16 h-16 bg-sui mb-7">
-					<Logo className="bg-obc rounded-full w-15 h-15" />
+					<Logo className="bg-bfc rounded-full w-15 h-15" />
 				</div>
 			) : null}
 			{headerCaption ? (
-				<Text variant="caption" color="obc-text1" weight="normal">
+				<Text variant="caption" color="bfc-text1" weight="normal">
 					{headerCaption}
 				</Text>
 			) : null}

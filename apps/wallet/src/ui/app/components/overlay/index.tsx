@@ -48,10 +48,10 @@ function Overlay({
 				})}
 			>
 				{title && (
-					<div className="bg-obc-card h-12 w-full">
+					<div className="bg-bfc-card h-12 w-full">
 						<div
 							data-testid="overlay-title"
-							className="text-obc-text3 flex justify-center h-12 items-center text-heading4 font-semibold"
+							className="text-bfc-text3 flex justify-center h-12 items-center text-heading4 font-semibold"
 						>
 							{title}
 						</div>

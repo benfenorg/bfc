@@ -23,7 +23,7 @@ export function useDeriveLedgerAccounts(options: UseDeriveLedgerAccountOptions) 
 		queryKey: ['derive-ledger-accounts'],
 		queryFn: () => {
 			if (!suiLedgerClient) {
-				throw new Error("The OBC application isn't open on a connected Ledger device");
+				throw new Error("The BenFen application isn't open on a connected Ledger device");
 			}
 			return deriveAccountsFromLedger(suiLedgerClient, numAccountsToDerive);
 		},

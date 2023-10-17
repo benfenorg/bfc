@@ -23,7 +23,7 @@ interface SignaturePubkeyPair {
 
 function SignaturePanel({ title, signature }: { title: string; signature: SignaturePubkeyPair }) {
 	return (
-		<div className="rounded-md border border-obc-border px-2 py-5">
+		<div className="rounded-md border border-bfc-border px-2 py-5">
 			<div className="text-heading6 font-semibold">{title}</div>
 			<DescriptionList>
 				<DescriptionItem title="Scheme" align="start" labelWidth="sm">
@@ -34,7 +34,7 @@ function SignaturePanel({ title, signature }: { title: string; signature: Signat
 				<DescriptionItem title="Address" align="start" labelWidth="sm">
 					<AddressLink noTruncate address={signature.publicKey.toSuiAddress()} />
 				</DescriptionItem>
-				<DescriptionItem title="OBC Public Key" align="start" labelWidth="sm">
+				<DescriptionItem title="BenFen Public Key" align="start" labelWidth="sm">
 					<Text variant="pBody/medium" color="steel-darker">
 						{signature.publicKey.toSuiPublicKey()}
 					</Text>

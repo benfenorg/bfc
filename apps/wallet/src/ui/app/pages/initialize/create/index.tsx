@@ -46,16 +46,16 @@ const CreatePage = () => {
 							<fieldset disabled={isSubmitting} className="contents">
 								<PasswordFields />
 								<div className="flex-1" />
-								<label className="flex items-center h-5 my-2.5 text-obc-text1 gap-1.25 relative cursor-pointer">
+								<label className="flex items-center h-5 my-2.5 text-bfc-text1 gap-1.25 relative cursor-pointer">
 									<Field name="terms" type="checkbox" id="terms" className="peer/terms invisible" />
-									<span className="absolute top-0 left-0.5 h-5 w-5 bg-obc-card rounded flex justify-center items-center">
+									<span className="absolute top-0 left-0.5 h-5 w-5 bg-bfc-card rounded flex justify-center items-center">
 										<Check12 />
 									</span>
-									<span className="absolute top-0 left-0.5 h-5 w-5 bg-obc-card border border-solid border-obc-text2 rounded peer-checked/terms:invisible"></span>
-									<Text variant="bodySmall" color="obc-text1" weight="normal">
+									<span className="absolute top-0 left-0.5 h-5 w-5 bg-bfc-card border border-solid border-bfc-text2 rounded peer-checked/terms:invisible"></span>
+									<Text variant="bodySmall" color="bfc-text1" weight="normal">
 										I read and agreed to the{' '}
 									</Text>
-									<ExternalLink href={ToS_LINK} className="text-obc-text1 font-medium no-underline">
+									<ExternalLink href={ToS_LINK} className="text-bfc-text1 font-medium no-underline">
 										Terms of Services
 									</ExternalLink>
 								</label>

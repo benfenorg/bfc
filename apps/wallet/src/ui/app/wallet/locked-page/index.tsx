@@ -48,9 +48,9 @@ export default function LockedPage() {
 				<PageMainLayout className={st.main}>
 					<CardLayout>
 						<div className="flex flex-col flex-nowrap items-center justify-center rounded-full w-15 h-15 mb-5">
-							<Logo className="bg-obc rounded-full w-15 h-15" />
+							<Logo className="bg-bfc rounded-full w-15 h-15" />
 						</div>
-						<Text variant="caption" color="obc-text1" weight="normal">
+						<Text variant="caption" color="bfc-text1" weight="normal">
 							Hello There
 						</Text>
 						<div className="mt-1.25 text-center w-[280px]">

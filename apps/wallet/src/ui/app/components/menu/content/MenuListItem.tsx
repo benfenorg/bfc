@@ -30,16 +30,16 @@ function MenuListItem({
 	const MenuItemContent = (
 		<>
 			<div className="flex flex-nowrap flex-1 items-center overflow-hidden basis-3/5">
-				<div className="w-6 h-6 flex text-obc flex-none">{icon}</div>
-				<div className="ml-1.25 flex-1 text-obc text-bodySmall font-medium truncate">{title}</div>
+				<div className="w-6 h-6 flex text-bfc flex-none">{icon}</div>
+				<div className="ml-1.25 flex-1 text-bfc text-bodySmall font-medium truncate">{title}</div>
 			</div>
 			<div className="flex flex-nowrap flex-1 justify-end gap-1 items-center overflow-hidden basis-2/5">
 				{subtitle ? (
-					<div className="transition truncate text-obc-text2 text-bodySmall font-medium group-hover:text-steel-darker">
+					<div className="transition truncate text-bfc-text2 text-bodySmall font-medium group-hover:text-steel-darker">
 						{subtitle}
 					</div>
 				) : null}
-				<div className="transition flex text-obc-text2 flex-none text-base">
+				<div className="transition flex text-bfc-text2 flex-none text-base">
 					{iconAfter || (to && <ChevronRight16 />) || null}
 				</div>
 			</div>

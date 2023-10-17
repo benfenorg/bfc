@@ -145,8 +145,8 @@ function MyTokens() {
 			{noSuiToken ? (
 				<div className="flex flex-col flex-nowrap justify-center items-center gap-2 text-center mt-7.5">
 					<FaucetRequestButton variant="secondary" />
-					<Text variant="body" color="obc-text2" weight="normal">
-						To conduct transactions on the OBC network, you need OBC in your wallet.
+					<Text variant="body" color="bfc-text2" weight="normal">
+						To conduct transactions on the BenFen network, you need BFC in your wallet.
 					</Text>
 				</div>
 			) : null}
@@ -192,7 +192,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 				) : null}
 				<div className="flex flex-nowrap gap-2.5 justify-stretch w-full mt-7.5">
 					<Link
-						className="w-full h-[76px] bg-obc-card flex flex-col items-center justify-center gap-0.5 rounded-lg border border-solid border-obc-border no-underline hover:border-obc"
+						className="w-full h-[76px] bg-bfc-card flex flex-col items-center justify-center gap-0.5 rounded-lg border border-solid border-bfc-border no-underline hover:border-bfc"
 						data-textid="send-coin-button"
 						to={`/send${
 							coinBalance?.coinType
@@ -214,10 +214,10 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 								fill="#171719"
 							/>
 						</svg>
-						<span className="text-body text-obc font-medium">Send</span>
+						<span className="text-body text-bfc font-medium">Send</span>
 					</Link>
 					<Link
-						className="w-full h-[76px] bg-obc-card flex flex-col items-center justify-center gap-0.5 rounded-lg border border-solid border-obc-border no-underline hover:border-obc"
+						className="w-full h-[76px] bg-bfc-card flex flex-col items-center justify-center gap-0.5 rounded-lg border border-solid border-bfc-border no-underline hover:border-bfc"
 						to={`/receive`}
 					>
 						<svg
@@ -232,12 +232,12 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 								fill="#09121F"
 							/>
 						</svg>
-						<span className="text-body text-obc font-medium">Receive</span>
+						<span className="text-body text-bfc font-medium">Receive</span>
 					</Link>
 				</div>
 				<Link
 					to="/stake"
-					className="mt-2.5 w-full h-10 bg-obc-card flex items-center justify-center gap-2.5 rounded-lg border border-solid border-obc-border no-underline hover:border-obc"
+					className="mt-2.5 w-full h-10 bg-bfc-card flex items-center justify-center gap-2.5 rounded-lg border border-solid border-bfc-border no-underline hover:border-bfc"
 				>
 					<svg
 						width="14"
@@ -251,7 +251,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 							fill="#171719"
 						/>
 					</svg>
-					<span className="text-body text-obc font-medium">Stake</span>
+					<span className="text-body text-bfc font-medium">Stake</span>
 				</Link>
 
 				<MyTokens />

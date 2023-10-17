@@ -100,7 +100,7 @@ function NFTDetailsPage() {
 												mono
 												href={ownerExplorerLink}
 												text={formatAddress(ownerAddress)}
-												title="View on OBC Explorer"
+												title="View on BenFen Explorer"
 											/>
 										}
 									/>
@@ -116,7 +116,7 @@ function NFTDetailsPage() {
 												mono
 												href={objectExplorerLink || ''}
 												text={formatAddress(nftId)}
-												title="View on OBC Explorer"
+												title="View on BenFen Explorer"
 											/>
 										) : null
 									}

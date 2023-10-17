@@ -13,7 +13,7 @@ const dividerStyles = cva('', {
 			gray45: 'border-gray-45',
 			gray40: 'border-gray-40',
 			'hero/10': 'border-hero/10',
-			obcBorder: 'border-obc-border',
+			obcBorder: 'border-bfc-border',
 		},
 		type: {
 			solid: 'border-solid',

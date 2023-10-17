@@ -28,7 +28,7 @@ export function SuiTokenCard() {
 					</div>
 					<div className="flex w-full flex-col gap-0.5">
 						<Text variant="body/semibold" color="steel-darker">
-							1 OBC = {formattedPrice}
+							1 BFC = {formattedPrice}
 						</Text>
 						<Text variant="subtitleSmallExtra/medium" color="steel">
 							via CoinGecko

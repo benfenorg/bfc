@@ -54,7 +54,7 @@ export function Overview() {
 								12332
 							</Text>
 							<Text variant="pBody/medium" color="steel-dark">
-								OBC
+								BFC
 							</Text>
 						</div>
 					</div>

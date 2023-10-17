@@ -41,7 +41,7 @@ function Header() {
 		<header
 			className={clsx(
 				'sticky top-0 z-20 flex h-header justify-center overflow-visible backdrop-blur-xl transition-shadow ',
-				showBlack ? 'border-b-0 bg-obc text-white/75' : 'border-b border-[#E1E1E9] bg-white',
+				showBlack ? 'border-b-0 bg-bfc text-white/75' : 'border-b border-[#E1E1E9] bg-white',
 			)}
 		>
 			<div className="flex h-full max-w-[1440px] flex-1 items-center justify-between gap-5 px-5 2xl:p-0">

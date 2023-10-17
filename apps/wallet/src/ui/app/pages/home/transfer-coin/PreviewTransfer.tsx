@@ -31,7 +31,7 @@ export function PreviewTransfer({
 	const amountWithoutDecimals = parseAmount(amount, metadata?.decimals ?? 0);
 
 	return (
-		<div className="divide-y divide-solid divide-obc-border divide-x-0 flex flex-col w-full [&>div]:pt-2.5 first:pt-0">
+		<div className="divide-y divide-solid divide-bfc-border divide-x-0 flex flex-col w-full [&>div]:pt-2.5 first:pt-0">
 			<TxnAmount
 				amount={amountWithoutDecimals.toString()}
 				label="Sending"
@@ -42,16 +42,16 @@ export function PreviewTransfer({
 			<TxnAddress address={to} label="To" />
 			<div className="h-10 flex w-full justify-between">
 				<div className="flex items-center">
-					<Text variant="body" color="obc-text1" weight="normal">
+					<Text variant="body" color="bfc-text1" weight="normal">
 						Estimated Gas Fees
 					</Text>
 				</div>
 				<div className="flex items-center">
-					<Heading variant="heading3" color="obc-text1" weight="bold">
+					<Heading variant="heading3" color="bfc-text1" weight="bold">
 						{gasBudget}
 					</Heading>
 					&nbsp;
-					<Text variant="body" color="obc-text1" weight="normal">
+					<Text variant="body" color="bfc-text1" weight="normal">
 						{GAS_SYMBOL}
 					</Text>
 				</div>

@@ -11,8 +11,8 @@ export function AutoLockSettings() {
 	return (
 		<MenuLayout title="Auto Lock" back={backUrl}>
 			<div className="flex flex-col gap-1.25">
-				<Text color="obc-text1" weight="normal" variant="bodySmall">
-					Set the idle time in minutes before OBC Wallet locks itself.
+				<Text color="bfc-text1" weight="normal" variant="bodySmall">
+					Set the idle time in minutes before BenFen Wallet locks itself.
 				</Text>
 				<AutoLockTimerSelector />
 			</div>

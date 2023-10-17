@@ -48,14 +48,14 @@ function AppsPlayGround() {
 		<>
 			<div className="flex justify-center mb-4">
 				<Heading variant="heading6" color="gray-90" weight="semibold">
-					OBC Apps
+					BenFen Apps
 				</Heading>
 			</div>
 
 			{BullsharkInterstitialEnabled && (
 				<div className="font-frankfurter flex flex-col w-full border-2 border-black border-solid bg-[#99DBFB] p-3 rounded-lg items-center text-white gap-1 [-webkit-text-stroke:1px_black] mb-3">
 					<div className="text-heading6">Join bullsharks quests!</div>
-					<div className="text-heading3">5 million OBC prize pool!</div>
+					<div className="text-heading3">5 million BFC prize pool!</div>
 					<ExternalLink
 						className="appearance-none no-underline text-white bg-[#EA3389] rounded-lg p-2 [-webkit-text-stroke:1px_black] leading-none text-heading6"
 						href="https://tech.mystenlabs.com/introducing-bullsharks-quests/"
@@ -70,7 +70,7 @@ function AppsPlayGround() {
 				<div className="p-4 bg-gray-40 rounded-xl">
 					<Text variant="pBodySmall" color="gray-75" weight="normal">
 						Apps below are actively curated but do not indicate any endorsement or relationship with
-						OBC Wallet. Please DYOR.
+						BenFen Wallet. Please DYOR.
 					</Text>
 				</div>
 			) : null}

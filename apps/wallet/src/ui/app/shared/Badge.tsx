@@ -10,8 +10,8 @@ const badgeStyle = cva(
 	{
 		variants: {
 			variant: {
-				warning: 'bg-obc-orange_10p text-obc-orange',
-				success: 'bg-obc-green_10p text-obc-green',
+				warning: 'bg-bfc-orange_10p text-bfc-orange',
+				success: 'bg-bfc-green_10p text-bfc-green',
 			},
 		},
 	},

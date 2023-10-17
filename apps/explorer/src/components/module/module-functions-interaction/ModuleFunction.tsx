@@ -147,8 +147,8 @@ export function ModuleFunction({
 						className={clsx(
 							'!rounded-md !text-bodySmall',
 							isConnected
-								? '!border !border-solid  !bg-obc !font-mono !text-white'
-								: '!flex !flex-nowrap !items-center !gap-1 !bg-obc !font-sans !text-white',
+								? '!border !border-solid  !bg-bfc !font-mono !text-white'
+								: '!flex !flex-nowrap !items-center !gap-1 !bg-bfc !font-sans !text-white',
 						)}
 					/>
 				</div>

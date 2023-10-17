@@ -20,7 +20,7 @@ export function AccountsSettings() {
 	return (
 		<MenuLayout title="Accounts" back={backUrl}>
 			<div className="flex flex-col gap-3">
-				<div className="flex flex-col justify-center items-stretch gap-2.5 p-2.5 border border-solid border-obc-border rounded-xl">
+				<div className="flex flex-col justify-center items-stretch gap-2.5 p-2.5 border border-solid border-bfc-border rounded-xl">
 					{accounts.map((account, index) => (
 						<React.Fragment key={account.address}>
 							<Account key={account.address} account={account} />

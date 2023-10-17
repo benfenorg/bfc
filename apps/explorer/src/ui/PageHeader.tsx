@@ -43,16 +43,16 @@ export function PageHeader({ title, subtitle, type, status, loading }: PageHeade
 	return (
 		<div data-testid="pageheader">
 			<div className="mb-5 flex cursor-pointer items-center gap-2" onClick={pageBack}>
-				<ArrowLeft12 width={20} height={20} className="text-obc-text1" />
-				<Heading variant="heading4/semibold" color="obc-text1">
+				<ArrowLeft12 width={20} height={20} className="text-bfc-text1" />
+				<Heading variant="heading4/semibold" color="bfc-text1">
 					{type in TYPE_TO_COPY ? TYPE_TO_COPY[type] : type}
 				</Heading>
 			</div>
 			{title && (
-				<div className="flex flex-col gap-2 rounded-md border-l-4 border-obc-border bg-obc-card p-5 lg:flex-row">
+				<div className="flex flex-col gap-2 rounded-md border-l-4 border-bfc-border bg-bfc-card p-5 lg:flex-row">
 					<div className="flex min-w-0 items-center gap-2">
 						<div className="min-w-0 break-words">
-							<Heading as="h2" variant="heading3/semibold" color="obc-text1" mono>
+							<Heading as="h2" variant="heading3/semibold" color="bfc-text1" mono>
 								{title}
 							</Heading>
 						</div>

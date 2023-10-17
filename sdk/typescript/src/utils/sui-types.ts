@@ -26,7 +26,7 @@ export function isValidTransactionDigest(value: string): value is string {
 export const SUI_ADDRESS_LENGTH = 32;
 export function isValidSuiAddress(value: string): value is string {
 	let address = value;
-	if (/^OBC/i.test(value)) {
+	if (/^bfc/i.test(value)) {
 		address = value.slice(3, -4);
 	}
 	return isHex(address) && getHexByteLength(address) === SUI_ADDRESS_LENGTH;
@@ -97,7 +97,7 @@ export function normalizeStructTag(type: string | StructTag): string {
  */
 export function normalizeSuiAddress(value: string, forceAdd0x: boolean = false): string {
 	let address = value.toLowerCase();
-	if (/^obc/i.test(value)) {
+	if (/^bfc/i.test(value)) {
 		address = obc2SuiAddress(value);
 	}
 	if (!forceAdd0x && address.startsWith('0x')) {

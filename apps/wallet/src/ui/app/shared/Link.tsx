@@ -31,17 +31,17 @@ const styles = cva(
 				],
 				suiDark: ['text-sui-dark'],
 				hero: ['text-hero hover:text-hero-dark focus:text-hero-dark disabled:text-hero-dark'],
-				'obc-text1': [
-					'text-obc-text1 hover:text-obc-text1 focus:text-obc-text1 disabled:text-obc-text1',
+				'bfc-text1': [
+					'text-bfc-text1 hover:text-bfc-text1 focus:text-bfc-text1 disabled:text-bfc-text1',
 				],
-				'obc-text2': [
-					'text-obc-text2 hover:text-obc-text2 focus:text-obc-text2 disabled:text-obc-text2',
+				'bfc-text2': [
+					'text-bfc-text2 hover:text-bfc-text2 focus:text-bfc-text2 disabled:text-bfc-text2',
 				],
-				'obc-text3': [
-					'text-obc-text3 hover:text-obc-text3 focus:text-obc-text3 disabled:text-obc-text3',
+				'bfc-text3': [
+					'text-bfc-text3 hover:text-bfc-text3 focus:text-bfc-text3 disabled:text-bfc-text3',
 				],
-				'obc-link':
-					'text-obc-link hover:text-obc-link-dark focus:text-obc-link-dark disabled:text-obc-link',
+				'bfc-link':
+					'text-bfc-link hover:text-bfc-link-dark focus:text-bfc-link-dark disabled:text-bfc-link',
 			},
 			weight: {
 				semibold: 'font-semibold',
@@ -80,10 +80,10 @@ const iconStyles = cva(['transition flex'], {
 			hero: [
 				'text-hero group-hover:text-hero-dark group-focus:text-hero-dark group-disabled:text-hero-dark',
 			],
-			'obc-text1': ['text-obc-text1'],
-			'obc-text2': ['text-obc-text2'],
-			'obc-text3': ['text-obc-text3'],
-			'obc-link': 'text-obc-link',
+			'bfc-text1': ['text-bfc-text1'],
+			'bfc-text2': ['text-bfc-text2'],
+			'bfc-text3': ['text-bfc-text3'],
+			'bfc-link': 'text-bfc-link',
 		},
 	},
 });

@@ -18,7 +18,7 @@ export type SuiSignAndExecuteTransactionBlockVersion = '1.0.0';
  */
 export type SuiSignAndExecuteTransactionBlockFeature = {
 	/** Namespace for the feature. */
-	'obc:signAndExecuteTransactionBlock': {
+	'bfc:signAndExecuteTransactionBlock': {
 		/** Version of the feature API. */
 		version: SuiSignAndExecuteTransactionBlockVersion;
 		signAndExecuteTransactionBlock: SuiSignAndExecuteTransactionBlockMethod;
