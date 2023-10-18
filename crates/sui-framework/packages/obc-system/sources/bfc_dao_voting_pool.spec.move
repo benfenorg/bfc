@@ -1,17 +1,17 @@
 spec obc_system::voting_pool{
     spec withdraw_from_principal {
         aborts_if false;
-        aborts_if voting_obc.pool_id != object::id(pool);
+        aborts_if voting_bfc.pool_id != object::id(pool);
     }
     spec new {
         aborts_if false;
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
-    spec obc_amount {
+    spec bfc_amount {
         aborts_if false;
     }
-    spec obc_balance {
+    spec bfc_balance {
         aborts_if false;
 
     }
@@ -34,27 +34,27 @@ spec obc_system::voting_pool{
 
     spec request_withdraw_voting {
         aborts_if false;
-        aborts_if voting_obc.pool_id != object::id(pool);
+        aborts_if voting_bfc.pool_id != object::id(pool);
     }
-    spec unwrap_voting_obc {
+    spec unwrap_voting_bfc {
         aborts_if false;
     }
     spec pool_id {
         aborts_if false;
     }
-    spec voting_obc_amount {
+    spec voting_bfc_amount {
         aborts_if false;
     }
-    spec split_voting_obc {
+    spec split_voting_bfc {
         aborts_if false;
-        aborts_if split_amount > votingObc.principal.value;
+        aborts_if split_amount > votingBfc.principal.value;
 
-        let remaining_amount = votingObc.principal.value - split_amount;
+        let remaining_amount = votingBfc.principal.value - split_amount;
         aborts_if remaining_amount < MIN_STAKING_THRESHOLD;
         aborts_if split_amount < MIN_STAKING_THRESHOLD;
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
-    spec join_voting_obc {
+    spec join_voting_bfc {
         aborts_if false;
         aborts_if other.pool_id != self.pool_id;
         aborts_if self.principal.value + other.principal.value > MAX_U64;

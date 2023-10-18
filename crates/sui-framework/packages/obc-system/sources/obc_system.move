@@ -1,7 +1,7 @@
 module obc_system::obc_system {
     use sui::balance;
-    use obc_system::obc_dao;
-    use obc_system::voting_pool::VotingObc;
+    use obc_system::bfc_dao;
+    use obc_system::voting_pool::VotingBfc;
     use sui::balance::{Balance, Supply};
     use sui::coin;
     use sui::coin::Coin;
@@ -17,8 +17,8 @@ module obc_system::obc_system {
 
     use obc_system::usd::{USD};
     use obc_system::vault::VaultInfo;
-    use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
-    use obc_system::obc_dao::{Proposal, Vote};
+    use obc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
+    use obc_system::bfc_dao::{Proposal, Vote};
     use obc_system::obc_system_state_inner;
     use obc_system::obc_system_state_inner::{ObcSystemStateInner, ObcSystemParameters};
 
@@ -35,8 +35,8 @@ module obc_system::obc_system {
         obc_system_state_inner::create_stake_manager_key(payment, ctx);
     }
 
-    public entry fun unstake_manager_key(key: OBCDaoManageKey,
-                                         token: ManagerKeyObc,
+    public entry fun unstake_manager_key(key: BFCDaoManageKey,
+                                         token: ManagerKeyBfc,
                                          ctx: &mut TxContext) {
         obc_system_state_inner::unstake_manager_key(key, token, ctx);
     }
@@ -221,7 +221,7 @@ module obc_system::obc_system {
 
     public entry fun destroy_terminated_proposal(
         wrapper: &mut ObcSystemState,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
     ) {
@@ -258,7 +258,7 @@ module obc_system::obc_system {
 
     public entry fun set_voting_period(
         wrapper: &mut ObcSystemState,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
         let system_state = load_system_state_mut(wrapper);
@@ -270,14 +270,14 @@ module obc_system::obc_system {
         obc_system_state_inner::modify_proposal(system_state, proposal_obj, index, clock);
     }
 
-    public entry fun set_voting_quorum_rate(wrapper: &mut ObcSystemState, manager_key: &OBCDaoManageKey, value: u8,){
+    public entry fun set_voting_quorum_rate(wrapper: &mut ObcSystemState, manager_key: &BFCDaoManageKey, value: u8,){
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::set_voting_quorum_rate(system_state, manager_key, value);
     }
 
     public entry fun set_min_action_delay(
         wrapper: &mut ObcSystemState,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
         let system_state = load_system_state_mut(wrapper);
@@ -285,7 +285,7 @@ module obc_system::obc_system {
     }
 
     public entry fun withdraw_voting(   wrapper: &mut ObcSystemState,
-                                 voting_obc: VotingObc,
+                                 voting_obc: VotingBfc,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
         obc_system_state_inner::withdraw_voting(system_state, voting_obc, ctx);
@@ -360,7 +360,7 @@ module obc_system::obc_system {
 
     public entry fun set_voting_delay(
         self: &mut ObcSystemState,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
         let inner_state = load_system_state_mut(self);
@@ -370,7 +370,7 @@ module obc_system::obc_system {
     public entry fun cast_vote(
         self: &mut ObcSystemState,
         proposal: &mut Proposal,
-        coin: VotingObc,
+        coin: VotingBfc,
         agreeInt: u8,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -393,7 +393,7 @@ module obc_system::obc_system {
 
     public entry fun queue_proposal_action(
         self: &mut ObcSystemState,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
     ) {
@@ -419,7 +419,7 @@ module obc_system::obc_system {
         clock: & Clock,
         ctx: &mut TxContext,
     ) {
-        obc_dao::unvote_votes(proposal, vote, clock, ctx);
+        bfc_dao::unvote_votes(proposal, vote, clock, ctx);
     }
 
     public entry fun vote_of(
@@ -427,14 +427,14 @@ module obc_system::obc_system {
         proposal: &Proposal,
         ctx: &mut TxContext,
     ) {
-        obc_dao::vote_of(vote, proposal, ctx);
+        bfc_dao::vote_of(vote, proposal, ctx);
     }
 
     public entry fun has_vote(
         vote: &Vote,
         proposal: &Proposal,
     ) {
-        obc_dao::has_vote(vote, proposal);
+        bfc_dao::has_vote(vote, proposal);
     }
 
 
@@ -442,7 +442,7 @@ module obc_system::obc_system {
         new_admin:address,
         ctx: &mut TxContext,
     ) {
-        obc_dao::add_admin(new_admin, ctx);
+        bfc_dao::add_admin(new_admin, ctx);
         //obc_dao_manager::new(new_admin, ctx);
     }
 }

@@ -1,4 +1,4 @@
-spec obc_system::obc_dao {
+spec obc_system::bfc_dao {
     spec voting_delay {
         aborts_if false;
     }
@@ -46,12 +46,12 @@ spec obc_system::obc_dao {
 
     spec withdraw_voting {
         aborts_if false;
-        aborts_if pool_id(voting_obc) != object::id(dao.voting_pool);
+        aborts_if pool_id(voting_bfc) != object::id(dao.voting_pool);
         aborts_if ctx.ids_created + 1 > MAX_U64;
 
     }
 
-    spec create_obcdao_action {
+    spec create_bfcdao_action {
         pragma aborts_if_is_partial = true;
         aborts_if false;
 
@@ -198,8 +198,8 @@ spec obc_system::obc_dao {
     spec propose {
         pragma aborts_if_is_partial = true;
         aborts_if false;
-        let obc =  payment.balance;
-        let count = balance::value(obc);
+        let bfc =  payment.balance;
+        let count = balance::value(bfc);
         aborts_if count < MIN_NEW_PROPOSE_COST;
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
@@ -209,7 +209,7 @@ spec obc_system::obc_dao {
         //aborts_if vec_map::contains(dao.proposals, pid) == false;
     }
 
-    spec get_obcdao_actionid {
+    spec get_bfcdao_actionid {
         aborts_if false;
     }
     spec modify_proposal_obj {
@@ -245,7 +245,7 @@ spec obc_system::obc_dao {
         aborts_if false;
     }
 
-    spec create_voting_obc {
+    spec create_voting_bfc {
         aborts_if false;
         aborts_if ctx.ids_created + 1 > MAX_U64;
         aborts_if coin.balance.value < MIN_VOTING_THRESHOLD;
