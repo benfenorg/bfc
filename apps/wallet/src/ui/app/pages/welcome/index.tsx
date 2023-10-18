@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowRight16, X, Chain, Logo } from '@mysten/icons';
+import { ArrowRight16, BenFenLogoDark, BenFenTextLight } from '@mysten/icons';
 
 import { Button } from '_app/shared/ButtonUI';
 import BottomMenuLayout, { Content } from '_app/shared/bottom-menu-layout';
@@ -27,12 +27,11 @@ const WelcomePage = () => {
 					<div className="rounded-20 bg-white shadow-wallet-content flex flex-col flex-nowrap items-center justify-center w-popup-width h-popup-height">
 						<BottomMenuLayout>
 							<Content className="flex flex-col flex-nowrap items-center pt-10 pb-0 px-5">
-								<div className="flex justify-center items-center rounded-lg bg-bfc p-2">
-									<Logo />
+								<div className="w-[46px] h-[46px] flex justify-center items-center rounded-xl bg-bfc">
+									<BenFenLogoDark className="w-[26px]" />
 								</div>
-								<div className="mt-2.5 flex justify-center items-center gap-0.5">
-									<X />
-									<Chain />
+								<div className="mt-2.5 flex justify-center items-center">
+									<BenFenTextLight className="w-[50px]" />
 								</div>
 
 								<div className="mx-auto mt-7.5">

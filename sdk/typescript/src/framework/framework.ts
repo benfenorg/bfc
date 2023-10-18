@@ -76,7 +76,7 @@ export class Coin {
 		return arg ? Coin.getCoinSymbol(arg) === 'SUI' : false;
 	}
 
-	static isOBC(obj: ObjectData) {
+	static isBFC(obj: ObjectData) {
 		const arg = Coin.getCoinTypeArg(obj);
 		return arg ? Coin.getCoinSymbol(arg) === 'BFC' : false;
 	}

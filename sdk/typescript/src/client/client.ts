@@ -80,7 +80,6 @@ import {
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	normalizeSuiAddress,
-	normalizeSuiObjectId,
 } from '../utils/sui-types.js';
 import { fromB58, toB64, toHEX } from '@mysten/bcs';
 import { sui2ObcAddress } from '../utils/format.js';
@@ -340,7 +339,7 @@ export class SuiClient {
 	 */
 	async multiGetObjects(input: MultiGetObjectsParams): Promise<SuiObjectResponse[]> {
 		input.ids.forEach((id) => {
-			if (!id || !isValidSuiObjectId(normalizeSuiObjectId(id))) {
+			if (!id || !isValidSuiObjectId(sui2ObcAddress(id))) {
 				throw new Error(`Invalid Sui Object id ${id}`);
 			}
 		});
@@ -490,7 +489,7 @@ export class SuiClient {
 	 */
 	async getStakesByIds(input: GetStakesByIdsParams): Promise<DelegatedStake[]> {
 		input.stakedSuiIds.forEach((id) => {
-			if (!id || !isValidSuiObjectId(normalizeSuiObjectId(id))) {
+			if (!id || !isValidSuiObjectId(sui2ObcAddress(id))) {
 				throw new Error(`Invalid Sui Stake id ${id}`);
 			}
 		});
@@ -624,7 +623,7 @@ export class SuiClient {
 	 * Return the list of dynamic field objects owned by an object
 	 */
 	async getDynamicFields(input: GetDynamicFieldsParams): Promise<DynamicFieldPage> {
-		if (!input.parentId || !isValidSuiObjectId(normalizeSuiObjectId(input.parentId))) {
+		if (!input.parentId || !isValidSuiObjectId(sui2ObcAddress(input.parentId))) {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({

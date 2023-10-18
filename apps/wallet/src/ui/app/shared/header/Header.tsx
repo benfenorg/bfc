@@ -22,7 +22,7 @@ export function Header({ networkName, middleContent, rightContent }: HeaderProps
 		<header className="grid grid-cols-header items-center gap-3 p-2.5 bg-bfc-card rounded-tl-xl rounded-tr-xl">
 			<div>
 				<Link to="/" className="no-underline text-gray-90">
-					<Logo networkName={networkName} />
+					<Logo />
 				</Link>
 			</div>
 			{middleContent && <div className="col-start-2 overflow-hidden">{middleContent}</div>}
