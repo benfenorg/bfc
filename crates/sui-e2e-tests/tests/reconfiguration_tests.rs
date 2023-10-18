@@ -2282,7 +2282,7 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
 
     let obc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
     let module = "obc_system".to_string();
-    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
     let function = "swap_bfc_to_stablecoin".to_string();
 
     let args = vec![
@@ -2337,7 +2337,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
 
     let obc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
     let module = "obc_system".to_string();
-    let package_id = OBC_SYSTEM_PACKAGE_ID;
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
     let function = "swap_stablecoin_to_bfc".to_string();
 
     let args = vec![

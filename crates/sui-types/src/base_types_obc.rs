@@ -95,7 +95,7 @@ pub mod bfc_address_util {
         //return address.to_string();
     }
 
-    pub fn convert_to_obc_address(prefix: &str, evm_address: &str) -> String {
+    pub fn convert_to_bfc_address(prefix: &str, evm_address: &str) -> String {
         //let mut address = evm_address.to_string();
         let result = sha256_string(&evm_address[2..]);
         let check_sum = result.get(0..4).unwrap();
