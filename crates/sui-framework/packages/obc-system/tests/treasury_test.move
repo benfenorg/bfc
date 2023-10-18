@@ -13,7 +13,7 @@ module obc_system::treasury_test {
     use sui::transfer;
     use obc_system::treasury::{Self, Treasury};
     use obc_system::vault;
-    use obc_system::usd::{Self, USD};
+    use obc_system::busd::{Self, BUSD};
 
     const IS_DEBUG: bool = false;
 
@@ -54,8 +54,8 @@ module obc_system::treasury_test {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
-            let usd_supply = usd::new(test_scenario::ctx(&mut scenario_val));
-            treasury::create_vault<USD>(
+            let usd_supply = busd::new(test_scenario::ctx(&mut scenario_val));
+            treasury::create_vault<BUSD>(
                 &mut t,
                 usd_supply,
                 position_number,
@@ -75,9 +75,9 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<USD>();
-            let mut_vault = treasury::borrow_mut_vault<USD>(&mut t, usd_vault_key);
-            let ticks = vault::init_positions<USD>(
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, usd_vault_key);
+            let ticks = vault::init_positions<BUSD>(
                 mut_vault,
                 spacing_times,
                 test_scenario::ctx(&mut scenario_val),
@@ -94,9 +94,9 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<USD>();
-            let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
-            let (amount_a, amount_b) = vault::get_position_amounts<USD>(
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let (amount_a, amount_b) = vault::get_position_amounts<BUSD>(
                 usd_vault,
                 1,
                 true,
@@ -104,7 +104,7 @@ module obc_system::treasury_test {
             assert!(amount_a == 0, 101);
             assert!(amount_b == 0, 102);
 
-            let (balance_a, balance_b) = vault::balances<USD>(
+            let (balance_a, balance_b) = vault::balances<BUSD>(
                 usd_vault,
             );
             assert!(balance_a == 0, 103);
@@ -118,8 +118,8 @@ module obc_system::treasury_test {
         {
             let position_index = 2;
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<USD>();
-            let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, usd_vault_key);
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, usd_vault_key);
             let upper =  i32::from(1);
             let lower = i32::sub(upper, i32::from(2));
             let (liquidity, amount_a, amount_b) = clmm_math::get_liquidity_by_amount(
@@ -130,24 +130,24 @@ module obc_system::treasury_test {
                 base_point,
                 false,
             );
-            let balance_a = balance::create_for_testing<USD>(amount_a);
+            let balance_a = balance::create_for_testing<BUSD>(amount_a);
             let balance_b = balance::create_for_testing<BFC>(amount_b);
 
-            let receipt = vault::add_liquidity<USD>(
+            let receipt = vault::add_liquidity<BUSD>(
                 usd_mut_vault,
                 position_index,
                 liquidity,
             );
             // repay
-            vault::repay_add_liquidity<USD>(
+            vault::repay_add_liquidity<BUSD>(
                 usd_mut_vault,
                 balance_a,
                 balance_b,
                 receipt,
             );
 
-            let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
-            let (amount_a, amount_b) = vault::balances<USD>(usd_vault);
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let (amount_a, amount_b) = vault::balances<BUSD>(usd_vault);
             if (IS_DEBUG) {
                 debug::print(&string(b"get balance after add-l"));
                 debug::print(&amount_a);
@@ -156,7 +156,7 @@ module obc_system::treasury_test {
             assert!(amount_a == base_point, 103);
             assert!(amount_b == base_point, 104);
 
-            let (amount_a, amount_b) = vault::get_position_amounts<USD>(
+            let (amount_a, amount_b) = vault::get_position_amounts<BUSD>(
                 usd_vault,
                 position_index,
                 true,
@@ -172,9 +172,9 @@ module obc_system::treasury_test {
         {
             let position_index = 2;
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<USD>();
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
 
-            let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
             let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
             let l = vault::get_position_liquidity(usd_vault, position_index);
             if (IS_DEBUG) {
@@ -202,7 +202,7 @@ module obc_system::treasury_test {
                 debug::print(&string(b"Alice balances before mint ..."));
                 debug::print(&coin_obc);
             };
-            treasury::mint<USD>(
+            treasury::mint<BUSD>(
                 &mut t,
                 coin_obc,
                 amount_obc,
@@ -214,7 +214,7 @@ module obc_system::treasury_test {
         // alice check balance
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let coin_obc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after mint ..."));
@@ -231,9 +231,9 @@ module obc_system::treasury_test {
         {
             let position_index = 2;
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<USD>();
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
 
-            let usd_vault = treasury::borrow_vault<USD>(&t, usd_vault_key);
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
             let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
             let l = vault::get_position_liquidity(usd_vault, position_index);
             if (IS_DEBUG) {
@@ -249,13 +249,13 @@ module obc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances redeem obc ..."));
                 debug::print(&amount);
             };
-            treasury::redeem<USD>(
+            treasury::redeem<BUSD>(
                 &mut t,
                 coin_usd,
                 amount,
@@ -267,7 +267,7 @@ module obc_system::treasury_test {
         // alice check balance
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let coin_usd = test_scenario::take_from_sender<Coin<USD>>(&scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let coin_obc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             let coin_obc_1 = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {

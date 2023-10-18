@@ -44,7 +44,7 @@ module obc_system::obc_system_tests {
 
 
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext) {
-        let usd_supply = obc_system::usd::new(ctx);
+        let usd_supply = obc_system::busd::new(ctx);
         let treasury_parameters = obc_system::obc_system_stat_parameter(
             9,
             60,
@@ -83,7 +83,7 @@ module obc_system::obc_system_tests {
 
         let system_state = test_scenario::take_shared<ObcSystemState>(&mut scenario_val);
 
-        let amount = obc_system::next_epoch_obc_required(&system_state);
+        let amount = obc_system::next_epoch_bfc_required(&system_state);
         // basepoint = 1000 /  position = 9 / timeinterval=4h
         assert!(amount == 1000 * 5 * 6, 100);
 
@@ -115,7 +115,7 @@ module obc_system::obc_system_tests {
     fun test_deposit_success() {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<ObcSystemState>(&mut scenario_val);
-        let amount = obc_system::next_epoch_obc_required(&system_state);
+        let amount = obc_system::next_epoch_bfc_required(&system_state);
         let obc = balance::create_for_testing<BFC>(amount);
         let current_balance = obc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);

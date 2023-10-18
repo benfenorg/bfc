@@ -15,7 +15,7 @@ module obc_system::obc_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use obc_system::usd::{USD};
+    use obc_system::busd::{BUSD};
     use obc_system::vault::VaultInfo;
     use obc_system::obc_dao_manager::{OBCDaoManageKey, ManagerKeyObc};
     use obc_system::obc_dao::{Proposal, Vote};
@@ -48,14 +48,14 @@ module obc_system::obc_system {
 
     public fun create(
         id: UID,
-        usd_supply: Supply<USD>,
-        obc_balance: Balance<BFC>,
+        usd_supply: Supply<BUSD>,
+        bfc_balance: Balance<BFC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ) {
         let inner_state = obc_system_state_inner::create_inner_state(
             usd_supply,
-            obc_balance,
+            bfc_balance,
             parameters,
             ctx,
         );
@@ -85,7 +85,7 @@ module obc_system::obc_system {
         //exchange all stable to obc.
         obc_system_state_inner::request_exchange_all(inner_state, ctx);
         //update inner exchange rate from stable-swap.
-        let stable = coin::zero<USD>(ctx);
+        let stable = coin::zero<BUSD>(ctx);
         obc_system_state_inner::request_update_gas_coin(inner_state, &stable);
         balance::destroy_zero(coin::into_balance(stable));
         // X-treasury rebalance
@@ -118,15 +118,15 @@ module obc_system::obc_system {
     /// Getter of the gas coin exchange pool rate.
     public entry fun request_get_exchange_rate(
         self: &ObcSystemState,
-        stable: &Coin<USD>
+        stable: &Coin<BUSD>
     ): u64 {
         let inner_state = load_system_state(self);
-        obc_system_state_inner::requst_get_exchange_rate<USD>(inner_state, stable)
+        obc_system_state_inner::requst_get_exchange_rate<BUSD>(inner_state, stable)
     }
 
     public entry fun request_add_gas_coin(
         self: &mut ObcSystemState,
-        gas_coin: &Coin<USD>,
+        gas_coin: &Coin<BUSD>,
         rate: u64,
     ) {
         let inner_state = load_system_state_mut(self);
@@ -135,7 +135,7 @@ module obc_system::obc_system {
 
     public entry fun request_update_gas_coin(
         self: &mut ObcSystemState,
-        gas_coin: &Coin<USD>,
+        gas_coin: &Coin<BUSD>,
     ) {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::request_update_gas_coin(inner_state, gas_coin)
@@ -143,7 +143,7 @@ module obc_system::obc_system {
 
     public entry fun request_remove_gas_coin(
         self: &mut ObcSystemState,
-        gas_coin: &Coin<USD>,
+        gas_coin: &Coin<BUSD>,
     ) {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
@@ -152,11 +152,11 @@ module obc_system::obc_system {
     /// Request exchange stable coin to obc.
     public entry fun request_exchange_stable(
         self: &mut ObcSystemState,
-        stable: Coin<USD>,
+        stable: Coin<BUSD>,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(self);
-        let balance = obc_system_state_inner::swap_stablecoin_to_obc_balance<USD>(
+        let balance = obc_system_state_inner::swap_stablecoin_to_bfc_balance<BUSD>(
             inner_state,
             stable,
             ctx);
@@ -183,7 +183,7 @@ module obc_system::obc_system {
 
     fun request_withdraw_stable_no_entry(
         self: &mut ObcSystemState,
-    ): Balance<USD> {
+    ): Balance<BUSD> {
         let inner_state = load_system_state_mut(self);
         obc_system_state_inner::request_withdraw_stable(inner_state)
     }
@@ -207,7 +207,7 @@ module obc_system::obc_system {
         max_counter_times: u32,
         chain_start_timestamp_ms: u64,
     ): ObcSystemParameters {
-        obc_system_state_inner::obc_system_stat_parameter(
+        obc_system_state_inner::bfc_system_stat_parameter(
             position_number,
             tick_spacing,
             spacing_times,
@@ -299,43 +299,43 @@ module obc_system::obc_system {
     }
 
     /// X treasury  swap obc to stablecoin
-    public entry fun swap_obc_to_stablecoin<StableCoinType>(
+    public entry fun swap_bfc_to_stablecoin<StableCoinType>(
         wrapper: &mut ObcSystemState,
-        coin_obc: Coin<BFC>,
+        native_coin: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::swap_obc_to_stablecoin<StableCoinType>(system_state, coin_obc, amount, ctx);
+        obc_system_state_inner::swap_obc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, ctx);
     }
 
     /// X treasury  swap stablecoin to obc
-    public entry fun swap_stablecoin_to_obc<StableCoinType>(
+    public entry fun swap_stablecoin_to_bfc<StableCoinType>(
         wrapper: &mut ObcSystemState,
-        coin_sc: Coin<StableCoinType>,
+        stable_coin: Coin<StableCoinType>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::swap_stablecoin_to_obc<StableCoinType>(system_state, coin_sc, amount, ctx);
+        obc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, amount, ctx);
     }
 
-    public fun get_stablecoin_by_obc<StableCoinType>(
+    public fun get_stablecoin_by_bfc<StableCoinType>(
         wrapper: &ObcSystemState,
         amount: u64,
     ): u64
     {
         let system_state = load_system_state(wrapper);
-        obc_system_state_inner::get_stablecoin_by_obc<StableCoinType>(system_state, amount)
+        obc_system_state_inner::get_stablecoin_by_bfc<StableCoinType>(system_state, amount)
     }
 
-    public fun get_obc_by_stablecoin<StableCoinType>(
+    public fun get_bfc_by_stablecoin<StableCoinType>(
         wrapper: &ObcSystemState,
         amount: u64,
     ): u64
     {
         let system_state = load_system_state(wrapper);
-        obc_system_state_inner::get_obc_by_stablecoin<StableCoinType>(system_state, amount)
+        obc_system_state_inner::get_bfc_by_stablecoin<StableCoinType>(system_state, amount)
     }
 
     public fun vault_info<StableCoinType>(wrapper: &ObcSystemState): VaultInfo {
@@ -343,9 +343,9 @@ module obc_system::obc_system {
         obc_system_state_inner::vault_info<StableCoinType>(inner_state)
     }
 
-    public fun next_epoch_obc_required(wrapper: &ObcSystemState): u64 {
+    public fun next_epoch_bfc_required(wrapper: &ObcSystemState): u64 {
         let system_state = load_system_state(wrapper);
-        obc_system_state_inner::next_epoch_obc_required(system_state)
+        obc_system_state_inner::next_epoch_bfc_required(system_state)
     }
 
     public fun treasury_balance(wrapper: &ObcSystemState): u64 {
@@ -353,9 +353,9 @@ module obc_system::obc_system {
         obc_system_state_inner::treasury_balance(system_state)
     }
 
-    public entry fun deposit_to_treasury(self: &mut ObcSystemState, coin: Coin<BFC>) {
+    public entry fun deposit_to_treasury(self: &mut ObcSystemState, bfc: Coin<BFC>) {
         let inner_state = load_system_state_mut(self);
-        obc_system_state_inner::deposit_to_treasury(inner_state, coin)
+        obc_system_state_inner::deposit_to_treasury(inner_state, bfc)
     }
 
     public entry fun set_voting_delay(

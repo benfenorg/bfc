@@ -17,7 +17,7 @@ module obc_system::obc_system_state_inner {
     use obc_system::treasury::{Self, Treasury};
     use obc_system::treasury_pool;
     use obc_system::treasury_pool::TreasuryPool;
-    use obc_system::usd::USD;
+    use obc_system::busd::BUSD;
     use obc_system::vault::VaultInfo;
     use obc_system::voting_pool::VotingObc;
 
@@ -41,7 +41,7 @@ module obc_system::obc_system_state_inner {
         /// Contains gas coin information
         gas_coin_map: GasCoinMap,
         /// Exchange gas coin pool
-        exchange_pool: ExchangePool<USD>,
+        exchange_pool: ExchangePool<BUSD>,
         dao: Dao,
         treasury: Treasury,
         treasury_pool: TreasuryPool,
@@ -65,17 +65,17 @@ module obc_system::obc_system_state_inner {
     const OBC_SYSTEM_TREASURY_KEY: u64 = 1;
 
     public(friend) fun create_inner_state(
-        usd_supply: Supply<USD>,
-        obc_balance: Balance<BFC>,
+        usd_supply: Supply<BUSD>,
+        bfc_balance: Balance<BFC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext,
     ): ObcSystemStateInner {
         // init gas coin mappings
         let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
-        let exchange_pool = exchange_inner::new_exchange_pool<USD>(ctx, 0);
+        let exchange_pool = exchange_inner::new_exchange_pool<BUSD>(ctx, 0);
         let dao = obc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
-        let (t, remain_balance) = create_treasury(usd_supply, obc_balance, parameters, ctx);
+        let (t, remain_balance) = create_treasury(usd_supply, bfc_balance, parameters, ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
 
         ObcSystemStateInner {
@@ -108,12 +108,12 @@ module obc_system::obc_system_state_inner {
 
     public(friend) fun request_exchange_stable(
         inner: &mut ObcSystemStateInner,
-        stable: Coin<USD>,
+        stable: Coin<BUSD>,
         ctx: &mut TxContext,
     ): Balance<BFC> {
         //get exchange rate
-        let rate = gas_coin_map::requst_get_exchange_rate<USD>(&inner.gas_coin_map, &stable);
-        exchange_inner::request_exchange_stable<USD>(rate, &mut inner.exchange_pool, stable, ctx)
+        let rate = gas_coin_map::requst_get_exchange_rate<BUSD>(&inner.gas_coin_map, &stable);
+        exchange_inner::request_exchange_stable<BUSD>(rate, &mut inner.exchange_pool, stable, ctx)
     }
 
     public(friend) fun request_exchange_all(
@@ -128,13 +128,13 @@ module obc_system::obc_system_state_inner {
             //get stable balance
             let stable_balance = exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool);
             //exchange from stable swap
-            let obc_balance = swap_stablecoin_to_obc_balance(
+            let bfc_balance = swap_stablecoin_to_bfc_balance(
                 inner,
                 coin::from_balance(stable_balance, ctx),
                 ctx,
             );
             //add obc to inner exchange pool
-            exchange_inner::request_deposit_obc_balance(&mut inner.exchange_pool, obc_balance);
+            exchange_inner::request_deposit_bfc_balance(&mut inner.exchange_pool, bfc_balance);
             // active pool
             exchange_inner::activate(&mut inner.exchange_pool, epoch);
         }
@@ -143,7 +143,7 @@ module obc_system::obc_system_state_inner {
     ///Request withdraw stable coin.
     public(friend) fun request_withdraw_stable(
         inner: &mut ObcSystemStateInner,
-    ): Balance<USD> {
+    ): Balance<BUSD> {
         exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool)
     }
 
@@ -152,7 +152,7 @@ module obc_system::obc_system_state_inner {
         self: &ObcSystemStateInner,
         _stable: &Coin<CoinType>
     ): u64 {
-        get_stablecoin_by_obc<CoinType>(
+        get_stablecoin_by_bfc<CoinType>(
             self,
             gas_coin_map::get_default_rate(),
         )
@@ -170,7 +170,7 @@ module obc_system::obc_system_state_inner {
         self: &mut ObcSystemStateInner,
         gas_coin: &Coin<CoinType>,
     ) {
-        let rate = get_stablecoin_by_obc<CoinType>(
+        let rate = get_stablecoin_by_bfc<CoinType>(
             self,
             gas_coin_map::get_default_rate(),
         );
@@ -194,15 +194,15 @@ module obc_system::obc_system_state_inner {
 
     /// X treasury  init treasury
     public(friend) fun create_treasury(
-        supply: Supply<USD>,
-        obc_balance: Balance<BFC>,
+        supply: Supply<BUSD>,
+        bfc_balance: Balance<BFC>,
         parameters: ObcSystemParameters,
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>) {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
 
-        treasury::init_vault_with_positions<USD>(
+        treasury::init_vault_with_positions<BUSD>(
             &mut t,
             supply,
             treasury_parameters.initialize_price,
@@ -214,12 +214,12 @@ module obc_system::obc_system_state_inner {
             parameters.chain_start_timestamp_ms,
             ctx,
         );
-        if (balance::value<BFC>(&obc_balance) > 0) {
-            let deposit_balance = balance::split(&mut obc_balance, treasury::next_epoch_obc_required(&t));
+        if (balance::value<BFC>(&bfc_balance) > 0) {
+            let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
             treasury::rebalance_first_init(&mut t, ctx);
         };
-        (t, obc_balance)
+        (t, bfc_balance)
     }
 
     /// swap obc to stablecoin
@@ -242,7 +242,7 @@ module obc_system::obc_system_state_inner {
     }
 
     /// swap stablecoin to obc
-    public(friend) fun swap_stablecoin_to_obc<StableCoinType>(
+    public(friend) fun swap_stablecoin_to_bfc<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
         amount: u64,
@@ -251,7 +251,7 @@ module obc_system::obc_system_state_inner {
         treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
     }
 
-    public(friend) fun swap_stablecoin_to_obc_balance<StableCoinType>(
+    public(friend) fun swap_stablecoin_to_bfc_balance<StableCoinType>(
         self: &mut ObcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
         ctx: &mut TxContext,
@@ -260,7 +260,7 @@ module obc_system::obc_system_state_inner {
         treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx)
     }
 
-    public(friend) fun get_stablecoin_by_obc<StableCoinType>(
+    public(friend) fun get_stablecoin_by_bfc<StableCoinType>(
         self: &ObcSystemStateInner,
         amount: u64
     ): u64
@@ -268,7 +268,7 @@ module obc_system::obc_system_state_inner {
         treasury::calculate_swap_result<StableCoinType>(&self.treasury, false, amount)
     }
 
-    public(friend) fun get_obc_by_stablecoin<StableCoinType>(
+    public(friend) fun get_bfc_by_stablecoin<StableCoinType>(
         self: &ObcSystemStateInner,
         amount: u64
     ): u64
@@ -277,8 +277,8 @@ module obc_system::obc_system_state_inner {
     }
 
     /// X-treasury
-    public fun next_epoch_obc_required(self: &ObcSystemStateInner): u64 {
-        treasury::next_epoch_obc_required(&self.treasury)
+    public fun next_epoch_bfc_required(self: &ObcSystemStateInner): u64 {
+        treasury::next_epoch_bfc_required(&self.treasury)
     }
 
     public fun treasury_balance(self: &ObcSystemStateInner): u64 {
@@ -294,7 +294,7 @@ module obc_system::obc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let amount = treasury::next_epoch_obc_required(&self.treasury);
+        let amount = treasury::next_epoch_bfc_required(&self.treasury);
         let withdraw_balance =
             treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
         if (balance::value(&withdraw_balance) > 0) {
@@ -310,7 +310,7 @@ module obc_system::obc_system_state_inner {
         treasury::vault_info<StableCoinType>(&self.treasury)
     }
 
-    public(friend) fun obc_system_stat_parameter(
+    public(friend) fun bfc_system_stat_parameter(
         position_number: u32,
         tick_spacing: u32,
         spacing_times: u32,

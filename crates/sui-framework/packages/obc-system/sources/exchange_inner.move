@@ -30,7 +30,7 @@ module obc_system::exchange_inner {
         /// The value is `None` if the pool is pre-active and `Some(<epoch_number>)` if active or inactive.
         activation_epoch: Option<u64>,
         /// The total number of SUI coins in this pool
-        obc_balance: u64,
+        bfc_balance: u64,
         /// The epoch stake rewards will be added here at the end of each epoch.
         obc_pool: Balance<BFC>,
         /// Total number of pool stable coins issued by the pool.
@@ -44,7 +44,7 @@ module obc_system::exchange_inner {
         ExchangePool {
             id: object::new(ctx),
             activation_epoch: option::some(epoch),
-            obc_balance: 0,
+            bfc_balance: 0,
             obc_pool: balance::zero(),
             stable_token_balance: 0,
             stable_pool: balance::zero<STABLE_COIN>(),
@@ -62,7 +62,7 @@ module obc_system::exchange_inner {
     public(friend) fun add_obc_to_pool<STABLE_COIN>(pool: &mut ExchangePool<STABLE_COIN>, coin: Coin<BFC>) {
         let amount = coin::value(&coin);
         assert!( amount > 0, EZeroAmount);
-        pool.obc_balance = pool.obc_balance + amount;
+        pool.bfc_balance = pool.bfc_balance + amount;
         let balance = coin::into_balance(coin);
         balance::join(&mut pool.obc_pool, balance);
     }
@@ -84,7 +84,7 @@ module obc_system::exchange_inner {
     }
 
     public(friend) fun get_obc_amount<STABLE_COIN>(pool: &ExchangePool<STABLE_COIN>): u64 {
-        pool.obc_balance
+        pool.bfc_balance
     }
 
     public(friend) fun get_stable_amount<STABLE_COIN>(pool: &ExchangePool<STABLE_COIN>): u64 {
@@ -109,10 +109,10 @@ module obc_system::exchange_inner {
         let stable_amount = balance::value(&tok_balance);
         let obc_amount= exchange_obc_amount(exchange_rate, stable_amount);
         assert!(obc_amount > 0, EOBCZeroAmount);
-        assert!(pool.obc_balance > obc_amount, ELackOfOBC);
+        assert!(pool.bfc_balance > obc_amount, ELackOfOBC);
         balance::join(&mut pool.stable_pool, tok_balance);
         let result = coin::take(&mut pool.obc_pool, obc_amount, ctx);
-        pool.obc_balance = pool.obc_balance - obc_amount;
+        pool.bfc_balance = pool.bfc_balance - obc_amount;
         pool.stable_token_balance = pool.stable_token_balance + stable_amount;
         coin::into_balance(result)
     }
@@ -120,9 +120,9 @@ module obc_system::exchange_inner {
     public(friend) fun get_obc_for_exchange_all<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
     ): Balance<BFC> {
-        if(pool.obc_balance > 0) {
+        if(pool.bfc_balance > 0) {
             //set pool active is false
-            pool.obc_balance = 0;
+            pool.bfc_balance = 0;
            balance::withdraw_all(&mut pool.obc_pool)
         }else {
             balance::zero<BFC>()
@@ -147,13 +147,13 @@ module obc_system::exchange_inner {
         balance::withdraw_all<STABLE_COIN>(&mut pool.stable_pool)
     }
 
-    public(friend) fun request_deposit_obc_balance<STABLE_COIN>(
+    public(friend) fun request_deposit_bfc_balance<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
-        obc_balance: Balance<BFC>,
+        bfc_balance: Balance<BFC>,
     ) {
         assert!(!is_active(pool), ENotAllowDeposit);
-        pool.obc_balance = pool.obc_balance + balance::value(&obc_balance);
-        balance::join(&mut pool.obc_pool, obc_balance);
+        pool.bfc_balance = pool.bfc_balance + balance::value(&bfc_balance);
+        balance::join(&mut pool.obc_pool, bfc_balance);
     }
 
 }
