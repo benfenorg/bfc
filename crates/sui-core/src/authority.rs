@@ -1249,17 +1249,24 @@ impl AuthorityState {
             }
         }
 
-        let is_stable_gas = false;
+        let mut is_stable_gas = false;
         // make a gas object if one was not provided
-        // let mut gas_object_refs = if !transaction.gas().is_empty() &&
-        //     !(transaction.gas_owner() == SuiAddress::from(SUI_FRAMEWORK_ADDRESS)) {
-        //     is_stable_gas = true;
-        //     vec![]
-        // }else {
-        //     transaction.gas().to_vec()
-        // };
-        // let ((gas_status, input_objects), mock_gas) = if gas_object_refs.is_empty() {
         let mut gas_object_refs = transaction.gas().to_vec();
+        if !transaction.gas().is_empty() {
+            //get gas obj
+            let gas_ids:Vec<_> = transaction.gas().iter().map(|(id, _, _)| *id).collect();
+            let gas_objs = self.get_objects(&gas_ids).await?;
+            for obj in gas_objs {
+                match obj {
+                    Some(stable)=> {
+                        is_stable_gas = stable.is_stable_gas_coin();
+                        gas_object_refs = vec![];
+                    },
+                    _ => {},
+                };
+            };
+        };
+
         let ((gas_status, input_objects), mock_gas) = if transaction.gas().is_empty() {
             let sender = transaction.sender();
             // use a 1B sui coin
