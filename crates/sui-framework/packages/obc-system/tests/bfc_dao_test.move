@@ -161,7 +161,7 @@ module obc_system::bfc_dao_test {
 
     //test_scenario
     #[test]
-    //#[expected_failure(abort_code = obc_system::bfc_dao::ERR_NOT_AUTHORIZED)]
+    //#[expected_failure(abort_code = bfc_system::bfc_dao::ERR_NOT_AUTHORIZED)]
     public fun test_propose_voting(){
         use sui::test_scenario;
         use obc_system::bfc_dao;
@@ -177,7 +177,7 @@ module obc_system::bfc_dao_test {
             let admins = vector[owner,user2];
             bfc_dao::create_dao_and_share(admins,test_scenario::ctx(&mut scenario_val));
         };
-        //create voting obc
+        //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
@@ -223,7 +223,7 @@ module obc_system::bfc_dao_test {
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let vObc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -232,8 +232,8 @@ module obc_system::bfc_dao_test {
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
 
-            //let amount = voting_pool::voting_obc_amount(&mut vObc);
-            bfc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            //let amount = voting_pool::voting_bfc_amount(&mut vBfc);
+            bfc_dao::cast_vote(&mut dao, &mut p, vBfc, 1, &clock, test_scenario::ctx(&mut scenario_val));
             //debug::print(&amount);
 
             let (forvote, agaistvote) = bfc_dao::proposal_info(&mut p);
@@ -274,7 +274,7 @@ module obc_system::bfc_dao_test {
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let vObc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
@@ -282,7 +282,7 @@ module obc_system::bfc_dao_test {
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
 
-            bfc_dao::cast_vote(&mut dao, &mut p, vObc, 0, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::cast_vote(&mut dao, &mut p, vBfc, 0, &clock, test_scenario::ctx(&mut scenario_val));
 
             let (forvote, agaistvote) = bfc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -368,7 +368,7 @@ module obc_system::bfc_dao_test {
             bfc_dao::create_dao_and_share(admins,test_scenario::ctx(&mut scenario_val));
             //transfer::share_object(dao);
         };
-        //create voting obc
+        //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
@@ -414,7 +414,7 @@ module obc_system::bfc_dao_test {
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let vObc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -424,8 +424,8 @@ module obc_system::bfc_dao_test {
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
             //change status for dao inside proposal info.
 
-            //let amount = voting_pool::voting_obc_amount(&mut vObc);
-            bfc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            //let amount = voting_pool::voting_bfc_amount(&mut vBfc);
+            bfc_dao::cast_vote(&mut dao, &mut p, vBfc, 1, &clock, test_scenario::ctx(&mut scenario_val));
             //debug::print(&amount);
 
             let (forvote, agaistvote) = bfc_dao::proposal_info(&mut p);
@@ -496,7 +496,7 @@ module obc_system::bfc_dao_test {
             bfc_dao::create_dao_and_share(admins,test_scenario::ctx(&mut scenario_val));
             //transfer::share_object(dao);
         };
-        //create voting obc
+        //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
@@ -542,7 +542,7 @@ module obc_system::bfc_dao_test {
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let vObc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -550,7 +550,7 @@ module obc_system::bfc_dao_test {
             //change status
             modify_proposal_obj(&mut dao,&mut p, ACTIVE, &clock);
 
-            bfc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::cast_vote(&mut dao, &mut p, vBfc, 1, &clock, test_scenario::ctx(&mut scenario_val));
 
             let (forvote, agaistvote) = bfc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -613,7 +613,7 @@ module obc_system::bfc_dao_test {
             bfc_dao::create_dao_and_share(admins,test_scenario::ctx(&mut scenario_val));
             //transfer::share_object(dao);
         };
-        //create voting obc
+        //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
@@ -659,7 +659,7 @@ module obc_system::bfc_dao_test {
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let vObc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
             let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -667,7 +667,7 @@ module obc_system::bfc_dao_test {
             //change status
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
 
-            bfc_dao::cast_vote(&mut dao, &mut p, vObc, 1, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::cast_vote(&mut dao, &mut p, vBfc, 1, &clock, test_scenario::ctx(&mut scenario_val));
 
             let (forvote, agaistvote) = bfc_dao::proposal_info(&mut p);
             debug::print(&forvote);
@@ -720,7 +720,7 @@ module obc_system::bfc_dao_test {
             bfc_dao::create_dao_and_share(admins,test_scenario::ctx(&mut scenario_val));
             //transfer::share_object(dao);
         };
-        //create voting obc
+        //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
