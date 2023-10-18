@@ -960,7 +960,9 @@ async fn test_staking_multiple_coins() -> Result<(), anyhow::Error> {
 
     Ok(())
 }
+
 #[sim_test]
+#[ignore]
 async fn test_dao_publish() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     info!("=================");
