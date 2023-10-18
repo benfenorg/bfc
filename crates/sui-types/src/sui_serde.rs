@@ -107,9 +107,9 @@ where
 
 ///===============
 /// custom serde for AccountAddress
-pub struct HexOBCAddress;
+pub struct HexBFCAddress;
 
-impl SerializeAs<[u8; 32]> for HexOBCAddress {
+impl SerializeAs<[u8; 32]> for HexBFCAddress {
     fn serialize_as<S>(value: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -131,7 +131,7 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
     }
 }
 
-impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
+impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
     fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
     where
         D: Deserializer<'de>,
@@ -143,7 +143,7 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
                 s = String::from(sui);
             } else {
                 info!(
-                    "HexOBCAddress deserializing error obc address from hex: {}",
+                    "HexBFCAddress deserializing error obc address from hex: {}",
                     s
                 );
                 return Err("invalid obc address").map_err(serde::de::Error::custom);

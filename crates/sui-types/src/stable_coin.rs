@@ -37,14 +37,14 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
-    use crate::OBC_SYSTEM_ADDRESS;
+    use crate::BFC_SYSTEM_ADDRESS;
     use super::*;
 
     pub struct STABLE {}
     impl STABLE {
         pub fn type_() -> StructTag {
             StructTag {
-                address: OBC_SYSTEM_ADDRESS,
+                address: BFC_SYSTEM_ADDRESS,
                 name: GAS_STRUCT_NAME.to_owned(),
                 module: GAS_MODULE_NAME.to_owned(),
                 type_params: Vec::new(),

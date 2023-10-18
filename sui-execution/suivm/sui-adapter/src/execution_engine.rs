@@ -16,14 +16,14 @@ mod checked {
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::{
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        obc_system_state::{OBC_SYSTEM_MODULE_NAME,OBC_ROUND_FUNCTION_NAME,ObcRoundParams},
+        obc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME, BfcRoundParams},
         SUI_FRAMEWORK_ADDRESS,
     };
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
-    } , transaction::ChangeObcRound};
+    } , transaction::ChangeBfcRound};
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::metrics::LimitsMetrics;
@@ -55,7 +55,7 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::Object,
     };
-    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, OBC_SYSTEM_PACKAGE_ID};
+    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -506,7 +506,7 @@ mod checked {
                     pt,
                 )
             }
-            TransactionKind::ChangeObcRound(change_round) => {
+            TransactionKind::ChangeBfcRound(change_round) => {
                 obc_round(
                     change_round,
                     temporary_store,
@@ -678,9 +678,9 @@ mod checked {
         info!("Call arguments to obc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
-            OBC_SYSTEM_PACKAGE_ID,
-            OBC_SYSTEM_MODULE_NAME.to_owned(),
-            OBC_ROUND_FUNCTION_NAME.to_owned(),
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            BFC_ROUND_FUNCTION_NAME.to_owned(),
             vec![],
             arguments,
         );
@@ -690,15 +690,15 @@ mod checked {
 
 
     fn obc_round(
-        change_round: ChangeObcRound,
+        change_round: ChangeBfcRound,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
         move_vm: &Arc<MoveVM>,
         gas_charger: &mut GasCharger,
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
-    )-> Result<(), ExecutionError>{
-        let _ = ObcRoundParams {
+    ) -> Result<(), ExecutionError>{
+        let _ = BfcRoundParams {
             round_id:change_round.obc_round
         };
         let advance_epoch_pt = construct_obc_round_pt(change_round.obc_round)?;
