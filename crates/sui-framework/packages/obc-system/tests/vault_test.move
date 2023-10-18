@@ -12,7 +12,7 @@ module obc_system::vault_test {
 
     use obc_system::treasury;
     use obc_system::treasury::Treasury;
-    use obc_system::usd::{USD};
+    use obc_system::busd::{BUSD};
     use obc_system::vault;
     use obc_system::test_utils;
 
@@ -39,8 +39,8 @@ module obc_system::vault_test {
         let t = test_scenario::take_shared<Treasury>(&scenario_val);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario_val));
 
-        let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, type_name::into_string(type_name::get<USD>()));
-        let (balance0, balance1) = vault::balances<USD>(usd_mut_vault);
+        let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, type_name::into_string(type_name::get<BUSD>()));
+        let (balance0, balance1) = vault::balances<BUSD>(usd_mut_vault);
         if (IS_DEBUG) {
             debug::print(&string(b"balance0: "));
             debug::print(&balance0);
@@ -80,7 +80,7 @@ module obc_system::vault_test {
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
-        let usd_mut_vault = treasury::borrow_mut_vault<USD>(&mut t, type_name::into_string(type_name::get<USD>()));
+        let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, type_name::into_string(type_name::get<BUSD>()));
         if (IS_DEBUG) {
             let (amount_a, amount_b) = vault::get_position_amounts(usd_mut_vault, 5, true);
             let liquidity = vault::get_position_liquidity(usd_mut_vault, 5);
@@ -103,7 +103,7 @@ module obc_system::vault_test {
         let balance_alice = balance::create_for_testing<BFC>(2_000_000_000);
         let alice_coin_to_mint = coin::from_balance(balance_alice, test_scenario::ctx(&mut scenario));
 
-        treasury::mint<USD>(&mut t, alice_coin_to_mint, 1_000_000_000, test_scenario::ctx(&mut scenario));
+        treasury::mint<BUSD>(&mut t, alice_coin_to_mint, 1_000_000_000, test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
 
@@ -135,7 +135,7 @@ module obc_system::vault_test {
         let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
 
         test_scenario::next_tx(&mut scenario_val, owner);
-        let calculate_usd_amount = treasury::calculate_swap_result<USD>(
+        let calculate_usd_amount = treasury::calculate_swap_result<BUSD>(
             &t,
             false,
             100_000_000_000,
@@ -148,7 +148,7 @@ module obc_system::vault_test {
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
-        let calculate_obc_amount = treasury::calculate_swap_result<USD>(
+        let calculate_obc_amount = treasury::calculate_swap_result<BUSD>(
             &t,
             true,
             100_000_000_000,

@@ -752,7 +752,7 @@ module obc_system::vault {
     ///     - `_index` The index of position.
     /// Returns
     ///     - `amount_a` The amount of `StableCoinType`
-    ///     - `amount_b` The amount of `OBC`
+    ///     - `amount_b` The amount of `BFC`
     public fun get_position_amounts<StableCoinType>(
         _vault: &Vault<StableCoinType>,
         _index: u64,
@@ -857,7 +857,7 @@ module obc_system::vault {
         _vault.state
     }
 
-    public fun obc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
+    public fun bfc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
         ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
     }
 
@@ -992,7 +992,7 @@ module obc_system::vault {
 
     fun rebalance_internal<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
-        _obc_balance: &mut Balance<BFC>,
+        _bfc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,
         _balance0: Balance<StableCoinType>,
         _balance1: Balance<BFC>,
@@ -1029,9 +1029,9 @@ module obc_system::vault {
         };
 
         if (balance1_value < total_b) {
-            balance::join(&mut _balance1, balance::split(_obc_balance, total_b - balance1_value));
+            balance::join(&mut _balance1, balance::split(_bfc_balance, total_b - balance1_value));
         } else if (balance1_value > total_a) {
-            balance::join(_obc_balance, balance::split(&mut _balance1, balance1_value - total_b));
+            balance::join(_bfc_balance, balance::split(&mut _balance1, balance1_value - total_b));
         };
 
         balance::join(&mut _vault.coin_a, _balance0);
@@ -1040,7 +1040,7 @@ module obc_system::vault {
 
     public(friend) fun rebalance<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
-        _obc_balance: &mut Balance<BFC>,
+        _bfc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,
         _ctx: &mut TxContext
     ) {
@@ -1054,7 +1054,7 @@ module obc_system::vault {
         let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape);
         rebalance_internal(
             _vault,
-            _obc_balance,
+            _bfc_balance,
             _supply,
             balance0,
             balance1,

@@ -20,7 +20,7 @@
 -  [Function `get_obc_for_exchange_all`](#0xc8_exchange_inner_get_obc_for_exchange_all)
 -  [Function `request_exchange_all`](#0xc8_exchange_inner_request_exchange_all)
 -  [Function `request_withdraw_all_stable`](#0xc8_exchange_inner_request_withdraw_all_stable)
--  [Function `request_deposit_obc_balance`](#0xc8_exchange_inner_request_deposit_obc_balance)
+-  [Function `request_deposit_bfc_balance`](#0xc8_exchange_inner_request_deposit_bfc_balance)
 -  [Module Specification](#@Module_Specification_1)
 
 
@@ -64,7 +64,7 @@
  The value is <code>None</code> if the pool is pre-active and <code>Some(&lt;epoch_number&gt;)</code> if active or inactive.
 </dd>
 <dt>
-<code>obc_balance: u64</code>
+<code>bfc_balance: u64</code>
 </dt>
 <dd>
  The total number of SUI coins in this pool
@@ -171,7 +171,7 @@ Init exchange pool for gas coin exchange.
     <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">ExchangePool</a> {
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         activation_epoch: <a href="_some">option::some</a>(epoch),
-        obc_balance: 0,
+        bfc_balance: 0,
         obc_pool: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>(),
         stable_token_balance: 0,
         stable_pool: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;STABLE_COIN&gt;(),
@@ -229,7 +229,7 @@ Add obc to pool for gas exchange.
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_add_obc_to_pool">add_obc_to_pool</a>&lt;STABLE_COIN&gt;(pool: &<b>mut</b> <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">ExchangePool</a>&lt;STABLE_COIN&gt;, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;) {
     <b>let</b> amount = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>);
     <b>assert</b>!( amount &gt; 0, <a href="exchange_inner.md#0xc8_exchange_inner_EZeroAmount">EZeroAmount</a>);
-    pool.obc_balance = pool.obc_balance + amount;
+    pool.bfc_balance = pool.bfc_balance + amount;
     <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>);
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.obc_pool, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
 }
@@ -333,7 +333,7 @@ Disable activation of pool and return current epoch
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_get_obc_amount">get_obc_amount</a>&lt;STABLE_COIN&gt;(pool: &<a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">ExchangePool</a>&lt;STABLE_COIN&gt;): u64 {
-    pool.obc_balance
+    pool.bfc_balance
 }
 </code></pre>
 
@@ -418,10 +418,10 @@ Request for exchange gas coin to default coin.
     <b>let</b> stable_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&tok_balance);
     <b>let</b> obc_amount= <a href="exchange_inner.md#0xc8_exchange_inner_exchange_obc_amount">exchange_obc_amount</a>(exchange_rate, stable_amount);
     <b>assert</b>!(obc_amount &gt; 0, <a href="exchange_inner.md#0xc8_exchange_inner_EOBCZeroAmount">EOBCZeroAmount</a>);
-    <b>assert</b>!(pool.obc_balance &gt; obc_amount, <a href="exchange_inner.md#0xc8_exchange_inner_ELackOfOBC">ELackOfOBC</a>);
+    <b>assert</b>!(pool.bfc_balance &gt; obc_amount, <a href="exchange_inner.md#0xc8_exchange_inner_ELackOfOBC">ELackOfOBC</a>);
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.stable_pool, tok_balance);
     <b>let</b> result = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_take">coin::take</a>(&<b>mut</b> pool.obc_pool, obc_amount, ctx);
-    pool.obc_balance = pool.obc_balance - obc_amount;
+    pool.bfc_balance = pool.bfc_balance - obc_amount;
     pool.stable_token_balance = pool.stable_token_balance + stable_amount;
     <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(result)
 }
@@ -449,9 +449,9 @@ Request for exchange gas coin to default coin.
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_get_obc_for_exchange_all">get_obc_for_exchange_all</a>&lt;STABLE_COIN&gt;(
     pool: &<b>mut</b> <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">ExchangePool</a>&lt;STABLE_COIN&gt;,
 ): Balance&lt;BFC&gt; {
-    <b>if</b>(pool.obc_balance &gt; 0) {
+    <b>if</b>(pool.bfc_balance &gt; 0) {
         //set pool active is <b>false</b>
-        pool.obc_balance = 0;
+        pool.bfc_balance = 0;
        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> pool.obc_pool)
     }<b>else</b> {
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;()
@@ -522,13 +522,13 @@ Withdraw the stable gas coins.
 
 </details>
 
-<a name="0xc8_exchange_inner_request_deposit_obc_balance"></a>
+<a name="0xc8_exchange_inner_request_deposit_bfc_balance"></a>
 
-## Function `request_deposit_obc_balance`
+## Function `request_deposit_bfc_balance`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_request_deposit_obc_balance">request_deposit_obc_balance</a>&lt;STABLE_COIN&gt;(pool: &<b>mut</b> <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>&lt;STABLE_COIN&gt;, obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_request_deposit_bfc_balance">request_deposit_bfc_balance</a>&lt;STABLE_COIN&gt;(pool: &<b>mut</b> <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>&lt;STABLE_COIN&gt;, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -537,13 +537,13 @@ Withdraw the stable gas coins.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_request_deposit_obc_balance">request_deposit_obc_balance</a>&lt;STABLE_COIN&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="exchange_inner.md#0xc8_exchange_inner_request_deposit_bfc_balance">request_deposit_bfc_balance</a>&lt;STABLE_COIN&gt;(
     pool: &<b>mut</b> <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">ExchangePool</a>&lt;STABLE_COIN&gt;,
-    obc_balance: Balance&lt;BFC&gt;,
+    bfc_balance: Balance&lt;BFC&gt;,
 ) {
     <b>assert</b>!(!<a href="exchange_inner.md#0xc8_exchange_inner_is_active">is_active</a>(pool), <a href="exchange_inner.md#0xc8_exchange_inner_ENotAllowDeposit">ENotAllowDeposit</a>);
-    pool.obc_balance = pool.obc_balance + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&obc_balance);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.obc_pool, obc_balance);
+    pool.bfc_balance = pool.bfc_balance + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&bfc_balance);
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.obc_pool, bfc_balance);
 }
 </code></pre>
 
