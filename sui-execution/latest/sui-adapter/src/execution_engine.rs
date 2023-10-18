@@ -707,7 +707,7 @@ mod checked {
             round_id:change_round.obc_round
         };
         let advance_epoch_pt = construct_obc_round_pt(change_round.obc_round)?;
-        let _result = programmable_transactions::execution::execute::<execution_mode::System>(
+        let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
             move_vm,
@@ -718,7 +718,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let result = maybe_modify_result(result, change_round.obc_round);
+        let _result = maybe_modify_result(result, change_round.obc_round);
 
         // if result.is_err() {
         //     tracing::error!(

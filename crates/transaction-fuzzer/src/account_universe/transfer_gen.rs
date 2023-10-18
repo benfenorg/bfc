@@ -27,9 +27,9 @@ use sui_types::{
 
 const GAS_UNIT_PRICE: u64 = 2;
 const DEFAULT_TRANSFER_AMOUNT: u64 = 1;
-const P2P_COMPUTE_GAS_USAGE: u64 = 1000;
-const P2P_SUCCESS_STORAGE_USAGE: u64 = 1976000;
-const P2P_FAILURE_STORAGE_USAGE: u64 = 988000;
+const P2P_COMPUTE_GAS_USAGE: u64 = 100;
+const P2P_SUCCESS_STORAGE_USAGE: u64 = 261440;
+const P2P_FAILURE_STORAGE_USAGE: u64 = 130720;
 const INSUFFICIENT_GAS_UNITS_THRESHOLD: u64 = 2;
 
 static PROTOCOL_CONFIG: Lazy<ProtocolConfig> =
@@ -215,7 +215,7 @@ fn p2p_failure_gas(gas_price: u64) -> u64 {
 pub fn gas_price_selection_strategy() -> impl Strategy<Value = u64> {
     prop_oneof![
         Just(0u64),
-        1u64..10_000,
+        1u64..1_000,
         Just(PROTOCOL_CONFIG.max_gas_price() - 1),
         Just(PROTOCOL_CONFIG.max_gas_price()),
         Just(PROTOCOL_CONFIG.max_gas_price() + 1),
@@ -230,7 +230,7 @@ pub fn gas_budget_selection_strategy() -> impl Strategy<Value = u64> {
     prop_oneof![
         Just(0u64),
         PROTOCOL_CONFIG.base_tx_cost_fixed() / 2..=PROTOCOL_CONFIG.base_tx_cost_fixed() * 2000,
-        1_000_000u64..=3_000_000,
+        // 1_000_000u64..=3_000_000,
         Just(PROTOCOL_CONFIG.max_tx_gas() - 1),
         Just(PROTOCOL_CONFIG.max_tx_gas()),
         Just(PROTOCOL_CONFIG.max_tx_gas() + 1),

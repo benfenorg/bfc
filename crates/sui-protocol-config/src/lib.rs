@@ -997,9 +997,9 @@ impl ProtocolConfig {
             move_binary_format_version: Some(6),
             max_move_object_size: Some(250 * 1024),
             max_move_package_size: Some(100 * 1024),
-            max_tx_gas: Some(1_000_000_000),
-            max_gas_price: Some(100_000),
-            max_gas_computation_bucket: Some(5_000_000),
+            max_tx_gas: Some(100_000_000),
+            max_gas_price: Some(10_000),
+            max_gas_computation_bucket: Some(500_000),
             max_loop_depth: Some(5),
             max_generic_instantiation_length: Some(32),
             max_function_parameters: Some(128),
@@ -1045,7 +1045,7 @@ impl ProtocolConfig {
             obj_access_cost_mutate_per_byte: Some(40),
             obj_access_cost_delete_per_byte: Some(40),
             obj_access_cost_verify_per_byte: Some(200),
-            obj_data_cost_refundable: Some(100),
+            obj_data_cost_refundable: Some(10),
             obj_metadata_cost_non_refundable: Some(50),
             gas_model_version: Some(1),
             storage_rebate_rate: Some(9900),
@@ -1318,7 +1318,7 @@ impl ProtocolConfig {
                 }
                 13 => {}
                 14 => {
-                    cfg.gas_rounding_step = Some(1_000);
+                    cfg.gas_rounding_step = Some(100);
                     cfg.gas_model_version = Some(6);
                 }
                 15 => {
@@ -1343,7 +1343,7 @@ impl ProtocolConfig {
                     // cfg.feature_flags.pack_digest_hash_modules = true;
                     cfg.feature_flags.txn_base_cost_as_multiplier = true;
                     // this is a multiplier of the gas price
-                    cfg.base_tx_cost_fixed = Some(1_000);
+                    cfg.base_tx_cost_fixed = Some(100);
                 }
                 19 => {
                     cfg.max_num_event_emit = Some(1024);
@@ -1417,6 +1417,10 @@ impl ProtocolConfig {
 
 // Setters for tests
 impl ProtocolConfig {
+    pub fn set_gas_rounding_step(&mut self, gas_rounding_step: Option<u64>) {
+        self.gas_rounding_step = gas_rounding_step
+    }
+
     pub fn set_package_upgrades_for_testing(&mut self, val: bool) {
         self.feature_flags.package_upgrades = val
     }
