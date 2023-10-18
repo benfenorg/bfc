@@ -1,6 +1,6 @@
 export function Overview() {
 	return (
-		<div className="flex justify-around text-center text-xs px-10 py-5 border border-bf-press rounded-md bg-bf-white_4p">
+		<div className="flex justify-around text-center text-xs px-10 py-5 border border-bf-press rounded-lg bg-bf-white_4p">
 			<div>
 				<div className="text-2xl">1,234.5678</div>
 				<div className="text-bf-text3 mt-1">已锁定BFC</div>

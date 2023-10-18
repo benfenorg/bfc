@@ -1,11 +1,11 @@
-module obc_system::usd {
+module obc_system::busd {
     use std::option;
     use sui::transfer;
     use sui::coin;
     use sui::balance::Supply;
     use sui::tx_context::{Self, TxContext};
 
-    struct USD has drop {}
+    struct BUSD has drop {}
 
     const EAlreadyMinted: u64 = 0;
     /// Sender is not @0x0 the system address.
@@ -15,11 +15,11 @@ module obc_system::usd {
 
 
     #[allow(unused_function)]
-    public fun new(ctx: &mut TxContext): Supply<USD> {
+    public fun new(ctx: &mut TxContext): Supply<BUSD> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
         let (cap, metadata) = coin::create_currency(
-            USD {},
+            BUSD {},
             9,
             b"obUSD",
             b"ob usd",

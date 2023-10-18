@@ -73,7 +73,7 @@ export function ConfirmModal({
 		>
 			<div className="p-5">
 				<div className="text-xs">
-					<div className="rounded-md border border-bf-border overflow-hidden font-semibold">
+					<div className="rounded-lg border border-bf-border overflow-hidden font-semibold">
 						<div className="py-2.5 bg-bf-card text-center">
 							{type === 'mint' ? 'Mint' : 'Withdraw'}
 						</div>
@@ -103,7 +103,7 @@ export function ConfirmModal({
 				{status !== 'waiting' && (
 					<div className="mt-5">
 						{status === 'fail' && errorText && (
-							<div className="flex items-center text-xs text-bf-red bg-bf-red_10p p-2.5 mb-2.5 rounded-md">
+							<div className="flex items-center text-xs text-bf-red bg-bf-red_10p p-2.5 mb-2.5 rounded-lg">
 								<FailIcon className="mr-1"/>
 								{errorText}
 							</div>

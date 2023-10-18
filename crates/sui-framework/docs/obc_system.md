@@ -35,12 +35,12 @@
 -  [Function `set_min_action_delay`](#0xc8_obc_system_set_min_action_delay)
 -  [Function `withdraw_voting`](#0xc8_obc_system_withdraw_voting)
 -  [Function `create_voting_bfc`](#0xc8_obc_system_create_voting_bfc)
--  [Function `swap_obc_to_stablecoin`](#0xc8_obc_system_swap_obc_to_stablecoin)
--  [Function `swap_stablecoin_to_obc`](#0xc8_obc_system_swap_stablecoin_to_obc)
--  [Function `get_stablecoin_by_obc`](#0xc8_obc_system_get_stablecoin_by_obc)
--  [Function `get_obc_by_stablecoin`](#0xc8_obc_system_get_obc_by_stablecoin)
+-  [Function `swap_bfc_to_stablecoin`](#0xc8_obc_system_swap_bfc_to_stablecoin)
+-  [Function `swap_stablecoin_to_bfc`](#0xc8_obc_system_swap_stablecoin_to_bfc)
+-  [Function `get_stablecoin_by_bfc`](#0xc8_obc_system_get_stablecoin_by_bfc)
+-  [Function `get_bfc_by_stablecoin`](#0xc8_obc_system_get_bfc_by_stablecoin)
 -  [Function `vault_info`](#0xc8_obc_system_vault_info)
--  [Function `next_epoch_obc_required`](#0xc8_obc_system_next_epoch_obc_required)
+-  [Function `next_epoch_bfc_required`](#0xc8_obc_system_next_epoch_bfc_required)
 -  [Function `treasury_balance`](#0xc8_obc_system_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_obc_system_deposit_to_treasury)
 -  [Function `set_voting_delay`](#0xc8_obc_system_set_voting_delay)
@@ -65,8 +65,8 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="bfc_dao.md#0xc8_bfc_dao">0xc8::bfc_dao</a>;
 <b>use</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager">0xc8::bfc_dao_manager</a>;
+<b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner">0xc8::obc_system_state_inner</a>;
-<b>use</b> <a href="usd.md#0xc8_usd">0xc8::usd</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -177,7 +177,7 @@
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, obc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, parameters: <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_ObcSystemParameters">obc_system_state_inner::ObcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -188,14 +188,14 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_create">create</a>(
     id: UID,
-    usd_supply: Supply&lt;USD&gt;,
-    obc_balance: Balance&lt;BFC&gt;,
+    usd_supply: Supply&lt;BUSD&gt;,
+    bfc_balance: Balance&lt;BFC&gt;,
     parameters: ObcSystemParameters,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> inner_state = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_create_inner_state">obc_system_state_inner::create_inner_state</a>(
         usd_supply,
-        obc_balance,
+        bfc_balance,
         parameters,
         ctx,
     );
@@ -265,7 +265,7 @@
     //exchange all <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> <b>to</b> obc.
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_exchange_all">obc_system_state_inner::request_exchange_all</a>(inner_state, ctx);
     //<b>update</b> inner exchange rate from <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>-swap.
-    <b>let</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;USD&gt;(ctx);
+    <b>let</b> <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;BUSD&gt;(ctx);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_update_gas_coin">obc_system_state_inner::request_update_gas_coin</a>(inner_state, &<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>);
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>));
     // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
@@ -366,7 +366,7 @@
 Getter of the gas coin exchange pool rate.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_get_exchange_rate">request_get_exchange_rate</a>(self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;): u64
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_get_exchange_rate">request_get_exchange_rate</a>(self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;): u64
 </code></pre>
 
 
@@ -377,10 +377,10 @@ Getter of the gas coin exchange pool rate.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_get_exchange_rate">request_get_exchange_rate</a>(
     self: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;USD&gt;
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: &Coin&lt;BUSD&gt;
 ): u64 {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(self);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_requst_get_exchange_rate">obc_system_state_inner::requst_get_exchange_rate</a>&lt;USD&gt;(inner_state, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_requst_get_exchange_rate">obc_system_state_inner::requst_get_exchange_rate</a>&lt;BUSD&gt;(inner_state, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>)
 }
 </code></pre>
 
@@ -394,7 +394,7 @@ Getter of the gas coin exchange pool rate.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_add_gas_coin">request_add_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, rate: u64)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_add_gas_coin">request_add_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, rate: u64)
 </code></pre>
 
 
@@ -405,7 +405,7 @@ Getter of the gas coin exchange pool rate.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_add_gas_coin">request_add_gas_coin</a>(
     self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    gas_coin: &Coin&lt;USD&gt;,
+    gas_coin: &Coin&lt;BUSD&gt;,
     rate: u64,
 ) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
@@ -423,7 +423,7 @@ Getter of the gas coin exchange pool rate.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_update_gas_coin">request_update_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_update_gas_coin">request_update_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;)
 </code></pre>
 
 
@@ -434,7 +434,7 @@ Getter of the gas coin exchange pool rate.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_update_gas_coin">request_update_gas_coin</a>(
     self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    gas_coin: &Coin&lt;USD&gt;,
+    gas_coin: &Coin&lt;BUSD&gt;,
 ) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_update_gas_coin">obc_system_state_inner::request_update_gas_coin</a>(inner_state, gas_coin)
@@ -451,7 +451,7 @@ Getter of the gas coin exchange pool rate.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_remove_gas_coin">request_remove_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_remove_gas_coin">request_remove_gas_coin</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;)
 </code></pre>
 
 
@@ -462,7 +462,7 @@ Getter of the gas coin exchange pool rate.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_remove_gas_coin">request_remove_gas_coin</a>(
     self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    gas_coin: &Coin&lt;USD&gt;,
+    gas_coin: &Coin&lt;BUSD&gt;,
 ) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_remove_gas_coin">obc_system_state_inner::request_remove_gas_coin</a>(inner_state, gas_coin)
@@ -480,7 +480,7 @@ Getter of the gas coin exchange pool rate.
 Request exchange stable coin to obc.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_stable">request_exchange_stable</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_stable">request_exchange_stable</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -491,11 +491,11 @@ Request exchange stable coin to obc.
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_exchange_stable">request_exchange_stable</a>(
     self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;USD&gt;,
+    <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>: Coin&lt;BUSD&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_obc_balance">obc_system_state_inner::swap_stablecoin_to_obc_balance</a>&lt;USD&gt;(
+    <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_bfc_balance">obc_system_state_inner::swap_stablecoin_to_bfc_balance</a>&lt;BUSD&gt;(
         inner_state,
         <a href="../../../.././build/Sui/docs/stable.md#0x2_stable">stable</a>,
         ctx);
@@ -571,7 +571,7 @@ Request withdraw stable coin.
 
 
 
-<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_withdraw_stable_no_entry">request_withdraw_stable_no_entry</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="usd.md#0xc8_usd_USD">usd::USD</a>&gt;
+<pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_withdraw_stable_no_entry">request_withdraw_stable_no_entry</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
 </code></pre>
 
 
@@ -582,7 +582,7 @@ Request withdraw stable coin.
 
 <pre><code><b>fun</b> <a href="obc_system.md#0xc8_obc_system_request_withdraw_stable_no_entry">request_withdraw_stable_no_entry</a>(
     self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-): Balance&lt;USD&gt; {
+): Balance&lt;BUSD&gt; {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
     <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_request_withdraw_stable">obc_system_state_inner::request_withdraw_stable</a>(inner_state)
 }
@@ -646,7 +646,7 @@ Init exchange pool by add obc coin.
     max_counter_times: u32,
     chain_start_timestamp_ms: u64,
 ): ObcSystemParameters {
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_obc_system_stat_parameter">obc_system_state_inner::obc_system_stat_parameter</a>(
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_bfc_system_stat_parameter">obc_system_state_inner::bfc_system_stat_parameter</a>(
         position_number,
         tick_spacing,
         spacing_times,
@@ -942,14 +942,14 @@ Init exchange pool by add obc coin.
 
 </details>
 
-<a name="0xc8_obc_system_swap_obc_to_stablecoin"></a>
+<a name="0xc8_obc_system_swap_bfc_to_stablecoin"></a>
 
-## Function `swap_obc_to_stablecoin`
+## Function `swap_bfc_to_stablecoin`
 
 X treasury  swap obc to stablecoin
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_obc_to_stablecoin">swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_obc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_bfc_to_stablecoin">swap_bfc_to_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, native_coin: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -958,14 +958,14 @@ X treasury  swap obc to stablecoin
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_obc_to_stablecoin">swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_bfc_to_stablecoin">swap_bfc_to_stablecoin</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    coin_obc: Coin&lt;BFC&gt;,
+    native_coin: Coin&lt;BFC&gt;,
     amount: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_obc_to_stablecoin">obc_system_state_inner::swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(system_state, coin_obc, amount, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_obc_to_stablecoin">obc_system_state_inner::swap_obc_to_stablecoin</a>&lt;StableCoinType&gt;(system_state, native_coin, amount, ctx);
 }
 </code></pre>
 
@@ -973,14 +973,14 @@ X treasury  swap obc to stablecoin
 
 </details>
 
-<a name="0xc8_obc_system_swap_stablecoin_to_obc"></a>
+<a name="0xc8_obc_system_swap_stablecoin_to_bfc"></a>
 
-## Function `swap_stablecoin_to_obc`
+## Function `swap_stablecoin_to_bfc`
 
 X treasury  swap stablecoin to obc
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_stablecoin_to_obc">swap_stablecoin_to_obc</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_stablecoin_to_bfc">swap_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, stable_coin: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -989,14 +989,14 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_stablecoin_to_obc">swap_stablecoin_to_obc</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_swap_stablecoin_to_bfc">swap_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
-    coin_sc: Coin&lt;StableCoinType&gt;,
+    stable_coin: Coin&lt;StableCoinType&gt;,
     amount: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_obc">obc_system_state_inner::swap_stablecoin_to_obc</a>&lt;StableCoinType&gt;(system_state, coin_sc, amount, ctx);
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_swap_stablecoin_to_bfc">obc_system_state_inner::swap_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(system_state, stable_coin, amount, ctx);
 }
 </code></pre>
 
@@ -1004,13 +1004,13 @@ X treasury  swap stablecoin to obc
 
 </details>
 
-<a name="0xc8_obc_system_get_stablecoin_by_obc"></a>
+<a name="0xc8_obc_system_get_stablecoin_by_bfc"></a>
 
-## Function `get_stablecoin_by_obc`
+## Function `get_stablecoin_by_bfc`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_stablecoin_by_obc">get_stablecoin_by_obc</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, amount: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_stablecoin_by_bfc">get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, amount: u64): u64
 </code></pre>
 
 
@@ -1019,13 +1019,13 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_stablecoin_by_obc">get_stablecoin_by_obc</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_stablecoin_by_bfc">get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(
     wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     amount: u64,
 ): u64
 {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_stablecoin_by_obc">obc_system_state_inner::get_stablecoin_by_obc</a>&lt;StableCoinType&gt;(system_state, amount)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_stablecoin_by_bfc">obc_system_state_inner::get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(system_state, amount)
 }
 </code></pre>
 
@@ -1033,13 +1033,13 @@ X treasury  swap stablecoin to obc
 
 </details>
 
-<a name="0xc8_obc_system_get_obc_by_stablecoin"></a>
+<a name="0xc8_obc_system_get_bfc_by_stablecoin"></a>
 
-## Function `get_obc_by_stablecoin`
+## Function `get_bfc_by_stablecoin`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_obc_by_stablecoin">get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, amount: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_bfc_by_stablecoin">get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, amount: u64): u64
 </code></pre>
 
 
@@ -1048,13 +1048,13 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_obc_by_stablecoin">get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_get_bfc_by_stablecoin">get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(
     wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>,
     amount: u64,
 ): u64
 {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_obc_by_stablecoin">obc_system_state_inner::get_obc_by_stablecoin</a>&lt;StableCoinType&gt;(system_state, amount)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_get_bfc_by_stablecoin">obc_system_state_inner::get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(system_state, amount)
 }
 </code></pre>
 
@@ -1087,13 +1087,13 @@ X treasury  swap stablecoin to obc
 
 </details>
 
-<a name="0xc8_obc_system_next_epoch_obc_required"></a>
+<a name="0xc8_obc_system_next_epoch_bfc_required"></a>
 
-## Function `next_epoch_obc_required`
+## Function `next_epoch_bfc_required`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_bfc_required">next_epoch_bfc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>): u64
 </code></pre>
 
 
@@ -1102,9 +1102,9 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_obc_required">next_epoch_obc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="obc_system.md#0xc8_obc_system_next_epoch_bfc_required">next_epoch_bfc_required</a>(wrapper: &<a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>): u64 {
     <b>let</b> system_state = <a href="obc_system.md#0xc8_obc_system_load_system_state">load_system_state</a>(wrapper);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_next_epoch_obc_required">obc_system_state_inner::next_epoch_obc_required</a>(system_state)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_next_epoch_bfc_required">obc_system_state_inner::next_epoch_bfc_required</a>(system_state)
 }
 </code></pre>
 
@@ -1143,7 +1143,7 @@ X treasury  swap stablecoin to obc
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">obc_system::ObcSystemState</a>, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1152,9 +1152,9 @@ X treasury  swap stablecoin to obc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="obc_system.md#0xc8_obc_system_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="obc_system.md#0xc8_obc_system_ObcSystemState">ObcSystemState</a>, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>: Coin&lt;BFC&gt;) {
     <b>let</b> inner_state = <a href="obc_system.md#0xc8_obc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_deposit_to_treasury">obc_system_state_inner::deposit_to_treasury</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
+    <a href="obc_system_state_inner.md#0xc8_obc_system_state_inner_deposit_to_treasury">obc_system_state_inner::deposit_to_treasury</a>(inner_state, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>)
 }
 </code></pre>
 

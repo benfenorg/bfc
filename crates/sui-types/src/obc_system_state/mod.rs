@@ -37,7 +37,7 @@ pub struct Bag {
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Treasury {
     pub id: UID,
-    pub obc_balance: Balance,
+    pub bfc_balance: Balance,
     supplies: Bag,
     index: u64,
     time_interval: u32,
@@ -143,7 +143,7 @@ pub struct ObcSystemStateInnerV1 {
 pub struct ExchangePoolV1 {
     pub id: ObjectID,
     pub activation_epoch: Option<u64>,
-    pub obc_balance: u64,
+    pub bfc_balance: u64,
     pub obc_pool: Balance,
     pub stable_token_balance: u64,
     pub stable_pool: Balance,

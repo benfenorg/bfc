@@ -4,7 +4,7 @@ export function SwapInfo({type,data}:any) {
 	const showcoin = type === 'mint' ? 'BUSD' : 'BFC'
 	return (
 		<div>
-			<div className="bg-bf-card rounded-md p-2.5 text-xs border border-bf-border">
+			<div className="bg-bf-card rounded-lg p-2.5 text-xs border border-bf-border">
 				<div className="flex justify-between">
 					<div className="text-bf-text2">Gas 费</div>
 					<div className="font-semibold">{data?.gas} BFC</div>

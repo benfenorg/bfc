@@ -9,7 +9,7 @@ module obc_system::test_utils {
     use sui::tx_context::TxContext;
 
     use obc_system::treasury::{Self, Treasury};
-    use obc_system::usd;
+    use obc_system::busd;
 
     friend obc_system::vault_test;
 
@@ -27,7 +27,7 @@ module obc_system::test_utils {
         ts: u64,
         ctx: &mut TxContext
     ) {
-        let usd_supply = usd::new(ctx);
+        let usd_supply = busd::new(ctx);
         let t = treasury::create_treasury(time_interval, ctx);
         treasury::init_vault_with_positions(
             &mut t,
