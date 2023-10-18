@@ -74,7 +74,7 @@ export function StationCoinCard({ type }: any) {
 	}, [loading, type]);
 
 	return (
-		<div className="text-xs bg-white text-bf-text1 rounded-md">
+		<div className="text-xs bg-white text-bf-text1 rounded-lg">
 			<div className="p-5">
 				<div className="flex justify-between">
 					<span className="font-semibold">Send</span>

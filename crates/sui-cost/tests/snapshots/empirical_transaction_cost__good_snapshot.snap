@@ -4,56 +4,56 @@ expression: common_costs_actual
 ---
 {
   "MergeCoin": {
-    "computationCost": "1000000",
-    "storageCost": "2614400",
+    "computationCost": "10000",
+    "storageCost": "261440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "Publish": {
-    "computationCost": "1000000",
-    "storageCost": "13824400",
+    "computationCost": "10000",
+    "storageCost": "1382440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "SharedCounterAssertValue": {
-    "computationCost": "1000000",
-    "storageCost": "2910800",
-    "storageRebate": "1587564",
-    "nonRefundableStorageFee": "16036"
+    "computationCost": "10000",
+    "storageCost": "291080",
+    "storageRebate": "158756",
+    "nonRefundableStorageFee": "1604"
   },
   "SharedCounterCreate": {
-    "computationCost": "1000000",
-    "storageCost": "2910800",
+    "computationCost": "10000",
+    "storageCost": "291080",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "SharedCounterIncrement": {
-    "computationCost": "1000000",
-    "storageCost": "2910800",
-    "storageRebate": "1587564",
-    "nonRefundableStorageFee": "16036"
+    "computationCost": "10000",
+    "storageCost": "291080",
+    "storageRebate": "158756",
+    "nonRefundableStorageFee": "1604"
   },
   "SplitCoin": {
-    "computationCost": "1000000",
-    "storageCost": "6536000",
+    "computationCost": "10000",
+    "storageCost": "653600",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "TransferPortionSuiCoin": {
-    "computationCost": "1000000",
-    "storageCost": "2614400",
+    "computationCost": "10000",
+    "storageCost": "261440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "TransferWholeCoin": {
-    "computationCost": "1000000",
-    "storageCost": "2614400",
+    "computationCost": "10000",
+    "storageCost": "261440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "TransferWholeSuiCoin": {
-    "computationCost": "1000000",
-    "storageCost": "1307200",
+    "computationCost": "10000",
+    "storageCost": "130720",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   }

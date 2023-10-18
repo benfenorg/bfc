@@ -24,7 +24,7 @@ export function Button({
 	return (
 		<button
 			className={classNames(
-				'h-10 flex w-full items-center justify-center bg-bf text-xs rounded-md font-semibold disabled:bg-bf-disabled',
+				'h-10 flex w-full items-center justify-center bg-bf text-xs rounded-lg font-semibold disabled:bg-bf-disabled',
 				className,
 				ghost ? 'bg-white text-bf-text1 border border-bf-text1' : 'text-white'
 			)}

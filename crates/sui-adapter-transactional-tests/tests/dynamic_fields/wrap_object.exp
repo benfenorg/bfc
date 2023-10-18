@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-41:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 7797600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 779760,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 43-43:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 45-45:
 Owner: Object ID: ( fake(2,2) )
@@ -23,12 +23,12 @@ created: object(4,0)
 mutated: object(0,0), object(2,0)
 deleted: object(2,2)
 wrapped: object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 4476400,  storage_rebate: 6147108, non_refundable_storage_fee: 62092
+gas summary: computation_cost: 100000, storage_cost: 447640,  storage_rebate: 614711, non_refundable_storage_fee: 6209
 
 task 5 'run'. lines 50-50:
 created: object(5,0), object(5,1), object(5,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 6 'view-object'. lines 52-52:
 Owner: Object ID: ( fake(5,0) )
@@ -36,22 +36,22 @@ Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(5,2)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(5,1)}}
 
 task 7 'run'. lines 54-54:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xa95ebe2fd19b29789b87c278aeb37e677b4f3dd57935acc7eee885180378f470, parent_id: 0xf8a7f5e5df153c5fe798d3c5761bbf5a0a9f45ae8e7184dfa6171b7d5f95f118 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x76d34a08e11047ef3e734c0fcc25da302ef2450faf19094b59eb066e71f1302e, parent_id: 0x884c3afc9c11e9be8157ffd5d962108500e66f4c12ce2d9c95511f85ce1423c3 }
 
 task 8 'run'. lines 57-57:
 created: object(8,0), object(8,1), object(8,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 9 'view-object'. lines 59-59:
-Owner: Object ID: ( fake(8,1) )
+Owner: Object ID: ( fake(8,0) )
 Version: 5
-Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(8,2)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(8,0)}}
+Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(8,2)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(8,1)}}
 
 task 10 'run'. lines 61-61:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x39cb286d6cc1fabc884681483f7b95306cdf1fd8e5b11ea27b864365e58695aa, parent_id: 0xc5acd8b2d131a24db58950a58010e92dedee673d03b9dd6d0551f9e1bbdcbe45 }
+mutated: object(0,0), object(8,0), object(8,1)
+deleted: object(8,2)
+gas summary: computation_cost: 100000, storage_cost: 375440,  storage_rebate: 614711, non_refundable_storage_fee: 6209
 
 task 11 'view-object'. lines 63-63:
-Owner: Object ID: ( fake(8,1) )
-Version: 5
-Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(8,2)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(8,0)}}
+No object at id 8,2
