@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, ObcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST};
+use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, BfcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST};
 use sui_execution::{self, Executor};
 use sui_framework::BuiltInFramework;
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
@@ -43,7 +43,7 @@ use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
-use sui_types::{OBC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::trace;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
@@ -687,7 +687,7 @@ fn build_unsigned_genesis_data(
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
-    let obc_system_parameters = parameters.to_obc_system_parameters();
+    let obc_system_parameters = parameters.to_bfc_system_parameters();
     let genesis_validators = validators
         .iter()
         .cloned()
@@ -873,7 +873,7 @@ fn create_genesis_objects(
     input_objects: &[Object],
     validators: &[GenesisValidatorMetadata],
     parameters: &GenesisChainParameters,
-    obc_system_parameters: &ObcSystemParameters,
+    obc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> Vec<Object> {
@@ -1026,7 +1026,7 @@ pub fn generate_genesis_system_object(
     genesis_validators: &[GenesisValidatorMetadata],
     genesis_ctx: &mut TxContext,
     genesis_chain_parameters: &GenesisChainParameters,
-    obc_system_parameters: &ObcSystemParameters,
+    obc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> anyhow::Result<()> {
@@ -1117,7 +1117,7 @@ pub fn generate_genesis_system_object(
 
         // create the supply of USD.
         let usd_supply = builder.programmable_move_call(
-            OBC_SYSTEM_ADDRESS.into(),
+            BFC_SYSTEM_ADDRESS.into(),
             ident_str!("usd").to_owned(),
             ident_str!("new").to_owned(),
             vec![],
@@ -1132,7 +1132,7 @@ pub fn generate_genesis_system_object(
         ];
 
         builder.programmable_move_call(
-            OBC_SYSTEM_ADDRESS.into(),
+            BFC_SYSTEM_ADDRESS.into(),
             ident_str!("obc_system").to_owned(),
             ident_str!("create").to_owned(),
             vec![],

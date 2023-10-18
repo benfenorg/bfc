@@ -9,7 +9,7 @@ use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
 use anyhow::Result;
 use sui_protocol_config::ProtocolConfig;
-use crate::{id::UID, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_STATE_OBJECT_ID};
+use crate::{id::UID, BFC_SYSTEM_ADDRESS, BFC_SYSTEM_STATE_OBJECT_ID};
 use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
 use serde::de::DeserializeOwned;
@@ -23,9 +23,9 @@ use crate::proposal::ProposalStatus;
 
 const OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("OBCSystemState");
 
-pub const OBC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("obc_round");
-pub const OBC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("obc_round_safe_mode");
-pub const OBC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("obc_system");
+pub const BFC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("obc_round");
+pub const BFC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("obc_round_safe_mode");
+pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("obc_system");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Bag {
@@ -52,7 +52,7 @@ pub struct TreasuryPool {
 }
 
 #[derive(Debug)]
-pub struct ObcRoundParams {
+pub struct BfcRoundParams {
     pub round_id: u64,
 }
 
@@ -65,9 +65,9 @@ pub struct ObcSystemStateWrapper {
 impl ObcSystemStateWrapper {
     pub fn type_() -> StructTag {
         StructTag {
-            address: OBC_SYSTEM_ADDRESS,
+            address: BFC_SYSTEM_ADDRESS,
             name: OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME.to_owned(),
-            module: OBC_SYSTEM_MODULE_NAME.to_owned(),
+            module: BFC_SYSTEM_MODULE_NAME.to_owned(),
             type_params: vec![],
         }
     }
@@ -172,11 +172,11 @@ impl ObcSystemStateTrait for ObcSystemStateInnerV1{
 
 }
 
-pub fn get_obc_system_state_wrapper(
+pub fn get_bfc_system_state_wrapper(
     object_store: &dyn ObjectStore,
 ) -> Result<ObcSystemStateWrapper, SuiError> {
     let wrapper = object_store
-        .get_object(&OBC_SYSTEM_STATE_OBJECT_ID)?
+        .get_object(&BFC_SYSTEM_STATE_OBJECT_ID)?
         // Don't panic here on None because object_store is a generic store.
         .ok_or_else(|| {
             SuiError::SuiSystemStateReadError("ObcSystemStateWrapper object not found".to_owned())
@@ -192,8 +192,8 @@ pub fn get_obc_system_state_wrapper(
     Ok(result)
 }
 
-pub fn get_obc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemState, SuiError> {
-    let wrapper = get_obc_system_state_wrapper(object_store)?;
+pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemState, SuiError> {
+    let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
         1 => {
@@ -215,8 +215,8 @@ pub fn get_obc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
     }
 }
 
-pub fn get_obc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
-    let wrapper = get_obc_system_state_wrapper(object_store)?;
+pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
+    let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
         1 => {

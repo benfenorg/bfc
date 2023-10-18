@@ -111,7 +111,7 @@ use sui_types::storage::{ObjectKey, ObjectStore, WriteKind};
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, OBC_SYSTEM_ADDRESS};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::gas_coin::MIST_PER_SUI;
@@ -1185,7 +1185,7 @@ impl AuthorityState {
             tx_digest,
             protocol_config,
         );
-        let proposal_map = temporary_store.get_obc_system_state_temporary();
+        let proposal_map = temporary_store.get_bfc_system_state_temporary();
 
         let transaction_data = &certificate.data().intent_message().value;
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -1241,7 +1241,7 @@ impl AuthorityState {
             TransactionKind::ProgrammableTransaction(_) => (),
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeObcRound(_)
+            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::ConsensusCommitPrologue(_) => {
                 return Err(SuiError::UnsupportedFeatureError {
                     error: "dry-exec does not support system transactions".to_string(),
@@ -2550,7 +2550,7 @@ impl AuthorityState {
 
     pub async fn get_obc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
         Ok(self
-            .get_object(&OBC_SYSTEM_ADDRESS.into())
+            .get_object(&BFC_SYSTEM_ADDRESS.into())
             .await?
             .expect("obc framework object should always exist")
             .compute_object_reference())

@@ -37,7 +37,7 @@ use sui_types::{
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::obc_system_state::{get_obc_system_proposal_state_map, get_obc_system_state_wrapper};
+use sui_types::obc_system_state::{get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -792,14 +792,14 @@ impl<'backing> TemporaryStore<'backing> {
         &mut self,
         protocol_config: &ProtocolConfig,
     ) {
-        let wrapper = get_obc_system_state_wrapper(self.store.as_object_store())
+        let wrapper = get_bfc_system_state_wrapper(self.store.as_object_store())
             .expect("System state wrapper object must exist");
         let new_object =
             wrapper.obc_round_safe_mode(self.store.as_object_store(),protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
-    pub fn get_obc_system_state_temporary(& self) -> VecMap<u64, ProposalStatus> {
-        let wrapper = get_obc_system_proposal_state_map(self.store.as_object_store())
+    pub fn get_bfc_system_state_temporary(& self) -> VecMap<u64, ProposalStatus> {
+        let wrapper = get_bfc_system_proposal_state_map(self.store.as_object_store())
             .expect("System state wrapper object must exist");
         return wrapper;
     }

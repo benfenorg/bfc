@@ -22,7 +22,7 @@ use sui_json::{primitive_type, SuiJsonValue};
 use sui_types::base_types::{
     EpochId, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 };
-use sui_types::committee::ObcRoundId;
+use sui_types::committee::BfcRoundId;
 use sui_types::digests::{ObjectDigest, TransactionEventsDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
 use sui_types::error::{ExecutionError, SuiError, SuiResult};
@@ -286,7 +286,7 @@ pub enum SuiTransactionBlockKind {
     /// transactions
     ProgrammableTransaction(SuiProgrammableTransactionBlock),
     // .. more transaction types go here
-    ChangeObcRound(SuiChangeObcRound)
+    ChangeBfcRound(SuiChangeBfcRound)
 }
 
 impl Display for SuiTransactionBlockKind {
@@ -301,7 +301,7 @@ impl Display for SuiTransactionBlockKind {
                 writeln!(writer, "Storage rebate : {}", e.storage_rebate)?;
                 writeln!(writer, "Timestamp : {}", e.epoch_start_timestamp_ms)?;
             }
-            Self::ChangeObcRound(e) => {
+            Self::ChangeBfcRound(e) => {
                 writeln!(writer, "Transaction Kind : Epoch Obc Round")?;
                 writeln!(writer, "New Obc Round ID : {}", e.round)?;
             }
@@ -335,7 +335,7 @@ impl SuiTransactionBlockKind {
                 storage_rebate: e.storage_rebate,
                 epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
             }),
-            TransactionKind::ChangeObcRound(o) =>  Self::ChangeObcRound(SuiChangeObcRound{
+            TransactionKind::ChangeBfcRound(o) =>  Self::ChangeBfcRound(SuiChangeBfcRound {
                 round:o.obc_round,
             }),
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
@@ -364,7 +364,7 @@ impl SuiTransactionBlockKind {
     pub fn name(&self) -> &'static str {
         match self {
             Self::ChangeEpoch(_) => "ChangeEpoch",
-            Self::ChangeObcRound(_) => "ChangeObcRound",
+            Self::ChangeBfcRound(_) => "ChangeBfcRound",
             Self::Genesis(_) => "Genesis",
             Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
             Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
@@ -394,10 +394,10 @@ pub struct SuiChangeEpoch {
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
-pub struct SuiChangeObcRound {
+pub struct SuiChangeBfcRound {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
-    pub round: ObcRoundId,
+    pub round: BfcRoundId,
 }
 #[derive(Debug, Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq)]
 #[enum_dispatch(SuiTransactionBlockEffectsAPI)]

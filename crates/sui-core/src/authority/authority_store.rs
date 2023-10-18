@@ -45,7 +45,7 @@ use mysten_common::sync::notify_read::NotifyRead;
 use sui_storage::package_object_cache::PackageObjectCache;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
-use sui_types::obc_system_state::{get_obc_system_state, ObcSystemState};
+use sui_types::obc_system_state::{get_bfc_system_state, ObcSystemState};
 use typed_store::rocks::util::is_ref_count_value;
 
 const NUM_SHARDS: usize = 4096;
@@ -1635,8 +1635,9 @@ impl AuthorityStore {
     pub fn get_sui_system_state_object(&self) -> SuiResult<SuiSystemState> {
         get_sui_system_state(self.perpetual_tables.as_ref())
     }
+
     pub fn get_obc_system_state_object(&self) ->SuiResult<ObcSystemState> {
-        get_obc_system_state(self.perpetual_tables.as_ref())
+        get_bfc_system_state(self.perpetual_tables.as_ref())
     }
 
     pub fn iter_live_object_set(
