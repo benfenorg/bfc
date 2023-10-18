@@ -10,5 +10,4 @@ gas summary: computation_cost: 100000, storage_cost: 130720,  storage_rebate: 0,
 task 2 'view-object'. lines 11-11:
 Owner: Account Address ( B )
 Version: 2
-Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object::ID {bytes: fake(0,0)}}, balance: sui::balance::Balance<sui::bfc::BFC> {value: 299999997692800u64}}
-
+Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object::ID {bytes: fake(0,0)}}, balance: sui::balance::Balance<sui::bfc::BFC> {value: 299999999769280u64}}

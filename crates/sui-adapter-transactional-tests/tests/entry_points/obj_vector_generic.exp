@@ -29,7 +29,7 @@ mutated: object(0,0), object(4,0)
 gas summary: computation_cost: 100000, storage_cost: 698440,  storage_rebate: 288922, non_refundable_storage_fee: 2918
 
 task 6 'run'. lines 129-133:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xcdc00e8d57493420738e6e327b77577053cbf8f40987beb8517a6bddd62423c5, parent_id: 0x1fe49062bc1da5ae3ea67234a63f05db4ec758a6afa02d6f016268d553153ef9 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x8c7e232dad93eec1bd95fef3ba1d03b3447d5faf71fd520ab133565c5932e8f4, parent_id: 0xebf2232f23616570c001d9f1e0dab513d95093bac83a013e69cf91d0366bf2e8 }
 
 task 7 'run'. lines 135-135:
 created: object(7,0)
