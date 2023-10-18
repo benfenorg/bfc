@@ -533,13 +533,13 @@ module sui_system::sui_system {
         sui_system_state_inner::active_validator_addresses(self)
     }
 
-    /// This function should be called at the end of an epoch, and advances the system to the next epoch.
-    /// It does the following things:
-    /// 1. Add storage charge to the storage fund.
-    /// 2. Burn the storage rebates from the storage fund. These are already refunded to transaction sender's
-    ///    gas coins.
-    /// 3. Distribute computation charge to validator stake.
-    /// 4. Update all validators.
+    // This function should be called at the end of an epoch, and advances the system to the next epoch.
+    // It does the following things:
+    // 1. Add storage charge to the storage fund.
+    // 2. Burn the storage rebates from the storage fund. These are already refunded to transaction sender's
+    //    gas coins.
+    // 3. Distribute computation charge to validator stake.
+    // 4. Update all validators.
     #[allow(unused_function)]
     fun advance_epoch(
         storage_reward: Balance<BFC>,
