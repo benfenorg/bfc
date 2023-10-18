@@ -48,8 +48,8 @@ pub fn verify_module(
     // framework code and thus deemed correct.
     let obc_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("bfc").to_owned());
     let stable_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("stable").to_owned());
-    let usd_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("usd").to_owned());
-    if obc_module == module.self_id() || stable_module == module.self_id() || usd_module == module.self_id() {
+    let busd_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("busd").to_owned());
+    if obc_module == module.self_id() || stable_module == module.self_id() || busd_module == module.self_id() {
         return Ok(());
     }
 

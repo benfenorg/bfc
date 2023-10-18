@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { StationCoinCard } from './StationCoinCard';
-
+import { MintRation } from './MintRatio';
 function StationMint() {
 	return (
 		<div className="grid grid-cols-2 gap-5">
 			<StationCoinCard type="mint"/>
-			<div>asdsd</div>
+			<div>
+				<MintRation />
+			</div>
 		</div>
 	);
 }
@@ -23,7 +25,7 @@ function StationWithdraw() {
 export function CoinSwap() {
 	const [type, setType] = useState<'mint' | 'withdraw'>('mint');
 
-	const selectTabCss = 'text-bf-text1 font-semibold bg-white border rounded-md';
+	const selectTabCss = 'text-bf-text1 font-semibold bg-white border rounded-lg';
 
 	return (
 		<div className="mt-5">

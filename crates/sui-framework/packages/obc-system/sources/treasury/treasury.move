@@ -13,7 +13,7 @@ module obc_system::treasury {
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
 
-    use obc_system::usd::USD;
+    use obc_system::busd::BUSD;
     use obc_system::event;
     use obc_system::vault::{Self, Vault, VaultInfo};
     use obc_system::tick_math;
@@ -37,7 +37,7 @@ module obc_system::treasury {
 
     struct Treasury has key, store {
         id: UID,
-        obc_balance: Balance<BFC>,
+        bfc_balance: Balance<BFC>,
         /// stable coin supplies
         supplies: Bag,
         /// Vault index
@@ -53,7 +53,7 @@ module obc_system::treasury {
     public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {
             id: object::new(ctx),
-            obc_balance: balance::zero<BFC>(),
+            bfc_balance: balance::zero<BFC>(),
             supplies: bag::new(ctx),
             index: 0,
             time_interval,
@@ -70,7 +70,7 @@ module obc_system::treasury {
     }
 
     public fun get_balance(_treasury: &Treasury): u64 {
-        balance::value(&_treasury.obc_balance)
+        balance::value(&_treasury.bfc_balance)
     }
 
     fun check_vault(_treasury: &Treasury, _vault_key: String) {
@@ -217,16 +217,16 @@ module obc_system::treasury {
     }
 
     ///  ======= Swap
-    /// Mint swap obc to stablecoin
+    /// Mint swap bfc to stablecoin
     public entry fun mint<StableCoinType>(
         _treasury: &mut Treasury,
-        _coin_obc: Coin<BFC>,
+        _coin_bfc: Coin<BFC>,
         _amount: u64,
         _ctx: &mut TxContext,
     ) {
         let balance_a = mint_internal<StableCoinType>(
             _treasury,
-            _coin_obc,
+            _coin_bfc,
             _amount,
             _ctx,
         );
@@ -235,16 +235,16 @@ module obc_system::treasury {
 
     public(friend) fun mint_internal<StableCoinType>(
         _treasury: &mut Treasury,
-        _coin_obc: Coin<BFC>,
+        _coin_bfc: Coin<BFC>,
         _amount: u64,
         _ctx: &mut TxContext,
     ): Balance<StableCoinType> {
-        assert!(coin::value<BFC>(&_coin_obc) > 0, ERR_ZERO_AMOUNT);
+        assert!(coin::value<BFC>(&_coin_bfc) > 0, ERR_ZERO_AMOUNT);
         let (balance_a, balance_b) = swap_internal<StableCoinType>(
             _treasury,
             false,
             coin::zero<StableCoinType>(_ctx),
-            _coin_obc,
+            _coin_bfc,
             _amount,
             true,
             _ctx,
@@ -253,7 +253,7 @@ module obc_system::treasury {
         balance_a
     }
 
-    /// Burn swap stablecoin to obc
+    /// Burn swap stablecoin to bfc
     public entry fun redeem<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_sc: Coin<StableCoinType>,
@@ -290,7 +290,7 @@ module obc_system::treasury {
         balance_b
     }
 
-    /// Burn swap stablecoin to obc
+    /// Burn swap stablecoin to bfc
     public fun calculate_swap_result<StableCoinType>(
         _treasury: &Treasury,
         _a2b: bool,
@@ -339,27 +339,27 @@ module obc_system::treasury {
     }
 
     /// Rebalance
-    public(friend) fun next_epoch_obc_required(_treasury: &Treasury): u64 {
+    public(friend) fun next_epoch_bfc_required(_treasury: &Treasury): u64 {
         let total = 0;
         let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
 
-        // USD obc required
-        let usd_vault_key = get_vault_key<USD>();
+        // USD bfc required
+        let usd_vault_key = get_vault_key<BUSD>();
         if (dynamic_field::exists_(&_treasury.id, usd_vault_key)) {
-            let usd_v = borrow_vault<USD>(_treasury, usd_vault_key);
-            let obc_required_per_time = vault::obc_required(usd_v);
-            total = total + obc_required_per_time * times_per_day;
+            let usd_v = borrow_vault<BUSD>(_treasury, usd_vault_key);
+            let bfc_required_per_time = vault::bfc_required(usd_v);
+            total = total + bfc_required_per_time * times_per_day;
         };
 
         total - get_balance(_treasury)
     }
 
-    public(friend) fun deposit(_treasury: &mut Treasury, _coin_obc: Coin<BFC>) {
-        let min_amount = next_epoch_obc_required(_treasury);
-        let input = coin::into_balance(_coin_obc);
+    public(friend) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
+        let min_amount = next_epoch_bfc_required(_treasury);
+        let input = coin::into_balance(_coin_bfc);
         let input_amount = balance::value(&input);
         assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
-        balance::join(&mut _treasury.obc_balance, input);
+        balance::join(&mut _treasury.bfc_balance, input);
         event::deposit(input_amount);
 
         if (!_treasury.init) {
@@ -385,16 +385,16 @@ module obc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<USD>>(
+        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<BUSD>>(
             &mut _treasury.id,
-            get_vault_key<USD>()
+            get_vault_key<BUSD>()
         );
         vault::update_state(usd_mut_v);
 
         vault::rebalance(
             usd_mut_v,
-            &mut _treasury.obc_balance,
-            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, get_vault_key<USD>()),
+            &mut _treasury.bfc_balance,
+            bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, get_vault_key<BUSD>()),
             _ctx
         );
     }
@@ -404,15 +404,15 @@ module obc_system::treasury {
         _ctx: &mut TxContext
     )
     {
-        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<USD>>(
+        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<BUSD>>(
             &mut _treasury.id,
-            get_vault_key<USD>()
+            get_vault_key<BUSD>()
         );
         // first rebalance just place liquidity not change vault state
         vault::rebalance(
             usd_mut_v,
-            &mut _treasury.obc_balance,
-            bag::borrow_mut<String, Supply<USD>>(&mut _treasury.supplies, get_vault_key<USD>()),
+            &mut _treasury.bfc_balance,
+            bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, get_vault_key<BUSD>()),
             _ctx
         );
     }

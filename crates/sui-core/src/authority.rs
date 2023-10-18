@@ -1426,7 +1426,7 @@ impl AuthorityState {
 
     #[allow(unused)]
     async fn exchange_rates(&self, gas_coin: ObjectID) -> SuiResult<u64> {
-        let system_state = self.database.get_obc_system_state_object()?;
+        let system_state = self.database.get_bfc_system_state_object()?;
         let exchange_rate = system_state.inner_state().gas_coin_map.get_exchange_rate(gas_coin);
         Ok(exchange_rate)
     }
@@ -2569,8 +2569,8 @@ impl AuthorityState {
         self.database.get_sui_system_state_object()
     }
 
-    pub fn get_obc_system_state_object_for_testing(&self) -> SuiResult<ObcSystemState> {
-        self.database.get_obc_system_state_object()
+    pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<ObcSystemState> {
+        self.database.get_bfc_system_state_object()
     }
 
     pub fn get_transaction_checkpoint_sequence(

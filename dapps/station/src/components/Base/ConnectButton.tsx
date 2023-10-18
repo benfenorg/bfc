@@ -73,7 +73,7 @@ export function ConnectButton({
 			{currentAccount ? (
 				<Menu as="div" style={{ position: 'relative', display: 'inline-block' }}>
 					<Menu.Button
-						className="inline-flex w-full justify-center bg-white rounded-md px-3 py-2 font-semibold text-bf-text1 text-xs"
+						className="inline-flex w-full justify-center bg-white rounded-lg px-3 py-2 font-semibold text-bf-text1 text-xs"
 					>
 						{connectedText ?? formatAddress(currentAccount.address)}
 						<ChevronIcon />
@@ -121,7 +121,7 @@ export function ConnectButton({
 				// 	{connectText}
 				// </Button>
 
-				<button className="bg-white text-bf-text1 px-3 py-2 rounded-md font-semibold" 
+				<button className="bg-white text-bf-text1 px-3 py-2 rounded-lg font-semibold" 
 				onClick={() => setConnectModalOpen(true)}>
 					{connectText}
 				</button>

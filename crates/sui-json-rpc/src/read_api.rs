@@ -1011,8 +1011,8 @@ impl ReadApiServer for ReadApi {
 
     #[instrument(skip(self))]
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
-        let inner_system_state = self.state.get_db().get_obc_system_state_object()
-            .expect("Reading bfc system state object cannot fail").inner_state();
+        let inner_system_state = self.state.get_db().get_bfc_system_state_object()
+            .expect("Reading obc system state object cannot fail").inner_state();
         let dao = inner_system_state.dao;
         let mut proposal_record = Vec::new();
         for proposal in dao.proposal_record.contents {
@@ -1083,8 +1083,8 @@ impl ReadApiServer for ReadApi {
 
     #[instrument(skip(self))]
     async fn get_inner_exchange_rate(&self, gas_coin: ObjectID) -> RpcResult<BigInt<u64>> {
-        let inner_system_state = self.state.get_db().get_obc_system_state_object()
-            .expect("Reading bfc system state object cannot fail").inner_state();
+        let inner_system_state = self.state.get_db().get_bfc_system_state_object()
+            .expect("Reading obc system state object cannot fail").inner_state();
         let rate = inner_system_state.gas_coin_map.get_exchange_rate(gas_coin);
          Ok(BigInt::from(rate))
     }

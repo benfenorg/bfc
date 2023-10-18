@@ -1636,7 +1636,7 @@ impl AuthorityStore {
         get_sui_system_state(self.perpetual_tables.as_ref())
     }
 
-    pub fn get_obc_system_state_object(&self) ->SuiResult<ObcSystemState> {
+    pub fn get_bfc_system_state_object(&self) ->SuiResult<ObcSystemState> {
         get_bfc_system_state(self.perpetual_tables.as_ref())
     }
 

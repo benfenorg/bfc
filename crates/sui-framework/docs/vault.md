@@ -46,7 +46,7 @@
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
 -  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
--  [Function `obc_required`](#0xc8_vault_obc_required)
+-  [Function `bfc_required`](#0xc8_vault_bfc_required)
 -  [Function `min_liquidity_rate`](#0xc8_vault_min_liquidity_rate)
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
 -  [Function `base_liquidity_rate`](#0xc8_vault_base_liquidity_rate)
@@ -1758,7 +1758,7 @@ Params
 - <code>_index</code> The index of position.
 Returns
 - <code>amount_a</code> The amount of <code>StableCoinType</code>
-- <code>amount_b</code> The amount of <code>OBC</code>
+- <code>amount_b</code> The amount of <code>BFC</code>
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _round_up: bool): (u64, u64)
@@ -2099,13 +2099,13 @@ vault info
 
 </details>
 
-<a name="0xc8_vault_obc_required"></a>
+<a name="0xc8_vault_bfc_required"></a>
 
-## Function `obc_required`
+## Function `bfc_required`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
 </code></pre>
 
 
@@ -2114,7 +2114,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_obc_required">obc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
     ((_vault.position_number <b>as</b> u64) + 1) / 2 * _vault.base_point
 }
 </code></pre>
@@ -2398,7 +2398,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _obc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _balance0: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance1: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _liquidities: <a href="">vector</a>&lt;u128&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _balance0: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance1: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _liquidities: <a href="">vector</a>&lt;u128&gt;)
 </code></pre>
 
 
@@ -2409,7 +2409,7 @@ State checker
 
 <pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _obc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
+    _bfc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
     _balance0: Balance&lt;StableCoinType&gt;,
     _balance1: Balance&lt;BFC&gt;,
@@ -2446,9 +2446,9 @@ State checker
     };
 
     <b>if</b> (balance1_value &lt; total_b) {
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _balance1, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(_obc_balance, total_b - balance1_value));
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _balance1, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(_bfc_balance, total_b - balance1_value));
     } <b>else</b> <b>if</b> (balance1_value &gt; total_a) {
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(_obc_balance, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _balance1, balance1_value - total_b));
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(_bfc_balance, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _balance1, balance1_value - total_b));
     };
 
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_a, _balance0);
@@ -2466,7 +2466,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _obc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2477,7 +2477,7 @@ State checker
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _obc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
+    _bfc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
     _ctx: &<b>mut</b> TxContext
 ) {
@@ -2491,7 +2491,7 @@ State checker
     <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(_vault, &ticks, shape);
     <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>(
         _vault,
-        _obc_balance,
+        _bfc_balance,
         _supply,
         balance0,
         balance1,

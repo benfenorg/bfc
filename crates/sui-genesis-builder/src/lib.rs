@@ -687,7 +687,7 @@ fn build_unsigned_genesis_data(
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
-    let obc_system_parameters = parameters.to_bfc_system_parameters();
+    let bfc_system_parameters = parameters.to_bfc_system_parameters();
     let genesis_validators = validators
         .iter()
         .cloned()
@@ -717,7 +717,7 @@ fn build_unsigned_genesis_data(
         objects,
         &genesis_validators,
         &genesis_chain_parameters,
-        &obc_system_parameters,
+        &bfc_system_parameters,
         token_distribution_schedule,
         metrics.clone(),
     );
@@ -873,7 +873,7 @@ fn create_genesis_objects(
     input_objects: &[Object],
     validators: &[GenesisValidatorMetadata],
     parameters: &GenesisChainParameters,
-    obc_system_parameters: &BfcSystemParameters,
+    bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> Vec<Object> {
@@ -918,7 +918,7 @@ fn create_genesis_objects(
         validators,
         genesis_ctx,
         parameters,
-        obc_system_parameters,
+        bfc_system_parameters,
         token_distribution_schedule,
         metrics,
     )
@@ -1026,7 +1026,7 @@ pub fn generate_genesis_system_object(
     genesis_validators: &[GenesisValidatorMetadata],
     genesis_ctx: &mut TxContext,
     genesis_chain_parameters: &GenesisChainParameters,
-    obc_system_parameters: &BfcSystemParameters,
+    bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> anyhow::Result<()> {
@@ -1116,9 +1116,9 @@ pub fn generate_genesis_system_object(
         );
 
         // create the supply of USD.
-        let usd_supply = builder.programmable_move_call(
+        let busd_supply = builder.programmable_move_call(
             BFC_SYSTEM_ADDRESS.into(),
-            ident_str!("usd").to_owned(),
+            ident_str!("busd").to_owned(),
             ident_str!("new").to_owned(),
             vec![],
             vec![],
@@ -1126,9 +1126,9 @@ pub fn generate_genesis_system_object(
 
         let arguments = vec![
             obc_system_state_uid,
-            usd_supply,
+            busd_supply,
             new_sui_supply,
-            builder.input(CallArg::Pure(bcs::to_bytes(&obc_system_parameters).unwrap()))?
+            builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?
         ];
 
         builder.programmable_move_call(
