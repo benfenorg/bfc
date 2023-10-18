@@ -27,7 +27,6 @@ use roaring::RoaringBitmap;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeMap;
 use std::hash::Hasher;
-use sui_macros::sim_test;
 
 #[test]
 fn test_signed_values() {

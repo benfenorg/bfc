@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-41:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 7797600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 779760,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 43-43:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 45-45:
 Owner: Account Address ( A )
@@ -19,12 +19,16 @@ Version: 2
 Contents: a::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,1)}}}
 
 task 4 'run'. lines 47-47:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x582b53219b4ca9000b37949317607471985da26ddfd532e6c521f1b3b41dec12, parent_id: 0x2412b9ace14d79b41401a156039e23f97e40b1ddca30d47403a1fdb7ac83ba8a }
+created: object(4,0)
+mutated: object(0,0), object(2,0)
+deleted: object(2,2)
+wrapped: object(2,1)
+gas summary: computation_cost: 100000, storage_cost: 447640,  storage_rebate: 614711, non_refundable_storage_fee: 6209
 
 task 5 'run'. lines 50-50:
 created: object(5,0), object(5,1), object(5,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 6 'view-object'. lines 52-52:
 Owner: Object ID: ( fake(5,0) )
@@ -32,22 +36,22 @@ Version: 3
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(5,2)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(5,1)}}
 
 task 7 'run'. lines 54-54:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xecfcf65a9bed33dbf26dc0aba77250746d69cab092b0d8bec74c9bbcef3e2f62, parent_id: 0x7417c61d64fb7db55e7cf9a90b1a8da1a763415b8d828a290b102d502d985429 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x76d34a08e11047ef3e734c0fcc25da302ef2450faf19094b59eb066e71f1302e, parent_id: 0x884c3afc9c11e9be8157ffd5d962108500e66f4c12ce2d9c95511f85ce1423c3 }
 
 task 8 'run'. lines 57-57:
 created: object(8,0), object(8,1), object(8,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 9 'view-object'. lines 59-59:
 Owner: Object ID: ( fake(8,0) )
-Version: 4
+Version: 5
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(8,2)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(8,1)}}
 
 task 10 'run'. lines 61-61:
 mutated: object(0,0), object(8,0), object(8,1)
 deleted: object(8,2)
-gas summary: computation_cost: 1000000, storage_cost: 3754400,  storage_rebate: 6147108, non_refundable_storage_fee: 62092
+gas summary: computation_cost: 100000, storage_cost: 375440,  storage_rebate: 614711, non_refundable_storage_fee: 6209
 
 task 11 'view-object'. lines 63-63:
 No object at id 8,2

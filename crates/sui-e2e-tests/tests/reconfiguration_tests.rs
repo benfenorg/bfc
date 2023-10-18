@@ -10,7 +10,6 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use jsonrpsee::http_client::HttpClient;
-use move_core_types::ident_str;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use sui_core::consensus_adapter::position_submit_certificate;
@@ -2323,9 +2322,6 @@ async fn swap_obc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
         SuiTransactionBlockEffects::V1(_effects) => {
             assert!(_effects.status.is_ok());
         },
-        _ => {
-            panic!("unexpected effects type");
-        }
     };
     Ok(())
 }
@@ -2381,9 +2377,6 @@ async fn swap_stablecoin_to_obc(test_cluster: &TestCluster, http_client: &HttpCl
         SuiTransactionBlockEffects::V1(_effects) => {
             assert!(_effects.status.is_ok());
         },
-        _ => {
-            panic!("unexpected effects type");
-        }
     };
     Ok(())
 }

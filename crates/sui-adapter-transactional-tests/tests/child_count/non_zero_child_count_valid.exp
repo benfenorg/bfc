@@ -6,12 +6,12 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 9-46:
 created: object(1,0)
 mutated: object(0,3)
-gas summary: computation_cost: 1000000, storage_cost: 7296000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 729600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 48-48:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 50-54:
 Owner: Object ID: ( fake(2,0) )
@@ -21,11 +21,11 @@ Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,1
 task 4 'run'. lines 56-56:
 created: object(4,0), object(4,1), object(4,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 5 'run'. lines 58-58:
 mutated: object(0,0), object(4,2)
-gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
+gas summary: computation_cost: 100000, storage_cost: 251560,  storage_rebate: 249044, non_refundable_storage_fee: 2516
 
 task 6 'view-object'. lines 60-64:
 Owner: Account Address ( B )
@@ -35,10 +35,10 @@ Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(4,2
 task 7 'run'. lines 66-66:
 created: object(7,0), object(7,1), object(7,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
+gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 8 'transfer-object'. lines 68-68:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x6ecd00bc63b49b38dfedd0795d52882ff7161ba1aac7b55b7cd9ded8063a2b2c, parent_id: 0x8d089c745b8ce42a84f52c33a446d4b70fc4dafdf851bdcc05f90154fd246b08 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x39732f10fdbe5f6219de4a7dd1eb1dd0db00bde3728b35398d8460bba020b4fb, parent_id: 0x21cce2e6a8a462abbb30e6aa5beb752f4bfcde729cc2b93def5f3f3752bd7ede }
 
 task 9 'view-object'. lines 70-70:
 Owner: Object ID: ( fake(7,0) )

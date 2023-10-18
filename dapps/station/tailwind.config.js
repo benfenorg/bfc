@@ -34,6 +34,7 @@ const config = {
 				border: '#E1E1E9',
 				card: '#F8F8FA',
 				press: '#FFFFFF24',
+				disabled: '#17171980'
 			},
 		},
 		extend: {

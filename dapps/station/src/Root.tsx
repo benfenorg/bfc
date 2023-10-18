@@ -9,7 +9,26 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RpcClientContext } from './context/RpcClientContext';
 import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+	  queries: {
+		enabled: true,
+		staleTime: 3_600_000,
+		cacheTime: Infinity,
+		refetchInterval: false,
+		refetchIntervalInBackground: false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: true,
+		refetchOnMount: true,
+		retryOnMount: true,
+	  },
+	  mutations: {
+		onError: (error) => {
+		  //
+		},
+	  },
+	},
+  });
 const suiClient = new SuiClient({ url: 'http://yobcrpc.openblock.vip' });
 
 export default function Root() {

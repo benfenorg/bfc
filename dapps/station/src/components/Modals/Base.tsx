@@ -3,9 +3,14 @@
 
 import { Fragment, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import { ReactComponent as CloseIcon } from '~/assets/close_icon.svg';
+import { ReactComponent as TitleLoadingIcon } from '~/assets/title_loading_icon.svg';
 
 export function ModalBase({
 	isOpen,
+	titleLoading = false,
+	maskClose = false,
+	iconClose = false,
 	closeModal,
 	children,
 	title = 'A modal',
@@ -14,10 +19,13 @@ export function ModalBase({
 	closeModal: () => void;
 	children: ReactNode;
 	title: string;
+	maskClose?: boolean;
+	iconClose?: boolean;
+	titleLoading?: boolean;
 }) {
 	return (
 		<Transition appear show={isOpen} as={Fragment}>
-			<Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={closeModal}>
+			<Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={maskClose ? closeModal : ()=>{}}>
 				<div className="min-h-screen px-4 text-center bg-primary bg-opacity-60">
 					<Transition.Child
 						as={Fragment}
@@ -43,11 +51,20 @@ export function ModalBase({
 						leaveFrom="opacity-100 scale-100"
 						leaveTo="opacity-0 scale-95"
 					>
-						<div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
-							<Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-								{title}
+						<div className="inline-block w-full max-w-[400px] my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+							<Dialog.Title
+								as="h3"
+								className="flex items-center justify-between py-3 px-2.5 bg-bf-card font-medium text-bf-text1"
+							>
+								<div className="flex items-center">
+									{titleLoading && <TitleLoadingIcon className="mr-1 animate-spin"/>}
+									{title}
+								</div>
+								{iconClose && <div className="cursor-pointer" onClick={closeModal}>
+									<CloseIcon />
+								</div>}
 							</Dialog.Title>
-							<div className="mt-2">{children}</div>
+							<div className="text-bf-text1">{children}</div>
 						</div>
 					</Transition.Child>
 				</div>
