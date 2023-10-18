@@ -15,7 +15,7 @@ pub const MAX_GAS_FOR_TESTING: u64 = 100 * MIST_PER_SUI;
 
 // TODO: get this information from protocol config
 // This is the maximum budget that can be set for a transaction. 50 SUI.
-pub const MAX_BUDGET: u64 = 50 * MIST_PER_SUI;
+pub const MAX_BUDGET: u64 = 5 * MIST_PER_SUI;
 // (COIN_BYTES_SIZE * STORAGE_PRICE * STORAGE_UNITS_PER_BYTE)
 pub const STORAGE_COST_PER_COIN: u64 = 130 * 76 * 100;
 // (COUNTER_BYTES_SIZE * STORAGE_PRICE * STORAGE_UNITS_PER_BYTE)
