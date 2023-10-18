@@ -141,8 +141,9 @@ pub fn assert_accounts_match(
             prop_assert_eq!(
                 account_balance_i,
                 total_sui_value,
-                "account {} should have correct balance {} for object {} but got {}",
+                "account {} {} should have correct balance {} for object {} but got {}",
                 idx,
+                object.owner,
                 total_sui_value,
                 acc_object.id(),
                 account_balance_i

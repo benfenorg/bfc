@@ -7,7 +7,6 @@
 
 -  [Resource `SkipList`](#0xc8_skip_list_SkipList)
 -  [Struct `Node`](#0xc8_skip_list_Node)
--  [Struct `Item`](#0xc8_skip_list_Item)
 -  [Constants](#@Constants_0)
 -  [Function `new`](#0xc8_skip_list_new)
 -  [Function `length`](#0xc8_skip_list_length)
@@ -156,45 +155,6 @@ The node of skip list.
 </dt>
 <dd>
  The data being stored
-</dd>
-</dl>
-
-
-</details>
-
-<a name="0xc8_skip_list_Item"></a>
-
-## Struct `Item`
-
-
-
-<pre><code><b>struct</b> <a href="skip_list.md#0xc8_skip_list_Item">Item</a> <b>has</b> drop, store
-</code></pre>
-
-
-
-<details>
-<summary>Fields</summary>
-
-
-<dl>
-<dt>
-<code>n: u64</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>score: u64</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>finded: <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a></code>
-</dt>
-<dd>
-
 </dd>
 </dl>
 
