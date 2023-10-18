@@ -335,7 +335,7 @@ module obc_system::obc_system_state_inner {
         }
     }
 
-    public(friend) fun create_obcdao_action(
+    public(friend) fun create_bfcdao_action(
         self: &mut ObcSystemStateInner,
         payment: Coin<BFC>,
 
@@ -463,7 +463,7 @@ module obc_system::obc_system_state_inner {
         bfc_dao::withdraw_voting(&mut system_state.dao, voting_obc, ctx);
     }
 
-    public(friend) fun create_voting_obc(system_state: &mut ObcSystemStateInner,
+    public(friend) fun create_voting_bfc(system_state: &mut ObcSystemStateInner,
                                          coin: Coin<BFC>,
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, ctx);

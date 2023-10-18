@@ -562,7 +562,7 @@ async fn test_obc_dao_create_action() -> Result<(), anyhow::Error>{
     // now do the call
     let package_id = OBC_SYSTEM_PACKAGE_ID;
     let module = "obc_system".to_string();
-    let function = "create_obcdao_action".to_string();
+    let function = "create_bfcdao_action".to_string();
     let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let arg = vec![
         SuiJsonValue::from_str(&obc_status_address.to_string())?,
@@ -629,7 +629,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
     // now do the call
-    let function = "create_obcdao_action".to_string();
+    let function = "create_bfcdao_action".to_string();
     let propose_function = "propose".to_string();
     let arg = vec![
         SuiJsonValue::from_str(&obc_status_address.to_string())?,
@@ -695,7 +695,7 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
     // now do the call
-    let function = "create_obcdao_action".to_string();
+    let function = "create_bfcdao_action".to_string();
     let propose_function = "propose".to_string();
     let arg = vec![
         SuiJsonValue::from_str(&obc_status_address.to_string())?,
@@ -750,7 +750,7 @@ async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData,
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
-    let objects = do_get_owned_objects_with_filter("0xc8::obc_dao_manager::OBCDaoManageKey", http_client, address).await?;
+    let objects = do_get_owned_objects_with_filter("0xc8::bfc_dao_manager::BFCDaoManageKey", http_client, address).await?;
     let manager_obj = objects.get(0).unwrap().object().unwrap();
     Ok(manager_obj.object_id)
 }
@@ -848,7 +848,7 @@ async fn test_obc_dao_create_votingobc()  -> Result<(), anyhow::Error> {
     // now do the call
     let package_id = OBC_SYSTEM_PACKAGE_ID;
     let module = "obc_system".to_string();
-    let function = "create_voting_obc".to_string();
+    let function = "create_voting_bfc".to_string();
     let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let arg = vec![
         SuiJsonValue::from_str(&obc_status_address.to_string())?,
@@ -857,7 +857,7 @@ async fn test_obc_dao_create_votingobc()  -> Result<(), anyhow::Error> {
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
 
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingBfc").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()
@@ -900,7 +900,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 
     let package_id = OBC_SYSTEM_PACKAGE_ID;
     let module = "obc_system".to_string();
-    let function = "create_voting_obc".to_string();
+    let function = "create_voting_bfc".to_string();
 
     let coin_obj = objects.get(4).unwrap().object().unwrap();
     let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
@@ -913,7 +913,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
 
-    let objects = do_get_owned_objects_with_filter("0xc8::voting_pool::VotingObc", http_client, address).await?;
+    let objects = do_get_owned_objects_with_filter("0xc8::voting_pool::VotingBfc", http_client, address).await?;
     let voting_obc = objects.get(0).unwrap().object().unwrap();
 
     let result = http_client.get_inner_dao_info().await?;
@@ -932,7 +932,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::obc_dao::Vote").unwrap());
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::bfc_dao::Vote").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()
@@ -1535,7 +1535,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
     // now do the call
     let package_id = OBC_SYSTEM_PACKAGE_ID;
     let module = "obc_system".to_string();
-    let function = "create_voting_obc".to_string();
+    let function = "create_voting_bfc".to_string();
     let obc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let arg = vec![
         SuiJsonValue::from_str(&obc_status_address.to_string())?,
@@ -1547,7 +1547,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
 
 
 
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingBfc").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()
@@ -1589,7 +1589,7 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
 
 
 
-    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingObc").unwrap());
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingBfc").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()

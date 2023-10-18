@@ -242,13 +242,13 @@ module obc_system::obc_system {
         obc_system_state_inner::propose(system_state, version_id, payment, action_id, action_delay, clock, ctx);
     }
 
-    public entry fun create_obcdao_action(
+    public entry fun create_bfcdao_action(
         wrapper: &mut ObcSystemState,
         payment: Coin<BFC>,
         actionName: vector<u8>,
         ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::create_obcdao_action(system_state, payment, actionName, ctx);
+        obc_system_state_inner::create_bfcdao_action(system_state, payment, actionName, ctx);
     }
 
     public entry fun judge_proposal_state(wrapper: &mut ObcSystemState, current_time: u64) {
@@ -291,11 +291,11 @@ module obc_system::obc_system {
         obc_system_state_inner::withdraw_voting(system_state, voting_obc, ctx);
     }
 
-    public entry fun create_voting_obc(wrapper: &mut ObcSystemState,
+    public entry fun create_voting_bfc(wrapper: &mut ObcSystemState,
                                  coin: Coin<BFC>,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        obc_system_state_inner::create_voting_obc(system_state, coin, ctx);
+        obc_system_state_inner::create_voting_bfc(system_state, coin, ctx);
     }
 
     /// X treasury  swap obc to stablecoin
