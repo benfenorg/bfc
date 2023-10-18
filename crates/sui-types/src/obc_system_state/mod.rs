@@ -105,7 +105,7 @@ impl ObcSystemStateWrapper {
         let mut field: Field<u64, T> =
             bcs::from_bytes(move_object.contents()).expect("bcs deserialization should never fail");
         tracing::info!(
-            "obc round safe mode: current round: {}",
+            "bfc round safe mode: current round: {}",
             field.value.round(),
         );
         field.value.obc_round_safe_mode();
@@ -116,7 +116,7 @@ impl ObcSystemStateWrapper {
         let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
         move_object
             .update_contents(new_contents,protocol_config)
-            .expect("Update obc system object content cannot fail since it should be small");
+            .expect("Update bfc system object content cannot fail since it should be small");
     }
 }
 
@@ -138,7 +138,7 @@ pub struct ObcSystemStateInnerV1 {
     pub treasury_pool: TreasuryPool,
 }
 
-// Rust version of the Move obc_system::obc_system_state_inner::ExchangePool type
+// Rust version of the Move bfc_system::bfc_system_state_inner::ExchangePool type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ExchangePoolV1 {
     pub id: ObjectID,
@@ -179,11 +179,11 @@ pub fn get_bfc_system_state_wrapper(
         .get_object(&BFC_SYSTEM_STATE_OBJECT_ID)?
         // Don't panic here on None because object_store is a generic store.
         .ok_or_else(|| {
-            SuiError::SuiSystemStateReadError("ObcSystemStateWrapper object not found".to_owned())
+            SuiError::SuiSystemStateReadError("BfcSystemStateWrapper object not found".to_owned())
         })?;
     let move_object = wrapper.data.try_as_move().ok_or_else(|| {
         SuiError::SuiSystemStateReadError(
-            "ObcSystemStateWrapper object must be a Move object".to_owned(),
+            "BfcSystemStateWrapper object must be a Move object".to_owned(),
         )
     })?;
 
@@ -201,7 +201,7 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(
-                            "Failed to load obc system state inner object with ID {:?} and version {:?}: {:?}",
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
                             id, wrapper.version, err
                         ))
                     },
@@ -209,7 +209,7 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
             Ok(ObcSystemState::V1(result))
         }
         _ => Err(SuiError::SuiSystemStateReadError(format!(
-            "Unsupported ObcSystemState version: {}",
+            "Unsupported BfcSystemState version: {}",
             wrapper.version
         ))),
     }

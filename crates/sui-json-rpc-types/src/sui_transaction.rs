@@ -302,8 +302,8 @@ impl Display for SuiTransactionBlockKind {
                 writeln!(writer, "Timestamp : {}", e.epoch_start_timestamp_ms)?;
             }
             Self::ChangeBfcRound(e) => {
-                writeln!(writer, "Transaction Kind : Epoch Obc Round")?;
-                writeln!(writer, "New Obc Round ID : {}", e.round)?;
+                writeln!(writer, "Transaction Kind : Epoch Bfc Round")?;
+                writeln!(writer, "New Bfc Round ID : {}", e.round)?;
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis Transaction")?;

@@ -26,7 +26,7 @@ pub struct Proposal {
 }
 
 const PROPOSAL_OBJECT_TYPE: &'static str =
-    "0x00000000000000000000000000000000000000000000000000000000000000c8::obc_dao::Proposal";
+    "0x00000000000000000000000000000000000000000000000000000000000000c8::bfc_dao::Proposal";
 
 impl Proposal {
     pub fn is_proposal(value: &Object) -> bool {

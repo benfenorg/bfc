@@ -365,7 +365,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     assert!(!result.has_next_page);
 
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::obc::TestCoin".into()), None, None)
+        .get_coins(address, Some("0x2::bfc::TestCoin".into()), None, None)
         .await?;
     assert_eq!(0, result.data.len());
 
@@ -1034,7 +1034,7 @@ async fn test_dao_publish() -> Result<(), anyhow::Error> {
     sleep(Duration::from_millis(4000)).await;
 
     // now do the call
-    let module = "obc_dao".to_string();
+    let module = "bfc_dao".to_string();
     let function = "create_dao_test".to_string();
 
 
@@ -1165,7 +1165,7 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
     sleep(Duration::from_millis(4000)).await;
 
     // now do the call
-    let module = "obc_dao".to_string();
+    let module = "bfc_dao".to_string();
     let function = "create_proposal_for_test".to_string();
 
 

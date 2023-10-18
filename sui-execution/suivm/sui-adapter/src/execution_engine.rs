@@ -675,7 +675,7 @@ mod checked {
 
         arguments.append(&mut args.unwrap());
 
-        info!("Call arguments to obc round transaction: {:?}",round_id);
+        info!("Call arguments to bfc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
             BFC_SYSTEM_PACKAGE_ID,
@@ -725,7 +725,7 @@ mod checked {
         //     // Must reset the storage rebate since we are re-executing.
         //     gas_charger.reset_storage_cost_and_rebate();
         //
-        //     temporary_store.advance_obc_round_mode(protocol_config);
+        //     temporary_store.advance_bfc_round_mode(protocol_config);
         // }
         Ok(())
     }

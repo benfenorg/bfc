@@ -115,7 +115,7 @@ pub const SUI_CLOCK_OBJECT_ID: ObjectID = ObjectID::from_address(SUI_CLOCK_ADDRE
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 
-/// 0x7: hardcoded object ID for the obc system.
+/// 0x7: hardcoded object ID for the bfc system.
 pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
 pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_ADDRESS);
 

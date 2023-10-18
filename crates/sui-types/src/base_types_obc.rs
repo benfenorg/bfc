@@ -59,7 +59,7 @@ impl TryFrom<&[u8]> for ObcAddress {
     }
 }
 
-pub mod obc_address_util {
+pub mod bfc_address_util {
     //use std::collections::hash_map::DefaultHasher;
     use sha2::{Digest, Sha256};
 

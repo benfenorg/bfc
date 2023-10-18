@@ -2552,7 +2552,7 @@ impl AuthorityState {
         Ok(self
             .get_object(&BFC_SYSTEM_ADDRESS.into())
             .await?
-            .expect("obc framework object should always exist")
+            .expect("bfc framework object should always exist")
             .compute_object_reference())
     }
 
@@ -4149,7 +4149,7 @@ impl AuthorityState {
             })?;
 
         info!(
-            "Effects summary of the change obc round transaction: {:?}",
+            "Effects summary of the change bfc round transaction: {:?}",
             effects.summary_for_debug()
         );
 

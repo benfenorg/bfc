@@ -22,7 +22,7 @@ pub const DAO_STRUCT_NAME: &IdentStr = ident_str!("Dao");
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
 pub struct VotingPool{
     pub id: UID,
-    /// The total number of OBC tokens in this pool,
+    /// The total number of BFC tokens in this pool,
     pub obc_balance: u64,
     /// Total number of pool tokens issued by the pool.
     pub pool_token_balance: u64,

@@ -790,7 +790,7 @@ async fn test_obc_dao_create_propose() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_obc_dao_create_votingobc()  -> Result<(), anyhow::Error> {
+async fn test_obc_dao_create_votingBfc()  -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
@@ -975,7 +975,7 @@ async fn test_obc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
 
     let gas = objects.first().unwrap().object().unwrap();
     create_proposal(http_client, gas, address, &cluster).await?;
-    //create votingObc
+    //create votingbfc
     // now do the call
     let vote_id = case_vote(http_client, gas, address, &cluster).await?;
 
@@ -1087,7 +1087,7 @@ async fn test_obc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
     do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
 
     create_active_proposal(http_client, gas, address, &test_cluster).await?;
-    //create votingObc
+    //create votingBfc
     // now do the call
     case_vote(http_client, gas, address, &test_cluster).await?;
 
@@ -1189,7 +1189,7 @@ async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
     create_active_proposal(http_client, gas, address, &cluster).await?;
-    //create votingObc
+    //create votingBfc
     // now do the call
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
@@ -1262,7 +1262,7 @@ async fn test_obc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
     create_active_proposal(http_client, gas, address, &cluster).await?;
-    //create votingObc
+    //create votingBfc
     // now do the call
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
@@ -1289,7 +1289,7 @@ async fn test_obc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 }
 
 #[sim_test]
-async fn test_obc_dao_unvote_votingobc() -> Result<(), anyhow::Error>{
+async fn test_obc_dao_unvote_votingBfc() -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1311,7 +1311,7 @@ async fn test_obc_dao_unvote_votingobc() -> Result<(), anyhow::Error>{
     let gas = objects.first().unwrap().object().unwrap();
 
     create_active_proposal(http_client, gas, address, &cluster).await?;
-    //create votingObc
+    //create votingBfc
     // now do the call
     let vote_id = case_vote(http_client, gas, address, &cluster).await?;
     assert!(objects.len() > 0);
@@ -1358,7 +1358,7 @@ async fn test_obc_dao_change_vote()  -> Result<(), anyhow::Error>{
 
     let gas = objects.first().unwrap().object().unwrap();
     create_proposal(http_client, gas, address, &cluster).await?;
-    //create votingObc
+    //create votingBfc
     // now do the call
     let vote_id = case_vote(http_client, gas, address, &cluster).await?;
     assert!(objects.len() > 0);
@@ -1573,9 +1573,9 @@ async fn test_obc_dao_withdraw_obc() -> Result<(), anyhow::Error>{
 
     let voting_obc = objects.get(0).unwrap().object().unwrap();
 
-    //with draw the voting obc,,,
+    //with draw the voting bfc,,,
     // now do the call
-    //public entry fun withdraw_voting(   wrapper: &mut ObcSystemState voting_obc: VotingObc)
+    //public entry fun withdraw_voting(   wrapper: &mut BfcSystemState voting_bfc: VotingBfc)
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "obc_system".to_string();
     let function = "withdraw_voting".to_string();
@@ -1647,8 +1647,8 @@ async fn test_obc_dao_change_setting_config() -> Result<(), anyhow::Error> {
 
 
     // now do the call  public entry fun set_voting_period(
-    //         wrapper: &mut ObcSystemState,
-    //         manager_key: &OBCDaoManageKey,
+    //         wrapper: &mut BfcSystemState,
+    //         manager_key: &BFCDaoManageKey,
     //         value: u64,
     //     )
     let package_id = BFC_SYSTEM_PACKAGE_ID;

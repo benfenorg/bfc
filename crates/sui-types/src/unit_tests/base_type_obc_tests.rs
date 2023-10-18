@@ -13,21 +13,21 @@ const SAMPLE_ADDRESS_VEC: [u8; 32] = [
 ];
 #[cfg(test)]
 mod tests {
-    //use crate::base_types_obc::obc_address_util::convert_to_obc_address;
+    //use crate::base_types_bfc::bfc_address_util::convert_to_bfc_address;
     use super::*;
 
     #[test]
     fn test_convert_util() {
-        let result = obc_address_util::convert_to_evm_address(String::from(
-            "OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede",
+        let result = bfc_address_util::convert_to_evm_address(String::from(
+            "BFCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede",
         ));
         println!("the evm convert result is {}", result);
 
-        let sui_address = obc_address_util::convert_to_obc_address(
+        let sui_address = bfc_address_util::convert_to_bfc_address(
             "BFC",
             "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857",
         );
-        println!("the obc convert result is {}", sui_address);
+        println!("the bfc convert result is {}", sui_address);
     }
 
     #[test]
@@ -35,10 +35,10 @@ mod tests {
         let prefix = "BFC";
         let evm_address = "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857";
 
-        let obc_address = local_convert_to_obaddress(prefix, evm_address);
+        let bfc_address = local_convert_to_obaddress(prefix, evm_address);
 
-        //OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede
-        println!("the ob convert result is {}", obc_address);
+        //BFCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede
+        println!("the ob convert result is {}", bfc_address);
 
         ////===============
 
@@ -49,7 +49,7 @@ mod tests {
     #[test]
     fn test_convert_sample2() {
         ////===============
-        let result = "OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede";
+        let result = "BFCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede";
         let evm_address = local_convert_to_evm_address(result.to_string());
         println!("the evm convert result is {}", evm_address);
     }
@@ -102,7 +102,7 @@ fn sha256_string(input: &str) -> String {
     format!("{:x}", result)
 }
 
-//OBCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede
+//BFCd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b768579ede
 fn local_convert_to_obaddress(prefix: &str, evm_address: &str) -> String {
     //let mut address = evm_address.to_string();
 

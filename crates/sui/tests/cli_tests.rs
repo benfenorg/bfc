@@ -615,7 +615,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         serialize_signed_transaction: false,
     }.execute(context).await?;
     resp.print(true);
-    //add obc to exchange pool
+    //add bfc to exchange pool
     let args = vec![
         SuiJsonValue::new(json!(BFC_SYSTEM_STATE_OBJECT_ID))?,
         SuiJsonValue::new(json!(exchange_id))?,
