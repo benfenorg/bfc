@@ -86,7 +86,7 @@ impl ObcSystemStateWrapper {
             .expect("Dynamic field object must be a Move object");
         match self.version {
             1 => {
-                Self::obc_round_safe_mode_impl::<ObcSystemStateInnerV1>(
+                Self::obc_round_safe_mode_impl::<BfcSystemStateInnerV1>(
                     move_object,
                     protocol_config
                 );
@@ -129,7 +129,7 @@ pub trait ObcSystemStateTrait {
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct ObcSystemStateInnerV1 {
+pub struct BfcSystemStateInnerV1 {
     pub round: u64,
     pub gas_coin_map: GasCoinMap,
     pub exchange_pool: ExchangePoolV1,
@@ -150,18 +150,18 @@ pub struct ExchangePoolV1 {
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[enum_dispatch(ObcSystemStateTrait)]
-pub enum ObcSystemState {
-    V1(ObcSystemStateInnerV1),
+pub enum BFCSystemState {
+    V1(BfcSystemStateInnerV1),
 }
 
-impl ObcSystemState {
-    pub fn inner_state(self) -> ObcSystemStateInnerV1 {
+impl BFCSystemState {
+    pub fn inner_state(self) -> BfcSystemStateInnerV1 {
         match self {
-            ObcSystemState::V1(inner) => inner,
+            BFCSystemState::V1(inner) => inner,
         }
     }
 }
-impl ObcSystemStateTrait for ObcSystemStateInnerV1{
+impl ObcSystemStateTrait for BfcSystemStateInnerV1 {
     fn round(&self) -> u64{
         return 0;
     }
@@ -192,12 +192,12 @@ pub fn get_bfc_system_state_wrapper(
     Ok(result)
 }
 
-pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemState, SuiError> {
+pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemState, SuiError> {
     let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
         1 => {
-            let result: ObcSystemStateInnerV1 =
+            let result: BfcSystemStateInnerV1 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(
@@ -206,7 +206,7 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemS
                         ))
                     },
                 )?;
-            Ok(ObcSystemState::V1(result))
+            Ok(BFCSystemState::V1(result))
         }
         _ => Err(SuiError::SuiSystemStateReadError(format!(
             "Unsupported BfcSystemState version: {}",
@@ -220,7 +220,7 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
     let id = wrapper.id.id.bytes;
     match wrapper.version {
         1 => {
-            let result: ObcSystemStateInnerV1 =
+            let result: BfcSystemStateInnerV1 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(

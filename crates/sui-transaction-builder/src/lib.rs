@@ -817,7 +817,7 @@ impl TransactionBuilder {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
             let arguments = vec![
-                builder.input(CallArg::OBC_SYSTEM_MUT).unwrap(),
+                builder.input(CallArg::BFC_SYSTEM_MUT).unwrap(),
                 builder
                     .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref)))
                     .unwrap(),
@@ -863,7 +863,7 @@ impl TransactionBuilder {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
             let arguments = vec![
-                builder.input(CallArg::OBC_SYSTEM_MUT).unwrap(),
+                builder.input(CallArg::BFC_SYSTEM_MUT).unwrap(),
                 builder
                     .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref))).unwrap(),
                 builder.pure(rate).unwrap(),

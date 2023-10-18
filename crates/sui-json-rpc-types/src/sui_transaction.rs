@@ -336,7 +336,7 @@ impl SuiTransactionBlockKind {
                 epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
             }),
             TransactionKind::ChangeBfcRound(o) =>  Self::ChangeBfcRound(SuiChangeBfcRound {
-                round:o.obc_round,
+                round:o.bfc_round,
             }),
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),

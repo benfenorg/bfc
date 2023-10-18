@@ -1072,7 +1072,7 @@ impl CheckpointBuilder {
         }
     }
 
-    async fn augment_obc_round(
+    async fn augment_bfc_round(
         &self,
         checkpoint: CheckpointSequenceNumber,
         checkpoint_effects: &mut Vec<TransactionEffects>,
@@ -1080,7 +1080,7 @@ impl CheckpointBuilder {
     )-> anyhow::Result<()>{
         let (_,effects) = self
             .state
-            .create_and_execute_obc_round_tx(&self.epoch_store ,checkpoint)
+            .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
             .await?;
         error!("bfc round effects is {:?}",effects);
         checkpoint_effects.push(effects);

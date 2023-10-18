@@ -840,7 +840,7 @@ fn extract_end_of_epoch_tx(
         .data()
         .intent_message()
         .value
-        .is_change_epoch_tx()||change_epoch_tx.data().intent_message().value.is_change_obc_round_tx());
+        .is_change_epoch_tx()||change_epoch_tx.data().intent_message().value.is_change_bfc_round_tx());
 
     Some((*digests, change_epoch_tx))
 }
@@ -899,7 +899,7 @@ fn get_unexecuted_transactions(
                     change_epoch_tx_digest, checkpoint.sequence_number()
                 )
             );
-        assert!(change_epoch_tx.data().intent_message().value.is_change_epoch_tx()||change_epoch_tx.data().intent_message().value.is_change_obc_round_tx());
+        assert!(change_epoch_tx.data().intent_message().value.is_change_epoch_tx()||change_epoch_tx.data().intent_message().value.is_change_bfc_round_tx());
     });
 
     let all_tx_digests: Vec<TransactionDigest> =
@@ -964,7 +964,7 @@ fn get_unexecuted_transactions(
                     )
                 );
                 // change epoch tx is handled specially in check_epoch_last_checkpoint
-                assert!(!tx.data().intent_message().value.is_change_epoch_tx()||!tx.data().intent_message().value.is_change_obc_round_tx());
+                assert!(!tx.data().intent_message().value.is_change_epoch_tx()||!tx.data().intent_message().value.is_change_bfc_round_tx());
                 (
                     VerifiedExecutableTransaction::new_from_checkpoint(
                         tx,

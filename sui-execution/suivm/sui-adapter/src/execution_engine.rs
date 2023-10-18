@@ -507,7 +507,7 @@ mod checked {
                 )
             }
             TransactionKind::ChangeBfcRound(change_round) => {
-                obc_round(
+                bfc_round(
                     change_round,
                     temporary_store,
                     tx_ctx,
@@ -657,7 +657,7 @@ mod checked {
         Ok(builder.finish())
     }
 
-    pub fn construct_obc_round_pt(
+    pub fn construct_bfc_round_pt(
         round_id: u64,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
@@ -665,7 +665,7 @@ mod checked {
         let mut arguments = vec![];
 
         let args = vec![
-            CallArg::OBC_SYSTEM_MUT,
+            CallArg::BFC_SYSTEM_MUT,
             //CallArg::SUI_SYSTEM_MUT,
             CallArg::CLOCK_IMM,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
@@ -689,7 +689,7 @@ mod checked {
     }
 
 
-    fn obc_round(
+    fn bfc_round(
         change_round: ChangeBfcRound,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
@@ -699,9 +699,9 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
         let _ = BfcRoundParams {
-            round_id:change_round.obc_round
+            round_id:change_round.bfc_round
         };
-        let advance_epoch_pt = construct_obc_round_pt(change_round.obc_round)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),

@@ -115,7 +115,7 @@ use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature,
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::gas_coin::MIST_PER_SUI;
-use sui_types::obc_system_state::ObcSystemState;
+use sui_types::obc_system_state::BFCSystemState;
 use sui_types::proposal::ProposalStatus;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 //use sui_types::{is_system_package, TypeTag};
@@ -2548,7 +2548,7 @@ impl AuthorityState {
     }
 
 
-    pub async fn get_obc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
+    pub async fn get_bfc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
         Ok(self
             .get_object(&BFC_SYSTEM_ADDRESS.into())
             .await?
@@ -2569,7 +2569,7 @@ impl AuthorityState {
         self.database.get_sui_system_state_object()
     }
 
-    pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<ObcSystemState> {
+    pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
         self.database.get_bfc_system_state_object()
     }
 
@@ -4090,14 +4090,14 @@ impl AuthorityState {
         Ok((system_obj, effects))
     }
 
-    pub async fn create_and_execute_obc_round_tx(
+    pub async fn create_and_execute_bfc_round_tx(
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         checkpoint: CheckpointSequenceNumber,
     ) -> anyhow::Result<(InnerTemporaryStore,TransactionEffects)>{
         let epoch = epoch_store.epoch();
 
-        let tx = VerifiedTransaction::new_change_obc_round(
+        let tx = VerifiedTransaction::new_change_bfc_round(
             epoch,
         );
 

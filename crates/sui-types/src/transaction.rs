@@ -71,7 +71,7 @@ pub enum CallArg {
 
 impl CallArg {
     pub const SUI_SYSTEM_MUT: Self = Self::Object(ObjectArg::SUI_SYSTEM_MUT);
-    pub const OBC_SYSTEM_MUT: Self = Self::Object(ObjectArg::BFC_SYSTEM_MUT);
+    pub const BFC_SYSTEM_MUT: Self = Self::Object(ObjectArg::BFC_SYSTEM_MUT);
 
     pub const CLOCK_IMM: Self = Self::Object(ObjectArg::SharedObject {
         id: SUI_CLOCK_OBJECT_ID,
@@ -166,7 +166,7 @@ pub struct ChangeEpoch {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct ChangeBfcRound {
-    pub obc_round: BfcRoundId,
+    pub bfc_round: BfcRoundId,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
@@ -1522,7 +1522,7 @@ pub trait TransactionDataAPI {
     fn is_system_tx(&self) -> bool;
     fn is_change_epoch_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
-    fn is_change_obc_round_tx(&self) -> bool;
+    fn is_change_bfc_round_tx(&self) -> bool;
 
     /// Check if the transaction is sponsored (namely gas owner != sender)
     fn is_sponsored_tx(&self) -> bool;
@@ -1662,7 +1662,7 @@ impl TransactionDataAPI for TransactionDataV1 {
         matches!(self.kind, TransactionKind::ChangeEpoch(_))
     }
 
-    fn is_change_obc_round_tx(&self) -> bool {
+    fn is_change_bfc_round_tx(&self) -> bool {
         matches!(self.kind, TransactionKind::ChangeBfcRound(_))
     }
 
@@ -1999,11 +1999,11 @@ impl VerifiedTransaction {
         .pipe(Self::new_system_transaction)
     }
 
-    pub fn new_change_obc_round(
+    pub fn new_change_bfc_round(
         round_id: BfcRoundId,
     ) -> Self {
         ChangeBfcRound {
-            obc_round:round_id,
+            bfc_round:round_id,
         }
             .pipe(TransactionKind::ChangeBfcRound)
             .pipe(Self::new_system_transaction)
