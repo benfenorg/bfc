@@ -1254,13 +1254,15 @@ impl AuthorityState {
         let mut gas_object_refs = transaction.gas().to_vec();
         if !transaction.gas().is_empty() {
             //get gas obj
-            let gas_ids:Vec<_> = transaction.gas().iter().map(|(id, _, _)| *id).collect();
+            let gas_ids :Vec<_> = transaction.gas().iter().map(|(id, _, _)| *id).collect();
             let gas_objs = self.get_objects(&gas_ids).await?;
             for obj in gas_objs {
                 match obj {
                     Some(stable)=> {
-                        is_stable_gas = stable.is_stable_gas_coin();
-                        gas_object_refs = vec![];
+                        if stable.is_stable_gas_coin() {
+                            is_stable_gas = true;
+                            gas_object_refs = vec![];
+                        }
                     },
                     _ => {},
                 };
@@ -1310,12 +1312,6 @@ impl AuthorityState {
 
         let protocol_config = epoch_store.protocol_config();
         let transaction_dependencies = input_objects.transaction_dependencies();
-        // let temporary_store = TemporaryStore::new_for_mock_transaction(
-        //     self.database.clone(),
-        //     input_objects,
-        //     transaction_digest,
-        //     protocol_config,
-        // );
 
         let (kind, signer, _) = transaction.execution_parts();
 
@@ -1339,14 +1335,6 @@ impl AuthorityState {
                     .epoch_start_config()
                     .epoch_data()
                     .epoch_start_timestamp(),
-                // temporary_store,
-                // shared_object_refs,
-                // &mut GasCharger::new(
-                //     transaction_digest,
-                //     gas_object_refs,
-                //     gas_status,
-                //     protocol_config,
-                // ),
                 input_objects,
                 shared_object_refs,
                 gas_object_refs,
