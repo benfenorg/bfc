@@ -45,10 +45,10 @@ export function CastVote({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::cast_vote`,
+				target: `0xc8::bfc_system::cast_vote`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(proposal.proposal_uid),
 					tx.object(voting),
 					tx.pure(!!agree),

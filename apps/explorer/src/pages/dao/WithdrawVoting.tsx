@@ -43,9 +43,9 @@ export function WithdrawVoting({ refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::withdraw_voting`,
+				target: `0xc8::bfc_system::withdraw_voting`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), tx.object(vote)],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.object(vote)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({

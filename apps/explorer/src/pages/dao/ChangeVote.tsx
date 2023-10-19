@@ -45,10 +45,10 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::change_vote`,
+				target: `0xc8::bfc_system::change_vote`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(vote),
 					tx.object(proposal.proposal_uid),
 					tx.pure(!!agree),

@@ -46,10 +46,10 @@ export function CreateDaoAction({ refetchDao }: Props) {
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::obc_system::create_obcdao_action`,
+				target: `0xc8::bfc_system::create_obcdao_action`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					coin,
 					tx.object(`0x${bytesToHex(new TextEncoder().encode(text))}`),
 				],

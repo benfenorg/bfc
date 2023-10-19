@@ -44,7 +44,7 @@ export function UnvoteVotes({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::unvote_votes`,
+				target: `0xc8::bfc_system::unvote_votes`,
 				typeArguments: [],
 				arguments: [tx.object(proposal.proposal_uid), tx.object(vote), tx.object(ADDRESS.CLOCK)],
 			});

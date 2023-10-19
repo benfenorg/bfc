@@ -49,10 +49,10 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::obc_system::propose`,
+				target: `0xc8::bfc_system::propose`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.pure(20),
 					coin,
 					tx.pure(Number.parseInt(action)),

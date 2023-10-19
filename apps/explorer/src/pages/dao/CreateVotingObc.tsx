@@ -44,9 +44,9 @@ export function CreateVotingObc({ refetchDao }: Props) {
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::obc_system::create_voting_obc`,
+				target: `0xc8::bfc_system::create_voting_obc`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), coin],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), coin],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
