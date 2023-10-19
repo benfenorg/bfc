@@ -1,10 +1,10 @@
 import classNames from 'classnames';
 import { AreaChart, Area, Tooltip, ResponsiveContainer, YAxis, Curve } from 'recharts';
-import { chartData } from './xxx';
+import { chartData } from '../xxx';
 import { ReactComponent as BfcCoinIcon } from '~/assets/bfc_coin_icon.svg';
 import { ReactComponent as BusdCoinIcon } from '~/assets/busd_coin_icon.svg';
 
-export function MintRation() {
+export function MintAmount() {
 	const chartLaoding = false;
     const TooltipContent = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
@@ -76,11 +76,10 @@ export function MintRation() {
 		<div className="bg-white text-bf-text1 rounded-lg">
 			<div className="flex items-center py-2 px-5 border-b border-bf-border">
 				<div className="flex">
-					<BfcCoinIcon className="w-[20px]" />
 					<BusdCoinIcon className="w-[20px] ml-[-2px]" />
 				</div>
-				<div className="ml-1 font-semibold">1 BFC = 13 BUSD</div>
-				<div className="ml-1 text-xs text-bf-text2">铸造比例</div>
+				<div className="ml-1 font-semibold">13 BUSD</div>
+				<div className="ml-1 text-xs text-bf-text2">可铸造数量</div>
 			</div>
 			<div className="p-5">
 				<div className="flex justify-between items-center ">
