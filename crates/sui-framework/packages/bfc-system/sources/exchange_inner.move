@@ -17,8 +17,8 @@ module bfc_system::exchange_inner {
 
     const ENotActivePool: u64 = 1;
     const EZeroAmount: u64 = 2;
-    const EOBCZeroAmount: u64 = 3;
-    const ELackOfOBC: u64 = 4;
+    const EBFCZeroAmount: u64 = 3;
+    const ELackOfBFC: u64 = 4;
     const ENotAllowWithdraw: u64 = 5;
     const ENotAllowDeposit: u64 = 6;
 
@@ -32,7 +32,7 @@ module bfc_system::exchange_inner {
         /// The total number of SUI coins in this pool
         bfc_balance: u64,
         /// The epoch stake rewards will be added here at the end of each epoch.
-        obc_pool: Balance<BFC>,
+        bfc_pool: Balance<BFC>,
         /// Total number of pool stable coins issued by the pool.
         stable_token_balance: u64,
         /// The epoch stable gas coins
@@ -45,7 +45,7 @@ module bfc_system::exchange_inner {
             id: object::new(ctx),
             activation_epoch: option::some(epoch),
             bfc_balance: 0,
-            obc_pool: balance::zero(),
+            bfc_pool: balance::zero(),
             stable_token_balance: 0,
             stable_pool: balance::zero<STABLE_COIN>(),
         }
@@ -58,13 +58,13 @@ module bfc_system::exchange_inner {
         &pool.id
     }
 
-    /// Add obc to pool for gas exchange.
+    /// Add bfc to pool for gas exchange.
     public(friend) fun add_obc_to_pool<STABLE_COIN>(pool: &mut ExchangePool<STABLE_COIN>, coin: Coin<BFC>) {
         let amount = coin::value(&coin);
         assert!( amount > 0, EZeroAmount);
         pool.bfc_balance = pool.bfc_balance + amount;
         let balance = coin::into_balance(coin);
-        balance::join(&mut pool.obc_pool, balance);
+        balance::join(&mut pool.bfc_pool, balance);
     }
 
     /// Returns true if the input exchange pool is active.
@@ -91,7 +91,7 @@ module bfc_system::exchange_inner {
         pool.stable_token_balance
     }
 
-    /// Get obc amount by exchange rate.
+    /// Get bfc amount by exchange rate.
     fun exchange_obc_amount(exchange_rate: u64, token_amount: u64): u64 {
         let res = (token_amount as u128) / (exchange_rate as u128);
         (res as u64)
@@ -107,12 +107,12 @@ module bfc_system::exchange_inner {
         assert!(coin::value(&stable_coin) > 0, EZeroAmount);
         let tok_balance = coin::into_balance(stable_coin);
         let stable_amount = balance::value(&tok_balance);
-        let obc_amount= exchange_obc_amount(exchange_rate, stable_amount);
-        assert!(obc_amount > 0, EOBCZeroAmount);
-        assert!(pool.bfc_balance > obc_amount, ELackOfOBC);
+        let bfc_amount= exchange_obc_amount(exchange_rate, stable_amount);
+        assert!(bfc_amount > 0, EBFCZeroAmount);
+        assert!(pool.bfc_balance > bfc_amount, ELackOfBFC);
         balance::join(&mut pool.stable_pool, tok_balance);
-        let result = coin::take(&mut pool.obc_pool, obc_amount, ctx);
-        pool.bfc_balance = pool.bfc_balance - obc_amount;
+        let result = coin::take(&mut pool.bfc_pool, bfc_amount, ctx);
+        pool.bfc_balance = pool.bfc_balance - bfc_amount;
         pool.stable_token_balance = pool.stable_token_balance + stable_amount;
         coin::into_balance(result)
     }
@@ -123,7 +123,7 @@ module bfc_system::exchange_inner {
         if(pool.bfc_balance > 0) {
             //set pool active is false
             pool.bfc_balance = 0;
-           balance::withdraw_all(&mut pool.obc_pool)
+           balance::withdraw_all(&mut pool.bfc_pool)
         }else {
             balance::zero<BFC>()
         }
@@ -153,7 +153,7 @@ module bfc_system::exchange_inner {
     ) {
         assert!(!is_active(pool), ENotAllowDeposit);
         pool.bfc_balance = pool.bfc_balance + balance::value(&bfc_balance);
-        balance::join(&mut pool.obc_pool, bfc_balance);
+        balance::join(&mut pool.bfc_pool, bfc_balance);
     }
 
 }

@@ -90,9 +90,9 @@ module bfc_system::test_utils {
         test_scenario::next_tx(scenario_val, owner);
 
         {
-            let obc = balance::create_for_testing<BFC>(300000000000000000);
+            let bfc = balance::create_for_testing<BFC>(300000000000000000);
             let t = test_scenario::take_shared<Treasury>(scenario_val);
-            treasury::deposit(&mut t, coin::from_balance(obc, test_scenario::ctx(scenario_val)));
+            treasury::deposit(&mut t, coin::from_balance(bfc, test_scenario::ctx(scenario_val)));
             test_scenario::return_shared(t);
         };
 

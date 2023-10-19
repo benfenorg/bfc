@@ -120,9 +120,9 @@ module bfc_system::bfc_system_state_inner {
         inner: &mut BfcSystemStateInner,
         ctx: &mut TxContext
     ) {
-        //get obc amount of inner exchange pool
-        let obc_amount = exchange_inner::get_obc_amount(&inner.exchange_pool);
-        if (obc_amount > 0) {
+        //get bfc amount of inner exchange pool
+        let bfc_amount = exchange_inner::get_obc_amount(&inner.exchange_pool);
+        if (bfc_amount > 0) {
             //set pool is disactivate
             let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
             //get stable balance
@@ -133,7 +133,7 @@ module bfc_system::bfc_system_state_inner {
                 coin::from_balance(stable_balance, ctx),
                 ctx,
             );
-            //add obc to inner exchange pool
+            //add bfc to inner exchange pool
             exchange_inner::request_deposit_bfc_balance(&mut inner.exchange_pool, bfc_balance);
             // active pool
             exchange_inner::activate(&mut inner.exchange_pool, epoch);
@@ -184,7 +184,7 @@ module bfc_system::bfc_system_state_inner {
         gas_coin_map::request_remove_gas_coin<CoinType>(&mut self.gas_coin_map, gas_coin)
     }
 
-    /// Init exchange pool by add obc coin.
+    /// Init exchange pool by add bfc coin.
     public fun init_exchange_pool(
         self: &mut BfcSystemStateInner,
         coin: Coin<BFC>,
@@ -222,26 +222,26 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance)
     }
 
-    /// swap obc to stablecoin
+    /// swap bfc to stablecoin
     public(friend) fun swap_obc_to_stablecoin<StableCoinType>(
         self: &mut BfcSystemStateInner,
-        coin_obc: Coin<BFC>,
+        coin_bfc: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
     ) {
-        treasury::mint<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx);
+        treasury::mint<StableCoinType>(&mut self.treasury, coin_bfc, amount, ctx);
     }
 
     public(friend) fun swap_obc_to_stablecoin_balance<StableCoinType>(
         self: &mut BfcSystemStateInner,
-        coin_obc: Coin<BFC>,
+        coin_bfc: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
     ): Balance<StableCoinType> {
-        treasury::mint_internal<StableCoinType>(&mut self.treasury, coin_obc, amount, ctx)
+        treasury::mint_internal<StableCoinType>(&mut self.treasury, coin_bfc, amount, ctx)
     }
 
-    /// swap stablecoin to obc
+    /// swap stablecoin to bfc
     public(friend) fun swap_stablecoin_to_bfc<StableCoinType>(
         self: &mut BfcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
@@ -285,8 +285,8 @@ module bfc_system::bfc_system_state_inner {
         treasury::get_balance(&self.treasury)
     }
 
-    public(friend) fun deposit_to_treasury(self: &mut BfcSystemStateInner, coin_obc: Coin<BFC>) {
-        treasury::deposit(&mut self.treasury, coin_obc);
+    public(friend) fun deposit_to_treasury(self: &mut BfcSystemStateInner, coin_bfc: Coin<BFC>) {
+        treasury::deposit(&mut self.treasury, coin_bfc);
     }
 
     public(friend) fun rebalance(
@@ -458,9 +458,9 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public fun withdraw_voting(system_state: &mut BfcSystemStateInner,
-                               voting_obc: VotingBfc,
+                               voting_bfc: VotingBfc,
                                ctx: &mut TxContext) {
-        bfc_dao::withdraw_voting(&mut system_state.dao, voting_obc, ctx);
+        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, ctx);
     }
 
     public(friend) fun create_voting_bfc(system_state: &mut BfcSystemStateInner,

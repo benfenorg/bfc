@@ -17,16 +17,16 @@ module bfc_system::exchange_inner_tests {
         let ctx = test_scenario::ctx(scenario);
         // new exchange pool
         let exchange_pool = exchange_inner::new_exchange_pool(ctx, 0);
-        // init obc balance
-        let obc = balance::create_for_testing<BFC>(10);
-        exchange_inner::add_obc_to_pool(&mut exchange_pool, coin::from_balance(obc, ctx));
+        // init bfc balance
+        let bfc = balance::create_for_testing<BFC>(10);
+        exchange_inner::add_obc_to_pool(&mut exchange_pool, coin::from_balance(bfc, ctx));
         assert!(exchange_inner::get_obc_amount(&exchange_pool) == 10, 100);
         // exchange where rate = 10000
         let stable = balance::create_for_testing<BUSD>(50000);
         let stable_coin = coin::from_balance(stable, ctx);
         let exchanged = exchange_inner::request_exchange_stable(10000, &mut exchange_pool, stable_coin, ctx);
         assert!(balance::value(&exchanged) == 5, 102);
-        //check stable amout and obc amount
+        //check stable amout and bfc amount
         assert!(exchange_inner::get_stable_amount(&exchange_pool) == 50000, 103);
         assert_eq(exchange_inner::get_obc_amount(&exchange_pool), 5);
 
