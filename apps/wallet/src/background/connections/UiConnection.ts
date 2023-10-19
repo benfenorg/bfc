@@ -39,7 +39,7 @@ import type { GetTransactionRequestsResponse } from '_payloads/transactions/ui/G
 import type { Runtime } from 'webextension-polyfill';
 
 export class UiConnection extends Connection {
-	public static readonly CHANNEL: PortChannelName = 'obc_ui<->background';
+	public static readonly CHANNEL: PortChannelName = 'bfc_ui<->background';
 	private uiAppInitialized: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
 	constructor(port: Runtime.Port) {

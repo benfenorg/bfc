@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { fromB58, splitGenericParameters } from '@mysten/bcs';
-import { obc2SuiAddress } from './format.js';
+import { bfc2SuiAddress } from './format.js';
 import BigNumber from 'bignumber.js';
 
 const TX_DIGEST_LENGTH = 32;
@@ -98,7 +98,7 @@ export function normalizeStructTag(type: string | StructTag): string {
 export function normalizeSuiAddress(value: string, forceAdd0x: boolean = false): string {
 	let address = value.toLowerCase();
 	if (/^bfc/i.test(value)) {
-		address = obc2SuiAddress(value);
+		address = bfc2SuiAddress(value);
 	}
 	if (!forceAdd0x && address.startsWith('0x')) {
 		address = address.slice(2);
@@ -118,10 +118,10 @@ function getHexByteLength(value: string): number {
 	return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
 }
 
-export function humanReadableToObcDigits(amount: number | string) {
+export function humanReadableToBfcDigits(amount: number | string) {
 	return BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString());
 }
 
-export function obcDigitsToHumanReadable(amount: string) {
+export function bfcDigitsToHumanReadable(amount: string) {
 	return new BigNumber(amount).shiftedBy(-9).toString();
 }

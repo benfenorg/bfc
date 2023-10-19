@@ -8,7 +8,7 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { humanReadableToObcDigits } from '@mysten/sui.js/utils';
+import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
@@ -29,7 +29,7 @@ const schema = z.object({
 		.refine((n) => n >= 1),
 });
 
-export function CreateVotingObc({ refetchDao }: Props) {
+export function CreateVotingBfc({ refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
 	const { handleSubmit, register, formState } = useZodForm({
@@ -38,13 +38,13 @@ export function CreateVotingObc({ refetchDao }: Props) {
 
 	const execute = useMutation({
 		mutationFn: async ({ amount }: { amount: number }) => {
-			const bigIntAmount = humanReadableToObcDigits(amount);
+			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::bfc_system::create_voting_obc`,
+				target: `0xc8::bfc_system::create_voting_bfc`,
 				typeArguments: [],
 				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), coin],
 			});

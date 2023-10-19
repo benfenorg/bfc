@@ -9,14 +9,14 @@ import {
 	getTransactionDigest,
 } from '@mysten/sui.js';
 import { type ProposalRecord } from '@mysten/sui.js/client';
-import { humanReadableToObcDigits } from '@mysten/sui.js/utils';
+import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
+import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
 import { Input } from '~/ui/Input';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
@@ -34,7 +34,7 @@ const schema = z.object({
 export function RevokeVote({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votes = [], refetch: refetchVotes } = useGetOBCDaoVote(
+	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(
 		currentAccount?.address || '',
 	);
 
@@ -44,7 +44,7 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 
 	const execute = useMutation({
 		mutationFn: async ({ amount, vote }: { amount: number; vote: string }) => {
-			const bigIntAmount = humanReadableToObcDigits(amount);
+			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
 

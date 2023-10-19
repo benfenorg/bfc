@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress, formatDigest, sui2ObcAddress } from './format.js';
+import { formatAddress, formatDigest, sui2BfcAddress } from './format.js';
 import {
 	isValidSuiAddress,
 	isValidSuiObjectId,
@@ -11,8 +11,8 @@ import {
 	normalizeSuiObjectId,
 	parseStructTag,
 	SUI_ADDRESS_LENGTH,
-	humanReadableToObcDigits,
-	obcDigitsToHumanReadable,
+	humanReadableToBfcDigits,
+	bfcDigitsToHumanReadable,
 } from './sui-types.js';
 
 export { fromB64, toB64 } from '@mysten/bcs';
@@ -29,8 +29,8 @@ export {
 	normalizeSuiObjectId,
 	parseStructTag,
 	SUI_ADDRESS_LENGTH,
-	humanReadableToObcDigits,
-	obcDigitsToHumanReadable,
+	humanReadableToBfcDigits,
+	bfcDigitsToHumanReadable,
 };
 
 export const SUI_DECIMALS = 9;
@@ -42,4 +42,4 @@ export const SUI_SYSTEM_ADDRESS = '0x3';
 export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
 export const SUI_SYSTEM_MODULE_NAME = 'bfc_system';
 export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::bfc::BFC`;
-export const SUI_SYSTEM_STATE_OBJECT_ID: string = sui2ObcAddress('0x5');
+export const SUI_SYSTEM_STATE_OBJECT_ID: string = sui2BfcAddress('0x5');

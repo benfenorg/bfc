@@ -44,7 +44,7 @@ import type { SetNetworkPayload } from '_payloads/network';
 import type { Runtime } from 'webextension-polyfill';
 
 export class ContentScriptConnection extends Connection {
-	public static readonly CHANNEL: PortChannelName = 'obc_content<->background';
+	public static readonly CHANNEL: PortChannelName = 'bfc_content<->background';
 	public readonly origin: string;
 	public readonly pagelink?: string | undefined;
 	public readonly originFavIcon: string | undefined;

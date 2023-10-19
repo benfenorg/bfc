@@ -46,7 +46,7 @@ export function ValidatorStatus() {
 	];
 
 	return (
-		<Card spacing="lg" bg="white" border="obcBorder" rounded="2xl">
+		<Card spacing="lg" bg="white" border="bfcBorder" rounded="2xl">
 			<div className="flex items-center gap-5">
 				<div className="min-h-[96px] min-w-[96px]">
 					<RingChart data={chartData} />

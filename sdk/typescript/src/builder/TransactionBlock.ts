@@ -27,7 +27,7 @@ import { TransactionBlockDataBuilder } from './TransactionBlockData.js';
 import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import { normalizeSuiObjectId } from '../utils/sui-types.js';
 import { SUI_TYPE_ARG } from '../framework/framework.js';
 import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
@@ -480,8 +480,8 @@ export class TransactionBlock {
 						'ImmOrOwned' in input.value.Object
 					) {
 						return (
-							sui2ObcAddress(coin.coinObjectId) ===
-							sui2ObcAddress(input.value.Object.ImmOrOwned.objectId)
+							sui2BfcAddress(coin.coinObjectId) ===
+							sui2BfcAddress(input.value.Object.ImmOrOwned.objectId)
 						);
 					}
 

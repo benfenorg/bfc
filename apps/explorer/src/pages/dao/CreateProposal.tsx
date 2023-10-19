@@ -8,8 +8,8 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ObcDao } from '@mysten/sui.js/client';
-import { humanReadableToObcDigits } from '@mysten/sui.js/utils';
+import { type BfcDao } from '@mysten/sui.js/client';
+import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { hexToBytes } from '@noble/hashes/utils';
@@ -21,7 +21,7 @@ import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
 export interface Props {
-	dao: ObcDao;
+	dao: BfcDao;
 	refetchDao: () => void;
 }
 
@@ -43,7 +43,7 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 
 	const execute = useMutation({
 		mutationFn: async ({ amount, action }: { amount: number; action: string }) => {
-			const bigIntAmount = humanReadableToObcDigits(amount);
+			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);

@@ -36,7 +36,7 @@ describe('BCS: Serde', () => {
 
 		expect(
 			serde(bcs, 'address', '0x000000000000000000000000e3edac2c684ddbba5ad1a2b90fb361100b2094af'),
-		).toEqual('OBC000000000000000000000000e3edac2c684ddbba5ad1a2b90fb361100b2094af5564');
+		).toEqual('BFC000000000000000000000000e3edac2c684ddbba5ad1a2b90fb361100b2094af5564');
 	});
 
 	it('should serde structs', () => {
@@ -54,7 +54,7 @@ describe('BCS: Serde', () => {
 		let struct = bcs.de('Beep', bytes);
 
 		expect(struct.id).toEqual(
-			'OBC00000000000000000000000045aacd9ed90a5a8e211502ac3fa898a3819f23b29437',
+			'BFC00000000000000000000000045aacd9ed90a5a8e211502ac3fa898a3819f23b29437',
 		);
 		expect(struct.value.toString(10)).toEqual('10000000');
 	});
@@ -67,7 +67,7 @@ describe('BCS: Serde', () => {
 			no_value: null,
 		});
 
-		let addr = 'OBCbb967ddbebfee8c40d8fdd2c24cb02452834cd3a7061d18564448f900eb9e66d454d';
+		let addr = 'BFCbb967ddbebfee8c40d8fdd2c24cb02452834cd3a7061d18564448f900eb9e66d454d';
 
 		expect(addr).toEqual(
 			bcs.de('Enum', bcs.ser('Enum', { with_value: addr }).toBytes()).with_value,
@@ -102,10 +102,10 @@ describe('BCS: Serde', () => {
 
 		{
 			let value = [
-				'OBC000000000000000000000000e3edac2c684ddbba5ad1a2b90fb361100b2094af5564',
-				'OBC0000000000000000000000000000000000000000000000000000000000000001c386',
-				'OBC000000000000000000000000000000000000000000000000000000000000000268e4',
-				'OBC000000000000000000000000c0ffeec0ffeec0ffeec0ffeec0ffeec0ffee1337a5d3',
+				'BFC000000000000000000000000e3edac2c684ddbba5ad1a2b90fb361100b2094af5564',
+				'BFC0000000000000000000000000000000000000000000000000000000000000001c386',
+				'BFC000000000000000000000000000000000000000000000000000000000000000268e4',
+				'BFC000000000000000000000000c0ffeec0ffeec0ffeec0ffeec0ffeec0ffee1337a5d3',
 			];
 
 			expect(serde(bcs, 'vector<address>', value)).toEqual(value);
@@ -144,7 +144,7 @@ describe('BCS: Serde', () => {
 
 		{
 			let value = {
-				owner: 'OBC0000000000000000000000000000000000000000000000000000000000000001c386',
+				owner: 'BFC0000000000000000000000000000000000000000000000000000000000000001c386',
 				is_active: true,
 				item: { balance: { value: '10000' } },
 			};
@@ -171,7 +171,7 @@ describe('BCS: Serde', () => {
 		bcs.registerAlias('ObjectDigest', BCS.STRING);
 
 		const value = {
-			objectId: 'OBC5443700000000000000000000000000000000000000000000000000000000000211c',
+			objectId: 'BFC5443700000000000000000000000000000000000000000000000000000000000211c',
 			version: '9180',
 			digest: 'hahahahahaha',
 		};

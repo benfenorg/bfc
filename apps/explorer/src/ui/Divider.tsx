@@ -13,7 +13,7 @@ const dividerStyles = cva('', {
 			gray45: 'border-gray-45',
 			gray40: 'border-gray-40',
 			'hero/10': 'border-hero/10',
-			obcBorder: 'border-bfc-border',
+			bfcBorder: 'border-bfc-border',
 		},
 		type: {
 			solid: 'border-solid',
@@ -22,7 +22,7 @@ const dividerStyles = cva('', {
 	},
 	defaultVariants: {
 		vertical: false,
-		color: 'obcBorder',
+		color: 'bfcBorder',
 		type: 'solid',
 	},
 });

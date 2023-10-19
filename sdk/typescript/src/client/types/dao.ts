@@ -32,7 +32,7 @@ export type ProposalRecordWithStatus = ProposalRecord & {
 	status: ProposalStatus;
 };
 
-export type ObcDao = {
+export type BfcDao = {
 	id: {
 		id: string;
 	};
@@ -74,7 +74,7 @@ export type ObcDao = {
 		id: {
 			id: string;
 		};
-		obc_balance: number;
+		bfc_balance: number;
 		pool_token_balance: number;
 	};
 	current_proposal_status: Record<
@@ -86,7 +86,7 @@ export type ObcDao = {
 	>;
 };
 
-export type VotingObc = {
+export type VotingBfc = {
 	id: {
 		id: string;
 	};

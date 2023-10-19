@@ -3,7 +3,7 @@
 
 import { useResolveSuiNSName } from '@mysten/core';
 import { Check24, Copy12 } from '@mysten/icons';
-import { formatAddress, sui2ObcAddress } from '@mysten/sui.js';
+import { formatAddress, sui2BfcAddress } from '@mysten/sui.js';
 
 import { AccountBadge } from './AccountBadge';
 import { useActiveAddress } from '../hooks/useActiveAddress';
@@ -19,7 +19,7 @@ export type AccountItemProps = {
 export function AccountListItem({ account, onAccountSelected }: AccountItemProps) {
 	const { address, type } = account;
 	const activeAddress = useActiveAddress();
-	const copy = useCopyToClipboard(sui2ObcAddress(address), {
+	const copy = useCopyToClipboard(sui2BfcAddress(address), {
 		copySuccessMessage: 'Address Copied',
 	});
 	const { data: domainName } = useResolveSuiNSName(address);

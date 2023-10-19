@@ -7,13 +7,13 @@ import clsx from 'clsx';
 
 import { CreateDaoAction } from './CreateDaoAction';
 import { CreateProposal } from './CreateProposal';
-import { CreateVotingObc } from './CreateVotingObc';
+import { CreateVotingBfc } from './CreateVotingBfc';
 import { WithdrawVoting } from './WithdrawVoting';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
+import { useGetBFCDaoManageKey } from '~/hooks/useGetBFCDaoManageKey';
 import { useGetDao } from '~/hooks/useGetDao';
-import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
@@ -67,7 +67,7 @@ function DaoItem({ data }: { data: ProposalRecord }) {
 
 function DaoList() {
 	const { isConnected, currentAccount } = useWalletKit();
-	const { data: manageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
+	const { data: manageKey } = useGetBFCDaoManageKey(currentAccount?.address || '');
 	console.log(manageKey); // TODO: remove useless code
 	const { data, refetch } = useGetDao();
 
@@ -101,7 +101,7 @@ function DaoList() {
 						</DisclosureBox>
 					)}
 					<DisclosureBox title="create voting bfc" defaultOpen={false}>
-						<CreateVotingObc refetchDao={refetch} />
+						<CreateVotingBfc refetchDao={refetch} />
 					</DisclosureBox>
 					<DisclosureBox title="withdraw voting bfc" defaultOpen={false}>
 						<WithdrawVoting refetchDao={refetch} />

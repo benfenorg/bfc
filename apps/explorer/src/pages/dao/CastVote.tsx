@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { z } from 'zod';
 
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
@@ -32,7 +32,7 @@ const schema = z.object({
 export function CastVote({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votingObcs = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
+	const { data: votingBfcs = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
 		currentAccount?.address || '',
 	);
 
@@ -82,7 +82,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 		>
 			<Selector
 				label="voting"
-				options={votingObcs.map((i) => ({
+				options={votingBfcs.map((i) => ({
 					label: new BigNumber(i.principal).shiftedBy(-9).toString(),
 					value: i.id.id,
 				}))}

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetObject } from '@mysten/core';
-import { sui2ObcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@mysten/sui.js';
 import { LoadingIndicator } from '@mysten/ui';
 import { useParams } from 'react-router-dom';
 
@@ -21,7 +21,7 @@ function Fail({ objID }: { objID: string | undefined }) {
 	return (
 		<Banner variant="error" spacing="lg" fullWidth>
 			Data could not be extracted on the following specified object ID:{' '}
-			{objID ? sui2ObcAddress(objID) : ''}
+			{objID ? sui2BfcAddress(objID) : ''}
 		</Banner>
 	);
 }

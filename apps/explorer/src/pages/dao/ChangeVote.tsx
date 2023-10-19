@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
+import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
@@ -32,7 +32,7 @@ const schema = z.object({
 export function ChangeVote({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votes = [], refetch: refetchVotes } = useGetOBCDaoVote(
+	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(
 		currentAccount?.address || '',
 	);
 

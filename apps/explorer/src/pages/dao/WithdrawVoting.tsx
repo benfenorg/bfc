@@ -8,14 +8,14 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { obcDigitsToHumanReadable } from '@mysten/sui.js/utils';
+import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
@@ -34,7 +34,7 @@ export function WithdrawVoting({ refetchDao }: Props) {
 		schema: schema,
 	});
 
-	const { data: votes = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
+	const { data: votes = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
 		currentAccount?.address || '',
 	);
 
@@ -65,7 +65,7 @@ export function WithdrawVoting({ refetchDao }: Props) {
 	const options = useMemo(
 		() =>
 			votes.map((i) => ({
-				label: obcDigitsToHumanReadable(i.principal),
+				label: bfcDigitsToHumanReadable(i.principal),
 				value: i.id.id,
 			})),
 		[votes],

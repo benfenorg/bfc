@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ArrowUpRight12 } from '@mysten/icons';
-import { sui2ObcAddress, formatAddress } from '@mysten/sui.js';
+import { sui2BfcAddress, formatAddress } from '@mysten/sui.js';
 import { type SuiValidatorSummary } from '@mysten/sui.js/client';
 import { Heading, Text } from '@mysten/ui';
 
@@ -65,12 +65,12 @@ export function ValidatorMeta({ validatorData }: ValidatorMetaProps) {
 						<DescriptionItem title="Pool ID" align="start" direction="cloumn">
 							<div className="flex items-start gap-1 break-all">
 								<Text variant="pBody/medium" color="steel-darker">
-									{formatAddress(sui2ObcAddress(validatorData.stakingPoolId))}
+									{formatAddress(sui2BfcAddress(validatorData.stakingPoolId))}
 								</Text>
 								<CopyToClipboard
 									size="md"
 									color="steel"
-									copyText={sui2ObcAddress(validatorData.stakingPoolId)}
+									copyText={sui2BfcAddress(validatorData.stakingPoolId)}
 								/>
 							</div>
 						</DescriptionItem>
@@ -80,7 +80,7 @@ export function ValidatorMeta({ validatorData }: ValidatorMetaProps) {
 								<CopyToClipboard
 									size="md"
 									color="steel"
-									copyText={sui2ObcAddress(validatorData.suiAddress)}
+									copyText={sui2BfcAddress(validatorData.suiAddress)}
 								/>
 							</div>
 						</DescriptionItem>

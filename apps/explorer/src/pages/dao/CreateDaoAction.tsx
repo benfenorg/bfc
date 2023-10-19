@@ -8,7 +8,7 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { humanReadableToObcDigits } from '@mysten/sui.js/utils';
+import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { bytesToHex } from '@noble/hashes/utils';
@@ -40,13 +40,13 @@ export function CreateDaoAction({ refetchDao }: Props) {
 
 	const execute = useMutation({
 		mutationFn: async ({ text, amount }: { amount: number; text: string }) => {
-			const bigIntAmount = humanReadableToObcDigits(amount);
+			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::bfc_system::create_obcdao_action`,
+				target: `0xc8::bfc_system::create_bfcdao_action`,
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),

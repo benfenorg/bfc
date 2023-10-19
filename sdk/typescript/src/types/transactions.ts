@@ -20,7 +20,7 @@ import {
 import { ObjectOwner, SuiJsonValue } from './common.js';
 import { SuiEvent } from './events.js';
 import { SuiGasData, SuiMovePackage, SuiObjectRef } from './objects.js';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import type {
 	SuiTransactionBlockResponse as NewSuiTransactionBlockResponse,
 	SuiTransactionBlockKind as NewSuiTransactionBlockKind,
@@ -437,7 +437,7 @@ export function getTransactionSignature(tx: NewSuiTransactionBlockResponse): str
 
 export function getTransactionSender(tx: NewSuiTransactionBlockResponse): string | undefined {
 	let sender = tx.transaction?.data.sender;
-	return sender ? sui2ObcAddress(sender) : undefined;
+	return sender ? sui2BfcAddress(sender) : undefined;
 }
 
 export function getGasData(tx: SuiTransactionBlockResponse): SuiGasData | undefined {

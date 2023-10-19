@@ -16,8 +16,8 @@ import { UnvoteVotes } from './UnvoteVotes';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
+import { useGetBFCDaoManageKey } from '~/hooks/useGetBFCDaoManageKey';
 import { useGetDao } from '~/hooks/useGetDao';
-import { useGetOBCDaoManageKey } from '~/hooks/useGetOBCDaoManageKey';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { PageHeader } from '~/ui/PageHeader';
 
@@ -152,7 +152,7 @@ function DaoContent() {
 	const { id } = useParams<{ id: string }>();
 	const { currentAccount } = useWalletKit();
 	const { data: daoData, isLoading, refetch } = useGetDao();
-	const { data: manageKey } = useGetOBCDaoManageKey(currentAccount?.address || '');
+	const { data: manageKey } = useGetBFCDaoManageKey(currentAccount?.address || '');
 
 	const data = useMemo(() => {
 		if (!daoData) {
