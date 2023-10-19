@@ -456,7 +456,7 @@ async fn test_failed_pay_sui() {
         sender,
         pt,
         vec![coin1, coin2],
-        2000000,
+        200000,
         rgp,
         true,
     )
