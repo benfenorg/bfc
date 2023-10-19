@@ -23,13 +23,13 @@ fn main() {
     let deepbook_path = packages_path.join("deepbook");
     let sui_system_path = packages_path.join("sui-system");
     let sui_framework_path = packages_path.join("sui-framework");
-    let obc_system_path = packages_path.join("obc-system");
+    let bfc_system_path = packages_path.join("obc-system");
     let move_stdlib_path = packages_path.join("move-stdlib");
 
     let deepbook_path_clone = deepbook_path.clone();
     let sui_system_path_clone = sui_system_path.clone();
     let sui_framework_path_clone = sui_framework_path.clone();
-    let obc_system_path_clone = obc_system_path.clone();
+    let bfc_system_path_clone = bfc_system_path.clone();
 
     Builder::new()
         .stack_size(16 * 1024 * 1024) // build_packages require bigger stack size on windows.
@@ -38,7 +38,7 @@ fn main() {
                 deepbook_path_clone,
                 sui_system_path_clone,
                 sui_framework_path_clone,
-                obc_system_path_clone,
+                bfc_system_path_clone,
                 out_dir,
             )
         })
@@ -81,11 +81,11 @@ fn main() {
     );
     println!(
         "cargo:rerun-if-changed={}",
-         obc_system_path.join("Move.toml").display()
+         bfc_system_path.join("Move.toml").display()
     );
     println!(
         "cargo:rerun-if-changed={}",
-         obc_system_path.join("sources").display()
+         bfc_system_path.join("sources").display()
     );
 }
 
@@ -93,7 +93,7 @@ fn build_packages(
     deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
-    obc_system_path: PathBuf,
+    bfc_system_path: PathBuf,
     out_dir: PathBuf,
 ) {
     let config = MoveBuildConfig {
@@ -107,7 +107,7 @@ fn build_packages(
         deepbook_path.clone(),
         sui_system_path.clone(),
         sui_framework_path.clone(),
-        obc_system_path.clone(),
+        bfc_system_path.clone(),
         out_dir.clone(),
         "deepbook",
         "sui-system",
@@ -126,7 +126,7 @@ fn build_packages(
         deepbook_path,
         sui_system_path,
         sui_framework_path,
-        obc_system_path,
+        bfc_system_path,
         out_dir,
         "deepbook-test",
         "sui-system-test",
@@ -141,7 +141,7 @@ fn build_packages_with_move_config(
     deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
-    obc_system_path: PathBuf,
+    bfc_system_path: PathBuf,
     out_dir: PathBuf,
 
     deepbook_dir: &str,
@@ -166,7 +166,7 @@ fn build_packages_with_move_config(
                 print_diags_to_stderr: false,
         lint: false,
     }
-        .build(obc_system_path)
+        .build(bfc_system_path)
                 .unwrap();
 
     let system_pkg = BuildConfig {

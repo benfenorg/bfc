@@ -43,7 +43,7 @@ use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
-use sui_types::{OBC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::trace;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
@@ -1106,7 +1106,7 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
-        // Step 6: Create the ObcSystemState UID
+        // Step 6: Create the BfcSystemState UID
         let obc_system_state_uid = builder.programmable_move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
             ident_str!("object").to_owned(),
@@ -1117,7 +1117,7 @@ pub fn generate_genesis_system_object(
 
         // create the supply of USD.
         let busd_supply = builder.programmable_move_call(
-            OBC_SYSTEM_ADDRESS.into(),
+            BFC_SYSTEM_ADDRESS.into(),
             ident_str!("busd").to_owned(),
             ident_str!("new").to_owned(),
             vec![],
@@ -1132,7 +1132,7 @@ pub fn generate_genesis_system_object(
         ];
 
         builder.programmable_move_call(
-            OBC_SYSTEM_ADDRESS.into(),
+            BFC_SYSTEM_ADDRESS.into(),
             ident_str!("obc_system").to_owned(),
             ident_str!("create").to_owned(),
             vec![],

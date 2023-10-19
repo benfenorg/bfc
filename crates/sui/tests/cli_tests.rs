@@ -17,8 +17,8 @@ use sui_types::transaction::{
 use sui_types::governance::{ADD_GAS_COIN_FUN_NAME, INIT_EXCHANGE_FUN_NAME};
 use tokio::time::sleep;
 use tracing::info;
-use sui_types::{OBC_SYSTEM_PACKAGE_ID, OBC_SYSTEM_STATE_OBJECT_ID};
-use sui_types::obc_system_state::OBC_SYSTEM_MODULE_NAME;
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID};
+use sui_types::obc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 use sui::client_commands::SwitchResponse;
 use sui::{
@@ -576,7 +576,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         SequenceNumber::from_u64(1),
         address,
     );
-    let obc_object = Object::with_id_owner_gas_for_testing(ObjectID::random(), address, 100000000000);
+    let bfc_object = Object::with_id_owner_gas_for_testing(ObjectID::random(), address, 100000000000);
     let exchange_id = ObjectID::random();
     let obc_exchange = Object::with_id_owner_gas_for_testing(exchange_id, address, 200000000000);
 
@@ -586,7 +586,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
             address: Some(address),
         }])
         .with_objects([
-            gas_object.clone(), obc_object, obc_exchange
+            gas_object.clone(), bfc_object, obc_exchange
         ])
         .build()
         .await;
@@ -599,13 +599,13 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         .add_key(SuiKeyPair::Ed25519(keypair))?;
     // add stable gas coin to config map
     let args = vec![
-        SuiJsonValue::new(json!(OBC_SYSTEM_STATE_OBJECT_ID))?,
+        SuiJsonValue::new(json!(BFC_SYSTEM_STATE_OBJECT_ID))?,
         SuiJsonValue::new(json!(obj_id))?,
         SuiJsonValue::new(json!(1000000000))?,
     ];
     let resp = SuiClientCommands::Call {
-        package: OBC_SYSTEM_PACKAGE_ID,
-        module: OBC_SYSTEM_MODULE_NAME.to_string(),
+        package: BFC_SYSTEM_PACKAGE_ID,
+        module: BFC_SYSTEM_MODULE_NAME.to_string(),
         function: ADD_GAS_COIN_FUN_NAME.to_string(),
         type_args: vec![],
         args,
@@ -615,14 +615,14 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         serialize_signed_transaction: false,
     }.execute(context).await?;
     resp.print(true);
-    //add obc to exchange pool
+    //add bfc to exchange pool
     let args = vec![
-        SuiJsonValue::new(json!(OBC_SYSTEM_STATE_OBJECT_ID))?,
+        SuiJsonValue::new(json!(BFC_SYSTEM_STATE_OBJECT_ID))?,
         SuiJsonValue::new(json!(exchange_id))?,
     ];
     let resp = SuiClientCommands::Call {
-        package: OBC_SYSTEM_PACKAGE_ID,
-        module: OBC_SYSTEM_MODULE_NAME.to_string(),
+        package: BFC_SYSTEM_PACKAGE_ID,
+        module: BFC_SYSTEM_MODULE_NAME.to_string(),
         function: INIT_EXCHANGE_FUN_NAME.to_string(),
         type_args: vec![],
         args,

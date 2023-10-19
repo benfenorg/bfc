@@ -45,7 +45,7 @@ use move_package::{
 };
 use move_symbol_pool::Symbol;
 use serde_reflection::Registry;
-use sui_types::{base_types::ObjectID, error::{SuiError, SuiResult}, is_system_package, move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage}, DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, OBC_SYSTEM_ADDRESS};
+use sui_types::{base_types::ObjectID, error::{SuiError, SuiResult}, is_system_package, move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage}, DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_verifier::verifier as sui_bytecode_verifier;
 
 use crate::linters::{
@@ -419,10 +419,10 @@ impl CompiledPackage {
         self.get_modules_and_deps()
             .filter(|m| *m.self_id().address() == MOVE_STDLIB_ADDRESS)
     }
-    /// Get bytecode modules from the obc system that are used by this package
+    /// Get bytecode modules from the bfc system that are used by this package
     pub fn get_obc_system_modules(&self) -> impl Iterator<Item = &CompiledModule> {
         self.get_modules_and_deps()
-            .filter(|m| *m.self_id().address() == OBC_SYSTEM_ADDRESS)
+            .filter(|m| *m.self_id().address() == BFC_SYSTEM_ADDRESS)
     }
 
     /// Generate layout schemas for all types declared by this package, as well as

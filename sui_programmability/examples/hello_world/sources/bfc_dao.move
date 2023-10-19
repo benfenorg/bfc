@@ -1,4 +1,4 @@
-module hello_world::obc_dao {
+module hello_world::bfc_dao {
     use sui::object::{Self, UID, uid_to_address};
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
@@ -10,11 +10,11 @@ module hello_world::obc_dao {
     use sui::tx_context::TxContext;
     use sui::tx_context;
     use sui::transfer;
-    use hello_world::voting_pool::{VotingObc, voting_obc_amount};
+    use hello_world::voting_pool::{VotingBfc, voting_bfc_amount};
     use hello_world::voting_pool;
-    use hello_world::obc_dao_manager::{OBCDaoManageKey};
+    use hello_world::bfc_dao_manager::{BFCDaoManageKey};
     use std::vector;
-    use hello_world::obc_dao_manager;
+    use hello_world::bfc_dao_manager;
     use sui::bfc::BFC;
     use sui::balance;
     //use sui::balance::Balance;
@@ -140,18 +140,18 @@ module hello_world::obc_dao {
         info: DaoGlobalInfo,
 
         proposalRecord: VecMap<u64, ProposalInfo>,  //pid -> proposal address
-        actionRecord: VecMap<u64, OBCDaoAction>,    //actionId -> action address
+        actionRecord: VecMap<u64, BFCDaoAction>,    //actionId -> action address
         votesRecord: VecMap<u64, u64>,  //pid -> vote count
         votingPool: voting_pool::VotingPool,
     }
 
-    struct OBCDaoAction has copy, drop, store{
+    struct BFCDaoAction has copy, drop, store{
         actionId: u64,
         /// Name for the action
         name: string::String,
     }
-    public fun getOBCDaoActionId(obcDaoAction: OBCDaoAction): u64 {
-        obcDaoAction.actionId
+    public fun getBFCDaoActionId(bfcDaoAction: BFCDaoAction): u64 {
+        bfcDaoAction.actionId
     }
 
     struct ProposalInfo has store, copy, drop{
@@ -173,7 +173,7 @@ module hello_world::obc_dao {
         /// how many votes to reach to make the proposal pass.
         quorum_votes: u64,
         /// proposal action.
-        action: OBCDaoAction,
+        action: BFCDaoAction,
     }
 
     /// Proposal data struct.
@@ -191,7 +191,7 @@ module hello_world::obc_dao {
         /// vote for the proposal under the `proposer`.
         proposer: address,
         /// how many tokens to vote.
-        vote:  VotingObc,
+        vote:  VotingBfc,
         /// vote for or vote against.
         agree: bool,
     }
@@ -200,18 +200,18 @@ module hello_world::obc_dao {
 
 
     //functions
-    entry public fun create_obcdao_action(
-            dao: &mut Dao,
-            _: &OBCDaoManageKey,
-            actionName:vector<u8>,
-            ctx: &mut TxContext): OBCDaoAction {
+    entry public fun create_bfcdao_action(
+        dao: &mut Dao,
+        _: &BFCDaoManageKey,
+        actionName:vector<u8>,
+        ctx: &mut TxContext): BFCDaoAction {
         //auth
 
         // sender address
         let sender = tx_context::sender(ctx);
         let action_id = generate_next_action_id(dao);
 
-        let action = OBCDaoAction{
+        let action = BFCDaoAction{
             actionId: action_id,
             name: string::utf8(actionName),
             //description: string::utf8(actionName),
@@ -228,7 +228,7 @@ module hello_world::obc_dao {
         action
     }
 
-    // Part 3: transfer the OBC Dao object to the sender
+    // Part 3: transfer the BFC Dao object to the sender
     entry public fun create_dao(        admins: vector<address>,
                                         ctx: &mut TxContext ) {
         // sender address
@@ -280,7 +280,7 @@ module hello_world::obc_dao {
 
 
 
-    fun getDaoActionByActionId(dao:&mut Dao, actionId: u64) : OBCDaoAction {
+    fun getDaoActionByActionId(dao:&mut Dao, actionId: u64) : BFCDaoAction {
         let data = vec_map::get(&dao.actionRecord, &actionId);
         *data
     }
@@ -309,7 +309,7 @@ module hello_world::obc_dao {
     /// `action_delay`: the delay to execute after the proposal is agreed
     entry public fun propose (
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
@@ -317,15 +317,15 @@ module hello_world::obc_dao {
         ctx: &mut TxContext,
     ) {
 
-        //convert proposal payment to voting_obc
+        //convert proposal payment to voting_bfc
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(payment);
         let value = balance::value(&balance);
         // ensure the user pays enough
         assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
 
-        let voting_obc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
-        transfer::public_transfer(voting_obc, sender);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
+        transfer::public_transfer(voting_bfc, sender);
 
 
         let action = getDaoActionByActionId(dao, action_id);
@@ -373,7 +373,7 @@ module hello_world::obc_dao {
         transfer::share_object(proposal);
 
 
-        send_obc_dao_event(manager_key,b"proposal_created");
+        send_bfc_dao_event(manager_key,b"proposal_created");
     }
 
     /// votes for a proposal.
@@ -382,7 +382,7 @@ module hello_world::obc_dao {
     /// So think twice before casting vote.
     entry public fun cast_vote(
         proposal: &mut Proposal,
-        coin: VotingObc,
+        coin: VotingBfc,
         agreeInt: u8,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -395,12 +395,12 @@ module hello_world::obc_dao {
             assert!(state == ACTIVE, (ERR_PROPOSAL_STATE_INVALID));
         };
 
-        let vote_amount = voting_pool::voting_obc_amount(&coin);
+        let vote_amount = voting_pool::voting_bfc_amount(&coin);
         {
             if(vote_amount <= 0) {
                 assert!(false, ERR_VOTED_ERR_AMOUNT);
             };
-            if(vote_amount > voting_pool::voting_obc_amount(&coin)){
+            if(vote_amount > voting_pool::voting_bfc_amount(&coin)){
                 assert!(false, ERR_VOTED_ERR_AMOUNT);
             };
         };
@@ -484,7 +484,7 @@ module hello_world::obc_dao {
     fun do_flip_vote(my_vote: &mut Vote,
                      proposal: &mut Proposal): u64 {
         my_vote.agree = !my_vote.agree;
-        let total_voted = voting_obc_amount(&my_vote.vote);
+        let total_voted = voting_bfc_amount(&my_vote.vote);
         if (my_vote.agree) {
             proposal.proposal.for_votes = proposal.proposal.for_votes + total_voted;
             proposal.proposal.against_votes = proposal.proposal.against_votes - total_voted;
@@ -525,11 +525,11 @@ module hello_world::obc_dao {
                 voter: sender,
                 proposer: proposal.proposal.proposer,
                 agree: my_vote.agree,
-                vote: voting_obc_amount(&my_vote.vote),
+                vote: voting_bfc_amount(&my_vote.vote),
             }
         );
 
-        if (voting_obc_amount(&my_vote.vote) == 0u64) {
+        if (voting_bfc_amount(&my_vote.vote) == 0u64) {
             let Vote {
                 proposer: _,
                 id: uid,
@@ -627,7 +627,7 @@ module hello_world::obc_dao {
                 voter: tx_context::sender(ctx),
                 proposer: proposal.proposal.proposer,
                 agree: vote.agree,
-                vote: voting_obc_amount(&vote.vote),
+                vote: voting_bfc_amount(&vote.vote),
             }
         );
     }
@@ -648,7 +648,7 @@ module hello_world::obc_dao {
 
     /// queue agreed proposal to execute.
     public entry fun queue_proposal_action(
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
     )  {
@@ -662,14 +662,14 @@ module hello_world::obc_dao {
         );
         proposal.proposal.eta =  clock::timestamp_ms(clock)  + proposal.proposal.action_delay;
 
-        send_obc_dao_event(manager_key, b"proposal_queued");
+        send_bfc_dao_event(manager_key, b"proposal_queued");
     }
 
     /// extract proposal action to execute.
     public fun extract_proposal_action(
         proposal: &mut Proposal,
         clock: & Clock,
-    ): OBCDaoAction  {
+    ): BFCDaoAction  {
         // Only executable proposal's action can be extracted.
         assert!(
             proposal_state(proposal, clock) == EXECUTABLE,
@@ -683,7 +683,7 @@ module hello_world::obc_dao {
     /// remove terminated proposal from proposer
     public entry fun destroy_terminated_proposal(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         proposal:  &mut Proposal,
         clock: & Clock,
     )  {
@@ -718,7 +718,7 @@ module hello_world::obc_dao {
         //     } = proposal;
         //
         //  object::delete(uid);
-        send_obc_dao_event(manager_key, b"ProposalDestroyed");
+        send_bfc_dao_event(manager_key, b"ProposalDestroyed");
 
     }
 
@@ -863,7 +863,7 @@ module hello_world::obc_dao {
     /// if any param is 0, it means no change to that param.
     public fun modify_dao_config(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         voting_delay: u64,
         voting_period: u64,
         voting_quorum_rate: u8,
@@ -886,13 +886,13 @@ module hello_world::obc_dao {
             config.min_action_delay = min_action_delay;
         };
 
-        send_obc_dao_event(manager_key, b"modify_dao_config");
+        send_bfc_dao_event(manager_key, b"modify_dao_config");
     }
 
     /// set voting delay
     entry public fun set_voting_delay(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
 
@@ -900,14 +900,14 @@ module hello_world::obc_dao {
         let config = get_config(dao);
         config.voting_delay = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_delay");
+        send_bfc_dao_event(manager_key, b"set_voting_delay");
     }
 
 
     /// set voting period
     entry public fun set_voting_period(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
 
@@ -915,34 +915,34 @@ module hello_world::obc_dao {
         let config = get_config(dao);
         config.voting_period = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_period");
+        send_bfc_dao_event(manager_key, b"set_voting_period");
     }
 
     /// set voting quorum rate
     entry public fun set_voting_quorum_rate(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u8,
     ) {
         assert!(value <= 100 && value > 0, (ERR_QUORUM_RATE_INVALID));
         let config = get_config(dao);
         config.voting_quorum_rate = value;
 
-        send_obc_dao_event(manager_key, b"set_voting_quorum_rate");
+        send_bfc_dao_event(manager_key, b"set_voting_quorum_rate");
     }
 
 
     /// set min action delay
     entry public fun set_min_action_delay(
         dao: &mut Dao,
-        manager_key: &OBCDaoManageKey,
+        manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
         assert!(value > 0, (ERR_CONFIG_PARAM_INVALID));
         let config = get_config(dao);
         config.min_action_delay = value;
 
-       send_obc_dao_event(manager_key, b"set_min_action_delay");
+       send_bfc_dao_event(manager_key, b"set_min_action_delay");
     }
 
 
@@ -953,23 +953,23 @@ module hello_world::obc_dao {
         //let index = 0;
         while (!vector::is_empty(&new_admins)) {
             let admin = vector::pop_back(&mut new_admins);
-            obc_dao_manager::new(admin, ctx);
+            bfc_dao_manager::new(admin, ctx);
 
         }
 
     }
 
     public fun add_admin(
-        _: &OBCDaoManageKey,
+        _: &BFCDaoManageKey,
         new_admin:address,
         ctx: &mut TxContext,
     ) {
-        obc_dao_manager::new(new_admin, ctx);
+        bfc_dao_manager::new(new_admin, ctx);
     }
 
 
-    public fun send_obc_dao_event( manager_key: &OBCDaoManageKey, msg: vector<u8>) {
-        let object_addr = obc_dao_manager::getKeyAddress(manager_key);
+    public fun send_bfc_dao_event(manager_key: &BFCDaoManageKey, msg: vector<u8>) {
+        let object_addr = bfc_dao_manager::getKeyAddress(manager_key);
         event::emit(
             DaoManagerEvent{
                 key: object_addr,
@@ -1027,24 +1027,24 @@ module hello_world::obc_dao {
 
 
 
-    entry public fun create_voting_obc(dao: &mut Dao,
+    entry public fun create_voting_bfc(dao: &mut Dao,
                                        coin: Coin<BFC>,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(coin);
-        let voting_obc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
 
-        transfer::public_transfer(voting_obc, sender);
+        transfer::public_transfer(voting_bfc, sender);
     }
 
     entry public fun withdraw_voting(  dao: &mut Dao,
-                                       voting_obc: VotingObc,
+                                       voting_bfc: VotingBfc,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
-        let voting_obc = voting_pool::request_withdraw_voting(&mut dao.votingPool, voting_obc);
-        let coin = coin::from_balance(voting_obc, ctx);
+        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.votingPool, voting_bfc);
+        let coin = coin::from_balance(voting_bfc, ctx);
         transfer::public_transfer(coin, sender);
 
     }
@@ -1052,7 +1052,7 @@ module hello_world::obc_dao {
     //#[test_only]
     entry public fun create_proposal_for_test(sender :address, ctx: &mut TxContext){
 
-        let action = OBCDaoAction{
+        let action = BFCDaoAction{
             actionId: 100,
             name: string::utf8(b"hello"),
             //description: string::utf8(actionName),
@@ -1125,7 +1125,7 @@ module hello_world::obc_dao {
 
         transfer::share_object(dao_obj);
 
-        obc_dao_manager::new(admin, ctx);
+        bfc_dao_manager::new(admin, ctx);
 
 
 

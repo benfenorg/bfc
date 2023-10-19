@@ -71,7 +71,7 @@ pub struct TreasuryParameters {
     /// maximum state counter value
     pub max_counter_times: u32,
 
-    /// OBC requirement base point
+    /// BFC requirement base point
     pub base_point: u64,
 
     /// Initialize Price

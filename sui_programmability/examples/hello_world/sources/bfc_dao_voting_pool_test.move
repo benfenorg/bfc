@@ -1,29 +1,27 @@
-module obc_system::obc_dao_voting_pool_test{
+module hello_world::bfc_dao_voting_pool_test {
     #[test_only]
     use std::debug;
     #[test_only]
-    use obc_system::obc_dao_manager::OBCDaoManageKey;
+    use hello_world::bfc_dao_manager::BFCDaoManageKey;
     #[test_only]
-    use obc_system::obc_dao::Dao;
+    use hello_world::bfc_dao::Dao;
     #[test_only]
     use sui::bfc::BFC;
     #[test_only]
     use sui::coin;
     #[test_only]
-    use obc_system::voting_pool::VotingObc;
+    use hello_world::voting_pool::VotingBfc;
     #[test_only]
-    use obc_system::voting_pool;
+    use hello_world::voting_pool;
     #[test_only]
     use sui::balance;
     #[test_only]
     use sui::test_utils;
 
-
-
     #[test]
     public fun test_voting_pool_init() {
         use sui::test_scenario;
-        use obc_system::obc_dao;
+        use hello_world::bfc_dao;
         let owner = @0xC0FFEE;
         //let user1 = @0xA1;
         //let user2 = @0xB1;
@@ -34,19 +32,18 @@ module obc_system::obc_dao_voting_pool_test{
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let admins = vector[owner];
-            obc_dao::create_dao_and_share(admins, test_scenario::ctx(&mut scenario_val));
-            //transfer::share_object(dao);
+            bfc_dao::create_dao(admins, test_scenario::ctx(&mut scenario_val));
 
         };
 
 
-        //create voting obc
+        //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
-            let key = test_scenario::take_from_sender<OBCDaoManageKey>(&mut scenario_val );
+            let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
-            obc_dao::create_voting_obc(&mut dao,  coin, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::create_voting_bfc(&mut dao,  coin, test_scenario::ctx(&mut scenario_val));
 
 
 
@@ -57,25 +54,25 @@ module obc_system::obc_dao_voting_pool_test{
 
 
 
-        //split obc
+        //split bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
-            let splitObc =  voting_pool::split(&mut vObc, 3000000000, test_scenario::ctx(&mut scenario_val));
-            let balance =  voting_pool::unwrap_voting_obc(splitObc);
+            let vbfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let splitbfc =  voting_pool::split(&mut vbfc, 3000000000, test_scenario::ctx(&mut scenario_val));
+            let balance =  voting_pool::unwrap_voting_bfc(splitbfc);
             debug::print(&balance::value(&balance));
             assert!(balance::value(&balance) == 3000000000, 0);
 
             //let _ = balance;
             test_utils::destroy(balance);
-            test_scenario::return_to_sender(&mut scenario_val, vObc);
+            test_scenario::return_to_sender(&mut scenario_val, vbfc);
         };
 
-        //unwrap voting obc
+        //unwrap voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let vObc = test_scenario::take_from_sender<VotingObc>(&mut scenario_val );
-            let balance =  voting_pool::unwrap_voting_obc(vObc);
+            let vbfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let balance =  voting_pool::unwrap_voting_bfc(vbfc);
             //assert!(balance::value(&balance) == 10, 0);
             debug::print(&balance::value(&balance));
 

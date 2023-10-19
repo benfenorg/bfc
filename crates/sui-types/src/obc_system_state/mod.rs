@@ -9,7 +9,7 @@ use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
 use anyhow::Result;
 use sui_protocol_config::ProtocolConfig;
-use crate::{id::UID, OBC_SYSTEM_ADDRESS, OBC_SYSTEM_STATE_OBJECT_ID};
+use crate::{id::UID, BFC_SYSTEM_ADDRESS, BFC_SYSTEM_STATE_OBJECT_ID};
 use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
 use serde::de::DeserializeOwned;
@@ -23,9 +23,9 @@ use crate::proposal::ProposalStatus;
 
 const OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("OBCSystemState");
 
-pub const OBC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("obc_round");
-pub const OBC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("obc_round_safe_mode");
-pub const OBC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("obc_system");
+pub const BFC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("obc_round");
+pub const BFC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("obc_round_safe_mode");
+pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("obc_system");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Bag {
@@ -52,7 +52,7 @@ pub struct TreasuryPool {
 }
 
 #[derive(Debug)]
-pub struct ObcRoundParams {
+pub struct BfcRoundParams {
     pub round_id: u64,
 }
 
@@ -65,9 +65,9 @@ pub struct ObcSystemStateWrapper {
 impl ObcSystemStateWrapper {
     pub fn type_() -> StructTag {
         StructTag {
-            address: OBC_SYSTEM_ADDRESS,
+            address: BFC_SYSTEM_ADDRESS,
             name: OBC_SYSTEM_STATE_WRAPPER_STRUCT_NAME.to_owned(),
-            module: OBC_SYSTEM_MODULE_NAME.to_owned(),
+            module: BFC_SYSTEM_MODULE_NAME.to_owned(),
             type_params: vec![],
         }
     }
@@ -86,7 +86,7 @@ impl ObcSystemStateWrapper {
             .expect("Dynamic field object must be a Move object");
         match self.version {
             1 => {
-                Self::obc_round_safe_mode_impl::<ObcSystemStateInnerV1>(
+                Self::obc_round_safe_mode_impl::<BfcSystemStateInnerV1>(
                     move_object,
                     protocol_config
                 );
@@ -105,7 +105,7 @@ impl ObcSystemStateWrapper {
         let mut field: Field<u64, T> =
             bcs::from_bytes(move_object.contents()).expect("bcs deserialization should never fail");
         tracing::info!(
-            "obc round safe mode: current round: {}",
+            "bfc round safe mode: current round: {}",
             field.value.round(),
         );
         field.value.obc_round_safe_mode();
@@ -116,7 +116,7 @@ impl ObcSystemStateWrapper {
         let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
         move_object
             .update_contents(new_contents,protocol_config)
-            .expect("Update obc system object content cannot fail since it should be small");
+            .expect("Update bfc system object content cannot fail since it should be small");
     }
 }
 
@@ -129,7 +129,7 @@ pub trait ObcSystemStateTrait {
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct ObcSystemStateInnerV1 {
+pub struct BfcSystemStateInnerV1 {
     pub round: u64,
     pub gas_coin_map: GasCoinMap,
     pub exchange_pool: ExchangePoolV1,
@@ -138,7 +138,7 @@ pub struct ObcSystemStateInnerV1 {
     pub treasury_pool: TreasuryPool,
 }
 
-// Rust version of the Move obc_system::obc_system_state_inner::ExchangePool type
+// Rust version of the Move bfc_system::bfc_system_state_inner::ExchangePool type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ExchangePoolV1 {
     pub id: ObjectID,
@@ -150,18 +150,18 @@ pub struct ExchangePoolV1 {
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[enum_dispatch(ObcSystemStateTrait)]
-pub enum ObcSystemState {
-    V1(ObcSystemStateInnerV1),
+pub enum BFCSystemState {
+    V1(BfcSystemStateInnerV1),
 }
 
-impl ObcSystemState {
-    pub fn inner_state(self) -> ObcSystemStateInnerV1 {
+impl BFCSystemState {
+    pub fn inner_state(self) -> BfcSystemStateInnerV1 {
         match self {
-            ObcSystemState::V1(inner) => inner,
+            BFCSystemState::V1(inner) => inner,
         }
     }
 }
-impl ObcSystemStateTrait for ObcSystemStateInnerV1{
+impl ObcSystemStateTrait for BfcSystemStateInnerV1 {
     fn round(&self) -> u64{
         return 0;
     }
@@ -172,18 +172,18 @@ impl ObcSystemStateTrait for ObcSystemStateInnerV1{
 
 }
 
-pub fn get_obc_system_state_wrapper(
+pub fn get_bfc_system_state_wrapper(
     object_store: &dyn ObjectStore,
 ) -> Result<ObcSystemStateWrapper, SuiError> {
     let wrapper = object_store
-        .get_object(&OBC_SYSTEM_STATE_OBJECT_ID)?
+        .get_object(&BFC_SYSTEM_STATE_OBJECT_ID)?
         // Don't panic here on None because object_store is a generic store.
         .ok_or_else(|| {
-            SuiError::SuiSystemStateReadError("ObcSystemStateWrapper object not found".to_owned())
+            SuiError::SuiSystemStateReadError("BfcSystemStateWrapper object not found".to_owned())
         })?;
     let move_object = wrapper.data.try_as_move().ok_or_else(|| {
         SuiError::SuiSystemStateReadError(
-            "ObcSystemStateWrapper object must be a Move object".to_owned(),
+            "BfcSystemStateWrapper object must be a Move object".to_owned(),
         )
     })?;
 
@@ -192,35 +192,35 @@ pub fn get_obc_system_state_wrapper(
     Ok(result)
 }
 
-pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<ObcSystemState, SuiError> {
-    let wrapper = get_obc_system_state_wrapper(object_store)?;
+pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemState, SuiError> {
+    let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
         1 => {
-            let result: ObcSystemStateInnerV1 =
+            let result: BfcSystemStateInnerV1 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(
-                            "Failed to load obc system state inner object with ID {:?} and version {:?}: {:?}",
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
                             id, wrapper.version, err
                         ))
                     },
                 )?;
-            Ok(ObcSystemState::V1(result))
+            Ok(BFCSystemState::V1(result))
         }
         _ => Err(SuiError::SuiSystemStateReadError(format!(
-            "Unsupported ObcSystemState version: {}",
+            "Unsupported BfcSystemState version: {}",
             wrapper.version
         ))),
     }
 }
 
-pub fn get_obc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
-    let wrapper = get_obc_system_state_wrapper(object_store)?;
+pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
+    let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
         1 => {
-            let result: ObcSystemStateInnerV1 =
+            let result: BfcSystemStateInnerV1 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(

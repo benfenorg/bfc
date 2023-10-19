@@ -59,7 +59,7 @@ impl TryFrom<&[u8]> for ObcAddress {
     }
 }
 
-pub mod obc_address_util {
+pub mod bfc_address_util {
     //use std::collections::hash_map::DefaultHasher;
     use sha2::{Digest, Sha256};
 
@@ -95,7 +95,7 @@ pub mod obc_address_util {
         //return address.to_string();
     }
 
-    pub fn convert_to_obc_address(prefix: &str, evm_address: &str) -> String {
+    pub fn convert_to_bfc_address(prefix: &str, evm_address: &str) -> String {
         //let mut address = evm_address.to_string();
         let result = sha256_string(&evm_address[2..]);
         let check_sum = result.get(0..4).unwrap();

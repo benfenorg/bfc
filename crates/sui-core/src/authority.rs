@@ -111,11 +111,11 @@ use sui_types::storage::{ObjectKey, ObjectStore, WriteKind};
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, OBC_SYSTEM_ADDRESS};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::gas_coin::MIST_PER_SUI;
-use sui_types::obc_system_state::ObcSystemState;
+use sui_types::obc_system_state::BFCSystemState;
 use sui_types::proposal::ProposalStatus;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 //use sui_types::{is_system_package, TypeTag};
@@ -1185,7 +1185,7 @@ impl AuthorityState {
             tx_digest,
             protocol_config,
         );
-        let proposal_map = temporary_store.get_obc_system_state_temporary();
+        let proposal_map = temporary_store.get_bfc_system_state_temporary();
 
         let transaction_data = &certificate.data().intent_message().value;
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -1241,7 +1241,7 @@ impl AuthorityState {
             TransactionKind::ProgrammableTransaction(_) => (),
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeObcRound(_)
+            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::ConsensusCommitPrologue(_) => {
                 return Err(SuiError::UnsupportedFeatureError {
                     error: "dry-exec does not support system transactions".to_string(),
@@ -2548,11 +2548,11 @@ impl AuthorityState {
     }
 
 
-    pub async fn get_obc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
+    pub async fn get_bfc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
         Ok(self
-            .get_object(&OBC_SYSTEM_ADDRESS.into())
+            .get_object(&BFC_SYSTEM_ADDRESS.into())
             .await?
-            .expect("obc framework object should always exist")
+            .expect("bfc framework object should always exist")
             .compute_object_reference())
     }
 
@@ -2569,7 +2569,7 @@ impl AuthorityState {
         self.database.get_sui_system_state_object()
     }
 
-    pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<ObcSystemState> {
+    pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
         self.database.get_bfc_system_state_object()
     }
 
@@ -4090,14 +4090,14 @@ impl AuthorityState {
         Ok((system_obj, effects))
     }
 
-    pub async fn create_and_execute_obc_round_tx(
+    pub async fn create_and_execute_bfc_round_tx(
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         checkpoint: CheckpointSequenceNumber,
     ) -> anyhow::Result<(InnerTemporaryStore,TransactionEffects)>{
         let epoch = epoch_store.epoch();
 
-        let tx = VerifiedTransaction::new_change_obc_round(
+        let tx = VerifiedTransaction::new_change_bfc_round(
             epoch,
         );
 
@@ -4149,7 +4149,7 @@ impl AuthorityState {
             })?;
 
         info!(
-            "Effects summary of the change obc round transaction: {:?}",
+            "Effects summary of the change bfc round transaction: {:?}",
             effects.summary_for_debug()
         );
 

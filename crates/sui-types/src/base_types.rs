@@ -30,7 +30,7 @@ use crate::multisig_legacy::MultiSigPublicKeyLegacy;
 use crate::object::{Object, Owner};
 use crate::parse_sui_struct_tag;
 use crate::signature::GenericSignature;
-use crate::sui_serde::HexOBCAddress;
+use crate::sui_serde::HexBFCAddress;
 use crate::sui_serde::Readable;
 use crate::sui_serde::{to_sui_struct_tag_string, HexAccountAddress};
 use crate::transaction::Transaction;
@@ -493,7 +493,7 @@ pub const SUI_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
 pub struct SuiAddress(
     #[schemars(with = "Hex")]
-    #[serde_as(as = "Readable<HexOBCAddress, _>")]
+    #[serde_as(as = "Readable<HexBFCAddress, _>")]
     [u8; SUI_ADDRESS_LENGTH],
 );
 

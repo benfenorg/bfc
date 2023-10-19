@@ -65,11 +65,11 @@ module obc_system::obc_system_tests {
     }
 
     fun setup(): Scenario {
-        let obc_addr = @0x0;
-        let scenario_val = test_scenario::begin(obc_addr);
+        let bfc_addr = @0x0;
+        let scenario_val = test_scenario::begin(bfc_addr);
 
         create_sui_system_state_for_testing(test_scenario::ctx(&mut scenario_val));
-        test_scenario::next_tx(&mut scenario_val, obc_addr);
+        test_scenario::next_tx(&mut scenario_val, bfc_addr);
         scenario_val
     }
 

@@ -252,7 +252,7 @@ module obc_system::treasury_test {
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
             if (IS_DEBUG) {
-                debug::print(&string(b"Alice balances redeem obc ..."));
+                debug::print(&string(b"Alice balances redeem bfc ..."));
                 debug::print(&amount);
             };
             treasury::redeem<BUSD>(

@@ -1,4 +1,4 @@
-module obc_system::obc_dao_manager {
+module obc_system::bfc_dao_manager {
     use sui::balance;
     use sui::balance::Balance;
     use sui::coin;
@@ -9,7 +9,7 @@ module obc_system::obc_dao_manager {
     use sui::transfer;
     use sui::tx_context;
 
-    friend obc_system::obc_dao;
+    friend obc_system::bfc_dao;
     friend obc_system::voting_pool;
 
 
@@ -20,7 +20,7 @@ module obc_system::obc_dao_manager {
     const ERROR_KEY_NOT_MATCH: u64 = 1401;
 
 
-    struct OBCDaoManageKey has key, store {
+    struct BFCDaoManageKey has key, store {
         id: UID,
         key_type: u64,
         amount: u64,
@@ -31,7 +31,7 @@ module obc_system::obc_dao_manager {
     }
     /// Create a new key.
     public(friend) fun new(sender: address, ctx: &mut TxContext)  {
-        let key = OBCDaoManageKey {
+        let key = BFCDaoManageKey {
             id: object::new(ctx),
             key_type: FREE_KEY,
             amount: 0,
@@ -40,7 +40,7 @@ module obc_system::obc_dao_manager {
     }
 
 
-    struct ManagerKeyObc has key, store {
+    struct ManagerKeyBfc has key, store {
         id: UID,
         principal: Balance<BFC>,
     }
@@ -49,42 +49,42 @@ module obc_system::obc_dao_manager {
     public(friend) fun create_stake_key(sender: address,
                                         payment: Balance<BFC>,
                                         ctx: &mut TxContext)  {
-        let key = OBCDaoManageKey {
+        let key = BFCDaoManageKey {
             id: object::new(ctx),
             key_type: STAKE_KEY,
             amount: balance::value(&payment)
         };
 
-        let managerObc = ManagerKeyObc {
+        let managerBfc = ManagerKeyBfc {
             id: object::new(ctx),
             principal: payment,
         };
 
 
         transfer::transfer(key, sender);
-        transfer::transfer(managerObc, sender);
+        transfer::transfer(managerBfc, sender);
 
     }
 
-    public (friend) fun unstake_key(key:OBCDaoManageKey, token: ManagerKeyObc, ctx: &mut TxContext){
+    public (friend) fun unstake_key(key:BFCDaoManageKey, token: ManagerKeyBfc, ctx: &mut TxContext){
 
         assert!(key.key_type == STAKE_KEY, ERROR_KEY_TYPE);
         assert!(key.amount == balance::value(&token.principal), ERROR_KEY_NOT_MATCH);
 
-        //convert proposal payment to voting_obc
+        //convert proposal payment to voting_bfc
         let sender = tx_context::sender(ctx);
 
-        let OBCDaoManageKey{id:uid,
+        let BFCDaoManageKey{id:uid,
                             key_type: _key_type,
                             amount: _amount,}= key;
         object::delete(uid);
 
-        let ManagerKeyObc{id:uid,
-            principal:obc}= token;
+        let ManagerKeyBfc{id:uid,
+            principal:bfc}= token;
 
         object::delete(uid);
 
-        let coin = coin::from_balance(obc, ctx);
+        let coin = coin::from_balance(bfc, ctx);
         transfer::public_transfer(coin, sender);
 
     }
@@ -97,7 +97,7 @@ module obc_system::obc_dao_manager {
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
-    public(friend) fun getKeyAddress(key: &OBCDaoManageKey) : address {
+    public(friend) fun getKeyAddress(key: &BFCDaoManageKey) : address {
         object::uid_to_address(&key.id)
     }
 

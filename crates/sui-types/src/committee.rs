@@ -19,7 +19,7 @@ pub use sui_protocol_config::ProtocolVersion;
 
 pub type EpochId = u64;
 
-pub type ObcRoundId = u64;
+pub type BfcRoundId = u64;
 
 // TODO: the stake and voting power of a validator can be different so
 // in some places when we are actually referring to the voting power, we
