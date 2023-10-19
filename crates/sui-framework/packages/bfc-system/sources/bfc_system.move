@@ -82,7 +82,7 @@ module bfc_system::bfc_system {
     ) {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
-        //exchange all stable to obc.
+        //exchange all stable to bfc.
         bfc_system_state_inner::request_exchange_all(inner_state, ctx);
         //update inner exchange rate from stable-swap.
         let stable = coin::zero<BUSD>(ctx);
@@ -149,7 +149,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
     }
 
-    /// Request exchange stable coin to obc.
+    /// Request exchange stable coin to bfc.
     public entry fun request_exchange_stable(
         self: &mut BfcSystemState,
         stable: Coin<BUSD>,
@@ -163,7 +163,7 @@ module bfc_system::bfc_system {
         transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
     }
 
-    /// Request exchange all stable coin to obc.
+    /// Request exchange all stable coin to bfc.
     public entry fun request_exchange_all(
         self: &mut BfcSystemState,
         ctx: &mut TxContext,
@@ -188,7 +188,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::request_withdraw_stable(inner_state)
     }
 
-    /// Init exchange pool by add obc coin.
+    /// Init exchange pool by add bfc coin.
     public entry fun init_exchange_pool(
         self: &mut BfcSystemState,
         coin: Coin<BFC>,
@@ -285,10 +285,10 @@ module bfc_system::bfc_system {
     }
 
     public entry fun withdraw_voting(   wrapper: &mut BfcSystemState,
-                                 voting_obc: VotingBfc,
+                                 voting_bfc: VotingBfc,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::withdraw_voting(system_state, voting_obc, ctx);
+        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc, ctx);
     }
 
     public entry fun create_voting_bfc(wrapper: &mut BfcSystemState,
@@ -298,7 +298,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_voting_bfc(system_state, coin, ctx);
     }
 
-    /// X treasury  swap obc to stablecoin
+    /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
         wrapper: &mut BfcSystemState,
         native_coin: Coin<BFC>,
@@ -309,7 +309,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::swap_obc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, ctx);
     }
 
-    /// X treasury  swap stablecoin to obc
+    /// X treasury  swap stablecoin to bfc
     public entry fun swap_stablecoin_to_bfc<StableCoinType>(
         wrapper: &mut BfcSystemState,
         stable_coin: Coin<StableCoinType>,
@@ -443,6 +443,6 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         bfc_dao::add_admin(new_admin, ctx);
-        //obc_dao_manager::new(new_admin, ctx);
+        //bfc::new(new_admin, ctx);
     }
 }

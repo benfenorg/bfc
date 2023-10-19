@@ -45,7 +45,7 @@ module bfc_system::treasury_test {
         let tick_spacing = 1;
         let spacing_times = 2;
         let initialize_price = 18446744073709551616; //2 ** 64
-        let base_point = 1_000_000_000_000; // 1000 obc
+        let base_point = 1_000_000_000_000; // 1000 bfc
         let max_counter_times = 5;
 
         // create vault
@@ -186,26 +186,26 @@ module bfc_system::treasury_test {
             test_scenario::return_shared(t);
         };
 
-        // alice swap obc-usd
+        // alice swap bfc-usd
         let alice = @0xA1;
-        let amount_obc = 1_000_000_000u64;
-        let total_amount_obc = amount_obc * 2;
+        let amount_bfc = 1_000_000_000u64;
+        let total_amount_bfc = amount_bfc * 2;
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let input_obc = balance::create_for_testing<BFC>(total_amount_obc);
-            let coin_obc = coin::from_balance(
-                input_obc,
+            let input_bfc = balance::create_for_testing<BFC>(total_amount_bfc);
+            let coin_bfc = coin::from_balance(
+                input_bfc,
                 test_scenario::ctx(&mut scenario_val),
             );
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances before mint ..."));
-                debug::print(&coin_obc);
+                debug::print(&coin_bfc);
             };
             treasury::mint<BUSD>(
                 &mut t,
-                coin_obc,
-                amount_obc,
+                coin_bfc,
+                amount_bfc,
                 test_scenario::ctx(&mut scenario_val),
             );
             test_scenario::return_shared(t);
@@ -215,15 +215,15 @@ module bfc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
-            let coin_obc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
+            let coin_bfc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after mint ..."));
                 debug::print(&coin_usd);
-                debug::print(&coin_obc);
+                debug::print(&coin_bfc);
             };
             assert!(coin::value(&coin_usd) > 0, 301);
             test_scenario::return_to_sender(&scenario_val, coin_usd);
-            test_scenario::return_to_sender(&scenario_val, coin_obc);
+            test_scenario::return_to_sender(&scenario_val, coin_bfc);
         };
 
         // check price after swap
@@ -245,7 +245,7 @@ module bfc_system::treasury_test {
             test_scenario::return_shared(t);
         };
 
-        // alice swap osd-obc
+        // alice swap osd-bfc
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
@@ -268,17 +268,17 @@ module bfc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
-            let coin_obc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
-            let coin_obc_1 = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
+            let coin_bfc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
+            let coin_bfc_1 = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after redeem ..."));
                 debug::print(&coin_usd);
-                debug::print(&coin_obc);
-                debug::print(&coin_obc_1);
+                debug::print(&coin_bfc);
+                debug::print(&coin_bfc_1);
             };
             test_scenario::return_to_sender(&scenario_val, coin_usd);
-            test_scenario::return_to_sender(&scenario_val, coin_obc);
-            test_scenario::return_to_sender(&scenario_val, coin_obc_1);
+            test_scenario::return_to_sender(&scenario_val, coin_bfc);
+            test_scenario::return_to_sender(&scenario_val, coin_bfc_1);
         };
 
         test_scenario::end(scenario_val);

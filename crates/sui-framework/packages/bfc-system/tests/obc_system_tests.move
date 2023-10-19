@@ -19,9 +19,9 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_round() {
-        let obc_addr = @0x0;
-        let scenario_val = test_scenario::begin(obc_addr);
-        test_utils::setup_without_parameters(&mut scenario_val, obc_addr);
+        let bfc_addr = @0x0;
+        let scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario_val);
@@ -30,7 +30,7 @@ module bfc_system::bfc_system_tests {
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         create_sui_system_state_for_testing(ctx);
-        test_scenario::next_tx(scenario, obc_addr);
+        test_scenario::next_tx(scenario, bfc_addr);
         let system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
         // let clock = clock::create_for_testing(test_scenario::ctx(scenario));
@@ -78,7 +78,7 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    fun test_next_epoch_obc_required() {
+    fun test_next_epoch_bfc_required() {
         let scenario_val = setup();
 
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
@@ -96,12 +96,12 @@ module bfc_system::bfc_system_tests {
     fun test_deposit_with_error() {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-        let obc = balance::create_for_testing<BFC>(100);
+        let bfc = balance::create_for_testing<BFC>(100);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 1);
         bfc_system::deposit_to_treasury(
             &mut system_state,
-            coin::from_balance(obc, test_scenario::ctx(&mut scenario_val)),
+            coin::from_balance(bfc, test_scenario::ctx(&mut scenario_val)),
         );
 
         let new_balance = bfc_system::treasury_balance(&system_state);
@@ -116,13 +116,13 @@ module bfc_system::bfc_system_tests {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
-        let obc = balance::create_for_testing<BFC>(amount);
+        let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);
 
         bfc_system::deposit_to_treasury(
             &mut system_state,
-            coin::from_balance(obc, test_scenario::ctx(&mut scenario_val)),
+            coin::from_balance(bfc, test_scenario::ctx(&mut scenario_val)),
         );
 
         let new_balance = bfc_system::treasury_balance(&system_state);
