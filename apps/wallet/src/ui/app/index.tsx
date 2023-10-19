@@ -22,7 +22,6 @@ import { ImportLedgerAccountsPage } from '_pages/accounts/ImportLedgerAccountsPa
 import { ImportPassphrasePage } from '_pages/accounts/ImportPassphrasePage';
 import { ImportPrivateKeyPage } from '_pages/accounts/ImportPrivateKeyPage';
 import { ApprovalRequestPage } from '_pages/approval-request';
-import { WelcomePage as WelcomePageV2 } from '_pages/enoki-onboarding/WelcomePage';
 import HomePage, {
 	TokensPage,
 	TransactionBlocksPage,
@@ -95,7 +94,7 @@ const App = () => {
 				<Route path="qredo-connect/:id/select" element={<SelectQredoAccountsPage />} />
 			</Route>
 
-			<Route path="welcome" element={useNewOnboardingFlow ? <WelcomePageV2 /> : <WelcomePage />} />
+			<Route path="welcome" element={<WelcomePage />} />
 			{useNewOnboardingFlow && (
 				<Route path="/accounts" element={<AccountsPage />}>
 					<Route path="add-account" element={<AddAccountPage />} />

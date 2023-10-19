@@ -237,7 +237,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 				</div>
 				<Link
 					to="/stake"
-					className="mt-2.5 w-full h-10 bg-bfc-card flex items-center justify-center gap-2.5 rounded-lg border border-solid border-bfc-border no-underline hover:border-bfc"
+					className="mt-2.5 w-full h-10 bg-bfc-card shrink-0 flex items-center justify-center gap-2.5 rounded-lg border border-solid border-bfc-border no-underline hover:border-bfc"
 				>
 					<svg
 						width="14"
