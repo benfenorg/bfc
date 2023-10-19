@@ -1,0 +1,11 @@
+[package]
+name = "ObcSystem"
+version = "0.0.1"
+published-at = "0xC8"
+
+[dependencies]
+MoveStdlib = { local = "../move-stdlib" }
+Sui = { local = "../sui-framework" }
+
+[addresses]
+bfc_system = "0xC8"

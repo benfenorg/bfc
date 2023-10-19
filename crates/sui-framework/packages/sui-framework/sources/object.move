@@ -18,7 +18,7 @@ module sui::object {
     /// The hardcoded ID for the singleton Sui System State Object.
     const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
 
-    const OBC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
+    const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
 
     /// The hardcoded ID for the singleton Clock Object.
     const SUI_CLOCK_OBJECT_ID: address = @0x6;
@@ -87,10 +87,10 @@ module sui::object {
     #[allow(unused_function)]
     /// Create the `UID` for the singleton `SuiSystemState` object.
     /// This should only be called once from `sui_system`.
-    public fun obc_system_state(ctx: &TxContext): UID {
+    public fun bfc_system_state(ctx: &TxContext): UID {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         UID {
-            id: ID { bytes: OBC_SYSTEM_STATE_OBJECT_ID },
+            id: ID { bytes: BFC_SYSTEM_STATE_OBJECT_ID },
         }
     }
 

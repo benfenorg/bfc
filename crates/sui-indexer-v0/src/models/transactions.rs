@@ -109,14 +109,14 @@ impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
     }
 }
 
-const OBC_MODULE_NAME: &IdentStr = ident_str!("bfc");
-const OBC_STRUCT_NAME: &IdentStr = ident_str!("BFC");
+const BFC_MODULE_NAME: &IdentStr = ident_str!("bfc");
+const BFC_STRUCT_NAME: &IdentStr = ident_str!("BFC");
 
 fn is_obc_coin(tt: &TypeTag) -> bool {
     if let TypeTag::Struct(st) = tt {
         return st.address == AccountAddress::TWO
-            && st.module == OBC_MODULE_NAME.into()
-            && st.name == OBC_STRUCT_NAME.into();
+            && st.module == BFC_MODULE_NAME.into()
+            && st.name == BFC_STRUCT_NAME.into();
     }
     return false;
 }

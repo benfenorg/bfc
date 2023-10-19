@@ -32,7 +32,7 @@ use sui_types::base_types::{
     RESOLVED_UTF8_STR, STD_ASCII_MODULE_NAME, STD_ASCII_STRUCT_NAME, STD_OPTION_MODULE_NAME,
     STD_OPTION_STRUCT_NAME, STD_UTF8_MODULE_NAME, STD_UTF8_STRUCT_NAME,
 };
-use sui_types::base_types_obc::bfc_address_util::convert_to_evm_address;
+use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use sui_types::id::{ID, RESOLVED_SUI_ID};
 use sui_types::move_package::MovePackage;
 use sui_types::MOVE_STDLIB_ADDRESS;

@@ -16,7 +16,7 @@ mod checked {
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::{
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        obc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME, BfcRoundParams},
+        bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME, BfcRoundParams},
         SUI_FRAMEWORK_ADDRESS,
     };
 
@@ -713,7 +713,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-            let result = maybe_modify_result(result, change_round.obc_round);
+            let result = maybe_modify_result(result, change_round.bfc_round);
 
         // if result.is_err() {
         //     tracing::error!(

@@ -120,7 +120,7 @@ async fn construct_unsigned_0x200_txn(
     construct_unsigned_system_txn(
         context,
         sender,
-        "obc_system",
+        "bfc_system",
         function,
         args,
         gas_budget

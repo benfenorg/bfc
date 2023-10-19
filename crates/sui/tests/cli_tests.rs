@@ -18,7 +18,7 @@ use sui_types::governance::{ADD_GAS_COIN_FUN_NAME, INIT_EXCHANGE_FUN_NAME};
 use tokio::time::sleep;
 use tracing::info;
 use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID};
-use sui_types::obc_system_state::BFC_SYSTEM_MODULE_NAME;
+use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 use sui::client_commands::SwitchResponse;
 use sui::{

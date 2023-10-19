@@ -33,7 +33,7 @@ use sui_types::transaction::{
 };
 use sui_types::{coin, fp_ensure, BFC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 use tracing::info;
-use sui_types::obc_system_state::BFC_SYSTEM_MODULE_NAME;
+use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 #[async_trait]
 pub trait DataReader {

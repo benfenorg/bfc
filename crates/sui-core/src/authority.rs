@@ -115,7 +115,7 @@ use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature,
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::gas_coin::MIST_PER_SUI;
-use sui_types::obc_system_state::BFCSystemState;
+use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::proposal::ProposalStatus;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 //use sui_types::{is_system_package, TypeTag};
