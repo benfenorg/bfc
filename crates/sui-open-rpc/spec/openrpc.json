@@ -10312,7 +10312,7 @@
               "kind": {
                 "type": "string",
                 "enum": [
-                  "ChangeObcRound"
+                  "ChangeBfcRound"
                 ]
               },
               "round": {
@@ -10841,7 +10841,7 @@
             "$ref": "#/components/schemas/UID"
           },
           "obc_balance": {
-            "description": "The total number of OBC tokens in this pool,",
+            "description": "The total number of BFC tokens in this pool,",
             "type": "integer",
             "format": "uint64",
             "minimum": 0.0
