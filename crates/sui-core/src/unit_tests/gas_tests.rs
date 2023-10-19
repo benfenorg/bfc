@@ -346,7 +346,7 @@ async fn test_oog_computation_oog_storage() -> SuiResult {
 #[tokio::test]
 async fn test_computation_ok_oog_storage_minimal_ok() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
-    const BUDGET: u64 = 1_100_000;
+    const BUDGET: u64 = 110_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
@@ -378,7 +378,7 @@ async fn test_computation_ok_oog_storage_minimal_ok() -> SuiResult {
 #[tokio::test]
 async fn test_computation_ok_oog_storage() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
-    const BUDGET: u64 = 1_002_000;
+    const BUDGET: u64 = 100_200;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
