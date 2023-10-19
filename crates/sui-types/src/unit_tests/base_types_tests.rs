@@ -181,14 +181,14 @@ fn test_object_id_deserialize_from_json_value() {
 fn test_object_id_serde_json() {
     let hex = format!("0x{}", SAMPLE_ADDRESS);
     let json_hex = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let json_obc = format!("\"BFC{}53c5\"", SAMPLE_ADDRESS);
+    let json_bfc = format!("\"BFC{}53c5\"", SAMPLE_ADDRESS);
 
     let obj_id = ObjectID::from_hex_literal(&hex).unwrap();
 
     let json = serde_json::to_string(&obj_id).unwrap();
     let json_obj_id: ObjectID = serde_json::from_str(&json_hex).unwrap();
 
-    assert_eq!(json == json_hex || json == json_obc, true);
+    assert_eq!(json == json_hex || json == json_bfc, true);
     assert_eq!(obj_id, json_obj_id);
 }
 
@@ -210,10 +210,10 @@ fn test_object_id_serde_with_expected_value() {
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
     let check_sum = get_check_sum(SAMPLE_ADDRESS.to_string());
-    let expected_json_address_obce = format!("\"BFC{}{}\"", SAMPLE_ADDRESS, check_sum);
+    let expected_json_address_bfc = format!("\"BFC{}{}\"", SAMPLE_ADDRESS, check_sum);
 
     assert_eq!(
-        expected_json_address == json_serialized || expected_json_address_obce == json_serialized,
+        expected_json_address == json_serialized || expected_json_address_bfc == json_serialized,
         true
     );
     //assert_eq!(expected_json_address, json_serialized);
@@ -279,10 +279,10 @@ fn test_address_serde_with_expected_value() {
     let bcs_serialized = bcs::to_bytes(&address).unwrap();
 
     let expected_json_address = format!("\"0x{}\"", SAMPLE_ADDRESS);
-    let expected_json_address_obc = format!("\"BFC{}53c5\"", SAMPLE_ADDRESS);
+    let expected_json_address_bfc = format!("\"BFC{}53c5\"", SAMPLE_ADDRESS);
 
     assert_eq!(
-        expected_json_address == json_serialized || expected_json_address_obc == json_serialized,
+        expected_json_address == json_serialized || expected_json_address_bfc == json_serialized,
         true
     );
     assert_eq!(SAMPLE_ADDRESS_VEC.to_vec(), bcs_serialized);
