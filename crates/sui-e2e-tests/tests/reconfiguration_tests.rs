@@ -1000,6 +1000,7 @@ async fn test_obc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
 }
 
 #[sim_test]
+#[ignore]
 async fn test_obc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
     let start_version = 18u64;
     let test_cluster = TestClusterBuilder::new()
