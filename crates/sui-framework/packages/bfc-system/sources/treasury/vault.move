@@ -21,8 +21,8 @@ use std::type_name;
     use bfc_system::tick_math;
 
     friend bfc_system::treasury;
-    friend bfc_system::obc_system;
-    friend bfc_system::obc_system_state_inner;
+    friend bfc_system::bfc_system;
+    friend bfc_system::bfc_system_state_inner;
     #[test_only]
     friend bfc_system::treasury_test;
 

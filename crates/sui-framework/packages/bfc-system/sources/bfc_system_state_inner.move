@@ -153,11 +153,7 @@ module bfc_system::bfc_system_state_inner {
         self: &BfcSystemStateInner,
         _stable: &Coin<CoinType>
     ): u64 {
-<<<<<<< HEAD:crates/sui-framework/packages/bfc-system/sources/bfc_system_state_inner.move
-        get_stablecoin_by_bfc<CoinType>(
-=======
-        vault::calculated_swap_result_amount_out(&get_stablecoin_by_obc<CoinType>(
->>>>>>> 4c950107d (add event coin_type and update calculate_swap_results):crates/sui-framework/packages/obc-system/sources/obc_system_state_inner.move
+        vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
             self,
             gas_coin_map::get_default_rate(),
         ))
@@ -175,11 +171,7 @@ module bfc_system::bfc_system_state_inner {
         self: &mut BfcSystemStateInner,
         gas_coin: &Coin<CoinType>,
     ) {
-<<<<<<< HEAD:crates/sui-framework/packages/bfc-system/sources/bfc_system_state_inner.move
-        let rate = get_stablecoin_by_bfc<CoinType>(
-=======
-        let rate = vault::calculated_swap_result_amount_out(&get_stablecoin_by_obc<CoinType>(
->>>>>>> 4c950107d (add event coin_type and update calculate_swap_results):crates/sui-framework/packages/obc-system/sources/obc_system_state_inner.move
+        let rate = vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
             self,
             gas_coin_map::get_default_rate(),
         ));
