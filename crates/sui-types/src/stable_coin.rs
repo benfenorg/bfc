@@ -37,8 +37,8 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
-    use crate::BFC_SYSTEM_ADDRESS;
     use super::*;
+    use crate::BFC_SYSTEM_ADDRESS;
 
     pub struct STABLE {}
     impl STABLE {
@@ -125,7 +125,10 @@ mod checked {
             if !value.type_().is_gas_coin() {
                 return Err(ExecutionError::new_with_source(
                     ExecutionErrorKind::InvalidGasObject,
-                    format!("Gas object type is not a stable gas coin: {}", value.type_()),
+                    format!(
+                        "Gas object type is not a stable gas coin: {}",
+                        value.type_()
+                    ),
                 ));
             }
             let gas_coin: StableCoin = bcs::from_bytes(value.contents()).map_err(|err| {
