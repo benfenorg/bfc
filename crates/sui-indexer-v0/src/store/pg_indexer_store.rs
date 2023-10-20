@@ -1339,7 +1339,7 @@ impl PgIndexerStore {
         }
         let metrics = NetworkSegmentMetrics {
             segment_started_at,
-            total_transact_obc: checkpoint.total_transact_obc,
+            total_transact_bfc: checkpoint.total_transact_bfc,
             avg_gas_cost,
             gas_checkpoint,
         };
@@ -1349,9 +1349,9 @@ impl PgIndexerStore {
                 .on_conflict(network_segment_metrics::segment_started_at)
                 .do_update()
                 .set((
-                    network_segment_metrics::total_transact_obc
-                        .eq(network_segment_metrics::total_transact_obc
-                            + excluded(network_segment_metrics::total_transact_obc)),
+                    network_segment_metrics::total_transact_bfc
+                        .eq(network_segment_metrics::total_transact_bfc
+                            + excluded(network_segment_metrics::total_transact_bfc)),
                     network_segment_metrics::avg_gas_cost
                         .eq(excluded(network_segment_metrics::avg_gas_cost)),
                     network_segment_metrics::gas_checkpoint

@@ -79,7 +79,7 @@ fn create_checkpoint(sequence_number: i64) -> TemporaryCheckpointStore {
             network_total_transactions: 0,
             timestamp_ms: Utc::now().timestamp_millis(),
             system_tick: false,
-            total_transact_obc: 0,
+            total_transact_bfc: 0,
         },
         transactions: (1..1000)
             .map(|_| create_transaction(sequence_number))

@@ -21,7 +21,7 @@ impl InnerSwap {
 }
 
 impl InnerSwap {
-    pub async fn exchange_obc(context: &mut WalletContext, any_coin: Coin) -> GasCoin {
+    pub async fn exchange_bfc(context: &mut WalletContext, any_coin: Coin) -> GasCoin {
         let coin_id_ref = get_object_ref(context, *any_coin.id()).await.unwrap();
         let args = vec![
             CallArg::Object(ObjectArg::ImmOrOwnedObject(coin_id_ref))

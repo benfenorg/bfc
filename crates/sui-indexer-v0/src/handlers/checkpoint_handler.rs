@@ -979,7 +979,7 @@ where
             .filter(|t| t.execution_success)
             .map(|t| t.transaction_count)
             .sum();
-        let total_transact_obc = db_transactions
+        let total_transact_bfc = db_transactions
             .iter()
             .filter(|t| t.execution_success)
             .map(|t| t.transact_obc)
@@ -998,7 +998,7 @@ where
                     total_transactions,
                     total_successful_transactions,
                     total_successful_transaction_blocks as i64,
-                    total_transact_obc,
+                    total_transact_bfc,
                     system_tick,
                 )?,
                 transactions: db_transactions,
