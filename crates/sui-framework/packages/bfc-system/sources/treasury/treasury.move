@@ -295,10 +295,10 @@ module bfc_system::treasury {
         _treasury: &Treasury,
         _a2b: bool,
         _amount: u64
-    ): u64
+    ): vault::CalculatedSwapResult
     {
         let sc_vault = borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>());
-        vault::calculated_swap_result_amount_out(&vault::calculate_swap_result(sc_vault, _a2b, true, _amount))
+        vault::calculate_swap_result(sc_vault, _a2b, true, _amount)
     }
 
     fun transfer_or_delete<CoinType>(

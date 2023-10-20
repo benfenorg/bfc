@@ -1,4 +1,6 @@
 module bfc_system::vault {
+use std::ascii::String;
+use std::type_name;
     use std::vector;
 
     use sui::balance::{Self, Balance, Supply};
@@ -19,6 +21,8 @@ module bfc_system::vault {
     use bfc_system::tick_math;
 
     friend bfc_system::treasury;
+    friend bfc_system::obc_system;
+    friend bfc_system::obc_system_state_inner;
     #[test_only]
     friend bfc_system::treasury_test;
 
@@ -445,7 +449,7 @@ module bfc_system::vault {
         &_calculatedSwapResult.step_results
     }
 
-    fun default_calculated_swap_result(): CalculatedSwapResult {
+    public(friend) fun default_calculated_swap_result(): CalculatedSwapResult {
         CalculatedSwapResult {
             amount_in: 0,
             amount_out: 0,
@@ -651,16 +655,25 @@ module bfc_system::vault {
         let swap_res = swap_in_vault(_vault, _a2b, _by_amount_in, _sqrt_price_limit, _amount);
         let balance_a_ret;
         let balance_b_ret;
+        let coin_type_in: String;
+        let coin_type_out: String;
+
         if (_a2b) {
             balance_b_ret = balance::split<BFC>(&mut _vault.coin_b, swap_res.amount_out);
             balance_a_ret = balance::zero<StableCoinType>();
+            coin_type_in = type_name::into_string(type_name::get<StableCoinType>());
+            coin_type_out = type_name::into_string(type_name::get<BFC>());
         } else {
             balance_a_ret = balance::split<StableCoinType>(&mut _vault.coin_a, swap_res.amount_out);
             balance_b_ret = balance::zero<BFC>();
+            coin_type_in = type_name::into_string(type_name::get<BFC>());
+            coin_type_out = type_name::into_string(type_name::get<StableCoinType>());
         };
         event::swap(
             vault_id(_vault),
             _a2b,
+            coin_type_in,
+            coin_type_out,
             swap_res.amount_in,
             swap_res.amount_out,
             balance::value(&balance_a_ret),
