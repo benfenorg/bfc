@@ -144,7 +144,7 @@ pub struct ExchangePoolV1 {
     pub id: ObjectID,
     pub activation_epoch: Option<u64>,
     pub bfc_balance: u64,
-    pub obc_pool: Balance,
+    pub bfc_pool: Balance,
     pub stable_token_balance: u64,
     pub stable_pool: Balance,
 }

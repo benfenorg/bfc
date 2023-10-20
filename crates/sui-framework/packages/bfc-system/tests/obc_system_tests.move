@@ -34,7 +34,7 @@ module bfc_system::bfc_system_tests {
         let system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
         // let clock = clock::create_for_testing(test_scenario::ctx(scenario));
-        bfc_system::obc_round(&mut system_state, &clock, 0,test_scenario::ctx(scenario));
+        bfc_system::bfc_round(&mut system_state, &clock, 0,test_scenario::ctx(scenario));
 
         test_scenario::return_shared(system_state);
         test_scenario::return_shared(t);

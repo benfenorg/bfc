@@ -59,7 +59,7 @@ module bfc_system::exchange_inner {
     }
 
     /// Add bfc to pool for gas exchange.
-    public(friend) fun add_obc_to_pool<STABLE_COIN>(pool: &mut ExchangePool<STABLE_COIN>, coin: Coin<BFC>) {
+    public(friend) fun add_bfc_to_pool<STABLE_COIN>(pool: &mut ExchangePool<STABLE_COIN>, coin: Coin<BFC>) {
         let amount = coin::value(&coin);
         assert!( amount > 0, EZeroAmount);
         pool.bfc_balance = pool.bfc_balance + amount;
@@ -83,7 +83,7 @@ module bfc_system::exchange_inner {
         pool.activation_epoch = option::some(epoch);
     }
 
-    public(friend) fun get_obc_amount<STABLE_COIN>(pool: &ExchangePool<STABLE_COIN>): u64 {
+    public(friend) fun get_bfc_amount<STABLE_COIN>(pool: &ExchangePool<STABLE_COIN>): u64 {
         pool.bfc_balance
     }
 
@@ -92,7 +92,7 @@ module bfc_system::exchange_inner {
     }
 
     /// Get bfc amount by exchange rate.
-    fun exchange_obc_amount(exchange_rate: u64, token_amount: u64): u64 {
+    fun exchange_bfc_amount(exchange_rate: u64, token_amount: u64): u64 {
         let res = (token_amount as u128) / (exchange_rate as u128);
         (res as u64)
     }
@@ -107,7 +107,7 @@ module bfc_system::exchange_inner {
         assert!(coin::value(&stable_coin) > 0, EZeroAmount);
         let tok_balance = coin::into_balance(stable_coin);
         let stable_amount = balance::value(&tok_balance);
-        let bfc_amount= exchange_obc_amount(exchange_rate, stable_amount);
+        let bfc_amount= exchange_bfc_amount(exchange_rate, stable_amount);
         assert!(bfc_amount > 0, EBFCZeroAmount);
         assert!(pool.bfc_balance > bfc_amount, ELackOfBFC);
         balance::join(&mut pool.stable_pool, tok_balance);
@@ -117,7 +117,7 @@ module bfc_system::exchange_inner {
         coin::into_balance(result)
     }
 
-    public(friend) fun get_obc_for_exchange_all<STABLE_COIN>(
+    public(friend) fun get_bfc_for_exchange_all<STABLE_COIN>(
         pool: &mut ExchangePool<STABLE_COIN>,
     ): Balance<BFC> {
         if(pool.bfc_balance > 0) {

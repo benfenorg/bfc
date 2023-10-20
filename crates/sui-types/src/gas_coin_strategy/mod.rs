@@ -69,7 +69,7 @@ impl FromStr for GasCoinStrategy {
 
 pub trait GasCoinExchange {
     /// Exchange any coin to default platform coin
-    fn exchange_obc(any_coin: Coin) -> GasCoin;
+    fn exchange_bfc(any_coin: Coin) -> GasCoin;
     /// Exchange any coin to another
     fn exchange(any_coin_x: Coin, any_coin_y: Coin);
     /// Get price of  any coin to another

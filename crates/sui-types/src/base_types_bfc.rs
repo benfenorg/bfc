@@ -15,42 +15,42 @@ use std::convert::TryFrom;
 //use sha2::{Digest, Sha256};
 
 #[cfg(test)]
-#[path = "unit_tests/base_type_obc_tests.rs"]
-mod base_type_obc_tests;
+#[path = "unit_tests/base_type_bfc_tests.rs"]
+mod base_type_bfc_tests;
 
-pub const OBC_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
+pub const BFC_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
 
 #[serde_as]
 #[derive(Eq, Default, PartialEq, Ord, PartialOrd, Copy, Clone, Hash, JsonSchema)]
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
-struct ObcAddress(
+struct BfcAddress(
     #[schemars(with = "Hex")]
     #[serde_as(as = "Readable<Hex, _>")]
-    [u8; OBC_ADDRESS_LENGTH],
+    [u8; BFC_ADDRESS_LENGTH],
 );
 
-impl ObcAddress {
+impl BfcAddress {
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
-        <[u8; OBC_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
+        <[u8; BFC_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
             .map_err(|_| SuiError::InvalidAddress)
-            .map(ObcAddress)
+            .map(BfcAddress)
     }
 }
 
-impl fmt::Debug for ObcAddress {
+impl fmt::Debug for BfcAddress {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "0x{}", Hex::encode(self.0))
     }
 }
 
-impl AsRef<[u8]> for ObcAddress {
+impl AsRef<[u8]> for BfcAddress {
     fn as_ref(&self) -> &[u8] {
         &self.0[..]
     }
 }
 
-impl TryFrom<&[u8]> for ObcAddress {
+impl TryFrom<&[u8]> for BfcAddress {
     type Error = SuiError;
 
     /// Tries to convert the provided byte array into a SuiAddress.

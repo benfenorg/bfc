@@ -20,7 +20,7 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
-    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, ObcSystemParameters};
+    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
 
     #[test_only]
     friend bfc_system::bfc_system_tests;
@@ -50,7 +50,7 @@ module bfc_system::bfc_system {
         id: UID,
         usd_supply: Supply<BUSD>,
         bfc_balance: Balance<BFC>,
-        parameters: ObcSystemParameters,
+        parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ) {
         let inner_state = bfc_system_state_inner::create_inner_state(
@@ -74,7 +74,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
     }
 
-    public fun obc_round(
+    public fun bfc_round(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
         round: u64,
@@ -100,7 +100,7 @@ module bfc_system::bfc_system {
 	clock: &Clock, 
         ctx: &mut TxContext,
     ){
-        obc_round(wrapper,  clock,200, ctx);
+        bfc_round(wrapper,  clock,200, ctx);
     }
 
     fun load_system_state(
@@ -206,7 +206,7 @@ module bfc_system::bfc_system {
         base_point: u64,
         max_counter_times: u32,
         chain_start_timestamp_ms: u64,
-    ): ObcSystemParameters {
+    ): BfcSystemParameters {
         bfc_system_state_inner::bfc_system_stat_parameter(
             position_number,
             tick_spacing,
@@ -306,7 +306,7 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::swap_obc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, ctx);
+        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, ctx);
     }
 
     /// X treasury  swap stablecoin to bfc

@@ -57,17 +57,17 @@ module bfc_system::bfc_system_state_inner {
         initialize_price: u128,
     }
 
-    struct ObcSystemParameters has drop, copy {
+    struct BfcSystemParameters has drop, copy {
         chain_start_timestamp_ms: u64,
         treasury_parameters: TreasuryParameters,
     }
 
-    const OBC_SYSTEM_TREASURY_KEY: u64 = 1;
+    const BFC_SYSTEM_TREASURY_KEY: u64 = 1;
 
     public(friend) fun create_inner_state(
         usd_supply: Supply<BUSD>,
         bfc_balance: Balance<BFC>,
-        parameters: ObcSystemParameters,
+        parameters: BfcSystemParameters,
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
         // init gas coin mappings
@@ -121,7 +121,7 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext
     ) {
         //get bfc amount of inner exchange pool
-        let bfc_amount = exchange_inner::get_obc_amount(&inner.exchange_pool);
+        let bfc_amount = exchange_inner::get_bfc_amount(&inner.exchange_pool);
         if (bfc_amount > 0) {
             //set pool is disactivate
             let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
@@ -189,14 +189,14 @@ module bfc_system::bfc_system_state_inner {
         self: &mut BfcSystemStateInner,
         coin: Coin<BFC>,
     ) {
-        exchange_inner::add_obc_to_pool(&mut self.exchange_pool, coin)
+        exchange_inner::add_bfc_to_pool(&mut self.exchange_pool, coin)
     }
 
     /// X treasury  init treasury
     public(friend) fun create_treasury(
         supply: Supply<BUSD>,
         bfc_balance: Balance<BFC>,
-        parameters: ObcSystemParameters,
+        parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>) {
         let treasury_parameters = parameters.treasury_parameters;
@@ -223,7 +223,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     /// swap bfc to stablecoin
-    public(friend) fun swap_obc_to_stablecoin<StableCoinType>(
+    public(friend) fun swap_bfc_to_stablecoin<StableCoinType>(
         self: &mut BfcSystemStateInner,
         coin_bfc: Coin<BFC>,
         amount: u64,
@@ -232,7 +232,7 @@ module bfc_system::bfc_system_state_inner {
         treasury::mint<StableCoinType>(&mut self.treasury, coin_bfc, amount, ctx);
     }
 
-    public(friend) fun swap_obc_to_stablecoin_balance<StableCoinType>(
+    public(friend) fun swap_bfc_to_stablecoin_balance<StableCoinType>(
         self: &mut BfcSystemStateInner,
         coin_bfc: Coin<BFC>,
         amount: u64,
@@ -319,7 +319,7 @@ module bfc_system::bfc_system_state_inner {
         base_point: u64,
         max_counter_times: u32,
         chain_start_timestamp_ms: u64,
-    ): ObcSystemParameters {
+    ): BfcSystemParameters {
         let treasury_parameters = TreasuryParameters {
             position_number,
             tick_spacing,
@@ -329,7 +329,7 @@ module bfc_system::bfc_system_state_inner {
             max_counter_times,
             base_point,
         };
-        ObcSystemParameters {
+        BfcSystemParameters {
             treasury_parameters,
             chain_start_timestamp_ms,
         }
