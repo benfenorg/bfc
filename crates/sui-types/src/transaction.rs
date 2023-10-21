@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{base_types::*, error::*};
-use crate::committee::{EpochId, ObcRoundId, ProtocolVersion};
+use crate::committee::{EpochId, BfcRoundId, ProtocolVersion};
 use crate::crypto::{
     default_hash, AuthoritySignInfo, AuthoritySignature, AuthorityStrongQuorumSignInfo,
     DefaultHash, Ed25519SuiSignature, EmptySignInfo, Signature, Signer, SuiSignatureInner,
@@ -18,7 +18,7 @@ use crate::messages_consensus::ConsensusCommitPrologue;
 use crate::object::{MoveObject, Object, Owner};
 use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
-use crate::{OBC_SYSTEM_STATE_OBJECT_ID, OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
+use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
@@ -71,7 +71,7 @@ pub enum CallArg {
 
 impl CallArg {
     pub const SUI_SYSTEM_MUT: Self = Self::Object(ObjectArg::SUI_SYSTEM_MUT);
-    pub const OBC_SYSTEM_MUT: Self = Self::Object(ObjectArg::OBC_SYSTEM_MUT);
+    pub const BFC_SYSTEM_MUT: Self = Self::Object(ObjectArg::BFC_SYSTEM_MUT);
 
     pub const CLOCK_IMM: Self = Self::Object(ObjectArg::SharedObject {
         id: SUI_CLOCK_OBJECT_ID,
@@ -165,8 +165,8 @@ pub struct ChangeEpoch {
 
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
-pub struct ChangeObcRound{
-    pub obc_round:ObcRoundId,
+pub struct ChangeBfcRound {
+    pub bfc_round: BfcRoundId,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
@@ -206,7 +206,7 @@ pub enum TransactionKind {
     Genesis(GenesisTransaction),
     ConsensusCommitPrologue(ConsensusCommitPrologue),
     // .. more transaction types go here
-    ChangeObcRound(ChangeObcRound),
+    ChangeBfcRound(ChangeBfcRound),
 }
 
 impl VersionedProtocolMessage for TransactionKind {
@@ -221,7 +221,7 @@ impl VersionedProtocolMessage for TransactionKind {
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ProgrammableTransaction(_)
-            | TransactionKind::ChangeObcRound(_)=> Ok(()),
+            | TransactionKind::ChangeBfcRound(_)=> Ok(()),
         }
     }
 }
@@ -329,9 +329,9 @@ impl ObjectArg {
         mutable: true,
     };
 
-    pub const OBC_SYSTEM_MUT: Self = Self::SharedObject {
-        id: OBC_SYSTEM_STATE_OBJECT_ID,
-        initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+    pub const BFC_SYSTEM_MUT: Self = Self::SharedObject {
+        id: BFC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
         mutable: true,
     };
 
@@ -812,9 +812,9 @@ impl SharedInputObject {
         mutable: true,
     };
 
-    pub const OBC_SYSTEM_OBJ: Self = Self {
-        id: OBC_SYSTEM_STATE_OBJECT_ID,
-        initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+    pub const BFC_SYSTEM_OBJ: Self = Self {
+        id: BFC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
         mutable: true,
     };
 
@@ -840,7 +840,7 @@ impl TransactionKind {
             TransactionKind::ChangeEpoch(_)
                 | TransactionKind::Genesis(_)
                 | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeObcRound(_)
+            | TransactionKind::ChangeBfcRound(_)
         )
     }
 
@@ -866,8 +866,8 @@ impl TransactionKind {
         match &self {
             Self::ChangeEpoch(_) => {
                 let objs = vec![SharedInputObject{
-                    id: OBC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },SharedInputObject::SUI_SYSTEM_OBJ,SharedInputObject {
                     id: SUI_CLOCK_OBJECT_ID,
@@ -886,10 +886,10 @@ impl TransactionKind {
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            Self::ChangeObcRound(_) => {
+            Self::ChangeBfcRound(_) => {
                 let objs = vec![SharedInputObject{
-                    id: OBC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },SharedInputObject::SUI_SYSTEM_OBJ];
                 Either::Right(Either::Right(objs.into_iter()))
@@ -917,8 +917,8 @@ impl TransactionKind {
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },InputObjectKind::SharedMoveObject {
-                    id: OBC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
@@ -936,10 +936,10 @@ impl TransactionKind {
                     mutable: true,
                 }]
             }
-            Self::ChangeObcRound(_)=>{
+            Self::ChangeBfcRound(_)=>{
                 vec![InputObjectKind::SharedMoveObject {
-                    id: OBC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },InputObjectKind::SharedMoveObject {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
@@ -973,7 +973,7 @@ impl TransactionKind {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeObcRound(_) => (),
+            | TransactionKind::ChangeBfcRound(_) => (),
         };
         Ok(())
     }
@@ -999,7 +999,7 @@ impl TransactionKind {
             Self::Genesis(_) => "Genesis",
             Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
             Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
-            Self::ChangeObcRound(_) => "ChangeObcRound",
+            Self::ChangeBfcRound(_) => "ChangeBfcRound",
         }
     }
 }
@@ -1019,8 +1019,8 @@ impl Display for TransactionKind {
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis")?;
             }
-            Self::ChangeObcRound(_) => {
-                writeln!(writer, "Transaction Kind : ChangeObcRound")?;
+            Self::ChangeBfcRound(_) => {
+                writeln!(writer, "Transaction Kind : ChangeBfcRound")?;
             }
             Self::ConsensusCommitPrologue(p) => {
                 writeln!(writer, "Transaction Kind : Consensus Commit Prologue")?;
@@ -1522,7 +1522,7 @@ pub trait TransactionDataAPI {
     fn is_system_tx(&self) -> bool;
     fn is_change_epoch_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
-    fn is_change_obc_round_tx(&self) -> bool;
+    fn is_change_bfc_round_tx(&self) -> bool;
 
     /// Check if the transaction is sponsored (namely gas owner != sender)
     fn is_sponsored_tx(&self) -> bool;
@@ -1650,7 +1650,7 @@ impl TransactionDataAPI for TransactionDataV1 {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeObcRound(_) => false,
+            | TransactionKind::ChangeBfcRound(_) => false,
         };
         if allow_sponsored_tx {
             return Ok(());
@@ -1662,8 +1662,8 @@ impl TransactionDataAPI for TransactionDataV1 {
         matches!(self.kind, TransactionKind::ChangeEpoch(_))
     }
 
-    fn is_change_obc_round_tx(&self) -> bool {
-        matches!(self.kind, TransactionKind::ChangeObcRound(_))
+    fn is_change_bfc_round_tx(&self) -> bool {
+        matches!(self.kind, TransactionKind::ChangeBfcRound(_))
     }
 
     fn is_system_tx(&self) -> bool {
@@ -1999,13 +1999,13 @@ impl VerifiedTransaction {
         .pipe(Self::new_system_transaction)
     }
 
-    pub fn new_change_obc_round(
-        round_id: ObcRoundId,
+    pub fn new_change_bfc_round(
+        round_id: BfcRoundId,
     ) -> Self {
-        ChangeObcRound {
-            obc_round:round_id,
+        ChangeBfcRound {
+            bfc_round:round_id,
         }
-            .pipe(TransactionKind::ChangeObcRound)
+            .pipe(TransactionKind::ChangeBfcRound)
             .pipe(Self::new_system_transaction)
     }
 

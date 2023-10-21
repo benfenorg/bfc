@@ -7,16 +7,16 @@ import { type ComponentProps, forwardRef, type ReactNode } from 'react';
 
 const styles = cva(
 	[
-		'cursor-pointer outline-0 flex flex-row items-center py-1.25 px-2.5 gap-1.25 rounded-[20px] border border-solid border-obc-border',
-		'hover:border-obc-text2',
-		'focus:border-obc',
-		'active:border-obc',
-		'disabled:text-obc-text3',
+		'cursor-pointer outline-0 flex flex-row items-center py-1.25 px-2.5 gap-1.25 rounded-[20px] border border-solid border-bfc-border',
+		'hover:border-bfc-text2',
+		'focus:border-bfc',
+		'active:border-bfc',
+		'disabled:text-bfc-text3',
 	],
 	{
 		variants: {
 			bgOnHover: {
-				blueLight: ['text-obc'],
+				blueLight: ['text-bfc'],
 			},
 		},
 		defaultVariants: {
@@ -40,7 +40,7 @@ export const ButtonConnectedTo = forwardRef<HTMLButtonElement, ButtonConnectedTo
 			<button {...rest} ref={ref} className={styles({ bgOnHover })}>
 				<div className="flex">{iconBefore}</div>
 				<div className={clsx('overflow-hidden', truncate && 'truncate')}>{text}</div>
-				<div className={cx('flex', 'text-obc')}>{iconAfter}</div>
+				<div className={cx('flex', 'text-bfc')}>{iconAfter}</div>
 			</button>
 		);
 	},

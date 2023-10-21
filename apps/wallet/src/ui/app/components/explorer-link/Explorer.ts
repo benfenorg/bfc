@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { sui2ObcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@mysten/sui.js';
 import { DEFAULT_API_ENV } from '_app/ApiProvider';
 import { getUrlWithDeviceId } from '_src/shared/analytics/amplitude';
 import { API_ENV } from '_src/shared/api-env';
@@ -35,7 +35,7 @@ export function getObjectUrl(
 	moduleName?: string | null,
 ) {
 	return getExplorerUrl(
-		`/object/${sui2ObcAddress(objectID)}${moduleName ? `?module=${moduleName}` : ''}`,
+		`/object/${sui2BfcAddress(objectID)}${moduleName ? `?module=${moduleName}` : ''}`,
 		apiEnv,
 		customRPC,
 	);
@@ -46,9 +46,9 @@ export function getTransactionUrl(txDigest: string, apiEnv: API_ENV, customRPC: 
 }
 
 export function getAddressUrl(address: string, apiEnv: API_ENV, customRPC: string) {
-	return getExplorerUrl(`/address/${sui2ObcAddress(address)}`, apiEnv, customRPC);
+	return getExplorerUrl(`/address/${sui2BfcAddress(address)}`, apiEnv, customRPC);
 }
 
 export function getValidatorUrl(address: string, apiEnv: API_ENV, customRPC: string) {
-	return getExplorerUrl(`/validator/${sui2ObcAddress(address)}`, apiEnv, customRPC);
+	return getExplorerUrl(`/validator/${sui2BfcAddress(address)}`, apiEnv, customRPC);
 }

@@ -44,7 +44,7 @@ export default {
 				dark: '#1F6493',
 			},
 
-			obc: {
+			bfc: {
 				DEFAULT: '#171719',
 				white: '#ffffff',
 				orange: '#E18416',

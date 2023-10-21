@@ -33,7 +33,7 @@ export function TransactionSummary({
 				<div className="flex flex-col gap-5">
 					{isDryRun && (
 						<div className="flex justify-center">
-							<Heading variant="heading6" color="obc-text1">
+							<Heading variant="heading6" color="bfc-text1">
 								Do you approve these actions?
 							</Heading>
 						</div>

@@ -19,7 +19,7 @@ import {
 	tuple,
 	unknown,
 } from 'superstruct';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import { ObjectOwner } from './common.js';
 import type { OwnedObjectRef } from './transactions.js';
 
@@ -62,7 +62,7 @@ export const MovePackageContent = record(string(), unknown());
 export type MovePackageContent = Infer<typeof MovePackageContent>;
 
 export const SuiMoveObject = object({
-	/** Move type (e.g., "0x2::coin::Coin<0x2::obc::OBC>") */
+	/** Move type (e.g., "0x2::coin::Coin<0x2::bfc::BFC>") */
 	type: string(),
 	/** Fields and values stored inside the Move object */
 	fields: ObjectContentFields,
@@ -83,7 +83,7 @@ export const SuiParsedData = union([
 export type SuiParsedData = Infer<typeof SuiParsedData>;
 
 export const SuiRawMoveObject = object({
-	/** Move type (e.g., "0x2::coin::Coin<0x2::obc::OBC>") */
+	/** Move type (e.g., "0x2::coin::Coin<0x2::bfc::BFC>") */
 	type: string(),
 	hasPublicTransfer: boolean(),
 	version: string(),
@@ -281,7 +281,7 @@ export function getObjectId(data: SuiObjectResponse | SuiObjectRef | OwnedObject
 		id =
 			getObjectReference(data)?.objectId ?? getObjectNotExistsResponse(data as SuiObjectResponse)!;
 	}
-	return sui2ObcAddress(id);
+	return sui2BfcAddress(id);
 }
 
 export function getObjectVersion(
@@ -303,7 +303,7 @@ export function isSuiObjectResponse(
 
 /**
  * Deriving the object type from the object response
- * @returns 'package' if the object is a package, move object type(e.g., 0x2::coin::Coin<0x2::obc::OBC>)
+ * @returns 'package' if the object is a package, move object type(e.g., 0x2::coin::Coin<0x2::bfc::BFC>)
  * if the object is a move object
  */
 export function getObjectType(

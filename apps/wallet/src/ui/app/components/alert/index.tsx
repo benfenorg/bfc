@@ -13,7 +13,7 @@ const alertStyles = cva(
 	{
 		variants: {
 			mode: {
-				warning: 'border-solid border bg-obc-red_10p border-obc-red text-obc-red',
+				warning: 'border-solid border bg-bfc-red_10p border-bfc-red text-bfc-red',
 				success: 'border-solid border bg-success-light border-success-dark/20 text-success-dark',
 				loading: 'bg-steel text-white border-warning-dark/20',
 				issue: 'border-solid border bg-issue-light border-issue-dark/20 text-issue-dark',

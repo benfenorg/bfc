@@ -22,7 +22,7 @@ import { builder } from './bcs.js';
 import { TransactionType, TransactionBlockInput } from './Transactions.js';
 import { BuilderCallArg, PureCallArg } from './Inputs.js';
 import { create } from './utils.js';
-import { obc2SuiAddress } from '../utils/format.js';
+import { bfc2SuiAddress } from '../utils/format.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
 
 export const TransactionExpiration = optional(
@@ -63,8 +63,8 @@ export type SerializedTransactionDataBuilder = Infer<typeof SerializedTransactio
 
 function prepareSuiAddress(address: string) {
 	let value = address;
-	if (/^obc/i.test(address)) {
-		value = obc2SuiAddress(address);
+	if (/^bfc/i.test(address)) {
+		value = bfc2SuiAddress(address);
 	}
 	return normalizeSuiAddress(value).replace('0x', '');
 }

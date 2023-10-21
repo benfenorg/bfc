@@ -951,7 +951,7 @@ impl CheckpointBuilder {
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
             // if  first_checkpoint_of_epoch{
-            //     self.augment_obc_round(sequence_number,
+            //     self.augment_bfc_round(sequence_number,
             //                                       &mut effects,
             //                                       &mut signatures,
             //     ).await?;
@@ -1072,7 +1072,7 @@ impl CheckpointBuilder {
         }
     }
 
-    async fn augment_obc_round(
+    async fn augment_bfc_round(
         &self,
         checkpoint: CheckpointSequenceNumber,
         checkpoint_effects: &mut Vec<TransactionEffects>,
@@ -1080,9 +1080,9 @@ impl CheckpointBuilder {
     )-> anyhow::Result<()>{
         let (_,effects) = self
             .state
-            .create_and_execute_obc_round_tx(&self.epoch_store ,checkpoint)
+            .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
             .await?;
-        error!("obc round effects is {:?}",effects);
+        error!("bfc round effects is {:?}",effects);
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(())

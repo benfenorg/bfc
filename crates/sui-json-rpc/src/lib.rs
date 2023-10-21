@@ -53,8 +53,8 @@ pub const APP_NAME_HEADER: &str = "app-name";
 
 pub const MAX_REQUEST_SIZE: u32 = 2 << 30;
 // #[cfg(test)]
-// #[path = "unit_tests/obc_base_types_tests.rs"]
-// mod obc_base_types_tests;
+// #[path = "unit_tests/bfc_base_types_tests.rs"]
+// mod bfc_base_types_tests;
 
 
 

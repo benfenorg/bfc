@@ -12,7 +12,7 @@ import { getObjectFields, getObjectId, getObjectType } from '../types/objects.js
 import type { Option } from '../types/option.js';
 import { getOption } from '../types/option.js';
 import type { CoinStruct } from '../types/coin.js';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import type { StructTag } from '../bcs/index.js';
 import type { Infer } from 'superstruct';
 import { nullable, number, object, string } from 'superstruct';
@@ -23,10 +23,10 @@ export const MOVE_STDLIB_ADDRESS = '0x1';
 export const OBJECT_MODULE_NAME = 'object';
 export const UID_STRUCT_NAME = 'UID';
 export const ID_STRUCT_NAME = 'ID';
-export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::obc::OBC`;
+export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::bfc::BFC`;
 export const VALIDATORS_EVENTS_QUERY = '0x3::validator_set::ValidatorEpochInfoEventV2';
 
-export const SUI_CLOCK_OBJECT_ID = sui2ObcAddress('0x6');
+export const SUI_CLOCK_OBJECT_ID = sui2BfcAddress('0x6');
 
 // `sui::pay` module is used for Coin management (split, join, join_and_transfer etc);
 export const PAY_MODULE_NAME = 'pay';
@@ -76,9 +76,9 @@ export class Coin {
 		return arg ? Coin.getCoinSymbol(arg) === 'SUI' : false;
 	}
 
-	static isOBC(obj: ObjectData) {
+	static isBFC(obj: ObjectData) {
 		const arg = Coin.getCoinTypeArg(obj);
-		return arg ? Coin.getCoinSymbol(arg) === 'OBC' : false;
+		return arg ? Coin.getCoinSymbol(arg) === 'BFC' : false;
 	}
 
 	static getCoinSymbol(coinTypeArg: string) {
@@ -87,7 +87,7 @@ export class Coin {
 
 	static getCoinStructTag(coinTypeArg: string): StructTag {
 		return {
-			address: sui2ObcAddress(coinTypeArg.split('::')[0]),
+			address: sui2BfcAddress(coinTypeArg.split('::')[0]),
 			module: coinTypeArg.split('::')[1],
 			name: coinTypeArg.split('::')[2],
 			typeParams: [],

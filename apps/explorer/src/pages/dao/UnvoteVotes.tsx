@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
+import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
@@ -31,7 +31,7 @@ const schema = z.object({
 export function UnvoteVotes({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votes = [], refetch: refetchVotes } = useGetOBCDaoVote(
+	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(
 		currentAccount?.address || '',
 	);
 
@@ -44,7 +44,7 @@ export function UnvoteVotes({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::unvote_votes`,
+				target: `0xc8::bfc_system::unvote_votes`,
 				typeArguments: [],
 				arguments: [tx.object(proposal.proposal_uid), tx.object(vote), tx.object(ADDRESS.CLOCK)],
 			});

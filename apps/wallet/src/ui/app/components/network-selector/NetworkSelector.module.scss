@@ -27,7 +27,7 @@
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
-	border-bottom: 1px solid colors.$obc-border;
+	border-bottom: 1px solid colors.$bfc-border;
 
 	line-height: 100%;
 
@@ -42,7 +42,7 @@
 		font-size: 12px;
 		line-height: 18px;
 		font-weight: 400;
-		color: colors.$obc-text1;
+		color: colors.$bfc-text1;
 	}
 
 	.network-icon {
@@ -50,7 +50,7 @@
 		height: 14px;
 		color: white;
 		border-radius: 100%;
-		background-color: colors.$obc-text3;
+		background-color: colors.$bfc-text3;
 		line-height: 100%;
 		transition: color 0.2s ease-in-out;
 	}
@@ -60,15 +60,15 @@
 	}
 
 	.network-active {
-		background-color: colors.$obc-text1;
+		background-color: colors.$bfc-text1;
 
 		&.custom-rpc-active {
-			background-color: colors.$obc-text1;
+			background-color: colors.$bfc-text1;
 		}
 	}
 
 	.custom-rpc-active {
-		background-color: colors.$obc-text2;
+		background-color: colors.$bfc-text2;
 	}
 }
 

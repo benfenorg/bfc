@@ -44,7 +44,7 @@ export function Account({ account }: AccountProps) {
 
 	return (
 		<div className="flex items-center gap-2.5">
-			<div className="grow text-bodySmall font-medium text-obc-text1">{formatAddress(address)}</div>
+			<div className="grow text-bodySmall font-medium text-bfc-text1">{formatAddress(address)}</div>
 			<div
 				className="w-[22px] h-[22px] rounded flex items-center justify-center cursor-pointer"
 				onClick={copyCallback}
@@ -79,19 +79,19 @@ export function Account({ account }: AccountProps) {
 					</defs>
 				</svg>
 				{isActionsVisible && (
-					<div className="absolute top-6 right-0 p-1 w-32 bg-white rounded-lg border border-solid border-obc-border shadow-accountAction flex flex-col items-stretch z-10">
-						<div className="h-[26px] rounded flex items-center text-bodySmall hover:bg-obc-card">
+					<div className="absolute top-6 right-0 p-1 w-32 bg-white rounded-lg border border-solid border-bfc-border shadow-accountAction flex flex-col items-stretch z-10">
+						<div className="h-[26px] rounded flex items-center text-bodySmall hover:bg-bfc-card">
 							<Link
 								text="Export Private Key"
 								to={exportAccountUrl}
-								color="obc-text1"
+								color="bfc-text1"
 								weight="normal"
 							/>
 						</div>
-						<div className="h-[26px] rounded flex items-center text-bodySmall hover:bg-obc-card">
+						<div className="h-[26px] rounded flex items-center text-bodySmall hover:bg-bfc-card">
 							<Link
 								to={recoveryPassphraseUrl}
-								color="obc-text1"
+								color="bfc-text1"
 								weight="normal"
 								text="Export Passphrase"
 							/>

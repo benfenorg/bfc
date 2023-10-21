@@ -25,7 +25,7 @@ export function SuiAmount({
 				{formattedAmount}
 			</Text>
 			<Text variant="captionSmall/normal" color="steel-dark">
-				{coinType === 'SUI' ? 'OBC' : 'MIST'}
+				{coinType === 'SUI' ? 'BFC' : 'MIST'}
 			</Text>
 		</div>
 	);

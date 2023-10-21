@@ -99,7 +99,7 @@ export function ValidatorsCard() {
 						{hasInactiveValidatorDelegation ? (
 							<div className="mb-3">
 								<Alert>
-									Unstake OBC from the inactive validators and stake on an active validator to start
+									Unstake BFC from the inactive validators and stake on an active validator to start
 									earning rewards again.
 								</Alert>
 							</div>
@@ -107,7 +107,7 @@ export function ValidatorsCard() {
 						<Card
 							padding="none"
 							header={
-								<div className="h-10 px-2.5 flex justify-center items-center w-full text-heading4/[22px] text-obc font-semibold">
+								<div className="h-10 px-2.5 flex justify-center items-center w-full text-heading4/[22px] text-bfc font-semibold">
 									Staking on {numberOfValidators}
 									{numberOfValidators > 1 ? ' Validators' : ' Validator'}
 								</div>
@@ -149,7 +149,7 @@ export function ValidatorsCard() {
 							})
 						}
 						before={<Plus12 />}
-						text="Stake OBC"
+						text="Stake BFC"
 					/>
 				</Menu>
 			</BottomMenuLayout>

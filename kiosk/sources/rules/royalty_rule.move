@@ -28,7 +28,7 @@
 /// The higher of the two will be used.
 ///
 module kiosk::royalty_rule {
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::transfer_policy::{
         Self as policy,
@@ -77,7 +77,7 @@ module kiosk::royalty_rule {
     public fun pay<T>(
         policy: &mut TransferPolicy<T>,
         request: &mut TransferRequest<T>,
-        payment: Coin<OBC>
+        payment: Coin<BFC>
     ) {
         let paid = policy::paid(request);
         let amount = fee_amount(policy, paid);

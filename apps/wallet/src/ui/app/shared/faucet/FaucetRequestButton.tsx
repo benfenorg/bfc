@@ -53,8 +53,8 @@ function FaucetRequestButton({ variant = 'primary', size = 'narrow' }: FaucetReq
 			}}
 			loading={mutation.isMutating}
 			text={
-				<Text variant="bodySmall" weight="medium" color="obc-text2">
-					Request {networkName} OBC Tokens
+				<Text variant="bodySmall" weight="medium" color="bfc-text2">
+					Request {networkName} BFC Tokens
 				</Text>
 			}
 		/>

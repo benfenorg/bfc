@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { z } from 'zod';
 
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
@@ -32,7 +32,7 @@ const schema = z.object({
 export function CastVote({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { data: votingObcs = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
+	const { data: votingBfcs = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
 		currentAccount?.address || '',
 	);
 
@@ -45,10 +45,10 @@ export function CastVote({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::cast_vote`,
+				target: `0xc8::bfc_system::cast_vote`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(proposal.proposal_uid),
 					tx.object(voting),
 					tx.pure(!!agree),
@@ -82,7 +82,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 		>
 			<Selector
 				label="voting"
-				options={votingObcs.map((i) => ({
+				options={votingBfcs.map((i) => ({
 					label: new BigNumber(i.principal).shiftedBy(-9).toString(),
 					value: i.id.id,
 				}))}

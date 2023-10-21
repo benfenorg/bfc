@@ -124,7 +124,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 						{hasInactiveValidatorDelegation ? (
 							<div className="mb-3">
 								<Alert>
-									Unstake OBC from this inactive validator and stake on an active validator to start
+									Unstake BFC from this inactive validator and stake on an active validator to start
 									earning rewards again.
 								</Alert>
 							</div>
@@ -132,15 +132,15 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 						<div className="w-full flex">
 							<Card
 								header={
-									<div className="grid grid-cols-2 divide-x divide-solid divide-obc-border divide-y-0 w-full">
+									<div className="grid grid-cols-2 divide-x divide-solid divide-bfc-border divide-y-0 w-full">
 										<div className="py-5 px-2.5 flex flex-col gap-1.25 items-center justify-center w-full">
-											<Text variant="body" weight="normal" color="obc-text2">
+											<Text variant="body" weight="normal" color="bfc-text2">
 												Your Stake
 											</Text>
 											<StakeAmount balance={totalStake} variant="body" isEarnedRewards />
 										</div>
 										<div className="py-5 px-2.5 flex flex-col gap-1.25 items-center justify-center w-full">
-											<Text variant="body" weight="normal" color="obc-text2">
+											<Text variant="body" weight="normal" color="bfc-text2">
 												Earned
 											</Text>
 											<StakeAmount balance={suiEarned} variant="body" isEarnedRewards />
@@ -149,33 +149,33 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 								}
 								padding="none"
 							>
-								<div className="divide-x flex divide-solid divide-obc-border divide-y-0">
+								<div className="divide-x flex divide-solid divide-bfc-border divide-y-0">
 									<div className="py-5 px-2.5 flex flex-col gap-1.25 items-center justify-center w-full">
-										<div className="flex text-obc-text2 gap-1.25 items-center">
+										<div className="flex text-bfc-text2 gap-1.25 items-center">
 											APY
 											<IconTooltip tip="Annual Percentage Yield" />
 										</div>
 
 										<div className="flex gap-1.25 items-center">
-											<Text variant="body" weight="medium" color="obc-text1">
+											<Text variant="body" weight="medium" color="bfc-text1">
 												{isApyApproxZero ? '~' : ''}
 												{apy}
 											</Text>
-											<Text variant="body" weight="medium" color="obc-text3">
+											<Text variant="body" weight="medium" color="bfc-text3">
 												%
 											</Text>
 										</div>
 									</div>
 									<div className="py-5 px-2.5 flex flex-col gap-1.25 items-center justify-center w-full">
-										<div className="flex text-obc-text2 gap-1.25 items-center">
+										<div className="flex text-bfc-text2 gap-1.25 items-center">
 											Commission
 											<IconTooltip tip="Validator commission" />
 										</div>
 										<div className="flex gap-1.25 items-center">
-											<Text variant="body" weight="medium" color="obc-text1">
+											<Text variant="body" weight="medium" color="bfc-text1">
 												{commission}
 											</Text>
-											<Text variant="body" weight="medium" color="obc-text3">
+											<Text variant="body" weight="medium" color="bfc-text3">
 												%
 											</Text>
 										</div>
@@ -203,7 +203,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 											/>
 										</svg>
 									}
-									text="Stake OBC"
+									text="Stake BFC"
 									onClick={() => {
 										ampli.clickedStakeSui({
 											isCurrentlyStaking: true,
@@ -226,7 +226,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 											validatorAddress,
 										});
 									}}
-									text="Unstake OBC"
+									text="Unstake BFC"
 									before={
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
@@ -252,7 +252,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 					<div className="flex flex-col gap-4 items-center">
 						<div className="w-8/12 text-center">
 							<Text variant="pSubtitle" weight="medium" color="steel-darker">
-								You need a minimum of {MIN_NUMBER_SUI_TO_STAKE} OBC to continue staking.
+								You need a minimum of {MIN_NUMBER_SUI_TO_STAKE} BFC to continue staking.
 							</Text>
 						</div>
 						<FaucetRequestButton size="tall" />

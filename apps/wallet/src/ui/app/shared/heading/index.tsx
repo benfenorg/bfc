@@ -40,9 +40,9 @@ const headingStyles = cva(
 				'success-dark': 'text-success-dark',
 				'hero-dark': 'text-hero-dark',
 				black: 'text-black',
-				'obc-text1': 'text-obc-text1',
-				'obc-text2': 'text-obc-text2',
-				'obc-text3': 'text-obc-text3',
+				'bfc-text1': 'text-bfc-text1',
+				'bfc-text2': 'text-bfc-text2',
+				'bfc-text3': 'text-bfc-text3',
 			},
 			weight: {
 				medium: 'font-medium',

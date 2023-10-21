@@ -31,7 +31,7 @@ function getAccount(account: ReadonlyWalletAccount, useWrongAccount: boolean) {
 }
 
 function findSuiWallet(wallets: readonly Wallet[]) {
-	return (wallets.find((aWallet) => aWallet.name.includes('OBC Wallet')) ||
+	return (wallets.find((aWallet) => aWallet.name.includes('BenFen Wallet')) ||
 		null) as SuiWallet | null;
 }
 
@@ -71,7 +71,7 @@ function App() {
 	}
 	return (
 		<>
-			<h1>OBC Wallet is installed. ({suiWallet.name})</h1>
+			<h1>BenFen Wallet is installed. ({suiWallet.name})</h1>
 			{accounts.length ? (
 				<ul data-testid="accounts-list">
 					{accounts.map((anAccount) => (
@@ -97,7 +97,7 @@ function App() {
 					const txb = getDemoTransaction(accounts[0]?.address);
 					try {
 						await suiWallet.features[
-							'obc:signAndExecuteTransactionBlock'
+							'bfc:signAndExecuteTransactionBlock'
 						].signAndExecuteTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
@@ -115,7 +115,7 @@ function App() {
 					setError(null);
 					const txb = getDemoTransaction(accounts[0]?.address);
 					try {
-						await suiWallet.features['obc:signTransactionBlock'].signTransactionBlock({
+						await suiWallet.features['bfc:signTransactionBlock'].signTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
 							chain: 'sui:unknown',
@@ -131,7 +131,7 @@ function App() {
 				onClick={async () => {
 					setError(null);
 					try {
-						await suiWallet.features['obc:signMessage']?.signMessage({
+						await suiWallet.features['bfc:signMessage']?.signMessage({
 							account: getAccount(accounts[0], useWrongAccounts),
 							message: new TextEncoder().encode('Test message'),
 						});

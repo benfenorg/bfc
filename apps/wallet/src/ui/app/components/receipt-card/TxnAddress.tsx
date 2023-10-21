@@ -16,7 +16,7 @@ export function TxnAddress({ address, label }: TxnAddressProps) {
 
 	return (
 		<div className="h-10 flex justify-between w-full items-center">
-			<Text variant="body" weight="normal" color="obc-text1">
+			<Text variant="body" weight="normal" color="bfc-text1">
 				{label}
 			</Text>
 			<div className="flex gap-1 items-center">{domainName ?? formatAddress(address)}</div>

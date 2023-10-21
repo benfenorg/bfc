@@ -74,10 +74,10 @@
 <pre><code><b>use</b> <a href="">0x1::option</a>;
 <b>use</b> <a href="">0x1::string</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/event.md#0x2_event">0x2::event</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -1309,7 +1309,7 @@ Error codes
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">obc_dao::OBCDaoAction</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">obc_dao::OBCDaoAction</a>
 </code></pre>
 
 
@@ -1320,7 +1320,7 @@ Error codes
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_obcdao_action">create_obcdao_action</a>(
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
-    payment: Coin&lt;OBC&gt;,
+    payment: Coin&lt;BFC&gt;,
     actionName:<a href="">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext): <a href="obc_dao.md#0xc8_obc_dao_OBCDaoAction">OBCDaoAction</a> {
     //auth
@@ -1640,7 +1640,7 @@ propose a proposal.
 <code>action_delay</code>: the delay to execute after the proposal is agreed
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1652,7 +1652,7 @@ propose a proposal.
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_propose">propose</a> (
     dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
     version_id: u64,
-    payment: Coin&lt;OBC&gt;,
+    payment: Coin&lt;BFC&gt;,
     action_id: u64,
     action_delay: u64,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
@@ -1729,8 +1729,8 @@ propose a proposal.
 
 <pre><code><b>pragma</b> aborts_if_is_partial = <b>true</b>;
 <b>aborts_if</b> <b>false</b>;
-<b>let</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a> =  payment.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>;
-<b>let</b> count = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(<a href="../../../.././build/Sui/docs/obc.md#0x2_obc">obc</a>);
+<b>let</b> obc =  payment.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>;
+<b>let</b> count = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(obc);
 <b>aborts_if</b> count &lt; <a href="obc_dao.md#0xc8_obc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>;
 <b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
 </code></pre>
@@ -3279,7 +3279,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">create_stake_manager_key</a>(payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">create_stake_manager_key</a>(payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -3288,7 +3288,7 @@ set min action delay
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">create_stake_manager_key</a>( payment: Coin&lt;OBC&gt;,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_stake_manager_key">create_stake_manager_key</a>( payment: Coin&lt;BFC&gt;,
                               ctx: &<b>mut</b> TxContext){
 
     //convert proposal payment <b>to</b> voting_obc
@@ -3490,7 +3490,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/obc.md#0x2_obc_OBC">obc::OBC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">obc_dao::Dao</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -3500,7 +3500,7 @@ set min action delay
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="obc_dao.md#0xc8_obc_dao_create_voting_obc">create_voting_obc</a>(dao: &<b>mut</b> <a href="obc_dao.md#0xc8_obc_dao_Dao">Dao</a>,
-                                   <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;OBC&gt;,
+                                   <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
                                    ctx: &<b>mut</b> TxContext) {
     // sender <b>address</b>
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);

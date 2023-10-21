@@ -55,7 +55,7 @@ export function useSwapMutation({ onSuccess, onError }: MutationParams) {
 			const functionName = type === 'mint' ? 'swap_obc_to_stablecoin' : 'swap_stablecoin_to_obc';
 
 			tx.moveCall({
-				target: `0xc8::obc_system::${functionName}`,
+				target: `0xc8::bfc_system::${functionName}`,
 				typeArguments: ['0xc8::usd::USD'],
 				arguments: [tx.object('0xc9'), coin, tx.pure(Number.parseInt(swapAmount))],
 			});

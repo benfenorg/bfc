@@ -38,7 +38,7 @@ export function TopPackagesCard() {
 					onChange={(val) => setSelectedFilter(val)}
 				/>
 			</div>
-			<div className="obc-table-container mt-5">
+			<div className="bfc-table-container mt-5">
 				<ErrorBoundary>
 					<TopPackagesTable data={filteredData} isLoading={isLoading} />
 				</ErrorBoundary>

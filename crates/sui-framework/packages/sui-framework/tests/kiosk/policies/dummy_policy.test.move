@@ -5,7 +5,7 @@
 /// Dummy policy which showcases all of the methods.
 module sui::dummy_policy {
     use sui::coin::Coin;
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer_policy::{
         Self as policy,
         TransferPolicy,
@@ -26,7 +26,7 @@ module sui::dummy_policy {
     public fun pay<T>(
         policy: &mut TransferPolicy<T>,
         request: &mut TransferRequest<T>,
-        payment: Coin<OBC>
+        payment: Coin<BFC>
     ) {
         policy::add_to_balance(Rule {}, policy, payment);
         policy::add_receipt(Rule {}, request);

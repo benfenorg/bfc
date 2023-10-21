@@ -14,14 +14,14 @@
 /// module me::my_pool {
 ///   use defi::pool;
 ///   use sui::coin::Coin;
-///   use sui::obc::OBC;
+///   use sui::bfc::BFC;
 ///   use sui::tx_context::TxContext;
 ///
 ///   struct POOL_TEAM has drop {}
 ///
 ///   entry fun create_pool<T>(
 ///     token: Coin<T>,
-///     sui: Coin<OBC>,
+///     sui: Coin<BFC>,
 ///     fee_percent: u64,
 ///     ctx: &mut TxContext
 ///   ) {
@@ -36,7 +36,7 @@ module defi::pool {
     use sui::object::{Self, UID};
     use sui::coin::{Self, Coin};
     use sui::balance::{Self, Supply, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::math;
     use sui::tx_context::{Self, TxContext};
@@ -78,7 +78,7 @@ module defi::pool {
     /// that 1000 is 100% and 1 is 0.1%
     struct Pool<phantom P, phantom T> has key {
         id: UID,
-        sui: Balance<OBC>,
+        sui: Balance<BFC>,
         token: Balance<T>,
         lsp_supply: Supply<LSP<P, T>>,
         /// Fee Percent is denominated in basis points.
@@ -91,14 +91,14 @@ module defi::pool {
     fun init(_: &mut TxContext) {}
 
     /// Create new `Pool` for token `T`. Each Pool holds a `Coin<T>`
-    /// and a `Coin<OBC>`. Swaps are available in both directions.
+    /// and a `Coin<BFC>`. Swaps are available in both directions.
     ///
     /// Share is calculated based on Uniswap's constant product formula:
     ///  liquidity = sqrt( X * Y )
     public fun create_pool<P: drop, T>(
         _: P,
         token: Coin<T>,
-        sui: Coin<OBC>,
+        sui: Coin<BFC>,
         fee_percent: u64,
         ctx: &mut TxContext
     ): Coin<LSP<P, T>> {
@@ -129,7 +129,7 @@ module defi::pool {
     /// Entrypoint for the `swap_sui` method. Sends swapped token
     /// to sender.
     entry fun swap_sui_<P, T>(
-        pool: &mut Pool<P, T>, sui: Coin<OBC>, ctx: &mut TxContext
+        pool: &mut Pool<P, T>, sui: Coin<BFC>, ctx: &mut TxContext
     ) {
         transfer::public_transfer(
             swap_sui(pool, sui, ctx),
@@ -137,10 +137,10 @@ module defi::pool {
         )
     }
 
-    /// Swap `Coin<OBC>` for the `Coin<T>`.
+    /// Swap `Coin<BFC>` for the `Coin<T>`.
     /// Returns Coin<T>.
     public fun swap_sui<P, T>(
-        pool: &mut Pool<P, T>, sui: Coin<OBC>, ctx: &mut TxContext
+        pool: &mut Pool<P, T>, sui: Coin<BFC>, ctx: &mut TxContext
     ): Coin<T> {
         assert!(coin::value(&sui) > 0, EZeroAmount);
 
@@ -173,11 +173,11 @@ module defi::pool {
         )
     }
 
-    /// Swap `Coin<T>` for the `Coin<OBC>`.
-    /// Returns the swapped `Coin<OBC>`.
+    /// Swap `Coin<T>` for the `Coin<BFC>`.
+    /// Returns the swapped `Coin<BFC>`.
     public fun swap_token<P, T>(
         pool: &mut Pool<P, T>, token: Coin<T>, ctx: &mut TxContext
-    ): Coin<OBC> {
+    ): Coin<BFC> {
         assert!(coin::value(&token) > 0, EZeroAmount);
 
         let tok_balance = coin::into_balance(token);
@@ -199,7 +199,7 @@ module defi::pool {
     /// Entrypoint for the `add_liquidity` method. Sends `Coin<LSP>` to
     /// the transaction sender.
     entry fun add_liquidity_<P, T>(
-        pool: &mut Pool<P, T>, sui: Coin<OBC>, token: Coin<T>, ctx: &mut TxContext
+        pool: &mut Pool<P, T>, sui: Coin<BFC>, token: Coin<T>, ctx: &mut TxContext
     ) {
         transfer::public_transfer(
             add_liquidity(pool, sui, token, ctx),
@@ -208,10 +208,10 @@ module defi::pool {
     }
 
     /// Add liquidity to the `Pool`. Sender needs to provide both
-    /// `Coin<OBC>` and `Coin<T>`, and in exchange he gets `Coin<LSP>` -
+    /// `Coin<BFC>` and `Coin<T>`, and in exchange he gets `Coin<LSP>` -
     /// liquidity provider tokens.
     public fun add_liquidity<P, T>(
-        pool: &mut Pool<P, T>, sui: Coin<OBC>, token: Coin<T>, ctx: &mut TxContext
+        pool: &mut Pool<P, T>, sui: Coin<BFC>, token: Coin<T>, ctx: &mut TxContext
     ): Coin<LSP<P, T>> {
         assert!(coin::value(&sui) > 0, EZeroAmount);
         assert!(coin::value(&token) > 0, EZeroAmount);
@@ -253,12 +253,12 @@ module defi::pool {
     }
 
     /// Remove liquidity from the `Pool` by burning `Coin<LSP>`.
-    /// Returns `Coin<T>` and `Coin<OBC>`.
+    /// Returns `Coin<T>` and `Coin<BFC>`.
     public fun remove_liquidity<P, T>(
         pool: &mut Pool<P, T>,
         lsp: Coin<LSP<P, T>>,
         ctx: &mut TxContext
-    ): (Coin<OBC>, Coin<T>) {
+    ): (Coin<BFC>, Coin<T>) {
         let lsp_amount = coin::value(&lsp);
 
         // If there's a non-empty LSP, we can
@@ -345,7 +345,7 @@ module defi::pool {
 /// |               +-- test_withdraw_all
 /// ```
 module defi::pool_tests {
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin, mint_for_testing as mint};
     use sui::test_scenario::{Self as test, Scenario, next_tx, ctx};
     use defi::pool::{Self, Pool, LSP};
@@ -423,7 +423,7 @@ module defi::pool_tests {
             let lsp = pool::create_pool(
                 POOLEY {},
                 mint<BEEP>(BEEP_AMT, ctx(test)),
-                mint<OBC>(SUI_AMT, ctx(test)),
+                mint<BFC>(SUI_AMT, ctx(test)),
                 3,
                 ctx(test)
             );
@@ -459,7 +459,7 @@ module defi::pool_tests {
 
             let lsp_tokens = pool::add_liquidity(
                 pool_mut,
-                mint<OBC>(amt_sui, ctx(test)),
+                mint<BFC>(amt_sui, ctx(test)),
                 mint<BEEP>(amt_tok, ctx(test)),
                 ctx(test)
             );
@@ -482,7 +482,7 @@ module defi::pool_tests {
             let pool = test::take_shared<Pool<POOLEY, BEEP>>(test);
             let pool_mut = &mut pool;
 
-            let token = pool::swap_sui(pool_mut, mint<OBC>(5000000, ctx(test)), ctx(test));
+            let token = pool::swap_sui(pool_mut, mint<BFC>(5000000, ctx(test)), ctx(test));
 
             // Check the value of the coin received by the guy.
             // Due to rounding problem the value is not precise

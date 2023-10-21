@@ -52,7 +52,7 @@ export function PageLayout({ gradient, content, loading, isError }: PageLayoutPr
 							paddingTop: `${headerHeight}px`,
 						}}
 						className={clsx(
-							'group/gradientContent bg-obc',
+							'group/gradientContent bg-bfc',
 							loading && 'bg-gradients-graph-cards',
 							isError && 'bg-gradients-failure',
 							!isError && 'bg-gradients-graph-cards',

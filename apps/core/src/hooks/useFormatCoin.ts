@@ -59,8 +59,8 @@ export function useCoinMetadata(coinType?: string | null) {
 					decimals: 9,
 					description: '',
 					iconUrl: null,
-					name: 'OBC',
-					symbol: 'OBC',
+					name: 'BFC',
+					symbol: 'BFC',
 				};
 				return metadata;
 			}
@@ -108,7 +108,7 @@ export function useFormatCoin(
 				type = Coin.getCoinSymbol(coinType);
 			}
 		}
-		return type === 'SUI' ? 'OBC' : type;
+		return type === 'SUI' ? 'BFC' : type;
 	}, [coinType, data]);
 
 	const formatted = useMemo(() => {

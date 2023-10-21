@@ -31,8 +31,8 @@ use crate::{
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
 //use crate::base_types::{SuiAddress};
-use crate::base_types_obc::obc_address_util::convert_to_evm_address;
-use crate::base_types_obc::obc_address_util::sha256_string;
+use crate::base_types_bfc::bfc_address_util::convert_to_evm_address;
+use crate::base_types_bfc::bfc_address_util::sha256_string;
 
 #[inline]
 fn to_custom_error<'de, D, E>(e: E) -> D::Error
@@ -107,9 +107,9 @@ where
 
 ///===============
 /// custom serde for AccountAddress
-pub struct HexOBCAddress;
+pub struct HexBFCAddress;
 
-impl SerializeAs<[u8; 32]> for HexOBCAddress {
+impl SerializeAs<[u8; 32]> for HexBFCAddress {
     fn serialize_as<S>(value: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -122,31 +122,31 @@ impl SerializeAs<[u8; 32]> for HexOBCAddress {
             let result = sha256_string(&s.clone());
             let check_sum = result.get(0..4).unwrap();
 
-            let obc_address = String::from("OBC") + &s + check_sum;
+            let bfc_address = String::from("BFC") + &s + check_sum;
 
-            return obc_address.serialize(serializer);
+            return bfc_address.serialize(serializer);
         }
 
         Hex::serialize_as(value, serializer)
     }
 }
 
-impl<'de> DeserializeAs<'de, [u8; 32]> for HexOBCAddress {
+impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
     fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
     where
         D: Deserializer<'de>,
     {
         let mut s = String::deserialize(deserializer)?;
-        if s.starts_with("obc") || s.starts_with("OBC") {
+        if s.starts_with("bfc") || s.starts_with("BFC") {
             let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0 {
                 s = String::from(sui);
             } else {
                 info!(
-                    "HexOBCAddress deserializing error obc address from hex: {}",
+                    "HexBFCAddress deserializing error bfc address from hex: {}",
                     s
                 );
-                return Err("invalid obc address").map_err(serde::de::Error::custom);
+                return Err("invalid bfc address").map_err(serde::de::Error::custom);
             }
         }
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
@@ -176,9 +176,9 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
             hasher.update(s.as_bytes());
             let result = format!("{:x}", hasher.finalize());
             let check_sum = result.get(0..4).unwrap();
-            let obc_address = String::from("OBC") + &s + check_sum;
+            let bfc_address = String::from("BFC") + &s + check_sum;
 
-            return obc_address.serialize(serializer);
+            return bfc_address.serialize(serializer);
         }
 
         Hex::serialize_as(value, serializer)
@@ -192,18 +192,18 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
     {
         let mut s = String::deserialize(deserializer)?;
 
-        //obcAddress convert to suiAddress format...
-        if s.starts_with("obc") || s.starts_with("OBC") {
+        //bfcAddress convert to suiAddress format...
+        if s.starts_with("bfc") || s.starts_with("BFC") {
             let sui = convert_to_evm_address(s.clone());
             if sui.len() > 0 {
                 s = String::from(sui);
             } else {
                 //todo..
-                info!("deserializing error obc address from hex: {}", s);
-                return Err("invalid obc address").map_err(serde::de::Error::custom);
+                info!("deserializing error bfc address from hex: {}", s);
+                return Err("invalid bfc address").map_err(serde::de::Error::custom);
             }
         }
-        //end of obcAddress convert to suiAddress format...
+        //end of bfcAddress convert to suiAddress format...
 
         if s.starts_with("0x") {
             AccountAddress::from_hex_literal(&s)

@@ -119,7 +119,7 @@ export function SelectValidatorCard() {
 			<Content className="flex flex-col w-full items-center">
 				<div className="flex flex-col w-full items-center bg-white sticky pt-5 pb-2.5 z-50 mt-0">
 					<div className="flex items-start w-full mb-2">
-						<Text variant="body" weight="normal" color="obc-text2">
+						<Text variant="body" weight="normal" color="bfc-text2">
 							Sort by:
 						</Text>
 						<div className="flex items-center ml-2 gap-1.5">
@@ -133,7 +133,7 @@ export function SelectValidatorCard() {
 										<Text
 											variant="body"
 											weight="normal"
-											color={sortKey === key ? 'hero' : 'obc-text1'}
+											color={sortKey === key ? 'hero' : 'bfc-text1'}
 										>
 											{value}
 										</Text>
@@ -151,8 +151,8 @@ export function SelectValidatorCard() {
 						</div>
 					</div>
 					<div className="flex items-start w-full">
-						<Text variant="body" weight="normal" color="obc-text1">
-							Select a validator to start staking OBC.
+						<Text variant="body" weight="normal" color="bfc-text1">
+							Select a validator to start staking BFC.
 						</Text>
 					</div>
 				</div>

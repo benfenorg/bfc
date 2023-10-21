@@ -1230,7 +1230,7 @@ mod tests {
 
             let coin_read_api = CoinReadApi::new_for_tests(Arc::new(mock_state), None);
             let response = coin_read_api
-                .get_coin_metadata("0x2::obc::OBC".to_string())
+                .get_coin_metadata("0x2::bfc::BFC".to_string())
                 .await;
 
             assert!(response.is_ok());
@@ -1282,7 +1282,7 @@ mod tests {
 
         #[tokio::test]
         async fn test_success_response_for_gas_coin() {
-            let coin_type = "0x2::obc::OBC";
+            let coin_type = "0x2::bfc::BFC";
             let mock_internal = MockCoinReadInternal::new();
             let coin_read_api = CoinReadApi {
                 internal: Box::new(mock_internal),

@@ -144,17 +144,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ------ Module previously defined here, with '(sui=0x2)::prover'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ ../sui-framework/packages/sui-framework/sources/object.move:5:13
-  │
-5 │ module sui::object {
-  │             ^^^^^^ Duplicate definition for module '(sui=0x2)::object'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object.move:5:13
-  │
-5 │ module sui::object {
-  │             ------ Module previously defined here, with '(sui=0x2)::object'
-
-error[E02001]: duplicate declaration, item, or annotation
   ┌─ build/mv_interfaces/04198760708772105478/0000000000000000000000000000000000000000000000000000000000000002/vec_map.move:1:13
   │
 1 │ module 0x2::vec_map {
@@ -173,17 +162,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │             │
   │             Duplicate definition for module '(sui=0x2)::ed25519'
   │             Module previously defined here, with '(sui=0x2)::ed25519'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ ../sui-framework/packages/sui-framework/sources/balance.move:7:13
-  │
-7 │ module sui::balance {
-  │             ^^^^^^^ Duplicate definition for module '(sui=0x2)::balance'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/balance_tests.move:7:13
-  │
-7 │ module sui::balance {
-  │             ------- Module previously defined here, with '(sui=0x2)::balance'
 
 error[E02001]: duplicate declaration, item, or annotation
    ┌─ ../sui-framework/packages/sui-framework/sources/event.move:29:13
@@ -409,17 +387,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::ecdsa_k1'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ ../sui-framework/packages/sui-framework/sources/kiosk/kiosk.move:83:13
-   │
-83 │ module sui::kiosk {
-   │             ^^^^^ Duplicate definition for module '(sui=0x2)::kiosk'
-   │
-   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk.move:83:13
-   │
-83 │ module sui::kiosk {
-   │             ----- Module previously defined here, with '(sui=0x2)::kiosk'
-
-error[E02001]: duplicate declaration, item, or annotation
   ┌─ build/mv_interfaces/04198760708772105478/0000000000000000000000000000000000000000000000000000000000000002/math.move:1:13
   │
 1 │ module 0x2::math {
@@ -493,6 +460,17 @@ error[E02001]: duplicate declaration, item, or annotation
   │             -------- Module previously defined here, with '(sui=0x2)::ecdsa_r1'
 
 error[E02001]: duplicate declaration, item, or annotation
+   ┌─ ../sui-framework/packages/sui-framework/sources/kiosk/transfer_policy.move:24:13
+   │
+24 │ module sui::transfer_policy {
+   │             ^^^^^^^^^^^^^^^ Duplicate definition for module '(sui=0x2)::transfer_policy'
+   │
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/transfer_policy.move:24:13
+   │
+24 │ module sui::transfer_policy {
+   │             --------------- Module previously defined here, with '(sui=0x2)::transfer_policy'
+
+error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/url.move:5:13
   │
 5 │ module sui::url {
@@ -509,17 +487,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │             │
   │             Duplicate definition for module '(sui=0x2)::ecdsa_r1'
   │             Module previously defined here, with '(sui=0x2)::ecdsa_r1'
-
-error[E02001]: duplicate declaration, item, or annotation
-   ┌─ ../sui-framework/packages/sui-framework/sources/kiosk/transfer_policy.move:24:13
-   │
-24 │ module sui::transfer_policy {
-   │             ^^^^^^^^^^^^^^^ Duplicate definition for module '(sui=0x2)::transfer_policy'
-   │
-   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/transfer_policy.move:24:13
-   │
-24 │ module sui::transfer_policy {
-   │             --------------- Module previously defined here, with '(sui=0x2)::transfer_policy'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/borrow.move:9:13
@@ -562,6 +529,17 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ---- Module previously defined here, with '(std=0x1)::hash'
 
 error[E02001]: duplicate declaration, item, or annotation
+   ┌─ ../sui-framework/packages/sui-framework/sources/kiosk/kiosk.move:83:13
+   │
+83 │ module sui::kiosk {
+   │             ^^^^^ Duplicate definition for module '(sui=0x2)::kiosk'
+   │
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk.move:83:13
+   │
+83 │ module sui::kiosk {
+   │             ----- Module previously defined here, with '(sui=0x2)::kiosk'
+
+error[E02001]: duplicate declaration, item, or annotation
   ┌─ build/mv_interfaces/04198760708772105478/0000000000000000000000000000000000000000000000000000000000000002/address.move:1:13
   │
 1 │ module 0x2::address {
@@ -591,6 +569,17 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 6 │ module std::address {
   │             ------- Module previously defined here, with '(std=0x1)::address'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ ../sui-framework/packages/sui-framework/sources/object.move:5:13
+  │
+5 │ module sui::object {
+  │             ^^^^^^ Duplicate definition for module '(sui=0x2)::object'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object.move:5:13
+  │
+5 │ module sui::object {
+  │             ------ Module previously defined here, with '(sui=0x2)::object'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/pay.move:5:13
@@ -911,6 +900,17 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 5 │ module sui::types {
   │             ----- Module previously defined here, with '(sui=0x2)::types'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ ../sui-framework/packages/sui-framework/sources/balance.move:7:13
+  │
+7 │ module sui::balance {
+  │             ^^^^^^^ Duplicate definition for module '(sui=0x2)::balance'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/balance_tests.move:7:13
+  │
+7 │ module sui::balance {
+  │             ------- Module previously defined here, with '(sui=0x2)::balance'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ build/mv_interfaces/04198760708772105478/0000000000000000000000000000000000000000000000000000000000000001/debug.move:1:13

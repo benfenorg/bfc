@@ -17,7 +17,7 @@ export function CardItem({ title, children }: CardItemProps) {
 				'p-2.5 flex flex-col flex-nowrap max-w-full gap-1.25 flex-1 justify-center items-center'
 			}
 		>
-			<Text variant="body" weight="normal" color="obc-text2">
+			<Text variant="body" weight="normal" color="bfc-text2">
 				{title}
 			</Text>
 

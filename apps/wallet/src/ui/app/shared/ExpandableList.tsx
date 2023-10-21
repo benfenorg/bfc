@@ -36,13 +36,13 @@ export function ExpandableList({ items, defaultItemsToShow }: ExpandableListProp
 							<ChevronDown14
 								height={14}
 								width={14}
-								className={clsx('text-obc-text2', {
+								className={clsx('text-bfc-text2', {
 									'rotate-180': showAll,
 								})}
 							/>
 						}
 					>
-						<Text variant="body" color="obc-text2" weight="normal">
+						<Text variant="body" color="bfc-text2" weight="normal">
 							{showAll ? 'Show Less' : 'Show All'}
 						</Text>
 					</Link>

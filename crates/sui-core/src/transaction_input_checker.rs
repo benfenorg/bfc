@@ -125,7 +125,7 @@ mod checked {
             TransactionKind::ProgrammableTransaction(_) => (),
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeObcRound(_)
+            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::ConsensusCommitPrologue(_) => {
                 return Err(UserInputError::Unsupported(format!(
                     "Transaction kind {} is not supported in dev-inspect",
@@ -174,7 +174,7 @@ mod checked {
 
         let tx_data = &cert.data().intent_message().value;
         let input_object_kinds = tx_data.input_objects()?;
-        let input_object_data: Vec<Object> = if tx_data.is_change_epoch_tx()||tx_data.is_change_obc_round_tx() {
+        let input_object_data: Vec<Object> = if tx_data.is_change_epoch_tx()||tx_data.is_change_bfc_round_tx() {
             // When changing the epoch, we update a the system object, which is shared, without going
             // through sequencing, so we must bypass the sequence checks here.
             store.check_input_objects(&input_object_kinds, epoch_store.protocol_config())?

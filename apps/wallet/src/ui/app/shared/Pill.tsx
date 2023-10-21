@@ -11,7 +11,7 @@ const styles = cva(
 		'inline-block outline-none transition no-underline bg-transparent border-none',
 		'cursor-pointer',
 		'truncate leading-tight uppercase text-bodySmall font-medium',
-		'disabled:text-obc-text3',
+		'disabled:text-bfc-text3',
 	],
 	{
 		variants: {
@@ -20,8 +20,8 @@ const styles = cva(
 				false: '',
 			},
 			dark: {
-				true: 'text-obc-text1 font-medium',
-				false: 'text-obc-text1 font-medium',
+				true: 'text-bfc-text1 font-medium',
+				false: 'text-bfc-text1 font-medium',
 			},
 		},
 		defaultVariants: {

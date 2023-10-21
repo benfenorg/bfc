@@ -31,7 +31,7 @@
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
 <b>use</b> <a href="">0x1::string</a>;
 <b>use</b> <a href="">0x1::type_name</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/obc.md#0x2_obc">0x2::obc</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
@@ -588,7 +588,7 @@ open / close position
         vault_id: _position_manager.vault_id,
         index: _position_manager.position_index,
         coin_type_a: <a href="_get">type_name::get</a>&lt;StableCoinType&gt;(),
-        coin_type_b: <a href="_get">type_name::get</a>&lt;OBC&gt;(),
+        coin_type_b: <a href="_get">type_name::get</a>&lt;BFC&gt;(),
         name: <a href="position.md#0xc8_position_new_position_name">new_position_name</a>(_position_manager.position_index, _vault_index),
         tick_lower_index: _tick_lower,
         tick_upper_index: _tick_upper,

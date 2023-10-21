@@ -37,9 +37,9 @@ pub const SUI_SYSTEM_CREATE: Symbol = symbol!("create");
 pub const CLOCK_MODULE_NAME: Symbol = symbol!("clock");
 pub const CLOCK_TYPE_NAME: Symbol = symbol!("Clock");
 pub const SUI_CLOCK_CREATE: Symbol = symbol!("create");
-pub const OBC_SYSTEM_ADDR_NAME: Symbol = symbol!("obc_system");
-pub const OBC_SYSTEM_MODULE_NAME: Symbol = symbol!("obc_system");
-pub const OBC_SYSTEM_CREATE: Symbol = symbol!("create");
+pub const BFC_SYSTEM_ADDR_NAME: Symbol = symbol!("bfc_system");
+pub const BFC_SYSTEM_MODULE_NAME: Symbol = symbol!("bfc_system");
+pub const BFC_SYSTEM_CREATE: Symbol = symbol!("create");
 
 
 //**************************************************************************************************

@@ -15,9 +15,9 @@ import cl from 'classnames';
 import LoadingIndicator from '../loading/LoadingIndicator';
 
 const icons = {
-	Send: <ArrowTopRight24 className="text-obc text-body" />,
-	Receive: <ArrowTopRight24 className="text-obc text-body rotate-180" />,
-	Transaction: <ArrowTopRight24 className="text-obc text-body" />,
+	Send: <ArrowTopRight24 className="text-bfc text-body" />,
+	Receive: <ArrowTopRight24 className="text-bfc text-body rotate-180" />,
+	Transaction: <ArrowTopRight24 className="text-bfc text-body" />,
 	Staked: <WalletActionStake24 className="text-gradient-blue-start text-heading2 bg-transparent" />,
 	Unstaked: <Unstaked className="text-gradient-blue-start text-heading3" />,
 	Rewards: <Sui className="text-gradient-blue-start text-body" />,

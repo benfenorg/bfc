@@ -36,7 +36,7 @@ export function TransactionDetailCard({
 	const { data: domainName } = useResolveSuiNSName(sender);
 
 	return (
-		<div className="overflow-hidden rounded-2xl bg-obc-card px-6 py-7">
+		<div className="overflow-hidden rounded-2xl bg-bfc-card px-6 py-7">
 			<TransactionBlockCardSection>
 				<div className="flex flex-col gap-6 ">
 					{timestamp && (

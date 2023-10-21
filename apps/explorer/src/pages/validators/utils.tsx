@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type ApyByValidator, formatPercentageDisplay } from '@mysten/core';
-import { sui2ObcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@mysten/sui.js';
 import { type SuiEvent, type SuiValidatorSummary } from '@mysten/sui.js/client';
 import { Text } from '@mysten/ui';
 
@@ -51,7 +51,7 @@ export function validatorsTableData(
 					),
 					name: (
 						<Link
-							to={`/validator/${encodeURIComponent(sui2ObcAddress(validator.suiAddress))}`}
+							to={`/validator/${encodeURIComponent(sui2BfcAddress(validator.suiAddress))}`}
 							onClick={() =>
 								ampli.clickedValidatorRow({
 									sourceFlow: 'Epoch details',
@@ -107,7 +107,7 @@ export function validatorsTableData(
 					atRisk:
 						atRisk !== null ? (
 							<Tooltip
-								tip="Staked OBC is below the minimum OBC stake threshold to remain a validator."
+								tip="Staked BFC is below the minimum BFC stake threshold to remain a validator."
 								onOpen={() =>
 									ampli.activatedTooltip({
 										tooltipLabel: label,
@@ -241,7 +241,7 @@ export function validatorsSortTableData(
 					const { name, logo } = props.getValue();
 					return (
 						<Link
-							to={`/validator/${encodeURIComponent(sui2ObcAddress(props.row.original.address))}`}
+							to={`/validator/${encodeURIComponent(sui2BfcAddress(props.row.original.address))}`}
 							onClick={() =>
 								ampli.clickedValidatorRow({
 									sourceFlow: 'Epoch details',
@@ -336,7 +336,7 @@ export function validatorsSortTableData(
 					const label = 'At Risk';
 					return atRisk !== null ? (
 						<Tooltip
-							tip="Staked OBC is below the minimum OBC stake threshold to remain a validator."
+							tip="Staked BFC is below the minimum BFC stake threshold to remain a validator."
 							onOpen={() =>
 								ampli.activatedTooltip({
 									tooltipLabel: label,

@@ -22,20 +22,20 @@ export function CoinItem({ coinType, balance, isActive, usd, centerAction }: Coi
 	return (
 		<div
 			className={cl(
-				'flex gap-2.5 w-full p-2.5 justify-center items-center rounded-lg hover:bg-obc-card',
+				'flex gap-2.5 w-full p-2.5 justify-center items-center rounded-lg hover:bg-bfc-card',
 				{
-					'bg-obc-card': isActive,
+					'bg-bfc-card': isActive,
 				},
 			)}
 		>
 			<CoinIcon coinType={coinType} size={isActive ? 'sm' : 'md'} />
 			<div className="flex flex-1 gap-1.5 justify-between items-center">
 				<div className="flex flex-col">
-					<Text variant="body" color="obc-text1" weight="medium" truncate>
+					<Text variant="body" color="bfc-text1" weight="medium" truncate>
 						{coinMeta?.name || symbol} {isActive ? 'available' : ''}
 					</Text>
 					{!isActive ? (
-						<Text variant="body" color="obc-text3" weight="normal">
+						<Text variant="body" color="bfc-text3" weight="normal">
 							{symbol}
 						</Text>
 					) : null}
@@ -45,16 +45,16 @@ export function CoinItem({ coinType, balance, isActive, usd, centerAction }: Coi
 
 				<div className="flex flex-row justify-center items-center">
 					{isActive ? (
-						<Text variant="body" color="obc-text1" weight="normal">
+						<Text variant="body" color="bfc-text1" weight="normal">
 							{formatted}
 						</Text>
 					) : (
 						<div data-testid={coinType} className="flex flex-col justify-end items-end">
-							<Text variant="body" color="obc-text1" weight="normal">
+							<Text variant="body" color="bfc-text1" weight="normal">
 								{formatted} {symbol}
 							</Text>
 							{usd && (
-								<Text variant="body" color="obc-text3" weight="normal">
+								<Text variant="body" color="bfc-text3" weight="normal">
 									${usd.toLocaleString('en-US')}
 								</Text>
 							)}

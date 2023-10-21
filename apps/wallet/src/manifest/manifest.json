@@ -16,10 +16,10 @@
 		"https://fullnode.staging.sui.io/"
 	],
 	"icons": {
-		"16": "manifest/icons/obc-16.png",
-		"32": "manifest/icons/obc-32.png",
-		"48": "manifest/icons/obc-48.png",
-		"128": "manifest/icons/obc-128.png"
+		"16": "manifest/icons/bfc-16.png",
+		"32": "manifest/icons/bfc-32.png",
+		"48": "manifest/icons/bfc-48.png",
+		"128": "manifest/icons/bfc-128.png"
 	},
 	"content_scripts": [
 		{

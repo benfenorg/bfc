@@ -23,8 +23,8 @@ export function PageBackHeader({ title }: PageHeaderProps) {
 	return (
 		<div data-testid="pagebackheader">
 			<div className="mb-5 flex cursor-pointer items-center gap-2" onClick={pageBack}>
-				<ArrowLeft12 width={20} height={20} className="text-obc-text1" />
-				<Heading variant="heading4/semibold" color="obc-text1">
+				<ArrowLeft12 width={20} height={20} className="text-bfc-text1" />
+				<Heading variant="heading4/semibold" color="bfc-text1">
 					{title}
 				</Heading>
 			</div>

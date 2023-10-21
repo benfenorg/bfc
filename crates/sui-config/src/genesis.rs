@@ -71,7 +71,7 @@ pub struct TreasuryParameters {
     /// maximum state counter value
     pub max_counter_times: u32,
 
-    /// OBC requirement base point
+    /// BFC requirement base point
     pub base_point: u64,
 
     /// Initialize Price
@@ -388,7 +388,7 @@ pub struct GenesisChainParameters {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
-pub struct ObcSystemParameters {
+pub struct BfcSystemParameters {
     pub chain_start_timestamp_ms: u64,
 
     pub treasury_parameters: TreasuryParameters,
@@ -501,8 +501,8 @@ impl GenesisCeremonyParameters {
         }
     }
 
-    pub fn to_obc_system_parameters(&self) -> ObcSystemParameters {
-        ObcSystemParameters {
+    pub fn to_bfc_system_parameters(&self) -> BfcSystemParameters {
+        BfcSystemParameters {
             chain_start_timestamp_ms: self.chain_start_timestamp_ms,
             treasury_parameters: TreasuryParameters::default(),
         }

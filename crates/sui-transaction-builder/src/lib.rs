@@ -31,9 +31,9 @@ use sui_types::sui_system_state::SUI_SYSTEM_MODULE_NAME;
 use sui_types::transaction::{
     Argument, CallArg, Command, InputObjectKind, ObjectArg, TransactionData, TransactionKind,
 };
-use sui_types::{coin, fp_ensure, OBC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+use sui_types::{coin, fp_ensure, BFC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 use tracing::info;
-use sui_types::obc_system_state::OBC_SYSTEM_MODULE_NAME;
+use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 #[async_trait]
 pub trait DataReader {
@@ -817,14 +817,14 @@ impl TransactionBuilder {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
             let arguments = vec![
-                builder.input(CallArg::OBC_SYSTEM_MUT).unwrap(),
+                builder.input(CallArg::BFC_SYSTEM_MUT).unwrap(),
                 builder
                     .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref)))
                     .unwrap(),
             ];
             builder.command(Command::move_call(
-                OBC_SYSTEM_PACKAGE_ID,
-                OBC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
                 EXCHANGE_GAS_FUN_NAME.to_owned(),
                 vec![],
                 arguments,
@@ -863,14 +863,14 @@ impl TransactionBuilder {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
             let arguments = vec![
-                builder.input(CallArg::OBC_SYSTEM_MUT).unwrap(),
+                builder.input(CallArg::BFC_SYSTEM_MUT).unwrap(),
                 builder
                     .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable_ref))).unwrap(),
                 builder.pure(rate).unwrap(),
             ];
             builder.command(Command::move_call(
-                OBC_SYSTEM_PACKAGE_ID,
-                OBC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
                 ADD_GAS_COIN_FUN_NAME.to_owned(),
                 vec![],
                 arguments,

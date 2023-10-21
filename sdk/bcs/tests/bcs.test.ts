@@ -122,7 +122,7 @@ describe('BCS: Primitives', () => {
 		let data = bcs.de('Wallet', fromB64(sample));
 
 		expect(data.kitties).toHaveLength(2);
-		expect(data.owner).toEqual('OBC00000000000000000000000000c0ffee730f');
+		expect(data.owner).toEqual('BFC00000000000000000000000000c0ffee730f');
 	});
 
 	it('should support growing size', () => {

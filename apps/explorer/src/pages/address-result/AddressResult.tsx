@@ -39,17 +39,17 @@ function AddressResult({ address }: { address: string }) {
 		<div className="space-y-12">
 			<PageHeader type="Address" title={address} subtitle={domainName} />
 			<div>
-				<div className="border-b border-obc-border pb-4 md:mt-12">
+				<div className="border-b border-bfc-border pb-4 md:mt-12">
 					<Heading color="steel-darker" variant="heading6/medium">
 						Owned Objects
 					</Heading>
 				</div>
 				<ErrorBoundary>
-					<div className="flex flex-col gap-10 border-b border-obc-border md:flex-row">
+					<div className="flex flex-col gap-10 border-b border-bfc-border md:flex-row">
 						<div className="flex-1  overflow-hidden pb-3">
 							<OwnedCoins id={address} />
 						</div>
-						<div className="hidden w-px bg-obc-border md:block" />
+						<div className="hidden w-px bg-bfc-border md:block" />
 						<div className="flex-1  overflow-hidden pb-3">
 							<OwnedObjects id={address} />
 						</div>

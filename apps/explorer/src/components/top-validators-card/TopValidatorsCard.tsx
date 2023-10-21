@@ -66,7 +66,7 @@ export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
 	}
 
 	return (
-		<div className="obc-table-container">
+		<div className="bfc-table-container">
 			{(isLoading || validatorsEventsLoading) && (
 				<PlaceholderTable
 					rowCount={limit || NUMBER_OF_VALIDATORS}
@@ -79,7 +79,7 @@ export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
 			{isSuccess && tableData?.data && (
 				<div>
 					<TableCard data={tableData.data} columns={tableData.columns} />
-					<div className="mt-3 flex justify-between bg-obc-card p-3.5">
+					<div className="mt-3 flex justify-between bg-bfc-card p-3.5">
 						<Link to="/validators">
 							<div className="flex items-center gap-2">
 								View all

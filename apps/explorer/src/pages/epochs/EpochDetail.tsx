@@ -152,7 +152,7 @@ export default function EpochDetail() {
 						</TabsContent>
 						<TabsContent value="validators">
 							{validatorsTable ? (
-								<div className="obc-table-container">
+								<div className="bfc-table-container">
 									<TableCard data={validatorsTable.data} columns={validatorsTable.columns} />
 								</div>
 							) : null}

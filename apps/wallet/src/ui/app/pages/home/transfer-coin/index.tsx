@@ -149,7 +149,7 @@ function TransferCoinPage() {
 				) : (
 					<>
 						<div className="mb-7.5 flex flex-col gap-1.25">
-							<Text variant="body" color="obc-text2" weight="normal">
+							<Text variant="body" color="bfc-text2" weight="normal">
 								Select all Coins
 							</Text>
 							<ActiveCoinsCard activeCoinType={coinType} />

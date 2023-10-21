@@ -44,7 +44,7 @@ export function StakeButton() {
 					target="_blank"
 					rel="noreferrer noopener"
 				>
-					Install OBC Wallet to stake OBC
+					Install BenFen Wallet to stake BFC
 				</a>
 			</Button>
 		);
@@ -54,7 +54,7 @@ export function StakeButton() {
 		return (
 			<ConnectButton
 				className="!border !border-solid !border-steel-dark !bg-transparent !px-4 !py-3 !text-body !font-semibold !text-steel-dark !shadow-none"
-				connectText="Stake OBC"
+				connectText="Stake BFC"
 			/>
 		);
 	}
@@ -68,7 +68,7 @@ export function StakeButton() {
 					connect(stakeSupportedWallets[0].name);
 				}}
 			>
-				Stake OBC on a supported wallet
+				Stake BFC on a supported wallet
 			</Button>
 		);
 	}
@@ -82,7 +82,7 @@ export function StakeButton() {
 				});
 			}}
 		>
-			Stake OBC
+			Stake BFC
 		</Button>
 	);
 }

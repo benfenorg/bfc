@@ -75,10 +75,10 @@ pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
-pub mod base_types_obc;
+pub mod base_types_bfc;
 pub mod epoch_data;
-pub mod obc_system_state;
-mod obc_base_types;
+pub mod bfc_system_state;
+mod bfc_base_types;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
@@ -115,13 +115,13 @@ pub const SUI_CLOCK_OBJECT_ID: ObjectID = ObjectID::from_address(SUI_CLOCK_ADDRE
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 
-/// 0x7: hardcoded object ID for the obc system.
-pub const OBC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
-pub const OBC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(OBC_SYSTEM_ADDRESS);
+/// 0x7: hardcoded object ID for the bfc system.
+pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
+pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_ADDRESS);
 
-pub const OBC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
-pub const OBC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(OBC_SYSTEM_STATE_ADDRESS);
-pub const OBC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+pub const BFC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
+pub const BFC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_STATE_ADDRESS);
+pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 
 /// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries
@@ -133,7 +133,7 @@ pub fn is_system_package(id: ObjectID) -> bool {
             | SUI_FRAMEWORK_PACKAGE_ID
             | SUI_SYSTEM_PACKAGE_ID
             | DEEPBOOK_PACKAGE_ID
-        |OBC_SYSTEM_PACKAGE_ID
+        |BFC_SYSTEM_PACKAGE_ID
     )
 }
 
@@ -171,7 +171,7 @@ fn resolve_address(addr: &str) -> Option<AccountAddress> {
         "std" => Some(MOVE_STDLIB_ADDRESS),
         "sui" => Some(SUI_FRAMEWORK_ADDRESS),
         "sui_system" => Some(SUI_SYSTEM_ADDRESS),
-        "obc_system" => Some(OBC_SYSTEM_ADDRESS),
+        "bfc_system" => Some(BFC_SYSTEM_ADDRESS),
         _ => None,
     }
 }

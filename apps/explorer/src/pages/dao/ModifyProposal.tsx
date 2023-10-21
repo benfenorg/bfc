@@ -39,10 +39,10 @@ export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::modify_proposal`,
+				target: `0xc8::bfc_system::modify_proposal`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(proposal.proposal_uid),
 					tx.pure(status),
 					tx.object(ADDRESS.CLOCK),

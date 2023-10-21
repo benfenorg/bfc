@@ -23,13 +23,13 @@ fn main() {
     let deepbook_path = packages_path.join("deepbook");
     let sui_system_path = packages_path.join("sui-system");
     let sui_framework_path = packages_path.join("sui-framework");
-    let obc_system_path = packages_path.join("obc-system");
+    let bfc_system_path = packages_path.join("bfc-system");
     let move_stdlib_path = packages_path.join("move-stdlib");
 
     let deepbook_path_clone = deepbook_path.clone();
     let sui_system_path_clone = sui_system_path.clone();
     let sui_framework_path_clone = sui_framework_path.clone();
-    let obc_system_path_clone = obc_system_path.clone();
+    let bfc_system_path_clone = bfc_system_path.clone();
 
     Builder::new()
         .stack_size(16 * 1024 * 1024) // build_packages require bigger stack size on windows.
@@ -38,7 +38,7 @@ fn main() {
                 deepbook_path_clone,
                 sui_system_path_clone,
                 sui_framework_path_clone,
-                obc_system_path_clone,
+                bfc_system_path_clone,
                 out_dir,
             )
         })
@@ -81,11 +81,11 @@ fn main() {
     );
     println!(
         "cargo:rerun-if-changed={}",
-         obc_system_path.join("Move.toml").display()
+         bfc_system_path.join("Move.toml").display()
     );
     println!(
         "cargo:rerun-if-changed={}",
-         obc_system_path.join("sources").display()
+         bfc_system_path.join("sources").display()
     );
 }
 
@@ -93,7 +93,7 @@ fn build_packages(
     deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
-    obc_system_path: PathBuf,
+    bfc_system_path: PathBuf,
     out_dir: PathBuf,
 ) {
     let config = MoveBuildConfig {
@@ -107,13 +107,13 @@ fn build_packages(
         deepbook_path.clone(),
         sui_system_path.clone(),
         sui_framework_path.clone(),
-        obc_system_path.clone(),
+        bfc_system_path.clone(),
         out_dir.clone(),
         "deepbook",
         "sui-system",
         "sui-framework",
         "move-stdlib",
-        "obc-system",
+        "bfc-system",
         config,
     );
     let config = MoveBuildConfig {
@@ -126,13 +126,13 @@ fn build_packages(
         deepbook_path,
         sui_system_path,
         sui_framework_path,
-        obc_system_path,
+        bfc_system_path,
         out_dir,
         "deepbook-test",
         "sui-system-test",
         "sui-framework-test",
         "move-stdlib-test",
-        "obc-system-test",
+        "bfc-system-test",
         config,
     );
 }
@@ -141,14 +141,14 @@ fn build_packages_with_move_config(
     deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
-    obc_system_path: PathBuf,
+    bfc_system_path: PathBuf,
     out_dir: PathBuf,
 
     deepbook_dir: &str,
     system_dir: &str,
     framework_dir: &str,
     stdlib_dir: &str,
-    obc_system_dir: &str,
+    bfc_system_dir: &str,
     config: MoveBuildConfig,
 ) {
     let framework_pkg = BuildConfig {
@@ -160,13 +160,13 @@ fn build_packages_with_move_config(
     .build(sui_framework_path)
     .unwrap();
 
-    let obc_system_pkg = BuildConfig {
+    let bfc_system_pkg = BuildConfig {
                config:config.clone(),
                 run_bytecode_verifier: true,
                 print_diags_to_stderr: false,
         lint: false,
     }
-        .build(obc_system_path)
+        .build(bfc_system_path)
                 .unwrap();
 
     let system_pkg = BuildConfig {
@@ -191,13 +191,13 @@ fn build_packages_with_move_config(
     let sui_framework = framework_pkg.get_sui_framework_modules();
     let deepbook = deepbook_pkg.get_deepbook_modules();
     let move_stdlib = framework_pkg.get_stdlib_modules();
-    let obc_system = obc_system_pkg.get_obc_system_modules();
+    let bfc_system = bfc_system_pkg.get_bfc_system_modules();
 
     serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
     serialize_modules_to_file(sui_framework, &out_dir.join(framework_dir)).unwrap();
     serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
     serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
-    serialize_modules_to_file(obc_system, &out_dir.join(obc_system_dir)).unwrap();
+    serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
 
     // write out generated docs
     // TODO: remove docs of deleted files
@@ -216,7 +216,7 @@ fn build_packages_with_move_config(
         dst_path.push(fname);
         fs::write(dst_path, doc).unwrap();
     }
-    for (fname, doc) in obc_system_pkg.package.compiled_docs.unwrap() {
+    for (fname, doc) in bfc_system_pkg.package.compiled_docs.unwrap() {
         let mut dst_path = PathBuf::from(DOCS_DIR);
                dst_path.push(fname);
                fs::write(dst_path, doc).unwrap();

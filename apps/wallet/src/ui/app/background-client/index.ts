@@ -498,7 +498,7 @@ export class BackgroundClient {
 	}
 
 	private createPortStream() {
-		this._portStream = PortStream.connectToBackgroundService('obc_ui<->background');
+		this._portStream = PortStream.connectToBackgroundService('bfc_ui<->background');
 		this._portStream.onDisconnect.subscribe(() => {
 			this.createPortStream();
 		});

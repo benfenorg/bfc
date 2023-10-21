@@ -15,7 +15,7 @@ test.skip('staking', async ({ page, extensionUrl }) => {
 	await page.getByTestId('faucet-request-button').click();
 	await expect(page.getByTestId('coin-balance')).not.toHaveText('0SUI');
 
-	await page.getByText(/Stake and Earn OBC/).click();
+	await page.getByText(/Stake and Earn BFC/).click();
 	await page.getByTestId('validator-list-item').first().click();
 	await page.getByTestId('select-validator-cta').click();
 	await page.getByTestId('stake-amount-input').fill(STAKE_AMOUNT.toString());
@@ -27,9 +27,9 @@ test.skip('staking', async ({ page, extensionUrl }) => {
 	await expect(page.getByTestId('transaction-status')).toHaveText('Transaction Success');
 
 	await page.getByTestId('close-icon').click();
-	await expect(page.getByText(`Currently Staked${STAKE_AMOUNT} OBC`)).toBeVisible();
+	await expect(page.getByText(`Currently Staked${STAKE_AMOUNT} BFC`)).toBeVisible();
 
-	await page.getByText(`Currently Staked${STAKE_AMOUNT} OBC`).click();
+	await page.getByText(`Currently Staked${STAKE_AMOUNT} BFC`).click();
 	await expect(page.getByText(/Starts Earning now/)).toBeVisible({
 		timeout: TEST_TIMEOUT,
 	});

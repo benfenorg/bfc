@@ -54,20 +54,20 @@ fn test_to_json_value() {
     let addr = move_event.coins[0].id().to_string();
     let addr_without_pre = addr.get(2..).unwrap();
     let checksum = get_check_sum(addr_without_pre.to_string());
-    let expected_addr_obc = format!("OBC{}{}", addr_without_pre, checksum);
+    let expected_addr_bfc = format!("BFC{}{}", addr_without_pre, checksum);
 
-    print!("{}", expected_addr_obc);
+    print!("{}", expected_addr_bfc);
     assert_eq!(
-        Some(&json!(expected_addr_obc)),
+        Some(&json!(expected_addr_bfc)),
         json_value.pointer("/coins/0/id/id")
     );
 
     let creator_addr = format!("{:#x}", move_event.creator);
     let creator_addr_without_pre = creator_addr.get(2..).unwrap();
     let checksum = get_check_sum(creator_addr_without_pre.to_string());
-    let expected_addr_obc = format!("OBC{}{}", creator_addr_without_pre, checksum);
+    let expected_addr_bfc = format!("BFC{}{}", creator_addr_without_pre, checksum);
     assert_eq!(
-        Some(&json!(expected_addr_obc)),
+        Some(&json!(expected_addr_bfc)),
         json_value.pointer("/creator")
     );
     assert_eq!(Some(&json!("100")), json_value.pointer("/data/0"));

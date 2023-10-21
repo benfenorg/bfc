@@ -110,7 +110,7 @@ function TransactionBlocksForAddress({
 				)}
 			</div>
 
-			<div className="obc-table-container mt-5 flex flex-col space-y-5 text-left">
+			<div className="bfc-table-container mt-5 flex flex-col space-y-5 text-left">
 				{isLoading || isFetching || isFetchingNextPage || !cardData ? (
 					<PlaceholderTable
 						rowCount={DEFAULT_TRANSACTIONS_LIMIT}
@@ -124,7 +124,7 @@ function TransactionBlocksForAddress({
 					</div>
 				)}
 
-				<div className="flex justify-between bg-obc-card p-3.5">
+				<div className="flex justify-between bg-bfc-card p-3.5">
 					{(hasNextPage || (data && data?.pages.length > 1)) && (
 						<Pagination
 							onNext={() => {

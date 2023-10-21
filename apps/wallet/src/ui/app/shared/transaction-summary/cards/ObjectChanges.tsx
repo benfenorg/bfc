@@ -27,9 +27,9 @@ import { Text } from '_src/ui/app/shared/text';
 
 function ChevronDown({ expanded }: { expanded: boolean }) {
 	return expanded ? (
-		<ChevronDown14 className="text-obc-text2" />
+		<ChevronDown14 className="text-bfc-text2" />
 	) : (
-		<ChevronRight14 className="text-obc-text2" />
+		<ChevronRight14 className="text-bfc-text2" />
 	);
 }
 
@@ -51,14 +51,14 @@ export function ObjectDetail({
 			{({ open }) => (
 				<div className="px-2.5 pb-2.5 flex flex-col gap-2.5">
 					<div className="grid grid-cols-2 overflow-auto cursor-pointer">
-						<Disclosure.Button className="flex items-center cursor-pointer border-none bg-transparent ouline-none p-0 gap-1 text-obc-text1 select-none">
+						<Disclosure.Button className="flex items-center cursor-pointer border-none bg-transparent ouline-none p-0 gap-1 text-bfc-text1 select-none">
 							<Text variant="body" weight="normal">
 								Object
 							</Text>
 							{open ? (
-								<ChevronDown14 className="text-obc-text2" />
+								<ChevronDown14 className="text-bfc-text2" />
 							) : (
-								<ChevronRight14 className="text-obc-text2" />
+								<ChevronRight14 className="text-bfc-text2" />
 							)}
 						</Disclosure.Button>
 						{change.objectId && (
@@ -68,7 +68,7 @@ export function ObjectDetail({
 									objectID={change.objectId}
 									className="no-underline"
 								>
-									<Text variant="body" weight="medium" color="obc-text1" truncate>
+									<Text variant="body" weight="medium" color="bfc-text1" truncate>
 										{formatAddress(change.objectId)}
 									</Text>
 								</ExplorerLink>
@@ -78,7 +78,7 @@ export function ObjectDetail({
 					<Disclosure.Panel>
 						<div className="flex flex-col gap-2.5">
 							<div className="grid grid-cols-2 overflow-auto relative">
-								<Text variant="body" weight="normal" color="obc-text2">
+								<Text variant="body" weight="normal" color="bfc-text2">
 									Package
 								</Text>
 								<div className="flex justify-end">
@@ -87,14 +87,14 @@ export function ObjectDetail({
 										objectID={packageId}
 										className="no-underline justify-self-end overflow-auto"
 									>
-										<Text variant="body" weight="medium" color="obc-text1" truncate>
+										<Text variant="body" weight="medium" color="bfc-text1" truncate>
 											{packageId}
 										</Text>
 									</ExplorerLink>
 								</div>
 							</div>
 							<div className="grid grid-cols-2 overflow-auto">
-								<Text variant="body" weight="normal" color="obc-text2">
+								<Text variant="body" weight="normal" color="bfc-text2">
 									Module
 								</Text>
 								<div className="flex justify-end">
@@ -104,14 +104,14 @@ export function ObjectDetail({
 										moduleName={moduleName}
 										className="no-underline justify-self-end overflow-auto"
 									>
-										<Text variant="body" weight="medium" color="obc-text1" truncate>
+										<Text variant="body" weight="medium" color="bfc-text1" truncate>
 											{moduleName}
 										</Text>
 									</ExplorerLink>
 								</div>
 							</div>
 							<div className="grid grid-cols-2 overflow-auto">
-								<Text variant="body" weight="normal" color="obc-text2">
+								<Text variant="body" weight="normal" color="bfc-text2">
 									Type
 								</Text>
 								<div className="flex justify-end">
@@ -121,7 +121,7 @@ export function ObjectDetail({
 										moduleName={moduleName}
 										className="no-underline justify-self-end overflow-auto"
 									>
-										<Text variant="body" weight="medium" color="obc-text1" truncate>
+										<Text variant="body" weight="medium" color="bfc-text1" truncate>
 											{typeName}
 										</Text>
 									</ExplorerLink>
@@ -157,10 +157,10 @@ export function ObjectChangeEntry({ changes, type }: ObjectChangeEntryProps) {
 										as="div"
 										className="mt-2.5 h-[34px] py-2 px-2.5 flex items-center w-full gap-1.25 cursor-pointer"
 									>
-										<Text variant="body" weight="medium" color="obc-text1">
+										<Text variant="body" weight="medium" color="bfc-text1">
 											{getObjectChangeLabel(type)}
 										</Text>
-										<div className="h-px bg-obc-border w-full" />
+										<div className="h-px bg-bfc-border w-full" />
 										<ChevronDown expanded={open} />
 									</Disclosure.Button>
 									<Disclosure.Panel as="div" className="gap-2.5 flex flex-col">

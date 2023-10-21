@@ -39,6 +39,9 @@ CallArg:
       Object:
         NEWTYPE:
           TYPENAME: ObjectArg
+ChangeBfcRound:
+  STRUCT:
+    - bfc_round: U64
 ChangeEpoch:
   STRUCT:
     - epoch: U64
@@ -57,9 +60,6 @@ ChangeEpoch:
                 SEQ: U8
             - SEQ:
                 TYPENAME: ObjectID
-ChangeObcRound:
-  STRUCT:
-    - obc_round: U64
 CheckpointCommitment:
   ENUM:
     0:
@@ -852,9 +852,9 @@ TransactionKind:
         NEWTYPE:
           TYPENAME: ConsensusCommitPrologue
     4:
-      ChangeObcRound:
+      ChangeBfcRound:
         NEWTYPE:
-          TYPENAME: ChangeObcRound
+          TYPENAME: ChangeBfcRound
 TypeArgumentError:
   ENUM:
     0:

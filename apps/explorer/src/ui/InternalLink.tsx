@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { isSuiNSName } from '@mysten/core';
-import { sui2ObcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@mysten/sui.js';
 import { formatAddress, formatDigest } from '@mysten/sui.js/utils';
 import { type ReactNode } from 'react';
 
@@ -33,9 +33,9 @@ function createInternalLink<T extends string>(
 		if (['address', 'object', 'validator'].includes(base)) {
 			const queryIndex = id.indexOf('?');
 			if (queryIndex === -1) {
-				converted = sui2ObcAddress(id);
+				converted = sui2BfcAddress(id);
 			} else {
-				converted = sui2ObcAddress(id.slice(0, queryIndex)) + id.slice(queryIndex);
+				converted = sui2BfcAddress(id.slice(0, queryIndex)) + id.slice(queryIndex);
 			}
 		}
 		const truncatedAddress = noTruncate ? converted : formatter(converted);

@@ -23,7 +23,7 @@ pub struct ProposalStatus{
 }
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
-pub struct OBCDaoAction{
+pub struct BFCDaoAction{
     pub action_id: u64,
     /// Name for the action
     pub name: String,
@@ -50,7 +50,7 @@ pub struct ProposalInfo{
     /// how many votes to reach to make the proposal pass.
     pub quorum_votes: u64,
     /// proposal action.
-    pub action: OBCDaoAction,
+    pub action: BFCDaoAction,
     version_id: u64,
 }
 

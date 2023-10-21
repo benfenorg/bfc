@@ -21,7 +21,7 @@ function Event({ event, divider }: { event: SuiEvent; divider: boolean }) {
 	const objectLinkLabel = [formatAddress(address), module, name].join('::');
 
 	return (
-		<div className="mb-5 rounded-md border border-obc-border px-2 py-5">
+		<div className="mb-5 rounded-md border border-bfc-border px-2 py-5">
 			<div className="flex flex-col gap-3">
 				<DescriptionItem title="Type" align="start" labelWidth="sm">
 					<Text variant="pBody/medium" color="steel-darker">

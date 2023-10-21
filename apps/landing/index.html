@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>BenFen Landing</title>
+	</head>
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			@apply bg-bfc-text1;
+		}
+	</style>
+	<body>
+		<div class="flex flex-col items-stretch max-w-[1100px] my-0 mx-auto">
+			{{> header}}
+			<div class="mt-[88px] self-center w-[755px] flex flex-col items-center">
+				<img class="h-[74px]" src="/images/logo-dark.svg" />
+				<div class="mt-20 text-[64px]/[normal] font-bold text-white text-center">
+					Empowering
+					<span
+						class="bg-clip-text"
+						style="
+							background-image: linear-gradient(
+								90deg,
+								#294e42 6.93%,
+								#68cda8 28.26%,
+								#66bde2 51.53%,
+								#d46661 100%
+							);
+							-webkit-text-fill-color: transparent;
+						"
+						>&nbsp;Web 3.0</span
+					>
+					with Speed, Scalability, and Security
+				</div>
+				<div class="mt-10 text-heading4/[26px] font-medium text-bfc-text3">
+					Unleash the Web 3.0 Future with BenFen: Faster, Safer, Smarter
+				</div>
+			</div>
+			<div class="mt-[60px] flex items-center justify-center gap-5 text-bodyLarge font-medium">
+				<a
+					class="w-[174px] h-[40px] flex items-center justify-center gap-2.5 bg-white rounded-lg text-bfc cursor-pointer"
+					>Start Building <img src="/images/arrow-right-dark.svg"
+				/></a>
+				<a
+					class="w-[134px] h-[40px] flex items-center justify-center gap-2.5 rounded-lg border border-solid border-[rgba(255,255,255,0.5)] text-white cursor-pointer"
+					>Explore <img src="/images/arrow-up-right.svg"
+				/></a>
+			</div>
+			<div class="mt-[137px] self-center w-[600px] flex flex-col items-center gap-7.5">
+				<div
+					class="p-2 rounded-full border-[3px] border-solid border-[#868686] shadow-[0px_8px_16px_0px_rgba(0,0,0,0.25)]"
+				>
+					<img class="w-7.5 h-7.5" src="/images/logo-dark.svg" />
+				</div>
+				<div class="text-bodyLarge/[22px] text-white text-center">
+					Discover the revolutionary OB Stablecoin, a cutting-edge, dynamic stablecoin model rooted
+					in the innovative Uniswap V3 framework. Seamlessly collateralize and acquire a diverse
+					range of stablecoins with OB core tokens. Employing an adaptable mechanism to navigate
+					market shifts and deliver a secure and streamlined digital asset trading encounter. OB
+					Stablecoin: fortifying the worth of your cryptocurrency assets.
+				</div>
+			</div>
+			<div class="mt-[162px] mb-[411px] flex justify-center gap-7.5">
+				<div class="flex flex-col items-start w-[500px] p-[50px] rounded-xl bg-white">
+					<div class="flex items-center gap-1.25">
+						<img class="w-[23px]" src="/images/logo-light.svg" />
+						<img class="w-[50px]" src="/images/benfen-light.svg" />
+						<div class="rounded-[5px] text-bodyLarge/[22px] text-[#c3c3cf]">Station</div>
+					</div>
+					<div class="my-5 w-full h-px bg-[rgba(0,0,0,0.30)]"></div>
+					<div class="text-bodyLarge/[22px] text-bfc">
+						The BenFen plugin wallet is a sophisticated browser extension wallet designed to
+						efficiently manage and securely store assets across the entire BenFen network, providing
+						you with the following delightful experiencesThe BenFen plugin wallet is a sophisticated
+						browser extension wallet designed to efficiently manage and securely store assets across
+						the entire BenFen network, providing you with the following delightful experiences
+					</div>
+					<a
+						class="mt-7.5 px-10 h-10 flex items-center p-2.5 rounded-lg bg-bfc text-body/[18px] font-medium text-white cursor-pointer"
+						>View More <img src="/images/arrow-right-light.svg"
+					/></a>
+				</div>
+				<div class="flex flex-col items-start w-[500px] p-[50px] rounded-xl bg-[#5036f1]">
+					<img src="/images/logo-openblock.svg" />
+					<div class="my-5 w-full h-px bg-[rgba(255,255,255,0.30)]"></div>
+					<div class="text-bodyLarge/[22px] text-white">
+						OpenBlock is an outstanding and reliable non-custodial MPC wallet that provides you with
+						the following remarkable experiences:The BenFen plugin wallet is a sophisticated browser
+						extension wallet designed to efficiently manage and securely store assets across the
+						entire BenFen network, providing you with the following delightful experiencesThe BenFen
+						plugin wallet is a sophisticated browser extension wallet designed to efficiently manage
+						and securely store assets across the entire BenFen network, providing you with the
+						following delightful experiences
+					</div>
+					<a
+						class="mt-7.5 px-10 h-10 flex items-center p-2.5 rounded-lg bg-bfc text-body/[18px] font-medium text-white cursor-pointer"
+						>View More <img src="/images/arrow-right-light.svg"
+					/></a>
+				</div>
+			</div>
+			{{> footer}}
+		</div>
+		<script type="module" src="./src/main.ts"></script>
+	</body>
+</html>

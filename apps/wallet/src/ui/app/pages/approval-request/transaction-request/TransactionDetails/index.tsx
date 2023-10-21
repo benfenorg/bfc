@@ -16,7 +16,7 @@ interface Props {
 
 const Tab = (props: TabProps<'div'>) => (
 	<HeadlessTab
-		className="border-0 border-b border-transparent ui-selected:border-obc-text1 text-obc-text2 p-0 pb-2 -mb-px border-solid ui-selected:text-obc-text1 text-body font-semibold bg-transparent outline-none cursor-pointer"
+		className="border-0 border-b border-transparent ui-selected:border-bfc-text1 text-bfc-text2 p-0 pb-2 -mb-px border-solid ui-selected:text-bfc-text1 text-body font-semibold bg-transparent outline-none cursor-pointer"
 		{...props}
 	/>
 );
@@ -29,13 +29,13 @@ export function TransactionDetails({ sender, transaction }: Props) {
 	return (
 		<SummaryCard header="Transaction Details" initialExpanded>
 			{isLoading || isError ? (
-				<div className="ml-0 text-obc-text1 text-body font-medium">
+				<div className="ml-0 text-bfc-text1 text-body font-medium">
 					{isLoading ? 'Gathering data...' : "Couldn't gather data"}
 				</div>
 			) : transactionData ? (
 				<div>
 					<HeadlessTab.Group>
-						<HeadlessTab.List className="flex gap-6 border-0 border-b border-solid border-obc-border mb-2.5">
+						<HeadlessTab.List className="flex gap-6 border-0 border-b border-solid border-bfc-border mb-2.5">
 							{!!transactionData.transactions.length && <Tab>Transactions</Tab>}
 							{!!transactionData.inputs.length && <Tab>Inputs</Tab>}
 						</HeadlessTab.List>

@@ -6,11 +6,11 @@ module sui_system::validator_set {
     use std::vector;
 
     use sui::balance::{Self, Balance};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator, staking_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedObc, pool_id};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedBfc, pool_id};
     use sui::object::{Self, ID};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
@@ -290,9 +290,9 @@ module sui_system::validator_set {
     public(friend) fun request_add_stake(
         self: &mut ValidatorSet,
         validator_address: address,
-        stake: Balance<OBC>,
+        stake: Balance<BFC>,
         ctx: &mut TxContext,
-    ) : StakedObc {
+    ) : StakedBfc {
         let sui_amount = balance::value(&stake);
         assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
         let validator = get_candidate_or_active_validator_mut(self, validator_address);
@@ -307,9 +307,9 @@ module sui_system::validator_set {
     ///    the stake and any rewards corresponding to it will be immediately processed.
     public(friend) fun request_withdraw_stake(
         self: &mut ValidatorSet,
-        staked_sui: StakedObc,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext,
-    ) : Balance<OBC> {
+    ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
             if (table::contains(&self.staking_pool_mappings, staking_pool_id)) { // This is an active validator.
@@ -347,8 +347,8 @@ module sui_system::validator_set {
     ///   5. At the end, we calculate the total stake for the new epoch.
     public(friend) fun advance_epoch(
         self: &mut ValidatorSet,
-        computation_reward: &mut Balance<OBC>,
-        storage_fund_reward: &mut Balance<OBC>,
+        computation_reward: &mut Balance<BFC>,
+        storage_fund_reward: &mut Balance<BFC>,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
         reward_slashing_rate: u64,
         low_stake_threshold: u64,
@@ -1146,8 +1146,8 @@ module sui_system::validator_set {
         validators: &mut vector<Validator>,
         adjusted_staking_reward_amounts: &vector<u64>,
         adjusted_storage_fund_reward_amounts: &vector<u64>,
-        staking_rewards: &mut Balance<OBC>,
-        storage_fund_reward: &mut Balance<OBC>,
+        staking_rewards: &mut Balance<BFC>,
+        storage_fund_reward: &mut Balance<BFC>,
         ctx: &mut TxContext
     ) {
         let length = vector::length(validators);

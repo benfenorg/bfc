@@ -3,7 +3,7 @@
 
 .icon {
 	font-size: 6px;
-	color: colors.$obc-green;
+	color: colors.$bfc-green;
 }
 
 .chevron {
@@ -12,7 +12,7 @@
 
 .popup {
 	position: absolute;
-	background: colors.$obc-card;
+	background: colors.$bfc-card;
 	border-radius: 6px;
 	padding: 10px 12px;
 	z-index: 999;
@@ -34,7 +34,7 @@
 
 	&::before {
 		content: '';
-		background: colors.$obc-card;
+		background: colors.$bfc-card;
 		transform: rotate(45deg);
 		height: 12px;
 		width: 12px;
@@ -52,19 +52,19 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 6px;
-	background-color: colors.$obc-text3;
+	background-color: colors.$bfc-text3;
 	margin-right: 8px;
 	padding: 2px;
 }
 
 .origin-text {
 	@include utils.overflow-ellipsis;
-	color: colors.$obc-text2;
+	color: colors.$bfc-text2;
 }
 
 .divider {
 	height: 1px;
-	background-color: colors.$obc-text3;
+	background-color: colors.$bfc-text3;
 	margin: 8px 0;
 	align-self: stretch;
 }
@@ -73,6 +73,6 @@
 	background: none;
 	outline: none;
 	border: none;
-	color: colors.$obc-red;
+	color: colors.$bfc-red;
 	cursor: pointer;
 }

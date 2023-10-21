@@ -3,7 +3,7 @@
 
 import { useGetValidatorsApy, useGetValidatorsEvents } from '@mysten/core';
 import { useLatestSuiSystemState } from '@mysten/dapp-kit';
-import { sui2ObcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@mysten/sui.js';
 import { type SuiSystemStateSummary } from '@mysten/sui.js/client';
 import { LoadingIndicator, Text } from '@mysten/ui';
 import React, { useMemo } from 'react';
@@ -34,7 +34,7 @@ function ValidatorDetails() {
 		return (
 			data.activeValidators.find(
 				({ suiAddress, stakingPoolId }) =>
-					sui2ObcAddress(suiAddress) === id || sui2ObcAddress(stakingPoolId) === id,
+					sui2BfcAddress(suiAddress) === id || sui2BfcAddress(stakingPoolId) === id,
 			) || null
 		);
 	}, [id, data]);
@@ -134,7 +134,7 @@ function ValidatorDetails() {
 								}
 							>
 								<Text variant="bodySmall/medium">
-									Staked OBC is below the minimum OBC stake threshold to remain a validator.
+									Staked BFC is below the minimum BFC stake threshold to remain a validator.
 								</Text>
 							</Banner>
 						</div>

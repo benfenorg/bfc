@@ -314,8 +314,8 @@ function StakingCard() {
 								{!unstake && (
 									<div className="flex-1 mt-5">
 										<Collapse title="Staking Rewards" initialIsOpen>
-											<Text variant="body" color="obc-text2" weight="normal">
-												Staked OBC starts counting as validator’s stake at the end of the Epoch in
+											<Text variant="body" color="bfc-text2" weight="normal">
+												Staked BFC starts counting as validator’s stake at the end of the Epoch in
 												which it was staked. Rewards are earned separately for each Epoch and become
 												available at the end of each Epoch.
 											</Text>

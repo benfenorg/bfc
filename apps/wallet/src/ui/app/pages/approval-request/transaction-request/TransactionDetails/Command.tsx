@@ -108,12 +108,12 @@ export function Command({ command }: CommandProps) {
 				<Text variant="body" weight="semibold" color="steel-darker">
 					{command.kind}
 				</Text>
-				<div className="h-px bg-obc-card flex-1" />
-				<div className="text-obc-text3">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>
+				<div className="h-px bg-bfc-card flex-1" />
+				<div className="text-bfc-text3">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>
 			</button>
 
 			{expanded && (
-				<div className="mt-2 text-body font-medium text-obc-text3">
+				<div className="mt-2 text-body font-medium text-bfc-text3">
 					({convertCommandToString(command)})
 				</div>
 			)}

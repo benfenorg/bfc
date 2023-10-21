@@ -72,7 +72,7 @@ describe('Transaction Builders', () => {
 		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: '0x2::pay::split',
-			typeArguments: ['0x2::obc::OBC'],
+			typeArguments: ['0x2::bfc::BFC'],
 			arguments: [tx.object(coin_0.objectId), tx.pure(DEFAULT_GAS_BUDGET * 2)],
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);

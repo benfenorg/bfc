@@ -9,15 +9,15 @@ module test::m1 {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::coin::{Self, Coin};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
 
     struct CoolMarker has key, store { id: UID }
 
-    public entry fun purchase(coin: Coin<OBC>, ctx: &mut TxContext) {
+    public entry fun purchase(coin: Coin<BFC>, ctx: &mut TxContext) {
         transfer::public_transfer(purchase_(coin, ctx), tx_context::sender(ctx))
     }
 
-    public fun purchase_(coin: Coin<OBC>, ctx: &mut TxContext): CoolMarker {
+    public fun purchase_(coin: Coin<BFC>, ctx: &mut TxContext): CoolMarker {
         assert!(coin::value(&coin) >= 100, 0);
         transfer::public_transfer(coin, @0x70DD);
         CoolMarker { id: object::new(ctx) }

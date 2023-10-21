@@ -33,9 +33,9 @@ export function JudgeProposalState({ refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::judge_proposal_state`,
+				target: `0xc8::bfc_system::judge_proposal_state`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), tx.pure(Date.now())],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.pure(Date.now())],
 			});
 
 			const result = await signAndExecuteTransactionBlock({

@@ -39,4 +39,4 @@ Version: 3
 Contents: t2::o2::Obj2 {id: sui::object::UID {id: sui::object::ID {bytes: fake(5,1)}}}
 
 task 8 'run'. lines 93-93:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xfa8dc535689a795434dd70e1588846735421f77d6bfb481c50faa8e54746f215, parent_id: 0xd20ce99d1381d4d97fda7df30080f38694a251a329fa96afbd86420422cf32e7 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xf3f1cf64d645f397f16e0a55037aee1444630dda3cdf61fae61ee7b9c70a8bc1, parent_id: 0x75e06b10fa1112c76d0a29a262aed2aa13c86e495221fc995b038cdb0ae8f39c }

@@ -87,7 +87,7 @@ export function WalletListSelect({
 						<div>
 							{filteredAccounts.length > 1 ? (
 								<Link
-									color="obc-text2"
+									color="bfc-text2"
 									weight="medium"
 									text="Select all"
 									disabled={disabled}
@@ -97,7 +97,7 @@ export function WalletListSelect({
 						</div>
 						<div>
 							<Link
-								color="obc-text2"
+								color="bfc-text2"
 								weight="medium"
 								text="New account"
 								disabled={disabled}

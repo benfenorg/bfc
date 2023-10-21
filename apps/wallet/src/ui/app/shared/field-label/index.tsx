@@ -13,7 +13,7 @@ export type FieldLabelProps = {
 export default function FieldLabel({ txt, children }: FieldLabelProps) {
 	return (
 		<label className="flex flex-col flex-nowrap gap-1.25 mt-5 first:mt-0">
-			<Text variant="bodySmall" color="obc-text1" weight="normal">
+			<Text variant="bodySmall" color="bfc-text1" weight="normal">
 				{txt}
 			</Text>
 

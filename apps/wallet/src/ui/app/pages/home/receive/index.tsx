@@ -29,12 +29,12 @@ function ReceivePage() {
 								Receive by scanning the QR code
 							</Text>
 						</div>
-						<div className="my-2.5 mx-auto w-50 h-50 rounded-xl bg-obc-text1"></div>
+						<div className="my-2.5 mx-auto w-50 h-50 rounded-xl bg-bfc-text1"></div>
 						<div
 							className="h-10 flex justify-between items-center cursor-pointer"
 							onClick={copyCallback}
 						>
-							<span className="text-[10px]/[18px] font-normal text-obc-text1 overflow-hidden text-ellipsis whitespace-nowrap">
+							<span className="text-[10px]/[18px] font-normal text-bfc-text1 overflow-hidden text-ellipsis whitespace-nowrap">
 								{activeAddress}
 							</span>
 							<div className="shrink-0 w-6 h-6 flex justify-center items-center rounded">
@@ -58,7 +58,7 @@ function ReceivePage() {
 							target="_blank"
 							rel="noreferrer"
 						>
-							<span className="text-[10px]/[18px] font-normal text-obc-text1" onClick={() => {}}>
+							<span className="text-[10px]/[18px] font-normal text-bfc-text1" onClick={() => {}}>
 								View address detail on the official blockchain website.
 							</span>
 							<div className="w-6 h-6 flex justify-center items-center rounded">

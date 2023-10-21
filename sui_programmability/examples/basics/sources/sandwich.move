@@ -7,7 +7,7 @@ module basics::sandwich {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 
@@ -31,7 +31,7 @@ module basics::sandwich {
     // Grocery is created on module init
     struct Grocery has key {
         id: UID,
-        profits: Balance<OBC>
+        profits: Balance<BFC>
     }
 
     /// Price for ham
@@ -49,7 +49,7 @@ module basics::sandwich {
     fun init(ctx: &mut TxContext) {
         transfer::share_object(Grocery {
             id: object::new(ctx),
-            profits: balance::zero<OBC>()
+            profits: balance::zero<BFC>()
         });
 
         transfer::transfer(GroceryOwnerCapability {
@@ -60,7 +60,7 @@ module basics::sandwich {
     /// Exchange `c` for some ham
     public fun buy_ham(
         grocery: &mut Grocery,
-        c: Coin<OBC>,
+        c: Coin<BFC>,
         ctx: &mut TxContext
     ): Ham {
         let b = coin::into_balance(c);
@@ -72,7 +72,7 @@ module basics::sandwich {
     /// Exchange `c` for some bread
     public fun buy_bread(
         grocery: &mut Grocery,
-        c: Coin<OBC>,
+        c: Coin<BFC>,
         ctx: &mut TxContext
     ): Bread {
         let b = coin::into_balance(c);
@@ -98,7 +98,7 @@ module basics::sandwich {
     }
 
     /// Owner of the grocery can collect profits by passing his capability
-    public fun collect_profits(_cap: &GroceryOwnerCapability, grocery: &mut Grocery, ctx: &mut TxContext): Coin<OBC> {
+    public fun collect_profits(_cap: &GroceryOwnerCapability, grocery: &mut Grocery, ctx: &mut TxContext): Coin<BFC> {
         let amount = balance::value(&grocery.profits);
 
         assert!(amount > 0, ENoProfits);
@@ -118,7 +118,7 @@ module basics::test_sandwich {
     use basics::sandwich::{Self, Grocery, GroceryOwnerCapability};
     use sui::test_scenario;
     use sui::coin::{Self};
-    use sui::obc::OBC;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::test_utils;
     use sui::tx_context;
@@ -143,13 +143,13 @@ module basics::test_sandwich {
 
             let ham = sandwich::buy_ham(
                 grocery,
-                coin::mint_for_testing<OBC>(10, ctx),
+                coin::mint_for_testing<BFC>(10, ctx),
                 ctx
             );
 
             let bread = sandwich::buy_bread(
                 grocery,
-                coin::mint_for_testing<OBC>(2, ctx),
+                coin::mint_for_testing<BFC>(2, ctx),
                 ctx
             );
             let sandwich = sandwich::make_sandwich(ham, bread, ctx);

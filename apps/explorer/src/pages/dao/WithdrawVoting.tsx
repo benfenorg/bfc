@@ -8,14 +8,14 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { obcDigitsToHumanReadable } from '@mysten/sui.js/utils';
+import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
@@ -34,7 +34,7 @@ export function WithdrawVoting({ refetchDao }: Props) {
 		schema: schema,
 	});
 
-	const { data: votes = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
+	const { data: votes = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
 		currentAccount?.address || '',
 	);
 
@@ -43,9 +43,9 @@ export function WithdrawVoting({ refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::withdraw_voting`,
+				target: `0xc8::bfc_system::withdraw_voting`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), tx.object(vote)],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.object(vote)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
@@ -65,7 +65,7 @@ export function WithdrawVoting({ refetchDao }: Props) {
 	const options = useMemo(
 		() =>
 			votes.map((i) => ({
-				label: obcDigitsToHumanReadable(i.principal),
+				label: bfcDigitsToHumanReadable(i.principal),
 				value: i.id.id,
 			})),
 		[votes],
@@ -75,7 +75,7 @@ export function WithdrawVoting({ refetchDao }: Props) {
 		<form
 			onSubmit={handleSubmit((formData) => {
 				execute.mutateAsync(formData).catch((e) => {
-					console.error(`failed to withdraw voting obc`, e);
+					console.error(`failed to withdraw voting bfc`, e);
 				});
 			})}
 			autoComplete="off"

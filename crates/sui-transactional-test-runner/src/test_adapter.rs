@@ -52,7 +52,7 @@ use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
 use sui_storage::{
     key_value_store::TransactionKeyValueStore, key_value_store_metrics::KeyValueStoreMetrics,
 };
-use sui_types::{OBC_SYSTEM_STATE_OBJECT_ID};
+use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID};
 use sui_types::transaction::Command;
 use sui_types::transaction::ProgrammableTransaction;
 use sui_types::DEEPBOOK_PACKAGE_ID;
@@ -96,7 +96,7 @@ const WELL_KNOWN_OBJECTS: &[ObjectID] = &[
     SUI_SYSTEM_PACKAGE_ID,
     SUI_SYSTEM_STATE_OBJECT_ID,
     SUI_CLOCK_OBJECT_ID,
-    OBC_SYSTEM_STATE_OBJECT_ID,
+    BFC_SYSTEM_STATE_OBJECT_ID,
 ];
 // TODO use the file name as a seed
 const RNG_SEED: [u8; 32] = [

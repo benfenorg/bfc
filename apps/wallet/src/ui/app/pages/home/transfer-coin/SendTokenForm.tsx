@@ -122,11 +122,11 @@ function GasBudgetEstimation({
 	return (
 		<div className="mt-1.25 flex w-full gap-2 justify-between">
 			<div className="grow">
-				<Text variant="body" color="obc-text1" weight="normal">
+				<Text variant="body" color="bfc-text1" weight="normal">
 					Estimated Gas Fees
 				</Text>
 			</div>
-			<Text variant="body" color="obc-text1" weight="normal">
+			<Text variant="body" color="bfc-text1" weight="normal">
 				{formattedGas ? formattedGas + ' ' + GAS_SYMBOL : '--'}
 			</Text>
 		</div>
@@ -239,7 +239,7 @@ export function SendTokenForm({
 							<Content>
 								<Form autoComplete="off" noValidate>
 									<div className="w-full flex flex-col flex-grow gap-1.25">
-										<Text variant="body" color="obc-text2" weight="normal">
+										<Text variant="body" color="bfc-text2" weight="normal">
 											Select Coin Amount to Send
 										</Text>
 
@@ -251,8 +251,8 @@ export function SendTokenForm({
 											prefix={values.isPayAllSui ? '~ ' : ''}
 											actionText="Max"
 											actionClass={cl('border border-solid rounded-[30px]', {
-												'border-obc-text1': !actionDisabled,
-												'border-obc-text3': actionDisabled,
+												'border-bfc-text1': !actionDisabled,
+												'border-bfc-text3': actionDisabled,
 											})}
 											suffix={` ${symbol}`}
 											actionType="button"
@@ -270,14 +270,14 @@ export function SendTokenForm({
 									</div>
 									{!hasEnoughBalance && isValid ? (
 										<div>
-											<Alert>Insufficient OBC to cover transaction</Alert>
+											<Alert>Insufficient BFC to cover transaction</Alert>
 										</div>
 									) : null}
 
 									{coins ? <GasBudgetEstimation coinDecimals={coinDecimals} coins={coins} /> : null}
 
 									<div className="w-full flex gap-2.5 flex-col mt-7.5">
-										<Text variant="body" color="obc-text2" weight="normal">
+										<Text variant="body" color="bfc-text2" weight="normal">
 											Enter Recipient Address
 										</Text>
 										<div className="w-full flex relative items-center flex-col">

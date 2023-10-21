@@ -66,4 +66,4 @@ yarn-error.log*
 /.idea/
 *.bpl
 sui_programmability/examples/hello_world/output.bpl
-crates/sui-framework/packages/obc-system/result.txt
+crates/sui-framework/packages/bfc-system/result.txt

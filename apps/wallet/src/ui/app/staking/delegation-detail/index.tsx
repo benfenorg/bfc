@@ -32,7 +32,7 @@ export function DelegationDetail() {
 	return (
 		<Overlay
 			showModal
-			title={<div className="flex items-center max-w-full px-4">Stake & Earn OBC</div>}
+			title={<div className="flex items-center max-w-full px-4">Stake & Earn BFC</div>}
 			closeOverlay={() => navigate('/')}
 		>
 			<DelegationDetailCard validatorAddress={validatorAddressParams} stakedId={stakeIdParams} />

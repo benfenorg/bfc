@@ -27,14 +27,14 @@ export function useStationQuery(type: string, amount: string) {
 			const functionName = type === 'mint' ? 'get_stablecoin_by_obc' : 'get_obc_by_stablecoin';
 			const swapAmount = new BigNumber(debouncedAmount).shiftedBy(9).toFixed()
 			txb.moveCall({
-				target: `0xc8::obc_system::${functionName}`,
+				target: `0xc8::bfc_system::${functionName}`,
 				typeArguments: ['0xc8::usd::USD'],
 				arguments: [txb.pure('0xc9'), txb.pure(swapAmount)],
 			});
 
 			const priceTxb = new TransactionBlock();
 			priceTxb.moveCall({
-				target: `0xc8::obc_system::${functionName}`,
+				target: `0xc8::bfc_system::${functionName}`,
 				typeArguments: ['0xc8::usd::USD'],
 				arguments: [priceTxb.pure('0xc9'), priceTxb.pure('1000000000')],
 			});

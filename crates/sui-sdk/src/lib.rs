@@ -103,7 +103,7 @@ pub mod apis;
 pub mod error;
 pub mod sui_client_config;
 pub mod wallet_context;
-pub const SUI_COIN_TYPE: &str = "0x2::obc::OBC";
+pub const SUI_COIN_TYPE: &str = "0x2::bfc::BFC";
 pub const SUI_LOCAL_NETWORK_URL: &str = "http://127.0.0.1:9000";
 pub const SUI_LOCAL_NETWORK_GAS_URL: &str = "http://127.0.0.1:5003/gas";
 pub const SUI_DEVNET_URL: &str = "https://fullnode.devnet.sui.io:443";

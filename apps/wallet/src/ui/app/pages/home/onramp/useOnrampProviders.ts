@@ -39,7 +39,7 @@ const ONRAMP_PROVIDER: OnrampProvider[] = [
 				// If you want to test ETH values, you can use something like this:
 				// cryptoCurrencyCode: 'ETH',
 				// walletAddress: '0x000000000000000000000000000000000000dead',
-				cryptoCurrencyCode: 'OBC',
+				cryptoCurrencyCode: 'BFC',
 				walletAddress: address,
 				disableWalletAddressForm: 'true',
 				themeColor: '#6fbcf0',

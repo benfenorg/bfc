@@ -24,7 +24,7 @@ export function CompletedTransactions() {
 					</ErrorBoundary>
 				))
 			) : (
-				<NoActivityCard message="When available, your OBC network transactions will show up here." />
+				<NoActivityCard message="When available, your BenFen network transactions will show up here." />
 			)}
 		</Loading>
 	);

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LockUnlocked16, Logo } from '@mysten/icons';
+import { LockUnlocked16, BenFenLogoDark } from '@mysten/icons';
 import { Form, Formik } from 'formik';
 import { Link } from 'react-router-dom';
 import Browser from 'webextension-polyfill';
@@ -47,13 +47,22 @@ export default function LockedPage() {
 			<PageLayout>
 				<PageMainLayout className={st.main}>
 					<CardLayout>
-						<div className="flex flex-col flex-nowrap items-center justify-center rounded-full w-15 h-15 mb-5">
-							<Logo className="bg-obc rounded-full w-15 h-15" />
+						<div
+							className="p-2.5 flex flex-col flex-nowrap items-center justify-center rounded-full w-15 h-15 mb-5"
+							style={{
+								border: '3.913px solid #868686',
+								background: 'linear-gradient(180deg, #2F2F32 0%, #171719 100%)',
+								boxShadow: '0px 10.43478px 20.86957px 0px rgba(0, 0, 0, 0.25)',
+							}}
+						>
+							<BenFenLogoDark className="w-10" />
 						</div>
-						<Text variant="caption" color="obc-text1" weight="normal">
-							Hello There
-						</Text>
-						<div className="mt-1.25 text-center w-[280px]">
+						<div className="flex justify-center items-center h-4.5">
+							<Text variant="caption" color="bfc-text1" weight="semibold">
+								Hello There
+							</Text>
+						</div>
+						<div className="flex justify-center items-center mt-1.25 w-[280px] h-[26px]">
 							<Heading variant="heading3" color="black" as="h1" weight="bold" leading="none">
 								Welcome Back
 							</Heading>

@@ -74,7 +74,7 @@ export function ReceiptCard({ txn, activeAddress }: ReceiptCardProps) {
 			<TransactionStatus success={summary.status === 'success'} timestamp={txn.timestampMs} />
 			<TransactionSummary showGasSummary summary={summary} />
 			<a
-				className="h-10 w-full no-underline flex items-center justify-center gap-1.25 bg-obc-card rounded-lg text-body text-obc-text2 font-medium"
+				className="h-10 w-full no-underline flex items-center justify-center gap-1.25 bg-bfc-card rounded-lg text-body text-bfc-text2 font-medium"
 				href={explorerHref!}
 				target="_blank"
 				rel="noreferrer"

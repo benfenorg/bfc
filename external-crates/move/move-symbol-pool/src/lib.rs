@@ -58,7 +58,7 @@ static_symbols!(
     "new_object",
     "UID",
     "sui_system",
-    "obc_system",
+    "bfc_system",
     "create",
     "clock",
     "option",

@@ -1,23 +1,45 @@
 import { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { StationCoinCard } from './StationCoinCard';
-import { MintRation } from './MintRatio';
+import { MintRation } from './charts/MintRatio';
+import { MintAmount } from './charts/MintAmount';
+import { AddLiquidity } from './charts/AddLiquidity';
+import { WithdrawRatio } from './charts/WithdrawRatio';
+import { WithdrawAmount } from './charts/WithdrawAmount';
 function StationMint() {
 	return (
 		<div className="grid grid-cols-2 gap-5">
-			<StationCoinCard type="mint"/>
+			<div>
+				<StationCoinCard type="mint" />
+			</div>
 			<div>
 				<MintRation />
+				<div className="mt-5">
+					<MintAmount />
+				</div>
+				<div className="mt-5">
+					<AddLiquidity />
+				</div>
 			</div>
 		</div>
 	);
 }
 
 function StationWithdraw() {
-	return(
+	return (
 		<div className="grid grid-cols-2 gap-5">
-			<StationCoinCard type="withdraw"/>
-			<div>asdsd</div>
+			<div>
+				<StationCoinCard type="withdraw" />
+			</div>
+			<div>
+				<WithdrawRatio />
+				<div className="mt-5">
+					<WithdrawAmount />
+				</div>
+				<div className="mt-5">
+					<AddLiquidity />
+				</div>
+			</div>
 		</div>
 	);
 }

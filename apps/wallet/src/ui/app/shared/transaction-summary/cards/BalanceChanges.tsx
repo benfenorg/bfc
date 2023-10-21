@@ -26,12 +26,12 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 		<div className="h-15 px-2.5 flex justify-between items-center">
 			<div className="flex items-center gap-1.25">
 				<CoinIcon coinType={coinType} size="sm" />
-				<Text variant="body" weight="medium" color="obc-text1">
+				<Text variant="body" weight="medium" color="bfc-text1">
 					{symbol}
 				</Text>
 			</div>
 			<div className="flex">
-				<Text variant="body" weight="medium" color={isPositive ? 'obc-text1' : 'obc-red'}>
+				<Text variant="body" weight="medium" color={isPositive ? 'bfc-text1' : 'bfc-red'}>
 					{isPositive ? '+' : ''}
 					{formatted} {symbol}
 				</Text>

@@ -56,10 +56,10 @@ function StakeForm({ validatorAddress, coinBalance, coinType, epoch }: StakeFrom
 	return (
 		<Form className="flex flex-1 flex-col flex-nowrap items-center" autoComplete="off">
 			<div className="flex flex-col justify-between items-center mb-5 w-full">
-				<Text variant="body" color="obc-text1" weight="medium">
-					Enter the amount of OBC to stake
+				<Text variant="body" color="bfc-text1" weight="medium">
+					Enter the amount of BFC to stake
 				</Text>
-				<Text variant="body" color="obc-text2" weight="normal">
+				<Text variant="body" color="bfc-text2" weight="normal">
 					Available - {maxToken} {symbol}
 				</Text>
 			</div>
@@ -70,34 +70,34 @@ function StakeForm({ validatorAddress, coinBalance, coinType, epoch }: StakeFrom
 						component={NumberInput}
 						allowNegative={false}
 						name="amount"
-						className="w-full border-none text-obc text-heading4/[22px] font-semibold bg-white placeholder:text-obc-text2"
+						className="w-full border-none text-bfc text-heading4/[22px] font-semibold bg-white placeholder:text-bfc-text2"
 						decimals
 						suffix={` ${symbol}`}
 						autoFocus
 					/>
 				</div>
 				<div className="p-2.5 flex justify-between w-full">
-					<Text variant="body" weight="normal" color="obc-text1">
+					<Text variant="body" weight="normal" color="bfc-text1">
 						Staking Rewards Start
 					</Text>
 					{timeBeforeStakeRewardsStarts > 0 ? (
 						<CountDownTimer
 							timestamp={timeBeforeStakeRewardsStarts}
 							variant="body"
-							color="obc-text1"
+							color="bfc-text1"
 							weight="normal"
 							label="in"
 							endLabel="--"
 						/>
 					) : (
-						<Text variant="body" weight="normal" color="obc-text1">
+						<Text variant="body" weight="normal" color="bfc-text1">
 							{epoch ? `Epoch #${Number(startEarningRewardsEpoch)}` : '--'}
 						</Text>
 					)}
 				</div>
 				<div className="p-2.5 flex justify-between item-center w-full">
 					<div className="flex-1">
-						<Text variant="body" weight="normal" color="obc-text1">
+						<Text variant="body" weight="normal" color="bfc-text1">
 							Staking Rewards Redeemable
 						</Text>
 					</div>
@@ -106,24 +106,24 @@ function StakeForm({ validatorAddress, coinBalance, coinType, epoch }: StakeFrom
 							<CountDownTimer
 								timestamp={timeBeforeStakeRewardsRedeemable}
 								variant="body"
-								color="obc-text1"
+								color="bfc-text1"
 								weight="normal"
 								label="in"
 								endLabel="--"
 							/>
 						) : (
-							<Text variant="body" weight="normal" color="obc-text1">
+							<Text variant="body" weight="normal" color="bfc-text1">
 								{epoch ? `Epoch #${Number(redeemableRewardsEpoch)}` : '--'}
 							</Text>
 						)}
 					</div>
 				</div>
-				<div className="px-2.5 w-full h-[1px] bg-obc-border"></div>
+				<div className="px-2.5 w-full h-[1px] bg-bfc-border"></div>
 				<div className="p-2.5 flex justify-between w-full">
-					<Text variant="body" weight="normal" color="obc-text1">
+					<Text variant="body" weight="normal" color="bfc-text1">
 						Gas Fees
 					</Text>
-					<Text variant="body" weight="normal" color="obc-text1">
+					<Text variant="body" weight="normal" color="bfc-text1">
 						{gasBudget} {symbol}
 					</Text>
 				</div>

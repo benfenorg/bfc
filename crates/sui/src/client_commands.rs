@@ -867,7 +867,7 @@ impl SuiClientCommands {
                        };
                        if type_.is_stable_gas_coin() {
                            let client = context.get_client().await?;
-                           // exchange to obc
+                           // exchange to bfc
                            let gas_owner = context.try_get_object_owner(&new_gas).await?;
                            let sender = gas_owner.unwrap_or(context.active_address()?);
                            let exchange_txn = client.transaction_builder()

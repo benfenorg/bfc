@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Formatter;
 use sui_types::base_types::ObjectRef;
 use sui_types::storage::ObjectStore;
-use sui_types::{DEEPBOOK_PACKAGE_ID, OBC_SYSTEM_PACKAGE_ID};
+use sui_types::{DEEPBOOK_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
 use sui_types::{
     base_types::ObjectID,
     digests::TransactionDigest,
@@ -124,8 +124,8 @@ impl BuiltInFramework {
                 [MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID]
             ),
             (
-                OBC_SYSTEM_PACKAGE_ID,
-                "obc-system",
+                BFC_SYSTEM_PACKAGE_ID,
+                "bfc-system",
                 [MOVE_STDLIB_PACKAGE_ID,SUI_FRAMEWORK_PACKAGE_ID]
             ),
 

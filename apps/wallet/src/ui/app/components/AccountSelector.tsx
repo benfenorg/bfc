@@ -4,7 +4,7 @@
 import { Popover, Transition } from '@headlessui/react';
 import { useResolveSuiNSName } from '@mysten/core';
 import { ChevronDown12, Copy12 } from '@mysten/icons';
-import { formatAddress, sui2ObcAddress } from '@mysten/sui.js';
+import { formatAddress, sui2BfcAddress } from '@mysten/sui.js';
 
 import { AccountList } from './AccountList';
 import { useAccounts } from '../hooks/useAccounts';
@@ -18,7 +18,7 @@ import { ampli } from '_src/shared/analytics/ampli';
 export function AccountSelector() {
 	const allAccounts = useAccounts();
 	const activeAddress = useActiveAddress();
-	const copyToAddress = useCopyToClipboard(activeAddress ? sui2ObcAddress(activeAddress) : '', {
+	const copyToAddress = useCopyToClipboard(activeAddress ? sui2BfcAddress(activeAddress) : '', {
 		copySuccessMessage: 'Address copied',
 	});
 	const backgroundClient = useBackgroundClient();
@@ -36,7 +36,7 @@ export function AccountSelector() {
 	if (allAccounts.length === 1) {
 		return (
 			<div
-				className="flex items-center justify-center gap-1.25 rounded-[20px] border border-solid border-obc-border py-1.25 px-2.5 cursor-pointer"
+				className="flex items-center justify-center gap-1.25 rounded-[20px] border border-solid border-bfc-border py-1.25 px-2.5 cursor-pointer"
 				onClick={copyToAddress}
 			>
 				{buttonText}
@@ -57,7 +57,7 @@ export function AccountSelector() {
 						leaveFrom="transform scale-100 opacity-100"
 						leaveTo="transform scale-75 opacity-0"
 					>
-						<Popover.Panel className="absolute left-1/2 -translate-x-1/2 w-[240px] mt-2 z-0 rounded-xl bg-white border border-solid border-obc-border shadow-[0px_16px_24px_0px_rgba(0_0_0_0.08)]">
+						<Popover.Panel className="absolute left-1/2 -translate-x-1/2 w-[240px] mt-2 z-0 rounded-xl bg-white border border-solid border-bfc-border shadow-[0px_16px_24px_0px_rgba(0_0_0_0.08)]">
 							<div className="absolute w-3 h-3 bg-white -top-1 left-1/2 -translate-x-1/2 rotate-45" />
 							<div className="relative max-h-80 overflow-y-auto max-w-full z-10">
 								<AccountList

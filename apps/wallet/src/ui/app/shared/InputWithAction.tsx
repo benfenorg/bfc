@@ -13,10 +13,10 @@ import type { ComponentProps } from 'react';
 
 const styles = cva(
 	[
-		'transition flex flex-row items-center h-10 w-full text-bodySmall text-obc-text1 gap-5 bg-obc-card px-2.5 border border-solid border-obc-border rounded-lg',
-		'placeholder-obc-text3 w-full pr-[calc(20%_+_24px)]',
-		'focus:bg-transparent focus:border-obc-text1',
-		'disabled:bg-white disabled:text-obc-text2',
+		'transition flex flex-row items-center h-10 w-full text-bodySmall text-bfc-text1 gap-5 bg-bfc-card px-2.5 border border-solid border-bfc-border rounded-lg',
+		'placeholder-bfc-text3 w-full pr-[calc(20%_+_24px)]',
+		'focus:bg-transparent focus:border-bfc-text1',
+		'disabled:bg-white disabled:text-bfc-text2',
 	],
 	{
 		variants: {

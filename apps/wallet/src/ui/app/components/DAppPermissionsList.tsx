@@ -21,8 +21,8 @@ export function DAppPermissionsList({ permissions }: DAppPermissionsListProps) {
 		<ul className="py-2.5 list-none m-0 p-0 flex flex-col gap-2.5">
 			{permissions.map((aPermission) => (
 				<li key={aPermission} className="flex flex-row flex-nowrap items-center gap-2">
-					<CheckFill12 className="text-obc-text2" />
-					<Text variant="body" weight="medium" color="obc-text1">
+					<CheckFill12 className="text-bfc-text2" />
+					<Text variant="body" weight="medium" color="bfc-text1">
 						{permissionTypeToTxt[aPermission]}
 					</Text>
 				</li>
