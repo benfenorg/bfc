@@ -135,11 +135,12 @@ module bfc_system::vault_test {
         let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
 
         test_scenario::next_tx(&mut scenario_val, owner);
-        let calculate_usd_amount = treasury::calculate_swap_result<BUSD>(
+        let calcualte_swap_result1 = treasury::calculate_swap_result<BUSD>(
             &t,
             false,
             100_000_000_000,
         );
+        let calculate_usd_amount = vault::calculated_swap_result_amount_out(&calcualte_swap_result1);
         if (IS_DEBUG) {
             debug::print(&string(b"calculate_usd_amount.. input bfc"));
             debug::print(&100_000_000_000);
@@ -148,11 +149,12 @@ module bfc_system::vault_test {
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
-        let calculate_bfc_amount = treasury::calculate_swap_result<BUSD>(
+        let calculate_swap_result2 = treasury::calculate_swap_result<BUSD>(
             &t,
             true,
             100_000_000_000,
         );
+        let calculate_bfc_amount = vault::calculated_swap_result_amount_out(&calculate_swap_result2);
         if (IS_DEBUG) {
             debug::print(&string(b"calculate_usd_amount.. input usd"));
             debug::print(&100_000_000_000);

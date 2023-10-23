@@ -62,6 +62,8 @@ module bfc_system::event {
     struct SwapEvent has copy, drop {
         atob: bool,
         vault: ID,
+        coin_type_in: String,
+        coin_type_out: String,
         amount_in: u64,
         amount_out: u64,
         vault_a_amount: u64,
@@ -192,6 +194,8 @@ module bfc_system::event {
     public(friend) fun swap(
         vault_id: ID,
         atob: bool, // true a->b false b->a
+        coin_type_in: String,
+        coin_type_out: String,
         amount_in: u64,
         amount_out: u64,
         vault_a_amount: u64, // current vault balance(A)
@@ -204,6 +208,8 @@ module bfc_system::event {
             SwapEvent {
                 vault: vault_id,
                 atob,
+                coin_type_in,
+                coin_type_out,
                 amount_in,
                 amount_out,
                 vault_a_amount,

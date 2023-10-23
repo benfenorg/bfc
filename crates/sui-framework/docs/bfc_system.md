@@ -1010,7 +1010,7 @@ X treasury  swap stablecoin to bfc
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stablecoin_by_bfc">get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stablecoin_by_bfc">get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1022,7 +1022,7 @@ X treasury  swap stablecoin to bfc
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stablecoin_by_bfc">get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(
     wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     amount: u64,
-): u64
+): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stablecoin_by_bfc">bfc_system_state_inner::get_stablecoin_by_bfc</a>&lt;StableCoinType&gt;(system_state, amount)
@@ -1039,7 +1039,7 @@ X treasury  swap stablecoin to bfc
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_by_stablecoin">get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_by_stablecoin">get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1051,7 +1051,7 @@ X treasury  swap stablecoin to bfc
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_by_stablecoin">get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(
     wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     amount: u64,
-): u64
+): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_by_stablecoin">bfc_system_state_inner::get_bfc_by_stablecoin</a>&lt;StableCoinType&gt;(system_state, amount)
