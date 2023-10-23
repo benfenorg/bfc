@@ -32,6 +32,7 @@ module bfc_system::bfc_system_state_inner {
         // @0xdcbb951dc6c91cb4838876825daef3b361ca84d3f1e56e89ede66ef15975b4b8,
         // @0x4cfd9d0cb99b422416a680868f2e4e04446a15939042c2fd42104e99fc1da57b,
         // @0x3212e3b30a5571b6538560ece888482f2908bd5a95cbf6305ed4052ceb1899dd,
+        @0x0,
     ];
 
     spec module { pragma verify = false; }
