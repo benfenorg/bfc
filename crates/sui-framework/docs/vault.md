@@ -273,6 +273,18 @@
 
 </dd>
 <dt>
+<code>coin_a_type: <a href="_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>coin_b_type: <a href="_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>tick_spacing: u32</code>
 </dt>
 <dd>
@@ -1947,6 +1959,8 @@ vault info
         last_sqrt_price: _vault.last_sqrt_price,
         coin_a_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_a),
         coin_b_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b),
+        coin_a_type: <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;()),
+        coin_b_type: <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BFC&gt;()),
         tick_spacing: _vault.tick_spacing,
         spacing_times: _vault.spacing_times,
         liquidity: _vault.liquidity,

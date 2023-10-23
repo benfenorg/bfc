@@ -835,7 +835,7 @@ use std::type_name;
             coin_a_balance: balance::value(&_vault.coin_a),
             coin_b_balance: balance::value(&_vault.coin_b),
             coin_a_type: type_name::into_string(type_name::get<StableCoinType>()),
-            coin_b_type: type_name::into_string(type_name::get<OBC>()),
+            coin_b_type: type_name::into_string(type_name::get<BFC>()),
             tick_spacing: _vault.tick_spacing,
             spacing_times: _vault.spacing_times,
             liquidity: _vault.liquidity,
