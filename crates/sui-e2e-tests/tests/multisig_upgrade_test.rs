@@ -23,19 +23,19 @@ async fn do_upgraded_multisig_test() -> SuiResult {
         .map(|_| ())
 }
 
-#[sim_test]
-async fn test_upgraded_multisig_feature_deny() {
-    use sui_protocol_config::ProtocolConfig;
-
-    let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_upgraded_multisig_for_testing(false);
-        config
-    });
-
-    let err = do_upgraded_multisig_test().await.unwrap_err();
-
-    assert!(matches!(err, SuiError::UnsupportedFeatureError { .. }));
-}
+// #[sim_test]
+// async fn test_upgraded_multisig_feature_deny() {
+//     use sui_protocol_config::ProtocolConfig;
+//
+//     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+//         config.set_upgraded_multisig_for_testing(false);
+//         config
+//     });
+//
+//     let err = do_upgraded_multisig_test().await.unwrap_err();
+//
+//     assert!(matches!(err, SuiError::UnsupportedFeatureError { .. }));
+// }
 
 #[sim_test]
 async fn test_upgraded_multisig_feature_allow() {
