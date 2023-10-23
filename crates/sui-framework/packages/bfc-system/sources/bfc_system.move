@@ -197,6 +197,12 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(self);
         bfc_system_state_inner::init_exchange_pool(inner_state, coin)
     }
+    public entry fun get_bfc_amount(
+    self: &BfcSystemState): u64
+    {
+        let inner_state = load_system_state(self);
+        bfc_system_state_inner::get_bfc_amount(inner_state)
+    }
 
     public(friend) fun bfc_system_stat_parameter(
         position_number: u32,

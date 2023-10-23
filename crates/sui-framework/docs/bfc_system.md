@@ -24,6 +24,7 @@
 -  [Function `request_withdraw_stable`](#0xc8_bfc_system_request_withdraw_stable)
 -  [Function `request_withdraw_stable_no_entry`](#0xc8_bfc_system_request_withdraw_stable_no_entry)
 -  [Function `init_exchange_pool`](#0xc8_bfc_system_init_exchange_pool)
+-  [Function `get_bfc_amount`](#0xc8_bfc_system_get_bfc_amount)
 -  [Function `bfc_system_stat_parameter`](#0xc8_bfc_system_bfc_system_stat_parameter)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
 -  [Function `propose`](#0xc8_bfc_system_propose)
@@ -614,6 +615,33 @@ Init exchange pool by add bfc coin.
 ) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_exchange_pool">bfc_system_state_inner::init_exchange_pool</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_get_bfc_amount"></a>
+
+## Function `get_bfc_amount`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_amount">get_bfc_amount</a>(self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_amount">get_bfc_amount</a>(
+self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): u64
+{
+    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_amount">bfc_system_state_inner::get_bfc_amount</a>(inner_state)
 }
 </code></pre>
 

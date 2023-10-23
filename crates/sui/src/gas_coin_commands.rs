@@ -33,7 +33,7 @@ pub enum GasCoinCommand {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[serde(untagged)]
 pub enum GasCoinCommandResponse {
     AddGasCoin,
@@ -63,6 +63,7 @@ impl GasCoinCommand {
                 ];
                 let _response =
                     call_0x200(context, "request_add_gas_coin", args, gas_budget).await?;
+                println!("response: {:?}", _response.effects.unwrap());
                 GasCoinCommandResponse::AddGasCoin
             },
             GasCoinCommand::RemoveGasCoin { coin_address,gas_budget} => {
