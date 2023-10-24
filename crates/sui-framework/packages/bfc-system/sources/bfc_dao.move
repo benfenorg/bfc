@@ -216,6 +216,8 @@ module bfc_system::bfc_dao {
         action: BFCDaoAction,
         /// version id.
         version_id: u64,
+        /// description
+        description: string::String,
     }
 
     /// Proposal data struct.
@@ -412,6 +414,7 @@ module bfc_system::bfc_dao {
         payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
+        description: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -440,6 +443,11 @@ module bfc_system::bfc_dao {
         let quorum_votes = quorum_votes(dao);
         let object_id = object::new(ctx);
 
+        let descriptionString = string::try_utf8(description);
+        assert!(descriptionString != option::none(), ERR_INVALID_STRING);
+
+        let description_ref = option::extract(&mut descriptionString);
+
         let proposalInfo = ProposalInfo {
             proposal_uid: object::uid_to_address(&object_id),
             pid: proposal_id,
@@ -453,6 +461,7 @@ module bfc_system::bfc_dao {
             quorum_votes,
             action,
             version_id,
+            description: description_ref,
         };
 
         let proposal = Proposal{
