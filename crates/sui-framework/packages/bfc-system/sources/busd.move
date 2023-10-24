@@ -21,8 +21,8 @@ module bfc_system::busd {
         let (cap, metadata) = coin::create_currency(
             BUSD {},
             9,
-            b"obUSD",
-            b"ob usd",
+            b"BUSD",
+            b"Benfen USD",
             b"",
             option::none(),
             ctx
