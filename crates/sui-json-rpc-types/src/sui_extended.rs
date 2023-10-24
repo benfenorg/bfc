@@ -230,4 +230,9 @@ pub struct SuiDaoProposal {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub quorum_votes: u64,
+
+    /// The description of the DAO action
+    #[schemars(with = "String")]
+    #[serde_as(as = "DisplayFromStr")]
+    pub description: String,
 }

@@ -120,6 +120,7 @@ diesel::table! {
         action_delay -> Int8,
         quorum_votes -> Int8,
         state -> Int2,
+        description -> Text,
     }
 }
 

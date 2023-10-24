@@ -14,6 +14,7 @@ CREATE TABLE dao_proposals (
   action_delay    BIGINT    NOT NULL,
   quorum_votes    BIGINT    NOT NULL,
   "state"         SMALLINT  NOT NULL
+  description     TEXT      NOT NULL,
 );
 
 CREATE UNIQUE INDEX action_id_pid_uniq ON dao_proposals(action_id, pid);

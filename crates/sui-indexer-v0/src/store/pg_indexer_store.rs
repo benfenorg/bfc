@@ -1647,6 +1647,7 @@ impl PgIndexerStore {
                 eta: p.eta as u64,
                 action_delay: p.action_delay as u64,
                 quorum_votes: p.quorum_votes as u64,
+                description: p.description.clone(),
             })
             .collect())
     }
