@@ -23,6 +23,7 @@ pub struct Proposal {
     pub action_delay: i64,
     pub quorum_votes: i64,
     pub state: i16,
+    pub description: String,
 }
 
 const PROPOSAL_OBJECT_TYPE: &'static str =
@@ -64,6 +65,7 @@ impl TryFrom<Object> for Proposal {
                 action_delay: val.action_delay as i64,
                 quorum_votes: val.quorum_votes as i64,
                 state: 0,
+                description: val.description,
             })
         } else {
             Err(IndexerError::InvalidArgumentError(format!(
