@@ -27,7 +27,7 @@ const schema = z.object({
 		.string()
 		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 100),
+		.refine((n) => n >= 100, 'should be greater than or equal to 100'),
 	text: z.string().trim().min(1),
 });
 

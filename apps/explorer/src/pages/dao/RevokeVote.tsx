@@ -14,6 +14,7 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
@@ -28,7 +29,7 @@ export interface Props {
 
 const schema = z.object({
 	vote: z.string().trim().nonempty(),
-	amount: z.string().transform(Number),
+	amount: z.number(),
 });
 
 export function RevokeVote({ proposal, refetchDao }: Props) {
@@ -38,7 +39,18 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 		currentAccount?.address || '',
 	);
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const options = useMemo(
+		() =>
+			votes
+				.filter((i) => i.vid === proposal.pid.toString())
+				.map((i) => ({
+					label: i.id.id,
+					value: i.id.id,
+				})),
+		[proposal, votes],
+	);
+
+	const { handleSubmit, register, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -74,17 +86,6 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 		},
 	});
 
-	const options = useMemo(
-		() =>
-			votes
-				.filter((i) => i.vid === proposal.pid.toString())
-				.map((i) => ({
-					label: i.id.id,
-					value: i.id.id,
-				})),
-		[proposal, votes],
-	);
-
 	return (
 		<form
 			onSubmit={handleSubmit((formData) => {
@@ -95,10 +96,21 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
+			<Controller
+				control={control}
+				name="vote"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="voting" options={options} value={value} onChange={onChange} />
+				)}
+			/>
 			<Input label="amount" type="number" {...register('amount')} />
 			<div className="flex items-stretch gap-1.5">
-				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
+				<Button
+					variant="primary"
+					type="submit"
+					loading={execute.isLoading}
+					disabled={!isConnected || options.length === 0}
+				>
 					execute
 				</Button>
 			</div>

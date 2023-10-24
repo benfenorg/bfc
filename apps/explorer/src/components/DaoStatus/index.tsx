@@ -21,10 +21,10 @@ export function RejectSpan() {
 	);
 }
 
-export function StatusSpan() {
+export function StatusSpan({ text }: { text: string }) {
 	return (
 		<div className="flex h-5 items-center rounded border border-bfc-border  px-1 text-body font-medium text-bfc-text1">
-			asddsdsd
+			{text}
 		</div>
 	);
 }
