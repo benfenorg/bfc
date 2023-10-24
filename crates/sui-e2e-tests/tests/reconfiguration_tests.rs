@@ -649,6 +649,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
         SuiJsonValue::new(json!("1"))?,
         SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::new(json!("hello world"))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
@@ -715,6 +716,7 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
         SuiJsonValue::new(json!("1"))?,
         SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::new(json!("hello world"))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
