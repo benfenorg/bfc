@@ -14,6 +14,7 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Input } from '~/ui/Input';
@@ -30,14 +31,14 @@ const schema = z.object({
 		.string()
 		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 200),
+		.refine((n) => n >= 200, 'should be greater than or equal to 200'),
 	action: z.string().trim(),
 });
 
 export function CreateProposal({ refetchDao, dao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, register, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -83,14 +84,22 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector
-				{...register('action')}
-				label="action"
-				options={Object.values(dao?.action_record || {}).map((i) => ({
-					value: i.action_id.toString(),
-					label: new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
-				}))}
+			<Controller
+				control={control}
+				name="action"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="action"
+						options={Object.values(dao?.action_record || {}).map((i) => ({
+							value: i.action_id.toString(),
+							label: new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
+						}))}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
+
 			<Input label="amount" type="number" {...register('amount')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>

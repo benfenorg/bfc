@@ -13,6 +13,7 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
@@ -30,7 +31,7 @@ const schema = z.object({
 export function WithdrawVoting({ refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -81,7 +82,13 @@ export function WithdrawVoting({ refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
+			<Controller
+				control={control}
+				name="vote"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="voting" options={options} value={value} onChange={onChange} />
+				)}
+			/>
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

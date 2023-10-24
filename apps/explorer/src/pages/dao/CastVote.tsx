@@ -13,6 +13,7 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
@@ -25,8 +26,8 @@ export interface Props {
 }
 
 const schema = z.object({
-	voting: z.string().trim().nonempty(),
-	agree: z.string().transform(Number),
+	voting: z.string().trim().nonempty('must select one voting'),
+	agree: z.number(),
 });
 
 export function CastVote({ proposal, refetchDao }: Props) {
@@ -36,7 +37,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 		currentAccount?.address || '',
 	);
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -80,22 +81,37 @@ export function CastVote({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector
-				label="voting"
-				options={votingBfcs.map((i) => ({
-					label: new BigNumber(i.principal).shiftedBy(-9).toString(),
-					value: i.id.id,
-				}))}
-				{...register('voting')}
+			<Controller
+				control={control}
+				name="voting"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="voting"
+						options={votingBfcs.map((i) => ({
+							label: new BigNumber(i.principal).shiftedBy(-9).toString(),
+							value: i.id.id,
+						}))}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
-			<Selector
-				label="agree"
-				options={[
-					{ label: 'upvote', value: 1 },
-					{ label: 'downvote', value: 0 },
-				]}
-				{...register('agree')}
+			<Controller
+				control={control}
+				name="agree"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="agree"
+						options={[
+							{ label: 'upvote', value: 1 },
+							{ label: 'downvote', value: 0 },
+						]}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
+
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

@@ -3,6 +3,8 @@
 import { ProposalStatus, type ProposalRecordWithStatus } from '@mysten/sui.js/client';
 import { Heading } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
+import { hexToBytes } from '@noble/hashes/utils';
+import dayjs from 'dayjs';
 import { useMemo, createContext, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -14,7 +16,7 @@ import { QueueProposalAction } from './QueueProposalAction';
 import { RevokeVote } from './RevokeVote';
 import { UnvoteVotes } from './UnvoteVotes';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
-import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
+import { AgreeSpan, StatusSpan, RejectSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { useGetBFCDaoManageKey } from '~/hooks/useGetBFCDaoManageKey';
 import { useGetDao } from '~/hooks/useGetDao';
@@ -35,26 +37,30 @@ function DaoContentDetail() {
 	return (
 		<div>
 			<div className="rounded-md border border-bfc-border px-3 py-6">
-				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">详情</div>
+				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
+					Details
+				</div>
 				<div className="mt-5 space-y-3">
 					<div className="flex justify-between">
 						<div className="text-pBody text-bfc-text2">ID</div>
 						<div className="text-pBody text-bfc-text1">{proposal.pid}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">状态</div>
-						<div className="text-pBody text-bfc-text1">12345</div>
+						<div className="text-pBody text-bfc-text2">Status</div>
+						<div className="text-pBody text-bfc-text1">{ProposalStatus[proposal.status]}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">创建者</div>
+						<div className="text-pBody text-bfc-text2">Proposer</div>
 						<div className="text-pBody text-bfc-text1">{proposal.proposer}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">结束时间</div>
-						<div className="text-pBody text-bfc-text1">{proposal.end_time}</div>
+						<div className="text-pBody text-bfc-text2">End Time</div>
+						<div className="text-pBody text-bfc-text1">
+							{dayjs(proposal.end_time).format('YYYY-MM-DD HH:mm:ss')}
+						</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">留言板</div>
+						<div className="text-pBody text-bfc-text2">Message Board</div>
 						<div className="text-pBody text-bfc-text1">12345</div>
 					</div>
 				</div>
@@ -73,34 +79,46 @@ function DaoContentDetail() {
 	);
 }
 
-function PollDetail() {
+function PoolDetail() {
 	const { proposal, refetch, manageKey } = useContext(DaoDetailContext)!;
+	const total = proposal.for_votes + proposal.against_votes;
 
 	return (
 		<div>
 			<div className="flex justify-between">
 				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">50.5%</div>
-					<div className="text-body text-bfc-text2">同意</div>
+					<div className="text-heading4 font-semibold">
+						{total === 0 ? 0 : ((proposal.against_votes / total) * 100).toFixed(1) + '%'}
+					</div>
+					<div className="text-body text-bfc-text2">Opposition</div>
 				</div>
 				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">50.5%</div>
-					<div className="text-body text-bfc-text2">同意</div>
+					<div className="text-heading4 font-semibold">
+						{total === 0 ? 0 : ((proposal.for_votes / total) * 100).toFixed(1) + '%'}
+					</div>
+					<div className="text-body text-bfc-text2">Agree</div>
 				</div>
 			</div>
 			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
-				<div className="absolute h-1 w-[50%] bg-bfc-red" />
+				<div
+					className="absolute h-1 bg-bfc-red"
+					style={{
+						width: total === 0 ? '50%' : (proposal.against_votes / total) * 100 + '%',
+					}}
+				/>
 			</div>
 
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
-					<span className="text-body text-bfc-text2">已投票</span>
-					<span className="text-body font-medium text-bfc-text1"> 55.5%</span>
+					<span className="text-body text-bfc-text2">Voted</span>
+					<span className="text-body font-medium text-bfc-text1">&nbsp;{total}</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
-					<span className="text-body text-bfc-text2">法定门槛</span>
-					<span className="text-body font-medium text-bfc-text1"> 51%</span>
+					<span className="text-body text-bfc-text2">Quorum</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{proposal.quorum_votes}
+					</span>
 				</div>
 			</div>
 			<div className="my-3 flex flex-col gap-2">
@@ -137,12 +155,14 @@ function PollDetail() {
 		</div>
 	);
 }
-function Poll() {
+function Pool() {
 	return (
 		<div className="h-max rounded-md border border-bfc-border px-3 py-6">
-			<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">投票</div>
+			<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
+				Voting Pool
+			</div>
 			<div className="mt-5">
-				<PollDetail />
+				<PoolDetail />
 			</div>
 		</div>
 	);
@@ -175,19 +195,26 @@ function DaoContent() {
 				<div className="flex flex-col gap-2 rounded-md border-l-4 border-bfc-border bg-bfc-card p-5 lg:flex-row">
 					<div className="flex min-w-0 flex-col gap-1">
 						<div className="flex gap-1">
-							<AgreeSpan />
-							<StatusSpan />
+							{data.status === ProposalStatus.Agree ? (
+								<AgreeSpan />
+							) : data.status === ProposalStatus.Defeat ? (
+								<RejectSpan />
+							) : (
+								<StatusSpan text={ProposalStatus[data.status]} />
+							)}
 						</div>
 						<div className="min-w-0 break-words">
 							<Heading as="h2" variant="heading3/semibold" color="bfc-text1" mono>
-								asdasdasdsa
+								{new TextDecoder().decode(
+									hexToBytes(daoData!.action_record[data.action.action_id].name.replace(/^0x/, '')),
+								)}
 							</Heading>
 						</div>
 					</div>
 				</div>
 				<div className="mt-6 grid grid-cols-2 gap-5">
 					<DaoContentDetail />
-					<Poll />
+					<Pool />
 				</div>
 			</div>
 		</DaoDetailContext.Provider>
