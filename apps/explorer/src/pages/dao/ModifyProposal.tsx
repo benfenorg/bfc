@@ -25,7 +25,7 @@ export interface Props {
 }
 
 const schema = z.object({
-	status: z.number(),
+	status: z.number({ required_error: 'must select status' }),
 });
 
 export function ModifyProposalObj({ proposal, refetchDao }: Props) {

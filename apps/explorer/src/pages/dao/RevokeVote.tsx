@@ -28,8 +28,14 @@ export interface Props {
 }
 
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
-	amount: z.number(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	amount: z
+		.string({
+			required_error: 'amount must be a valid number',
+			invalid_type_error: 'amount must be a valid number',
+		})
+		.transform(Number)
+		.refine((n) => n >= 1, 'amount must be greater than or equal to 1'),
 });
 
 export function RevokeVote({ proposal, refetchDao }: Props) {
@@ -103,7 +109,7 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 					<Selector label="voting" options={options} value={value} onChange={onChange} />
 				)}
 			/>
-			<Input label="amount" type="number" {...register('amount')} />
+			<Input label="amount" type="number" step="any" {...register('amount')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button
 					variant="primary"

@@ -122,6 +122,6 @@ export function humanReadableToBfcDigits(amount: number | string) {
 	return BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString());
 }
 
-export function bfcDigitsToHumanReadable(amount: string) {
+export function bfcDigitsToHumanReadable(amount: string | number) {
 	return new BigNumber(amount).shiftedBy(-9).toString();
 }

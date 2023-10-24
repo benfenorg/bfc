@@ -25,9 +25,8 @@ export interface Props {
 const schema = z.object({
 	amount: z
 		.string()
-		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 100, 'should be greater than or equal to 100'),
+		.refine((n) => n >= 100, 'amount should be greater than or equal to 100'),
 	text: z.string().trim().min(1),
 });
 
@@ -77,7 +76,7 @@ export function CreateDaoAction({ refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Input label="amount" type="number" {...register('amount')} />
+			<Input label="amount" type="number" step="any" {...register('amount')} />
 			<Input label="text" {...register('text')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>

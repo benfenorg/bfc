@@ -24,9 +24,8 @@ export interface Props {
 const schema = z.object({
 	amount: z
 		.string()
-		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 1, 'should be greater than or equal to 1'),
+		.refine((n) => n >= 1, 'amount should be greater than or equal to 1'),
 });
 
 export function CreateVotingBfc({ refetchDao }: Props) {

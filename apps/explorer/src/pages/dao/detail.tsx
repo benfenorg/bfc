@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { ProposalStatus, type ProposalRecordWithStatus } from '@mysten/sui.js/client';
+import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Heading } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { hexToBytes } from '@noble/hashes/utils';
@@ -111,13 +112,15 @@ function PoolDetail() {
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
 					<span className="text-body text-bfc-text2">Voted</span>
-					<span className="text-body font-medium text-bfc-text1">&nbsp;{total}</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(total)}
+					</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
 					<span className="text-body text-bfc-text2">Quorum</span>
 					<span className="text-body font-medium text-bfc-text1">
-						&nbsp;{proposal.quorum_votes}
+						&nbsp;{bfcDigitsToHumanReadable(proposal.quorum_votes)}
 					</span>
 				</div>
 			</div>

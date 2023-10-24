@@ -26,8 +26,8 @@ export interface Props {
 }
 
 const schema = z.object({
-	voting: z.string().trim().nonempty('must select one voting'),
-	agree: z.number(),
+	voting: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	agree: z.number({ required_error: 'must select agree' }),
 });
 
 export function CastVote({ proposal, refetchDao }: Props) {

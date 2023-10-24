@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { ArrowRight12 } from '@mysten/icons';
 import { type BfcDao, type ProposalRecord, ProposalStatus } from '@mysten/sui.js/client';
+import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Heading } from '@mysten/ui';
 import { useWalletKit, ConnectButton } from '@mysten/wallet-kit';
 import { hexToBytes } from '@noble/hashes/utils';
@@ -44,6 +45,12 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 				<span className="text-body text-bfc-text2">ID：</span>
 				<span className="text-body text-bfc-text1">{data.pid}</span>
 			</div>
+			<div>
+				<span className="text-body text-bfc-text2">Start Time：</span>
+				<span className="text-body text-bfc-text1">
+					{dayjs(data.start_time).format('YYYY-MM-DD HH:mm:ss')}
+				</span>
+			</div>
 			<div className="mb-3">
 				<span className="text-body text-bfc-text2">End Time：</span>
 				<span className="text-body text-bfc-text1">
@@ -52,7 +59,9 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 			</div>
 			<Divider type="dashed" />
 			<div className="mt-3 flex items-baseline gap-1">
-				<div className="text-heading4 font-semibold">{data.for_votes}</div>
+				<div className="text-heading4 font-semibold">
+					{bfcDigitsToHumanReadable(data.for_votes)}
+				</div>
 				<div className="text-body text-bfc-text2">Agree</div>
 			</div>
 			<div className="relative my-3 flex h-1 items-stretch overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
@@ -67,12 +76,16 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
 					<span className="text-body text-bfc-text2">Voted</span>
-					<span className="text-body font-medium text-bfc-text1">&nbsp;{total}</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(total)}
+					</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
 					<span className="text-body text-bfc-text2">Quorum</span>
-					<span className="text-body font-medium text-bfc-text1">&nbsp;{data.quorum_votes}</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(data.quorum_votes)}
+					</span>
 				</div>
 			</div>
 		</div>

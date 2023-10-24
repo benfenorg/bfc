@@ -29,10 +29,9 @@ export interface Props {
 const schema = z.object({
 	amount: z
 		.string()
-		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 200, 'should be greater than or equal to 200'),
-	action: z.string().trim(),
+		.refine((n) => n >= 200, 'amount should be greater than or equal to 200'),
+	action: z.number({ required_error: 'must select action' }),
 });
 
 export function CreateProposal({ refetchDao, dao }: Props) {
@@ -43,7 +42,7 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 	});
 
 	const execute = useMutation({
-		mutationFn: async ({ amount, action }: { amount: number; action: string }) => {
+		mutationFn: async ({ amount, action }: { amount: number; action: number }) => {
 			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
@@ -56,7 +55,7 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.pure(20),
 					coin,
-					tx.pure(Number.parseInt(action)),
+					tx.pure(action),
 					tx.pure(6000000),
 					tx.object(ADDRESS.CLOCK),
 				],
@@ -91,8 +90,11 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 					<Selector
 						label="action"
 						options={Object.values(dao?.action_record || {}).map((i) => ({
-							value: i.action_id.toString(),
-							label: new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
+							value: i.action_id,
+							label:
+								i.action_id.toString() +
+								'-' +
+								new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
 						}))}
 						value={value}
 						onChange={onChange}

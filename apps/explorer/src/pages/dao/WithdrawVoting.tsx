@@ -25,7 +25,7 @@ export interface Props {
 }
 
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
 });
 
 export function WithdrawVoting({ refetchDao }: Props) {
