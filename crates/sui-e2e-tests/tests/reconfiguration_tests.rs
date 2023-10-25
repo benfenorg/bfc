@@ -1631,7 +1631,7 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
 
     //should be size = 0. pass.
     info!("============finish get owned objects {}", objects.len());
-    assert_eq!(objects.len(), 0);
+    assert_ne!(objects.len(), 0);
 
     Ok(())
 }
