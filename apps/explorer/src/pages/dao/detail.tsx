@@ -1,9 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { ProposalStatus } from '@mysten/sui.js/client';
-import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
+import { bfcDigitsToHumanReadable, hexToString } from '@mysten/sui.js/utils';
 import { Heading } from '@mysten/ui';
-import { hexToBytes } from '@noble/hashes/utils';
 import dayjs from 'dayjs';
 import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
@@ -75,11 +74,7 @@ function DaoContentDetail() {
 				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
 					Description
 				</div>
-				<div className="mt-5 text-pBody text-bfc-text1">
-					Galaxy is a digital asset and blockchain leader helping institutions, startups, and
-					qualified individuals shape a changing economy. We provide platform solutions custom-made
-					for a digitally native ecosystem.
-				</div>
+				<div className="mt-5 text-pBody text-bfc-text1">{hexToString(proposal.description)}</div>
 			</div>
 		</div>
 	);
@@ -219,9 +214,7 @@ function DaoContent() {
 						</div>
 						<div className="min-w-0 break-words">
 							<Heading as="h2" variant="heading3/semibold" color="bfc-text1" mono>
-								{new TextDecoder().decode(
-									hexToBytes(dao!.action_record[proposal.action.action_id].name.replace(/^0x/, '')),
-								)}
+								{hexToString(dao!.action_record[proposal.action.action_id]?.name || '')}
 							</Heading>
 						</div>
 					</div>

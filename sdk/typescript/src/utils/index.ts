@@ -13,6 +13,8 @@ import {
 	SUI_ADDRESS_LENGTH,
 	humanReadableToBfcDigits,
 	bfcDigitsToHumanReadable,
+	hexToString,
+	strToHex,
 } from './sui-types.js';
 
 export { fromB64, toB64 } from '@mysten/bcs';
@@ -31,6 +33,8 @@ export {
 	SUI_ADDRESS_LENGTH,
 	humanReadableToBfcDigits,
 	bfcDigitsToHumanReadable,
+	hexToString,
+	strToHex,
 };
 
 export const SUI_DECIMALS = 9;

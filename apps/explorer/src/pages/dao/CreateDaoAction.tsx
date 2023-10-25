@@ -8,10 +8,9 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
+import { humanReadableToBfcDigits, strToHex } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
-import { bytesToHex } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { z } from 'zod';
@@ -49,7 +48,7 @@ export function CreateDaoAction() {
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					coin,
-					tx.object(`0x${bytesToHex(new TextEncoder().encode(text))}`),
+					tx.object(strToHex(text)),
 					tx.object(ADDRESS.CLOCK),
 				],
 			});

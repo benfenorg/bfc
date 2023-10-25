@@ -4,6 +4,7 @@
 import { fromB58, splitGenericParameters } from '@mysten/bcs';
 import { bfc2SuiAddress } from './format.js';
 import BigNumber from 'bignumber.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 
 const TX_DIGEST_LENGTH = 32;
 
@@ -124,4 +125,12 @@ export function humanReadableToBfcDigits(amount: number | string) {
 
 export function bfcDigitsToHumanReadable(amount: string | number) {
 	return new BigNumber(amount).shiftedBy(-9).toString(10);
+}
+
+export function hexToString(hex: string) {
+	return new TextDecoder().decode(hexToBytes(hex.replace(/^0x/, '')));
+}
+
+export function strToHex(str: string) {
+	return `0x${bytesToHex(new TextEncoder().encode(str))}`;
 }

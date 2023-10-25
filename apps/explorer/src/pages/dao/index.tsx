@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { ArrowRight12 } from '@mysten/icons';
 import { type BfcDao, type ProposalRecord, ProposalStatus } from '@mysten/sui.js/client';
-import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
+import { bfcDigitsToHumanReadable, hexToString } from '@mysten/sui.js/utils';
 import { Heading } from '@mysten/ui';
 import { useWalletKit, ConnectButton } from '@mysten/wallet-kit';
-import { hexToBytes } from '@noble/hashes/utils';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
 
@@ -38,9 +37,7 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 				)}
 			</div>
 			<div className="mt-2 line-clamp-2 h-11 text-ellipsis text-heading4 font-semibold leading-6 text-bfc-text1">
-				{new TextDecoder().decode(
-					hexToBytes(dao.action_record[data.action.action_id].name.replace(/^0x/, '')),
-				)}
+				{hexToString(dao.action_record[data.action.action_id]?.name || '')}
 			</div>
 			<div className="mt-2.5">
 				<span className="text-body text-bfc-text2">ID：</span>
@@ -49,6 +46,10 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 			<div>
 				<span className="text-body text-bfc-text2">Version：</span>
 				<span className="text-body text-bfc-text1">{data.version_id}</span>
+			</div>
+			<div>
+				<span className="text-body text-bfc-text2">Description：</span>
+				<span className="text-body text-bfc-text1">{hexToString(data.description)}</span>
 			</div>
 			<div>
 				<span className="text-body text-bfc-text2">Start Time：</span>

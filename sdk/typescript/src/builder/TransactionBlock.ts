@@ -621,7 +621,20 @@ export class TransactionBlock {
 						// Skip if the input is already resolved
 						if (is(input.value, BuilderCallArg)) return;
 
-						const inputValue = input.value;
+						let inputValue = input.value;
+						// if (typeof param === 'string') {
+						// 	if (['U8', 'U16', 'U32', 'U64', 'U128', 'U256'].includes(param)) {
+						// 		inputValue = Number.parseInt(inputValue);
+						// 	} else if (param === 'Bool') {
+						// 		inputValue = inputValue.toLowerCase() === 'true';
+						// 	}
+						// } else if ('Vector' in param) {
+						// 	if (typeof inputValue === 'string' && param.Vector === 'U8') {
+						// 		// do nothing;
+						// 	} else {
+						// 		inputValue = inputValue.split(',').filter(Boolean);
+						// 	}
+						// }
 
 						const serType = getPureSerializationType(param, inputValue);
 
