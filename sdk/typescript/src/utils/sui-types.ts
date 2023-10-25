@@ -128,9 +128,9 @@ export function bfcDigitsToHumanReadable(amount: string | number) {
 }
 
 export function hexToString(hex: string) {
-	return new TextDecoder().decode(hexToBytes(hex.replace(/^0x/, '')));
+	return new TextDecoder().decode(hexToBytes((hex || '').replace(/^0x/, '')));
 }
 
 export function strToHex(str: string) {
-	return `0x${bytesToHex(new TextEncoder().encode(str))}`;
+	return `0x${bytesToHex(new TextEncoder().encode(str || ''))}`;
 }
