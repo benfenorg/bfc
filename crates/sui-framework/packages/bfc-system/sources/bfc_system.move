@@ -17,6 +17,7 @@ module bfc_system::bfc_system {
     use sui::tx_context::TxContext;
 
     use bfc_system::busd::{BUSD};
+    use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
@@ -248,9 +249,10 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         payment: Coin<BFC>,
         actionName: vector<u8>,
+        clock: &Clock,
         ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName, ctx);
+        bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
     public entry fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
@@ -288,16 +290,18 @@ module bfc_system::bfc_system {
 
     public entry fun withdraw_voting(   wrapper: &mut BfcSystemState,
                                  voting_bfc: VotingBfc,
+                                    clock: &Clock,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc, ctx);
+        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc,clock, ctx);
     }
 
     public entry fun create_voting_bfc(wrapper: &mut BfcSystemState,
                                  coin: Coin<BFC>,
+                                    clock: &Clock,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::create_voting_bfc(system_state, coin, ctx);
+        bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin
@@ -325,7 +329,7 @@ module bfc_system::bfc_system {
     public fun get_stablecoin_by_bfc<StableCoinType>(
         wrapper: &BfcSystemState,
         amount: u64,
-    ): u64
+    ): vault::CalculatedSwapResult
     {
         let system_state = load_system_state(wrapper);
         bfc_system_state_inner::get_stablecoin_by_bfc<StableCoinType>(system_state, amount)
@@ -334,7 +338,7 @@ module bfc_system::bfc_system {
     public fun get_bfc_by_stablecoin<StableCoinType>(
         wrapper: &BfcSystemState,
         amount: u64,
-    ): u64
+    ): vault::CalculatedSwapResult
     {
         let system_state = load_system_state(wrapper);
         bfc_system_state_inner::get_bfc_by_stablecoin<StableCoinType>(system_state, amount)

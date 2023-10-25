@@ -12,6 +12,7 @@ use std::time::Duration;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
+use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
@@ -2446,7 +2447,29 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error>
     Ok(())
 }
 
-async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) -> u64 {
+#[derive(Debug, Serialize, Deserialize)]
+struct SwapStepResult {
+    current_sqrt_price: u128,
+    target_sqrt_price: u128,
+    current_liquidity: u128,
+    current_tick_index: i32,
+    amount_in: u64,
+    amount_out: u64,
+    remainer_amount: u64
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CalculatedSwapResult {
+    amount_in: u64,
+    amount_out: u64,
+    after_sqrt_price: u128,
+    is_exceed: bool,
+    step_results: Vec<SwapStepResult>,
+    steps: u64
+}
+
+async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) -> CalculatedSwapResult
+{
     let client = cluster.rpc_client();
     let sender = cluster.get_address_0();
     let txn = TransactionKind::programmable(pt);
@@ -2486,8 +2509,8 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
     };
-
-    assert_eq!(dev_inspect_call(&test_cluster, pt.clone()).await, 99999);
+    let r = dev_inspect_call(&test_cluster, pt.clone()).await;
+    assert_eq!(r.amount_out, 99999);
     Ok(())
 }
 
@@ -2512,7 +2535,7 @@ async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> 
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
     };
-
-    assert_eq!(dev_inspect_call(&test_cluster, pt.clone()).await, 99999);
+    let r = dev_inspect_call(&test_cluster, pt.clone()).await;
+    assert_eq!(r.amount_out, 99999);
     Ok(())
 }

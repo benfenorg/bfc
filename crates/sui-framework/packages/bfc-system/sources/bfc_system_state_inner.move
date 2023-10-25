@@ -19,6 +19,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::busd::BUSD;
+    use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
     use bfc_system::voting_pool::VotingBfc;
 
@@ -154,10 +155,10 @@ module bfc_system::bfc_system_state_inner {
         self: &BfcSystemStateInner,
         _stable: &Coin<CoinType>
     ): u64 {
-        get_stablecoin_by_bfc<CoinType>(
+        vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
             self,
             gas_coin_map::get_default_rate(),
-        )
+        ))
     }
 
     public(friend) fun request_add_gas_coin<CoinType>(
@@ -172,10 +173,10 @@ module bfc_system::bfc_system_state_inner {
         self: &mut BfcSystemStateInner,
         gas_coin: &Coin<CoinType>,
     ) {
-        let rate = get_stablecoin_by_bfc<CoinType>(
+        let rate = vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
             self,
             gas_coin_map::get_default_rate(),
-        );
+        ));
         gas_coin_map::request_update_gas_coin(&mut self.gas_coin_map, gas_coin, rate)
     }
 
@@ -265,7 +266,7 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun get_stablecoin_by_bfc<StableCoinType>(
         self: &BfcSystemStateInner,
         amount: u64
-    ): u64
+    ): vault::CalculatedSwapResult
     {
         treasury::calculate_swap_result<StableCoinType>(&self.treasury, false, amount)
     }
@@ -273,7 +274,7 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun get_bfc_by_stablecoin<StableCoinType>(
         self: &BfcSystemStateInner,
         amount: u64
-    ): u64
+    ): vault::CalculatedSwapResult
     {
         treasury::calculate_swap_result<StableCoinType>(&self.treasury, true, amount)
     }
@@ -340,10 +341,10 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun create_bfcdao_action(
         self: &mut BfcSystemStateInner,
         payment: Coin<BFC>,
-
         actionName: vector<u8>,
+        clock: &Clock,
         ctx: &mut TxContext) {
-        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName, ctx);
+        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName,clock, ctx);
     }
 
     public(friend) fun propose(
@@ -462,13 +463,15 @@ module bfc_system::bfc_system_state_inner {
 
     public fun withdraw_voting(system_state: &mut BfcSystemStateInner,
                                voting_bfc: VotingBfc,
+                                clock: & Clock,
                                ctx: &mut TxContext) {
-        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, ctx);
+        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, clock, ctx);
     }
 
     public(friend) fun create_voting_bfc(system_state: &mut BfcSystemStateInner,
                                          coin: Coin<BFC>,
+                                        clock: & Clock,
                                          ctx: &mut TxContext) {
-        bfc_dao::create_voting_bfc(&mut system_state.dao, coin, ctx);
+        bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
 }

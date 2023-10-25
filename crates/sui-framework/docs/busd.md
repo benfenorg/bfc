@@ -93,8 +93,8 @@ Sender is not @0x0 the system address.
     <b>let</b> (cap, metadata) = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_create_currency">coin::create_currency</a>(
         <a href="busd.md#0xc8_busd_BUSD">BUSD</a> {},
         9,
-        b"obUSD",
-        b"ob usd",
+        b"<a href="busd.md#0xc8_busd_BUSD">BUSD</a>",
+        b"Benfen USD",
         b"",
         <a href="_none">option::none</a>(),
         ctx
