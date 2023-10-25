@@ -27,6 +27,7 @@ pub struct BFCDaoAction{
     pub action_id: u64,
     /// Name for the action
     pub name: String,
+    pub status: bool,
 }
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]

@@ -187,6 +187,8 @@ module bfc_system::bfc_dao {
         action_id: u64,
         /// Name for the action
         name: string::String,
+        // status is false, which means it is not executed; status is true, which means it is executed
+        status: bool,
     }
 
     public(friend) fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
@@ -275,6 +277,7 @@ module bfc_system::bfc_dao {
         let action = BFCDaoAction{
             action_id: action_id,
             name: name_ref,
+            status: false,
         };
 
         event::emit(
@@ -868,7 +871,7 @@ module bfc_system::bfc_dao {
         } else if (current_time < proposal.eta) {
             // Queued, waiting to execute
             QUEUED
-        } else if (proposal.action.action_id != 0 ) {
+        } else if (proposal.action.status == false ) {
             EXECUTABLE
         } else {
             EXTRACTED
@@ -1132,7 +1135,7 @@ module bfc_system::bfc_dao {
             proposal_obj.proposal.against_votes = 2;
             proposal_obj.proposal.quorum_votes = 2;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal_obj.proposal.action.action_id = 1;
+            proposal_obj.proposal.action.status = false;
         } else if (index == 7) {
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
@@ -1140,7 +1143,7 @@ module bfc_system::bfc_dao {
             proposal_obj.proposal.against_votes = 2;
             proposal_obj.proposal.quorum_votes = 2;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal_obj.proposal.action.action_id = 0;
+            proposal_obj.proposal.action.status = true;
         };
         synchronize_proposal_into_dao(proposal_obj, dao);
     }

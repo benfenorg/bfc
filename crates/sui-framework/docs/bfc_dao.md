@@ -584,6 +584,12 @@ Configuration of the <code>Token</code>'s DAO.
 <dd>
  Name for the action
 </dd>
+<dt>
+<code>status: bool</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -1390,6 +1396,7 @@ Error codes
     <b>let</b> action = <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a>{
         action_id: action_id,
         name: name_ref,
+        status: <b>false</b>,
     };
 
     <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
@@ -2630,7 +2637,7 @@ Get the proposal state.
     } <b>else</b> <b>if</b> (current_time &lt; proposal.eta) {
         // Queued, waiting <b>to</b> execute
         <a href="bfc_dao.md#0xc8_bfc_dao_QUEUED">QUEUED</a>
-    } <b>else</b> <b>if</b> (proposal.action.action_id != 0 ) {
+    } <b>else</b> <b>if</b> (proposal.action.status == <b>false</b> ) {
         <a href="bfc_dao.md#0xc8_bfc_dao_EXECUTABLE">EXECUTABLE</a>
     } <b>else</b> {
         <a href="bfc_dao.md#0xc8_bfc_dao_EXTRACTED">EXTRACTED</a>
@@ -3503,7 +3510,7 @@ set min action delay
         proposal_obj.proposal.against_votes = 2;
         proposal_obj.proposal.quorum_votes = 2;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.action_id = 1;
+        proposal_obj.proposal.action.status = <b>false</b>;
     } <b>else</b> <b>if</b> (index == 7) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
@@ -3511,7 +3518,7 @@ set min action delay
         proposal_obj.proposal.against_votes = 2;
         proposal_obj.proposal.quorum_votes = 2;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.action_id = 0;
+        proposal_obj.proposal.action.status = <b>true</b>;
     };
     <a href="bfc_dao.md#0xc8_bfc_dao_synchronize_proposal_into_dao">synchronize_proposal_into_dao</a>(proposal_obj, dao);
 }
