@@ -13,6 +13,7 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
@@ -26,7 +27,7 @@ export interface Props {
 
 const schema = z.object({
 	vote: z.string().trim().nonempty(),
-	agree: z.string().transform(Number),
+	agree: z.number(),
 });
 
 export function ChangeVote({ proposal, refetchDao }: Props) {
@@ -36,7 +37,7 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 		currentAccount?.address || '',
 	);
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -91,17 +92,35 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
-			<Selector
-				label="agree"
-				options={[
-					{ label: 'upvote', value: 1 },
-					{ label: 'downvote', value: 0 },
-				]}
-				{...register('agree')}
+			<Controller
+				control={control}
+				name="vote"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="voting" options={options} value={value} onChange={onChange} />
+				)}
+			/>
+			<Controller
+				control={control}
+				name="agree"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="agree"
+						options={[
+							{ label: 'upvote', value: 1 },
+							{ label: 'downvote', value: 0 },
+						]}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
 			<div className="flex items-stretch gap-1.5">
-				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
+				<Button
+					variant="primary"
+					type="submit"
+					loading={execute.isLoading}
+					disabled={!isConnected || options.length === 0}
+				>
 					execute
 				</Button>
 			</div>

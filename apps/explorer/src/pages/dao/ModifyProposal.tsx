@@ -13,6 +13,7 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Selector } from '~/ui/Selector';
@@ -24,13 +25,13 @@ export interface Props {
 }
 
 const schema = z.object({
-	status: z.string().transform(Number),
+	status: z.number(),
 });
 
 export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
-	const { handleSubmit, formState, register } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -77,7 +78,14 @@ export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="status" options={options} {...register('status')} />
+			<Controller
+				control={control}
+				name="status"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="status" options={options} value={value} onChange={onChange} />
+				)}
+			/>
+
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

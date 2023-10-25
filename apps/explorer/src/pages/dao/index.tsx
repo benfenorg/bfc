@@ -1,64 +1,78 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { ArrowRight12 } from '@mysten/icons';
+import { type BfcDao, type ProposalRecord, ProposalStatus } from '@mysten/sui.js/client';
 import { Heading } from '@mysten/ui';
 import { useWalletKit, ConnectButton } from '@mysten/wallet-kit';
+import { hexToBytes } from '@noble/hashes/utils';
 import clsx from 'clsx';
+import dayjs from 'dayjs';
 
 import { CreateDaoAction } from './CreateDaoAction';
 import { CreateProposal } from './CreateProposal';
 import { CreateVotingBfc } from './CreateVotingBfc';
 import { WithdrawVoting } from './WithdrawVoting';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
-import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
+import { AgreeSpan, StatusSpan, RejectSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
-import { useGetBFCDaoManageKey } from '~/hooks/useGetBFCDaoManageKey';
 import { useGetDao } from '~/hooks/useGetDao';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
 
-import type { ProposalRecord } from '@mysten/sui.js/client';
+function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
+	const status = dao.current_proposal_status[data.pid]?.status || ProposalStatus.Pending;
+	const total = data.for_votes + data.against_votes;
 
-function DaoItem({ data }: { data: ProposalRecord }) {
 	return (
 		<div className="rounded-md border border-bfc-border p-5">
 			<div className="flex gap-1">
-				<AgreeSpan />
-				<StatusSpan />
+				{status === ProposalStatus.Agree ? (
+					<AgreeSpan />
+				) : status === ProposalStatus.Defeat ? (
+					<RejectSpan />
+				) : (
+					<StatusSpan text={ProposalStatus[status]} />
+				)}
 			</div>
 			<div className="mt-2 line-clamp-2 h-11 text-ellipsis text-heading4 font-semibold leading-6 text-bfc-text1">
-				升级starcoin标准库到v11版本，将合约标准库升级到v10升级starcoin标准库到v11版本，将合约标准库升级到v10升级starcoin标准库到v11版本，将合约标准库升级到v10
+				{new TextDecoder().decode(
+					hexToBytes(dao.action_record[data.action.action_id].name.replace(/^0x/, '')),
+				)}
 			</div>
 			<div className="mt-2.5">
 				<span className="text-body text-bfc-text2">ID：</span>
 				<span className="text-body text-bfc-text1">{data.pid}</span>
 			</div>
 			<div className="mb-3">
-				<span className="text-body text-bfc-text2">结束时间：</span>
-				<span className="text-body text-bfc-text1">{data.end_time}</span>
+				<span className="text-body text-bfc-text2">End Time：</span>
+				<span className="text-body text-bfc-text1">
+					{dayjs(data.end_time).format('YYYY-MM-DD HH:mm:ss')}
+				</span>
 			</div>
 			<Divider type="dashed" />
 			<div className="mt-3 flex items-baseline gap-1">
 				<div className="text-heading4 font-semibold">{data.for_votes}</div>
-				<div className="text-body text-bfc-text2">同意</div>
+				<div className="text-body text-bfc-text2">Agree</div>
 			</div>
-			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
-				<div className="absolute h-1 w-[50%] bg-bfc-red" />
+			<div className="relative my-3 flex h-1 items-stretch overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
+				<div
+					className="h-full bg-bfc-red"
+					style={{
+						width: total === 0 ? '50%' : (data.against_votes / total) * 100 + '%',
+					}}
+				/>
 			</div>
 
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
-					<span className="text-body text-bfc-text2">已投票</span>
-					<span className="text-body font-medium text-bfc-text1">
-						{' '}
-						{data.for_votes + data.against_votes}
-					</span>
+					<span className="text-body text-bfc-text2">Voted</span>
+					<span className="text-body font-medium text-bfc-text1">&nbsp;{total}</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
-					<span className="text-body text-bfc-text2">法定门槛</span>
-					<span className="text-body font-medium text-bfc-text1">{data.quorum_votes}</span>
+					<span className="text-body text-bfc-text2">Quorum</span>
+					<span className="text-body font-medium text-bfc-text1">&nbsp;{data.quorum_votes}</span>
 				</div>
 			</div>
 		</div>
@@ -66,9 +80,7 @@ function DaoItem({ data }: { data: ProposalRecord }) {
 }
 
 function DaoList() {
-	const { isConnected, currentAccount } = useWalletKit();
-	const { data: manageKey } = useGetBFCDaoManageKey(currentAccount?.address || '');
-	console.log(manageKey); // TODO: remove useless code
+	const { isConnected } = useWalletKit();
 	const { data, refetch } = useGetDao();
 
 	return (
@@ -116,7 +128,7 @@ function DaoList() {
 			<div className="mt-5 grid grid-cols-3 gap-5">
 				{data?.proposal_record.map((item) => (
 					<LinkWithQuery key={item.pid} to={`/dao/detail/${item.proposal_uid}`}>
-						<DaoItem data={item} />
+						<DaoItem data={item} dao={data} />
 					</LinkWithQuery>
 				))}
 			</div>
