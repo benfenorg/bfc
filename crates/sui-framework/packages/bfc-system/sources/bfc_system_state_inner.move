@@ -1,4 +1,5 @@
 module bfc_system::bfc_system_state_inner {
+    use std::string;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
@@ -352,10 +353,11 @@ module bfc_system::bfc_system_state_inner {
         payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
+        description: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        bfc_dao:: propose(&mut self.dao, version_id, payment, action_id, action_delay, clock, ctx);
+        bfc_dao:: propose(&mut self.dao, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
     public(friend) fun set_voting_delay(self: &mut BfcSystemStateInner, manager_key: &BFCDaoManageKey, value: u64) {

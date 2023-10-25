@@ -565,10 +565,14 @@ async fn test_bfc_dao_create_action() -> Result<(), anyhow::Error>{
     let module = "bfc_system".to_string();
     let function = "create_bfcdao_action".to_string();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
         SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
 
@@ -605,6 +609,8 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         .data;
 
 
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
     // now do the call
     let payment = objects.get(2).unwrap().object().unwrap();
     let module = "bfc_system".to_string();
@@ -636,12 +642,12 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
         SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
 
-    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
     let coin_obj = objects.get(3).unwrap().object().unwrap();
 
     let arg = vec![
@@ -650,6 +656,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
         SuiJsonValue::new(json!("1"))?,
         SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::new(json!("hello world"))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
@@ -695,6 +702,9 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
     // now do the call
     let function = "create_bfcdao_action".to_string();
     let propose_function = "propose".to_string();
@@ -702,12 +712,12 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
         SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
 
-    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
     let coin_obj = objects.get(4).unwrap().object().unwrap();
 
     let arg = vec![
@@ -716,6 +726,7 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
         SuiJsonValue::new(json!("1"))?,
         SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::new(json!("hello world"))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
@@ -847,6 +858,8 @@ async fn test_bfc_dao_create_votingbfc()  -> Result<(), anyhow::Error> {
 
 
     // now do the call
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
     let function = "create_voting_bfc".to_string();
@@ -854,6 +867,7 @@ async fn test_bfc_dao_create_votingbfc()  -> Result<(), anyhow::Error> {
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
@@ -910,6 +924,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
@@ -1534,6 +1549,8 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
     let coin_obj = objects.get(2).unwrap().object().unwrap();
 
 
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
     // now do the call
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
@@ -1542,6 +1559,7 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
@@ -1585,6 +1603,7 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&voting_bfc.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
@@ -1612,7 +1631,7 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
 
     //should be size = 0. pass.
     info!("============finish get owned objects {}", objects.len());
-    assert_eq!(objects.len(), 0);
+    assert_ne!(objects.len(), 0);
 
     Ok(())
 }

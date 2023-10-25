@@ -8,34 +8,25 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
-	agree: z.number(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	agree: z.number({ required_error: 'must select agree' }),
 });
 
-export function ChangeVote({ proposal, refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
-
-	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(
-		currentAccount?.address || '',
-	);
+export function ChangeVote() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { votes, proposal, refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
@@ -51,7 +42,7 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(vote),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.pure(!!agree),
 					tx.object(ADDRESS.CLOCK),
 				],
@@ -66,15 +57,14 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVotes();
+			refetch();
 		},
 	});
 
 	const options = useMemo(
 		() =>
 			votes
-				.filter((i) => i.vid === proposal.pid.toString())
+				.filter((i) => i.vid === proposal!.pid.toString())
 				.map((i) => ({
 					label: i.id.id,
 					value: i.id.id,

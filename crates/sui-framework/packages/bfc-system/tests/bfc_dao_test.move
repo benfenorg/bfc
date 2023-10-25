@@ -130,7 +130,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19,  coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19,  coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -211,7 +211,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"test", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -331,7 +331,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -410,7 +410,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -540,7 +540,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -659,7 +659,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 
@@ -768,7 +768,7 @@ module bfc_system::bfc_dao_test {
             let coin =  coin::mint_for_testing<BFC>(200000000000, test_scenario::ctx(&mut scenario_val));
             //let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
 
-            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, &clock, test_scenario::ctx(&mut scenario_val));
+            bfc_dao::propose(&mut dao, 19, coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(clock);
 

@@ -20,7 +20,7 @@ export function Selector<T extends string | number>({
 	label: string;
 	options: { label: string; value: T }[];
 	value?: T;
-	onChange: (next: T) => void;
+	onChange: (next: T | undefined) => void;
 }) {
 	const [selected, setSelected] = useState<T>();
 	const [isOpen, setIsOpen] = useState(false);
@@ -28,13 +28,19 @@ export function Selector<T extends string | number>({
 	const container = useRef<HTMLDivElement>(null);
 
 	const onSelect = useCallback(
-		(value: T) => {
+		(value: T | undefined) => {
 			setSelected(value);
 			setIsOpen(false);
 			onChange?.(value);
 		},
 		[onChange],
 	);
+
+	useEffect(() => {
+		if (!options.find((i) => i.value === selected)) {
+			onSelect(undefined);
+		}
+	}, [selected, options, onSelect]);
 
 	useEffect(() => {
 		setSelected((pre) => value ?? pre);

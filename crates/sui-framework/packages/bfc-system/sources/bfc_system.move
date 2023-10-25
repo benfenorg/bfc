@@ -1,4 +1,5 @@
 module bfc_system::bfc_system {
+    use std::string;
     use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
@@ -236,11 +237,12 @@ module bfc_system::bfc_system {
         payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
+        description: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::propose(system_state, version_id, payment, action_id, action_delay, clock, ctx);
+        bfc_system_state_inner::propose(system_state, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
     public entry fun create_bfcdao_action(

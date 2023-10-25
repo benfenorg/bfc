@@ -8,41 +8,38 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
+import { DaoContext } from '~/context';
 import { Input } from '~/ui/Input';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
-	amount: z.number(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	amount: z
+		.string({
+			required_error: 'amount must be a valid number',
+			invalid_type_error: 'amount must be a valid number',
+		})
+		.transform(Number)
+		.refine((n) => n >= 1, 'amount must be greater than or equal to 1'),
 });
 
-export function RevokeVote({ proposal, refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
-
-	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(
-		currentAccount?.address || '',
-	);
+export function RevokeVote() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { proposal, votes, refetch } = useContext(DaoContext)!;
 
 	const options = useMemo(
 		() =>
 			votes
-				.filter((i) => i.vid === proposal.pid.toString())
+				.filter((i) => i.vid === proposal!.pid.toString())
 				.map((i) => ({
 					label: i.id.id,
 					value: i.id.id,
@@ -65,7 +62,7 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.object(vote),
 					tx.pure(bigIntAmount),
 					tx.object(ADDRESS.CLOCK),
@@ -81,8 +78,7 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVotes();
+			refetch();
 		},
 	});
 
@@ -103,7 +99,7 @@ export function RevokeVote({ proposal, refetchDao }: Props) {
 					<Selector label="voting" options={options} value={value} onChange={onChange} />
 				)}
 			/>
-			<Input label="amount" type="number" {...register('amount')} />
+			<Input label="amount" type="number" step="any" {...register('amount')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button
 					variant="primary"

@@ -8,34 +8,27 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
+import { useContext } from 'react';
 import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	voting: z.string().trim().nonempty('must select one voting'),
-	agree: z.number(),
+	voting: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	agree: z.number({ required_error: 'must select agree' }),
 });
 
-export function CastVote({ proposal, refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+export function CastVote() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
-	const { data: votingBfcs = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
-		currentAccount?.address || '',
-	);
+	const { votingBfcs, proposal, refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
@@ -50,7 +43,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.object(voting),
 					tx.pure(!!agree),
 					tx.object(ADDRESS.CLOCK),
@@ -66,8 +59,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVoting();
+			refetch();
 		},
 	});
 

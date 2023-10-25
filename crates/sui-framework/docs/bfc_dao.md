@@ -677,6 +677,12 @@ Configuration of the <code>Token</code>'s DAO.
 <dd>
  version id.
 </dd>
+<dt>
+<code>description: <a href="_String">string::String</a></code>
+</dt>
+<dd>
+ description
+</dd>
 </dl>
 
 
@@ -1641,7 +1647,7 @@ propose a proposal.
 <code>action_delay</code>: the delay to execute after the proposal is agreed
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, description: <a href="">vector</a>&lt;u8&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1656,6 +1662,7 @@ propose a proposal.
     payment: Coin&lt;BFC&gt;,
     action_id: u64,
     action_delay: u64,
+    description: <a href="">vector</a>&lt;u8&gt;,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
@@ -1684,6 +1691,11 @@ propose a proposal.
     <b>let</b> quorum_votes = <a href="bfc_dao.md#0xc8_bfc_dao_quorum_votes">quorum_votes</a>(dao);
     <b>let</b> object_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx);
 
+    <b>let</b> descriptionString = <a href="_try_utf8">string::try_utf8</a>(description);
+    <b>assert</b>!(descriptionString != <a href="_none">option::none</a>(), <a href="bfc_dao.md#0xc8_bfc_dao_ERR_INVALID_STRING">ERR_INVALID_STRING</a>);
+
+    <b>let</b> description_ref = <a href="_extract">option::extract</a>(&<b>mut</b> descriptionString);
+
     <b>let</b> proposalInfo = <a href="bfc_dao.md#0xc8_bfc_dao_ProposalInfo">ProposalInfo</a> {
         proposal_uid: <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_address">object::uid_to_address</a>(&object_id),
         pid: proposal_id,
@@ -1697,6 +1709,7 @@ propose a proposal.
         quorum_votes,
         action,
         version_id,
+        description: description_ref,
     };
 
     <b>let</b> proposal = <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>{

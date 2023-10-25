@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { ProposalStatus, type ProposalRecordWithStatus } from '@mysten/sui.js/client';
+import { ProposalStatus } from '@mysten/sui.js/client';
+import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Heading } from '@mysten/ui';
-import { useWalletKit } from '@mysten/wallet-kit';
 import { hexToBytes } from '@noble/hashes/utils';
 import dayjs from 'dayjs';
-import { useMemo, createContext, useContext } from 'react';
+import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { CastVote } from './CastVote';
@@ -13,26 +13,22 @@ import { ChangeVote } from './ChangeVote';
 import { JudgeProposalState } from './JudgeProposalState';
 import { ModifyProposalObj } from './ModifyProposal';
 import { QueueProposalAction } from './QueueProposalAction';
+import { Refresh } from './Refresh';
 import { RevokeVote } from './RevokeVote';
 import { UnvoteVotes } from './UnvoteVotes';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan, RejectSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
-import { useGetBFCDaoManageKey } from '~/hooks/useGetBFCDaoManageKey';
-import { useGetDao } from '~/hooks/useGetDao';
+import { useDaoContext, DaoContext } from '~/context';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { PageHeader } from '~/ui/PageHeader';
 
-export interface DaoDetailContextProps {
-	proposal: ProposalRecordWithStatus;
-	manageKey?: string;
-	refetch: () => void;
-}
-
-const DaoDetailContext = createContext<DaoDetailContextProps | undefined>(undefined);
-
 function DaoContentDetail() {
-	const { proposal } = useContext(DaoDetailContext)!;
+	const { proposal } = useContext(DaoContext)!;
+
+	if (!proposal) {
+		return null;
+	}
 
 	return (
 		<div>
@@ -52,6 +48,12 @@ function DaoContentDetail() {
 					<div className="flex justify-between">
 						<div className="text-pBody text-bfc-text2">Proposer</div>
 						<div className="text-pBody text-bfc-text1">{proposal.proposer}</div>
+					</div>
+					<div className="flex justify-between">
+						<div className="text-pBody text-bfc-text2">Start Time</div>
+						<div className="text-pBody text-bfc-text1">
+							{dayjs(proposal.start_time).format('YYYY-MM-DD HH:mm:ss')}
+						</div>
 					</div>
 					<div className="flex justify-between">
 						<div className="text-pBody text-bfc-text2">End Time</div>
@@ -80,7 +82,11 @@ function DaoContentDetail() {
 }
 
 function PoolDetail() {
-	const { proposal, refetch, manageKey } = useContext(DaoDetailContext)!;
+	const { proposal, manageKey } = useContext(DaoContext)!;
+	if (!proposal) {
+		return null;
+	}
+
 	const total = proposal.for_votes + proposal.against_votes;
 
 	return (
@@ -111,44 +117,46 @@ function PoolDetail() {
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
 					<span className="text-body text-bfc-text2">Voted</span>
-					<span className="text-body font-medium text-bfc-text1">&nbsp;{total}</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(total)}
+					</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
 					<span className="text-body text-bfc-text2">Quorum</span>
 					<span className="text-body font-medium text-bfc-text1">
-						&nbsp;{proposal.quorum_votes}
+						&nbsp;{bfcDigitsToHumanReadable(proposal.quorum_votes)}
 					</span>
 				</div>
 			</div>
 			<div className="my-3 flex flex-col gap-2">
 				<DisclosureBox title="modify proposal" defaultOpen={false}>
-					<ModifyProposalObj proposal={proposal} refetchDao={refetch} />
+					<ModifyProposalObj />
 				</DisclosureBox>
 				<DisclosureBox title="judge proposal state" defaultOpen={false}>
-					<JudgeProposalState refetchDao={refetch} />
+					<JudgeProposalState />
 				</DisclosureBox>
 				{proposal.status === ProposalStatus.Active && (
 					<>
 						<DisclosureBox title="cast vote" defaultOpen={false}>
-							<CastVote proposal={proposal} refetchDao={refetch} />
+							<CastVote />
 						</DisclosureBox>
 						<DisclosureBox title="change vote" defaultOpen={false}>
-							<ChangeVote proposal={proposal} refetchDao={refetch} />
+							<ChangeVote />
 						</DisclosureBox>
 						<DisclosureBox title="revoke vote" defaultOpen={false}>
-							<RevokeVote proposal={proposal} refetchDao={refetch} />
+							<RevokeVote />
 						</DisclosureBox>
 					</>
 				)}
 				{proposal.end_time < Date.now() && (
 					<DisclosureBox title="unvote votes" defaultOpen={false}>
-						<UnvoteVotes proposal={proposal} refetchDao={refetch} />
+						<UnvoteVotes />
 					</DisclosureBox>
 				)}
 				{manageKey && proposal.status === ProposalStatus.Agree && (
 					<DisclosureBox title="queue proposal action">
-						<QueueProposalAction proposal={proposal} refetchDao={refetch} manageKey={manageKey} />
+						<QueueProposalAction />
 					</DisclosureBox>
 				)}
 			</div>
@@ -170,43 +178,31 @@ function Pool() {
 
 function DaoContent() {
 	const { id } = useParams<{ id: string }>();
-	const { currentAccount } = useWalletKit();
-	const { data: daoData, isLoading, refetch } = useGetDao();
-	const { data: manageKey } = useGetBFCDaoManageKey(currentAccount?.address || '');
+	const daoValues = useDaoContext(id || '');
+	const { proposal, dao } = daoValues;
 
-	const data = useMemo(() => {
-		if (!daoData) {
-			return undefined;
-		}
-		const proposal = daoData.proposal_record.find((i) => i.proposal_uid === id)!;
-		return {
-			...proposal,
-			status: daoData.current_proposal_status[proposal!.pid]?.status || ProposalStatus.Pending,
-		};
-	}, [daoData, id]);
-
-	if (isLoading || !data) {
+	if (!proposal || !dao) {
 		return null;
 	}
 
 	return (
-		<DaoDetailContext.Provider value={{ proposal: data, refetch, manageKey }}>
+		<DaoContext.Provider value={daoValues}>
 			<div>
 				<div className="flex flex-col gap-2 rounded-md border-l-4 border-bfc-border bg-bfc-card p-5 lg:flex-row">
 					<div className="flex min-w-0 flex-col gap-1">
 						<div className="flex gap-1">
-							{data.status === ProposalStatus.Agree ? (
+							{proposal.status === ProposalStatus.Agree ? (
 								<AgreeSpan />
-							) : data.status === ProposalStatus.Defeat ? (
+							) : proposal.status === ProposalStatus.Defeat ? (
 								<RejectSpan />
 							) : (
-								<StatusSpan text={ProposalStatus[data.status]} />
+								<StatusSpan text={ProposalStatus[proposal.status]} />
 							)}
 						</div>
 						<div className="min-w-0 break-words">
 							<Heading as="h2" variant="heading3/semibold" color="bfc-text1" mono>
 								{new TextDecoder().decode(
-									hexToBytes(daoData!.action_record[data.action.action_id].name.replace(/^0x/, '')),
+									hexToBytes(dao!.action_record[proposal.action.action_id].name.replace(/^0x/, '')),
 								)}
 							</Heading>
 						</div>
@@ -217,7 +213,8 @@ function DaoContent() {
 					<Pool />
 				</div>
 			</div>
-		</DaoDetailContext.Provider>
+			<Refresh />
+		</DaoContext.Provider>
 	);
 }
 

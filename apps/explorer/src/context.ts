@@ -1,11 +1,23 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+	type ProposalRecordWithStatus,
+	type BfcDao,
+	type Vote,
+	type VotingBfc,
+	ProposalStatus,
+} from '@mysten/sui.js/client';
+import { useWalletKit } from '@mysten/wallet-kit';
 import * as Sentry from '@sentry/react';
-import { createContext, useContext, useLayoutEffect, useMemo } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { useSearchParams } from 'react-router-dom';
 
+import { useGetBFCDaoManageKey } from './hooks/useGetBFCDaoManageKey';
+import { useGetBFCDaoVote } from './hooks/useGetBFCDaoVote';
+import { useGetBFCDaoVotingBfc } from './hooks/useGetBFCDaoVotingBfc';
+import { useGetDao } from './hooks/useGetDao';
 import { Network } from './utils/api/DefaultRpcClient';
 import { growthbook } from './utils/growthbook';
 import { queryClient } from './utils/queryClient';
@@ -55,3 +67,55 @@ export function useNetwork(): [string, (network: Network | string) => void] {
 
 	return [network, setNetwork];
 }
+
+export interface DaoContextProps {
+	manageKey: string;
+	dao?: BfcDao;
+	proposal?: ProposalRecordWithStatus;
+	votes: Vote[];
+	votingBfcs: VotingBfc[];
+	refetch: () => void;
+}
+
+export const DaoContext = createContext<DaoContextProps | undefined>(undefined);
+
+export const useDaoContext = (proposalId: string): DaoContextProps => {
+	const { currentAccount } = useWalletKit();
+
+	const currentAddress = currentAccount?.address || '';
+
+	const { data: daoData, refetch: refetchDao } = useGetDao();
+	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(currentAddress);
+	const { data: votingBfcs = [], refetch: refetchVotingBfcs } =
+		useGetBFCDaoVotingBfc(currentAddress);
+	const { data: manageKey = '' } = useGetBFCDaoManageKey(currentAddress);
+
+	const refetch = useCallback(() => {
+		refetchDao();
+		refetchVotingBfcs();
+		refetchVotes();
+	}, [refetchDao, refetchVotingBfcs, refetchVotes]);
+
+	const proposal = useMemo(() => {
+		if (!daoData) {
+			return undefined;
+		}
+		const proposal = daoData.proposal_record.find((i) => i.proposal_uid === proposalId);
+		if (!proposal) {
+			return undefined;
+		}
+		return {
+			...proposal,
+			status: daoData.current_proposal_status[proposal.pid]?.status || ProposalStatus.Pending,
+		};
+	}, [daoData, proposalId]);
+
+	return {
+		manageKey,
+		proposal,
+		dao: daoData,
+		votes,
+		votingBfcs,
+		refetch,
+	};
+};

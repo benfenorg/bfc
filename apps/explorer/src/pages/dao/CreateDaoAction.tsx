@@ -13,26 +13,24 @@ import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { bytesToHex } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
+import { useContext } from 'react';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { Input } from '~/ui/Input';
 import { ADDRESS } from '~/utils/constants';
-
-export interface Props {
-	refetchDao: () => void;
-}
 
 const schema = z.object({
 	amount: z
 		.string()
-		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 100, 'should be greater than or equal to 100'),
+		.refine((n) => n >= 100, 'amount should be greater than or equal to 100'),
 	text: z.string().trim().min(1),
 });
 
-export function CreateDaoAction({ refetchDao }: Props) {
+export function CreateDaoAction() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, register, formState } = useZodForm({
 		schema: schema,
@@ -64,7 +62,7 @@ export function CreateDaoAction({ refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 	return (
@@ -77,7 +75,7 @@ export function CreateDaoAction({ refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Input label="amount" type="number" {...register('amount')} />
+			<Input label="amount" type="number" step="any" {...register('amount')} />
 			<Input label="text" {...register('text')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>

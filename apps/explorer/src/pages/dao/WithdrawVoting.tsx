@@ -12,32 +12,25 @@ import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
 });
 
-export function WithdrawVoting({ refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+export function WithdrawVoting() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { votingBfcs, refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
-
-	const { data: votes = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
-		currentAccount?.address || '',
-	);
 
 	const execute = useMutation({
 		mutationFn: async ({ vote }: { vote: string }) => {
@@ -58,18 +51,17 @@ export function WithdrawVoting({ refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVoting();
+			refetch();
 		},
 	});
 
 	const options = useMemo(
 		() =>
-			votes.map((i) => ({
+			votingBfcs.map((i) => ({
 				label: bfcDigitsToHumanReadable(i.principal),
 				value: i.id.id,
 			})),
-		[votes],
+		[votingBfcs],
 	);
 
 	return (
