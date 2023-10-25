@@ -42,6 +42,10 @@ function DaoContentDetail() {
 						<div className="text-pBody text-bfc-text1">{proposal.pid}</div>
 					</div>
 					<div className="flex justify-between">
+						<div className="text-pBody text-bfc-text2">Version</div>
+						<div className="text-pBody text-bfc-text1">{proposal.version_id}</div>
+					</div>
+					<div className="flex justify-between">
 						<div className="text-pBody text-bfc-text2">Status</div>
 						<div className="text-pBody text-bfc-text1">{ProposalStatus[proposal.status]}</div>
 					</div>
@@ -119,6 +123,20 @@ function PoolDetail() {
 					<span className="text-body text-bfc-text2">Voted</span>
 					<span className="text-body font-medium text-bfc-text1">
 						&nbsp;{bfcDigitsToHumanReadable(total)}
+					</span>
+				</div>
+				<div className="h-3 w-[1px] bg-bfc-border" />
+				<div>
+					<span className="text-body text-bfc-text2">Agree</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(proposal.for_votes)}
+					</span>
+				</div>
+				<div className="h-3 w-[1px] bg-bfc-border" />
+				<div>
+					<span className="text-body text-bfc-text2">Opposition</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(proposal.against_votes)}
 					</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />

@@ -11,7 +11,7 @@ import {
 import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
-import { hexToBytes } from '@noble/hashes/utils';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { Controller } from 'react-hook-form';
@@ -32,6 +32,7 @@ const schema = z.object({
 		.transform(Number)
 		.refine((n) => n >= 24, 'version should be greater than or equal to 24'),
 	action: z.number({ required_error: 'must select action' }),
+	describe: z.string({ required_error: 'must input describe' }).trim().nonempty(),
 });
 
 export function CreateProposal() {
@@ -47,10 +48,12 @@ export function CreateProposal() {
 			amount,
 			action,
 			version,
+			describe,
 		}: {
 			amount: number;
 			action: number;
 			version: number;
+			describe: string;
 		}) => {
 			const bigIntAmount = humanReadableToBfcDigits(amount);
 
@@ -66,6 +69,7 @@ export function CreateProposal() {
 					coin,
 					tx.pure(action),
 					tx.pure(6000000),
+					tx.object(`0x${bytesToHex(new TextEncoder().encode(describe))}`),
 					tx.object(ADDRESS.CLOCK),
 				],
 			});
@@ -113,6 +117,7 @@ export function CreateProposal() {
 
 			<Input label="amount" type="number" step="any" {...register('amount')} />
 			<Input label="version" type="number" {...register('version')} />
+			<Input label="describe" {...register('describe')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

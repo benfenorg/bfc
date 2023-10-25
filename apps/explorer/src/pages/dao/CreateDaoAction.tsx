@@ -50,6 +50,7 @@ export function CreateDaoAction() {
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					coin,
 					tx.object(`0x${bytesToHex(new TextEncoder().encode(text))}`),
+					tx.object(ADDRESS.CLOCK),
 				],
 			});
 

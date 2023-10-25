@@ -119,9 +119,9 @@ function getHexByteLength(value: string): number {
 }
 
 export function humanReadableToBfcDigits(amount: number | string) {
-	return BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString());
+	return BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString(10));
 }
 
 export function bfcDigitsToHumanReadable(amount: string | number) {
-	return new BigNumber(amount).shiftedBy(-9).toString();
+	return new BigNumber(amount).shiftedBy(-9).toString(10);
 }

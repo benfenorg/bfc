@@ -47,6 +47,10 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 				<span className="text-body text-bfc-text1">{data.pid}</span>
 			</div>
 			<div>
+				<span className="text-body text-bfc-text2">Version：</span>
+				<span className="text-body text-bfc-text1">{data.version_id}</span>
+			</div>
+			<div>
 				<span className="text-body text-bfc-text2">Start Time：</span>
 				<span className="text-body text-bfc-text1">
 					{dayjs(data.start_time).format('YYYY-MM-DD HH:mm:ss')}
@@ -59,11 +63,19 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 				</span>
 			</div>
 			<Divider type="dashed" />
-			<div className="mt-3 flex items-baseline gap-1">
-				<div className="text-heading4 font-semibold">
-					{bfcDigitsToHumanReadable(data.for_votes)}
+			<div className="mt-3 flex items-center justify-between">
+				<div className="flex items-baseline gap-1">
+					<div className="text-heading4 font-semibold">
+						{bfcDigitsToHumanReadable(data.for_votes)}
+					</div>
+					<div className="text-body text-bfc-text2">Agree</div>
 				</div>
-				<div className="text-body text-bfc-text2">Agree</div>
+				<div className="flex items-baseline gap-1">
+					<div className="text-heading4 font-semibold">
+						{bfcDigitsToHumanReadable(data.against_votes)}
+					</div>
+					<div className="text-body text-bfc-text2">Opposition</div>
+				</div>
 			</div>
 			<div className="relative my-3 flex h-1 items-stretch overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
 				<div
