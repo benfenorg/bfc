@@ -47,6 +47,9 @@ module bfc_system::bfc_dao {
     const DEFAULT_BFC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  BFC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 BFC
     const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 BFC
+    const MAX_ACTION_NAME_LENGTH: u64 = 100;
+    const MAX_DESCRIPTION_LENGTH: u64 = 1000;
+
     const MIN_STAKE_MANAGER_KEY_COST: u64 = 100 * 1000000000; // 100 BFC
 
     const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max BFC
@@ -79,7 +82,8 @@ module bfc_system::bfc_dao {
     const ERR_WRONG_VOTING_POOL: u64 = 1412;
     const ERR_INVALID_STRING: u64 = 1413;
     const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
-
+    const ERR_ACTION_NAME_TOO_LONG: u64 = 1416;
+    const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
     //
     struct DaoEvent has copy, drop, store {
         name: string::String,
@@ -255,6 +259,7 @@ module bfc_system::bfc_dao {
         let value = balance::value(&balance);
         // ensure the user pays enough
         assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!(vector::length(&actionName) <= MAX_ACTION_NAME_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
         let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
@@ -426,6 +431,7 @@ module bfc_system::bfc_dao {
         let value = balance::value(&balance);
         // ensure the user pays enough
         assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!( vector::length(&description) <= MAX_DESCRIPTION_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
         let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
