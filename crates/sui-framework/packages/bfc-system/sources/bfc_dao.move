@@ -243,6 +243,7 @@ module bfc_system::bfc_dao {
         dao: &mut Dao,
         payment: Coin<BFC>,
         actionName:vector<u8>,
+        clock: & Clock,
         ctx: &mut TxContext): BFCDaoAction {
         //auth
 
@@ -253,7 +254,7 @@ module bfc_system::bfc_dao {
         // ensure the user pays enough
         assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
 
         let nameString = string::try_utf8(actionName);
@@ -423,7 +424,7 @@ module bfc_system::bfc_dao {
         // ensure the user pays enough
         assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
 
 
@@ -1132,22 +1133,24 @@ module bfc_system::bfc_dao {
 
     public(friend) fun create_voting_bfc(dao: &mut Dao,
                                        coin: Coin<BFC>,
+                                        clock: & Clock,
                                        ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(coin);
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock,  ctx);
 
         transfer::public_transfer(voting_bfc, sender);
     }
 
     public(friend) fun withdraw_voting(  dao: &mut Dao,
                                        voting_bfc: VotingBfc,
+                                        clock: & Clock,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
         assert!(pool_id(&voting_bfc) == object::id(&dao.voting_pool), ERR_WRONG_VOTING_POOL);
-        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_bfc);
+        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_bfc, clock);
         let coin = coin::from_balance(voting_bfc, ctx);
         transfer::public_transfer(coin, sender);
     }

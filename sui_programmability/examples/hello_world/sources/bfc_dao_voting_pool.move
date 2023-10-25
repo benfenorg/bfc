@@ -2,6 +2,8 @@
 module hello_world::voting_pool {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
+    use sui::clock;
+    use sui::clock::Clock;
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::object::{Self, ID, UID};
@@ -20,6 +22,9 @@ module hello_world::voting_pool {
     const EIncompatibleVotingBfc: u64 = 12;
     const EDelegationOfZeroBfc: u64 = 17;
     const EVotingBfcBelowThreshold: u64 = 18;
+
+    const DEFAULT_VOTE_END_TIME: u64      = 1000 * 60 * 60  * 1; // 3 hours later
+    const ENotEndOfStakingTime: u64 = 19;
 
     /// A staking pool embedded in each validator struct in the system state object.
     struct VotingPool has key, store {
@@ -44,6 +49,8 @@ module hello_world::voting_pool {
         pool_id: ID,
         /// The voting bfc tokens.
         principal: Balance<BFC>,
+        /// when voting stake ends.
+        stake_end_time: u64,
     }
 
     // ==== initializer ====
@@ -63,6 +70,7 @@ module hello_world::voting_pool {
     public(friend) fun request_add_voting(
         pool: &mut VotingPool,
         voting: Balance<BFC>,
+        clock: &Clock,
         ctx: &mut TxContext
     ) : VotingBfc {
         let bfc_amount = balance::value(&voting);
@@ -71,6 +79,7 @@ module hello_world::voting_pool {
             id: object::new(ctx),
             pool_id: object::id(pool),
             principal: voting,
+            stake_end_time: clock::timestamp_ms(clock) + DEFAULT_VOTE_END_TIME,
         };
         votingbfc
     }
@@ -81,9 +90,10 @@ module hello_world::voting_pool {
     public(friend) fun request_withdraw_voting(
         pool: &mut VotingPool,
         voting_bfc: VotingBfc,
+        clock: &Clock,
     ) : Balance<BFC> {
         let (_, principal_withdraw) =
-            withdraw_from_principal(pool, voting_bfc);
+            withdraw_from_principal(pool, voting_bfc, clock);
         let principal_withdraw_amount = balance::value(&principal_withdraw);
 
 
@@ -99,10 +109,12 @@ module hello_world::voting_pool {
     public(friend) fun withdraw_from_principal(
         pool: &mut VotingPool,
         voting_bfc: VotingBfc,
+        clock: &Clock,
     ) : (u64, Balance<BFC>) {
 
         // Check that the voting information matches the pool.
         assert!(voting_bfc.pool_id == object::id(pool), EWrongPool);
+        assert!(clock::timestamp_ms(clock) > voting_bfc.stake_end_time, ENotEndOfStakingTime);
 
         let exchange_rate_at_staking_epoch = pool_token_exchange_rate_at_epoch();
         let principal_withdraw = unwrap_voting_bfc(voting_bfc);
@@ -118,6 +130,7 @@ module hello_world::voting_pool {
             id,
             pool_id: _,
             principal,
+            stake_end_time: _,
         } = voting_bfc;
         object::delete(id);
         principal
@@ -148,6 +161,7 @@ module hello_world::voting_pool {
             id: object::new(ctx),
             pool_id: self.pool_id,
             principal: balance::split(&mut self.principal, split_amount),
+            stake_end_time: self.stake_end_time,
         }
     }
 
@@ -165,6 +179,7 @@ module hello_world::voting_pool {
             id,
             pool_id: _,
             principal,
+            stake_end_time: _,
         } = other;
 
         object::delete(id);

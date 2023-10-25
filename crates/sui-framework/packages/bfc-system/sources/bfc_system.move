@@ -247,9 +247,10 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         payment: Coin<BFC>,
         actionName: vector<u8>,
+        clock: &Clock,
         ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName, ctx);
+        bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
     public entry fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
@@ -287,16 +288,18 @@ module bfc_system::bfc_system {
 
     public entry fun withdraw_voting(   wrapper: &mut BfcSystemState,
                                  voting_bfc: VotingBfc,
+                                    clock: &Clock,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc, ctx);
+        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc,clock, ctx);
     }
 
     public entry fun create_voting_bfc(wrapper: &mut BfcSystemState,
                                  coin: Coin<BFC>,
+                                    clock: &Clock,
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::create_voting_bfc(system_state, coin, ctx);
+        bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin

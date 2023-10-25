@@ -340,10 +340,10 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun create_bfcdao_action(
         self: &mut BfcSystemStateInner,
         payment: Coin<BFC>,
-
         actionName: vector<u8>,
+        clock: &Clock,
         ctx: &mut TxContext) {
-        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName, ctx);
+        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName,clock, ctx);
     }
 
     public(friend) fun propose(
@@ -461,13 +461,15 @@ module bfc_system::bfc_system_state_inner {
 
     public fun withdraw_voting(system_state: &mut BfcSystemStateInner,
                                voting_bfc: VotingBfc,
+                                clock: & Clock,
                                ctx: &mut TxContext) {
-        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, ctx);
+        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, clock, ctx);
     }
 
     public(friend) fun create_voting_bfc(system_state: &mut BfcSystemStateInner,
                                          coin: Coin<BFC>,
+                                        clock: & Clock,
                                          ctx: &mut TxContext) {
-        bfc_dao::create_voting_bfc(&mut system_state.dao, coin, ctx);
+        bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
 }
