@@ -12,11 +12,12 @@ import dayjs from 'dayjs';
 import { CreateDaoAction } from './CreateDaoAction';
 import { CreateProposal } from './CreateProposal';
 import { CreateVotingBfc } from './CreateVotingBfc';
+import { Refresh } from './Refresh';
 import { WithdrawVoting } from './WithdrawVoting';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
 import { AgreeSpan, StatusSpan, RejectSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
-import { useGetDao } from '~/hooks/useGetDao';
+import { DaoContext, useDaoContext } from '~/context';
 import { DisclosureBox } from '~/ui/DisclosureBox';
 import { Divider } from '~/ui/Divider';
 import { LinkWithQuery } from '~/ui/utils/LinkWithQuery';
@@ -93,59 +94,64 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 }
 
 function DaoList() {
+	const daoValues = useDaoContext('')!;
 	const { isConnected } = useWalletKit();
-	const { data, refetch } = useGetDao();
+
+	const { dao } = daoValues;
 
 	return (
-		<div className="flex flex-col items-stretch gap-5">
-			<div className="self-start">
-				<ConnectButton
-					connectText={
-						<>
-							Connect Wallet
-							<ArrowRight12 fill="currentColor" className="-rotate-45" />
-						</>
-					}
-					size="md"
-					className={clsx(
-						'!rounded-md !text-bodySmall',
-						isConnected
-							? '!border !border-solid  !bg-bfc !font-mono !text-white'
-							: '!flex !flex-nowrap !items-center !gap-1 !bg-bfc !font-sans !text-white',
-					)}
-				/>
-			</div>
-			{isConnected && (
-				<div className="flex flex-col gap-2">
-					<DisclosureBox title="create action" defaultOpen={false}>
-						<CreateDaoAction refetchDao={refetch} />
-					</DisclosureBox>
-					{data && (
-						<DisclosureBox title="create proposal" defaultOpen={false}>
-							<CreateProposal dao={data} refetchDao={refetch} />
-						</DisclosureBox>
-					)}
-					<DisclosureBox title="create voting bfc" defaultOpen={false}>
-						<CreateVotingBfc refetchDao={refetch} />
-					</DisclosureBox>
-					<DisclosureBox title="withdraw voting bfc" defaultOpen={false}>
-						<WithdrawVoting refetchDao={refetch} />
-					</DisclosureBox>
+		<DaoContext.Provider value={daoValues}>
+			<div className="flex flex-col items-stretch gap-5">
+				<div className="self-start">
+					<ConnectButton
+						connectText={
+							<>
+								Connect Wallet
+								<ArrowRight12 fill="currentColor" className="-rotate-45" />
+							</>
+						}
+						size="md"
+						className={clsx(
+							'!rounded-md !text-bodySmall',
+							isConnected
+								? '!border !border-solid  !bg-bfc !font-mono !text-white'
+								: '!flex !flex-nowrap !items-center !gap-1 !bg-bfc !font-sans !text-white',
+						)}
+					/>
 				</div>
-			)}
-			<div>
-				<Heading variant="heading4/semibold" color="steel-darker">
-					提案
-				</Heading>
+				{isConnected && (
+					<div className="flex flex-col gap-2">
+						<DisclosureBox title="create action" defaultOpen={false}>
+							<CreateDaoAction />
+						</DisclosureBox>
+						{dao && (
+							<DisclosureBox title="create proposal" defaultOpen={false}>
+								<CreateProposal />
+							</DisclosureBox>
+						)}
+						<DisclosureBox title="create voting bfc" defaultOpen={false}>
+							<CreateVotingBfc />
+						</DisclosureBox>
+						<DisclosureBox title="withdraw voting bfc" defaultOpen={false}>
+							<WithdrawVoting />
+						</DisclosureBox>
+					</div>
+				)}
+				<div>
+					<Heading variant="heading4/semibold" color="steel-darker">
+						提案
+					</Heading>
+				</div>
+				<div className="mt-5 grid grid-cols-3 gap-5">
+					{dao?.proposal_record.map((item) => (
+						<LinkWithQuery key={item.pid} to={`/dao/detail/${item.proposal_uid}`}>
+							<DaoItem data={item} dao={dao} />
+						</LinkWithQuery>
+					))}
+				</div>
 			</div>
-			<div className="mt-5 grid grid-cols-3 gap-5">
-				{data?.proposal_record.map((item) => (
-					<LinkWithQuery key={item.pid} to={`/dao/detail/${item.proposal_uid}`}>
-						<DaoItem data={item} dao={data} />
-					</LinkWithQuery>
-				))}
-			</div>
-		</div>
+			<Refresh />
+		</DaoContext.Provider>
 	);
 }
 
@@ -167,9 +173,7 @@ function Dao() {
 				<div id="home-content">
 					<div>
 						<ErrorBoundary>
-							<div>
-								<DaoList />
-							</div>
+							<DaoList />
 						</ErrorBoundary>
 					</div>
 				</div>

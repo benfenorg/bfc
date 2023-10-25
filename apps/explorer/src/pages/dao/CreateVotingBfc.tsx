@@ -12,14 +12,12 @@ import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
+import { useContext } from 'react';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { Input } from '~/ui/Input';
 import { ADDRESS } from '~/utils/constants';
-
-export interface Props {
-	refetchDao: () => void;
-}
 
 const schema = z.object({
 	amount: z
@@ -28,8 +26,9 @@ const schema = z.object({
 		.refine((n) => n >= 1, 'amount should be greater than or equal to 1'),
 });
 
-export function CreateVotingBfc({ refetchDao }: Props) {
+export function CreateVotingBfc() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, register, formState } = useZodForm({
 		schema: schema,
@@ -57,7 +56,7 @@ export function CreateVotingBfc({ refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 	return (

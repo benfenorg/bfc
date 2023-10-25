@@ -8,41 +8,50 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type BfcDao } from '@mysten/sui.js/client';
 import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
+import { useContext } from 'react';
 import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { Input } from '~/ui/Input';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
-
-export interface Props {
-	dao: BfcDao;
-	refetchDao: () => void;
-}
 
 const schema = z.object({
 	amount: z
 		.string()
 		.transform(Number)
 		.refine((n) => n >= 200, 'amount should be greater than or equal to 200'),
+	version: z
+		.string()
+		.transform(Number)
+		.refine((n) => n >= 24, 'version should be greater than or equal to 24'),
 	action: z.number({ required_error: 'must select action' }),
 });
 
-export function CreateProposal({ refetchDao, dao }: Props) {
+export function CreateProposal() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { dao, refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, formState, register, control } = useZodForm({
 		schema: schema,
 	});
 
 	const execute = useMutation({
-		mutationFn: async ({ amount, action }: { amount: number; action: number }) => {
+		mutationFn: async ({
+			amount,
+			action,
+			version,
+		}: {
+			amount: number;
+			action: number;
+			version: number;
+		}) => {
 			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
@@ -53,7 +62,7 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
-					tx.pure(20),
+					tx.pure(version),
 					coin,
 					tx.pure(action),
 					tx.pure(6000000),
@@ -70,7 +79,7 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 	return (
@@ -102,7 +111,8 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 				)}
 			/>
 
-			<Input label="amount" type="number" {...register('amount')} />
+			<Input label="amount" type="number" step="any" {...register('amount')} />
+			<Input label="version" type="number" {...register('version')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute
