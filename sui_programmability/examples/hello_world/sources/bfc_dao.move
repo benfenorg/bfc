@@ -149,6 +149,7 @@ module hello_world::bfc_dao {
         actionId: u64,
         /// Name for the action
         name: string::String,
+        status: bool,
     }
     public fun getBFCDaoActionId(bfcDaoAction: BFCDaoAction): u64 {
         bfcDaoAction.actionId
@@ -214,6 +215,7 @@ module hello_world::bfc_dao {
         let action = BFCDaoAction{
             actionId: action_id,
             name: string::utf8(actionName),
+            status: false,
             //description: string::utf8(actionName),
         };
 
@@ -1058,6 +1060,7 @@ module hello_world::bfc_dao {
             actionId: 100,
             name: string::utf8(b"hello"),
             //description: string::utf8(actionName),
+            status: false,
         };
 
 

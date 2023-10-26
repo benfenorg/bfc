@@ -39,7 +39,7 @@ export function WithdrawVoting() {
 			tx.moveCall({
 				target: `0xc8::bfc_system::withdraw_voting`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.object(vote)],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.object(vote), tx.object(ADDRESS.CLOCK)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({

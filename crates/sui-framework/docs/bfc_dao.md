@@ -584,6 +584,12 @@ Configuration of the <code>Token</code>'s DAO.
 <dd>
  Name for the action
 </dd>
+<dt>
+<code>status: bool</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -1038,11 +1044,29 @@ Proposal state
 
 
 
+<a name="0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>: u64 = 1416;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_ERR_CONFIG_PARAM_INVALID"></a>
 
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>: u64 = 1407;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ERR_DESCRIPTION_TOO_LONG"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_DESCRIPTION_TOO_LONG">ERR_DESCRIPTION_TOO_LONG</a>: u64 = 1417;
 </code></pre>
 
 
@@ -1156,11 +1180,29 @@ Error codes
 
 
 
+<a name="0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH">MAX_ACTION_NAME_LENGTH</a>: u64 = 100;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_MAX_ADMIN_COUNT"></a>
 
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ADMIN_COUNT">MAX_ADMIN_COUNT</a>: u64 = 1000;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>: u64 = 1000;
 </code></pre>
 
 
@@ -1338,6 +1380,7 @@ Error codes
     <b>let</b> value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
     // ensure the user pays enough
     <b>assert</b>!(value &gt;= <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_ACTION_COST">MIN_NEW_ACTION_COST</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
+    <b>assert</b>!(<a href="_length">vector::length</a>(&actionName) &lt;= <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH">MAX_ACTION_NAME_LENGTH</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>);
 
     <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_bfc, sender);
@@ -1353,6 +1396,7 @@ Error codes
     <b>let</b> action = <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a>{
         action_id: action_id,
         name: name_ref,
+        status: <b>false</b>,
     };
 
     <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
@@ -1673,6 +1717,7 @@ propose a proposal.
     <b>let</b> value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
     // ensure the user pays enough
     <b>assert</b>!(value &gt;= <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
+    <b>assert</b>!( <a href="_length">vector::length</a>(&description) &lt;= <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>);
 
     <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_bfc, sender);
@@ -2592,7 +2637,7 @@ Get the proposal state.
     } <b>else</b> <b>if</b> (current_time &lt; proposal.eta) {
         // Queued, waiting <b>to</b> execute
         <a href="bfc_dao.md#0xc8_bfc_dao_QUEUED">QUEUED</a>
-    } <b>else</b> <b>if</b> (proposal.action.action_id != 0 ) {
+    } <b>else</b> <b>if</b> (proposal.action.status == <b>false</b> ) {
         <a href="bfc_dao.md#0xc8_bfc_dao_EXECUTABLE">EXECUTABLE</a>
     } <b>else</b> {
         <a href="bfc_dao.md#0xc8_bfc_dao_EXTRACTED">EXTRACTED</a>
@@ -3465,7 +3510,7 @@ set min action delay
         proposal_obj.proposal.against_votes = 2;
         proposal_obj.proposal.quorum_votes = 2;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.action_id = 1;
+        proposal_obj.proposal.action.status = <b>false</b>;
     } <b>else</b> <b>if</b> (index == 7) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
@@ -3473,7 +3518,7 @@ set min action delay
         proposal_obj.proposal.against_votes = 2;
         proposal_obj.proposal.quorum_votes = 2;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.action_id = 0;
+        proposal_obj.proposal.action.status = <b>true</b>;
     };
     <a href="bfc_dao.md#0xc8_bfc_dao_synchronize_proposal_into_dao">synchronize_proposal_into_dao</a>(proposal_obj, dao);
 }

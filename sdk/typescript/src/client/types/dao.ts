@@ -16,6 +16,7 @@ export type ProposalRecord = {
 		name: string;
 	};
 	version_id: number;
+	description: string;
 };
 
 export enum ProposalStatus {

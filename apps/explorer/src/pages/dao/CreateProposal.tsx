@@ -8,10 +8,9 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
+import { humanReadableToBfcDigits, hexToString, strToHex } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
-import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { Controller } from 'react-hook-form';
@@ -32,6 +31,7 @@ const schema = z.object({
 		.transform(Number)
 		.refine((n) => n >= 24, 'version should be greater than or equal to 24'),
 	action: z.number({ required_error: 'must select action' }),
+	description: z.string({ required_error: 'must input describe' }).trim().nonempty(),
 });
 
 export function CreateProposal() {
@@ -47,10 +47,12 @@ export function CreateProposal() {
 			amount,
 			action,
 			version,
+			description,
 		}: {
 			amount: number;
 			action: number;
 			version: number;
+			description: string;
 		}) => {
 			const bigIntAmount = humanReadableToBfcDigits(amount);
 
@@ -66,6 +68,7 @@ export function CreateProposal() {
 					coin,
 					tx.pure(action),
 					tx.pure(6000000),
+					tx.object(strToHex(description)),
 					tx.object(ADDRESS.CLOCK),
 				],
 			});
@@ -100,10 +103,7 @@ export function CreateProposal() {
 						label="action"
 						options={Object.values(dao?.action_record || {}).map((i) => ({
 							value: i.action_id,
-							label:
-								i.action_id.toString() +
-								'-' +
-								new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
+							label: i.action_id.toString() + '-' + hexToString(i.name),
 						}))}
 						value={value}
 						onChange={onChange}
@@ -113,6 +113,7 @@ export function CreateProposal() {
 
 			<Input label="amount" type="number" step="any" {...register('amount')} />
 			<Input label="version" type="number" {...register('version')} />
+			<Input label="description" {...register('description')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

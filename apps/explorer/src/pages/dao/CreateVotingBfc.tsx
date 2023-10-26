@@ -44,7 +44,7 @@ export function CreateVotingBfc() {
 			tx.moveCall({
 				target: `0xc8::bfc_system::create_voting_bfc`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), coin],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), coin, tx.object(ADDRESS.CLOCK)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
