@@ -1639,6 +1639,7 @@ impl PgIndexerStore {
             .map(|p| SuiDaoProposal {
                 pid: p.pid as u64,
                 action_name: p.action_name.clone(),
+                action_status: p.action_status,
                 proposer: p.proposer.clone(),
                 start_time: p.start_time as u64,
                 end_time: p.end_time as u64,
