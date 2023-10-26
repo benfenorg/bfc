@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Disclosure } from '@headlessui/react';
-import { useWalletKit, ConnectModal } from '@mysten/wallet-kit';
+import { useWalletKit } from '@mysten/wallet-kit';
 import { useStationQuery, useBalance } from '~/hooks/station';
 import { useSwapMutation } from '../../mutations/station';
 import { toast } from 'react-hot-toast';
-import { Button } from '../Base/Button';
+import { ConnectExcuteButton } from '../ConnectExcuteButton';
 import { ConfirmModal } from './ConfirmModal';
 import { SwapInfo } from './SwapInfo';
 import { ConfirmModaStatus } from './ConfirmModal';
@@ -34,7 +34,6 @@ function BusdCoin() {
 }
 
 export function StationCoinCard({ type }: any) {
-	const [connectModalOpen, setConnectModalOpen] = useState(false);
 	const [amount, setAmount] = useState('');
 	const [isOpen, setIsOpen] = useState(false);
 	const [status, setStatus] = useState<ConfirmModaStatus>('show');
@@ -42,7 +41,10 @@ export function StationCoinCard({ type }: any) {
 
 	const { currentAccount } = useWalletKit();
 
-	const { data: balance, refetch: balanceRefetch } = useBalance(type, currentAccount?.address ?? '');
+	const { data: balance, refetch: balanceRefetch } = useBalance(
+		type,
+		currentAccount?.address ?? '',
+	);
 
 	const { data, isFetching: loading } = useStationQuery(type, amount);
 
@@ -137,22 +139,15 @@ export function StationCoinCard({ type }: any) {
 			</Disclosure>
 
 			<div className="p-5">
-				{currentAccount ? (
-					<Button
-						onClick={() => {
-							setIsOpen(true);
-						}}
-						disabled={!!loading || !!isLoading || !Boolean(amount) || !Boolean(data?.result)}
-					>
-						{connectedText}
-					</Button>
-				) : (
-					<Button onClick={() => setConnectModalOpen(true)}>Connect Wallet</Button>
-				)}
+				<ConnectExcuteButton
+					currentAccount={currentAccount}
+					connectedText={connectedText}
+					disabled={!!loading || !!isLoading || !Boolean(amount) || !Boolean(data?.result)}
+					excute={() => {
+						setIsOpen(true);
+					}}
+				/>
 			</div>
-			{!currentAccount && (
-				<ConnectModal open={connectModalOpen} onClose={() => setConnectModalOpen(false)} />
-			)}
 			<ConfirmModal
 				isOpen={isOpen}
 				data={data}

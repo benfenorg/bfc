@@ -8,12 +8,47 @@ body,
 	height: 100%;
 	width: 100%;
 	background: #171719;
-  color: #ffffff;
+	color: #ffffff;
 }
 
+input {
+	background: none;
+	outline: none;
+	border: 0px;
+}
 
-input{  
-	background:none;  
-	outline:none;  
-	border:0px;
+@keyframes loading {
+	from {
+		transform: rotate(0deg);
+	}
+	50% {
+		transform: rotate(180deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+.circular-progress {
+	position: relative;
+}
+
+.circular-progress-svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	stroke: #e1e1e9;
+}
+.circular-progress-loading-svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	stroke: #171719;
+	animation: loading 0.8s linear 0s infinite;
+}
+.circular-progress-loading-add-svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	stroke: #171719;
+	transform: rotate(-90deg);
 }

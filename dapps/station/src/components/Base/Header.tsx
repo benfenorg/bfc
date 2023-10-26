@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useNavigate } from 'react-router-dom';
-import { ConnectButton } from './ConnectButton';
+import { ConnectButton } from '../ConnectButton';
 import { ReactComponent as BenfenHeaderLogo } from '../../assets/benfen_header_logo.svg';
 import {HeaderTab} from './HeaderTab'
 export function Header() {
@@ -15,12 +15,13 @@ export function Header() {
 					<BenfenHeaderLogo />
 				</div>
 				<div className="font-semibold text-xs">BenFen Station</div>
+				<div className="ml-auto">
+					<ConnectButton />
+				</div>
 			</div>
 			<div className="flex px-10 pt-10 pb-5">
 				<div className="text-xl font-bold">BenFen Station</div>
-				<div className="ml-auto my-3 md:my-1">
-					<ConnectButton />
-				</div>
+				
 			</div>
 			<div className="flex px-10">
 				<HeaderTab />
