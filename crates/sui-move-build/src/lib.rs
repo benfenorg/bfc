@@ -420,7 +420,7 @@ impl CompiledPackage {
             .filter(|m| *m.self_id().address() == MOVE_STDLIB_ADDRESS)
     }
     /// Get bytecode modules from the bfc system that are used by this package
-    pub fn get_obc_system_modules(&self) -> impl Iterator<Item = &CompiledModule> {
+    pub fn get_bfc_system_modules(&self) -> impl Iterator<Item = &CompiledModule> {
         self.get_modules_and_deps()
             .filter(|m| *m.self_id().address() == BFC_SYSTEM_ADDRESS)
     }

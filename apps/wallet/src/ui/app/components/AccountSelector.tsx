@@ -4,7 +4,7 @@
 import { Popover, Transition } from '@headlessui/react';
 import { useResolveSuiNSName } from '@mysten/core';
 import { ChevronDown12, Copy12 } from '@mysten/icons';
-import { formatAddress, sui2ObcAddress } from '@mysten/sui.js';
+import { formatAddress, sui2BfcAddress } from '@mysten/sui.js';
 
 import { AccountList } from './AccountList';
 import { useAccounts } from '../hooks/useAccounts';
@@ -18,7 +18,7 @@ import { ampli } from '_src/shared/analytics/ampli';
 export function AccountSelector() {
 	const allAccounts = useAccounts();
 	const activeAddress = useActiveAddress();
-	const copyToAddress = useCopyToClipboard(activeAddress ? sui2ObcAddress(activeAddress) : '', {
+	const copyToAddress = useCopyToClipboard(activeAddress ? sui2BfcAddress(activeAddress) : '', {
 		copySuccessMessage: 'Address copied',
 	});
 	const backgroundClient = useBackgroundClient();

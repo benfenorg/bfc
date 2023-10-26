@@ -100,7 +100,7 @@ diesel::table! {
         network_total_transactions -> Int8,
         timestamp_ms -> Int8,
         validator_signature -> Text,
-        total_transact_obc -> Int8,
+        total_transact_bfc -> Int8,
         system_tick -> Bool,
     }
 }
@@ -110,6 +110,7 @@ diesel::table! {
         object_id -> Varchar,
         action_id -> Int8,
         action_name -> Text,
+        action_status -> Bool,
         pid -> Int8,
         proposer -> Varchar,
         start_time -> Int8,
@@ -120,6 +121,7 @@ diesel::table! {
         action_delay -> Int8,
         quorum_votes -> Int8,
         state -> Int2,
+        description -> Text,
     }
 }
 
@@ -310,7 +312,7 @@ diesel::table! {
         raw_transaction -> Bytea,
         transaction_effects_content -> Text,
         confirmed_local_execution -> Nullable<Bool>,
-        transact_obc -> Int8,
+        transact_bfc -> Int8,
     }
 }
 
@@ -362,7 +364,7 @@ diesel::table! {
 diesel::table! {
     network_segment_metrics(segment_started_at) {
         segment_started_at -> Int8,
-        total_transact_obc -> Int8,
+        total_transact_bfc -> Int8,
         avg_gas_cost -> Int8,
         gas_checkpoint -> Int8,
     }

@@ -50,6 +50,6 @@ async fn test_inner_swap()  -> Result<(), anyhow::Error> {
         .await;
     let mut context = test_cluster.wallet;
 
-    let _result = InnerSwap::exchange_obc(&mut context, Coin::new(UID::new(gas_id), 1000)).await;
+    let _result = InnerSwap::exchange_bfc(&mut context, Coin::new(UID::new(gas_id), 1000)).await;
     Ok(())
 }

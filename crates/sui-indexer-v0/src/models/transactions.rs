@@ -39,7 +39,7 @@ pub struct Transaction {
     pub raw_transaction: Vec<u8>,
     pub transaction_effects_content: String,
     pub confirmed_local_execution: Option<bool>,
-    pub transact_obc: i64,
+    pub transact_bfc: i64,
 }
 
 impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
@@ -66,10 +66,10 @@ impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
                 err
             ))
         })?;
-        let transact_obc = match balance_changes {
+        let transact_bfc = match balance_changes {
             Some(changes) => changes
                 .iter()
-                .filter(|x| is_obc_coin(&x.coin_type) && x.amount > 0)
+                .filter(|x| is_bfc_coin(&x.coin_type) && x.amount > 0)
                 .map(|x| x.amount)
                 .sum(),
             None => 0,
@@ -104,19 +104,19 @@ impl TryFrom<TemporaryTransactionBlockResponseStore> for Transaction {
             raw_transaction,
             transaction_effects_content: tx_effect_json,
             confirmed_local_execution,
-            transact_obc,
+            transact_bfc,
         })
     }
 }
 
-const OBC_MODULE_NAME: &IdentStr = ident_str!("bfc");
-const OBC_STRUCT_NAME: &IdentStr = ident_str!("BFC");
+const BFC_MODULE_NAME: &IdentStr = ident_str!("bfc");
+const BFC_STRUCT_NAME: &IdentStr = ident_str!("BFC");
 
-fn is_obc_coin(tt: &TypeTag) -> bool {
+fn is_bfc_coin(tt: &TypeTag) -> bool {
     if let TypeTag::Struct(st) = tt {
         return st.address == AccountAddress::TWO
-            && st.module == OBC_MODULE_NAME.into()
-            && st.name == OBC_STRUCT_NAME.into();
+            && st.module == BFC_MODULE_NAME.into()
+            && st.name == BFC_STRUCT_NAME.into();
     }
     return false;
 }

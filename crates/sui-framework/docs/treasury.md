@@ -711,7 +711,7 @@ Burn swap stablecoin to bfc
 Burn swap stablecoin to bfc
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _a2b: bool, _amount: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _a2b: bool, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -724,10 +724,10 @@ Burn swap stablecoin to bfc
     _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _a2b: bool,
     _amount: u64
-): u64
+): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 {
     <b>let</b> sc_vault = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;());
-    <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="vault.md#0xc8_vault_calculate_swap_result">vault::calculate_swap_result</a>(sc_vault, _a2b, <b>true</b>, _amount))
+    <a href="vault.md#0xc8_vault_calculate_swap_result">vault::calculate_swap_result</a>(sc_vault, _a2b, <b>true</b>, _amount)
 }
 </code></pre>
 

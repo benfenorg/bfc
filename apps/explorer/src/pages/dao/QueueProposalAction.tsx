@@ -8,24 +8,20 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
+import { useContext } from 'react';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { ADDRESS } from '~/utils/constants';
-
-export interface Props {
-	manageKey: string;
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
 
 const schema = z.object({});
 
-export function QueueProposalAction({ proposal, manageKey, refetchDao }: Props) {
+export function QueueProposalAction() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { manageKey, proposal, refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, formState } = useZodForm({
 		schema: schema,
@@ -36,12 +32,12 @@ export function QueueProposalAction({ proposal, manageKey, refetchDao }: Props) 
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::queue_proposal_action`,
+				target: `0xc8::bfc_system::queue_proposal_action`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(manageKey!),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.object(ADDRESS.CLOCK),
 				],
 			});
@@ -55,7 +51,7 @@ export function QueueProposalAction({ proposal, manageKey, refetchDao }: Props) 
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 

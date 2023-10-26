@@ -75,10 +75,10 @@ pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
-pub mod base_types_obc;
+pub mod base_types_bfc;
 pub mod epoch_data;
-pub mod obc_system_state;
-mod obc_base_types;
+pub mod bfc_system_state;
+mod bfc_base_types;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
@@ -171,7 +171,7 @@ fn resolve_address(addr: &str) -> Option<AccountAddress> {
         "std" => Some(MOVE_STDLIB_ADDRESS),
         "sui" => Some(SUI_FRAMEWORK_ADDRESS),
         "sui_system" => Some(SUI_SYSTEM_ADDRESS),
-        "obc_system" => Some(BFC_SYSTEM_ADDRESS),
+        "bfc_system" => Some(BFC_SYSTEM_ADDRESS),
         _ => None,
     }
 }

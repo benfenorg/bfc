@@ -123,7 +123,7 @@ export function TransactionBlockCard({
 	const [open, setOpen] = useState(!initialClose);
 	return (
 		<div className="relative w-full">
-			<Card rounded="2xl" border="obcBorder" bg="white" spacing="none" {...cardProps}>
+			<Card rounded="2xl" border="bfcBorder" bg="white" spacing="none" {...cardProps}>
 				<Collapsible.Root
 					open={open}
 					onOpenChange={setOpen}

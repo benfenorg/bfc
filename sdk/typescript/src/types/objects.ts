@@ -19,7 +19,7 @@ import {
 	tuple,
 	unknown,
 } from 'superstruct';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import { ObjectOwner } from './common.js';
 import type { OwnedObjectRef } from './transactions.js';
 
@@ -281,7 +281,7 @@ export function getObjectId(data: SuiObjectResponse | SuiObjectRef | OwnedObject
 		id =
 			getObjectReference(data)?.objectId ?? getObjectNotExistsResponse(data as SuiObjectResponse)!;
 	}
-	return sui2ObcAddress(id);
+	return sui2BfcAddress(id);
 }
 
 export function getObjectVersion(

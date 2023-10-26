@@ -52,7 +52,7 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::Object,
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        obc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME, BfcRoundParams},
+        bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME, BfcRoundParams},
         SUI_FRAMEWORK_ADDRESS,
     };
 
@@ -514,7 +514,7 @@ mod checked {
                 )
             }
             TransactionKind::ChangeBfcRound(change_round) => {
-                obc_round(
+                bfc_round(
                     change_round,
                     temporary_store,
                     tx_ctx,
@@ -694,7 +694,7 @@ mod checked {
         Ok(builder.finish())    
     }
 
-    fn obc_round(
+    fn bfc_round(
         change_round: ChangeBfcRound,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
@@ -718,7 +718,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let _result = maybe_modify_result(result, change_round.obc_round);
+        let _result = maybe_modify_result(result, change_round.bfc_round);
 
         // if result.is_err() {
         //     tracing::error!(

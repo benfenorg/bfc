@@ -1107,10 +1107,10 @@ pub fn generate_genesis_system_object(
         );
 
         // Step 6: Create the BfcSystemState UID
-        let obc_system_state_uid = builder.programmable_move_call(
+        let bfc_system_state_uid = builder.programmable_move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
             ident_str!("object").to_owned(),
-            ident_str!("obc_system_state").to_owned(),
+            ident_str!("bfc_system_state").to_owned(),
             vec![],
             vec![],
         );
@@ -1125,7 +1125,7 @@ pub fn generate_genesis_system_object(
         );
 
         let arguments = vec![
-            obc_system_state_uid,
+            bfc_system_state_uid,
             busd_supply,
             new_sui_supply,
             builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?
@@ -1133,7 +1133,7 @@ pub fn generate_genesis_system_object(
 
         builder.programmable_move_call(
             BFC_SYSTEM_ADDRESS.into(),
-            ident_str!("obc_system").to_owned(),
+            ident_str!("bfc_system").to_owned(),
             ident_str!("create").to_owned(),
             vec![],
             arguments,

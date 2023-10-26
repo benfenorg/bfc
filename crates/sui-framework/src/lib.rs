@@ -125,7 +125,7 @@ impl BuiltInFramework {
             ),
             (
                 BFC_SYSTEM_PACKAGE_ID,
-                "obc-system",
+                "bfc-system",
                 [MOVE_STDLIB_PACKAGE_ID,SUI_FRAMEWORK_PACKAGE_ID]
             ),
 

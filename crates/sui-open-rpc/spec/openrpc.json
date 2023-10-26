@@ -5211,6 +5211,24 @@
           }
         ]
       },
+      "BFCDaoAction": {
+        "type": "object",
+        "required": [
+          "action_id",
+          "name"
+        ],
+        "properties": {
+          "action_id": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "name": {
+            "description": "Name for the action",
+            "type": "string"
+          }
+        }
+      },
       "Balance": {
         "type": "object",
         "required": [
@@ -5640,7 +5658,7 @@
           "action_record": {
             "type": "object",
             "additionalProperties": {
-              "$ref": "#/components/schemas/OBCDaoAction"
+              "$ref": "#/components/schemas/BFCDaoAction"
             }
           },
           "admin": {
@@ -6876,24 +6894,6 @@
           }
         }
       },
-      "OBCDaoAction": {
-        "type": "object",
-        "required": [
-          "action_id",
-          "name"
-        ],
-        "properties": {
-          "action_id": {
-            "type": "integer",
-            "format": "uint64",
-            "minimum": 0.0
-          },
-          "name": {
-            "description": "Name for the action",
-            "type": "string"
-          }
-        }
-      },
       "ObjectChange": {
         "description": "ObjectChange are derived from the object mutations in the TransactionEffect to provide richer object information.",
         "oneOf": [
@@ -7914,7 +7914,7 @@
             "description": "proposal action.",
             "allOf": [
               {
-                "$ref": "#/components/schemas/OBCDaoAction"
+                "$ref": "#/components/schemas/BFCDaoAction"
               }
             ]
           },
@@ -10832,19 +10832,19 @@
       "VotingPool": {
         "type": "object",
         "required": [
+          "bfc_balance",
           "id",
-          "obc_balance",
           "pool_token_balance"
         ],
         "properties": {
-          "id": {
-            "$ref": "#/components/schemas/UID"
-          },
-          "obc_balance": {
+          "bfc_balance": {
             "description": "The total number of BFC tokens in this pool,",
             "type": "integer",
             "format": "uint64",
             "minimum": 0.0
+          },
+          "id": {
+            "$ref": "#/components/schemas/UID"
           },
           "pool_token_balance": {
             "description": "Total number of pool tokens issued by the pool.",

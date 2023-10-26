@@ -32,14 +32,14 @@ use sui_types::base_types::{
     RESOLVED_UTF8_STR, STD_ASCII_MODULE_NAME, STD_ASCII_STRUCT_NAME, STD_OPTION_MODULE_NAME,
     STD_OPTION_STRUCT_NAME, STD_UTF8_MODULE_NAME, STD_UTF8_STRUCT_NAME,
 };
-use sui_types::base_types_obc::bfc_address_util::convert_to_evm_address;
+use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use sui_types::id::{ID, RESOLVED_SUI_ID};
 use sui_types::move_package::MovePackage;
 use sui_types::MOVE_STDLIB_ADDRESS;
 
 const HEX_PREFIX: &str = "0x";
-const OBC_PREFIX_UPPER: &str = "BFC";
-const OBC_PREFIX_LOWER: &str = "bfc";
+const BFC_PREFIX_UPPER: &str = "BFC";
+const BFC_PREFIX_LOWER: &str = "bfc";
 
 #[cfg(test)]
 mod tests;
@@ -380,7 +380,7 @@ fn json_value_to_sui_address(value: &JsonValue) -> anyhow::Result<SuiAddress> {
         JsonValue::String(s) => {
             let mut s = s.trim().to_lowercase();
 
-            if s.starts_with(OBC_PREFIX_UPPER) || s.starts_with(OBC_PREFIX_LOWER) {
+            if s.starts_with(BFC_PREFIX_UPPER) || s.starts_with(BFC_PREFIX_LOWER) {
                 s = convert_to_evm_address(s.clone());
             }
             if !s.starts_with(HEX_PREFIX) {
@@ -707,7 +707,7 @@ fn resolve_object_arg(idx: usize, arg: &JsonValue) -> Result<ObjectID, anyhow::E
         JsonValue::String(s) => {
             let mut s = s.trim().to_lowercase();
 
-            if s.starts_with(OBC_PREFIX_UPPER) || s.starts_with(OBC_PREFIX_LOWER) {
+            if s.starts_with(BFC_PREFIX_UPPER) || s.starts_with(BFC_PREFIX_LOWER) {
                 s = convert_to_evm_address(s.clone());
             }
             if !s.starts_with(HEX_PREFIX) {

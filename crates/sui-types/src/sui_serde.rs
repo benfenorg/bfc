@@ -31,8 +31,8 @@ use crate::{
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
 //use crate::base_types::{SuiAddress};
-use crate::base_types_obc::bfc_address_util::convert_to_evm_address;
-use crate::base_types_obc::bfc_address_util::sha256_string;
+use crate::base_types_bfc::bfc_address_util::convert_to_evm_address;
+use crate::base_types_bfc::bfc_address_util::sha256_string;
 
 #[inline]
 fn to_custom_error<'de, D, E>(e: E) -> D::Error

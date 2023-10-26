@@ -59,7 +59,9 @@
 -  [Module Specification](#@Module_Specification_1)
 
 
-<pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<pre><code><b>use</b> <a href="">0x1::ascii</a>;
+<b>use</b> <a href="">0x1::type_name</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
@@ -266,6 +268,18 @@
 </dd>
 <dt>
 <code>coin_b_balance: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>coin_a_type: <a href="_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>coin_b_type: <a href="_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -1297,7 +1311,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1306,7 +1320,7 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
     <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
         amount_in: 0,
         amount_out: 0,
@@ -1629,16 +1643,25 @@ open <code>position_number</code> positions
     <b>let</b> swap_res = <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>(_vault, _a2b, _by_amount_in, _sqrt_price_limit, _amount);
     <b>let</b> balance_a_ret;
     <b>let</b> balance_b_ret;
+    <b>let</b> coin_type_in: String;
+    <b>let</b> coin_type_out: String;
+
     <b>if</b> (_a2b) {
         balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;BFC&gt;(&<b>mut</b> _vault.coin_b, swap_res.amount_out);
         balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
+        coin_type_in = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;());
+        coin_type_out = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BFC&gt;());
     } <b>else</b> {
         balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;StableCoinType&gt;(&<b>mut</b> _vault.coin_a, swap_res.amount_out);
         balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
+        coin_type_in = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BFC&gt;());
+        coin_type_out = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;());
     };
     event::swap(
         <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         _a2b,
+        coin_type_in,
+        coin_type_out,
         swap_res.amount_in,
         swap_res.amount_out,
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&balance_a_ret),
@@ -1936,6 +1959,8 @@ vault info
         last_sqrt_price: _vault.last_sqrt_price,
         coin_a_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_a),
         coin_b_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b),
+        coin_a_type: <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;()),
+        coin_b_type: <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BFC&gt;()),
         tick_spacing: _vault.tick_spacing,
         spacing_times: _vault.spacing_times,
         liquidity: _vault.liquidity,

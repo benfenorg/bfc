@@ -8,55 +8,67 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ObcDao } from '@mysten/sui.js/client';
-import { humanReadableToObcDigits } from '@mysten/sui.js/utils';
+import { humanReadableToBfcDigits, hexToString, strToHex } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
-import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
+import { useContext } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { Input } from '~/ui/Input';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	dao: ObcDao;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
 	amount: z
 		.string()
-		.regex(/\d+/)
 		.transform(Number)
-		.refine((n) => n >= 200),
-	action: z.string().trim(),
+		.refine((n) => n >= 200, 'amount should be greater than or equal to 200'),
+	version: z
+		.string()
+		.transform(Number)
+		.refine((n) => n >= 24, 'version should be greater than or equal to 24'),
+	action: z.number({ required_error: 'must select action' }),
+	description: z.string({ required_error: 'must input describe' }).trim().nonempty(),
 });
 
-export function CreateProposal({ refetchDao, dao }: Props) {
+export function CreateProposal() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { dao, refetch } = useContext(DaoContext)!;
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, register, control } = useZodForm({
 		schema: schema,
 	});
 
 	const execute = useMutation({
-		mutationFn: async ({ amount, action }: { amount: number; action: string }) => {
-			const bigIntAmount = humanReadableToObcDigits(amount);
+		mutationFn: async ({
+			amount,
+			action,
+			version,
+			description,
+		}: {
+			amount: number;
+			action: number;
+			version: number;
+			description: string;
+		}) => {
+			const bigIntAmount = humanReadableToBfcDigits(amount);
 
 			const tx = new TransactionBlock();
 			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 
 			tx.moveCall({
-				target: `0xc8::obc_system::propose`,
+				target: `0xc8::bfc_system::propose`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
-					tx.pure(20),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
+					tx.pure(version),
 					coin,
-					tx.pure(Number.parseInt(action)),
+					tx.pure(action),
 					tx.pure(6000000),
+					tx.object(strToHex(description)),
 					tx.object(ADDRESS.CLOCK),
 				],
 			});
@@ -70,7 +82,7 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 	return (
@@ -83,15 +95,25 @@ export function CreateProposal({ refetchDao, dao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector
-				{...register('action')}
-				label="action"
-				options={Object.values(dao?.action_record || {}).map((i) => ({
-					value: i.action_id.toString(),
-					label: new TextDecoder().decode(hexToBytes(i.name.replace(/^0x/, ''))),
-				}))}
+			<Controller
+				control={control}
+				name="action"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="action"
+						options={Object.values(dao?.action_record || {}).map((i) => ({
+							value: i.action_id,
+							label: i.action_id.toString() + '-' + hexToString(i.name),
+						}))}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
-			<Input label="amount" type="number" {...register('amount')} />
+
+			<Input label="amount" type="number" step="any" {...register('amount')} />
+			<Input label="version" type="number" {...register('version')} />
+			<Input label="description" {...register('description')} />
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

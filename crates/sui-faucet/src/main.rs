@@ -30,6 +30,7 @@ use tracing::{info, warn};
 use uuid::Uuid;
 
 const CONCURRENCY_LIMIT: usize = 30;
+const DEFAULT_NUM_COINS: usize = 100;
 
 struct AppState<F = Arc<SimpleFaucet>> {
     faucet: F,
@@ -53,7 +54,7 @@ async fn main() -> Result<(), anyhow::Error> {
     };
     info!("Max concurrency: {max_concurrency}.");
 
-    let config: FaucetConfig = FaucetConfig::parse();
+    let mut config: FaucetConfig = FaucetConfig::parse();
     let FaucetConfig {
         port,
         host_ip,
@@ -64,7 +65,7 @@ async fn main() -> Result<(), anyhow::Error> {
         wal_retry_interval,
         ..
     } = config;
-
+    config.num_coins = DEFAULT_NUM_COINS;
     let context = create_wallet_context(wallet_client_timeout_secs).await?;
 
     let prom_binding = PROM_PORT_ADDR.parse().unwrap();

@@ -5,7 +5,7 @@ import { ChevronRight12 } from '@mysten/icons';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { cva, type VariantProps } from 'class-variance-authority';
 import clsx from 'clsx';
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, useEffect } from 'react';
 
 const disclosureBoxStyles = cva('group', {
 	variants: {
@@ -25,6 +25,7 @@ export interface DisclosureBoxProps extends VariantProps<typeof disclosureBoxSty
 	title: ReactNode;
 	preview?: ReactNode;
 	children: ReactNode;
+	disabled?: boolean;
 }
 
 export function DisclosureBox({
@@ -33,14 +34,28 @@ export function DisclosureBox({
 	children,
 	preview,
 	variant,
+	disabled,
 }: DisclosureBoxProps) {
 	const [open, setOpen] = useState(defaultOpen);
+
+	useEffect(() => {
+		if (disabled) {
+			setOpen(false);
+		}
+	}, [disabled]);
+
 	return (
 		<div className={disclosureBoxStyles({ variant })}>
 			<Collapsible.Root open={open} onOpenChange={setOpen}>
-				<Collapsible.Trigger className="flex w-full cursor-pointer flex-nowrap items-center gap-1 px-5 py-3.75">
+				<Collapsible.Trigger
+					className={clsx(
+						'flex w-full flex-nowrap items-center gap-1 px-5 py-3.75',
+						disabled ? 'cursor-not-allowed' : 'cursor-pointer ',
+					)}
+					disabled={disabled}
+				>
 					<div className="flex w-11/12 flex-1 gap-1 text-body font-semibold text-gray-90">
-						{title}
+						<span className={clsx(disabled ? 'text-bfc-text3' : 'text-bfc')}>{title}</span>
 						{preview && !open ? preview : null}
 					</div>
 

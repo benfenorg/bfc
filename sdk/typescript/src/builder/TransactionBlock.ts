@@ -27,7 +27,7 @@ import { TransactionBlockDataBuilder } from './TransactionBlockData.js';
 import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import { normalizeSuiObjectId } from '../utils/sui-types.js';
 import { SUI_TYPE_ARG } from '../framework/framework.js';
 import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
@@ -113,7 +113,7 @@ const LIMITS = {
 type Limits = Partial<Record<keyof typeof LIMITS, number>>;
 
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
-const GAS_SAFE_OVERHEAD = 1000n;
+const GAS_SAFE_OVERHEAD = 1000000n;
 
 // The maximum objects that can be fetched at once using multiGetObjects.
 const MAX_OBJECTS_PER_FETCH = 50;
@@ -480,8 +480,8 @@ export class TransactionBlock {
 						'ImmOrOwned' in input.value.Object
 					) {
 						return (
-							sui2ObcAddress(coin.coinObjectId) ===
-							sui2ObcAddress(input.value.Object.ImmOrOwned.objectId)
+							sui2BfcAddress(coin.coinObjectId) ===
+							sui2BfcAddress(input.value.Object.ImmOrOwned.objectId)
 						);
 					}
 
@@ -621,7 +621,20 @@ export class TransactionBlock {
 						// Skip if the input is already resolved
 						if (is(input.value, BuilderCallArg)) return;
 
-						const inputValue = input.value;
+						let inputValue = input.value;
+						// if (typeof param === 'string') {
+						// 	if (['U8', 'U16', 'U32', 'U64', 'U128', 'U256'].includes(param)) {
+						// 		inputValue = Number.parseInt(inputValue);
+						// 	} else if (param === 'Bool') {
+						// 		inputValue = inputValue.toLowerCase() === 'true';
+						// 	}
+						// } else if ('Vector' in param) {
+						// 	if (typeof inputValue === 'string' && param.Vector === 'U8') {
+						// 		// do nothing;
+						// 	} else {
+						// 		inputValue = inputValue.split(',').filter(Boolean);
+						// 	}
+						// }
 
 						const serType = getPureSerializationType(param, inputValue);
 

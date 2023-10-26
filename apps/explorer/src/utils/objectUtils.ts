@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { sui2ObcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@mysten/sui.js';
 import { type ObjectOwner, type SuiObjectResponse } from '@mysten/sui.js/client';
 
 import { findIPFSvalue } from './stringUtils';
@@ -43,7 +43,7 @@ export function getOwnerStr(owner: ObjectOwner | string): string {
 	} else {
 		address = owner;
 	}
-	return sui2ObcAddress(address);
+	return sui2BfcAddress(address);
 }
 
 export const checkIsPropertyType = (value: any) => ['number', 'string'].includes(typeof value);

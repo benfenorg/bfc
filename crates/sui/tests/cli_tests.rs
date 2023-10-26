@@ -18,7 +18,7 @@ use sui_types::governance::{ADD_GAS_COIN_FUN_NAME, INIT_EXCHANGE_FUN_NAME};
 use tokio::time::sleep;
 use tracing::info;
 use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID};
-use sui_types::obc_system_state::BFC_SYSTEM_MODULE_NAME;
+use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 use sui::client_commands::SwitchResponse;
 use sui::{
@@ -578,7 +578,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     );
     let bfc_object = Object::with_id_owner_gas_for_testing(ObjectID::random(), address, 100000000000);
     let exchange_id = ObjectID::random();
-    let obc_exchange = Object::with_id_owner_gas_for_testing(exchange_id, address, 200000000000);
+    let bfc_exchange = Object::with_id_owner_gas_for_testing(exchange_id, address, 200000000000);
 
     let mut test_cluster = TestClusterBuilder::new()
         .with_accounts(vec![AccountConfig {
@@ -586,7 +586,7 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
             address: Some(address),
         }])
         .with_objects([
-            gas_object.clone(), bfc_object, obc_exchange
+            gas_object.clone(), bfc_object, bfc_exchange
         ])
         .build()
         .await;

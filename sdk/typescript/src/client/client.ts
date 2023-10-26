@@ -39,7 +39,7 @@ import type {
 	NetworkMetrics,
 	AddressMetrics,
 	AllEpochsAddressMetrics,
-	ObcDao,
+	BfcDao,
 	DevInspectTransactionBlockParams,
 	DryRunTransactionBlockParams,
 	ExecuteTransactionBlockParams,
@@ -82,7 +82,7 @@ import {
 	normalizeSuiAddress,
 } from '../utils/sui-types.js';
 import { fromB58, toB64, toHEX } from '@mysten/bcs';
-import { sui2ObcAddress } from '../utils/format.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import type { TransactionBlock } from '../builder/index.js';
 import { isTransactionBlock } from '../builder/index.js';
 import { SuiHTTPTransport } from './http-transport.js';
@@ -318,7 +318,7 @@ export class SuiClient {
 	 * Get details about an object
 	 */
 	async getObject(input: GetObjectParams): Promise<SuiObjectResponse> {
-		if (!input.id || !isValidSuiObjectId(sui2ObcAddress(input.id))) {
+		if (!input.id || !isValidSuiObjectId(sui2BfcAddress(input.id))) {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({
@@ -339,7 +339,7 @@ export class SuiClient {
 	 */
 	async multiGetObjects(input: MultiGetObjectsParams): Promise<SuiObjectResponse[]> {
 		input.ids.forEach((id) => {
-			if (!id || !isValidSuiObjectId(sui2ObcAddress(id))) {
+			if (!id || !isValidSuiObjectId(sui2BfcAddress(id))) {
 				throw new Error(`Invalid Sui Object id ${id}`);
 			}
 		});
@@ -489,7 +489,7 @@ export class SuiClient {
 	 */
 	async getStakesByIds(input: GetStakesByIdsParams): Promise<DelegatedStake[]> {
 		input.stakedSuiIds.forEach((id) => {
-			if (!id || !isValidSuiObjectId(sui2ObcAddress(id))) {
+			if (!id || !isValidSuiObjectId(sui2BfcAddress(id))) {
 				throw new Error(`Invalid Sui Stake id ${id}`);
 			}
 		});
@@ -519,7 +519,7 @@ export class SuiClient {
 	/**
 	 * Getting inner dao info
 	 */
-	async getInnerDao(): Promise<ObcDao> {
+	async getInnerDao(): Promise<BfcDao> {
 		return await this.transport.request({
 			method: 'sui_getInnerDaoInfo',
 			params: [],
@@ -623,7 +623,7 @@ export class SuiClient {
 	 * Return the list of dynamic field objects owned by an object
 	 */
 	async getDynamicFields(input: GetDynamicFieldsParams): Promise<DynamicFieldPage> {
-		if (!input.parentId || !isValidSuiObjectId(sui2ObcAddress(input.parentId))) {
+		if (!input.parentId || !isValidSuiObjectId(sui2BfcAddress(input.parentId))) {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({

@@ -8,44 +8,38 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { obcDigitsToHumanReadable } from '@mysten/sui.js/utils';
+import { bfcDigitsToHumanReadable } from '@mysten/sui.js/utils';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetOBCDaoVotingObc } from '~/hooks/useGetOBCDaoVotingObc';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
 });
 
-export function WithdrawVoting({ refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+export function WithdrawVoting() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { votingBfcs, refetch } = useContext(DaoContext)!;
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
-
-	const { data: votes = [], refetch: refetchVoting } = useGetOBCDaoVotingObc(
-		currentAccount?.address || '',
-	);
 
 	const execute = useMutation({
 		mutationFn: async ({ vote }: { vote: string }) => {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::withdraw_voting`,
+				target: `0xc8::bfc_system::withdraw_voting`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), tx.object(vote)],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.object(vote), tx.object(ADDRESS.CLOCK)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
@@ -57,18 +51,17 @@ export function WithdrawVoting({ refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVoting();
+			refetch();
 		},
 	});
 
 	const options = useMemo(
 		() =>
-			votes.map((i) => ({
-				label: obcDigitsToHumanReadable(i.principal),
+			votingBfcs.map((i) => ({
+				label: bfcDigitsToHumanReadable(i.principal),
 				value: i.id.id,
 			})),
-		[votes],
+		[votingBfcs],
 	);
 
 	return (
@@ -81,7 +74,13 @@ export function WithdrawVoting({ refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
+			<Controller
+				control={control}
+				name="vote"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="voting" options={options} value={value} onChange={onChange} />
+				)}
+			/>
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

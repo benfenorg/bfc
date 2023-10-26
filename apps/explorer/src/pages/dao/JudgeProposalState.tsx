@@ -11,18 +11,17 @@ import {
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
+import { useContext } from 'react';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { ADDRESS } from '~/utils/constants';
-
-export interface Props {
-	refetchDao: () => void;
-}
 
 const schema = z.object({});
 
-export function JudgeProposalState({ refetchDao }: Props) {
+export function JudgeProposalState() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, formState } = useZodForm({
 		schema: schema,
@@ -33,9 +32,9 @@ export function JudgeProposalState({ refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::judge_proposal_state`,
+				target: `0xc8::bfc_system::judge_proposal_state`,
 				typeArguments: [],
-				arguments: [tx.object(ADDRESS.OBC_SYSTEM_STATE), tx.pure(Date.now())],
+				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), tx.pure(Date.now())],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
@@ -47,7 +46,7 @@ export function JudgeProposalState({ refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 

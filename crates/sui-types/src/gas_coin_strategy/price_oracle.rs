@@ -20,7 +20,7 @@ impl SwapPriceOracle {
 }
 
 impl GasCoinExchange for SwapPriceOracle {
-    fn exchange_obc(_any_coin: Coin) -> GasCoin {
+    fn exchange_bfc(_any_coin: Coin) -> GasCoin {
         todo!()
     }
 

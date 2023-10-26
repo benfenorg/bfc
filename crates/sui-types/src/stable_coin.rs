@@ -30,15 +30,15 @@ pub const TOTAL_SUPPLY_SUI: u64 = 10_000_000_000;
 /// Total supply denominated in Mist
 pub const TOTAL_SUPPLY_MIST: u64 = TOTAL_SUPPLY_SUI * MIST_PER_SUI;
 
-pub const GAS_MODULE_NAME: &IdentStr = ident_str!("usd");
-pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("USD");
+pub const GAS_MODULE_NAME: &IdentStr = ident_str!("busd");
+pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("BUSD");
 
 pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
-    use crate::BFC_SYSTEM_ADDRESS;
     use super::*;
+    use crate::BFC_SYSTEM_ADDRESS;
 
     pub struct STABLE {}
     impl STABLE {
@@ -125,7 +125,10 @@ mod checked {
             if !value.type_().is_gas_coin() {
                 return Err(ExecutionError::new_with_source(
                     ExecutionErrorKind::InvalidGasObject,
-                    format!("Gas object type is not a stable gas coin: {}", value.type_()),
+                    format!(
+                        "Gas object type is not a stable gas coin: {}",
+                        value.type_()
+                    ),
                 ));
             }
             let gas_coin: StableCoin = bcs::from_bytes(value.contents()).map_err(|err| {

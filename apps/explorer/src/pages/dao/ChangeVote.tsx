@@ -8,35 +8,27 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetOBCDaoVote } from '~/hooks/useGetOBCDaoVote';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
-	agree: z.string().transform(Number),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	agree: z.number({ required_error: 'must select agree' }),
 });
 
-export function ChangeVote({ proposal, refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+export function ChangeVote() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { votes, proposal, refetch } = useContext(DaoContext)!;
 
-	const { data: votes = [], refetch: refetchVotes } = useGetOBCDaoVote(
-		currentAccount?.address || '',
-	);
-
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -45,12 +37,12 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 			const tx = new TransactionBlock();
 
 			tx.moveCall({
-				target: `0xc8::obc_system::change_vote`,
+				target: `0xc8::bfc_system::change_vote`,
 				typeArguments: [],
 				arguments: [
-					tx.object(ADDRESS.OBC_SYSTEM_STATE),
+					tx.object(ADDRESS.BFC_SYSTEM_STATE),
 					tx.object(vote),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.pure(!!agree),
 					tx.object(ADDRESS.CLOCK),
 				],
@@ -65,15 +57,14 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVotes();
+			refetch();
 		},
 	});
 
 	const options = useMemo(
 		() =>
 			votes
-				.filter((i) => i.vid === proposal.pid.toString())
+				.filter((i) => i.vid === proposal!.pid.toString())
 				.map((i) => ({
 					label: i.id.id,
 					value: i.id.id,
@@ -91,17 +82,35 @@ export function ChangeVote({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
-			<Selector
-				label="agree"
-				options={[
-					{ label: 'upvote', value: 1 },
-					{ label: 'downvote', value: 0 },
-				]}
-				{...register('agree')}
+			<Controller
+				control={control}
+				name="vote"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="voting" options={options} value={value} onChange={onChange} />
+				)}
+			/>
+			<Controller
+				control={control}
+				name="agree"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="agree"
+						options={[
+							{ label: 'upvote', value: 1 },
+							{ label: 'downvote', value: 0 },
+						]}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
 			<div className="flex items-stretch gap-1.5">
-				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
+				<Button
+					variant="primary"
+					type="submit"
+					loading={execute.isLoading}
+					disabled={!isConnected || options.length === 0}
+				>
 					execute
 				</Button>
 			</div>

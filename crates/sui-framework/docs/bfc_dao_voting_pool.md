@@ -31,6 +31,7 @@
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -147,6 +148,12 @@ A self-custodial object holding the Voting bfc tokens.
 <dd>
  The voting BFC tokens.
 </dd>
+<dt>
+<code>stake_end_time: u64</code>
+</dt>
+<dd>
+ when voting stake ends.
+</dd>
 </dl>
 
 
@@ -155,6 +162,15 @@ A self-custodial object holding the Voting bfc tokens.
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="0xc8_voting_pool_DEFAULT_VOTE_END_TIME"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_DEFAULT_VOTE_END_TIME">DEFAULT_VOTE_END_TIME</a>: u64 = 3600000;
+</code></pre>
+
 
 
 <a name="0xc8_voting_pool_EDelegationOfZeroBfc"></a>
@@ -189,6 +205,15 @@ A self-custodial object holding the Voting bfc tokens.
 
 
 <pre><code><b>const</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_EInsufficientPoolTokenBalance">EInsufficientPoolTokenBalance</a>: u64 = 0;
+</code></pre>
+
+
+
+<a name="0xc8_voting_pool_ENotEndOfStakingTime"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_ENotEndOfStakingTime">ENotEndOfStakingTime</a>: u64 = 19;
 </code></pre>
 
 
@@ -288,7 +313,7 @@ Create a new, empty voting pool.
 Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>
 </code></pre>
 
 
@@ -300,6 +325,7 @@ Request to voting to a staking pool. The voting starts counting at the beginning
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(
     pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting: Balance&lt;BFC&gt;,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext
 ) : <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a> {
     <b>let</b> bfc_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&voting);
@@ -308,6 +334,7 @@ Request to voting to a staking pool. The voting starts counting at the beginning
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         pool_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool),
         principal: voting,
+        stake_end_time: <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) + <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_DEFAULT_VOTE_END_TIME">DEFAULT_VOTE_END_TIME</a>,
     };
     votingbfc
 }
@@ -340,7 +367,7 @@ Both the principal and corresponding rewards in BFC are withdrawn.
 A proportional amount of pool token withdraw is recorded and processed at epoch change time.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -352,9 +379,10 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(
     pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
 ) : Balance&lt;BFC&gt; {
     <b>let</b> (_, principal_withdraw) =
-        <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool, voting_bfc);
+        <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool, voting_bfc, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
     <b>let</b> principal_withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&principal_withdraw);
 
 
@@ -391,7 +419,7 @@ tokens using exchange rate at staking epoch.
 Returns values are amount of pool tokens withdrawn and withdrawn principal portion of BFC.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): (u64, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): (u64, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -403,10 +431,13 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(
     pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
 ) : (u64, Balance&lt;BFC&gt;) {
 
     // Check that the voting information matches the pool.
     <b>assert</b>!(voting_bfc.pool_id == <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool), <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_EWrongPool">EWrongPool</a>);
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) &gt; voting_bfc.stake_end_time, <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_ENotEndOfStakingTime">ENotEndOfStakingTime</a>);
+
 
     <b>let</b> exchange_rate_at_staking_epoch = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>();
     <b>let</b> principal_withdraw = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_bfc">unwrap_voting_bfc</a>(voting_bfc);
@@ -457,6 +488,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
         id,
         pool_id: _,
         principal,
+        stake_end_time: _,
     } = voting_bfc;
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id);
     principal
@@ -610,6 +642,7 @@ All the other parameters of the votingBfc like <code>voting</code> or <code>pool
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         pool_id: self.pool_id,
         principal: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> self.principal, split_amount),
+        stake_end_time: self.stake_end_time,
     }
 }
 </code></pre>
@@ -702,6 +735,7 @@ Aborts if some of the staking parameters are incompatible (pool id,  activation 
         id,
         pool_id: _,
         principal,
+        stake_end_time: _,
     } = other;
 
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id);

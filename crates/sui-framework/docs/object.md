@@ -16,7 +16,7 @@ Sui object identifiers
 -  [Function `id_from_bytes`](#0x2_object_id_from_bytes)
 -  [Function `id_from_address`](#0x2_object_id_from_address)
 -  [Function `sui_system_state`](#0x2_object_sui_system_state)
--  [Function `obc_system_state`](#0x2_object_obc_system_state)
+-  [Function `bfc_system_state`](#0x2_object_bfc_system_state)
 -  [Function `clock`](#0x2_object_clock)
 -  [Function `uid_as_inner`](#0x2_object_uid_as_inner)
 -  [Function `uid_to_inner`](#0x2_object_uid_to_inner)
@@ -175,21 +175,21 @@ containing object's address)
 ## Constants
 
 
+<a name="0x2_object_BFC_SYSTEM_STATE_OBJECT_ID"></a>
+
+
+
+<pre><code><b>const</b> <a href="object.md#0x2_object_BFC_SYSTEM_STATE_OBJECT_ID">BFC_SYSTEM_STATE_OBJECT_ID</a>: <b>address</b> = c9;
+</code></pre>
+
+
+
 <a name="0x2_object_ENotSystemAddress"></a>
 
 Sender is not @0x0 the system address.
 
 
 <pre><code><b>const</b> <a href="object.md#0x2_object_ENotSystemAddress">ENotSystemAddress</a>: u64 = 0;
-</code></pre>
-
-
-
-<a name="0x2_object_OBC_SYSTEM_STATE_OBJECT_ID"></a>
-
-
-
-<pre><code><b>const</b> <a href="object.md#0x2_object_OBC_SYSTEM_STATE_OBJECT_ID">OBC_SYSTEM_STATE_OBJECT_ID</a>: <b>address</b> = c9;
 </code></pre>
 
 
@@ -343,15 +343,15 @@ This should only be called once from <code>sui_system</code>.
 
 </details>
 
-<a name="0x2_object_obc_system_state"></a>
+<a name="0x2_object_bfc_system_state"></a>
 
-## Function `obc_system_state`
+## Function `bfc_system_state`
 
 Create the <code><a href="object.md#0x2_object_UID">UID</a></code> for the singleton <code>SuiSystemState</code> object.
 This should only be called once from <code>sui_system</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="object.md#0x2_object_obc_system_state">obc_system_state</a>(ctx: &<a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="object.md#0x2_object_UID">object::UID</a>
+<pre><code><b>public</b> <b>fun</b> <a href="object.md#0x2_object_bfc_system_state">bfc_system_state</a>(ctx: &<a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="object.md#0x2_object_UID">object::UID</a>
 </code></pre>
 
 
@@ -360,10 +360,10 @@ This should only be called once from <code>sui_system</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="object.md#0x2_object_obc_system_state">obc_system_state</a>(ctx: &TxContext): <a href="object.md#0x2_object_UID">UID</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="object.md#0x2_object_bfc_system_state">bfc_system_state</a>(ctx: &TxContext): <a href="object.md#0x2_object_UID">UID</a> {
     <b>assert</b>!(<a href="tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="object.md#0x2_object_ENotSystemAddress">ENotSystemAddress</a>);
     <a href="object.md#0x2_object_UID">UID</a> {
-        id: <a href="object.md#0x2_object_ID">ID</a> { bytes: <a href="object.md#0x2_object_OBC_SYSTEM_STATE_OBJECT_ID">OBC_SYSTEM_STATE_OBJECT_ID</a> },
+        id: <a href="object.md#0x2_object_ID">ID</a> { bytes: <a href="object.md#0x2_object_BFC_SYSTEM_STATE_OBJECT_ID">BFC_SYSTEM_STATE_OBJECT_ID</a> },
     }
 }
 </code></pre>

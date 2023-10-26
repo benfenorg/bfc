@@ -812,7 +812,7 @@ impl SharedInputObject {
         mutable: true,
     };
 
-    pub const OBC_SYSTEM_OBJ: Self = Self {
+    pub const BFC_SYSTEM_OBJ: Self = Self {
         id: BFC_SYSTEM_STATE_OBJECT_ID,
         initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
         mutable: true,

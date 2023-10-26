@@ -137,7 +137,7 @@ module DiemFramework::Genesis {
     /// the owner). The operators, their names, and their authentication keys are encoded
     /// in the `operators`, `operator_names`, and `operator_auth_keys` vectors.
     /// Finally, each validator must specify the network address
-    /// (see diem/types/src/network_address/mod.rs) for itself and its full nodes.
+    /// (see diem/types/src/network_address/bfc_system_state) for itself and its full nodes.
     fun create_initialize_owners_operators(
         dr_account: signer,
         owners: vector<signer>,

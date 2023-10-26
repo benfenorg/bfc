@@ -177,7 +177,7 @@ export class SuiWallet implements Wallet {
 	constructor() {
 		this.#events = mitt();
 		this.#accounts = [];
-		this.#messagesStream = new WindowMessageStream('obc_in-page', 'obc_content-script');
+		this.#messagesStream = new WindowMessageStream('bfc_in-page', 'bfc_content-script');
 		this.#messagesStream.messages.subscribe(({ payload }) => {
 			if (isWalletStatusChangePayload(payload)) {
 				const { network, accounts } = payload;
