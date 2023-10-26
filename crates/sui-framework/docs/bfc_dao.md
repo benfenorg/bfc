@@ -3485,38 +3485,38 @@ set min action delay
         //afer voting  Defeated...
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 1;
-        proposal_obj.proposal.against_votes = 2;
+        proposal_obj.proposal.for_votes = 1 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
     } <b>else</b> <b>if</b> (index == 4) {
         //afer voting <a href="bfc_dao.md#0xc8_bfc_dao_AGREED">AGREED</a>
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = 0;
     } <b>else</b> <b>if</b> (index == 5) {
         // Queued, waiting <b>to</b> execute
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  + 100000000;
     } <b>else</b> <b>if</b> (index == 6) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
         proposal_obj.proposal.action.status = <b>false</b>;
     } <b>else</b> <b>if</b> (index == 7) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
         proposal_obj.proposal.action.status = <b>true</b>;
     };
