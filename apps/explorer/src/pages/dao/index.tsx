@@ -67,15 +67,15 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 			<div className="mt-3 flex items-center justify-between">
 				<div className="flex items-baseline gap-1">
 					<div className="text-heading4 font-semibold">
-						{bfcDigitsToHumanReadable(data.for_votes)}
-					</div>
-					<div className="text-body text-bfc-text2">Agree</div>
-				</div>
-				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">
 						{bfcDigitsToHumanReadable(data.against_votes)}
 					</div>
 					<div className="text-body text-bfc-text2">Opposition</div>
+				</div>
+				<div className="flex items-baseline gap-1">
+					<div className="text-heading4 font-semibold">
+						{bfcDigitsToHumanReadable(data.for_votes)}
+					</div>
+					<div className="text-body text-bfc-text2">Agree</div>
 				</div>
 			</div>
 			<div className="relative my-3 flex h-1 items-stretch overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
@@ -110,7 +110,7 @@ function DaoList() {
 	const daoValues = useDaoContext('')!;
 	const { isConnected } = useWalletKit();
 
-	const { dao } = daoValues;
+	const { dao, votingBfcs } = daoValues;
 
 	return (
 		<DaoContext.Provider value={daoValues}>
@@ -137,15 +137,21 @@ function DaoList() {
 						<DisclosureBox title="create action" defaultOpen={false}>
 							<CreateDaoAction />
 						</DisclosureBox>
-						{dao && (
-							<DisclosureBox title="create proposal" defaultOpen={false}>
-								<CreateProposal />
-							</DisclosureBox>
-						)}
+						<DisclosureBox
+							title="create proposal"
+							defaultOpen={false}
+							disabled={Object.values(dao?.action_record || {}).length === 0}
+						>
+							<CreateProposal />
+						</DisclosureBox>
 						<DisclosureBox title="create voting bfc" defaultOpen={false}>
 							<CreateVotingBfc />
 						</DisclosureBox>
-						<DisclosureBox title="withdraw voting bfc" defaultOpen={false}>
+						<DisclosureBox
+							title="withdraw voting bfc"
+							defaultOpen={false}
+							disabled={votingBfcs.length === 0}
+						>
 							<WithdrawVoting />
 						</DisclosureBox>
 					</div>
