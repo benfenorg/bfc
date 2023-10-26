@@ -110,6 +110,7 @@ diesel::table! {
         object_id -> Varchar,
         action_id -> Int8,
         action_name -> Text,
+        action_status -> Bool,
         pid -> Int8,
         proposer -> Varchar,
         start_time -> Int8,
