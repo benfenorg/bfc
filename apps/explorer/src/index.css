@@ -37,14 +37,6 @@ body,
 			'epoch'
 			'transactions';
 	}
-	.home-page-grid-container-top.with-token {
-		grid-template-areas:
-			'network'
-			'epoch'
-			'token'
-			'transactions'
-			'accounts';
-	}
 
 	.bfc-table-container {
 		@apply overflow-hidden rounded-md border border-gray-45;
@@ -59,7 +51,7 @@ body,
 	.bfc-form-select {
 		background-image: url(./assets/ObcDown.svg) !important;
 	}
-	@screen sm {
+	/* @screen sm {
 		.home-page-grid-container-top {
 			@apply grid-cols-2;
 			grid-template-areas:
@@ -67,32 +59,18 @@ body,
 				'transactions transactions';
 		}
 
-		.home-page-grid-container-top.with-token {
-			grid-template-areas:
-				'overview epoch'
-				'network token'
-				'transactions transactions'
-				'accounts accounts';
-		}
-	}
+	} */
 
 	@screen md {
 		.home-page-grid-container-top {
-			@apply grid-cols-2;
+			@apply grid-cols-[1fr,2fr];
 			grid-template-areas:
-				'overview epoch'
-				'transactions transactions';
-		}
-
-		.home-page-grid-container-top.with-token {
-			grid-template-areas:
-				'network epoch'
-				'network token'
-				'transactions accounts';
+				'overview transactions'
+				'epoch transactions';
 		}
 	}
 
-	@screen xl {
+	/* @screen xl {
 		.home-page-grid-container-top {
 			@apply grid-cols-[1fr,2fr];
 			grid-template-areas:
@@ -100,13 +78,7 @@ body,
 				'epoch transactions';
 		}
 
-		.home-page-grid-container-top.with-token {
-			grid-template-areas:
-				'network transactions accounts'
-				'epoch   transactions accounts'
-				'token   transactions accounts';
-		}
-	}
+	} */
 
 	.home-page-grid-container-bottom {
 		@apply grid grid-cols-1 gap-8;
