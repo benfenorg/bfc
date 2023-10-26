@@ -191,6 +191,9 @@ pub struct SuiDaoProposal {
     #[serde_as(as = "DisplayFromStr")]
     pub action_name: String,
 
+    /// The status of the DAO action
+    pub action_status: bool,
+
     /// Who propose this
     #[schemars(with = "String")]
     #[serde_as(as = "DisplayFromStr")]
