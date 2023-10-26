@@ -403,7 +403,7 @@ module bfc_system::bfc_system_state_inner {
         let size: u64 = vec_map::size(&proposal_record);
         let i = 0;
         while (i < size) {
-            let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
+            let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, i);
             let cur_status = bfc_dao::judge_proposal_state(proposalInfo, current_time);
             bfc_dao::set_current_status_into_dao(&mut wrapper.dao, proposalInfo, cur_status);
             i = i + 1;
