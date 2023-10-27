@@ -202,6 +202,12 @@ module sui::object {
         ID { bytes: tx_context::last_created_object_id(ctx) }
     }
 
+    #[test_only]
+    public fun bfc_system_state_for_test(): UID {
+        UID {
+            id: ID { bytes: BFC_SYSTEM_STATE_OBJECT_ID },
+        }
+    }
 
     // === Prover support (to avoid circular dependency ===
 

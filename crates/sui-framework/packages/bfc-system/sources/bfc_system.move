@@ -1,5 +1,4 @@
 module bfc_system::bfc_system {
-    use std::string;
     use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
@@ -110,11 +109,20 @@ module bfc_system::bfc_system {
     ): &BfcSystemStateInner {
         dynamic_field::borrow(&self.id, self.version)
     }
+    public fun load_bfc_system_state(id: &UID, version: u64): &BfcSystemStateInner {
+        dynamic_field::borrow(id, version)
+    }
 
     fun load_system_state_mut(
         self: &mut BfcSystemState
     ): &mut BfcSystemStateInner {
         dynamic_field::borrow_mut(&mut self.id, self.version)
+    }
+
+    public fun get_exchange_rate(id: &UID, version: u64): u64 {
+        //todo modify to real method
+        let inner = load_bfc_system_state(id, version);
+        0
     }
 
     /// Getter of the gas coin exchange pool rate.

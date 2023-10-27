@@ -8,9 +8,10 @@ module sui_system::validator_set {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
-    use sui_system::validator::{Self, Validator, staking_pool_id, sui_address};
+    use sui_system::validator::{Self, Validator, staking_pool_id,stable_pool_id as v_stable_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedBfc, pool_id};
+    use sui_system::stable_pool::{pool_id as stable_pool_id};
     use sui::object::{Self, ID};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
@@ -24,6 +25,8 @@ module sui_system::validator_set {
     use sui_system::validator_wrapper;
     use sui::bag::Bag;
     use sui::bag;
+    use sui::stable::STABLE;
+    use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
@@ -51,6 +54,8 @@ module sui_system::validator_set {
 
         /// Mappings from staking pool's ID to the sui address of a validator.
         staking_pool_mappings: Table<ID, address>,
+
+        stable_pool_mappings: Table<ID, address>,
 
         /// Mapping from a staking pool ID to the inactive validator that has that pool as its staking pool.
         /// When a validator is deactivated the validator is removed from `active_validators` it
@@ -126,6 +131,8 @@ module sui_system::validator_set {
     const BASIS_POINT_DENOMINATOR: u128 = 10000;
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
+    //define the rate of stable exchange, must used to init method
+    const INIT_STABLE_EXCHANGE_RATE: u64 = 10;
     // Errors
     const ENonValidatorInReportRecords: u64 = 0;
     const EInvalidStakeAdjustmentAmount: u64 = 1;
@@ -150,11 +157,13 @@ module sui_system::validator_set {
     public(friend) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
         let total_stake = calculate_total_stakes(&init_active_validators);
         let staking_pool_mappings = table::new(ctx);
+        let stable_pool_mappings = table::new(ctx);
         let num_validators = vector::length(&init_active_validators);
         let i = 0;
         while (i < num_validators) {
             let validator = vector::borrow(&init_active_validators, i);
             table::add(&mut staking_pool_mappings, staking_pool_id(validator), sui_address(validator));
+            table::add(&mut stable_pool_mappings, v_stable_pool_id(validator), sui_address(validator));
             i = i + 1;
         };
         let validators = ValidatorSet {
@@ -163,12 +172,13 @@ module sui_system::validator_set {
             pending_active_validators: table_vec::empty(ctx),
             pending_removals: vector::empty(),
             staking_pool_mappings,
+            stable_pool_mappings,
             inactive_validators: table::new(ctx),
             validator_candidates: table::new(ctx),
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
         };
-        voting_power::set_voting_power(&mut validators.active_validators);
+        voting_power::set_voting_power(&mut validators.active_validators, INIT_STABLE_EXCHANGE_RATE);
         validators
     }
 
@@ -299,6 +309,18 @@ module sui_system::validator_set {
         validator::request_add_stake(validator, stake, tx_context::sender(ctx), ctx)
     }
 
+    public(friend) fun request_add_stable_stake(
+        self: &mut ValidatorSet,
+        validator_address: address,
+        stake: Balance<STABLE>,
+        ctx: &mut TxContext,
+    ) : StakedStable<STABLE> {
+        let sui_amount = balance::value(&stake);
+        assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
+        let validator = get_candidate_or_active_validator_mut(self, validator_address);
+        validator::request_add_stable_stake(validator, stake, tx_context::sender(ctx), ctx)
+    }
+
     /// Called by `sui_system`, to withdraw some share of a stake from the validator. The share to withdraw
     /// is denoted by `principal_withdraw_amount`. One of two things occurs in this function:
     /// 1. If the `staked_sui` is staked with an active validator, the request is added to the validator's
@@ -321,6 +343,24 @@ module sui_system::validator_set {
                 validator_wrapper::load_validator_maybe_upgrade(wrapper)
             };
         validator::request_withdraw_stake(validator, staked_sui, ctx)
+    }
+
+    public(friend) fun request_withdraw_stable_stake(
+        self: &mut ValidatorSet,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        let stable_pool_id = stable_pool_id(&staked_sui);
+        let validator =
+            if (table::contains(&self.stable_pool_mappings, stable_pool_id)) { // This is an active validator.
+                let validator_address = *table::borrow(&self.staking_pool_mappings, stable_pool_id(&staked_sui));
+                get_candidate_or_active_validator_mut(self, validator_address)
+            } else { // This is an inactive pool.
+                assert!(table::contains(&self.inactive_validators, stable_pool_id), ENoPoolFound);
+                let wrapper = table::borrow_mut(&mut self.inactive_validators, stable_pool_id);
+                validator_wrapper::load_validator_maybe_upgrade(wrapper)
+            };
+        validator::request_withdraw_stable_stake(validator, staked_sui, ctx)
     }
 
     // ==== validator config setting functions ====
@@ -354,6 +394,7 @@ module sui_system::validator_set {
         low_stake_threshold: u64,
         very_low_stake_threshold: u64,
         low_stake_grace_period: u64,
+        stable_exchange_rate: u64,
         ctx: &mut TxContext,
     ) {
         let new_epoch = tx_context::epoch(ctx) + 1;
@@ -437,7 +478,7 @@ module sui_system::validator_set {
 
         self.total_stake = calculate_total_stakes(&self.active_validators);
 
-        voting_power::set_voting_power(&mut self.active_validators);
+        voting_power::set_voting_power(&mut self.active_validators, stable_exchange_rate);
 
         // At this point, self.active_validators are updated for next epoch.
         // Now we process the staged validator metadata.
@@ -546,6 +587,11 @@ module sui_system::validator_set {
     public fun validator_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::stake_amount(validator)
+    }
+
+    public fun validator_stable_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
+        let validator = get_validator_ref(&self.active_validators, validator_address);
+        validator::stable_stake_amount(validator)
     }
 
     public fun validator_staking_pool_id(self: &ValidatorSet, validator_address: address): ID {

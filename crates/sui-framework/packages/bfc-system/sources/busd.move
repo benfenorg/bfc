@@ -30,4 +30,19 @@ module bfc_system::busd {
         transfer::public_freeze_object(metadata);
         coin::treasury_into_supply(cap)
     }
+
+    #[test_only]
+    public fun new_for_test(ctx: &mut TxContext): Supply<BUSD> {
+        let (cap, metadata) = coin::create_currency(
+            BUSD {},
+            9,
+            b"BUSD",
+            b"Benfen USD",
+            b"",
+            option::none(),
+            ctx
+        );
+        transfer::public_freeze_object(metadata);
+        coin::treasury_into_supply(cap)
+    }
 }

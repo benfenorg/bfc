@@ -55,7 +55,10 @@ module sui_system::sui_system {
     use sui_system::stake_subsidy::StakeSubsidy;
     use sui_system::staking_pool::PoolTokenExchangeRate;
     use std::option;
+    use bfc_system::bfc_system;
     use sui::dynamic_field;
+    use sui::stable::STABLE;
+    use sui_system::stable_pool::StakedStable;
 
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
@@ -72,6 +75,8 @@ module sui_system::sui_system {
     struct SuiSystemState has key {
         id: UID,
         version: u64,
+        bfc_system_id: UID,
+        bfc_system_version: u64,
     }
 
     const ENotSystemAddress: u64 = 0;
@@ -83,6 +88,7 @@ module sui_system::sui_system {
     /// This function will be called only once in genesis.
     public(friend) fun create(
         id: UID,
+        bfc_system_id: UID,
         validators: vector<Validator>,
         storage_fund: Balance<BFC>,
         protocol_version: u64,
@@ -104,6 +110,8 @@ module sui_system::sui_system {
         let self = SuiSystemState {
             id,
             version,
+            bfc_system_id,
+            bfc_system_version: version,
         };
         dynamic_field::add(&mut self.id, version, system_state);
         transfer::share_object(self);
@@ -244,6 +252,28 @@ module sui_system::sui_system {
         transfer::public_transfer(staked_sui, tx_context::sender(ctx));
     }
 
+    /// Add stake to a validator's stable pool.
+    public entry fun request_add_stable_stake(
+        wrapper: &mut SuiSystemState,
+        stake: Coin<STABLE>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ) {
+        let staked_sui = request_add_stable_stake_non_entry(wrapper, stake, validator_address, ctx);
+        transfer::public_transfer(staked_sui, tx_context::sender(ctx));
+    }
+
+    /// The non-entry version of `request_add_stable_stake`, which returns the staked SUI instead of transferring it to the sender.
+    public fun request_add_stable_stake_non_entry(
+        wrapper: &mut SuiSystemState,
+        stake: Coin<STABLE>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ): StakedStable<STABLE> {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::request_add_stable_stake(self, stake, validator_address, ctx)
+    }
+
     /// The non-entry version of `request_add_stake`, which returns the staked SUI instead of transferring it to the sender.
     public fun request_add_stake_non_entry(
         wrapper: &mut SuiSystemState,
@@ -278,6 +308,15 @@ module sui_system::sui_system {
         transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
     }
 
+    public entry fun request_withdraw_stable_stake(
+        wrapper: &mut SuiSystemState,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) {
+        let withdrawn_stake = request_withdraw_stable_stake_non_entry(wrapper, staked_sui, ctx);
+        transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
+    }
+
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
     public fun request_withdraw_stake_non_entry(
         wrapper: &mut SuiSystemState,
@@ -288,6 +327,14 @@ module sui_system::sui_system {
         sui_system_state_inner::request_withdraw_stake(self, staked_sui, ctx)
     }
 
+    public fun request_withdraw_stable_stake_non_entry(
+        wrapper: &mut SuiSystemState,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::request_withdraw_stable_stake(self, staked_sui, ctx)
+    }
     /// Report a validator as a bad or non-performant actor in the system.
     /// Succeeds if all the following are satisfied:
     /// 1. both the reporter in `cap` and the input `reportee_addr` are active validators.
@@ -555,9 +602,13 @@ module sui_system::sui_system {
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
     ) : Balance<BFC> {
+        // get stable exchange rate from bfc system
+        let stable_exchange_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id, wrapper.bfc_system_version);
+
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
+
         let storage_rebate = sui_system_state_inner::advance_epoch(
             self,
             new_epoch,
@@ -568,11 +619,16 @@ module sui_system::sui_system {
             non_refundable_storage_fee,
             storage_fund_reinvest_rate,
             reward_slashing_rate,
+            stable_exchange_rate,
             epoch_start_timestamp_ms,
             ctx,
         );
 
         storage_rebate
+    }
+
+    fun get_stable_rate_from_bfc(id: &UID, version: u64) : u64 {
+       bfc_system::get_exchange_rate(id, version)
     }
 
     fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {

@@ -21,6 +21,7 @@ module sui_system::governance_test_utils {
     use std::vector;
     use sui::test_utils;
     use sui::balance::Balance;
+    use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
@@ -85,8 +86,10 @@ module sui_system::governance_test_utils {
             ctx,
         );
 
+        create_bfc_system_state(ctx);
         sui_system::create(
             object::new(ctx), // it doesn't matter what ID sui system state has in tests
+            object::bfc_system_state_for_test(),
             validators,
             balance::create_for_testing<BFC>(storage_fund_amount * MIST_PER_SUI), // storage_fund
             1,   // protocol version

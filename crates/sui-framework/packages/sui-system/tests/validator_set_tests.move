@@ -457,6 +457,7 @@ module sui_system::validator_set_tests {
             0, // low_stake_threshold
             0, // very_low_stake_threshold
             0, // low_stake_grace_period
+            1,
             test_scenario::ctx(scenario)
         );
 
@@ -483,6 +484,7 @@ module sui_system::validator_set_tests {
             low_stake_threshold * MIST_PER_SUI,
             very_low_stake_threshold * MIST_PER_SUI,
             low_stake_grace_period,
+            1,
             test_scenario::ctx(scenario)
         );
 
