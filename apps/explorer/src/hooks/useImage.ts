@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
-import { useImageMod } from './useImageMod';
-
 type Status = 'loading' | 'failed' | 'loaded';
 
 interface UseImageProps {
@@ -11,13 +9,9 @@ interface UseImageProps {
 	moderate?: boolean;
 }
 
-export function useImage({ src = '', moderate = true }: UseImageProps) {
+export function useImage({ src = '' }: UseImageProps) {
 	const [status, setStatus] = useState<Status>('loading');
 	const formatted = src?.replace(/^ipfs:\/\//, 'https://ipfs.io/ipfs/');
-	const { data: moderation, isFetched } = useImageMod({
-		url: formatted,
-		enabled: moderate,
-	});
 
 	const ref = useRef<HTMLImageElement | null>(null);
 
@@ -34,17 +28,17 @@ export function useImage({ src = '', moderate = true }: UseImageProps) {
 		const img = new Image();
 		img.src = formatted;
 
-		img.onload = () => (!moderate || (moderate && isFetched)) && setStatus('loaded');
+		img.onload = () => setStatus('loaded');
 		img.onerror = () => setStatus('failed');
 		ref.current = img;
-	}, [src, formatted, moderate, isFetched]);
+	}, [src, formatted]);
 
 	useLayoutEffect(() => {
 		load();
 		return () => cleanup();
 	}, [load]);
 
-	return { moderation, url: formatted, status, ref };
+	return { url: formatted, status, ref };
 }
 
 export default useImage;

@@ -14,7 +14,7 @@ import {
 	SuiSignAndExecuteTransactionBlockMethod,
 	getWallets,
 	Wallet,
-	SUI_CHAINS,
+	BFC_CHAINS,
 	ReadonlyWalletAccount,
 } from '@mysten/wallet-standard';
 import { getFaucetHost, requestSuiFromFaucetV0 } from '@mysten/sui.js/faucet';
@@ -65,7 +65,7 @@ export function registerUnsafeBurnerWallet(
 
 		// Return the Sui chains that your wallet supports.
 		get chains() {
-			return SUI_CHAINS;
+			return BFC_CHAINS;
 		}
 
 		get accounts() {
