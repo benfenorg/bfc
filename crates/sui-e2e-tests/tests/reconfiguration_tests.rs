@@ -2480,6 +2480,7 @@ struct CalculatedSwapResult {
     amount_in: u64,
     amount_out: u64,
     after_sqrt_price: u128,
+    vault_sqrt_price: u128,
     is_exceed: bool,
     step_results: Vec<SwapStepResult>,
     steps: u64

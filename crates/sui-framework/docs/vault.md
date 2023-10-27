@@ -471,7 +471,7 @@ The calculated swap result
 
 </dd>
 <dt>
-<code>current_sqrt_price: u128</code>
+<code>vault_sqrt_price: u128</code>
 </dt>
 <dd>
 
@@ -1334,7 +1334,7 @@ open <code>position_number</code> positions
         step_results: <a href="_empty">vector::empty</a>(),
         is_exceed: <b>false</b>,
         after_sqrt_price: 0,
-        current_sqrt_price: 0
+        vault_sqrt_price: 0
     }
 }
 </code></pre>
@@ -1417,7 +1417,7 @@ open <code>position_number</code> positions
     _amount: u64,
 ): <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
     <b>let</b> swap_result = <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
-    swap_result.current_sqrt_price = _vault.current_sqrt_price;
+    swap_result.vault_sqrt_price = _vault.current_sqrt_price;
     swap_result.after_sqrt_price = _vault.current_sqrt_price;
     <b>let</b> liquidity = _vault.liquidity;
     <b>let</b> current_sqrt_price = _vault.current_sqrt_price;
@@ -1717,7 +1717,7 @@ open <code>position_number</code> positions
     <b>let</b> next_score = <a href="tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(&_vault.tick_manager, _vault.current_tick_index, _a2b);
     <b>let</b> remaining_amount = _amount;
     <b>let</b> current_sqrt_price = _vault.current_sqrt_price;
-    swap_result.current_sqrt_price = current_sqrt_price;
+    swap_result.vault_sqrt_price = current_sqrt_price;
     <b>while</b> (remaining_amount &gt; 0 && current_sqrt_price != _sqrt_price_limit) {
         <b>assert</b>!(!<a href="option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
         <b>let</b> (<a href="tick.md#0xc8_tick">tick</a>, tick_score) = <a href="tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
