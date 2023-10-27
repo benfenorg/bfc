@@ -22,14 +22,14 @@ pub const MAX_VALIDATOR_COUNT: u64 = 150;
 
 /// Lower-bound on the amount of stake required to become a validator.
 ///
-/// 30 million SUI
+/// 3 million SUI
 pub const MIN_VALIDATOR_JOINING_STAKE_MIST: u64 = 3_000_000 * MIST_PER_SUI;
 
 /// Validators with stake amount below `validator_low_stake_threshold` are considered to
 /// have low stake and will be escorted out of the validator set after being below this
 /// threshold for more than `validator_low_stake_grace_period` number of epochs.
 ///
-/// 20 million SUI
+/// 2 million SUI
 pub const VALIDATOR_LOW_STAKE_THRESHOLD_MIST: u64 = 2_000_000 * MIST_PER_SUI;
 
 /// Validators with stake below `validator_very_low_stake_threshold` will be removed

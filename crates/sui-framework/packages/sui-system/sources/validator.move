@@ -20,6 +20,7 @@ module sui_system::validator {
     use sui::event;
     use sui::bag::Bag;
     use sui::bag;
+    use sui_system::stable_pool::StablePool;
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
     friend sui_system::validator_wrapper;
@@ -147,6 +148,8 @@ module sui_system::validator {
         gas_price: u64,
         /// Staking pool for this validator.
         staking_pool: StakingPool,
+
+        stable_pool: StablePool,
         /// Commission rate of the validator, in basis point.
         commission_rate: u64,
         /// Total amount of stake that would be active in the next epoch.
