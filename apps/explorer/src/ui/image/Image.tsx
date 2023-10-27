@@ -5,10 +5,9 @@ import { EyeClose16, NftTypeImage24 } from '@mysten/icons';
 import { LoadingIndicator } from '@mysten/ui';
 import { cva, cx, type VariantProps } from 'class-variance-authority';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import useImage from '~/hooks/useImage';
-import { VISIBILITY } from '~/hooks/useImageMod';
 
 const imageStyles = cva(null, {
 	variants: {
@@ -47,7 +46,6 @@ export interface ImageProps extends ImageStyleProps, React.ImgHTMLAttributes<HTM
 	onClick?: () => void;
 	moderate?: boolean;
 	src: string;
-	visibility?: VISIBILITY;
 }
 
 function BaseImage({
@@ -58,16 +56,10 @@ function BaseImage({
 	src,
 	srcSet,
 	fit,
-	visibility,
 	onClick,
 	...imgProps
 }: ImageProps & { status: string }) {
 	const [isBlurred, setIsBlurred] = useState(false);
-	useEffect(() => {
-		if (visibility && visibility !== VISIBILITY.PASS) {
-			setIsBlurred(true);
-		}
-	}, [visibility]);
 	return (
 		<div
 			className={cx(
@@ -82,7 +74,6 @@ function BaseImage({
 					<div
 						className={clsx(
 							'absolute z-20 flex h-full w-full items-center justify-center rounded-md bg-gray-100/30 text-center text-white backdrop-blur-md',
-							visibility === VISIBILITY.HIDE && 'pointer-events-none cursor-not-allowed',
 						)}
 						onClick={() => setIsBlurred(!isBlurred)}
 					>
@@ -111,6 +102,6 @@ function BaseImage({
 }
 
 export function Image({ src, moderate = true, ...props }: ImageProps) {
-	const { status, url, moderation } = useImage({ src, moderate });
-	return <BaseImage visibility={moderation?.visibility} status={status} src={url} {...props} />;
+	const { status, url } = useImage({ src, moderate });
+	return <BaseImage status={status} src={url} {...props} />;
 }
