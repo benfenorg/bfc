@@ -2429,7 +2429,7 @@ async fn test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error>
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
 
     objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
-    // assert!(objects.len() == 1);
+    assert!(objects.len() == 1);
     Ok(())
 }
 
@@ -2455,6 +2455,8 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error>
         .unwrap();
 
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
     let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_before_bfc_objects_length = bfc_objects.len();
     swap_stablecoin_to_bfc(&test_cluster, http_client, address).await?;
@@ -2480,6 +2482,7 @@ struct CalculatedSwapResult {
     amount_in: u64,
     amount_out: u64,
     after_sqrt_price: u128,
+    vault_sqrt_price: u128,
     is_exceed: bool,
     step_results: Vec<SwapStepResult>,
     steps: u64
