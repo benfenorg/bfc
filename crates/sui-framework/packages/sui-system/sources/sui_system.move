@@ -56,6 +56,8 @@ module sui_system::sui_system {
     use sui_system::staking_pool::PoolTokenExchangeRate;
     use std::option;
     use sui::dynamic_field;
+    use sui::stable::STABLE;
+    use sui_system::stable_pool::StakedStable;
 
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
@@ -244,6 +246,28 @@ module sui_system::sui_system {
         transfer::public_transfer(staked_sui, tx_context::sender(ctx));
     }
 
+    /// Add stake to a validator's stable pool.
+    public entry fun request_add_stable_stake(
+        wrapper: &mut SuiSystemState,
+        stake: Coin<STABLE>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ) {
+        let staked_sui = request_add_stable_stake_non_entry(wrapper, stake, validator_address, ctx);
+        transfer::public_transfer(staked_sui, tx_context::sender(ctx));
+    }
+
+    /// The non-entry version of `request_add_stable_stake`, which returns the staked SUI instead of transferring it to the sender.
+    public fun request_add_stable_stake_non_entry(
+        wrapper: &mut SuiSystemState,
+        stake: Coin<STABLE>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ): StakedStable<STABLE> {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::request_add_stable_stake(self, stake, validator_address, ctx)
+    }
+
     /// The non-entry version of `request_add_stake`, which returns the staked SUI instead of transferring it to the sender.
     public fun request_add_stake_non_entry(
         wrapper: &mut SuiSystemState,
@@ -278,6 +302,15 @@ module sui_system::sui_system {
         transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
     }
 
+    public entry fun request_withdraw_stable_stake(
+        wrapper: &mut SuiSystemState,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) {
+        let withdrawn_stake = request_withdraw_stable_stake_non_entry(wrapper, staked_sui, ctx);
+        transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
+    }
+
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
     public fun request_withdraw_stake_non_entry(
         wrapper: &mut SuiSystemState,
@@ -288,6 +321,14 @@ module sui_system::sui_system {
         sui_system_state_inner::request_withdraw_stake(self, staked_sui, ctx)
     }
 
+    public fun request_withdraw_stable_stake_non_entry(
+        wrapper: &mut SuiSystemState,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::request_withdraw_stable_stake(self, staked_sui, ctx)
+    }
     /// Report a validator as a bad or non-performant actor in the system.
     /// Succeeds if all the following are satisfied:
     /// 1. both the reporter in `cap` and the input `reportee_addr` are active validators.

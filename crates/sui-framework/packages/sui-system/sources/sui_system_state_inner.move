@@ -25,6 +25,9 @@ module sui_system::sui_system_state_inner {
     use sui::bag::Bag;
     use sui::bag;
     use sui::object;
+    use sui::stable::STABLE;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
     friend sui_system::sui_system;
@@ -520,6 +523,21 @@ module sui_system::sui_system_state_inner {
         )
     }
 
+    /// Add stake to a validator's staking pool.
+    public(friend) fun request_add_stable_stake(
+        self: &mut SuiSystemStateInnerV2,
+        stake: Coin<STABLE>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ) : StakedStable<STABLE> {
+        validator_set::request_add_stable_stake(
+            &mut self.validators,
+            validator_address,
+            coin::into_balance(stake),
+            ctx,
+        )
+    }
+
     /// Add stake to a validator's staking pool using multiple coins.
     public(friend) fun request_add_stake_mul_coin(
         self: &mut SuiSystemStateInnerV2,
@@ -543,6 +561,20 @@ module sui_system::sui_system_state_inner {
             EStakeWithdrawBeforeActivation
         );
         validator_set::request_withdraw_stake(
+            &mut self.validators, staked_sui, ctx,
+        )
+    }
+
+    public(friend) fun request_withdraw_stable_stake(
+        self: &mut SuiSystemStateInnerV2,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        assert!(
+            stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
+            EStakeWithdrawBeforeActivation
+        );
+        validator_set::request_withdraw_stable_stake(
             &mut self.validators, staked_sui, ctx,
         )
     }

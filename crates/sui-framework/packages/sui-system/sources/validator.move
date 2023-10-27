@@ -20,7 +20,9 @@ module sui_system::validator {
     use sui::event;
     use sui::bag::Bag;
     use sui::bag;
-    use sui_system::stable_pool::StablePool;
+    use sui::stable::STABLE;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::{StablePool, StakedStable};
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
     friend sui_system::validator_wrapper;
@@ -148,8 +150,8 @@ module sui_system::validator {
         gas_price: u64,
         /// Staking pool for this validator.
         staking_pool: StakingPool,
-
-        stable_pool: StablePool,
+        /// Stable pool for this validator.
+        stable_pool: StablePool<STABLE>,
         /// Commission rate of the validator, in basis point.
         commission_rate: u64,
         /// Total amount of stake that would be active in the next epoch.
@@ -287,11 +289,13 @@ module sui_system::validator {
 
     /// Deactivate this validator's staking pool
     public(friend) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
-        staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch)
+        staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch);
+        stable_pool::deactivate_staking_pool(&mut self.stable_pool, deactivation_epoch)
     }
 
     public(friend) fun activate(self: &mut Validator, activation_epoch: u64) {
         staking_pool::activate_staking_pool(&mut self.staking_pool, activation_epoch);
+        stable_pool::activate_staking_pool(&mut self.stable_pool, activation_epoch)
     }
 
     /// Process pending stake and pending withdraws, and update the gas price.
@@ -321,6 +325,35 @@ module sui_system::validator {
         event::emit(
             StakingRequestEvent {
                 pool_id: staking_pool_id(self),
+                validator_address: self.metadata.sui_address,
+                staker_address,
+                epoch: tx_context::epoch(ctx),
+                amount: stake_amount,
+            }
+        );
+        staked_sui
+    }
+
+    public(friend) fun request_add_stable_stake(
+        self: &mut Validator,
+        stake: Balance<STABLE>,
+        staker_address: address,
+        ctx: &mut TxContext,
+    ) : StakedStable<STABLE> {
+        let stake_amount = balance::value(&stake);
+        assert!(stake_amount > 0, EInvalidStakeAmount);
+        let stake_epoch = tx_context::epoch(ctx) + 1;
+        let staked_sui = stable_pool::request_add_stake(
+            &mut self.stable_pool, stake, stake_epoch, ctx
+        );
+        // Process stake right away if staking pool is preactive.
+        if (stable_pool::is_preactive<STABLE>(&self.stable_pool)) {
+            stable_pool::process_pending_stake<STABLE>(&mut self.stable_pool);
+        };
+        self.next_epoch_stake = self.next_epoch_stake + stake_amount;
+        event::emit(
+            StakingRequestEvent {
+                pool_id: stable_pool_id(self),
                 validator_address: self.metadata.sui_address,
                 staker_address,
                 epoch: tx_context::epoch(ctx),
@@ -371,6 +404,32 @@ module sui_system::validator {
         event::emit(
             UnstakingRequestEvent {
                 pool_id: staking_pool_id(self),
+                validator_address: self.metadata.sui_address,
+                staker_address: tx_context::sender(ctx),
+                stake_activation_epoch,
+                unstaking_epoch: tx_context::epoch(ctx),
+                principal_amount,
+                reward_amount,
+            }
+        );
+        withdrawn_stake
+    }
+
+    public(friend) fun request_withdraw_stable_stake(
+        self: &mut Validator,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        let principal_amount = stable_pool::staked_sui_amount(&staked_sui);
+        let stake_activation_epoch = stable_pool::stake_activation_epoch(&staked_sui);
+        let withdrawn_stake = stable_pool::request_withdraw_stake(
+            &mut self.stable_pool, staked_sui, ctx);
+        let withdraw_amount = balance::value(&withdrawn_stake);
+        let reward_amount = withdraw_amount - principal_amount;
+        self.next_epoch_stake = self.next_epoch_stake - withdraw_amount;
+        event::emit(
+            UnstakingRequestEvent {
+                pool_id: stable_pool_id(self),
                 validator_address: self.metadata.sui_address,
                 staker_address: tx_context::sender(ctx),
                 stake_activation_epoch,
@@ -590,6 +649,10 @@ module sui_system::validator {
 
     public fun staking_pool_id(self: &Validator): ID {
         object::id(&self.staking_pool)
+    }
+
+    public fun stable_pool_id(self: &Validator): ID {
+        object::id(&self.stable_pool)
     }
 
     // MUSTFIX: We need to check this when updating metadata as well.
@@ -896,6 +959,7 @@ module sui_system::validator {
         let sui_address = metadata.sui_address;
 
         let staking_pool = staking_pool::new(ctx);
+        let stable_pool = stable_pool::new<STABLE>(ctx);
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
         Validator {
@@ -907,6 +971,7 @@ module sui_system::validator {
             operation_cap_id,
             gas_price,
             staking_pool,
+            stable_pool,
             commission_rate,
             next_epoch_stake: 0,
             next_epoch_gas_price: gas_price,
