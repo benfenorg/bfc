@@ -1,7 +1,7 @@
 {
 	"name": "obc-wallet",
 	"private": true,
-	"description": "A wallet for OBC",
+	"description": "A wallet for BenFen",
 	"main": "./dist/ui.js",
 	"scripts": {
 		"build": "pnpm build:prod",

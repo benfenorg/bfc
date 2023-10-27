@@ -4,7 +4,7 @@
 import { fromB64 } from '@mysten/bcs';
 import { is, mask } from 'superstruct';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
-import type { SuiObjectResponse } from '../types/index.js';
+import type { CoinStruct, SuiObjectResponse } from '../types/index.js';
 import {
 	extractMutableReference,
 	extractStructTag,
@@ -465,12 +465,23 @@ export class TransactionBlock {
 
 		const gasOwner = this.#blockData.gasConfig.owner ?? this.#blockData.sender;
 
-		const coins = await expectClient(options).getCoins({
-			owner: gasOwner!,
-			coinType: SUI_TYPE_ARG,
-		});
+		const coins: CoinStruct[] = [];
+		let cursor: string | undefined = undefined;
 
-		const paymentCoins = coins.data
+		for (;;) {
+			const temp = await expectClient(options).getCoins({
+				owner: gasOwner!,
+				coinType: SUI_TYPE_ARG,
+				cursor,
+			});
+			coins.push(...temp.data);
+			if (!temp.nextCursor) {
+				break;
+			}
+			cursor = temp.nextCursor;
+		}
+
+		const paymentCoins = coins
 			// Filter out coins that are also used as input:
 			.filter((coin) => {
 				const matchingInput = this.#blockData.inputs.find((input) => {

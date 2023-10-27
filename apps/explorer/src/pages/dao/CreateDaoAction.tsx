@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useZodForm } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import {
+	type CoinStruct,
+	SUI_TYPE_ARG,
 	TransactionBlock,
 	getExecutionStatusError,
 	getExecutionStatusType,
@@ -28,7 +31,9 @@ const schema = z.object({
 });
 
 export function CreateDaoAction() {
-	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const client = useSuiClient();
+
+	const { isConnected, currentAccount, signAndExecuteTransactionBlock } = useWalletKit();
 	const { refetch } = useContext(DaoContext)!;
 
 	const { handleSubmit, register, formState } = useZodForm({
@@ -39,9 +44,41 @@ export function CreateDaoAction() {
 		mutationFn: async ({ text, amount }: { amount: number; text: string }) => {
 			const bigIntAmount = humanReadableToBfcDigits(amount);
 
-			const tx = new TransactionBlock();
-			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
+			const allCoins: CoinStruct[] = [];
+			let cursor: string | undefined = undefined;
+			for (;;) {
+				const temp = await client.getCoins({
+					owner: currentAccount!.address,
+					coinType: SUI_TYPE_ARG,
+					cursor,
+				});
+				allCoins.push(...temp.data);
+				if (!temp.nextCursor) {
+					break;
+				}
+				cursor = temp.nextCursor;
+			}
+			// TODO: 检查是否需要 mergeCoins
 
+			// if (BigInt(largest.balance) < bigIntAmount) {
+			// 	const tx = new TransactionBlock();
+
+			// 	tx.mergeCoins(
+			// 		tx.object(allCoins[0].coinObjectId),
+			// 		allCoins.slice(1).map((i) => tx.object(i.coinObjectId)),
+			// 	);
+
+			// 	const result = await signAndExecuteTransactionBlock({ transactionBlock: tx });
+			// 	if (getExecutionStatusType(result) === 'failure') {
+			// 		throw new Error(getExecutionStatusError(result) || 'Transaction failed');
+			// 	}
+			// } else {
+			// 	gas = tx.object(largest.coinObjectId);
+			// }
+
+			const tx = new TransactionBlock();
+
+			const coin = tx.splitCoins(tx.gas, [tx.pure(bigIntAmount)]);
 			tx.moveCall({
 				target: `0xc8::bfc_system::create_bfcdao_action`,
 				typeArguments: [],
