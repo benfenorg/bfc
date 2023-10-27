@@ -30,7 +30,7 @@ use tracing::{info, warn};
 use uuid::Uuid;
 
 const CONCURRENCY_LIMIT: usize = 30;
-const DEFAULT_AMOUNT: u64 = 100 * 1_000_000_000;
+const DEFAULT_AMOUNT: u64 = 1000 * 1_000_000_000;
 
 struct AppState<F = Arc<SimpleFaucet>> {
     faucet: F,
