@@ -2310,6 +2310,7 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&coin.object_id.to_string())?,
         SuiJsonValue::new(json!("100000000000"))?,
+        SuiJsonValue::new(json!("0"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -2365,6 +2366,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&coin.object_id.to_string())?,
         SuiJsonValue::new(json!("80000000000"))?,
+        SuiJsonValue::new(json!("0"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
