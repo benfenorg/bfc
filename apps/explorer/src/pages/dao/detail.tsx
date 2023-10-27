@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { ProposalStatus } from '@mysten/sui.js/client';
 import { bfcDigitsToHumanReadable, hexToString } from '@mysten/sui.js/utils';
-import { Heading } from '@mysten/ui';
+import { Heading, Button } from '@mysten/ui';
 import dayjs from 'dayjs';
 import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
@@ -20,6 +20,7 @@ import { AgreeSpan, StatusSpan, RejectSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
 import { useDaoContext, DaoContext } from '~/context';
 import { DisclosureBox } from '~/ui/DisclosureBox';
+import { Link } from '~/ui/Link';
 import { PageHeader } from '~/ui/PageHeader';
 
 function DaoContentDetail() {
@@ -81,7 +82,7 @@ function DaoContentDetail() {
 }
 
 function PoolDetail() {
-	const { proposal, manageKey } = useContext(DaoContext)!;
+	const { proposal, manageKey, votingBfcs, votes } = useContext(DaoContext)!;
 	if (!proposal) {
 		return null;
 	}
@@ -149,29 +150,46 @@ function PoolDetail() {
 				<DisclosureBox title="judge proposal state" defaultOpen={false}>
 					<JudgeProposalState />
 				</DisclosureBox>
-				{proposal.status === ProposalStatus.Active && (
-					<>
-						<DisclosureBox title="cast vote" defaultOpen={false}>
-							<CastVote />
-						</DisclosureBox>
-						<DisclosureBox title="change vote" defaultOpen={false}>
-							<ChangeVote />
-						</DisclosureBox>
-						<DisclosureBox title="revoke vote" defaultOpen={false}>
-							<RevokeVote />
-						</DisclosureBox>
-					</>
-				)}
-				{proposal.end_time < Date.now() && (
-					<DisclosureBox title="unvote votes" defaultOpen={false}>
-						<UnvoteVotes />
-					</DisclosureBox>
-				)}
-				{manageKey && proposal.status === ProposalStatus.Agree && (
-					<DisclosureBox title="queue proposal action">
-						<QueueProposalAction />
-					</DisclosureBox>
-				)}
+				<DisclosureBox
+					title="cast vote"
+					defaultOpen={false}
+					disabled={proposal.status !== ProposalStatus.Active}
+				>
+					{votingBfcs.length === 0 ? (
+						<Button variant="outline">
+							<Link to="/dao">Create Voting BFC</Link>
+						</Button>
+					) : (
+						<CastVote />
+					)}
+				</DisclosureBox>
+				<DisclosureBox
+					title="change vote"
+					defaultOpen={false}
+					disabled={proposal.status !== ProposalStatus.Active || votes.length === 0}
+				>
+					<ChangeVote />
+				</DisclosureBox>
+				<DisclosureBox
+					title="revoke vote"
+					defaultOpen={false}
+					disabled={proposal.status !== ProposalStatus.Active || votes.length === 0}
+				>
+					<RevokeVote />
+				</DisclosureBox>
+				<DisclosureBox
+					title="unvote votes"
+					defaultOpen={false}
+					disabled={proposal.end_time >= Date.now()}
+				>
+					<UnvoteVotes />
+				</DisclosureBox>
+				<DisclosureBox
+					title="queue proposal action"
+					disabled={!manageKey || proposal.status !== ProposalStatus.Agree}
+				>
+					<QueueProposalAction />
+				</DisclosureBox>
 			</div>
 		</div>
 	);

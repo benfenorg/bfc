@@ -3,12 +3,10 @@
 
 import { ReactNode, useState } from 'react';
 import { ConnectModal, useWalletKit } from '@mysten/wallet-kit';
-import { Button } from './Button';
 import { Menu } from '@headlessui/react';
 import { formatAddress } from '@mysten/sui.js/utils';
 import { styled } from '@stitches/react';
-import { ReactComponent as CheckIcon } from '../../assets/check_icon.svg';
-import { ReactComponent as ChevronIcon } from '../../assets/chevron_icon.svg';
+import { ReactComponent as CheckIcon } from '../assets/check_icon.svg';
 
 interface ConnectButtonProps {
 	connectText?: ReactNode;
@@ -72,11 +70,8 @@ export function ConnectButton({
 		<>
 			{currentAccount ? (
 				<Menu as="div" style={{ position: 'relative', display: 'inline-block' }}>
-					<Menu.Button
-						className="inline-flex w-full justify-center bg-white rounded-lg px-3 py-2 font-semibold text-bf-text1 text-xs"
-					>
+					<Menu.Button className="inline-flex w-full justify-center bg-white rounded-lg px-3 py-2 font-semibold text-bf-text1 text-xs">
 						{connectedText ?? formatAddress(currentAccount.address)}
-						<ChevronIcon />
 					</Menu.Button>
 
 					<MenuItems>
@@ -111,18 +106,10 @@ export function ConnectButton({
 					</MenuItems>
 				</Menu>
 			) : (
-				// <Button
-				// 	color="primary"
-				// 	size="lg"
-				// 	onClick={() => setConnectModalOpen(true)}
-				// 	type="button"
-				// 	{...props}
-				// >
-				// 	{connectText}
-				// </Button>
-
-				<button className="bg-white text-bf-text1 px-3 py-2 rounded-lg font-semibold" 
-				onClick={() => setConnectModalOpen(true)}>
+				<button
+					className="bg-white text-bf-text1 px-3 py-2 rounded-lg font-semibold"
+					onClick={() => setConnectModalOpen(true)}
+				>
 					{connectText}
 				</button>
 			)}

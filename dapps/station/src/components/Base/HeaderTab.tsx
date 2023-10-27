@@ -2,20 +2,32 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
+import { useAppSelector } from "~/state/hooks";
 
 export function HeaderTab() {
+	const [tab, setTab] = useState('/');
+
+	const statePathTab = useAppSelector((state) => state.user.pathTab);
 	const navigate = useNavigate();
 
-	const [tab, setTab] = useState('1');
+	console.log('statePathTabstatePathTab',statePathTab)
+
+	useEffect(()=>{
+		setTab(statePathTab)
+	},[statePathTab])
 
 	const pathTab = [
-		{ name: '稳定币', path: '1' },
-		{ name: '兑换', path: '2' },
-		{ name: '流动池', path: '3' },
+		{ name: '稳定币', path: '/' },
+		{ name: '兑换', path: '/swap' },
+		{ name: '流动池', path: '/pool' },
 	];
 
+	const changePage = (path:string) => {
+		setTab(path);
+		navigate(path)
+	}
 	return (
 		<div className="w-full flex justify-between items-center border-b border-bf-hover">
 			<div className="flex gap-5">
@@ -27,7 +39,7 @@ export function HeaderTab() {
 							tab === item.path && 'font-semibold text-white border-b border-white',
 						)}
 						onClick={() => {
-							setTab(item.path);
+							changePage(item.path)
 						}}
 					>
 						{item.name}

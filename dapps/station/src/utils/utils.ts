@@ -80,7 +80,6 @@ export async function getAllCoins(
 
   
 export function normalizeSuiCoinType(coinType: string): string {
-    console.log('coinTypecoinType',coinType)
     if (coinType !== SUI_TYPE_ARG) {
       const [normalAddress, module, name] = coinType.split('::');
       if (module && name) {

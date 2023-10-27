@@ -8,3 +8,11 @@ export const TANSTACK_OWNED_OBJECTS_KEY = 'TANSTACK_OWNED_OBJECTS_KEY';
 
 // const public images
 export const DEFAULT_IMAGE = '/empty-image.svg';
+
+
+
+export type Token = {
+	name: string;
+	logo: string;
+	type: string;
+};

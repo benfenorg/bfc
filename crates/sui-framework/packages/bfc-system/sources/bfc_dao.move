@@ -1110,38 +1110,38 @@ module bfc_system::bfc_dao {
             //afer voting  Defeated...
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 1;
-            proposal_obj.proposal.against_votes = 2;
+            proposal_obj.proposal.for_votes = 1 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
         } else if (index == 4) {
             //afer voting AGREED
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = 0;
         } else if (index == 5) {
             // Queued, waiting to execute
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  + 100000000;
         } else if (index == 6) {
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
             proposal_obj.proposal.action.status = false;
         } else if (index == 7) {
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
             proposal_obj.proposal.action.status = true;
         };

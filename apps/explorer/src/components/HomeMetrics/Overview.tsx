@@ -7,19 +7,24 @@ import {
 	useGetReferenceGasPrice,
 	useGetTotalTransactionBlocks,
 	useGetNetworkOverview,
+	useFormatCoin,
 } from '@mysten/core';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 
 import { ReactComponent as XCoinLogo } from '../../assets/XCoin.svg';
 import { numberSuffix } from '../../utils/numberUtil';
 import { Card } from '~/ui/Card';
+import { useTokenPrice } from '~/hooks/useTokenPrice';
 
 export function Overview() {
 	const { data: referenceGasPrice } = useGetReferenceGasPrice();
 	const { data: totalTransactionBlocks } = useGetTotalTransactionBlocks();
 	const { data: overview } = useGetNetworkOverview();
+	const { data: price } = useTokenPrice();
 
-	console.log('overview', overview);
+	const [formattedAmount] = useFormatCoin(overview?.volume24h, SUI_TYPE_ARG);
+
 	const gasPriceFormatted =
 		typeof referenceGasPrice === 'bigint'
 			? formatBalance(referenceGasPrice, 0, CoinFormat.FULL)
@@ -36,9 +41,9 @@ export function Overview() {
 					</div>
 					<div className="mt-2.5 flex gap-4 border-b border-[#E1E1E9] pb-7.5">
 						<XCoinLogo />
-						<div>
-							<span className="text-[32px] font-bold text-[#171719]">12.89234</span>
-							<span className="px-1 text-[20px] font-bold text-[#A3A8B5]">OST</span>
+						<div className="flex items-baseline">
+							<span className="text-[32px] font-bold text-[#171719]">{price}</span>
+							<span className="px-1 text-[20px] font-bold text-[#A3A8B5]">BUSD</span>
 						</div>
 					</div>
 				</div>
@@ -51,7 +56,7 @@ export function Overview() {
 						</div>
 						<div className="mt-1.25 flex items-baseline gap-1">
 							<Text variant="pHeading4/semibold" color="steel-darker">
-								12332
+								{formattedAmount}
 							</Text>
 							<Text variant="pBody/medium" color="steel-dark">
 								BFC
@@ -60,19 +65,19 @@ export function Overview() {
 					</div>
 					<div>
 						<div>
-							<Text variant="subtitle/medium" color="gray-90">
+							<Text variant="pBody/normal" color="steel-dark">
 								24H Active Addresses
 							</Text>
 						</div>
-						<div className="mt-1.25">
+						<div className="mt-1.25  items-baseline">
 							<Text variant="pHeading4/semibold" color="steel-darker">
-								12332
+								{overview?.totalAddresses24h ? numberSuffix(Number(overview.totalAddresses24h)) : '-'}
 							</Text>
 						</div>
 					</div>
 					<div>
 						<div>
-							<Text variant="subtitle/medium" color="gray-90">
+							<Text variant="pBody/normal" color="steel-dark">
 								Transactions
 							</Text>
 						</div>
@@ -84,7 +89,7 @@ export function Overview() {
 					</div>
 					<div>
 						<div>
-							<Text variant="subtitle/medium" color="gray-90">
+							<Text variant="pBody/normal" color="steel-dark">
 								Gas Price
 							</Text>
 						</div>
