@@ -584,6 +584,12 @@ Configuration of the <code>Token</code>'s DAO.
 <dd>
  Name for the action
 </dd>
+<dt>
+<code>status: bool</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -676,6 +682,12 @@ Configuration of the <code>Token</code>'s DAO.
 </dt>
 <dd>
  version id.
+</dd>
+<dt>
+<code>description: <a href="_String">string::String</a></code>
+</dt>
+<dd>
+ description
 </dd>
 </dl>
 
@@ -1032,11 +1044,29 @@ Proposal state
 
 
 
+<a name="0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>: u64 = 1416;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_ERR_CONFIG_PARAM_INVALID"></a>
 
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_CONFIG_PARAM_INVALID">ERR_CONFIG_PARAM_INVALID</a>: u64 = 1407;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ERR_DESCRIPTION_TOO_LONG"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_DESCRIPTION_TOO_LONG">ERR_DESCRIPTION_TOO_LONG</a>: u64 = 1417;
 </code></pre>
 
 
@@ -1150,11 +1180,29 @@ Error codes
 
 
 
+<a name="0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH">MAX_ACTION_NAME_LENGTH</a>: u64 = 100;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_MAX_ADMIN_COUNT"></a>
 
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ADMIN_COUNT">MAX_ADMIN_COUNT</a>: u64 = 1000;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>: u64 = 1000;
 </code></pre>
 
 
@@ -1309,7 +1357,7 @@ Error codes
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_bfcdao_action">create_bfcdao_action</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">bfc_dao::BFCDaoAction</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_bfcdao_action">create_bfcdao_action</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">bfc_dao::BFCDaoAction</a>
 </code></pre>
 
 
@@ -1322,6 +1370,7 @@ Error codes
     dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,
     payment: Coin&lt;BFC&gt;,
     actionName:<a href="">vector</a>&lt;u8&gt;,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext): <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a> {
     //auth
 
@@ -1331,8 +1380,9 @@ Error codes
     <b>let</b> value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
     // ensure the user pays enough
     <b>assert</b>!(value &gt;= <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_ACTION_COST">MIN_NEW_ACTION_COST</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
+    <b>assert</b>!(<a href="_length">vector::length</a>(&actionName) &lt;= <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH">MAX_ACTION_NAME_LENGTH</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>);
 
-    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_bfc, sender);
 
     <b>let</b> nameString = <a href="_try_utf8">string::try_utf8</a>(actionName);
@@ -1346,6 +1396,7 @@ Error codes
     <b>let</b> action = <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a>{
         action_id: action_id,
         name: name_ref,
+        status: <b>false</b>,
     };
 
     <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
@@ -1640,7 +1691,7 @@ propose a proposal.
 <code>action_delay</code>: the delay to execute after the proposal is agreed
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_propose">propose</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, description: <a href="">vector</a>&lt;u8&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1655,6 +1706,7 @@ propose a proposal.
     payment: Coin&lt;BFC&gt;,
     action_id: u64,
     action_delay: u64,
+    description: <a href="">vector</a>&lt;u8&gt;,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
@@ -1665,8 +1717,9 @@ propose a proposal.
     <b>let</b> value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
     // ensure the user pays enough
     <b>assert</b>!(value &gt;= <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
+    <b>assert</b>!( <a href="_length">vector::length</a>(&description) &lt;= <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>);
 
-    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_bfc, sender);
 
 
@@ -1683,6 +1736,11 @@ propose a proposal.
     <b>let</b> quorum_votes = <a href="bfc_dao.md#0xc8_bfc_dao_quorum_votes">quorum_votes</a>(dao);
     <b>let</b> object_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx);
 
+    <b>let</b> descriptionString = <a href="_try_utf8">string::try_utf8</a>(description);
+    <b>assert</b>!(descriptionString != <a href="_none">option::none</a>(), <a href="bfc_dao.md#0xc8_bfc_dao_ERR_INVALID_STRING">ERR_INVALID_STRING</a>);
+
+    <b>let</b> description_ref = <a href="_extract">option::extract</a>(&<b>mut</b> descriptionString);
+
     <b>let</b> proposalInfo = <a href="bfc_dao.md#0xc8_bfc_dao_ProposalInfo">ProposalInfo</a> {
         proposal_uid: <a href="../../../.././build/Sui/docs/object.md#0x2_object_uid_to_address">object::uid_to_address</a>(&object_id),
         pid: proposal_id,
@@ -1696,6 +1754,7 @@ propose a proposal.
         quorum_votes,
         action,
         version_id,
+        description: description_ref,
     };
 
     <b>let</b> proposal = <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>{
@@ -2578,7 +2637,7 @@ Get the proposal state.
     } <b>else</b> <b>if</b> (current_time &lt; proposal.eta) {
         // Queued, waiting <b>to</b> execute
         <a href="bfc_dao.md#0xc8_bfc_dao_QUEUED">QUEUED</a>
-    } <b>else</b> <b>if</b> (proposal.action.action_id != 0 ) {
+    } <b>else</b> <b>if</b> (proposal.action.status == <b>false</b> ) {
         <a href="bfc_dao.md#0xc8_bfc_dao_EXECUTABLE">EXECUTABLE</a>
     } <b>else</b> {
         <a href="bfc_dao.md#0xc8_bfc_dao_EXTRACTED">EXTRACTED</a>
@@ -3426,40 +3485,40 @@ set min action delay
         //afer voting  Defeated...
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 1;
-        proposal_obj.proposal.against_votes = 2;
+        proposal_obj.proposal.for_votes = 1 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
     } <b>else</b> <b>if</b> (index == 4) {
         //afer voting <a href="bfc_dao.md#0xc8_bfc_dao_AGREED">AGREED</a>
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = 0;
     } <b>else</b> <b>if</b> (index == 5) {
         // Queued, waiting <b>to</b> execute
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  + 100000000;
     } <b>else</b> <b>if</b> (index == 6) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.action_id = 1;
+        proposal_obj.proposal.action.status = <b>false</b>;
     } <b>else</b> <b>if</b> (index == 7) {
         proposal_obj.proposal.start_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 2000000000;
         proposal_obj.proposal.end_time = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) - 1000000000;
-        proposal_obj.proposal.for_votes = 3;
-        proposal_obj.proposal.against_votes = 2;
-        proposal_obj.proposal.quorum_votes = 2;
+        proposal_obj.proposal.for_votes = 3 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.against_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
+        proposal_obj.proposal.quorum_votes = 2 * <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>;
         proposal_obj.proposal.eta = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>)  - 100000000;
-        proposal_obj.proposal.action.action_id = 0;
+        proposal_obj.proposal.action.status = <b>true</b>;
     };
     <a href="bfc_dao.md#0xc8_bfc_dao_synchronize_proposal_into_dao">synchronize_proposal_into_dao</a>(proposal_obj, dao);
 }
@@ -3488,7 +3547,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_voting_bfc">create_voting_bfc</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_voting_bfc">create_voting_bfc</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -3499,11 +3558,12 @@ set min action delay
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_voting_bfc">create_voting_bfc</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,
                                    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
+                                    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
                                    ctx: &<b>mut</b> TxContext) {
     // sender <b>address</b>
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
     <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>);
-    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx);
+    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">voting_pool::request_add_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>,  ctx);
 
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(voting_bfc, sender);
 }
@@ -3533,7 +3593,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_withdraw_voting">withdraw_voting</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_withdraw_voting">withdraw_voting</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -3544,11 +3604,12 @@ set min action delay
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_withdraw_voting">withdraw_voting</a>(  dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,
                                    voting_bfc: VotingBfc,
+                                    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
                                    ctx: &<b>mut</b> TxContext ,) {
     // sender <b>address</b>
     <b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
     <b>assert</b>!(pool_id(&voting_bfc) == <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>), <a href="bfc_dao.md#0xc8_bfc_dao_ERR_WRONG_VOTING_POOL">ERR_WRONG_VOTING_POOL</a>);
-    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">voting_pool::request_withdraw_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, voting_bfc);
+    <b>let</b> voting_bfc = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">voting_pool::request_withdraw_voting</a>(&<b>mut</b> dao.<a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>, voting_bfc, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
     <b>let</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a> = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(voting_bfc, ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, sender);
 }

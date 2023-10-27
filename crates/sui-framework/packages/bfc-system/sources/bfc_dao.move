@@ -47,6 +47,9 @@ module bfc_system::bfc_dao {
     const DEFAULT_BFC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  BFC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 BFC
     const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 BFC
+    const MAX_ACTION_NAME_LENGTH: u64 = 100;
+    const MAX_DESCRIPTION_LENGTH: u64 = 1000;
+
     const MIN_STAKE_MANAGER_KEY_COST: u64 = 100 * 1000000000; // 100 BFC
 
     const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max BFC
@@ -79,7 +82,8 @@ module bfc_system::bfc_dao {
     const ERR_WRONG_VOTING_POOL: u64 = 1412;
     const ERR_INVALID_STRING: u64 = 1413;
     const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
-
+    const ERR_ACTION_NAME_TOO_LONG: u64 = 1416;
+    const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
     //
     struct DaoEvent has copy, drop, store {
         name: string::String,
@@ -183,6 +187,8 @@ module bfc_system::bfc_dao {
         action_id: u64,
         /// Name for the action
         name: string::String,
+        // status is false, which means it is not executed; status is true, which means it is executed
+        status: bool,
     }
 
     public(friend) fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
@@ -216,6 +222,8 @@ module bfc_system::bfc_dao {
         action: BFCDaoAction,
         /// version id.
         version_id: u64,
+        /// description
+        description: string::String,
     }
 
     /// Proposal data struct.
@@ -243,6 +251,7 @@ module bfc_system::bfc_dao {
         dao: &mut Dao,
         payment: Coin<BFC>,
         actionName:vector<u8>,
+        clock: & Clock,
         ctx: &mut TxContext): BFCDaoAction {
         //auth
 
@@ -252,8 +261,9 @@ module bfc_system::bfc_dao {
         let value = balance::value(&balance);
         // ensure the user pays enough
         assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!(vector::length(&actionName) <= MAX_ACTION_NAME_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
 
         let nameString = string::try_utf8(actionName);
@@ -267,6 +277,7 @@ module bfc_system::bfc_dao {
         let action = BFCDaoAction{
             action_id: action_id,
             name: name_ref,
+            status: false,
         };
 
         event::emit(
@@ -412,6 +423,7 @@ module bfc_system::bfc_dao {
         payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
+        description: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -422,8 +434,9 @@ module bfc_system::bfc_dao {
         let value = balance::value(&balance);
         // ensure the user pays enough
         assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!( vector::length(&description) <= MAX_DESCRIPTION_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
 
 
@@ -440,6 +453,11 @@ module bfc_system::bfc_dao {
         let quorum_votes = quorum_votes(dao);
         let object_id = object::new(ctx);
 
+        let descriptionString = string::try_utf8(description);
+        assert!(descriptionString != option::none(), ERR_INVALID_STRING);
+
+        let description_ref = option::extract(&mut descriptionString);
+
         let proposalInfo = ProposalInfo {
             proposal_uid: object::uid_to_address(&object_id),
             pid: proposal_id,
@@ -453,6 +471,7 @@ module bfc_system::bfc_dao {
             quorum_votes,
             action,
             version_id,
+            description: description_ref,
         };
 
         let proposal = Proposal{
@@ -852,7 +871,7 @@ module bfc_system::bfc_dao {
         } else if (current_time < proposal.eta) {
             // Queued, waiting to execute
             QUEUED
-        } else if (proposal.action.action_id != 0 ) {
+        } else if (proposal.action.status == false ) {
             EXECUTABLE
         } else {
             EXTRACTED
@@ -1091,40 +1110,40 @@ module bfc_system::bfc_dao {
             //afer voting  Defeated...
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 1;
-            proposal_obj.proposal.against_votes = 2;
+            proposal_obj.proposal.for_votes = 1 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
         } else if (index == 4) {
             //afer voting AGREED
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = 0;
         } else if (index == 5) {
             // Queued, waiting to execute
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  + 100000000;
         } else if (index == 6) {
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal_obj.proposal.action.action_id = 1;
+            proposal_obj.proposal.action.status = false;
         } else if (index == 7) {
             proposal_obj.proposal.start_time = clock::timestamp_ms(clock)  - 2000000000;
             proposal_obj.proposal.end_time = clock::timestamp_ms(clock) - 1000000000;
-            proposal_obj.proposal.for_votes = 3;
-            proposal_obj.proposal.against_votes = 2;
-            proposal_obj.proposal.quorum_votes = 2;
+            proposal_obj.proposal.for_votes = 3 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.against_votes = 2 * MIN_VOTING_THRESHOLD;
+            proposal_obj.proposal.quorum_votes = 2 * MIN_VOTING_THRESHOLD;
             proposal_obj.proposal.eta = clock::timestamp_ms(clock)  - 100000000;
-            proposal_obj.proposal.action.action_id = 0;
+            proposal_obj.proposal.action.status = true;
         };
         synchronize_proposal_into_dao(proposal_obj, dao);
     }
@@ -1132,22 +1151,24 @@ module bfc_system::bfc_dao {
 
     public(friend) fun create_voting_bfc(dao: &mut Dao,
                                        coin: Coin<BFC>,
+                                        clock: & Clock,
                                        ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(coin);
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock,  ctx);
 
         transfer::public_transfer(voting_bfc, sender);
     }
 
     public(friend) fun withdraw_voting(  dao: &mut Dao,
                                        voting_bfc: VotingBfc,
+                                        clock: & Clock,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
         assert!(pool_id(&voting_bfc) == object::id(&dao.voting_pool), ERR_WRONG_VOTING_POOL);
-        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_bfc);
+        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_bfc, clock);
         let coin = coin::from_balance(voting_bfc, ctx);
         transfer::public_transfer(coin, sender);
     }

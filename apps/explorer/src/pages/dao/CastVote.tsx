@@ -8,35 +8,29 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
+import { useContext } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetBFCDaoVotingBfc } from '~/hooks/useGetBFCDaoVotingBfc';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	voting: z.string().trim().nonempty(),
-	agree: z.string().transform(Number),
+	voting: z.string({ required_error: 'must select voting' }).trim().nonempty(),
+	agree: z.number({ required_error: 'must select agree' }),
 });
 
-export function CastVote({ proposal, refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+export function CastVote() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 
-	const { data: votingBfcs = [], refetch: refetchVoting } = useGetBFCDaoVotingBfc(
-		currentAccount?.address || '',
-	);
+	const { votingBfcs, proposal, refetch } = useContext(DaoContext)!;
 
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -49,7 +43,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.object(voting),
 					tx.pure(!!agree),
 					tx.object(ADDRESS.CLOCK),
@@ -65,8 +59,7 @@ export function CastVote({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVoting();
+			refetch();
 		},
 	});
 
@@ -80,22 +73,37 @@ export function CastVote({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector
-				label="voting"
-				options={votingBfcs.map((i) => ({
-					label: new BigNumber(i.principal).shiftedBy(-9).toString(),
-					value: i.id.id,
-				}))}
-				{...register('voting')}
+			<Controller
+				control={control}
+				name="voting"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="voting"
+						options={votingBfcs.map((i) => ({
+							label: new BigNumber(i.principal).shiftedBy(-9).toString(),
+							value: i.id.id,
+						}))}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
-			<Selector
-				label="agree"
-				options={[
-					{ label: 'upvote', value: 1 },
-					{ label: 'downvote', value: 0 },
-				]}
-				{...register('agree')}
+			<Controller
+				control={control}
+				name="agree"
+				render={({ field: { value, onChange } }) => (
+					<Selector
+						label="agree"
+						options={[
+							{ label: 'upvote', value: 1 },
+							{ label: 'downvote', value: 0 },
+						]}
+						value={value}
+						onChange={onChange}
+					/>
+				)}
 			/>
+
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

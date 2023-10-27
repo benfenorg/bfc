@@ -1,9 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { ProposalStatus, type ProposalRecordWithStatus } from '@mysten/sui.js/client';
-import { Heading } from '@mysten/ui';
-import { useWalletKit } from '@mysten/wallet-kit';
-import { useMemo, createContext, useContext } from 'react';
+import { ProposalStatus } from '@mysten/sui.js/client';
+import { bfcDigitsToHumanReadable, hexToString } from '@mysten/sui.js/utils';
+import { Heading, Button } from '@mysten/ui';
+import dayjs from 'dayjs';
+import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { CastVote } from './CastVote';
@@ -11,50 +12,61 @@ import { ChangeVote } from './ChangeVote';
 import { JudgeProposalState } from './JudgeProposalState';
 import { ModifyProposalObj } from './ModifyProposal';
 import { QueueProposalAction } from './QueueProposalAction';
+import { Refresh } from './Refresh';
 import { RevokeVote } from './RevokeVote';
 import { UnvoteVotes } from './UnvoteVotes';
 import { ErrorBoundary } from '../../components/error-boundary/ErrorBoundary';
-import { AgreeSpan, StatusSpan } from '~/components/DaoStatus';
+import { AgreeSpan, StatusSpan, RejectSpan } from '~/components/DaoStatus';
 import { PageLayout } from '~/components/Layout/PageLayout';
-import { useGetBFCDaoManageKey } from '~/hooks/useGetBFCDaoManageKey';
-import { useGetDao } from '~/hooks/useGetDao';
+import { useDaoContext, DaoContext } from '~/context';
 import { DisclosureBox } from '~/ui/DisclosureBox';
+import { Link } from '~/ui/Link';
 import { PageHeader } from '~/ui/PageHeader';
 
-export interface DaoDetailContextProps {
-	proposal: ProposalRecordWithStatus;
-	manageKey?: string;
-	refetch: () => void;
-}
-
-const DaoDetailContext = createContext<DaoDetailContextProps | undefined>(undefined);
-
 function DaoContentDetail() {
-	const { proposal } = useContext(DaoDetailContext)!;
+	const { proposal } = useContext(DaoContext)!;
+
+	if (!proposal) {
+		return null;
+	}
 
 	return (
 		<div>
 			<div className="rounded-md border border-bfc-border px-3 py-6">
-				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">详情</div>
+				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
+					Details
+				</div>
 				<div className="mt-5 space-y-3">
 					<div className="flex justify-between">
 						<div className="text-pBody text-bfc-text2">ID</div>
 						<div className="text-pBody text-bfc-text1">{proposal.pid}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">状态</div>
-						<div className="text-pBody text-bfc-text1">12345</div>
+						<div className="text-pBody text-bfc-text2">Version</div>
+						<div className="text-pBody text-bfc-text1">{proposal.version_id}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">创建者</div>
+						<div className="text-pBody text-bfc-text2">Status</div>
+						<div className="text-pBody text-bfc-text1">{ProposalStatus[proposal.status]}</div>
+					</div>
+					<div className="flex justify-between">
+						<div className="text-pBody text-bfc-text2">Proposer</div>
 						<div className="text-pBody text-bfc-text1">{proposal.proposer}</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">结束时间</div>
-						<div className="text-pBody text-bfc-text1">{proposal.end_time}</div>
+						<div className="text-pBody text-bfc-text2">Start Time</div>
+						<div className="text-pBody text-bfc-text1">
+							{dayjs(proposal.start_time).format('YYYY-MM-DD HH:mm:ss')}
+						</div>
 					</div>
 					<div className="flex justify-between">
-						<div className="text-pBody text-bfc-text2">留言板</div>
+						<div className="text-pBody text-bfc-text2">End Time</div>
+						<div className="text-pBody text-bfc-text1">
+							{dayjs(proposal.end_time).format('YYYY-MM-DD HH:mm:ss')}
+						</div>
+					</div>
+					<div className="flex justify-between">
+						<div className="text-pBody text-bfc-text2">Message Board</div>
 						<div className="text-pBody text-bfc-text1">12345</div>
 					</div>
 				</div>
@@ -63,86 +75,133 @@ function DaoContentDetail() {
 				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
 					Description
 				</div>
-				<div className="mt-5 text-pBody text-bfc-text1">
-					Galaxy is a digital asset and blockchain leader helping institutions, startups, and
-					qualified individuals shape a changing economy. We provide platform solutions custom-made
-					for a digitally native ecosystem.
-				</div>
+				<div className="mt-5 text-pBody text-bfc-text1">{hexToString(proposal.description)}</div>
 			</div>
 		</div>
 	);
 }
 
-function PollDetail() {
-	const { proposal, refetch, manageKey } = useContext(DaoDetailContext)!;
+function PoolDetail() {
+	const { proposal, manageKey, votingBfcs, votes } = useContext(DaoContext)!;
+	if (!proposal) {
+		return null;
+	}
+
+	const total = proposal.for_votes + proposal.against_votes;
 
 	return (
 		<div>
 			<div className="flex justify-between">
 				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">50.5%</div>
-					<div className="text-body text-bfc-text2">同意</div>
+					<div className="text-heading4 font-semibold">
+						{total === 0 ? 0 : ((proposal.against_votes / total) * 100).toFixed(1) + '%'}
+					</div>
+					<div className="text-body text-bfc-text2">Opposition</div>
 				</div>
 				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">50.5%</div>
-					<div className="text-body text-bfc-text2">同意</div>
+					<div className="text-heading4 font-semibold">
+						{total === 0 ? 0 : ((proposal.for_votes / total) * 100).toFixed(1) + '%'}
+					</div>
+					<div className="text-body text-bfc-text2">Agree</div>
 				</div>
 			</div>
 			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
-				<div className="absolute h-1 w-[50%] bg-bfc-red" />
+				<div
+					className="absolute h-1 bg-bfc-red"
+					style={{
+						width: total === 0 ? '50%' : (proposal.against_votes / total) * 100 + '%',
+					}}
+				/>
 			</div>
 
 			<div className="flex h-4.5 items-center gap-2">
 				<div>
-					<span className="text-body text-bfc-text2">已投票</span>
-					<span className="text-body font-medium text-bfc-text1"> 55.5%</span>
+					<span className="text-body text-bfc-text2">Voted</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(total)}
+					</span>
 				</div>
 				<div className="h-3 w-[1px] bg-bfc-border" />
 				<div>
-					<span className="text-body text-bfc-text2">法定门槛</span>
-					<span className="text-body font-medium text-bfc-text1"> 51%</span>
+					<span className="text-body text-bfc-text2">Agree</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(proposal.for_votes)}
+					</span>
+				</div>
+				<div className="h-3 w-[1px] bg-bfc-border" />
+				<div>
+					<span className="text-body text-bfc-text2">Opposition</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(proposal.against_votes)}
+					</span>
+				</div>
+				<div className="h-3 w-[1px] bg-bfc-border" />
+				<div>
+					<span className="text-body text-bfc-text2">Quorum</span>
+					<span className="text-body font-medium text-bfc-text1">
+						&nbsp;{bfcDigitsToHumanReadable(proposal.quorum_votes)}
+					</span>
 				</div>
 			</div>
 			<div className="my-3 flex flex-col gap-2">
 				<DisclosureBox title="modify proposal" defaultOpen={false}>
-					<ModifyProposalObj proposal={proposal} refetchDao={refetch} />
+					<ModifyProposalObj />
 				</DisclosureBox>
 				<DisclosureBox title="judge proposal state" defaultOpen={false}>
-					<JudgeProposalState refetchDao={refetch} />
+					<JudgeProposalState />
 				</DisclosureBox>
-				{proposal.status === ProposalStatus.Active && (
-					<>
-						<DisclosureBox title="cast vote" defaultOpen={false}>
-							<CastVote proposal={proposal} refetchDao={refetch} />
-						</DisclosureBox>
-						<DisclosureBox title="change vote" defaultOpen={false}>
-							<ChangeVote proposal={proposal} refetchDao={refetch} />
-						</DisclosureBox>
-						<DisclosureBox title="revoke vote" defaultOpen={false}>
-							<RevokeVote proposal={proposal} refetchDao={refetch} />
-						</DisclosureBox>
-					</>
-				)}
-				{proposal.end_time < Date.now() && (
-					<DisclosureBox title="unvote votes" defaultOpen={false}>
-						<UnvoteVotes proposal={proposal} refetchDao={refetch} />
-					</DisclosureBox>
-				)}
-				{manageKey && proposal.status === ProposalStatus.Agree && (
-					<DisclosureBox title="queue proposal action">
-						<QueueProposalAction proposal={proposal} refetchDao={refetch} manageKey={manageKey} />
-					</DisclosureBox>
-				)}
+				<DisclosureBox
+					title="cast vote"
+					defaultOpen={false}
+					disabled={proposal.status !== ProposalStatus.Active}
+				>
+					{votingBfcs.length === 0 ? (
+						<Button variant="outline">
+							<Link to="/dao">Create Voting BFC</Link>
+						</Button>
+					) : (
+						<CastVote />
+					)}
+				</DisclosureBox>
+				<DisclosureBox
+					title="change vote"
+					defaultOpen={false}
+					disabled={proposal.status !== ProposalStatus.Active || votes.length === 0}
+				>
+					<ChangeVote />
+				</DisclosureBox>
+				<DisclosureBox
+					title="revoke vote"
+					defaultOpen={false}
+					disabled={proposal.status !== ProposalStatus.Active || votes.length === 0}
+				>
+					<RevokeVote />
+				</DisclosureBox>
+				<DisclosureBox
+					title="unvote votes"
+					defaultOpen={false}
+					disabled={proposal.end_time >= Date.now()}
+				>
+					<UnvoteVotes />
+				</DisclosureBox>
+				<DisclosureBox
+					title="queue proposal action"
+					disabled={!manageKey || proposal.status !== ProposalStatus.Agree}
+				>
+					<QueueProposalAction />
+				</DisclosureBox>
 			</div>
 		</div>
 	);
 }
-function Poll() {
+function Pool() {
 	return (
 		<div className="h-max rounded-md border border-bfc-border px-3 py-6">
-			<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">投票</div>
+			<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
+				Voting Pool
+			</div>
 			<div className="mt-5">
-				<PollDetail />
+				<PoolDetail />
 			</div>
 		</div>
 	);
@@ -150,47 +209,41 @@ function Poll() {
 
 function DaoContent() {
 	const { id } = useParams<{ id: string }>();
-	const { currentAccount } = useWalletKit();
-	const { data: daoData, isLoading, refetch } = useGetDao();
-	const { data: manageKey } = useGetBFCDaoManageKey(currentAccount?.address || '');
+	const daoValues = useDaoContext(id || '');
+	const { proposal, dao } = daoValues;
 
-	const data = useMemo(() => {
-		if (!daoData) {
-			return undefined;
-		}
-		const proposal = daoData.proposal_record.find((i) => i.proposal_uid === id)!;
-		return {
-			...proposal,
-			status: daoData.current_proposal_status[proposal!.pid]?.status || ProposalStatus.Pending,
-		};
-	}, [daoData, id]);
-
-	if (isLoading || !data) {
+	if (!proposal || !dao) {
 		return null;
 	}
 
 	return (
-		<DaoDetailContext.Provider value={{ proposal: data, refetch, manageKey }}>
+		<DaoContext.Provider value={daoValues}>
 			<div>
 				<div className="flex flex-col gap-2 rounded-md border-l-4 border-bfc-border bg-bfc-card p-5 lg:flex-row">
 					<div className="flex min-w-0 flex-col gap-1">
 						<div className="flex gap-1">
-							<AgreeSpan />
-							<StatusSpan />
+							{proposal.status === ProposalStatus.Agree ? (
+								<AgreeSpan />
+							) : proposal.status === ProposalStatus.Defeat ? (
+								<RejectSpan />
+							) : (
+								<StatusSpan text={ProposalStatus[proposal.status]} />
+							)}
 						</div>
 						<div className="min-w-0 break-words">
 							<Heading as="h2" variant="heading3/semibold" color="bfc-text1" mono>
-								asdasdasdsa
+								{hexToString(dao!.action_record[proposal.action.action_id]?.name || '')}
 							</Heading>
 						</div>
 					</div>
 				</div>
 				<div className="mt-6 grid grid-cols-2 gap-5">
 					<DaoContentDetail />
-					<Poll />
+					<Pool />
 				</div>
 			</div>
-		</DaoDetailContext.Provider>
+			<Refresh />
+		</DaoContext.Provider>
 	);
 }
 

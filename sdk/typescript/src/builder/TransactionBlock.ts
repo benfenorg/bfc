@@ -4,7 +4,7 @@
 import { fromB64 } from '@mysten/bcs';
 import { is, mask } from 'superstruct';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
-import type { SuiObjectResponse } from '../types/index.js';
+import type { CoinStruct, SuiObjectResponse } from '../types/index.js';
 import {
 	extractMutableReference,
 	extractStructTag,
@@ -113,7 +113,7 @@ const LIMITS = {
 type Limits = Partial<Record<keyof typeof LIMITS, number>>;
 
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
-const GAS_SAFE_OVERHEAD = 1000n;
+const GAS_SAFE_OVERHEAD = 1000000n;
 
 // The maximum objects that can be fetched at once using multiGetObjects.
 const MAX_OBJECTS_PER_FETCH = 50;
@@ -465,12 +465,23 @@ export class TransactionBlock {
 
 		const gasOwner = this.#blockData.gasConfig.owner ?? this.#blockData.sender;
 
-		const coins = await expectClient(options).getCoins({
-			owner: gasOwner!,
-			coinType: SUI_TYPE_ARG,
-		});
+		const coins: CoinStruct[] = [];
+		let cursor: string | undefined = undefined;
 
-		const paymentCoins = coins.data
+		for (;;) {
+			const temp = await expectClient(options).getCoins({
+				owner: gasOwner!,
+				coinType: SUI_TYPE_ARG,
+				cursor,
+			});
+			coins.push(...temp.data);
+			if (!temp.nextCursor) {
+				break;
+			}
+			cursor = temp.nextCursor;
+		}
+
+		const paymentCoins = coins
 			// Filter out coins that are also used as input:
 			.filter((coin) => {
 				const matchingInput = this.#blockData.inputs.find((input) => {
@@ -621,7 +632,20 @@ export class TransactionBlock {
 						// Skip if the input is already resolved
 						if (is(input.value, BuilderCallArg)) return;
 
-						const inputValue = input.value;
+						let inputValue = input.value;
+						// if (typeof param === 'string') {
+						// 	if (['U8', 'U16', 'U32', 'U64', 'U128', 'U256'].includes(param)) {
+						// 		inputValue = Number.parseInt(inputValue);
+						// 	} else if (param === 'Bool') {
+						// 		inputValue = inputValue.toLowerCase() === 'true';
+						// 	}
+						// } else if ('Vector' in param) {
+						// 	if (typeof inputValue === 'string' && param.Vector === 'U8') {
+						// 		// do nothing;
+						// 	} else {
+						// 		inputValue = inputValue.split(',').filter(Boolean);
+						// 	}
+						// }
 
 						const serType = getPureSerializationType(param, inputValue);
 

@@ -191,6 +191,9 @@ pub struct SuiDaoProposal {
     #[serde_as(as = "DisplayFromStr")]
     pub action_name: String,
 
+    /// The status of the DAO action
+    pub action_status: bool,
+
     /// Who propose this
     #[schemars(with = "String")]
     #[serde_as(as = "DisplayFromStr")]
@@ -230,4 +233,9 @@ pub struct SuiDaoProposal {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub quorum_votes: u64,
+
+    /// The description of the DAO action
+    #[schemars(with = "String")]
+    #[serde_as(as = "DisplayFromStr")]
+    pub description: String,
 }

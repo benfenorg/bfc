@@ -27,6 +27,7 @@ pub struct BFCDaoAction{
     pub action_id: u64,
     /// Name for the action
     pub name: String,
+    pub status: bool,
 }
 
 #[derive(Debug, Serialize, JsonSchema, Deserialize, Clone, Eq, PartialEq)]
@@ -52,6 +53,7 @@ pub struct ProposalInfo{
     /// proposal action.
     pub action: BFCDaoAction,
     version_id: u64,
+    pub description: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]

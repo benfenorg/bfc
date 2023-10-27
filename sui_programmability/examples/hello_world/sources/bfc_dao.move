@@ -149,6 +149,7 @@ module hello_world::bfc_dao {
         actionId: u64,
         /// Name for the action
         name: string::String,
+        status: bool,
     }
     public fun getBFCDaoActionId(bfcDaoAction: BFCDaoAction): u64 {
         bfcDaoAction.actionId
@@ -214,6 +215,7 @@ module hello_world::bfc_dao {
         let action = BFCDaoAction{
             actionId: action_id,
             name: string::utf8(actionName),
+            status: false,
             //description: string::utf8(actionName),
         };
 
@@ -324,7 +326,7 @@ module hello_world::bfc_dao {
         // ensure the user pays enough
         assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.votingPool, balance, clock, ctx);
         transfer::public_transfer(voting_bfc, sender);
 
 
@@ -1029,21 +1031,23 @@ module hello_world::bfc_dao {
 
     entry public fun create_voting_bfc(dao: &mut Dao,
                                        coin: Coin<BFC>,
+                                       clock: & Clock,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(coin);
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.votingPool, balance, ctx);
+        let voting_bfc = voting_pool::request_add_voting(&mut dao.votingPool, balance,clock, ctx);
 
         transfer::public_transfer(voting_bfc, sender);
     }
 
     entry public fun withdraw_voting(  dao: &mut Dao,
                                        voting_bfc: VotingBfc,
+                                       clock: & Clock,
                                        ctx: &mut TxContext ,) {
         // sender address
         let sender = tx_context::sender(ctx);
-        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.votingPool, voting_bfc);
+        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.votingPool, voting_bfc, clock);
         let coin = coin::from_balance(voting_bfc, ctx);
         transfer::public_transfer(coin, sender);
 
@@ -1056,6 +1060,7 @@ module hello_world::bfc_dao {
             actionId: 100,
             name: string::utf8(b"hello"),
             //description: string::utf8(actionName),
+            status: false,
         };
 
 

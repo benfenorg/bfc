@@ -8,34 +8,26 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useGetBFCDaoVote } from '~/hooks/useGetBFCDaoVote';
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	vote: z.string().trim().nonempty(),
+	vote: z.string({ required_error: 'must select voting' }).trim().nonempty(),
 });
 
-export function UnvoteVotes({ proposal, refetchDao }: Props) {
-	const { isConnected, signAndExecuteTransactionBlock, currentAccount } = useWalletKit();
+export function UnvoteVotes() {
+	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { proposal, votes, refetch } = useContext(DaoContext)!;
 
-	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(
-		currentAccount?.address || '',
-	);
-
-	const { handleSubmit, register, formState } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -46,7 +38,7 @@ export function UnvoteVotes({ proposal, refetchDao }: Props) {
 			tx.moveCall({
 				target: `0xc8::bfc_system::unvote_votes`,
 				typeArguments: [],
-				arguments: [tx.object(proposal.proposal_uid), tx.object(vote), tx.object(ADDRESS.CLOCK)],
+				arguments: [tx.object(proposal!.proposal_uid), tx.object(vote), tx.object(ADDRESS.CLOCK)],
 			});
 
 			const result = await signAndExecuteTransactionBlock({
@@ -58,15 +50,14 @@ export function UnvoteVotes({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
-			refetchVotes();
+			refetch();
 		},
 	});
 
 	const options = useMemo(
 		() =>
 			votes
-				.filter((i) => i.vid === proposal.pid.toString())
+				.filter((i) => i.vid === proposal!.pid.toString())
 				.map((i) => ({
 					label: i.id.id,
 					value: i.id.id,
@@ -84,7 +75,13 @@ export function UnvoteVotes({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="voting" options={options} {...register('vote')} />
+			<Controller
+				control={control}
+				name="vote"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="voting" options={options} value={value} onChange={onChange} />
+				)}
+			/>
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

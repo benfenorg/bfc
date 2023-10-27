@@ -1,4 +1,5 @@
 module bfc_system::bfc_system_state_inner {
+    use std::string;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
@@ -346,10 +347,10 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun create_bfcdao_action(
         self: &mut BfcSystemStateInner,
         payment: Coin<BFC>,
-
         actionName: vector<u8>,
+        clock: &Clock,
         ctx: &mut TxContext) {
-        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName, ctx);
+        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName,clock, ctx);
     }
 
     public(friend) fun propose(
@@ -358,10 +359,11 @@ module bfc_system::bfc_system_state_inner {
         payment: Coin<BFC>,
         action_id: u64,
         action_delay: u64,
+        description: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        bfc_dao:: propose(&mut self.dao, version_id, payment, action_id, action_delay, clock, ctx);
+        bfc_dao:: propose(&mut self.dao, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
     public(friend) fun set_voting_delay(self: &mut BfcSystemStateInner, manager_key: &BFCDaoManageKey, value: u64) {
@@ -407,7 +409,7 @@ module bfc_system::bfc_system_state_inner {
         let size: u64 = vec_map::size(&proposal_record);
         let i = 0;
         while (i < size) {
-            let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, size - 1);
+            let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, i);
             let cur_status = bfc_dao::judge_proposal_state(proposalInfo, current_time);
             bfc_dao::set_current_status_into_dao(&mut wrapper.dao, proposalInfo, cur_status);
             i = i + 1;
@@ -467,13 +469,15 @@ module bfc_system::bfc_system_state_inner {
 
     public fun withdraw_voting(system_state: &mut BfcSystemStateInner,
                                voting_bfc: VotingBfc,
+                                clock: & Clock,
                                ctx: &mut TxContext) {
-        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, ctx);
+        bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, clock, ctx);
     }
 
     public(friend) fun create_voting_bfc(system_state: &mut BfcSystemStateInner,
                                          coin: Coin<BFC>,
+                                        clock: & Clock,
                                          ctx: &mut TxContext) {
-        bfc_dao::create_voting_bfc(&mut system_state.dao, coin, ctx);
+        bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
 }

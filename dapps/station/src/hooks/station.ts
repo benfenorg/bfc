@@ -104,7 +104,9 @@ export function useBalance(type: string, address: string) {
 
 			const coinType = normalizeSuiCoinType(typeArg);
 
-			const coins = await getAllCoins(provider, address, coinType);
+			console.log('coinTypecoinType',typeArg,coinType)
+
+			const coins = await getAllCoins(provider, address, typeArg);
 
 			return coins || [];
 		},

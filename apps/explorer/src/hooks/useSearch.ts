@@ -35,7 +35,6 @@ const getResultsForObject = async (client: SuiClient, query: string) => {
 
 	const { data, error } = await client.getObject({ id: normalized });
 	if (!data || error) return null;
-
 	return [
 		{
 			id: data.objectId,
@@ -89,11 +88,10 @@ const getResultsForAddress = async (client: SuiClient, query: string, suiNSEnabl
 	]);
 
 	if (!from.data?.length && !to.data?.length) return null;
-
 	return [
 		{
-			id: normalized,
-			label: normalized,
+			id: query,
+			label: query,
 			type: 'address',
 		},
 	];

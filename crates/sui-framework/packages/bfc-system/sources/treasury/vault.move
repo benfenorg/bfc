@@ -423,6 +423,7 @@ use std::type_name;
     struct CalculatedSwapResult has copy, drop, store {
         amount_in: u64,
         amount_out: u64,
+        vault_sqrt_price: u128,
         after_sqrt_price: u128,
         is_exceed: bool,
         step_results: vector<SwapStepResult>,
@@ -458,7 +459,8 @@ use std::type_name;
             steps: 0,
             step_results: vector::empty(),
             is_exceed: false,
-            after_sqrt_price: 0
+            after_sqrt_price: 0,
+            vault_sqrt_price: 0
         }
     }
 
@@ -486,6 +488,7 @@ use std::type_name;
         _amount: u64,
     ): CalculatedSwapResult {
         let swap_result = default_calculated_swap_result();
+        swap_result.vault_sqrt_price = _vault.current_sqrt_price;
         swap_result.after_sqrt_price = _vault.current_sqrt_price;
         let liquidity = _vault.liquidity;
         let current_sqrt_price = _vault.current_sqrt_price;
@@ -703,6 +706,7 @@ use std::type_name;
         let next_score = tick::first_score_for_swap(&_vault.tick_manager, _vault.current_tick_index, _a2b);
         let remaining_amount = _amount;
         let current_sqrt_price = _vault.current_sqrt_price;
+        swap_result.vault_sqrt_price = current_sqrt_price;
         while (remaining_amount > 0 && current_sqrt_price != _sqrt_price_limit) {
             assert!(!option_u64::is_none(&next_score), ERR_TICK_INDEX_OPTION_IS_NONE);
             let (tick, tick_score) = tick::borrow_tick_for_swap(

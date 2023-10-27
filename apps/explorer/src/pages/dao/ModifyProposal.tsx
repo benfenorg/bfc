@@ -8,29 +8,27 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@mysten/sui.js';
-import { type ProposalRecord, ProposalStatus } from '@mysten/sui.js/client';
+import { ProposalStatus } from '@mysten/sui.js/client';
 import { Button } from '@mysten/ui';
 import { useWalletKit } from '@mysten/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
+import { Controller } from 'react-hook-form';
 import { z } from 'zod';
 
+import { DaoContext } from '~/context';
 import { Selector } from '~/ui/Selector';
 import { ADDRESS } from '~/utils/constants';
 
-export interface Props {
-	proposal: ProposalRecord;
-	refetchDao: () => void;
-}
-
 const schema = z.object({
-	status: z.string().transform(Number),
+	status: z.number({ required_error: 'must select status' }),
 });
 
-export function ModifyProposalObj({ proposal, refetchDao }: Props) {
+export function ModifyProposalObj() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
+	const { proposal, refetch } = useContext(DaoContext)!;
 
-	const { handleSubmit, formState, register } = useZodForm({
+	const { handleSubmit, formState, control } = useZodForm({
 		schema: schema,
 	});
 
@@ -43,7 +41,7 @@ export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 				typeArguments: [],
 				arguments: [
 					tx.object(ADDRESS.BFC_SYSTEM_STATE),
-					tx.object(proposal.proposal_uid),
+					tx.object(proposal!.proposal_uid),
 					tx.pure(status),
 					tx.object(ADDRESS.CLOCK),
 				],
@@ -58,7 +56,7 @@ export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 			return result;
 		},
 		onSuccess: () => {
-			refetchDao();
+			refetch();
 		},
 	});
 
@@ -77,7 +75,14 @@ export function ModifyProposalObj({ proposal, refetchDao }: Props) {
 			autoComplete="off"
 			className="flex flex-col flex-nowrap items-stretch gap-4"
 		>
-			<Selector label="status" options={options} {...register('status')} />
+			<Controller
+				control={control}
+				name="status"
+				render={({ field: { value, onChange } }) => (
+					<Selector label="status" options={options} value={value} onChange={onChange} />
+				)}
+			/>
+
 			<div className="flex items-stretch gap-1.5">
 				<Button variant="primary" type="submit" loading={execute.isLoading} disabled={!isConnected}>
 					execute

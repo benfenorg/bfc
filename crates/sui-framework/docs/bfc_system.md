@@ -727,7 +727,7 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_propose">propose</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_propose">propose</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, version_id: u64, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, action_id: u64, action_delay: u64, description: <a href="">vector</a>&lt;u8&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -742,11 +742,12 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
     payment: Coin&lt;BFC&gt;,
     action_id: u64,
     action_delay: u64,
+    description: <a href="">vector</a>&lt;u8&gt;,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_propose">bfc_system_state_inner::propose</a>(system_state, version_id, payment, action_id, action_delay, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_propose">bfc_system_state_inner::propose</a>(system_state, version_id, payment, action_id, action_delay, description, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -760,7 +761,7 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_bfcdao_action">create_bfcdao_action</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_bfcdao_action">create_bfcdao_action</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, payment: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, actionName: <a href="">vector</a>&lt;u8&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -773,9 +774,10 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     payment: Coin&lt;BFC&gt;,
     actionName: <a href="">vector</a>&lt;u8&gt;,
+    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfcdao_action">bfc_system_state_inner::create_bfcdao_action</a>(system_state, payment, actionName, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfcdao_action">bfc_system_state_inner::create_bfcdao_action</a>(system_state, payment, actionName,<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -922,7 +924,7 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_withdraw_voting">withdraw_voting</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_withdraw_voting">withdraw_voting</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -933,9 +935,10 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_withdraw_voting">withdraw_voting</a>(   wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
                              voting_bfc: VotingBfc,
+                                <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
                              ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_voting">bfc_system_state_inner::withdraw_voting</a>(system_state, voting_bfc, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_voting">bfc_system_state_inner::withdraw_voting</a>(system_state, voting_bfc,<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -949,7 +952,7 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_voting_bfc">create_voting_bfc</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_voting_bfc">create_voting_bfc</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -960,9 +963,10 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_voting_bfc">create_voting_bfc</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
                              <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
+                                <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
                              ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_voting_bfc">bfc_system_state_inner::create_voting_bfc</a>(system_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_voting_bfc">bfc_system_state_inner::create_voting_bfc</a>(system_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>,<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 

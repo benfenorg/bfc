@@ -4,11 +4,11 @@
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { toB64, fromB64 } from '@mysten/sui.js/utils';
 import {
-	SUI_CHAINS,
+	BFC_CHAINS,
 	ReadonlyWalletAccount,
-	SUI_DEVNET_CHAIN,
-	SUI_TESTNET_CHAIN,
-	SUI_LOCALNET_CHAIN,
+	BFC_DEVNET_CHAIN,
+	BFC_TESTNET_CHAIN,
+	BFC_LOCALNET_CHAIN,
 	type SuiFeatures,
 	type SuiSignAndExecuteTransactionBlockMethod,
 	type StandardConnectFeature,
@@ -19,7 +19,7 @@ import {
 	type StandardEventsListeners,
 	type SuiSignTransactionBlockMethod,
 	type SuiSignMessageMethod,
-	SUI_MAINNET_CHAIN,
+	BFC_MAINNET_CHAIN,
 } from '@mysten/wallet-standard';
 import mitt, { type Emitter } from 'mitt';
 import { filter, map, type Observable } from 'rxjs';
@@ -83,10 +83,10 @@ type QredoConnectFeature = {
 };
 type ChainType = Wallet['chains'][number];
 const API_ENV_TO_CHAIN: Record<Exclude<API_ENV, API_ENV.customRPC>, ChainType> = {
-	[API_ENV.local]: SUI_LOCALNET_CHAIN,
-	[API_ENV.devNet]: SUI_DEVNET_CHAIN,
-	[API_ENV.testNet]: SUI_TESTNET_CHAIN,
-	[API_ENV.mainnet]: SUI_MAINNET_CHAIN,
+	[API_ENV.local]: BFC_LOCALNET_CHAIN,
+	[API_ENV.devNet]: BFC_DEVNET_CHAIN,
+	[API_ENV.testNet]: BFC_TESTNET_CHAIN,
+	[API_ENV.mainnet]: BFC_MAINNET_CHAIN,
 };
 
 export class SuiWallet implements Wallet {
@@ -111,7 +111,7 @@ export class SuiWallet implements Wallet {
 
 	get chains() {
 		// TODO: Extract chain from wallet:
-		return SUI_CHAINS;
+		return BFC_CHAINS;
 	}
 
 	get features(): StandardConnectFeature &
@@ -339,7 +339,7 @@ export class SuiWallet implements Wallet {
 	}
 
 	#setActiveChain({ env }: NetworkEnvType) {
-		this.#activeChain = env === API_ENV.customRPC ? 'sui:unknown' : API_ENV_TO_CHAIN[env];
+		this.#activeChain = env === API_ENV.customRPC ? 'bfc:unknown' : API_ENV_TO_CHAIN[env];
 	}
 
 	#qredoConnect = async (input: QredoConnectInput): Promise<void> => {
