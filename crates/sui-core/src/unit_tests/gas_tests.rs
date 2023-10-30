@@ -130,7 +130,7 @@ where
     F: FnOnce(&GasCostSummary, u64, u64) -> SuiResult,
 {
     // initial system with given gas coins
-    const GAS_AMOUNT: u64 = 10_000_000_000;
+    const GAS_AMOUNT: u64 = 1_000_000_000;
     let gas_coins = make_gas_coins(sender, GAS_AMOUNT, coin_num);
     let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
     let authority_state = TestAuthorityBuilder::new().build().await;
