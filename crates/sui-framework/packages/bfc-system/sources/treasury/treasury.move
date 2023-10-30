@@ -222,6 +222,7 @@ module bfc_system::treasury {
         _treasury: &mut Treasury,
         _coin_bfc: Coin<BFC>,
         _amount: u64,
+        _min_amount: u64,
         _ctx: &mut TxContext,
     ) {
         let balance_a = mint_internal<StableCoinType>(
@@ -230,6 +231,7 @@ module bfc_system::treasury {
             _amount,
             _ctx,
         );
+        assert!(balance::value(&balance_a) >= _min_amount, ERR_INSUFFICIENT);
         transfer_or_delete(balance_a, _ctx);
     }
 
@@ -258,6 +260,7 @@ module bfc_system::treasury {
         _treasury: &mut Treasury,
         _coin_sc: Coin<StableCoinType>,
         _amount: u64,
+        _min_amount: u64,
         _ctx: &mut TxContext,
     ) {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
@@ -267,6 +270,7 @@ module bfc_system::treasury {
             _amount,
             _ctx,
         );
+        assert!(balance::value(&balance_b) >= _min_amount, ERR_INSUFFICIENT);
         transfer_or_delete(balance_b, _ctx);
     }
 

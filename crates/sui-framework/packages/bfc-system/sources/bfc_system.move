@@ -309,10 +309,11 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         native_coin: Coin<BFC>,
         amount: u64,
+        min_amount: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, ctx);
+        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, min_amount, ctx);
     }
 
     /// X treasury  swap stablecoin to bfc
@@ -320,10 +321,11 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         stable_coin: Coin<StableCoinType>,
         amount: u64,
+        min_amount: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, amount, ctx);
+        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, amount, min_amount, ctx);
     }
 
     public fun get_stablecoin_by_bfc<StableCoinType>(

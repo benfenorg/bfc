@@ -190,6 +190,7 @@ module bfc_system::treasury_test {
         let alice = @0xA1;
         let amount_bfc = 1_000_000_000u64;
         let total_amount_bfc = amount_bfc * 2;
+        let min_amount = 0;
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
@@ -206,6 +207,7 @@ module bfc_system::treasury_test {
                 &mut t,
                 coin_bfc,
                 amount_bfc,
+                min_amount,
                 test_scenario::ctx(&mut scenario_val),
             );
             test_scenario::return_shared(t);
@@ -251,6 +253,7 @@ module bfc_system::treasury_test {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
+            let min_amount: u64 = 0;
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances redeem bfc ..."));
                 debug::print(&amount);
@@ -259,6 +262,7 @@ module bfc_system::treasury_test {
                 &mut t,
                 coin_usd,
                 amount,
+                min_amount,
                 test_scenario::ctx(&mut scenario_val),
             );
             test_scenario::return_shared(t);
