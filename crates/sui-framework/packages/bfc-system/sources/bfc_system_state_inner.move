@@ -229,11 +229,13 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun swap_bfc_to_stablecoin<StableCoinType>(
         self: &mut BfcSystemStateInner,
         coin_bfc: Coin<BFC>,
+        clock: &Clock,
         amount: u64,
         min_amount: u64,
+        deadline: u64,
         ctx: &mut TxContext,
     ) {
-        treasury::mint<StableCoinType>(&mut self.treasury, coin_bfc, amount, min_amount, ctx);
+        treasury::mint<StableCoinType>(&mut self.treasury, coin_bfc, clock, amount, min_amount, deadline, ctx);
     }
 
     public(friend) fun swap_bfc_to_stablecoin_balance<StableCoinType>(
@@ -249,11 +251,13 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun swap_stablecoin_to_bfc<StableCoinType>(
         self: &mut BfcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
+        clock: &Clock,
         amount: u64,
         min_amount: u64,
+        deadline: u64,
         ctx: &mut TxContext,
     ) {
-        treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, amount, min_amount, ctx);
+        treasury::redeem<StableCoinType>(&mut self.treasury, coin_sc, clock, amount, min_amount, deadline, ctx);
     }
 
     public(friend) fun swap_stablecoin_to_bfc_balance<StableCoinType>(

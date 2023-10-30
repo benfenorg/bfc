@@ -34,6 +34,7 @@ module bfc_system::treasury {
     const ERR_ZERO_AMOUNT: u64 = 102;
     const ERR_INSUFFICIENT: u64 = 103;
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
+    const ERR_DEADLINE_EXCEED: u64 = 105;
 
     struct Treasury has key, store {
         id: UID,
@@ -221,8 +222,10 @@ module bfc_system::treasury {
     public entry fun mint<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_bfc: Coin<BFC>,
+        _clock: &Clock,
         _amount: u64,
         _min_amount: u64,
+        _deadline: u64,
         _ctx: &mut TxContext,
     ) {
         let balance_a = mint_internal<StableCoinType>(
@@ -232,6 +235,7 @@ module bfc_system::treasury {
             _ctx,
         );
         assert!(balance::value(&balance_a) >= _min_amount, ERR_INSUFFICIENT);
+        assert!(clock::timestamp_ms(_clock) <= _deadline, ERR_DEADLINE_EXCEED);
         transfer_or_delete(balance_a, _ctx);
     }
 
@@ -259,8 +263,10 @@ module bfc_system::treasury {
     public entry fun redeem<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_sc: Coin<StableCoinType>,
+        _clock: &Clock,
         _amount: u64,
         _min_amount: u64,
+        _deadline: u64,
         _ctx: &mut TxContext,
     ) {
         assert!(coin::value<StableCoinType>(&_coin_sc) > 0, ERR_ZERO_AMOUNT);
@@ -271,6 +277,7 @@ module bfc_system::treasury {
             _ctx,
         );
         assert!(balance::value(&balance_b) >= _min_amount, ERR_INSUFFICIENT);
+        assert!(clock::timestamp_ms(_clock) <= _deadline, ERR_DEADLINE_EXCEED);
         transfer_or_delete(balance_b, _ctx);
     }
 
