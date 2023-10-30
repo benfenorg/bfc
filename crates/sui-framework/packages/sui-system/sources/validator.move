@@ -22,7 +22,7 @@ module sui_system::validator {
     use sui::bag;
     use sui::stable::STABLE;
     use sui_system::stable_pool;
-    use sui_system::stable_pool::{StablePool, StakedStable};
+    use sui_system::stable_pool::{StablePool, StakedStable, PoolStableTokenExchangeRate};
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
     friend sui_system::validator_wrapper;
@@ -156,6 +156,8 @@ module sui_system::validator {
         commission_rate: u64,
         /// Total amount of stake that would be active in the next epoch.
         next_epoch_stake: u64,
+        /// Total amount of stable stake that would be active in the next epoch.
+        next_epoch_stable_stake: u64,
         /// This validator's gas price quote for the next epoch.
         next_epoch_gas_price: u64,
         /// The commission rate of the validator starting the next epoch, in basis point.
@@ -290,12 +292,12 @@ module sui_system::validator {
     /// Deactivate this validator's staking pool
     public(friend) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
         staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch);
-        stable_pool::deactivate_staking_pool(&mut self.stable_pool, deactivation_epoch)
+        stable_pool::deactivate_stable_pool(&mut self.stable_pool, deactivation_epoch)
     }
 
     public(friend) fun activate(self: &mut Validator, activation_epoch: u64) {
         staking_pool::activate_staking_pool(&mut self.staking_pool, activation_epoch);
-        stable_pool::activate_staking_pool(&mut self.stable_pool, activation_epoch)
+        stable_pool::activate_stable_pool(&mut self.stable_pool, activation_epoch)
     }
 
     /// Process pending stake and pending withdraws, and update the gas price.
@@ -350,7 +352,7 @@ module sui_system::validator {
         if (stable_pool::is_preactive<STABLE>(&self.stable_pool)) {
             stable_pool::process_pending_stake<STABLE>(&mut self.stable_pool);
         };
-        self.next_epoch_stake = self.next_epoch_stake + stake_amount;
+        self.next_epoch_stable_stake = self.next_epoch_stable_stake + stake_amount;
         event::emit(
             StakingRequestEvent {
                 pool_id: stable_pool_id(self),
@@ -426,7 +428,7 @@ module sui_system::validator {
             &mut self.stable_pool, staked_sui, ctx);
         let withdraw_amount = balance::value(&withdrawn_stake);
         let reward_amount = withdraw_amount - principal_amount;
-        self.next_epoch_stake = self.next_epoch_stake - withdraw_amount;
+        self.next_epoch_stable_stake = self.next_epoch_stable_stake - withdraw_amount;
         event::emit(
             UnstakingRequestEvent {
                 pool_id: stable_pool_id(self),
@@ -487,10 +489,21 @@ module sui_system::validator {
         staking_pool::deposit_rewards(&mut self.staking_pool, reward);
     }
 
+    //todo stable rewards diposit
+    public(friend) fun deposit_stable_stake_rewards(self: &mut Validator, reward: Balance<STABLE>) {
+        self.next_epoch_stable_stake = self.next_epoch_stable_stake + balance::value(&reward);
+        stable_pool::deposit_rewards(&mut self.stable_pool, reward);
+    }
+
     /// Process pending stakes and withdraws, called at the end of the epoch.
     public(friend) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
         staking_pool::process_pending_stakes_and_withdraws(&mut self.staking_pool, ctx);
         assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
+    }
+
+    public(friend) fun process_pending_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
+        stable_pool::process_pending_stakes_and_withdraws(&mut self.stable_pool, ctx);
+        assert!(stable_stake_amount(self) == self.next_epoch_stable_stake, EInvalidStakeAmount);
     }
 
     /// Returns true if the validator is preactive.
@@ -612,9 +625,17 @@ module sui_system::validator {
         staking_pool::sui_balance(&self.staking_pool)
     }
 
+    public fun stable_stake_amount(self: &Validator): u64 {
+        stable_pool::stable_balance(&self.stable_pool)
+    }
+
     /// Return the total amount staked with this validator
     public fun total_stake(self: &Validator): u64 {
         stake_amount(self)
+    }
+
+    public fun total_stable_stake(self: &Validator): u64 {
+        stable_stake_amount(self)
     }
 
     /// Return the voting power of this validator.
@@ -645,6 +666,11 @@ module sui_system::validator {
 
     public fun pool_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): PoolTokenExchangeRate {
         staking_pool::pool_token_exchange_rate_at_epoch(&self.staking_pool, epoch)
+    }
+
+    // todo check is needed?
+    public fun pool_stable_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): PoolStableTokenExchangeRate {
+        stable_pool::pool_token_exchange_rate_at_epoch<STABLE>(&self.stable_pool, epoch)
     }
 
     public fun staking_pool_id(self: &Validator): ID {
@@ -974,6 +1000,7 @@ module sui_system::validator {
             stable_pool,
             commission_rate,
             next_epoch_stake: 0,
+            next_epoch_stable_stake: 0,
             next_epoch_gas_price: gas_price,
             next_epoch_commission_rate: commission_rate,
             extra_fields: bag::new(ctx),

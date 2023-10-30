@@ -586,6 +586,11 @@ module sui_system::validator_set {
         validator::stake_amount(validator)
     }
 
+    public fun validator_stable_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
+        let validator = get_validator_ref(&self.active_validators, validator_address);
+        validator::stable_stake_amount(validator)
+    }
+
     public fun validator_staking_pool_id(self: &ValidatorSet, validator_address: address): ID {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::staking_pool_id(validator)
