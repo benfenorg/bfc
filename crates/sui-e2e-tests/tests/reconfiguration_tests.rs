@@ -2565,3 +2565,74 @@ async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> 
     assert_eq!(r.amount_out, 99999);
     Ok(())
 }
+
+async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTransaction) -> u64
+{
+    let client = cluster.rpc_client();
+    let sender = cluster.get_address_0();
+    let txn = TransactionKind::programmable(pt);
+    let response = client
+        .dev_inspect_transaction_block(
+            sender,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            /* gas_price */ None,
+            /* epoch_id */ None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
+
+    bcs::from_bytes(&return_).unwrap()
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_bfc_exchange_rate").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert_eq!(r, 999999950);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_stablecoin_exchange_rate").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert_eq!(r, 999999950);
+    Ok(())
+}
