@@ -3,7 +3,6 @@
 
 module sui_system::stable_pool {
     use sui::balance::{Self, Balance};
-    use sui::bfc::BFC;
     use std::option::{Self, Option};
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
@@ -48,9 +47,9 @@ module sui_system::stable_pool {
         /// The epoch at which this stable pool ceased to be active. `None` = {pre-active, active},
         /// `Some(<epoch_number>)` if in-active, and it was de-activated at epoch `<epoch_number>`.
         deactivation_epoch: Option<u64>,
-        /// The total number of SUI tokens in this pool, including the SUI in the rewards_pool, as well as in all the principal
-        /// in the `StakedSui` object, updated at epoch boundaries.
-        sui_balance: u64,
+        /// The total number of STABLE tokens in this pool, including the SUI in the rewards_pool, as well as in all the principal
+        /// in the `StakedSTABLE` object, updated at epoch boundaries.
+        stable_balance: u64,
         /// The epoch stake rewards will be added here at the end of each epoch.
         rewards_pool: Balance<STABLE>,
         /// Total number of pool tokens issued by the pool.
@@ -58,7 +57,7 @@ module sui_system::stable_pool {
         /// Exchange rate history of previous epochs. Key is the epoch number.
         /// The entries start from the `activation_epoch` of this pool and contains exchange rates at the beginning of each epoch,
         /// i.e., right after the rewards for the previous epoch have been deposited into the pool.
-        exchange_rates: Table<u64, PoolTokenExchangeRate>,
+        exchange_rates: Table<u64, PoolStableTokenExchangeRate>,
         /// Pending stake amount for this epoch, emptied at epoch boundaries.
         pending_stake: u64,
         /// Pending stake withdrawn during the current epoch, emptied at epoch boundaries.
@@ -71,7 +70,7 @@ module sui_system::stable_pool {
     }
 
     /// Struct representing the exchange rate of the stake pool token to SUI.
-    struct PoolTokenExchangeRate has store, copy, drop {
+    struct PoolStableTokenExchangeRate has store, copy, drop {
         sui_amount: u64,
         pool_token_amount: u64,
     }
@@ -96,7 +95,7 @@ module sui_system::stable_pool {
             id: object::new(ctx),
             activation_epoch: option::none(),
             deactivation_epoch: option::none(),
-            sui_balance: 0,
+            stable_balance: 0,
             rewards_pool: balance::zero<STABLE>(),
             pool_token_balance: 0,
             exchange_rates,
@@ -193,7 +192,7 @@ module sui_system::stable_pool {
 
     /// Called at epoch advancement times to add rewards (in SUI) to the stable pool.
     public(friend) fun deposit_rewards<STABLE>(pool: &mut StablePool<STABLE>, rewards: Balance<STABLE>) {
-        pool.sui_balance = pool.sui_balance + balance::value(&rewards);
+        pool.stable_balance = pool.stable_balance + balance::value(&rewards);
         balance::join(&mut pool.rewards_pool, rewards);
     }
 
@@ -204,7 +203,7 @@ module sui_system::stable_pool {
         table::add(
             &mut pool.exchange_rates,
             new_epoch,
-            PoolTokenExchangeRate { sui_amount: pool.sui_balance, pool_token_amount: pool.pool_token_balance },
+            PoolStableTokenExchangeRate { sui_amount: pool.stable_balance, pool_token_amount: pool.pool_token_balance },
         );
         check_balance_invariants(pool, new_epoch);
     }
@@ -212,7 +211,7 @@ module sui_system::stable_pool {
     /// Called at epoch boundaries to process pending stake withdraws requested during the epoch.
     /// Also called immediately upon withdrawal if the pool is inactive.
     fun process_pending_stake_withdraw<STABLE>(pool: &mut StablePool<STABLE>) {
-        pool.sui_balance = pool.sui_balance - pool.pending_total_sui_withdraw;
+        pool.stable_balance = pool.stable_balance - pool.pending_total_sui_withdraw;
         pool.pool_token_balance = pool.pool_token_balance - pool.pending_pool_token_withdraw;
         pool.pending_total_sui_withdraw = 0;
         pool.pending_pool_token_withdraw = 0;
@@ -222,9 +221,9 @@ module sui_system::stable_pool {
     public(friend) fun process_pending_stake<STABLE>(pool: &mut StablePool<STABLE>) {
         // Use the most up to date exchange rate with the rewards deposited and withdraws effectuated.
         let latest_exchange_rate =
-            PoolTokenExchangeRate { sui_amount: pool.sui_balance, pool_token_amount: pool.pool_token_balance };
-        pool.sui_balance = pool.sui_balance + pool.pending_stake;
-        pool.pool_token_balance = get_token_amount(&latest_exchange_rate, pool.sui_balance);
+            PoolStableTokenExchangeRate { sui_amount: pool.stable_balance, pool_token_amount: pool.pool_token_balance };
+        pool.stable_balance = pool.stable_balance + pool.pending_stake;
+        pool.pool_token_balance = get_token_amount(&latest_exchange_rate, pool.stable_balance);
         pool.pending_stake = 0;
     }
 
@@ -257,7 +256,7 @@ module sui_system::stable_pool {
     // ==== preactive pool related ====
 
     /// Called by `validator` module to activate a stable pool.
-    public(friend) fun activate_staking_pool<STABLE>(pool: &mut StablePool<STABLE>, activation_epoch: u64) {
+    public(friend) fun activate_stable_pool<STABLE>(pool: &mut StablePool<STABLE>, activation_epoch: u64) {
         // Add the initial exchange rate to the table.
         table::add(
             &mut pool.exchange_rates,
@@ -276,7 +275,7 @@ module sui_system::stable_pool {
     /// Deactivate a stable pool by setting the `deactivation_epoch`. After
     /// this pool deactivation, the pool stops earning rewards. Only stake
     /// withdraws can be made to the pool.
-    public(friend) fun deactivate_staking_pool<STABLE>(pool: &mut StablePool<STABLE>, deactivation_epoch: u64) {
+    public(friend) fun deactivate_stable_pool<STABLE>(pool: &mut StablePool<STABLE>, deactivation_epoch: u64) {
         // We can't deactivate an already deactivated pool.
         assert!(!is_inactive(pool), EDeactivationOfInactivePool);
         pool.deactivation_epoch = option::some(deactivation_epoch);
@@ -284,7 +283,7 @@ module sui_system::stable_pool {
 
     // ==== getters and misc utility functions ====
 
-    public fun sui_balance<STABLE>(pool: &StablePool<STABLE>): u64 { pool.sui_balance }
+    public fun stable_balance<STABLE>(pool: &StablePool<STABLE>): u64 { pool.stable_balance }
 
     public fun pool_id<STABLE>(staked_sui: &StakedStable<STABLE>): ID { staked_sui.pool_id }
 
@@ -350,7 +349,7 @@ module sui_system::stable_pool {
     }
 
 
-    public fun pool_token_exchange_rate_at_epoch<STABLE>(pool: &StablePool<STABLE>, epoch: u64): PoolTokenExchangeRate {
+    public fun pool_token_exchange_rate_at_epoch<STABLE>(pool: &StablePool<STABLE>, epoch: u64): PoolStableTokenExchangeRate {
         // If the pool is preactive then the exchange rate is always 1:1.
         if (is_preactive_at_epoch(pool, epoch)) {
             return initial_exchange_rate()
@@ -380,15 +379,15 @@ module sui_system::stable_pool {
         stable_pool.pending_total_sui_withdraw
     }
 
-    public(friend) fun exchange_rates<STABLE>(pool: &StablePool<STABLE>): &Table<u64, PoolTokenExchangeRate> {
+    public(friend) fun exchange_rates<STABLE>(pool: &StablePool<STABLE>): &Table<u64, PoolStableTokenExchangeRate> {
         &pool.exchange_rates
     }
 
-    public fun sui_amount(exchange_rate: &PoolTokenExchangeRate): u64 {
+    public fun sui_amount(exchange_rate: &PoolStableTokenExchangeRate): u64 {
         exchange_rate.sui_amount
     }
 
-    public fun pool_token_amount(exchange_rate: &PoolTokenExchangeRate): u64 {
+    public fun pool_token_amount(exchange_rate: &PoolStableTokenExchangeRate): u64 {
         exchange_rate.pool_token_amount
     }
 
@@ -398,7 +397,7 @@ module sui_system::stable_pool {
         is_preactive(pool) || (*option::borrow(&pool.activation_epoch) > epoch)
     }
 
-    fun get_sui_amount(exchange_rate: &PoolTokenExchangeRate, token_amount: u64): u64 {
+    fun get_sui_amount(exchange_rate: &PoolStableTokenExchangeRate, token_amount: u64): u64 {
         // When either amount is 0, that means we have no stakes with this pool.
         // The other amount might be non-zero when there's dust left in the pool.
         if (exchange_rate.sui_amount == 0 || exchange_rate.pool_token_amount == 0) {
@@ -410,7 +409,7 @@ module sui_system::stable_pool {
         (res as u64)
     }
 
-    fun get_token_amount(exchange_rate: &PoolTokenExchangeRate, sui_amount: u64): u64 {
+    fun get_token_amount(exchange_rate: &PoolStableTokenExchangeRate, sui_amount: u64): u64 {
         // When either amount is 0, that means we have no stakes with this pool.
         // The other amount might be non-zero when there's dust left in the pool.
         if (exchange_rate.sui_amount == 0 || exchange_rate.pool_token_amount == 0) {
@@ -422,14 +421,14 @@ module sui_system::stable_pool {
         (res as u64)
     }
 
-    fun initial_exchange_rate(): PoolTokenExchangeRate {
-        PoolTokenExchangeRate { sui_amount: 0, pool_token_amount: 0 }
+    fun initial_exchange_rate(): PoolStableTokenExchangeRate {
+        PoolStableTokenExchangeRate { sui_amount: 0, pool_token_amount: 0 }
     }
 
     fun check_balance_invariants<STABLE>(pool: &StablePool<STABLE>, epoch: u64) {
         let exchange_rate = pool_token_exchange_rate_at_epoch(pool, epoch);
         // check that the pool token balance and sui balance ratio matches the exchange rate stored.
-        let expected = get_token_amount(&exchange_rate, pool.sui_balance);
+        let expected = get_token_amount(&exchange_rate, pool.stable_balance);
         let actual = pool.pool_token_balance;
         assert!(expected == actual, ETokenBalancesDoNotMatchExchangeRate)
     }
