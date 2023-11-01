@@ -1,5 +1,22 @@
 # @mysten/sui.js
 
+## 0.42.0
+
+### Minor Changes
+
+- 1696f3e5f: Added FromOrToAddress Transaction Filter
+- 1696f3e5f: Add toSuiPublicKey method for retrieving the Sui representation of a raw public key
+- 1696f3e5f: Added a MultiSigPublicKey class for verifying multisig signatures
+- 1696f3e5f: update signMessage to correctly wrap PersonalMessages before signing
+- 1696f3e5f: Deprecate imports from the root path which can be imported from a modular export
+- 1696f3e5f: Introduce new `@mysten/sui.js/faucet` export, which should be used for all faucet interactions. This deprecates the previous `requestSuiFromFaucet` APIs that existed on the `JsonRpcProvider` and `Signer` classes.
+
+### Patch Changes
+
+- 1696f3e5f: add getAllEpochAddressMetrics method to rpc-provider
+- 1696f3e5f: websocket client memory leak fix in reconnect logics
+- 1696f3e5f: Deprecate type aliases for strings.
+
 ## 0.41.1
 
 ### Patch Changes

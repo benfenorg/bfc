@@ -1,5 +1,23 @@
 # kiosk-demo
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+- Updated dependencies [1696f3e5f]
+  - @mysten/sui.js@0.42.0
+  - @mysten/wallet-kit@0.8.0
+  - @mysten/kiosk@0.6.0
+
 ## 0.0.8
 
 ### Patch Changes
