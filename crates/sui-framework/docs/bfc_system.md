@@ -40,6 +40,8 @@
 -  [Function `get_stablecoin_by_bfc`](#0xc8_bfc_system_get_stablecoin_by_bfc)
 -  [Function `get_bfc_by_stablecoin`](#0xc8_bfc_system_get_bfc_by_stablecoin)
 -  [Function `vault_info`](#0xc8_bfc_system_vault_info)
+-  [Function `get_bfc_exchange_rate`](#0xc8_bfc_system_get_bfc_exchange_rate)
+-  [Function `get_stablecoin_exchange_rate`](#0xc8_bfc_system_get_stablecoin_exchange_rate)
 -  [Function `next_epoch_bfc_required`](#0xc8_bfc_system_next_epoch_bfc_required)
 -  [Function `treasury_balance`](#0xc8_bfc_system_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_bfc_system_deposit_to_treasury)
@@ -1090,6 +1092,58 @@ X treasury  swap stablecoin to bfc
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_vault_info">vault_info</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): VaultInfo {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_info">bfc_system_state_inner::vault_info</a>&lt;StableCoinType&gt;(inner_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_get_bfc_exchange_rate"></a>
+
+## Function `get_bfc_exchange_rate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_exchange_rate">get_bfc_exchange_rate</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_bfc_exchange_rate">get_bfc_exchange_rate</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): u64
+{
+    <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_exchange_rate">bfc_system_state_inner::get_bfc_exchange_rate</a>&lt;StableCoinType&gt;(system_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_get_stablecoin_exchange_rate"></a>
+
+## Function `get_stablecoin_exchange_rate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stablecoin_exchange_rate">get_stablecoin_exchange_rate</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stablecoin_exchange_rate">get_stablecoin_exchange_rate</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): u64
+{
+    <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stablecoin_exchange_rate">bfc_system_state_inner::get_stablecoin_exchange_rate</a>&lt;StableCoinType&gt;(system_state)
 }
 </code></pre>
 

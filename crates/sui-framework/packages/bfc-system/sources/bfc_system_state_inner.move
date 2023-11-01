@@ -285,6 +285,20 @@ module bfc_system::bfc_system_state_inner {
         treasury::calculate_swap_result<StableCoinType>(&self.treasury, true, amount)
     }
 
+    public(friend) fun get_bfc_exchange_rate<CoinType>(self: &BfcSystemStateInner): u64 {
+        vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
+            self,
+            gas_coin_map::get_default_rate(),
+        ))
+    }
+
+    public(friend) fun get_stablecoin_exchange_rate<CoinType>(self: &BfcSystemStateInner): u64 {
+        vault::calculated_swap_result_amount_out(&get_bfc_by_stablecoin<CoinType>(
+            self,
+            gas_coin_map::get_default_rate(),
+        ))
+    }
+
     /// X-treasury
     public fun next_epoch_bfc_required(self: &BfcSystemStateInner): u64 {
         treasury::next_epoch_bfc_required(&self.treasury)
