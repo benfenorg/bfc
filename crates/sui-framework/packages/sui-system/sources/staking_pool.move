@@ -12,7 +12,6 @@ module sui_system::staking_pool {
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
-    use sui_system::stable_pool::StakedStable;
 
     friend sui_system::validator;
     friend sui_system::validator_set;

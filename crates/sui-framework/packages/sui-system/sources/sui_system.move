@@ -599,6 +599,8 @@ module sui_system::sui_system {
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
+        //todo get rate from bfc_system
+        let stable_exchange_rate :u64 = 10;
         let storage_rebate = sui_system_state_inner::advance_epoch(
             self,
             new_epoch,
@@ -610,6 +612,7 @@ module sui_system::sui_system {
             storage_fund_reinvest_rate,
             reward_slashing_rate,
             epoch_start_timestamp_ms,
+            stable_exchange_rate,
             ctx,
         );
 

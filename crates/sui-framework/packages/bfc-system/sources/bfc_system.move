@@ -1,5 +1,4 @@
 module bfc_system::bfc_system {
-    use std::string;
     use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;

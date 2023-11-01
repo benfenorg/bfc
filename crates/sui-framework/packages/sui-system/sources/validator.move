@@ -634,8 +634,10 @@ module sui_system::validator {
         stake_amount(self)
     }
 
-    public fun total_stable_stake(self: &Validator): u64 {
-        stable_stake_amount(self)
+    public fun total_stake_with_stable(self: &Validator, stable_exchange_rate: u64): u64 {
+        let stable_stake =  stable_stake_amount(self);
+        let total_stake = (total_stake(self) as u128) + (stable_stake as u128) * (stable_exchange_rate as u128);
+        (total_stake as u64)
     }
 
     /// Return the voting power of this validator.

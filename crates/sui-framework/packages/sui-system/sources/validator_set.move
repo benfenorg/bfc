@@ -131,6 +131,8 @@ module sui_system::validator_set {
     const BASIS_POINT_DENOMINATOR: u128 = 10000;
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
+    //define the rate of stable exchange, must used to init method
+    const INIT_STABLE_EXCHANGE_RATE: u64 = 10;
     // Errors
     const ENonValidatorInReportRecords: u64 = 0;
     const EInvalidStakeAdjustmentAmount: u64 = 1;
@@ -176,7 +178,7 @@ module sui_system::validator_set {
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
         };
-        voting_power::set_voting_power(&mut validators.active_validators);
+        voting_power::set_voting_power(&mut validators.active_validators, INIT_STABLE_EXCHANGE_RATE);
         validators
     }
 
@@ -392,6 +394,7 @@ module sui_system::validator_set {
         low_stake_threshold: u64,
         very_low_stake_threshold: u64,
         low_stake_grace_period: u64,
+        stable_exchange_rate: u64,
         ctx: &mut TxContext,
     ) {
         let new_epoch = tx_context::epoch(ctx) + 1;
@@ -475,7 +478,7 @@ module sui_system::validator_set {
 
         self.total_stake = calculate_total_stakes(&self.active_validators);
 
-        voting_power::set_voting_power(&mut self.active_validators);
+        voting_power::set_voting_power(&mut self.active_validators, stable_exchange_rate);
 
         // At this point, self.active_validators are updated for next epoch.
         // Now we process the staged validator metadata.

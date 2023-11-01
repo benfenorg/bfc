@@ -1507,6 +1507,8 @@ Getter returning addresses of the currently active validators.
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     // Validator will make a special system call <b>with</b> sender set <b>as</b> 0x0.
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="sui_system.md#0x3_sui_system_ENotSystemAddress">ENotSystemAddress</a>);
+    //todo get rate from bfc_system
+    <b>let</b> stable_exchange_rate :u64 = 10;
     <b>let</b> storage_rebate = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_advance_epoch">sui_system_state_inner::advance_epoch</a>(
         self,
         new_epoch,
@@ -1518,6 +1520,7 @@ Getter returning addresses of the currently active validators.
         storage_fund_reinvest_rate,
         reward_slashing_rate,
         epoch_start_timestamp_ms,
+        stable_exchange_rate,
         ctx,
     );
 
