@@ -38,7 +38,7 @@ use tracing::info;
 use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, parse_sui_struct_tag};
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag};
 use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
@@ -2309,7 +2309,10 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
     let args = vec![
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&coin.object_id.to_string())?,
+        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
         SuiJsonValue::new(json!("100000000000"))?,
+        SuiJsonValue::new(json!("0"))?,
+        SuiJsonValue::new(json!("9999999999999"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -2364,7 +2367,10 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
     let args = vec![
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&coin.object_id.to_string())?,
+        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
         SuiJsonValue::new(json!("80000000000"))?,
+        SuiJsonValue::new(json!("0"))?,
+        SuiJsonValue::new(json!("9999999999999"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -2557,5 +2563,76 @@ async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> 
     };
     let r = dev_inspect_call(&test_cluster, pt.clone()).await;
     assert_eq!(r.amount_out, 99999);
+    Ok(())
+}
+
+async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTransaction) -> u64
+{
+    let client = cluster.rpc_client();
+    let sender = cluster.get_address_0();
+    let txn = TransactionKind::programmable(pt);
+    let response = client
+        .dev_inspect_transaction_block(
+            sender,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            /* gas_price */ None,
+            /* epoch_id */ None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
+
+    bcs::from_bytes(&return_).unwrap()
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_bfc_exchange_rate").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert_eq!(r, 999999950);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_stablecoin_exchange_rate").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert_eq!(r, 999999950);
     Ok(())
 }

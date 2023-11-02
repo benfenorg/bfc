@@ -103,7 +103,7 @@ module bfc_system::vault_test {
         let balance_alice = balance::create_for_testing<BFC>(2_000_000_000);
         let alice_coin_to_mint = coin::from_balance(balance_alice, test_scenario::ctx(&mut scenario));
 
-        treasury::mint<BUSD>(&mut t, alice_coin_to_mint, 1_000_000_000, test_scenario::ctx(&mut scenario));
+        treasury::mint<BUSD>(&mut t, alice_coin_to_mint, &c, 1_000_000_000,0, 9999999999,test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
 

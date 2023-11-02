@@ -314,22 +314,28 @@ module bfc_system::bfc_system {
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
         wrapper: &mut BfcSystemState,
         native_coin: Coin<BFC>,
+        clock: &Clock,
         amount: u64,
+        min_amount: u64,
+        deadline: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, amount, ctx);
+        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, clock, amount, min_amount, deadline, ctx);
     }
 
     /// X treasury  swap stablecoin to bfc
     public entry fun swap_stablecoin_to_bfc<StableCoinType>(
         wrapper: &mut BfcSystemState,
         stable_coin: Coin<StableCoinType>,
+        clock: &Clock,
         amount: u64,
+        min_amount: u64,
+        deadline: u64,
         ctx: &mut TxContext,
     ) {
         let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, amount, ctx);
+        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, clock, amount, min_amount, deadline, ctx);
     }
 
     public fun get_stablecoin_by_bfc<StableCoinType>(
@@ -353,6 +359,18 @@ module bfc_system::bfc_system {
     public fun vault_info<StableCoinType>(wrapper: &BfcSystemState): VaultInfo {
         let inner_state = load_system_state(wrapper);
         bfc_system_state_inner::vault_info<StableCoinType>(inner_state)
+    }
+
+    public fun get_bfc_exchange_rate<StableCoinType>(wrapper: &BfcSystemState): u64
+    {
+        let system_state = load_system_state(wrapper);
+        bfc_system_state_inner::get_bfc_exchange_rate<StableCoinType>(system_state)
+    }
+
+    public fun get_stablecoin_exchange_rate<StableCoinType>(wrapper: &BfcSystemState): u64
+    {
+        let system_state = load_system_state(wrapper);
+        bfc_system_state_inner::get_stablecoin_exchange_rate<StableCoinType>(system_state)
     }
 
     public fun next_epoch_bfc_required(wrapper: &BfcSystemState): u64 {
