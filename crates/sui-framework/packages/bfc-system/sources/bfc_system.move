@@ -109,8 +109,8 @@ module bfc_system::bfc_system {
     ): &BfcSystemStateInner {
         dynamic_field::borrow(&self.id, self.version)
     }
-    public fun load_bfc_system_state(id: &UID, version: u64): &BfcSystemStateInner {
-        dynamic_field::borrow(id, version)
+    public fun load_bfc_system_state(id: &UID): &BfcSystemStateInner {
+        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V1)
     }
 
     fun load_system_state_mut(
@@ -119,8 +119,8 @@ module bfc_system::bfc_system {
         dynamic_field::borrow_mut(&mut self.id, self.version)
     }
 
-    public fun get_exchange_rate(id: &UID, version: u64): u64 {
-        let inner = load_bfc_system_state(id, version);
+    public fun get_exchange_rate(id: &UID): u64 {
+        let inner = load_bfc_system_state(id);
         bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner)
     }
 

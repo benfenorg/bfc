@@ -76,7 +76,6 @@ module sui_system::sui_system {
         id: UID,
         version: u64,
         bfc_system_id: UID,
-        bfc_system_version: u64,
     }
 
     const ENotSystemAddress: u64 = 0;
@@ -111,7 +110,6 @@ module sui_system::sui_system {
             id,
             version,
             bfc_system_id,
-            bfc_system_version: version,
         };
         dynamic_field::add(&mut self.id, version, system_state);
         transfer::share_object(self);
@@ -603,7 +601,7 @@ module sui_system::sui_system {
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get BUSD exchange rate from bfc system
-        let stable_exchange_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id, wrapper.bfc_system_version);
+        let stable_exchange_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
 
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
@@ -627,8 +625,8 @@ module sui_system::sui_system {
         storage_rebate
     }
 
-    fun get_stable_rate_from_bfc(id: &UID, version: u64) : u64 {
-       bfc_system::get_exchange_rate(id, version)
+    fun get_stable_rate_from_bfc(id: &UID) : u64 {
+       bfc_system::get_exchange_rate(id)
     }
 
     fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {

@@ -155,7 +155,7 @@ module sui_system::validator_set {
     // ==== initialization at genesis ====
 
     public(friend) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
-        let total_stake = calculate_total_stakes(&init_active_validators);
+        let total_stake = calculate_total_stakes(&init_active_validators, INIT_STABLE_EXCHANGE_RATE);
         let staking_pool_mappings = table::new(ctx);
         let stable_pool_mappings = table::new(ctx);
         let num_validators = vector::length(&init_active_validators);
@@ -476,7 +476,7 @@ module sui_system::validator_set {
             ctx
         );
 
-        self.total_stake = calculate_total_stakes(&self.active_validators);
+        self.total_stake = calculate_total_stakes(&self.active_validators, stable_exchange_rate);
 
         voting_power::set_voting_power(&mut self.active_validators, stable_exchange_rate);
 
@@ -1001,13 +1001,13 @@ module sui_system::validator_set {
     }
 
     /// Calculate the total active validator stake.
-    fun calculate_total_stakes(validators: &vector<Validator>): u64 {
+    fun calculate_total_stakes(validators: &vector<Validator>, exchange_rate: u64): u64 {
         let stake = 0;
         let length = vector::length(validators);
         let i = 0;
         while (i < length) {
             let v = vector::borrow(validators, i);
-            stake = stake + validator::total_stake_amount(v);
+            stake = stake + validator::total_stake_with_stable(v, exchange_rate);
             i = i + 1;
         };
         stake
