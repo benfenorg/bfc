@@ -11,6 +11,7 @@ module bfc_system::bfc_system {
 
     use sui::bfc::BFC;
     use sui::object::UID;
+    use sui::stable::STABLE;
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
@@ -120,9 +121,8 @@ module bfc_system::bfc_system {
     }
 
     public fun get_exchange_rate(id: &UID, version: u64): u64 {
-        //todo modify to real method
         let inner = load_bfc_system_state(id, version);
-        0
+        bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner)
     }
 
     /// Getter of the gas coin exchange pool rate.
