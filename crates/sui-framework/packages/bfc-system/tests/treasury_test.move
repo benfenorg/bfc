@@ -190,8 +190,11 @@ module bfc_system::treasury_test {
         let alice = @0xA1;
         let amount_bfc = 1_000_000_000u64;
         let total_amount_bfc = amount_bfc * 2;
+        let min_amount = 0;
         test_scenario::next_tx(&mut scenario_val, alice);
         {
+            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            clock::increment_for_testing(&mut clock, 360000);
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let input_bfc = balance::create_for_testing<BFC>(total_amount_bfc);
             let coin_bfc = coin::from_balance(
@@ -205,10 +208,14 @@ module bfc_system::treasury_test {
             treasury::mint<BUSD>(
                 &mut t,
                 coin_bfc,
+                &clock,
                 amount_bfc,
+                min_amount,
+                9999999999,
                 test_scenario::ctx(&mut scenario_val),
             );
             test_scenario::return_shared(t);
+            clock::destroy_for_testing(clock);
         };
 
         // alice check balance
@@ -248,9 +255,12 @@ module bfc_system::treasury_test {
         // alice swap osd-bfc
         test_scenario::next_tx(&mut scenario_val, alice);
         {
+            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            clock::increment_for_testing(&mut clock, 360000);
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
+            let min_amount: u64 = 0;
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances redeem bfc ..."));
                 debug::print(&amount);
@@ -258,10 +268,14 @@ module bfc_system::treasury_test {
             treasury::redeem<BUSD>(
                 &mut t,
                 coin_usd,
+                &clock,
                 amount,
+                min_amount,
+                9999999999,
                 test_scenario::ctx(&mut scenario_val),
             );
             test_scenario::return_shared(t);
+            clock::destroy_for_testing(clock);
         };
 
         // alice check balance

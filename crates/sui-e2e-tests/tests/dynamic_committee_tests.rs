@@ -30,7 +30,7 @@ use sui_types::{
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tracing::info;
 
-const MAX_DELEGATION_AMOUNT: u64 = 10_000_000_000;
+const MAX_DELEGATION_AMOUNT: u64 = 1_000_000_000;
 const MIN_DELEGATION_AMOUNT: u64 = 1_000_000_000;
 
 macro_rules! move_call {

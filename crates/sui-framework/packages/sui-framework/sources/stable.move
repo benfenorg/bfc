@@ -18,10 +18,10 @@ module sui::stable {
     /// 10^-9 of a Sui token
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
-    /// The total supply of Sui denominated in whole Sui tokens (1 Billion)
+    /// The total supply of Sui denominated in whole Sui tokens (10 Billion)
     const TOTAL_SUPPLY_SUI: u64 = 1_000_000_000;
 
-    /// The total supply of Sui denominated in Mist (1 Billion * 10^9)
+    /// The total supply of Sui denominated in Mist (10 Billion * 10^9)
     const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;
 
     /// Name of the coin

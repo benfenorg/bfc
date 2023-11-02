@@ -119,6 +119,15 @@
 ## Constants
 
 
+<a name="0xc8_treasury_ERR_DEADLINE_EXCEED"></a>
+
+
+
+<pre><code><b>const</b> <a href="treasury.md#0xc8_treasury_ERR_DEADLINE_EXCEED">ERR_DEADLINE_EXCEED</a>: u64 = 105;
+</code></pre>
+
+
+
 <a name="0xc8_treasury_ERR_INSUFFICIENT"></a>
 
 
@@ -558,7 +567,7 @@ creat vault for ordered A & B
 Mint swap bfc to stablecoin
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_bfc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_bfc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _amount: u64, _min_amount: u64, _deadline: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -570,7 +579,10 @@ Mint swap bfc to stablecoin
 <pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_mint">mint</a>&lt;StableCoinType&gt;(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _coin_bfc: Coin&lt;BFC&gt;,
+    _clock: &Clock,
     _amount: u64,
+    _min_amount: u64,
+    _deadline: u64,
     _ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> balance_a = <a href="treasury.md#0xc8_treasury_mint_internal">mint_internal</a>&lt;StableCoinType&gt;(
@@ -579,6 +591,8 @@ Mint swap bfc to stablecoin
         _amount,
         _ctx,
     );
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&balance_a) &gt;= _min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(_clock) &lt;= _deadline, <a href="treasury.md#0xc8_treasury_ERR_DEADLINE_EXCEED">ERR_DEADLINE_EXCEED</a>);
     <a href="treasury.md#0xc8_treasury_transfer_or_delete">transfer_or_delete</a>(balance_a, _ctx);
 }
 </code></pre>
@@ -634,7 +648,7 @@ Mint swap bfc to stablecoin
 Burn swap stablecoin to bfc
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _amount: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_sc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _amount: u64, _min_amount: u64, _deadline: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -646,7 +660,10 @@ Burn swap stablecoin to bfc
 <pre><code><b>public</b> entry <b>fun</b> <a href="treasury.md#0xc8_treasury_redeem">redeem</a>&lt;StableCoinType&gt;(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _coin_sc: Coin&lt;StableCoinType&gt;,
+    _clock: &Clock,
     _amount: u64,
+    _min_amount: u64,
+    _deadline: u64,
     _ctx: &<b>mut</b> TxContext,
 ) {
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>&lt;StableCoinType&gt;(&_coin_sc) &gt; 0, <a href="treasury.md#0xc8_treasury_ERR_ZERO_AMOUNT">ERR_ZERO_AMOUNT</a>);
@@ -656,6 +673,8 @@ Burn swap stablecoin to bfc
         _amount,
         _ctx,
     );
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&balance_b) &gt;= _min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(_clock) &lt;= _deadline, <a href="treasury.md#0xc8_treasury_ERR_DEADLINE_EXCEED">ERR_DEADLINE_EXCEED</a>);
     <a href="treasury.md#0xc8_treasury_transfer_or_delete">transfer_or_delete</a>(balance_b, _ctx);
 }
 </code></pre>
