@@ -20,7 +20,7 @@ module sui_system::validator {
     use sui::event;
     use sui::bag::Bag;
     use sui::bag;
-    use sui::stable::STABLE;
+    use bfc_system::busd::BUSD;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StablePool, StakedStable, PoolStableTokenExchangeRate};
     friend sui_system::genesis;
@@ -150,13 +150,13 @@ module sui_system::validator {
         gas_price: u64,
         /// Staking pool for this validator.
         staking_pool: StakingPool,
-        /// Stable pool for this validator.
-        stable_pool: StablePool<STABLE>,
+        /// BUSD pool for this validator.
+        stable_pool: StablePool<BUSD>,
         /// Commission rate of the validator, in basis point.
         commission_rate: u64,
         /// Total amount of stake that would be active in the next epoch.
         next_epoch_stake: u64,
-        /// Total amount of stable stake that would be active in the next epoch.
+        /// Total amount of BUSD stake that would be active in the next epoch.
         next_epoch_stable_stake: u64,
         /// This validator's gas price quote for the next epoch.
         next_epoch_gas_price: u64,
@@ -338,10 +338,10 @@ module sui_system::validator {
 
     public(friend) fun request_add_stable_stake(
         self: &mut Validator,
-        stake: Balance<STABLE>,
+        stake: Balance<BUSD>,
         staker_address: address,
         ctx: &mut TxContext,
-    ) : StakedStable<STABLE> {
+    ) : StakedStable<BUSD> {
         let stake_amount = balance::value(&stake);
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;
@@ -349,8 +349,8 @@ module sui_system::validator {
             &mut self.stable_pool, stake, stake_epoch, ctx
         );
         // Process stake right away if staking pool is preactive.
-        if (stable_pool::is_preactive<STABLE>(&self.stable_pool)) {
-            stable_pool::process_pending_stake<STABLE>(&mut self.stable_pool);
+        if (stable_pool::is_preactive<BUSD>(&self.stable_pool)) {
+            stable_pool::process_pending_stake<BUSD>(&mut self.stable_pool);
         };
         self.next_epoch_stable_stake = self.next_epoch_stable_stake + stake_amount;
         event::emit(
@@ -419,9 +419,9 @@ module sui_system::validator {
 
     public(friend) fun request_withdraw_stable_stake(
         self: &mut Validator,
-        staked_sui: StakedStable<STABLE>,
+        staked_sui: StakedStable<BUSD>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : Balance<BUSD> {
         let principal_amount = stable_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = stable_pool::stake_activation_epoch(&staked_sui);
         let withdrawn_stake = stable_pool::request_withdraw_stake(
@@ -489,8 +489,8 @@ module sui_system::validator {
         staking_pool::deposit_rewards(&mut self.staking_pool, reward);
     }
 
-    //todo stable rewards diposit
-    public(friend) fun deposit_stable_stake_rewards(self: &mut Validator, reward: Balance<STABLE>) {
+    //todo BUSD rewards diposit
+    public(friend) fun deposit_stable_stake_rewards(self: &mut Validator, reward: Balance<BUSD>) {
         self.next_epoch_stable_stake = self.next_epoch_stable_stake + balance::value(&reward);
         stable_pool::deposit_rewards(&mut self.stable_pool, reward);
     }
@@ -672,7 +672,7 @@ module sui_system::validator {
 
     // todo check is needed?
     public fun pool_stable_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): PoolStableTokenExchangeRate {
-        stable_pool::pool_token_exchange_rate_at_epoch<STABLE>(&self.stable_pool, epoch)
+        stable_pool::pool_token_exchange_rate_at_epoch<BUSD>(&self.stable_pool, epoch)
     }
 
     public fun staking_pool_id(self: &Validator): ID {
@@ -987,7 +987,7 @@ module sui_system::validator {
         let sui_address = metadata.sui_address;
 
         let staking_pool = staking_pool::new(ctx);
-        let stable_pool = stable_pool::new<STABLE>(ctx);
+        let stable_pool = stable_pool::new<BUSD>(ctx);
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
         Validator {

@@ -8,7 +8,6 @@ module sui::balance {
     use sui::tx_context::{Self, TxContext};
 
     friend sui::bfc;
-    friend sui::stable;
 
     /// For when trying to destroy a non-zero balance.
     const ENonZero: u64 = 0;

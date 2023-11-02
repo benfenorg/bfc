@@ -31,6 +31,10 @@ module bfc_system::busd {
         coin::treasury_into_supply(cap)
     }
 
+    public entry fun transfer(c: coin::Coin<BUSD>, recipient: address) {
+        transfer::public_transfer(c, recipient)
+    }
+
     #[test_only]
     public fun new_for_test(ctx: &mut TxContext): Supply<BUSD> {
         let (cap, metadata) = coin::create_currency(

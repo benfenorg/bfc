@@ -11,7 +11,6 @@ module bfc_system::bfc_system {
 
     use sui::bfc::BFC;
     use sui::object::UID;
-    use sui::stable::STABLE;
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;

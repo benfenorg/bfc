@@ -25,7 +25,7 @@ module sui_system::validator_set {
     use sui_system::validator_wrapper;
     use sui::bag::Bag;
     use sui::bag;
-    use sui::stable::STABLE;
+    use bfc_system::busd::BUSD;
     use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
@@ -131,7 +131,7 @@ module sui_system::validator_set {
     const BASIS_POINT_DENOMINATOR: u128 = 10000;
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
-    //define the rate of stable exchange, must used to init method
+    //define the rate of BUSD exchange, must used to init method
     const INIT_STABLE_EXCHANGE_RATE: u64 = 10;
     // Errors
     const ENonValidatorInReportRecords: u64 = 0;
@@ -312,9 +312,9 @@ module sui_system::validator_set {
     public(friend) fun request_add_stable_stake(
         self: &mut ValidatorSet,
         validator_address: address,
-        stake: Balance<STABLE>,
+        stake: Balance<BUSD>,
         ctx: &mut TxContext,
-    ) : StakedStable<STABLE> {
+    ) : StakedStable<BUSD> {
         let sui_amount = balance::value(&stake);
         assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
         let validator = get_candidate_or_active_validator_mut(self, validator_address);
@@ -347,9 +347,9 @@ module sui_system::validator_set {
 
     public(friend) fun request_withdraw_stable_stake(
         self: &mut ValidatorSet,
-        staked_sui: StakedStable<STABLE>,
+        staked_sui: StakedStable<BUSD>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : Balance<BUSD> {
         let stable_pool_id = stable_pool_id(&staked_sui);
         let validator =
             if (table::contains(&self.stable_pool_mappings, stable_pool_id)) { // This is an active validator.

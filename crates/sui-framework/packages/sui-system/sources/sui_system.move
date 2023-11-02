@@ -56,8 +56,8 @@ module sui_system::sui_system {
     use sui_system::staking_pool::PoolTokenExchangeRate;
     use std::option;
     use bfc_system::bfc_system;
+    use bfc_system::busd::BUSD;
     use sui::dynamic_field;
-    use sui::stable::STABLE;
     use sui_system::stable_pool::StakedStable;
 
     #[test_only] use sui::balance;
@@ -252,10 +252,10 @@ module sui_system::sui_system {
         transfer::public_transfer(staked_sui, tx_context::sender(ctx));
     }
 
-    /// Add stake to a validator's stable pool.
+    /// Add stake to a validator's BUSD pool.
     public entry fun request_add_stable_stake(
         wrapper: &mut SuiSystemState,
-        stake: Coin<STABLE>,
+        stake: Coin<BUSD>,
         validator_address: address,
         ctx: &mut TxContext,
     ) {
@@ -266,10 +266,10 @@ module sui_system::sui_system {
     /// The non-entry version of `request_add_stable_stake`, which returns the staked SUI instead of transferring it to the sender.
     public fun request_add_stable_stake_non_entry(
         wrapper: &mut SuiSystemState,
-        stake: Coin<STABLE>,
+        stake: Coin<BUSD>,
         validator_address: address,
         ctx: &mut TxContext,
-    ): StakedStable<STABLE> {
+    ): StakedStable<BUSD> {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_add_stable_stake(self, stake, validator_address, ctx)
     }
@@ -310,7 +310,7 @@ module sui_system::sui_system {
 
     public entry fun request_withdraw_stable_stake(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedStable<STABLE>,
+        staked_sui: StakedStable<BUSD>,
         ctx: &mut TxContext,
     ) {
         let withdrawn_stake = request_withdraw_stable_stake_non_entry(wrapper, staked_sui, ctx);
@@ -329,9 +329,9 @@ module sui_system::sui_system {
 
     public fun request_withdraw_stable_stake_non_entry(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedStable<STABLE>,
+        staked_sui: StakedStable<BUSD>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : Balance<BUSD> {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_withdraw_stable_stake(self, staked_sui, ctx)
     }
@@ -602,7 +602,7 @@ module sui_system::sui_system {
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
     ) : Balance<BFC> {
-        // get stable exchange rate from bfc system
+        // get BUSD exchange rate from bfc system
         let stable_exchange_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id, wrapper.bfc_system_version);
 
         let self = load_system_state_mut(wrapper);
