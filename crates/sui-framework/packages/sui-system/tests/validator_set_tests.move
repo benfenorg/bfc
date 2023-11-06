@@ -96,6 +96,32 @@ module sui_system::validator_set_tests {
     }
 
     #[test]
+    fun test_validator_set_flow_with_stable() {
+        let scenario_val = test_scenario::begin(@0x1);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        let validator1 = create_validator(@0x1, 1, 1, true, ctx);
+
+        // Create a validator set with only the first validator in it.
+        let validator_set = validator_set::new(vector[validator1], ctx);
+        assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 0);
+        //add stable stake
+        let new_stake = coin::into_balance(coin::mint_for_testing(30_000_000_000, ctx));
+        let staked = validator_set::request_add_stable_stake(&mut validator_set, @0x1, new_stake, ctx);
+
+        assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 0);
+
+        advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
+        // Total stake for these should be the starting stake 100 + the 300 staked with stable.
+        let total = validator_set::total_stake(&validator_set);
+        assert!( total== 400 * MIST_PER_SUI, total);
+
+        test_utils::destroy(staked);
+        test_utils::destroy(validator_set);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     fun test_reference_gas_price_derivation() {
         // Create 5 validators with different stakes and different gas prices.
         let scenario_val = test_scenario::begin(@0x0);
@@ -457,7 +483,7 @@ module sui_system::validator_set_tests {
             0, // low_stake_threshold
             0, // very_low_stake_threshold
             0, // low_stake_grace_period
-            1,
+            10, //INIT_STABLE_EXCHANGE_RATE
             test_scenario::ctx(scenario)
         );
 

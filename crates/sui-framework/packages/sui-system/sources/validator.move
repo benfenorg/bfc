@@ -636,7 +636,8 @@ module sui_system::validator {
 
     public fun total_stake_with_stable(self: &Validator, stable_exchange_rate: u64): u64 {
         let stable_stake =  stable_stake_amount(self);
-        let total_stake = (total_stake(self) as u128) + (stable_stake as u128) * (stable_exchange_rate as u128);
+        let stake = total_stake(self);
+        let total_stake = (stake as u128) + (stable_stake as u128) * (stable_exchange_rate as u128);
         (total_stake as u64)
     }
 
@@ -987,7 +988,7 @@ module sui_system::validator {
         let sui_address = metadata.sui_address;
 
         let staking_pool = staking_pool::new(ctx);
-        let stable_pool = stable_pool::new<BUSD>(ctx);
+        let busd_pool = stable_pool::new<BUSD>(ctx);
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
         Validator {
@@ -999,7 +1000,7 @@ module sui_system::validator {
             operation_cap_id,
             gas_price,
             staking_pool,
-            busd_pool: stable_pool,
+            busd_pool,
             commission_rate,
             next_epoch_stake: 0,
             next_epoch_stable_stake: 0,

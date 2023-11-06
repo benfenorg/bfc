@@ -71,6 +71,28 @@ module sui_system::validator_tests {
     }
 
     #[test]
+    fun test_validator_with_stable() {
+        let sender = VALID_ADDRESS;
+        let scenario_val = test_scenario::begin(sender);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+
+        let validator = get_test_validator(ctx);
+        //add stable stake
+        let new_stake = coin::into_balance(coin::mint_for_testing(30_000_000_000, ctx));
+        let staked = validator::request_add_stable_stake(&mut validator, new_stake, sender, ctx);
+
+        //process pending stake
+        validator::process_pending_stable_stakes_and_withdraws(&mut validator, ctx);
+        assert!( validator::stable_stake_amount(&validator) == 30_000_000_000, 0);
+        assert!(validator::total_stake_with_stable(&validator, 2) == 61_000_000_000, 0);
+
+        test_utils::destroy(staked);
+        test_utils::destroy(validator);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     fun test_validator_owner_flow() {
         let sender = VALID_ADDRESS;
         let scenario_val = test_scenario::begin(sender);
