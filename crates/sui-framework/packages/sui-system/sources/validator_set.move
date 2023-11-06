@@ -353,7 +353,7 @@ module sui_system::validator_set {
         let stable_pool_id = stable_pool_id(&staked_sui);
         let validator =
             if (table::contains(&self.stable_pool_mappings, stable_pool_id)) { // This is an active validator.
-                let validator_address = *table::borrow(&self.staking_pool_mappings, stable_pool_id(&staked_sui));
+                let validator_address = *table::borrow(&self.stable_pool_mappings, stable_pool_id(&staked_sui));
                 get_candidate_or_active_validator_mut(self, validator_address)
             } else { // This is an inactive pool.
                 assert!(table::contains(&self.inactive_validators, stable_pool_id), ENoPoolFound);
