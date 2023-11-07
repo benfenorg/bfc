@@ -76,6 +76,7 @@ module sui_system::validator_set {
         extra_fields: Bag,
     }
 
+    #[allow(unused_field)]
     /// Event containing staking and rewards related information of
     /// each validator, emitted during epoch advancement.
     struct ValidatorEpochInfoEvent has copy, drop {

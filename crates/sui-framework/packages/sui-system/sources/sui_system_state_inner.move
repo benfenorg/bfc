@@ -24,7 +24,6 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
-    use sui::object;
     use bfc_system::busd::BUSD;
     use sui_system::stable_pool;
     use sui_system::stable_pool::StakedStable;
@@ -255,7 +254,6 @@ module sui_system::sui_system_state_inner {
         let reference_gas_price = validator_set::derive_reference_gas_price(&validators);
         // This type is fixed as it's created at genesis. It should not be updated during type upgrade.
         let init_coin = coin::from_balance(initial_storage_fund, ctx);
-        let coin_id_address = object::id_address(&init_coin);
         let system_state = SuiSystemStateInner {
             epoch: 0,
             protocol_version,

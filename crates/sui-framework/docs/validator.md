@@ -2087,7 +2087,8 @@ Return the total amount staked with this validator
 
 <pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_stable">total_stake_with_stable</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, stable_exchange_rate: u64): u64 {
     <b>let</b> stable_stake =  <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>(self);
-    <b>let</b> total_stake = (<a href="validator.md#0x3_validator_total_stake">total_stake</a>(self) <b>as</b> u128) + (stable_stake <b>as</b> u128) * (stable_exchange_rate <b>as</b> u128);
+    <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake">total_stake</a>(self);
+    <b>let</b> total_stake = (stake <b>as</b> u128) + (stable_stake <b>as</b> u128) * (stable_exchange_rate <b>as</b> u128);
     (total_stake <b>as</b> u64)
 }
 </code></pre>

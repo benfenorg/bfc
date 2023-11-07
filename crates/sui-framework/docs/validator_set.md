@@ -1031,7 +1031,7 @@ the stake and any rewards corresponding to it will be immediately processed.
     <b>let</b> stable_pool_id = stable_pool_id(&staked_sui);
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> =
         <b>if</b> (<a href="../../../.././build/Sui/docs/table.md#0x2_table_contains">table::contains</a>(&self.stable_pool_mappings, stable_pool_id)) { // This is an active <a href="validator.md#0x3_validator">validator</a>.
-            <b>let</b> validator_address = *<a href="../../../.././build/Sui/docs/table.md#0x2_table_borrow">table::borrow</a>(&self.staking_pool_mappings, stable_pool_id(&staked_sui));
+            <b>let</b> validator_address = *<a href="../../../.././build/Sui/docs/table.md#0x2_table_borrow">table::borrow</a>(&self.stable_pool_mappings, stable_pool_id(&staked_sui));
             <a href="validator_set.md#0x3_validator_set_get_candidate_or_active_validator_mut">get_candidate_or_active_validator_mut</a>(self, validator_address)
         } <b>else</b> { // This is an inactive pool.
             <b>assert</b>!(<a href="../../../.././build/Sui/docs/table.md#0x2_table_contains">table::contains</a>(&self.inactive_validators, stable_pool_id), <a href="validator_set.md#0x3_validator_set_ENoPoolFound">ENoPoolFound</a>);
@@ -2435,6 +2435,7 @@ Process all active validators' pending stake deposits and withdraws.
     <b>while</b> (i &lt; length) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow_mut">vector::borrow_mut</a>(validators, i);
         <a href="validator.md#0x3_validator_process_pending_stakes_and_withdraws">validator::process_pending_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
+        <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">validator::process_pending_stable_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
         i = i + 1;
     }
 }

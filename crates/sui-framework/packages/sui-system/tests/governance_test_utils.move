@@ -22,6 +22,7 @@ module sui_system::governance_test_utils {
     use sui::test_utils;
     use sui::balance::Balance;
     use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
+    use sui::transfer;
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
@@ -61,6 +62,24 @@ module sui_system::governance_test_utils {
             i = i + 1
         };
         validators
+    }
+
+    public fun stake_stables(validators:  &mut vector<Validator>, stable_stakes: vector<u64>, ctx: &mut TxContext) {
+        let i = 0;
+        if(vector::length(validators) == vector::length(&stable_stakes)) {
+            let len = vector::length(validators);
+            while (i < len) {
+                let stable = *vector::borrow(&stable_stakes, i);
+                let validator = vector::borrow_mut(validators, i);
+                let addr = validator::sui_address(validator);
+                let new_stake = coin::into_balance(coin::mint_for_testing(stable, ctx));
+                let staked = validator::request_add_stable_stake(
+                    validator, new_stake, addr, ctx);
+                transfer::public_transfer(staked, addr);
+                validator::process_pending_stable_stakes_and_withdraws(validator, ctx);
+                i = i+ 1;
+            };
+        };
     }
 
     public fun create_sui_system_state_for_testing(
