@@ -28,6 +28,7 @@
 -  [Function `derive_reference_gas_price`](#0x3_validator_set_derive_reference_gas_price)
 -  [Function `total_stake`](#0x3_validator_set_total_stake)
 -  [Function `validator_total_stake_amount`](#0x3_validator_set_validator_total_stake_amount)
+-  [Function `validator_total_stake_amount_with_stable`](#0x3_validator_set_validator_total_stake_amount_with_stable)
 -  [Function `validator_stake_amount`](#0x3_validator_set_validator_stake_amount)
 -  [Function `validator_stable_stake_amount`](#0x3_validator_set_validator_stable_stake_amount)
 -  [Function `validator_staking_pool_id`](#0x3_validator_set_validator_staking_pool_id)
@@ -340,6 +341,12 @@ V2 of ValidatorEpochInfoEvent containing more information about the validator.
 </dd>
 <dt>
 <code>pool_token_exchange_rate: <a href="staking_pool.md#0x3_staking_pool_PoolTokenExchangeRate">staking_pool::PoolTokenExchangeRate</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>stable_pool_token_exchange_rate: <a href="stable_pool.md#0x3_stable_pool_PoolStableTokenExchangeRate">stable_pool::PoolStableTokenExchangeRate</a></code>
 </dt>
 <dd>
 
@@ -1393,6 +1400,34 @@ gas price, weighted by stake.
 <pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount">validator_total_stake_amount</a>(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>, validator_address: <b>address</b>): u64 {
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator_set.md#0x3_validator_set_get_validator_ref">get_validator_ref</a>(&self.active_validators, validator_address);
     <a href="validator.md#0x3_validator_total_stake_amount">validator::total_stake_amount</a>(<a href="validator.md#0x3_validator">validator</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_set_validator_total_stake_amount_with_stable"></a>
+
+## Function `validator_total_stake_amount_with_stable`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_total_stake_amount_with_stable</a>(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, validator_address: <b>address</b>, stable_exchange_rate: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_total_stake_amount_with_stable</a>(
+    self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>,
+    validator_address: <b>address</b>,
+    stable_exchange_rate: u64): u64 {
+    <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator_set.md#0x3_validator_set_get_validator_ref">get_validator_ref</a>(&self.active_validators, validator_address);
+    <a href="validator.md#0x3_validator_total_stake_with_stable">validator::total_stake_with_stable</a>(<a href="validator.md#0x3_validator">validator</a>, stable_exchange_rate)
 }
 </code></pre>
 
@@ -2863,6 +2898,7 @@ including stakes, rewards, performance, etc.
                 pool_staking_reward: *<a href="_borrow">vector::borrow</a>(pool_staking_reward_amounts, i),
                 storage_fund_staking_reward: *<a href="_borrow">vector::borrow</a>(storage_fund_staking_reward_amounts, i),
                 pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_token_exchange_rate_at_epoch">validator::pool_token_exchange_rate_at_epoch</a>(v, new_epoch),
+                stable_pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">validator::pool_stable_token_exchange_rate_at_epoch</a>(v, new_epoch),
                 tallying_rule_reporters,
                 tallying_rule_global_score,
             }

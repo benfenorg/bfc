@@ -111,6 +111,21 @@ module sui_system::voting_power_tests {
         test_scenario::end(scenario);
     }
 
+    #[test]
+    fun test_medium_stable_validator_sets_2() {
+        let scenario = test_scenario::begin(@0x0);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let stable = 1 * MIST_PER_SUI;
+        // more validators, harder to reach max
+        check_with_stable(vector[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            vector[stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable],
+            vector[526, 526, 526, 526, 526, 526, 526, 526, 526, 526, 526, 526, 526, 527, 527, 527, 527, 527, 527], ctx);
+        check_with_stable(vector[2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            vector[stable * 2,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable,stable, stable],
+            vector[889, 667, 667, 667, 444, 444, 444, 444, 444, 444, 444, 444, 444, 444, 445, 445, 445, 445, 445, 445], ctx);
+        test_scenario::end(scenario);
+    }
+
     fun get_voting_power(validators: &vector<Validator>): vector<u64> {
         let result = vector[];
         let i = 0;

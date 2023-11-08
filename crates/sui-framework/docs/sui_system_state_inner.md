@@ -57,6 +57,7 @@
 -  [Function `genesis_system_state_version`](#0x3_sui_system_state_inner_genesis_system_state_version)
 -  [Function `epoch_start_timestamp_ms`](#0x3_sui_system_state_inner_epoch_start_timestamp_ms)
 -  [Function `validator_stake_amount`](#0x3_sui_system_state_inner_validator_stake_amount)
+-  [Function `validator_stake_amount_with_stable`](#0x3_sui_system_state_inner_validator_stake_amount_with_stable)
 -  [Function `validator_staking_pool_id`](#0x3_sui_system_state_inner_validator_staking_pool_id)
 -  [Function `validator_staking_pool_mappings`](#0x3_sui_system_state_inner_validator_staking_pool_mappings)
 -  [Function `get_reporters_of`](#0x3_sui_system_state_inner_get_reporters_of)
@@ -769,7 +770,6 @@ This function will be called only once in genesis.
     <b>let</b> reference_gas_price = <a href="validator_set.md#0x3_validator_set_derive_reference_gas_price">validator_set::derive_reference_gas_price</a>(&validators);
     // This type is fixed <b>as</b> it's created at <a href="genesis.md#0x3_genesis">genesis</a>. It should not be updated during type upgrade.
     <b>let</b> init_coin = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(initial_storage_fund, ctx);
-    <b>let</b> coin_id_address = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id_address">object::id_address</a>(&init_coin);
     <b>let</b> system_state = <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInner">SuiSystemStateInner</a> {
         epoch: 0,
         protocol_version,
@@ -1264,7 +1264,7 @@ Add stake to a validator's staking pool.
 
 ## Function `request_add_stable_stake`
 
-Add stake to a validator's staking pool.
+Add stake to a validator's stable pool.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_add_stable_stake">request_add_stable_stake</a>(self: &<b>mut</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, stake: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, validator_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
@@ -2452,6 +2452,33 @@ Aborts if <code>validator_addr</code> is not an active validator.
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_stake_amount">validator_stake_amount</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>, validator_addr: <b>address</b>): u64 {
     <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount">validator_set::validator_total_stake_amount</a>(&self.validators, validator_addr)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_state_inner_validator_stake_amount_with_stable"></a>
+
+## Function `validator_stake_amount_with_stable`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_stake_amount_with_stable">validator_stake_amount_with_stable</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, validator_addr: <b>address</b>, stable_exchange_rate: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_validator_stake_amount_with_stable">validator_stake_amount_with_stable</a>(
+    self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a>,
+    validator_addr: <b>address</b>,
+    stable_exchange_rate: u64): u64 {
+    <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_set::validator_total_stake_amount_with_stable</a>(&self.validators, validator_addr, stable_exchange_rate)
 }
 </code></pre>
 

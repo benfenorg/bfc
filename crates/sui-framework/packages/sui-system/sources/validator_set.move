@@ -11,7 +11,7 @@ module sui_system::validator_set {
     use sui_system::validator::{Self, Validator, staking_pool_id,stable_pool_id as v_stable_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedBfc, pool_id};
-    use sui_system::stable_pool::{pool_id as stable_pool_id};
+    use sui_system::stable_pool::{pool_id as stable_pool_id, PoolStableTokenExchangeRate};
     use sui::object::{Self, ID};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
@@ -103,6 +103,7 @@ module sui_system::validator_set {
         pool_staking_reward: u64,
         storage_fund_staking_reward: u64,
         pool_token_exchange_rate: PoolTokenExchangeRate,
+        stable_pool_token_exchange_rate: PoolStableTokenExchangeRate,
         tallying_rule_reporters: vector<address>,
         tallying_rule_global_score: u64,
     }
@@ -583,6 +584,13 @@ module sui_system::validator_set {
     public fun validator_total_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::total_stake_amount(validator)
+    }
+    public fun validator_total_stake_amount_with_stable(
+        self: &ValidatorSet,
+        validator_address: address,
+        stable_exchange_rate: u64): u64 {
+        let validator = get_validator_ref(&self.active_validators, validator_address);
+        validator::total_stake_with_stable(validator, stable_exchange_rate)
     }
 
     public fun validator_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
@@ -1265,6 +1273,7 @@ module sui_system::validator_set {
                     pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
                     storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
                     pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
+                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
                     tallying_rule_reporters,
                     tallying_rule_global_score,
                 }
