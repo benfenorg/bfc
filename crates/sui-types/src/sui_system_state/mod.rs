@@ -240,6 +240,7 @@ pub fn get_sui_system_state_wrapper(
 pub fn get_sui_system_state(object_store: &dyn ObjectStore) -> Result<SuiSystemState, SuiError> {
     let wrapper = get_sui_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
+    println!("version is {:?}",wrapper.version);
     match wrapper.version {
         1 => {
             let result: SuiSystemStateInnerV1 =
