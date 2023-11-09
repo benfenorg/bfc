@@ -307,6 +307,7 @@ pub struct ValidatorV1 {
     pub busd_pool: StablePoolV1,
     pub commission_rate: u64,
     pub next_epoch_stake: u64,
+    pub next_epoch_stable_stake:u64,
     pub next_epoch_gas_price: u64,
     pub next_epoch_commission_rate: u64,
     pub extra_fields: Bag,
@@ -389,6 +390,7 @@ impl ValidatorV1 {
             },
             commission_rate,
             next_epoch_stake,
+            next_epoch_stable_stake,
             next_epoch_gas_price,
             next_epoch_commission_rate,
             extra_fields: _,
@@ -476,6 +478,7 @@ pub struct ValidatorSetV1 {
     pub pending_active_validators: TableVec,
     pub pending_removals: Vec<u64>,
     pub staking_pool_mappings: Table,
+    pub stable_pool_mappings: Table,
     pub inactive_validators: Table,
     pub validator_candidates: Table,
     pub at_risk_validators: VecMap<SuiAddress, u64>,
@@ -666,6 +669,11 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                             id: staking_pool_mappings_id,
                             size: staking_pool_mappings_size,
                         },
+                    stable_pool_mappings:
+                    Table {
+                        id: stable_pool_mappings_id,
+                        size: stable_pool_mappings_size,
+                    },
                     inactive_validators:
                         Table {
                             id: inactive_pools_id,
