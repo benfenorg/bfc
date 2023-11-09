@@ -61,6 +61,7 @@ pub const SUI_SYSTEM_STATE_SIM_TEST_DEEP_V2: u64 = 18446744073709551607; // u64:
 pub struct SuiSystemStateWrapper {
     pub id: UID,
     pub version: u64,
+    pub bfc_system_id:UID,
 }
 
 impl SuiSystemStateWrapper {

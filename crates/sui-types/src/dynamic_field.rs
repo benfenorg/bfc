@@ -317,6 +317,7 @@ where
             object.id()
         ))
     })?;
+    println!("{:?}",hex::encode(move_object.contents()));
     Ok(bcs::from_bytes::<Field<K, V>>(move_object.contents())
         .map_err(|err| SuiError::DynamicFieldReadError(err.to_string()))?
         .value)
