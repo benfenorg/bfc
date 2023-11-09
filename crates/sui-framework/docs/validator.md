@@ -974,7 +974,7 @@ Request to add stake to the validator's staking pool, processed at the end of th
     <b>let</b> staked_sui = <a href="stable_pool.md#0x3_stable_pool_request_add_stake">stable_pool::request_add_stake</a>(
         &<b>mut</b> self.busd_pool, stake, stake_epoch, ctx
     );
-    // Process stake right away <b>if</b> staking pool is preactive.
+    // Process stake right away <b>if</b> stable pool is preactive.
     <b>if</b> (<a href="stable_pool.md#0x3_stable_pool_is_preactive">stable_pool::is_preactive</a>&lt;BUSD&gt;(&self.busd_pool)) {
         <a href="stable_pool.md#0x3_stable_pool_process_pending_stake">stable_pool::process_pending_stake</a>&lt;BUSD&gt;(&<b>mut</b> self.busd_pool);
     };

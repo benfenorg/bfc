@@ -606,7 +606,6 @@ module sui_system::sui_system {
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
-
         let storage_rebate = sui_system_state_inner::advance_epoch(
             self,
             new_epoch,
@@ -671,6 +670,17 @@ module sui_system::sui_system {
     public fun validator_stake_amount(wrapper: &mut SuiSystemState, validator_addr: address): u64 {
         let self = load_system_state(wrapper);
         sui_system_state_inner::validator_stake_amount(self, validator_addr)
+    }
+
+    #[test_only]
+    /// Returns the total amount staked with `validator_addr`.
+    /// Aborts if `validator_addr` is not an active validator.
+    public fun validator_stake_amount_with_stable(
+        wrapper: &mut SuiSystemState,
+        validator_addr: address,
+        stable_exchange_rate: u64): u64 {
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, stable_exchange_rate)
     }
 
     #[test_only]

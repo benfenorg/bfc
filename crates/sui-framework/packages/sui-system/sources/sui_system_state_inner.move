@@ -521,7 +521,7 @@ module sui_system::sui_system_state_inner {
         )
     }
 
-    /// Add stake to a validator's staking pool.
+    /// Add stake to a validator's stable pool.
     public(friend) fun request_add_stable_stake(
         self: &mut SuiSystemStateInnerV2,
         stake: Coin<BUSD>,
@@ -1041,6 +1041,13 @@ module sui_system::sui_system_state_inner {
     /// Aborts if `validator_addr` is not an active validator.
     public(friend) fun validator_stake_amount(self: &SuiSystemStateInnerV2, validator_addr: address): u64 {
         validator_set::validator_total_stake_amount(&self.validators, validator_addr)
+    }
+
+    public(friend) fun validator_stake_amount_with_stable(
+        self: &SuiSystemStateInnerV2,
+        validator_addr: address,
+        stable_exchange_rate: u64): u64 {
+        validator_set::validator_total_stake_amount_with_stable(&self.validators, validator_addr, stable_exchange_rate)
     }
 
     /// Returns the staking pool id of a given validator.

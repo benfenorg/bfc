@@ -348,7 +348,7 @@ module sui_system::validator {
         let staked_sui = stable_pool::request_add_stake(
             &mut self.busd_pool, stake, stake_epoch, ctx
         );
-        // Process stake right away if staking pool is preactive.
+        // Process stake right away if stable pool is preactive.
         if (stable_pool::is_preactive<BUSD>(&self.busd_pool)) {
             stable_pool::process_pending_stake<BUSD>(&mut self.busd_pool);
         };
@@ -489,7 +489,6 @@ module sui_system::validator {
         staking_pool::deposit_rewards(&mut self.staking_pool, reward);
     }
 
-    //todo BUSD rewards diposit
     public(friend) fun deposit_stable_stake_rewards(self: &mut Validator, reward: Balance<BUSD>) {
         self.next_epoch_stable_stake = self.next_epoch_stable_stake + balance::value(&reward);
         stable_pool::deposit_rewards(&mut self.busd_pool, reward);
@@ -671,7 +670,6 @@ module sui_system::validator {
         staking_pool::pool_token_exchange_rate_at_epoch(&self.staking_pool, epoch)
     }
 
-    // todo check is needed?
     public fun pool_stable_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): PoolStableTokenExchangeRate {
         stable_pool::pool_token_exchange_rate_at_epoch<BUSD>(&self.busd_pool, epoch)
     }

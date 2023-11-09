@@ -18,7 +18,8 @@ module sui_system::rewards_distribution_tests {
         create_validator_for_testing,
         create_sui_system_state_for_testing,
         stake_with,
-        total_sui_balance, unstake
+        total_sui_balance, unstake, assert_validator_total_stake_with_stable_amounts, stake_with_stable, unstake_stable,
+        total_busd_balance
     };
     use sui::test_utils::assert_eq;
     use std::vector;
@@ -61,6 +62,38 @@ module sui_system::rewards_distribution_tests {
         assert_validator_total_stake_amounts(
             validator_addrs(),
             vector[150 * MIST_PER_SUI, 970 * MIST_PER_SUI, 350 * MIST_PER_SUI, 450 * MIST_PER_SUI],
+            scenario
+        );
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_validator_rewards_with_stable() {
+        set_up_sui_system_state();
+        let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+        let scenario = &mut scenario_val;
+
+        // need to advance epoch so validator's staking starts counting
+        governance_test_utils::advance_epoch(scenario);
+
+        advance_epoch_with_reward_amounts(0, 100, scenario);
+        assert_validator_total_stake_with_stable_amounts(
+            validator_addrs(),
+            vector[125 * MIST_PER_SUI, 225 * MIST_PER_SUI, 325 * MIST_PER_SUI, 425 * MIST_PER_SUI],
+            1,
+            scenario
+        );
+
+        stake_with_stable(VALIDATOR_ADDR_2, VALIDATOR_ADDR_2, 720, scenario);
+
+        advance_epoch(scenario);
+        advance_epoch_with_reward_amounts(0, 200, scenario);
+        // Even though validator 2 has a lot more stake now, it should not get more rewards because
+        // the voting power is capped at 10%.
+        assert_validator_total_stake_with_stable_amounts(
+            validator_addrs(),
+            vector[175 * MIST_PER_SUI, 995 * MIST_PER_SUI, 375 * MIST_PER_SUI, 475 * MIST_PER_SUI],
+            1,
             scenario
         );
         test_scenario::end(scenario_val);
@@ -116,6 +149,37 @@ module sui_system::rewards_distribution_tests {
         // that would be about 728 SUI.
         // TODO: Come up with better numbers and clean it up!
         assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 728108108107);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_stake_stable_rewards() {
+        set_up_sui_system_state();
+        let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+        let scenario = &mut scenario_val;
+
+        stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 200, scenario);
+        stake_with_stable(STAKER_ADDR_2, VALIDATOR_ADDR_2, 100, scenario);
+        governance_test_utils::advance_epoch(scenario);
+
+        assert_validator_total_stake_with_stable_amounts(
+            validator_addrs(),
+            vector[300 * MIST_PER_SUI, 300 * MIST_PER_SUI, 300 * MIST_PER_SUI, 400 * MIST_PER_SUI],
+            1,
+            scenario);
+
+        // Each pool gets 30 SUI.
+        advance_epoch_with_reward_amounts(0, 120, scenario);
+        unstake_stable(STAKER_ADDR_1, 0, scenario);
+        stake_with_stable(STAKER_ADDR_2, VALIDATOR_ADDR_1, 600, scenario);
+        // Each pool gets 30 SUI.
+        advance_epoch_with_reward_amounts(0, 120, scenario);
+        // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
+        assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 200 * MIST_PER_SUI);
+        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario), 0);
+        unstake_stable(STAKER_ADDR_2, 0, scenario);
+        assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100 * MIST_PER_SUI);
+        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 0);
         test_scenario::end(scenario_val);
     }
 
