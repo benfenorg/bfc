@@ -357,7 +357,7 @@ This step computes one pairing e(P, Q), and binds the verification to one partic
 This can be used as inputs for the <code>verify_groth16_proof</code> function.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key">prepare_verifying_key</a>(curve: &<a href="groth16.md#0x2_groth16_Curve">groth16::Curve</a>, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">groth16::PreparedVerifyingKey</a>
+<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key">prepare_verifying_key</a>(<a href="curve.md#0x2_curve">curve</a>: &<a href="groth16.md#0x2_groth16_Curve">groth16::Curve</a>, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">groth16::PreparedVerifyingKey</a>
 </code></pre>
 
 
@@ -366,8 +366,8 @@ This can be used as inputs for the <code>verify_groth16_proof</code> function.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key">prepare_verifying_key</a>(curve: &<a href="groth16.md#0x2_groth16_Curve">Curve</a>, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">PreparedVerifyingKey</a> {
-    <a href="groth16.md#0x2_groth16_prepare_verifying_key_internal">prepare_verifying_key_internal</a>(curve.id, verifying_key)
+<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key">prepare_verifying_key</a>(<a href="curve.md#0x2_curve">curve</a>: &<a href="groth16.md#0x2_groth16_Curve">Curve</a>, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">PreparedVerifyingKey</a> {
+    <a href="groth16.md#0x2_groth16_prepare_verifying_key_internal">prepare_verifying_key_internal</a>(<a href="curve.md#0x2_curve">curve</a>.id, verifying_key)
 }
 </code></pre>
 
@@ -382,7 +382,7 @@ This can be used as inputs for the <code>verify_groth16_proof</code> function.
 Native functions that flattens the inputs into an array and passes to the Rust native function.
 
 
-<pre><code><b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key_internal">prepare_verifying_key_internal</a>(curve: u8, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">groth16::PreparedVerifyingKey</a>
+<pre><code><b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key_internal">prepare_verifying_key_internal</a>(<a href="curve.md#0x2_curve">curve</a>: u8, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">groth16::PreparedVerifyingKey</a>
 </code></pre>
 
 
@@ -391,7 +391,7 @@ Native functions that flattens the inputs into an array and passes to the Rust n
 <summary>Implementation</summary>
 
 
-<pre><code><b>native</b> <b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key_internal">prepare_verifying_key_internal</a>(curve: u8, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">PreparedVerifyingKey</a>;
+<pre><code><b>native</b> <b>fun</b> <a href="groth16.md#0x2_groth16_prepare_verifying_key_internal">prepare_verifying_key_internal</a>(<a href="curve.md#0x2_curve">curve</a>: u8, verifying_key: &<a href="">vector</a>&lt;u8&gt;): <a href="groth16.md#0x2_groth16_PreparedVerifyingKey">PreparedVerifyingKey</a>;
 </code></pre>
 
 
@@ -423,7 +423,7 @@ Native functions that flattens the inputs into an array and passes to the Rust n
 Returns a boolean indicating whether the proof is valid.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof">verify_groth16_proof</a>(curve: &<a href="groth16.md#0x2_groth16_Curve">groth16::Curve</a>, prepared_verifying_key: &<a href="groth16.md#0x2_groth16_PreparedVerifyingKey">groth16::PreparedVerifyingKey</a>, public_proof_inputs: &<a href="groth16.md#0x2_groth16_PublicProofInputs">groth16::PublicProofInputs</a>, proof_points: &<a href="groth16.md#0x2_groth16_ProofPoints">groth16::ProofPoints</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof">verify_groth16_proof</a>(<a href="curve.md#0x2_curve">curve</a>: &<a href="groth16.md#0x2_groth16_Curve">groth16::Curve</a>, prepared_verifying_key: &<a href="groth16.md#0x2_groth16_PreparedVerifyingKey">groth16::PreparedVerifyingKey</a>, public_proof_inputs: &<a href="groth16.md#0x2_groth16_PublicProofInputs">groth16::PublicProofInputs</a>, proof_points: &<a href="groth16.md#0x2_groth16_ProofPoints">groth16::ProofPoints</a>): bool
 </code></pre>
 
 
@@ -432,9 +432,9 @@ Returns a boolean indicating whether the proof is valid.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof">verify_groth16_proof</a>(curve: &<a href="groth16.md#0x2_groth16_Curve">Curve</a>, prepared_verifying_key: &<a href="groth16.md#0x2_groth16_PreparedVerifyingKey">PreparedVerifyingKey</a>, public_proof_inputs: &<a href="groth16.md#0x2_groth16_PublicProofInputs">PublicProofInputs</a>, proof_points: &<a href="groth16.md#0x2_groth16_ProofPoints">ProofPoints</a>): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof">verify_groth16_proof</a>(<a href="curve.md#0x2_curve">curve</a>: &<a href="groth16.md#0x2_groth16_Curve">Curve</a>, prepared_verifying_key: &<a href="groth16.md#0x2_groth16_PreparedVerifyingKey">PreparedVerifyingKey</a>, public_proof_inputs: &<a href="groth16.md#0x2_groth16_PublicProofInputs">PublicProofInputs</a>, proof_points: &<a href="groth16.md#0x2_groth16_ProofPoints">ProofPoints</a>): bool {
     <a href="groth16.md#0x2_groth16_verify_groth16_proof_internal">verify_groth16_proof_internal</a>(
-        curve.id,
+        <a href="curve.md#0x2_curve">curve</a>.id,
         &prepared_verifying_key.vk_gamma_abc_g1_bytes,
         &prepared_verifying_key.alpha_g1_beta_g2_bytes,
         &prepared_verifying_key.gamma_g2_neg_pc_bytes,
@@ -456,7 +456,7 @@ Returns a boolean indicating whether the proof is valid.
 Native functions that flattens the inputs into arrays of vectors and passed to the Rust native function.
 
 
-<pre><code><b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof_internal">verify_groth16_proof_internal</a>(curve: u8, vk_gamma_abc_g1_bytes: &<a href="">vector</a>&lt;u8&gt;, alpha_g1_beta_g2_bytes: &<a href="">vector</a>&lt;u8&gt;, gamma_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, delta_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, public_proof_inputs: &<a href="">vector</a>&lt;u8&gt;, proof_points: &<a href="">vector</a>&lt;u8&gt;): bool
+<pre><code><b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof_internal">verify_groth16_proof_internal</a>(<a href="curve.md#0x2_curve">curve</a>: u8, vk_gamma_abc_g1_bytes: &<a href="">vector</a>&lt;u8&gt;, alpha_g1_beta_g2_bytes: &<a href="">vector</a>&lt;u8&gt;, gamma_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, delta_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, public_proof_inputs: &<a href="">vector</a>&lt;u8&gt;, proof_points: &<a href="">vector</a>&lt;u8&gt;): bool
 </code></pre>
 
 
@@ -465,7 +465,7 @@ Native functions that flattens the inputs into arrays of vectors and passed to t
 <summary>Implementation</summary>
 
 
-<pre><code><b>native</b> <b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof_internal">verify_groth16_proof_internal</a>(curve: u8, vk_gamma_abc_g1_bytes: &<a href="">vector</a>&lt;u8&gt;, alpha_g1_beta_g2_bytes: &<a href="">vector</a>&lt;u8&gt;, gamma_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, delta_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, public_proof_inputs: &<a href="">vector</a>&lt;u8&gt;, proof_points: &<a href="">vector</a>&lt;u8&gt;): bool;
+<pre><code><b>native</b> <b>fun</b> <a href="groth16.md#0x2_groth16_verify_groth16_proof_internal">verify_groth16_proof_internal</a>(<a href="curve.md#0x2_curve">curve</a>: u8, vk_gamma_abc_g1_bytes: &<a href="">vector</a>&lt;u8&gt;, alpha_g1_beta_g2_bytes: &<a href="">vector</a>&lt;u8&gt;, gamma_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, delta_g2_neg_pc_bytes: &<a href="">vector</a>&lt;u8&gt;, public_proof_inputs: &<a href="">vector</a>&lt;u8&gt;, proof_points: &<a href="">vector</a>&lt;u8&gt;): bool;
 </code></pre>
 
 

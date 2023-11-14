@@ -91,7 +91,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 {
     <b>let</b> <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a> = <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> {
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>,
     };
     <b>let</b> treasury_pool_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
     event::init_treasury_pool(treasury_pool_id);

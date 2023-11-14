@@ -109,6 +109,12 @@
 <dd>
 
 </dd>
+<dt>
+<code>total_bfc_supply: u64</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -179,7 +185,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_treasury">create_treasury</a>(time_interval: u32, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_treasury">create_treasury</a>(time_interval: u32, total_bfc_supply: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>
 </code></pre>
 
 
@@ -188,7 +194,7 @@
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_treasury">create_treasury</a>(time_interval: u32, ctx: &<b>mut</b> TxContext): <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a> {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_treasury">create_treasury</a>(time_interval: u32, total_bfc_supply: u64, ctx: &<b>mut</b> TxContext): <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a> {
     <b>let</b> <a href="treasury.md#0xc8_treasury">treasury</a> = <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a> {
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;(),
@@ -197,6 +203,7 @@
         time_interval,
         updated_at: 0,
         init: <b>false</b>,
+        total_bfc_supply: total_bfc_supply,
     };
     <b>let</b> treasury_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&<a href="treasury.md#0xc8_treasury">treasury</a>);
     event::init_treasury(treasury_id);
@@ -943,6 +950,7 @@ Rebalance
         usd_mut_v,
         &<b>mut</b> _treasury.bfc_balance,
         <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;()),
+        _treasury.total_bfc_supply,
         _ctx
     );
 }
@@ -981,6 +989,7 @@ Rebalance
         usd_mut_v,
         &<b>mut</b> _treasury.bfc_balance,
         <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;()),
+        _treasury.total_bfc_supply,
         _ctx
     );
 }
