@@ -87,7 +87,7 @@ impl Default for TreasuryParameters {
             spacing_times: 2,
             time_interval: 14400,
             max_counter_times: 5,
-            base_point: 1000_000_000_000,
+            base_point: 50000_000_000_000,
             initialize_price: 2u128.pow(64),
         }
     }

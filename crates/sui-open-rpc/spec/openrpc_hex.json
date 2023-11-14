@@ -1367,6 +1367,9 @@
                 "address_to_u256_cost_base": {
                   "u64": "52"
                 },
+                "curve_dx_cost_base":  {
+                  "u64": "52"
+                },
                 "base_tx_cost_fixed": {
                   "u64": "2000"
                 },

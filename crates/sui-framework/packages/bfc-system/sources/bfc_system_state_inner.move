@@ -1,5 +1,4 @@
 module bfc_system::bfc_system_state_inner {
-    use std::string;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
@@ -209,7 +208,7 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>) {
         let treasury_parameters = parameters.treasury_parameters;
-        let t = treasury::create_treasury(treasury_parameters.time_interval, ctx);
+        let t = treasury::create_treasury(treasury_parameters.time_interval, balance::value(&bfc_balance), ctx);
 
         treasury::init_vault_with_positions<BUSD>(
             &mut t,

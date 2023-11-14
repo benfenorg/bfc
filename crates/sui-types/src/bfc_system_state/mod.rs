@@ -43,6 +43,7 @@ pub struct Treasury {
     time_interval: u32,
     updated_at: u64,
     init: bool,
+    total_bfc_supply: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]

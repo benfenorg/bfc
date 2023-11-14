@@ -3,7 +3,7 @@ module bfc_system::vault_test {
     use std::ascii::string;
     use std::debug;
     use std::type_name;
-
+    use std::debug::print;
     use sui::balance;
     use sui::clock;
     use sui::coin;
@@ -25,7 +25,7 @@ module bfc_system::vault_test {
         test_utils::setup_with_parameters(
             3600 * 4,
             1 << 64,
-            1000_000000000,
+            50000_000000000,
             9,
             60,
             10,
@@ -53,8 +53,9 @@ module bfc_system::vault_test {
             debug::print(&amount_b);
             debug::print(&amount_a);
         };
-        assert!(amount_b == 1000_000000000, 100);
-        assert!(amount_a == 1000_000000000, 101);
+        print(&amount_b);
+        assert!(amount_b == 300000_000000000, 100);
+        assert!(amount_a == 300000_000000000, 101);
         test_scenario::return_shared(t);
         clock::destroy_for_testing(c);
         test_scenario::end(scenario_val);

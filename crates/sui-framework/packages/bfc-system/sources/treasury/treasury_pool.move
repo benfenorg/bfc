@@ -16,7 +16,7 @@ module bfc_system::treasury_pool {
 
     struct TreasuryPool has key, store {
         id: UID,
-        balance: Balance<BFC>
+        balance: Balance<BFC>,
     }
 
     public(friend) fun create_treasury_pool(
@@ -26,7 +26,7 @@ module bfc_system::treasury_pool {
     {
         let treasury_pool = TreasuryPool {
             id: object::new(ctx),
-            balance
+            balance: balance,
         };
         let treasury_pool_id = object::id(&treasury_pool);
         event::init_treasury_pool(treasury_pool_id);

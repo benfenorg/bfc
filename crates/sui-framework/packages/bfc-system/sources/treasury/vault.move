@@ -42,11 +42,13 @@ use std::type_name;
     const ERR_AMOUNT_MISMATCH: u64 = 210;
     const ERR_POSITIONS_IS_NOT_EMPTY: u64 = 211;
     const ERR_INVALID_SHAPE_KINDS: u64 = 212;
+    const ERR_POSITION_LENGTH_MISMATCH: u64 = 213;
 
     const SHAPE_EQUAL_SIZE: u8 = 0;
     const SHAPE_DECREMENT_SIZE: u8 = 1;
     const SHAPE_INCREMENT_SIZE: u8 = 2;
 
+    const Q64: u128 = 18446744073709551616;
     spec module { pragma verify = false; }
 
     struct Vault<phantom StableCoinType> has key, store {
@@ -90,6 +92,12 @@ use std::type_name;
         index: u64,
 
         base_point: u64,
+
+        /// bfc accrued consume
+        bfc_accrued_consume: u64,
+
+        /// last rebalance bfc amount
+        last_bfc_rebalance_amount: u64,
     }
 
     struct VaultInfo has copy, drop {
@@ -111,6 +119,8 @@ use std::type_name;
         is_pause: bool,
         index: u64,
         base_point: u64,
+        bfc_accrued_consume: u64,
+        last_bfc_rebalance_amount: u64,
     }
 
     spec create_vault {
@@ -152,6 +162,8 @@ use std::type_name;
             index: _index,
             base_point: _base_point,
             max_counter_times: _max_counter_times,
+            bfc_accrued_consume: 0,
+            last_bfc_rebalance_amount: 0,
         }
     }
 
@@ -848,6 +860,8 @@ use std::type_name;
             is_pause: _vault.is_pause,
             index: _vault.index,
             base_point: _vault.base_point,
+            bfc_accrued_consume: _vault.bfc_accrued_consume,
+            last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
         } }
 
     public fun vault_id<StableCoinType>(_vault: &Vault<StableCoinType>): ID {
@@ -879,7 +893,7 @@ use std::type_name;
     }
 
     public fun bfc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
-        ((_vault.position_number as u64) + 1) / 2 * _vault.base_point
+        ((_vault.position_number as u64) + 1) / 2 * _vault.base_point * 6
     }
 
     public fun min_liquidity_rate(): u128 {
@@ -959,7 +973,8 @@ use std::type_name;
 
     fun get_liquidity_from_base_point<StableCoinType>(
         _vault: &Vault<StableCoinType>,
-        _ticks: &vector<vector<I32>>
+        _ticks: &vector<vector<I32>>,
+        _amount: u64,
     ): u128
     {
         let middle_tick = vector::borrow(_ticks, (_vault.position_number / 2 as u64));
@@ -969,7 +984,7 @@ use std::type_name;
             *tick_upper_index,
             _vault.current_tick_index,
             _vault.current_sqrt_price,
-            _vault.base_point,
+            _amount,
             false
         );
         liquidity
@@ -978,10 +993,13 @@ use std::type_name;
     public(friend) fun positions_liquidity_size_balance<StableCoinType>(
         _vault: &Vault<StableCoinType>,
         _ticks: &vector<vector<I32>>,
-        _shape: u8
+        _shape: u8,
+        _treasury_total_bfc_supply: u64,
     ): vector<u128> {
         // base point position liquidity
-        let liquidity = get_liquidity_from_base_point(_vault, _ticks);
+        let curve_dx_q64 = curve_dx((_vault.bfc_accrued_consume as u128), (_treasury_total_bfc_supply as u128));
+        let base_point_amount = (((_vault.base_point as u128) * (Q64 + curve_dx_q64) / Q64) as u64);
+        let liquidity = get_liquidity_from_base_point(_vault, _ticks, base_point_amount);
         let liquidities = vector::empty<u128>();
         let index: u128 ;
         let length: u128;
@@ -1023,7 +1041,7 @@ use std::type_name;
         let index = 0u64;
         let length = vector::length(&_liquidities);
         let position_length = position::get_total_positions(&_vault.position_manager);
-        assert!(length == position_length, 1008611);
+        assert!(length == position_length, ERR_POSITION_LENGTH_MISMATCH);
         let (total_a, total_b) = (0, 0);
         while (index < length) {
             let receipt = add_liquidity(
@@ -1063,6 +1081,7 @@ use std::type_name;
         _vault: &mut Vault<StableCoinType>,
         _bfc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,
+        _treasury_total_bfc_supply: u64,
         _ctx: &mut TxContext
     ) {
         let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
@@ -1072,7 +1091,10 @@ use std::type_name;
             // reset state counter
             _vault.state_counter = 0;
         };
-        let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape);
+        if (_vault.last_bfc_rebalance_amount > balance::value(&balance1)) {
+            _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - balance::value(&balance1);
+        };
+        let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape, _treasury_total_bfc_supply);
         rebalance_internal(
             _vault,
             _bfc_balance,
@@ -1081,5 +1103,6 @@ use std::type_name;
             balance1,
             liquidities
         );
+        _vault.last_bfc_rebalance_amount = balance::value(&_vault.coin_b);
     }
 }

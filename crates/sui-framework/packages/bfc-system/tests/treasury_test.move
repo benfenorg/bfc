@@ -27,6 +27,7 @@ module bfc_system::treasury_test {
         {
             let t = treasury::create_treasury(
                 3600 * 4,
+                300000000_000000000,
                 test_scenario::ctx(&mut scenario_val),
             );
             transfer::public_share_object(t);

@@ -28,7 +28,7 @@ module bfc_system::test_utils {
         ctx: &mut TxContext
     ) {
         let usd_supply = busd::new(ctx);
-        let t = treasury::create_treasury(time_interval, ctx);
+        let t = treasury::create_treasury(time_interval, 3000000000_000000000,ctx);
         treasury::init_vault_with_positions(
             &mut t,
             usd_supply,

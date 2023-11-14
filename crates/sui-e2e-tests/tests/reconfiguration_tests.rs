@@ -2289,7 +2289,7 @@ async fn test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .state()
         .get_bfc_system_state_object_for_testing().unwrap();
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
-    assert_eq!(treasury.bfc_balance, Balance::new(21001799655057));
+    assert_eq!(treasury.bfc_balance, Balance::new(6300539896517547));
     Ok(())
 }
 
@@ -2608,7 +2608,7 @@ async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> 
         }))],
     };
     let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
-    assert_eq!(r, 999999950);
+    assert_eq!(r, 999999999);
     Ok(())
 }
 
@@ -2633,6 +2633,6 @@ async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::
         }))],
     };
     let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
-    assert_eq!(r, 999999950);
+    assert_eq!(r, 999999999);
     Ok(())
 }

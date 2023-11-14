@@ -84,7 +84,7 @@ module bfc_system::bfc_system_tests {
 
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         // basepoint = 1000 /  position = 9 / timeinterval=4h
-        assert!(amount == 1000 * 5 * 6, 100);
+        assert!(amount == 1000 * 5 * 6 * 6, 100);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);

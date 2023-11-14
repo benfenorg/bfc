@@ -46,12 +46,13 @@ module bfc_system::treasury {
         time_interval: u32,
         updated_at: u64,
         init: bool,
+        total_bfc_supply: u64,
     }
 
     //spec module { pragma verify = false; }
 
     // call in bfc_system
-    public(friend) fun create_treasury(time_interval: u32, ctx: &mut TxContext): Treasury {
+    public(friend) fun create_treasury(time_interval: u32, total_bfc_supply: u64, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {
             id: object::new(ctx),
             bfc_balance: balance::zero<BFC>(),
@@ -60,6 +61,7 @@ module bfc_system::treasury {
             time_interval,
             updated_at: 0,
             init: false,
+            total_bfc_supply: total_bfc_supply,
         };
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
@@ -406,6 +408,7 @@ module bfc_system::treasury {
             usd_mut_v,
             &mut _treasury.bfc_balance,
             bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, get_vault_key<BUSD>()),
+            _treasury.total_bfc_supply,
             _ctx
         );
     }
@@ -424,6 +427,7 @@ module bfc_system::treasury {
             usd_mut_v,
             &mut _treasury.bfc_balance,
             bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, get_vault_key<BUSD>()),
+            _treasury.total_bfc_supply,
             _ctx
         );
     }
