@@ -148,7 +148,7 @@ fn get_keypair() -> Result<SignerInfo> {
 
 fn get_sui_config_directory() -> PathBuf {
     match dirs::home_dir() {
-        Some(v) => v.join(".sui").join("sui_config"),
+        Some(v) => v.join(".bfc").join("sui_config"),
         None => panic!("Cannot obtain home directory path"),
     }
 }

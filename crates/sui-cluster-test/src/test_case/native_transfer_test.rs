@@ -63,7 +63,7 @@ impl TestCaseImpl for NativeTransferTest {
             None::<u64>
         ];
         let data = ctx
-            .build_transaction_remotely("unsafe_transferSui", params)
+            .build_transaction_remotely("unsafe_transferBfc", params)
             .await?;
         let mut response = ctx.sign_and_execute(data, "coin transfer").await;
 

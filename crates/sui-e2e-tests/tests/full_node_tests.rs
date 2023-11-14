@@ -637,9 +637,9 @@ async fn test_full_node_sub_and_query_move_event_ok() -> Result<(), anyhow::Erro
 
     let mut sub: Subscription<SuiEvent> = ws_client
         .subscribe(
-            "suix_subscribeEvent",
+            "bfcx_subscribeEvent",
             rpc_params![EventFilter::MoveEventType(struct_tag.clone())],
-            "suix_unsubscribeEvent",
+            "bfcx_unsubscribeEvent",
         )
         .await
         .unwrap();
@@ -764,7 +764,7 @@ async fn test_full_node_event_read_api_ok() {
     // query by move event struct name
     let params = rpc_params![digest2];
     let events: Vec<SuiEvent> = jsonrpc_client
-        .request("sui_getEvents", params)
+        .request("bfc_getEvents", params)
         .await
         .unwrap();
     assert_eq!(events.len(), 1);
@@ -797,7 +797,7 @@ async fn test_full_node_event_query_by_module_ok() {
         module: ident_str!("devnet_nft").into()
     }];
     let page: EventPage = jsonrpc_client
-        .request("suix_queryEvents", params)
+        .request("bfcx_queryEvents", params)
         .await
         .unwrap();
     assert_eq!(page.data.len(), 1);
@@ -944,7 +944,7 @@ async fn test_execute_tx_with_serialized_signature() -> Result<(), anyhow::Error
             ExecuteTransactionRequestType::WaitForLocalExecution
         ];
         let response: SuiTransactionBlockResponse = jsonrpc_client
-            .request("sui_executeTransactionBlock", params)
+            .request("bfc_executeTransactionBlock", params)
             .await
             .unwrap();
 
@@ -985,7 +985,7 @@ async fn test_full_node_transaction_orchestrator_rpc_ok() -> Result<(), anyhow::
         ExecuteTransactionRequestType::WaitForLocalExecution
     ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_executeTransactionBlock", params)
+        .request("bfc_executeTransactionBlock", params)
         .await
         .unwrap();
 
@@ -998,7 +998,7 @@ async fn test_full_node_transaction_orchestrator_rpc_ok() -> Result<(), anyhow::
     assert!(confirmed_local_execution.unwrap());
 
     let _response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_getTransactionBlock", rpc_params![*tx_digest])
+        .request("bfc_getTransactionBlock", rpc_params![*tx_digest])
         .await
         .unwrap();
 
@@ -1011,7 +1011,7 @@ async fn test_full_node_transaction_orchestrator_rpc_ok() -> Result<(), anyhow::
         ExecuteTransactionRequestType::WaitForEffectsCert
     ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_executeTransactionBlock", params)
+        .request("bfc_executeTransactionBlock", params)
         .await
         .unwrap();
 

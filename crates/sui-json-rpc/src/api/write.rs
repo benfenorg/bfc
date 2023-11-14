@@ -14,8 +14,8 @@ use sui_types::base_types::SuiAddress;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::sui_serde::BigInt;
 
-#[open_rpc(namespace = "sui", tag = "Write API")]
-#[rpc(server, client, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Write API")]
+#[rpc(server, client, namespace = "bfc")]
 pub trait WriteApi {
     /// Execute the transaction and wait for results if desired.
     /// Request types:

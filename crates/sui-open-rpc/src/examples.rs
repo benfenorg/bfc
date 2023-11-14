@@ -220,7 +220,7 @@ impl RpcExampleProvider {
         let result = TransactionBlockBytes::from_data(data).unwrap();
 
         Examples::new(
-            "sui_batchTransaction",
+            "bfc_batchTransaction",
             vec![ExamplePairing::new(
                 "Creates unsigned batch transaction data.",
                 vec![
@@ -240,7 +240,7 @@ impl RpcExampleProvider {
         let tx_bytes = TransactionBlockBytes::from_data(data).unwrap();
 
         Examples::new(
-            "sui_executeTransactionBlock",
+            "bfc_executeTransactionBlock",
             vec![ExamplePairing::new(
                 "Executes a transaction with serialized signatures.",
                 vec![
@@ -271,7 +271,7 @@ impl RpcExampleProvider {
         let tx_bytes = TransactionBlockBytes::from_data(data).unwrap();
 
         Examples::new(
-            "sui_dryRunTransactionBlock",
+            "bfc_dryRunTransactionBlock",
             vec![ExamplePairing::new(
                 "Dry runs a transaction block to get back estimated gas fees and other potential effects.",
                 vec![
@@ -294,7 +294,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_devInspectTransactionBlock",
+            "bfc_devInspectTransactionBlock",
             vec![ExamplePairing::new(
                 "Runs the transaction in dev-inspect mode. Which allows for nearly any transaction (or Move call) with any arguments. Detailed results are provided, including both the transaction effects and any return values.",
                 vec![
@@ -315,7 +315,7 @@ impl RpcExampleProvider {
             .map(|o| o.object_id().unwrap())
             .collect::<Vec<_>>();
         Examples::new(
-            "sui_multiGetObjects",
+            "bfc_multiGetObjects",
             vec![ExamplePairing::new(
                 "Gets objects by IDs.",
                 vec![
@@ -360,7 +360,7 @@ impl RpcExampleProvider {
     fn get_object_example(&mut self) -> Examples {
         let result = self.get_object_responses(1).pop().unwrap();
         Examples::new(
-            "sui_getObject",
+            "bfc_getObject",
             vec![ExamplePairing::new(
                 "Gets Object data for the ID in the request.",
                 vec![
@@ -399,7 +399,7 @@ impl RpcExampleProvider {
         });
 
         Examples::new(
-            "sui_tryGetPastObject",
+            "bfc_tryGetPastObject",
             vec![ExamplePairing::new(
                 "Gets Past Object data.",
                 vec![
@@ -428,7 +428,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getCheckpoint",
+            "bfc_getCheckpoint",
             vec![ExamplePairing::new(
                 "Gets checkpoint information for the checkpoint ID in the request.",
                 vec![("id", json!(CheckpointId::SequenceNumber(1000)))],
@@ -464,7 +464,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getCheckpoints",
+            "bfc_getCheckpoints",
             vec![ExamplePairing::new(
                 "Gets a paginated list in descending order of all checkpoints starting at the provided cursor. Each page of results has a maximum number of checkpoints set by the provided limit.",
                 vec![(
@@ -501,7 +501,7 @@ impl RpcExampleProvider {
             .collect::<Vec<_>>();
 
         Examples::new(
-            "sui_getOwnedObjects",
+            "bfc_getOwnedObjects",
             vec![ExamplePairing::new(
                 "Gets objects owned by the address in the request.",
                 vec![
@@ -531,7 +531,7 @@ impl RpcExampleProvider {
 
     fn get_total_transaction_blocks(&mut self) -> Examples {
         Examples::new(
-            "sui_getTotalTransactionBlocks",
+            "bfc_getTotalTransactionBlocks",
             vec![ExamplePairing::new(
                 "Gets total number of transactions on the network.",
                 vec![],
@@ -543,7 +543,7 @@ impl RpcExampleProvider {
     fn get_transaction_block(&mut self) -> Examples {
         let (_, _, _, _, result) = self.get_transfer_data_response();
         Examples::new(
-            "sui_getTransactionBlock",
+            "bfc_getTransactionBlock",
             vec![ExamplePairing::new(
                 "Returns the transaction response object for specified transaction digest.",
                 vec![
@@ -577,7 +577,7 @@ impl RpcExampleProvider {
             has_next_page,
         };
         Examples::new(
-            "suix_queryTransactionBlocks",
+            "bfcx_queryTransactionBlocks",
             vec![ExamplePairing::new(
                 "Returns the transaction digest for specified query criteria.",
                 vec![
@@ -605,7 +605,7 @@ impl RpcExampleProvider {
             .collect::<Vec<_>>();
         let digests = data.iter().map(|x| x.digest).collect::<Vec<_>>();
         Examples::new(
-            "sui_multiGetTransactionBlocks",
+            "bfc_multiGetTransactionBlocks",
             vec![ExamplePairing::new(
                 "Returns the transaction data for specified digest.",
                 vec![
@@ -643,7 +643,7 @@ impl RpcExampleProvider {
     fn get_protocol_config(&mut self) -> Examples {
         let version = Some(6);
         Examples::new(
-            "sui_getProtocolConfig",
+            "bfc_getProtocolConfig",
             vec![ExamplePairing::new(
                 "Returns the protocol config for the given protocol version. If none is specified, the node uses the version of the latest epoch it has processed",
                 vec![
@@ -797,7 +797,7 @@ impl RpcExampleProvider {
             has_next_page: false,
         };
         Examples::new(
-            "sui_getEvents",
+            "bfc_getEvents",
             vec![ExamplePairing::new(
                 "Returns the events the transaction in the request emits.",
                 vec![("transaction_digest", json!(tx_dig))],
@@ -816,7 +816,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "suix_getCommitteeInfo",
+            "bfcx_getCommitteeInfo",
             vec![ExamplePairing::new(
                 "Gets committee information for epoch 5000.",
                 vec![("epoch", json!(epoch.to_string()))],
@@ -828,7 +828,7 @@ impl RpcExampleProvider {
     fn sui_get_reference_gas_price(&mut self) -> Examples {
         let result = 1000;
         Examples::new(
-            "suix_getReferenceGasPrice",
+            "bfcx_getReferenceGasPrice",
             vec![ExamplePairing::new(
                 "Gets reference gas price information for the network.",
                 vec![],
@@ -847,7 +847,7 @@ impl RpcExampleProvider {
             locked_balance: HashMap::new(),
         };
         Examples::new(
-            "suix_getAllBalances",
+            "bfcx_getAllBalances",
             vec![ExamplePairing::new(
                 "Gets all balances for the address in the request.",
                 vec![("owner", json!(address))],
@@ -879,7 +879,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "suix_getAllCoins",
+            "bfcx_getAllCoins",
             vec![ExamplePairing::new(
                 "Gets all coins for the address in the request body. Begin listing the coins that are after the provided `cursor` value and return only the `limit` amount of results per page.",
                 vec![
@@ -903,7 +903,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "suix_getBalance",
+            "bfcx_getBalance",
             vec![ExamplePairing::new(
                 "Gets the balance of the specified type of coin for the address in the request.",
                 vec![("owner", json!(owner)), ("coin_type", json!(coin_type))],
@@ -925,7 +925,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "suix_getCoinMetadata",
+            "bfcx_getCoinMetadata",
             vec![ExamplePairing::new(
                 "Gets the metadata for the coin type in the request.",
                 vec![(
@@ -940,7 +940,7 @@ impl RpcExampleProvider {
     fn sui_get_latest_checkpoint_sequence_number(&mut self) -> Examples {
         let result = "507021";
         Examples::new(
-            "sui_getLatestCheckpointSequenceNumber",
+            "bfc_getLatestCheckpointSequenceNumber",
             vec![ExamplePairing::new(
                 "Gets the sequence number for the latest checkpoint.",
                 vec![],
@@ -973,7 +973,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "suix_getCoins",
+            "bfcx_getCoins",
             vec![ExamplePairing::new(
                 "Gets all SUI coins owned by the address provided. Return a paginated list of `limit` results per page. Similar to `suix_getAllCoins`, but provides a way to filter by coin type.",
                 vec![
@@ -994,7 +994,7 @@ impl RpcExampleProvider {
         let result = Supply { value: 12023692 };
 
         Examples::new(
-            "suix_getTotalSupply",
+            "bfcx_getTotalSupply",
             vec![ExamplePairing::new(
                 "Gets total supply for the type of coin provided.",
                 vec![("coin_type", json!(coin))],
@@ -1021,7 +1021,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getLoadedChildObjects",
+            "bfc_getLoadedChildObjects",
             vec![ExamplePairing::new(
                 "Gets loaded child objects associated with the transaction the request provides.",
                 vec![("digest", json!(ObjectDigest::new(self.rng.gen())))],
@@ -1042,7 +1042,7 @@ impl RpcExampleProvider {
         ];
 
         Examples::new(
-            "sui_getMoveFunctionArgTypes",
+            "bfc_getMoveFunctionArgTypes",
             vec![ExamplePairing::new(
                 "Returns the argument types for the package and function the request provides.",
                 vec![
@@ -1069,7 +1069,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getNormalizedMoveFunction",
+            "bfc_getNormalizedMoveFunction",
             vec![ExamplePairing::new(
                 "Returns the structured representation of the function the request provides.",
                 vec![
@@ -1093,7 +1093,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getNormalizedMoveModule",
+            "bfc_getNormalizedMoveModule",
             vec![ExamplePairing::new(
                 "Gets a structured representation of the Move module for the package in the request.",
                 vec![
@@ -1116,7 +1116,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getNormalizedMoveModulesByPackage",
+            "bfc_getNormalizedMoveModulesByPackage",
             vec![ExamplePairing::new(
                 "Gets structured representations of all the modules for the package in the request.",
                 vec![
@@ -1140,7 +1140,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "sui_getNormalizedMoveStruct",
+            "bfc_getNormalizedMoveStruct",
             vec![ExamplePairing::new(
                 "Gets a structured representation of the struct in the request.",
                 vec![
@@ -1170,7 +1170,7 @@ impl RpcExampleProvider {
         ];
 
         Examples::new(
-            "suix_getValidatorsApy",
+            "bfcx_getValidatorsApy",
             vec![ExamplePairing::new(
                 "Gets the APY for all validators.",
                 vec![],
@@ -1207,7 +1207,7 @@ impl RpcExampleProvider {
             has_next_page: true,
         };
 
-        Examples::new("suix_getDynamicFields",
+        Examples::new("bfcx_getDynamicFields",
         vec![ExamplePairing::new(
             "Gets dynamic fields for the object the request provides in a paginated list of `limit` dynamic field results per page. The default limit is 50.",
             vec![
@@ -1260,7 +1260,7 @@ impl RpcExampleProvider {
             display: None,
         });
         Examples::new(
-            "suix_getDynamicFieldObject",
+            "bfcx_getDynamicFieldObject",
             vec![ExamplePairing::new(
                 "Gets the information for the dynamic field the request provides.",
                 vec![
@@ -1316,7 +1316,7 @@ impl RpcExampleProvider {
         };
 
         Examples::new(
-            "suix_getOwnedObjects",
+            "bfcx_getOwnedObjects",
             vec![ExamplePairing::new(
                 "Returns all the objects the address provided in the request owns and that match the filter. By default, only the digest value is returned, but the request returns additional information by setting the relevant keys to true. A cursor value is also provided, so the list of results begin after that value.",
                 vec![
@@ -1359,7 +1359,7 @@ impl RpcExampleProvider {
             has_next_page,
         };
         Examples::new(
-            "suix_queryEvents",
+            "bfcx_queryEvents",
             vec![ExamplePairing::new(
                 "Returns the events for a specified query criteria.",
                 vec![
@@ -1382,7 +1382,7 @@ impl RpcExampleProvider {
     fn suix_get_latest_sui_system_state(&mut self) -> Examples {
         let result = "some_system_state";
         Examples::new(
-            "suix_getLatestSuiSystemState",
+            "bfcx_getLatestSuiSystemState",
             vec![ExamplePairing::new(
                 "Gets objects owned by the address in the request.",
                 vec![],
@@ -1394,7 +1394,7 @@ impl RpcExampleProvider {
     fn sui_get_chain_identifier(&mut self) -> Examples {
         let result = "4c78adac".to_string();
         Examples::new(
-            "sui_getChainIdentifier",
+            "bfc_getChainIdentifier",
             vec![ExamplePairing::new(
                 "Gets the identifier for the chain receiving the POST.",
                 vec![],
@@ -1436,7 +1436,7 @@ impl RpcExampleProvider {
             ],
         };
         Examples::new(
-            "suix_getStakes",
+            "bfcx_getStakes",
             vec![ExamplePairing::new(
                 "Returns the staking information for the address the request provides.",
                 vec![("owner", json!(owner))],
@@ -1472,7 +1472,7 @@ impl RpcExampleProvider {
             ],
         };
         Examples::new(
-            "suix_getStakesByIds",
+            "bfcx_getStakesByIds",
             vec![ExamplePairing::new(
                 "Returns the staking information for the address the request provides.",
                 vec![("staked_sui_ids", json!(vec![stake1, stake2]))],
@@ -1484,7 +1484,7 @@ impl RpcExampleProvider {
     fn suix_resolve_name_service_address(&mut self) -> Examples {
         let result = ObjectID::new(self.rng.gen());
         Examples::new(
-            "suix_resolveNameServiceAddress",
+            "bfcx_resolveNameServiceAddress",
             vec![ExamplePairing::new(
                 "Returns the resolved address for the name the request provides.",
                 vec![("name", json!("example.sui".to_string()))],
@@ -1502,7 +1502,7 @@ impl RpcExampleProvider {
             has_next_page: false,
         };
         Examples::new(
-            "suix_resolveNameServiceNames",
+            "bfcx_resolveNameServiceNames",
             vec![ExamplePairing::new(
                 "Returns the SuiNS name for the address the request provides. Currently, the API returns only the first name in cases where there are multiple. Future support will use the cursor ID and limit values in the request to control pagination of the response for addresses with multiple names.",
                 vec![
@@ -1573,7 +1573,7 @@ impl RpcExampleProvider {
         ];
 
         Examples::new(
-            "sui_tryMultiGetPastObjects",
+            "bfc_tryMultiGetPastObjects",
             vec![ExamplePairing::new(
                 "Gets Past Object data for a vector of objects.",
                 vec![

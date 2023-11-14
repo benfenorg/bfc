@@ -8,8 +8,8 @@ use sui_open_rpc_macros::open_rpc;
 use sui_types::balance::Supply;
 use sui_types::base_types::{ObjectID, SuiAddress};
 
-#[open_rpc(namespace = "suix", tag = "Coin Query API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Coin Query API")]
+#[rpc(server, client, namespace = "bfcx")]
 pub trait CoinReadApi {
     /// Return all Coin<`coin_type`> objects owned by an address.
     #[method(name = "getCoins")]

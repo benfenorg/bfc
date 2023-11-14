@@ -1,0 +1,11 @@
+---
+source: crates/sui-swarm-config/tests/snapshot_tests.rs
+assertion_line: 98
+expression: genesis.sui_system_wrapper_object()
+---
+id:
+  id: BFC0000000000000000000000000000000000000000000000000000000000000005f3ce
+version: 1
+bfc_system_id:
+  id: BFC00000000000000000000000000000000000000000000000000000000000000c903b9
+

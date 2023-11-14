@@ -81,7 +81,7 @@ curl --location 'http://0.0.0.0:9000' \
 --data '{
     "jsonrpc": "2.0",
     "id": 1,
-    "method": "suix_queryEvents",
+    "method": "bfcx_queryEvents",
     "params": {
         "query": {
             "MoveModule":{"package":"<PACKAGE-ID>", "module":"devnet_nft"}
@@ -170,7 +170,7 @@ curl --location 'http://0.0.0.0:9000' \
 --data '{
     "jsonrpc": "2.0",
     "id": 1,
-    "method": "suix_queryEvents",
+    "method": "bfcx_queryEvents",
     "params": {
         "query": {
             "MoveEventType": "<PACKAGE-ID>::devnet_nft::MintNFTEvent"
@@ -258,7 +258,7 @@ curl --location 'http://0.0.0.0:9000' \
 --data '{
     "jsonrpc": "2.0",
     "id": 1,
-    "method": "suix_queryEvents",
+    "method": "bfcx_queryEvents",
     "params": {
         "query": {
             "All": []

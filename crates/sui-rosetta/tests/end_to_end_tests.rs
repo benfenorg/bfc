@@ -387,12 +387,12 @@ async fn test_pay_sui() {
     let ops = serde_json::from_value(json!(
         [{
             "operation_identifier":{"index":0},
-            "type":"PaySui",
+            "type":"PayBfc",
             "account": { "address" : recipient.to_string() },
             "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
         },{
             "operation_identifier":{"index":1},
-            "type":"PaySui",
+            "type":"PayBfc",
             "account": { "address" : sender.to_string() },
             "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
         }]
@@ -446,12 +446,12 @@ async fn test_pay_sui_multiple_times() {
         let ops = serde_json::from_value(json!(
             [{
                 "operation_identifier":{"index":0},
-                "type":"PaySui",
+                "type":"PayBfc",
                 "account": { "address" : recipient.to_string() },
                 "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
             },{
                 "operation_identifier":{"index":1},
-                "type":"PaySui",
+                "type":"PayBfc",
                 "account": { "address" : sender.to_string() },
                 "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
             }]

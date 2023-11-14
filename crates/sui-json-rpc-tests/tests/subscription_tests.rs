@@ -27,9 +27,9 @@ async fn test_subscribe_transaction() -> Result<(), anyhow::Error> {
 
     let mut sub: Subscription<SuiTransactionBlockEffects> = ws_client
         .subscribe(
-            "suix_subscribeTransaction",
+            "bfcx_subscribeTransaction",
             rpc_params![TransactionFilter::FromAddress(*address)],
-            "suix_unsubscribeTransaction",
+            "bfcx_unsubscribeTransaction",
         )
         .await
         .unwrap();

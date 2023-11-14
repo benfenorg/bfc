@@ -11,8 +11,8 @@ use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_types::proposal::Proposal;
 
-#[open_rpc(namespace = "suix", tag = "Governance Read API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Governance Read API")]
+#[rpc(server, client, namespace = "bfcx")]
 pub trait GovernanceReadApi {
     /// Return one or more [DelegatedStake]. If a Stake was withdrawn its status will be Unstaked.
     #[method(name = "getStakesByIds")]

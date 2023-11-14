@@ -28,7 +28,7 @@ def get_current_network_epoch(env='testnet'):
     for i in range(NUM_RETRIES):
         cmd = ['curl', '--location', '--request', 'POST', f'https://explorer-rpc.{env}.sui.io/',
                '--header', 'Content-Type: application/json', '--data-raw',
-               '{"jsonrpc":"2.0", "method":"suix_getCurrentEpoch", "params":[], "id":1}']
+               '{"jsonrpc":"2.0", "method":"bfcx_getCurrentEpoch", "params":[], "id":1}']
         try:
             result = subprocess.check_output(cmd, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:

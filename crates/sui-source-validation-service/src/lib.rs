@@ -378,9 +378,9 @@ pub async fn watch_for_upgrades(config: &Config) -> anyhow::Result<()> {
     let client: WsClient = WsClientBuilder::default().build(LOCALNET_WS_URL).await?;
     let mut subscription: Subscription<SuiTransactionBlockEffects> = client
         .subscribe(
-            "suix_subscribeTransaction",
+            "bfcx_subscribeTransaction",
             watch_ids,
-            "suix_unsubscribeTransaction",
+            "bfcx_unsubscribeTransaction",
         )
         .await?;
 

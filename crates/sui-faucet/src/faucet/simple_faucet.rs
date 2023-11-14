@@ -417,7 +417,7 @@ impl SimpleFaucet {
             ?recipient,
             ?coin_id,
             ?uuid,
-            "PaySui transaction in faucet."
+            "PayBfc transaction in faucet."
         );
 
         match timeout(
@@ -431,7 +431,7 @@ impl SimpleFaucet {
                     ?recipient,
                     ?coin_id,
                     ?uuid,
-                    "Failed to execute PaySui transactions in faucet after {elapsed}. Coin will \
+                    "Failed to execute PayBfc transactions in faucet after {elapsed}. Coin will \
                      not be reused."
                 );
 
@@ -583,7 +583,7 @@ impl SimpleFaucet {
                 ?coin_id,
                 ?uuid,
                 ?retry_delay,
-                "PaySui transaction in faucet failed, previous error: {:?}",
+                "PayBfc transaction in faucet failed, previous error: {:?}",
                 &res,
             );
 
@@ -660,7 +660,7 @@ impl SimpleFaucet {
             .await
             .map_err(|e| {
                 anyhow::anyhow!(
-                    "Failed to build PaySui transaction for coin {:?}, with err {:?}",
+                    "Failed to build PayBfc transaction for coin {:?}, with err {:?}",
                     coin_id,
                     e
                 )
@@ -685,7 +685,7 @@ impl SimpleFaucet {
             .to_vec();
         if created.len() != number_of_coins {
             return Err(FaucetError::CoinAmountTransferredIncorrect(format!(
-                "PaySui Transaction should create exact {:?} new coins, but got {:?}",
+                "PayBfc Transaction should create exact {:?} new coins, but got {:?}",
                 number_of_coins, created
             )));
         }
@@ -771,7 +771,7 @@ impl SimpleFaucet {
 
             if number_of_coins as u64 + index > coins_created_for_address.len() as u64 {
                 return Err(FaucetError::CoinAmountTransferredIncorrect(format!(
-                    "PaySui Transaction should create exact {:?} new coins, but got {:?}",
+                    "PayBfc Transaction should create exact {:?} new coins, but got {:?}",
                     number_of_coins as u64 + index,
                     coins_created_for_address.len()
                 )));
@@ -859,7 +859,7 @@ impl Faucet for SimpleFaucet {
 
         let (digest, coin_ids) = self.transfer_gases(amounts, recipient, id).await?;
 
-        info!(uuid = ?id, ?recipient, ?digest, "PaySui txn succeeded");
+        info!(uuid = ?id, ?recipient, ?digest, "PayBfc txn succeeded");
         let mut sent = Vec::with_capacity(coin_ids.len());
         let coin_results =
             futures::future::join_all(coin_ids.iter().map(|coin_id| self.get_coin(*coin_id))).await;

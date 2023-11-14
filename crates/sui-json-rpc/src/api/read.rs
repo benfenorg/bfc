@@ -15,8 +15,8 @@ use sui_types::base_types::{ObjectID, SequenceNumber, TransactionDigest};
 use sui_types::dao::DaoRPC;
 use sui_types::sui_serde::BigInt;
 
-#[open_rpc(namespace = "sui", tag = "Read API")]
-#[rpc(server, client, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Read API")]
+#[rpc(server, client, namespace = "bfc")]
 pub trait ReadApi {
     /// Return the transaction response object.
     #[method(name = "getTransactionBlock")]

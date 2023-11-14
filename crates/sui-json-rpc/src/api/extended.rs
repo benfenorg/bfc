@@ -11,8 +11,8 @@ use sui_json_rpc_types::{
 use sui_open_rpc_macros::open_rpc;
 use sui_types::sui_serde::BigInt;
 
-#[open_rpc(namespace = "suix", tag = "Extended API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Extended API")]
+#[rpc(server, client, namespace = "bfcx")]
 pub trait ExtendedApi {
     /// Return a list of epoch info
     #[method(name = "getEpochs")]

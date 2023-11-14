@@ -20,7 +20,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .await?;
     // Load keystore from ~/.sui/sui_config/sui.keystore
     let keystore_path = match dirs::home_dir() {
-        Some(v) => v.join(".sui").join("sui_config").join("sui.keystore"),
+        Some(v) => v.join(".bfc").join("sui_config").join("sui.keystore"),
         None => panic!("Cannot obtain home directory path"),
     };
 

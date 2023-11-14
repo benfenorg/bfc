@@ -16,7 +16,7 @@
   },
   "methods": [
     {
-      "name": "sui_devInspectTransactionBlock",
+      "name": "bfc_devInspectTransactionBlock",
       "tags": [
         {
           "name": "Write API"
@@ -139,7 +139,7 @@
       ]
     },
     {
-      "name": "sui_dryRunTransactionBlock",
+      "name": "bfc_dryRunTransactionBlock",
       "tags": [
         {
           "name": "Write API"
@@ -294,7 +294,7 @@
       ]
     },
     {
-      "name": "sui_executeTransactionBlock",
+      "name": "bfc_executeTransactionBlock",
       "tags": [
         {
           "name": "Write API"
@@ -496,7 +496,7 @@
       ]
     },
     {
-      "name": "sui_getChainIdentifier",
+      "name": "bfc_getChainIdentifier",
       "tags": [
         {
           "name": "Read API"
@@ -513,7 +513,7 @@
       }
     },
     {
-      "name": "sui_getCheckpoint",
+      "name": "bfc_getCheckpoint",
       "tags": [
         {
           "name": "Read API"
@@ -572,7 +572,7 @@
       ]
     },
     {
-      "name": "sui_getCheckpoints",
+      "name": "bfc_getCheckpoints",
       "tags": [
         {
           "name": "Read API"
@@ -718,7 +718,7 @@
       ]
     },
     {
-      "name": "sui_getEvents",
+      "name": "bfc_getEvents",
       "tags": [
         {
           "name": "Read API"
@@ -784,7 +784,7 @@
       ]
     },
     {
-      "name": "sui_getLatestCheckpointSequenceNumber",
+      "name": "bfc_getLatestCheckpointSequenceNumber",
       "tags": [
         {
           "name": "Read API"
@@ -811,7 +811,7 @@
       ]
     },
     {
-      "name": "sui_getLoadedChildObjects",
+      "name": "bfc_getLoadedChildObjects",
       "tags": [
         {
           "name": "Read API"
@@ -877,7 +877,7 @@
       ]
     },
     {
-      "name": "sui_getMoveFunctionArgTypes",
+      "name": "bfc_getMoveFunctionArgTypes",
       "tags": [
         {
           "name": "Move Utils"
@@ -960,7 +960,7 @@
       ]
     },
     {
-      "name": "sui_getNormalizedMoveFunction",
+      "name": "bfc_getNormalizedMoveFunction",
       "tags": [
         {
           "name": "Move Utils"
@@ -1039,7 +1039,7 @@
       ]
     },
     {
-      "name": "sui_getNormalizedMoveModule",
+      "name": "bfc_getNormalizedMoveModule",
       "tags": [
         {
           "name": "Move Utils"
@@ -1097,7 +1097,7 @@
       ]
     },
     {
-      "name": "sui_getNormalizedMoveModulesByPackage",
+      "name": "bfc_getNormalizedMoveModulesByPackage",
       "tags": [
         {
           "name": "Move Utils"
@@ -1147,7 +1147,7 @@
       ]
     },
     {
-      "name": "sui_getNormalizedMoveStruct",
+      "name": "bfc_getNormalizedMoveStruct",
       "tags": [
         {
           "name": "Move Utils"
@@ -1218,7 +1218,7 @@
       ]
     },
     {
-      "name": "sui_getObject",
+      "name": "bfc_getObject",
       "tags": [
         {
           "name": "Read API"
@@ -1301,7 +1301,7 @@
       ]
     },
     {
-      "name": "sui_getProtocolConfig",
+      "name": "bfc_getProtocolConfig",
       "tags": [
         {
           "name": "Read API"
@@ -1844,7 +1844,7 @@
       ]
     },
     {
-      "name": "sui_getTotalTransactionBlocks",
+      "name": "bfc_getTotalTransactionBlocks",
       "tags": [
         {
           "name": "Read API"
@@ -1871,7 +1871,7 @@
       ]
     },
     {
-      "name": "sui_getTransactionBlock",
+      "name": "bfc_getTransactionBlock",
       "tags": [
         {
           "name": "Read API"
@@ -2045,7 +2045,7 @@
       ]
     },
     {
-      "name": "sui_multiGetObjects",
+      "name": "bfc_multiGetObjects",
       "tags": [
         {
           "name": "Read API"
@@ -2238,7 +2238,7 @@
       ]
     },
     {
-      "name": "sui_multiGetTransactionBlocks",
+      "name": "bfc_multiGetTransactionBlocks",
       "tags": [
         {
           "name": "Read API"
@@ -2656,7 +2656,7 @@
       ]
     },
     {
-      "name": "sui_tryGetPastObject",
+      "name": "bfc_tryGetPastObject",
       "tags": [
         {
           "name": "Read API"
@@ -2752,7 +2752,7 @@
       ]
     },
     {
-      "name": "sui_tryMultiGetPastObjects",
+      "name": "bfc_tryMultiGetPastObjects",
       "tags": [
         {
           "name": "Read API"
@@ -2791,7 +2791,7 @@
       }
     },
     {
-      "name": "suix_getAllBalances",
+      "name": "bfcx_getAllBalances",
       "tags": [
         {
           "name": "Coin Query API"
@@ -2842,7 +2842,7 @@
       ]
     },
     {
-      "name": "suix_getAllCoins",
+      "name": "bfcx_getAllCoins",
       "tags": [
         {
           "name": "Coin Query API"
@@ -2936,7 +2936,7 @@
       ]
     },
     {
-      "name": "suix_getBalance",
+      "name": "bfcx_getBalance",
       "tags": [
         {
           "name": "Coin Query API"
@@ -2993,7 +2993,7 @@
       ]
     },
     {
-      "name": "suix_getCoinMetadata",
+      "name": "bfcx_getCoinMetadata",
       "tags": [
         {
           "name": "Coin Query API"
@@ -3042,7 +3042,7 @@
       ]
     },
     {
-      "name": "suix_getCoins",
+      "name": "bfcx_getCoins",
       "tags": [
         {
           "name": "Coin Query API"
@@ -3147,7 +3147,7 @@
       ]
     },
     {
-      "name": "suix_getCommitteeInfo",
+      "name": "bfcx_getCommitteeInfo",
       "tags": [
         {
           "name": "Governance Read API"
@@ -3207,7 +3207,7 @@
       ]
     },
     {
-      "name": "suix_getDynamicFieldObject",
+      "name": "bfcx_getDynamicFieldObject",
       "tags": [
         {
           "name": "Extended API"
@@ -3281,7 +3281,7 @@
       ]
     },
     {
-      "name": "suix_getDynamicFields",
+      "name": "bfcx_getDynamicFields",
       "tags": [
         {
           "name": "Extended API"
@@ -3387,7 +3387,7 @@
       ]
     },
     {
-      "name": "suix_getLatestSuiSystemState",
+      "name": "bfcx_getLatestSuiSystemState",
       "tags": [
         {
           "name": "Governance Read API"
@@ -3414,7 +3414,7 @@
       ]
     },
     {
-      "name": "suix_getOwnedObjects",
+      "name": "bfcx_getOwnedObjects",
       "tags": [
         {
           "name": "Extended API"
@@ -3557,7 +3557,7 @@
       ]
     },
     {
-      "name": "suix_getReferenceGasPrice",
+      "name": "bfcx_getReferenceGasPrice",
       "tags": [
         {
           "name": "Governance Read API"
@@ -3584,7 +3584,7 @@
       ]
     },
     {
-      "name": "suix_getStakes",
+      "name": "bfcx_getStakes",
       "tags": [
         {
           "name": "Governance Read API"
@@ -3612,7 +3612,7 @@
       }
     },
     {
-      "name": "suix_getStakesByIds",
+      "name": "bfcx_getStakesByIds",
       "tags": [
         {
           "name": "Governance Read API"
@@ -3643,7 +3643,7 @@
       }
     },
     {
-      "name": "suix_getTotalSupply",
+      "name": "bfcx_getTotalSupply",
       "tags": [
         {
           "name": "Coin Query API"
@@ -3686,7 +3686,7 @@
       ]
     },
     {
-      "name": "suix_getValidatorsApy",
+      "name": "bfcx_getValidatorsApy",
       "tags": [
         {
           "name": "Governance Read API"
@@ -3729,7 +3729,7 @@
       ]
     },
     {
-      "name": "suix_queryEvents",
+      "name": "bfcx_queryEvents",
       "tags": [
         {
           "name": "Extended API"
@@ -3869,7 +3869,7 @@
       ]
     },
     {
-      "name": "suix_queryTransactionBlocks",
+      "name": "bfcx_queryTransactionBlocks",
       "tags": [
         {
           "name": "Extended API"
@@ -3967,7 +3967,7 @@
       ]
     },
     {
-      "name": "suix_resolveNameServiceAddress",
+      "name": "bfcx_resolveNameServiceAddress",
       "tags": [
         {
           "name": "Extended API"
@@ -3992,7 +3992,7 @@
       }
     },
     {
-      "name": "suix_resolveNameServiceNames",
+      "name": "bfcx_resolveNameServiceNames",
       "tags": [
         {
           "name": "Extended API"
@@ -4032,7 +4032,7 @@
       }
     },
     {
-      "name": "suix_subscribeEvent",
+      "name": "bfcx_subscribeEvent",
       "tags": [
         {
           "name": "Extended API"
@@ -4064,7 +4064,7 @@
       }
     },
     {
-      "name": "suix_subscribeTransaction",
+      "name": "bfcx_subscribeTransaction",
       "tags": [
         {
           "name": "Extended API"
@@ -4852,7 +4852,7 @@
       }
     },
     {
-      "name": "unsafe_transferSui",
+      "name": "unsafe_transferBfc",
       "tags": [
         {
           "name": "Transaction Builder API"
@@ -4869,7 +4869,7 @@
           }
         },
         {
-          "name": "sui_object_id",
+          "name": "bfc_object_id",
           "description": "the Sui coin object to be used in this transaction",
           "required": true,
           "schema": {

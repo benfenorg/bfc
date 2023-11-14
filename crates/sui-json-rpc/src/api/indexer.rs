@@ -16,8 +16,8 @@ use sui_types::digests::TransactionDigest;
 use sui_types::dynamic_field::DynamicFieldName;
 use sui_types::event::EventID;
 
-#[open_rpc(namespace = "suix", tag = "Extended API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Extended API")]
+#[rpc(server, client, namespace = "bfcx")]
 pub trait IndexerApi {
     /// Return the list of objects owned by an address.
     /// Note that if the address owns more than `QUERY_MAX_RESULT_LIMIT` objects,
