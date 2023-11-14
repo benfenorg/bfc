@@ -1,5 +1,4 @@
 module bfc_system::bfc_system {
-    use std::string;
     use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
@@ -110,11 +109,19 @@ module bfc_system::bfc_system {
     ): &BfcSystemStateInner {
         dynamic_field::borrow(&self.id, self.version)
     }
+    public fun load_bfc_system_state(id: &UID): &BfcSystemStateInner {
+        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V1)
+    }
 
     fun load_system_state_mut(
         self: &mut BfcSystemState
     ): &mut BfcSystemStateInner {
         dynamic_field::borrow_mut(&mut self.id, self.version)
+    }
+
+    public fun get_exchange_rate(id: &UID): u64 {
+        let inner = load_bfc_system_state(id);
+        bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner)
     }
 
     /// Getter of the gas coin exchange pool rate.
@@ -197,6 +204,12 @@ module bfc_system::bfc_system {
     ) {
         let inner_state = load_system_state_mut(self);
         bfc_system_state_inner::init_exchange_pool(inner_state, coin)
+    }
+    public entry fun get_bfc_amount(
+    self: &BfcSystemState): u64
+    {
+        let inner_state = load_system_state(self);
+        bfc_system_state_inner::get_bfc_amount(inner_state)
     }
 
     public(friend) fun bfc_system_stat_parameter(

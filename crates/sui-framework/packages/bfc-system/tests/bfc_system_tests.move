@@ -42,9 +42,8 @@ module bfc_system::bfc_system_tests {
         test_scenario::end(scenario_val);
     }
 
-
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext) {
-        let usd_supply = bfc_system::busd::new(ctx);
+        let usd_supply = bfc_system::busd::new_for_test(ctx);
         let treasury_parameters = bfc_system::bfc_system_stat_parameter(
             9,
             60,
@@ -56,7 +55,7 @@ module bfc_system::bfc_system_tests {
             2000,
         );
         bfc_system::create(
-            object::new(ctx),
+            object::bfc_system_state_for_test(),
             usd_supply,
             balance::zero<BFC>(),
             treasury_parameters,

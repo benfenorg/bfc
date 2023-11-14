@@ -1054,6 +1054,14 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
+        let bfc_system_state_uid = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("object").to_owned(),
+            ident_str!("bfc_system_state").to_owned(),
+            vec![],
+            vec![],
+        );
+
         // Step 2: Create and share the Clock.
         builder.move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
@@ -1088,7 +1096,7 @@ pub fn generate_genesis_system_object(
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
-        let mut arguments = vec![sui_system_state_uid, sui_supply];
+        let mut arguments = vec![sui_system_state_uid, bfc_system_state_uid,sui_supply];
         let mut call_arg_arguments = vec![
             CallArg::Pure(bcs::to_bytes(&genesis_chain_parameters).unwrap()),
             CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),

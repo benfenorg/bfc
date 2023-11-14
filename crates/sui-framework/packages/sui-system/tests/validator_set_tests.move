@@ -96,6 +96,63 @@ module sui_system::validator_set_tests {
     }
 
     #[test]
+    fun test_validator_set_flow_with_stable() {
+        // Create 1 validator  with stake 100, which is an initial validator.
+        let scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        let validator1 = create_validator(@0x1, 1, 1, true, ctx);
+
+        // Create a validator set with only the first validator in it.
+        let validator_set = validator_set::new(vector[validator1], ctx);
+        assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 0);
+
+        test_scenario::end(scenario_val);
+
+        let scenario_val = test_scenario::begin(@0x1);
+        let scenario = &mut scenario_val;
+        let staked = {
+            let ctx1 = test_scenario::ctx(scenario);
+            let stake = validator_set::request_add_stake(
+                &mut validator_set,
+                @0x1,
+                coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1)),
+                ctx1,
+            );
+            transfer::public_transfer(stake, @0x1);
+            // Adding stake to existing active validator during the epoch
+            // should not change total stake.
+            assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 0);
+            //add stable stake
+            let new_stake = coin::into_balance(coin::mint_for_testing(30 * MIST_PER_SUI, ctx1));
+            validator_set::request_add_stable_stake(&mut validator_set, @0x1, new_stake, ctx1)
+        };
+
+
+        advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
+        {
+            let ctx1 = test_scenario::ctx(scenario);
+            let withdraw = validator_set::request_withdraw_stable_stake(&mut validator_set, staked, ctx1);
+            transfer::public_transfer(coin::from_balance(withdraw, ctx1), @0x1);
+        };
+
+
+        // Total stake for these should be the stable stake + init stake +
+        // the 500 staked with validator 1 in addition to the starting stake.(300 + 100 + 500)
+        assert!(validator_set::total_stake(&validator_set) == 900 * MIST_PER_SUI, 0);
+
+        test_scenario::next_tx(scenario, @0x1);
+
+        // Total validator candidate count changes, but total stake remains during epoch.
+        advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
+        // Validator1 is gone. This removes its is 300 stable staked with it.
+        assert!(validator_set::total_stake(&validator_set) == 600 * MIST_PER_SUI, 0);
+
+        test_utils::destroy(validator_set);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     fun test_reference_gas_price_derivation() {
         // Create 5 validators with different stakes and different gas prices.
         let scenario_val = test_scenario::begin(@0x0);
@@ -457,6 +514,7 @@ module sui_system::validator_set_tests {
             0, // low_stake_threshold
             0, // very_low_stake_threshold
             0, // low_stake_grace_period
+            10, //INIT_STABLE_EXCHANGE_RATE
             test_scenario::ctx(scenario)
         );
 
@@ -483,6 +541,7 @@ module sui_system::validator_set_tests {
             low_stake_threshold * MIST_PER_SUI,
             very_low_stake_threshold * MIST_PER_SUI,
             low_stake_grace_period,
+            1,
             test_scenario::ctx(scenario)
         );
 

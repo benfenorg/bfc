@@ -12,6 +12,9 @@ module sui_system::stake_tests {
     use sui::test_utils;
     use sui::table::{Self, Table};
     use std::vector;
+    use bfc_system::busd::BUSD;
+    use sui_system::stable_pool::StakedStable;
+    use sui_system::stable_pool;
 
     use sui_system::governance_test_utils::{
         Self,
@@ -200,6 +203,64 @@ module sui_system::stake_tests {
         {
             let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             assert!(sui_system::validator_stake_amount(&mut system_state, VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 107);
+            test_scenario::return_shared(system_state);
+        };
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_add_remove_stable_stake_flow() {
+        set_up_sui_system_state();
+        let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+        let scenario = &mut scenario_val;
+
+        test_scenario::next_tx(scenario, STAKER_ADDR_1);
+        {
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let system_state_mut_ref = &mut system_state;
+
+            let ctx = test_scenario::ctx(scenario);
+
+            // Create a stake to VALIDATOR_ADDR_1.
+            sui_system::request_add_stable_stake(
+                system_state_mut_ref, coin::mint_for_testing(60 * MIST_PER_SUI, ctx), VALIDATOR_ADDR_1, ctx);
+
+            assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1, 1) == 100 * MIST_PER_SUI, 101);
+            assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_2, 1) == 100 * MIST_PER_SUI, 102);
+
+            test_scenario::return_shared(system_state);
+        };
+
+        governance_test_utils::advance_epoch(scenario);
+
+        test_scenario::next_tx(scenario, STAKER_ADDR_1);
+        {
+
+            let staked_sui = test_scenario::take_from_sender<StakedStable<BUSD>>(scenario);
+            assert!(stable_pool::staked_sui_amount(&staked_sui) == 60 * MIST_PER_SUI, 105);
+
+
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let system_state_mut_ref = &mut system_state;
+
+            assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1,1) == 160 * MIST_PER_SUI, 103);
+            assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_2,1) == 100 * MIST_PER_SUI, 104);
+
+            let ctx = test_scenario::ctx(scenario);
+
+            // Unstake from VALIDATOR_ADDR_1
+            sui_system::request_withdraw_stable_stake(system_state_mut_ref, staked_sui, ctx);
+
+            assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1,1) == 160 * MIST_PER_SUI, 107);
+            test_scenario::return_shared(system_state);
+        };
+
+        governance_test_utils::advance_epoch(scenario);
+
+        test_scenario::next_tx(scenario, STAKER_ADDR_1);
+        {
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            assert!(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1, 1) == 100 * MIST_PER_SUI, 107);
             test_scenario::return_shared(system_state);
         };
         test_scenario::end(scenario_val);

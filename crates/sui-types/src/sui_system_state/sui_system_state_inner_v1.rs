@@ -304,8 +304,10 @@ pub struct ValidatorV1 {
     pub operation_cap_id: ID,
     pub gas_price: u64,
     pub staking_pool: StakingPoolV1,
+    pub busd_pool: StablePoolV1,
     pub commission_rate: u64,
     pub next_epoch_stake: u64,
+    pub next_epoch_stable_stake:u64,
     pub next_epoch_gas_price: u64,
     pub next_epoch_commission_rate: u64,
     pub extra_fields: Bag,
@@ -369,8 +371,26 @@ impl ValidatorV1 {
                     pending_pool_token_withdraw,
                     extra_fields: _,
                 },
+            busd_pool: StablePoolV1{
+                id: stable_pool_id,
+                activation_epoch: stable_pool_activation_epoch,
+                deactivation_epoch: stable_pool_deactivation_epoch,
+                stable_balance: stable_pool_busd_balance,
+                rewards_pool: busd_pool_rewards_pool,
+                pool_token_balance:busd_pool_token_balance,
+                exchange_rates:
+                Table {
+                    id: busd_exchange_rates_id,
+                    size: busd_exchange_rates_size,
+                },
+                pending_stake:busd_pool_pending_stake,
+                pending_total_sui_withdraw:busd_pool_pending_total_sui_withdraw,
+                pending_pool_token_withdraw:busd_pending_pool_token_withdraw,
+                extra_fields: _,
+            },
             commission_rate,
             next_epoch_stake,
+            next_epoch_stable_stake,
             next_epoch_gas_price,
             next_epoch_commission_rate,
             extra_fields: _,
@@ -435,6 +455,21 @@ pub struct StakingPoolV1 {
     pub extra_fields: Bag,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct StablePoolV1 {
+    pub id: ObjectID,
+    pub activation_epoch: Option<u64>,
+    pub deactivation_epoch: Option<u64>,
+    pub stable_balance: u64,
+    pub rewards_pool: Balance,
+    pub pool_token_balance: u64,
+    pub exchange_rates: Table,
+    pub pending_stake: u64,
+    pub pending_total_sui_withdraw: u64,
+    pub pending_pool_token_withdraw: u64,
+    pub extra_fields: Bag,
+}
+
 /// Rust version of the Move sui_system::validator_set::ValidatorSet type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ValidatorSetV1 {
@@ -443,6 +478,7 @@ pub struct ValidatorSetV1 {
     pub pending_active_validators: TableVec,
     pub pending_removals: Vec<u64>,
     pub staking_pool_mappings: Table,
+    pub stable_pool_mappings: Table,
     pub inactive_validators: Table,
     pub validator_candidates: Table,
     pub at_risk_validators: VecMap<SuiAddress, u64>,
@@ -633,6 +669,11 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                             id: staking_pool_mappings_id,
                             size: staking_pool_mappings_size,
                         },
+                    stable_pool_mappings:
+                    Table {
+                        id: stable_pool_mappings_id,
+                        size: stable_pool_mappings_size,
+                    },
                     inactive_validators:
                         Table {
                             id: inactive_pools_id,

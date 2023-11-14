@@ -8,6 +8,7 @@
 -  [Struct `BUSD`](#0xc8_busd_BUSD)
 -  [Constants](#@Constants_0)
 -  [Function `new`](#0xc8_busd_new)
+-  [Function `transfer`](#0xc8_busd_transfer)
 -  [Module Specification](#@Module_Specification_1)
 
 
@@ -101,6 +102,30 @@ Sender is not @0x0 the system address.
     );
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_freeze_object">transfer::public_freeze_object</a>(metadata);
     <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_treasury_into_supply">coin::treasury_into_supply</a>(cap)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_busd_transfer"></a>
+
+## Function `transfer`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">transfer</a>(c: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, recipient: <b>address</b>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">transfer</a>(c: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">BUSD</a>&gt;, recipient: <b>address</b>) {
+    <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(c, recipient)
 }
 </code></pre>
 

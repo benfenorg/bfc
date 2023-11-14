@@ -24,7 +24,9 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
-    use sui::object;
+    use bfc_system::busd::BUSD;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
     friend sui_system::sui_system;
@@ -252,7 +254,6 @@ module sui_system::sui_system_state_inner {
         let reference_gas_price = validator_set::derive_reference_gas_price(&validators);
         // This type is fixed as it's created at genesis. It should not be updated during type upgrade.
         let init_coin = coin::from_balance(initial_storage_fund, ctx);
-        let coin_id_address = object::id_address(&init_coin);
         let system_state = SuiSystemStateInner {
             epoch: 0,
             protocol_version,
@@ -520,6 +521,21 @@ module sui_system::sui_system_state_inner {
         )
     }
 
+    /// Add stake to a validator's stable pool.
+    public(friend) fun request_add_stable_stake(
+        self: &mut SuiSystemStateInnerV2,
+        stake: Coin<BUSD>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ) : StakedStable<BUSD> {
+        validator_set::request_add_stable_stake(
+            &mut self.validators,
+            validator_address,
+            coin::into_balance(stake),
+            ctx,
+        )
+    }
+
     /// Add stake to a validator's staking pool using multiple coins.
     public(friend) fun request_add_stake_mul_coin(
         self: &mut SuiSystemStateInnerV2,
@@ -543,6 +559,20 @@ module sui_system::sui_system_state_inner {
             EStakeWithdrawBeforeActivation
         );
         validator_set::request_withdraw_stake(
+            &mut self.validators, staked_sui, ctx,
+        )
+    }
+
+    public(friend) fun request_withdraw_stable_stake(
+        self: &mut SuiSystemStateInnerV2,
+        staked_sui: StakedStable<BUSD>,
+        ctx: &mut TxContext,
+    ) : Balance<BUSD> {
+        assert!(
+            stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
+            EStakeWithdrawBeforeActivation
+        );
+        validator_set::request_withdraw_stable_stake(
             &mut self.validators, staked_sui, ctx,
         )
     }
@@ -843,6 +873,7 @@ module sui_system::sui_system_state_inner {
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
                                          // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
+        stable_exchange_rate: u64,
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
     ) : Balance<BFC> {
@@ -922,6 +953,7 @@ module sui_system::sui_system_state_inner {
             self.parameters.validator_low_stake_threshold,
             self.parameters.validator_very_low_stake_threshold,
             self.parameters.validator_low_stake_grace_period,
+            stable_exchange_rate,
             ctx,
         );
 
@@ -1009,6 +1041,13 @@ module sui_system::sui_system_state_inner {
     /// Aborts if `validator_addr` is not an active validator.
     public(friend) fun validator_stake_amount(self: &SuiSystemStateInnerV2, validator_addr: address): u64 {
         validator_set::validator_total_stake_amount(&self.validators, validator_addr)
+    }
+
+    public(friend) fun validator_stake_amount_with_stable(
+        self: &SuiSystemStateInnerV2,
+        validator_addr: address,
+        stable_exchange_rate: u64): u64 {
+        validator_set::validator_total_stake_amount_with_stable(&self.validators, validator_addr, stable_exchange_rate)
     }
 
     /// Returns the staking pool id of a given validator.

@@ -21,6 +21,10 @@ module sui_system::governance_test_utils {
     use std::vector;
     use sui::test_utils;
     use sui::balance::Balance;
+    use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
+    use bfc_system::busd::BUSD;
+    use sui::transfer;
+    use sui_system::stable_pool::StakedStable;
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
@@ -62,6 +66,24 @@ module sui_system::governance_test_utils {
         validators
     }
 
+    public fun stake_stables(validators:  &mut vector<Validator>, stable_stakes: vector<u64>, ctx: &mut TxContext) {
+        let i = 0;
+        if(vector::length(validators) == vector::length(&stable_stakes)) {
+            let len = vector::length(validators);
+            while (i < len) {
+                let stable = *vector::borrow(&stable_stakes, i);
+                let validator = vector::borrow_mut(validators, i);
+                let addr = validator::sui_address(validator);
+                let new_stake = coin::into_balance(coin::mint_for_testing(stable, ctx));
+                let staked = validator::request_add_stable_stake(
+                    validator, new_stake, addr, ctx);
+                transfer::public_transfer(staked, addr);
+                validator::process_pending_stable_stakes_and_withdraws(validator, ctx);
+                i = i+ 1;
+            };
+        };
+    }
+
     public fun create_sui_system_state_for_testing(
         validators: vector<Validator>, sui_supply_amount: u64, storage_fund_amount: u64, ctx: &mut TxContext
     ) {
@@ -85,8 +107,10 @@ module sui_system::governance_test_utils {
             ctx,
         );
 
+        create_bfc_system_state(ctx);
         sui_system::create(
             object::new(ctx), // it doesn't matter what ID sui system state has in tests
+            object::bfc_system_state_for_test(),
             validators,
             balance::create_for_testing<BFC>(storage_fund_amount * MIST_PER_SUI), // storage_fund
             1,   // protocol version
@@ -174,6 +198,18 @@ module sui_system::governance_test_utils {
         test_scenario::return_shared(system_state);
     }
 
+    public fun stake_with_stable(
+        staker: address, validator: address, amount: u64, scenario: &mut Scenario
+    ) {
+        test_scenario::next_tx(scenario, staker);
+        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+
+        let ctx = test_scenario::ctx(scenario);
+
+        sui_system::request_add_stable_stake(&mut system_state, coin::mint_for_testing(amount * MIST_PER_SUI, ctx), validator, ctx);
+        test_scenario::return_shared(system_state);
+    }
+
     public fun unstake(
         staker: address, staked_sui_idx: u64, scenario: &mut Scenario
     ) {
@@ -184,6 +220,19 @@ module sui_system::governance_test_utils {
 
         let ctx = test_scenario::ctx(scenario);
         sui_system::request_withdraw_stake(&mut system_state, staked_sui, ctx);
+        test_scenario::return_shared(system_state);
+    }
+
+    public fun unstake_stable(
+        staker: address, staked_sui_idx: u64, scenario: &mut Scenario
+    ) {
+        test_scenario::next_tx(scenario, staker);
+        let stake_sui_ids = test_scenario::ids_for_sender<StakedStable<BUSD>>(scenario);
+        let staked_sui = test_scenario::take_from_sender_by_id(scenario, *vector::borrow(&stake_sui_ids, staked_sui_idx));
+        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+
+        let ctx = test_scenario::ctx(scenario);
+        sui_system::request_withdraw_stable_stake(&mut system_state, staked_sui, ctx);
         test_scenario::return_shared(system_state);
     }
 
@@ -309,6 +358,25 @@ module sui_system::governance_test_utils {
         };
     }
 
+    public fun assert_validator_total_stake_with_stable_amounts(
+        validator_addrs: vector<address>,
+        stake_amounts: vector<u64>,
+        exchange_stable_rate: u64,
+        scenario: &mut Scenario) {
+        let i = 0;
+        while (i < vector::length(&validator_addrs)) {
+            let validator_addr = *vector::borrow(&validator_addrs, i);
+            let amount = *vector::borrow(&stake_amounts, i);
+
+            test_scenario::next_tx(scenario, validator_addr);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let validator_amount = sui_system::validator_stake_amount_with_stable(&mut system_state, validator_addr, exchange_stable_rate);
+            assert!(validator_amount == amount, validator_amount);
+            test_scenario::return_shared(system_state);
+            i = i + 1;
+        };
+    }
+
     public fun assert_validator_non_self_stake_amounts(validator_addrs: vector<address>, stake_amounts: vector<u64>, scenario: &mut Scenario) {
         let i = 0;
         while (i < vector::length(&validator_addrs)) {
@@ -341,6 +409,20 @@ module sui_system::governance_test_utils {
             let staked_sui = test_scenario::take_from_sender_by_id<StakedBfc>(scenario, staked_sui_id);
             sum = sum + staking_pool::calculate_rewards(staking_pool, &staked_sui, current_epoch);
             test_scenario::return_to_sender(scenario, staked_sui);
+        };
+        sum
+    }
+
+    public fun total_busd_balance(addr: address, scenario: &mut Scenario): u64 {
+        let sum = 0;
+        test_scenario::next_tx(scenario, addr);
+        let coin_ids = test_scenario::ids_for_sender<Coin<BUSD>>(scenario);
+        let i = 0;
+        while (i < vector::length(&coin_ids)) {
+            let coin = test_scenario::take_from_sender_by_id<Coin<BUSD>>(scenario, *vector::borrow(&coin_ids, i));
+            sum = sum + coin::value(&coin);
+            test_scenario::return_to_sender(scenario, coin);
+            i = i + 1;
         };
         sum
     }

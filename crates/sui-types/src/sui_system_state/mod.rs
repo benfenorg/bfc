@@ -61,6 +61,7 @@ pub const SUI_SYSTEM_STATE_SIM_TEST_DEEP_V2: u64 = 18446744073709551607; // u64:
 pub struct SuiSystemStateWrapper {
     pub id: UID,
     pub version: u64,
+    pub bfc_system_id:UID,
 }
 
 impl SuiSystemStateWrapper {
@@ -239,6 +240,7 @@ pub fn get_sui_system_state_wrapper(
 pub fn get_sui_system_state(object_store: &dyn ObjectStore) -> Result<SuiSystemState, SuiError> {
     let wrapper = get_sui_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
+    println!("version is {:?}",wrapper.version);
     match wrapper.version {
         1 => {
             let result: SuiSystemStateInnerV1 =

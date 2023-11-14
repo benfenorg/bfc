@@ -188,12 +188,18 @@ module bfc_system::bfc_system_state_inner {
     }
 
     /// Init exchange pool by add bfc coin.
-    public fun init_exchange_pool(
+    public(friend) fun init_exchange_pool(
         self: &mut BfcSystemStateInner,
         coin: Coin<BFC>,
     ) {
         exchange_inner::add_bfc_to_pool(&mut self.exchange_pool, coin)
     }
+
+    public(friend) fun get_bfc_amount(
+        self:&BfcSystemStateInner,
+    ):u64 {
+    exchange_inner::get_bfc_amount(&self.exchange_pool)
+   }
 
     /// X treasury  init treasury
     public(friend) fun create_treasury(

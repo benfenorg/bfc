@@ -44,12 +44,27 @@ async fn test_gas_coin_config() -> Result<(), anyhow::Error> {
 #[tokio::test]
 async fn test_inner_swap()  -> Result<(), anyhow::Error> {
     let gas_id = ObjectID::random();
+    let (address, keypair): (SuiAddress, AccountKeyPair) =
+        deterministic_random_account_key();
+    let gas_object = Object::with_stable_id_owner_version_for_testing(
+        gas_id,
+        SequenceNumber::from_u64(1),
+        address,
+    );
+    let gas2 = Object::new_gas_with_balance_and_owner_for_testing(1000_000_000_000, address);
+    let gas3 = Object::new_gas_with_balance_and_owner_for_testing(1000_000_000_000, address);
+    let gas3_id = gas3.id();
     let test_cluster = TestClusterBuilder::new()
-        .with_objects([Object::immutable_with_id_for_testing(gas_id)])
+        .with_objects([gas_object, gas2, gas3])
         .build()
         .await;
     let mut context = test_cluster.wallet;
-
-    let _result = InnerSwap::exchange_bfc(&mut context, Coin::new(UID::new(gas_id), 1000)).await;
+    context
+        .config
+        .keystore
+        .add_key(SuiKeyPair::Ed25519(keypair))?;
+    // InnerSwap::exchange_pool_init(&mut context, address, Coin::new(UID::new(gas3_id),1000)).await;
+    // let _result = InnerSwap::exchange_obc(&mut context, address,Coin::new(UID::new(gas_id), 1000)).await;
+    let _result = InnerSwap::exchange_bfc(&mut context, address,Coin::new(UID::new(gas_id), 1000)).await;
     Ok(())
 }

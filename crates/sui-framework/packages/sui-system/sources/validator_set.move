@@ -8,9 +8,10 @@ module sui_system::validator_set {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
-    use sui_system::validator::{Self, Validator, staking_pool_id, sui_address};
+    use sui_system::validator::{Self, Validator, staking_pool_id,stable_pool_id as v_stable_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedBfc, pool_id};
+    use sui_system::stable_pool::{pool_id as stable_pool_id, PoolStableTokenExchangeRate};
     use sui::object::{Self, ID};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
@@ -24,6 +25,8 @@ module sui_system::validator_set {
     use sui_system::validator_wrapper;
     use sui::bag::Bag;
     use sui::bag;
+    use bfc_system::busd::BUSD;
+    use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
     friend sui_system::sui_system_state_inner;
@@ -52,6 +55,8 @@ module sui_system::validator_set {
         /// Mappings from staking pool's ID to the sui address of a validator.
         staking_pool_mappings: Table<ID, address>,
 
+        stable_pool_mappings: Table<ID, address>,
+
         /// Mapping from a staking pool ID to the inactive validator that has that pool as its staking pool.
         /// When a validator is deactivated the validator is removed from `active_validators` it
         /// is added to this table so that stakers can continue to withdraw their stake from it.
@@ -71,6 +76,7 @@ module sui_system::validator_set {
         extra_fields: Bag,
     }
 
+    #[allow(unused_field)]
     /// Event containing staking and rewards related information of
     /// each validator, emitted during epoch advancement.
     struct ValidatorEpochInfoEvent has copy, drop {
@@ -97,6 +103,7 @@ module sui_system::validator_set {
         pool_staking_reward: u64,
         storage_fund_staking_reward: u64,
         pool_token_exchange_rate: PoolTokenExchangeRate,
+        stable_pool_token_exchange_rate: PoolStableTokenExchangeRate,
         tallying_rule_reporters: vector<address>,
         tallying_rule_global_score: u64,
     }
@@ -126,6 +133,8 @@ module sui_system::validator_set {
     const BASIS_POINT_DENOMINATOR: u128 = 10000;
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
+    //define the rate of BUSD exchange, must used to init method
+    const INIT_STABLE_EXCHANGE_RATE: u64 = 10;
     // Errors
     const ENonValidatorInReportRecords: u64 = 0;
     const EInvalidStakeAdjustmentAmount: u64 = 1;
@@ -148,13 +157,15 @@ module sui_system::validator_set {
     // ==== initialization at genesis ====
 
     public(friend) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
-        let total_stake = calculate_total_stakes(&init_active_validators);
+        let total_stake = calculate_total_stakes(&init_active_validators, INIT_STABLE_EXCHANGE_RATE);
         let staking_pool_mappings = table::new(ctx);
+        let stable_pool_mappings = table::new(ctx);
         let num_validators = vector::length(&init_active_validators);
         let i = 0;
         while (i < num_validators) {
             let validator = vector::borrow(&init_active_validators, i);
             table::add(&mut staking_pool_mappings, staking_pool_id(validator), sui_address(validator));
+            table::add(&mut stable_pool_mappings, v_stable_pool_id(validator), sui_address(validator));
             i = i + 1;
         };
         let validators = ValidatorSet {
@@ -163,12 +174,13 @@ module sui_system::validator_set {
             pending_active_validators: table_vec::empty(ctx),
             pending_removals: vector::empty(),
             staking_pool_mappings,
+            stable_pool_mappings,
             inactive_validators: table::new(ctx),
             validator_candidates: table::new(ctx),
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
         };
-        voting_power::set_voting_power(&mut validators.active_validators);
+        voting_power::set_voting_power(&mut validators.active_validators, INIT_STABLE_EXCHANGE_RATE);
         validators
     }
 
@@ -299,6 +311,18 @@ module sui_system::validator_set {
         validator::request_add_stake(validator, stake, tx_context::sender(ctx), ctx)
     }
 
+    public(friend) fun request_add_stable_stake(
+        self: &mut ValidatorSet,
+        validator_address: address,
+        stake: Balance<BUSD>,
+        ctx: &mut TxContext,
+    ) : StakedStable<BUSD> {
+        let sui_amount = balance::value(&stake);
+        assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
+        let validator = get_candidate_or_active_validator_mut(self, validator_address);
+        validator::request_add_stable_stake(validator, stake, tx_context::sender(ctx), ctx)
+    }
+
     /// Called by `sui_system`, to withdraw some share of a stake from the validator. The share to withdraw
     /// is denoted by `principal_withdraw_amount`. One of two things occurs in this function:
     /// 1. If the `staked_sui` is staked with an active validator, the request is added to the validator's
@@ -321,6 +345,24 @@ module sui_system::validator_set {
                 validator_wrapper::load_validator_maybe_upgrade(wrapper)
             };
         validator::request_withdraw_stake(validator, staked_sui, ctx)
+    }
+
+    public(friend) fun request_withdraw_stable_stake(
+        self: &mut ValidatorSet,
+        staked_sui: StakedStable<BUSD>,
+        ctx: &mut TxContext,
+    ) : Balance<BUSD> {
+        let stable_pool_id = stable_pool_id(&staked_sui);
+        let validator =
+            if (table::contains(&self.stable_pool_mappings, stable_pool_id)) { // This is an active validator.
+                let validator_address = *table::borrow(&self.stable_pool_mappings, stable_pool_id(&staked_sui));
+                get_candidate_or_active_validator_mut(self, validator_address)
+            } else { // This is an inactive pool.
+                assert!(table::contains(&self.inactive_validators, stable_pool_id), ENoPoolFound);
+                let wrapper = table::borrow_mut(&mut self.inactive_validators, stable_pool_id);
+                validator_wrapper::load_validator_maybe_upgrade(wrapper)
+            };
+        validator::request_withdraw_stable_stake(validator, staked_sui, ctx)
     }
 
     // ==== validator config setting functions ====
@@ -354,6 +396,7 @@ module sui_system::validator_set {
         low_stake_threshold: u64,
         very_low_stake_threshold: u64,
         low_stake_grace_period: u64,
+        stable_exchange_rate: u64,
         ctx: &mut TxContext,
     ) {
         let new_epoch = tx_context::epoch(ctx) + 1;
@@ -435,9 +478,9 @@ module sui_system::validator_set {
             ctx
         );
 
-        self.total_stake = calculate_total_stakes(&self.active_validators);
+        self.total_stake = calculate_total_stakes(&self.active_validators, stable_exchange_rate);
 
-        voting_power::set_voting_power(&mut self.active_validators);
+        voting_power::set_voting_power(&mut self.active_validators, stable_exchange_rate);
 
         // At this point, self.active_validators are updated for next epoch.
         // Now we process the staged validator metadata.
@@ -542,10 +585,22 @@ module sui_system::validator_set {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::total_stake_amount(validator)
     }
+    public fun validator_total_stake_amount_with_stable(
+        self: &ValidatorSet,
+        validator_address: address,
+        stable_exchange_rate: u64): u64 {
+        let validator = get_validator_ref(&self.active_validators, validator_address);
+        validator::total_stake_with_stable(validator, stable_exchange_rate)
+    }
 
     public fun validator_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::stake_amount(validator)
+    }
+
+    public fun validator_stable_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
+        let validator = get_validator_ref(&self.active_validators, validator_address);
+        validator::stable_stake_amount(validator)
     }
 
     public fun validator_staking_pool_id(self: &ValidatorSet, validator_address: address): ID {
@@ -950,18 +1005,19 @@ module sui_system::validator_set {
         while (i < length) {
             let validator = vector::borrow_mut(validators, i);
             validator::process_pending_stakes_and_withdraws(validator, ctx);
+            validator::process_pending_stable_stakes_and_withdraws(validator, ctx);
             i = i + 1;
         }
     }
 
     /// Calculate the total active validator stake.
-    fun calculate_total_stakes(validators: &vector<Validator>): u64 {
+    fun calculate_total_stakes(validators: &vector<Validator>, exchange_rate: u64): u64 {
         let stake = 0;
         let length = vector::length(validators);
         let i = 0;
         while (i < length) {
             let v = vector::borrow(validators, i);
-            stake = stake + validator::total_stake_amount(v);
+            stake = stake + validator::total_stake_with_stable(v, exchange_rate);
             i = i + 1;
         };
         stake
@@ -1217,6 +1273,7 @@ module sui_system::validator_set {
                     pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
                     storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
                     pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
+                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
                     tallying_rule_reporters,
                     tallying_rule_global_score,
                 }

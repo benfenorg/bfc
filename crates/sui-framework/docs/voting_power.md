@@ -183,7 +183,7 @@ Each validator's voting power is initialized using their stake. We then attempt 
 at <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a></code>. If <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a></code> is not a feasible cap, we pick the lowest possible cap.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="voting_power.md#0x3_voting_power_set_voting_power">set_voting_power</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="voting_power.md#0x3_voting_power_set_voting_power">set_voting_power</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_exchange_rate: u64)
 </code></pre>
 
 
@@ -192,14 +192,17 @@ at <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="voting_power.md#0x3_voting_power_set_voting_power">set_voting_power</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;Validator&gt;) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="voting_power.md#0x3_voting_power_set_voting_power">set_voting_power</a>(
+    validators: &<b>mut</b> <a href="">vector</a>&lt;Validator&gt;,
+    stable_exchange_rate:u64) {
     // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
     // have 100%. So we bound the threshold_pct <b>to</b> be always enough <b>to</b> find a solution.
     <b>let</b> threshold = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(
         <a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a>,
         <a href="../../../.././build/Sui/docs/math.md#0x2_math_max">math::max</a>(<a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a>, divide_and_round_up(<a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a>, <a href="_length">vector::length</a>(validators))),
     );
-    <b>let</b> (info_list, remaining_power) = <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators, threshold);
+    <b>let</b> (info_list, remaining_power) =
+        <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators, threshold, stable_exchange_rate);
     <a href="voting_power.md#0x3_voting_power_adjust_voting_power">adjust_voting_power</a>(&<b>mut</b> info_list, threshold, remaining_power);
     <a href="voting_power.md#0x3_voting_power_update_voting_power">update_voting_power</a>(validators, info_list);
     <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(validators);
@@ -220,7 +223,7 @@ descending order using voting power.
 Anything beyond the threshold is added to the remaining_power, which is also returned.
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, threshold: u64): (<a href="">vector</a>&lt;<a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">voting_power::VotingPowerInfoV2</a>&gt;, u64)
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, threshold: u64, stable_exchange_rate: u64): (<a href="">vector</a>&lt;<a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">voting_power::VotingPowerInfoV2</a>&gt;, u64)
 </code></pre>
 
 
@@ -232,15 +235,16 @@ Anything beyond the threshold is added to the remaining_power, which is also ret
 <pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(
     validators: &<a href="">vector</a>&lt;Validator&gt;,
     threshold: u64,
+    stable_exchange_rate:u64,
 ): (<a href="">vector</a>&lt;<a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a>&gt;, u64) {
-    <b>let</b> total_stake = <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators);
+    <b>let</b> total_stake = <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators, stable_exchange_rate);
     <b>let</b> i = 0;
     <b>let</b> len = <a href="_length">vector::length</a>(validators);
     <b>let</b> total_power = 0;
     <b>let</b> result = <a href="">vector</a>[];
     <b>while</b> (i &lt; len) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow">vector::borrow</a>(validators, i);
-        <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake">validator::total_stake</a>(<a href="validator.md#0x3_validator">validator</a>);
+        <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake_with_stable">validator::total_stake_with_stable</a>(<a href="validator.md#0x3_validator">validator</a>, stable_exchange_rate);
         <b>let</b> adjusted_stake = (stake <b>as</b> u128) * (<a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a> <b>as</b> u128) / (total_stake <b>as</b> u128);
         <b>let</b> <a href="voting_power.md#0x3_voting_power">voting_power</a> = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>((adjusted_stake <b>as</b> u64), threshold);
         <b>let</b> info = <a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a> {
@@ -267,7 +271,7 @@ Anything beyond the threshold is added to the remaining_power, which is also ret
 Sum up the total stake of all validators.
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;): u64
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_exchange_rate: u64): u64
 </code></pre>
 
 
@@ -276,12 +280,13 @@ Sum up the total stake of all validators.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators: &<a href="">vector</a>&lt;Validator&gt;): u64 {
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators: &<a href="">vector</a>&lt;Validator&gt;, stable_exchange_rate:u64): u64 {
     <b>let</b> i = 0;
     <b>let</b> len = <a href="_length">vector::length</a>(validators);
     <b>let</b> total_stake =0 ;
     <b>while</b> (i &lt; len) {
-        total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake">validator::total_stake</a>(<a href="_borrow">vector::borrow</a>(validators, i));
+        total_stake = total_stake +
+            <a href="validator.md#0x3_validator_total_stake_with_stable">validator::total_stake_with_stable</a>(<a href="_borrow">vector::borrow</a>(validators, i), stable_exchange_rate);
         i = i + 1;
     };
     total_stake
