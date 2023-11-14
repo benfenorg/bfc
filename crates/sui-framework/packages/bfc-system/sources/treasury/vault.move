@@ -3,7 +3,7 @@ module bfc_system::vault {
     use std::type_name;
     use std::vector;
     use sui::curve::curve_dx;
-    
+
     use sui::balance::{Self, Balance, Supply};
     use sui::coin::{Self, Coin};
     use sui::bfc::BFC;

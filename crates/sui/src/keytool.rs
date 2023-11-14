@@ -86,6 +86,13 @@ pub enum KeyToolCommand {
         derivation_path: Option<DerivationPath>,
     },
 
+    GenerateWithName {
+        key_scheme: SignatureScheme,
+        name: String,
+        word_length: Option<String>,
+        derivation_path: Option<DerivationPath>,
+    },
+
     /// Add a new key to sui.keystore using either the input mnemonic phrase or a private key (from the Wallet),
     /// the key scheme flag {ed25519 | secp256k1 | secp256r1} and an optional derivation path,
     /// default to m/44'/784'/0'/0'/0' for ed25519 or m/54'/784'/0'/0/0 for secp256k1
@@ -317,6 +324,7 @@ pub enum CommandOutput {
     DecodeTxBytes(TransactionData),
     Error(String),
     Generate(Key),
+    GenerateWithName(Key),
     GenerateZkLoginAddress(SuiAddress, AddressParams),
     Import(Key),
     List(Vec<Key>),
@@ -420,6 +428,36 @@ impl KeyToolCommand {
                     let (sui_address, skp, _scheme, phrase) =
                         generate_new_key(key_scheme, derivation_path, word_length)?;
                     let file = format!("{sui_address}.key");
+                    write_keypair_to_file(&skp, file)?;
+                    let mut key = Key::from(&skp);
+                    key.mnemonic = Some(phrase);
+                    CommandOutput::Generate(key)
+                }
+            },
+
+            KeyToolCommand::GenerateWithName {
+                key_scheme,
+                name,
+                derivation_path,
+                word_length,
+            } => match key_scheme {
+                SignatureScheme::BLS12381 => {
+                    let (sui_address, kp) = get_authority_key_pair();
+                    let file_name = format!("{name}.key");
+                    write_authority_keypair_to_file(&kp, file_name)?;
+                    CommandOutput::Generate(Key {
+                        sui_address,
+                        public_base64_key: kp.public().encode_base64(),
+                        key_scheme: key_scheme.to_string(),
+                        flag: SignatureScheme::BLS12381.flag(),
+                        mnemonic: None,
+                        peer_id: None,
+                    })
+                }
+                _ => {
+                    let (sui_address, skp, _scheme, phrase) =
+                        generate_new_key(key_scheme, derivation_path, word_length)?;
+                    let file = format!("{name}.key");
                     write_keypair_to_file(&skp, file)?;
                     let mut key = Key::from(&skp);
                     key.mnemonic = Some(phrase);

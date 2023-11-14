@@ -67,3 +67,5 @@ yarn-error.log*
 *.bpl
 sui_programmability/examples/hello_world/output.bpl
 crates/sui-framework/packages/bfc-system/result.txt
+genesis/parameters
+
