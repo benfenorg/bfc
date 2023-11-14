@@ -153,7 +153,6 @@ async fn construct_unsigned_0x200_txn(
 ) -> anyhow::Result<TransactionData> {
     let mut args = vec![CallArg::BFC_SYSTEM_MUT];
     args.extend(call_args);
-    println!("args: {:?}", args);
     construct_unsigned_system_txn(
         context,
         sender,
