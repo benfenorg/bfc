@@ -447,7 +447,6 @@ impl Builder {
                         let Owner::AddressOwner(owner) = &o.owner else {
                         panic!("gas object owner must be address owner");
                     };
-                        println!("===owner: {:?}, allocation: {:?}", owner, allocation);
                         *owner == allocation.recipient_address &&
                         s.principal() == allocation.amount_mist
                           && s.pool_id() == staking_pool_id
