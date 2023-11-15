@@ -455,7 +455,7 @@ impl KeyToolCommand {
                     })
                 }
                 _ => {
-                    let (sui_address, skp, _scheme, phrase) =
+                    let (_, skp, _scheme, phrase) =
                         generate_new_key(key_scheme, derivation_path, word_length)?;
                     let file = format!("{name}.key");
                     write_keypair_to_file(&skp, file)?;
