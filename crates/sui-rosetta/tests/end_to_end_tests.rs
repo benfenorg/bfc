@@ -444,16 +444,18 @@ async fn test_pay_sui_multiple_times() {
 
     let (rosetta_client, _handle) = start_rosetta_test_server(client.clone()).await;
 
+
+    //todo change paysui --> pay bfc,
     for _ in 1..100 {
         let ops = serde_json::from_value(json!(
             [{
                 "operation_identifier":{"index":0},
-                "type":"PayBfc",
+                "type":"PaySui",
                 "account": { "address" : recipient.to_string() },
                 "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
             },{
                 "operation_identifier":{"index":1},
-                "type":"PayBfc",
+                "type":"PaySui",
                 "account": { "address" : sender.to_string() },
                 "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
             }]
