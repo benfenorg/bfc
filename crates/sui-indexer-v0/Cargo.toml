@@ -63,7 +63,7 @@ ntest.workspace = true
 criterion.workspace = true
 
 [[bin]]
-name = "sui-indexer-v0"
+name = "bfc-indexer-v0"
 path = "src/main.rs"
 
 [[bench]]

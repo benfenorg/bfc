@@ -48,5 +48,5 @@ workspace-hack = { version = "0.1", path = "../workspace-hack" }
 test-cluster.workspace = true
 
 [[bin]]
-name = "sui-faucet"
+name = "bfc-faucet"
 path = "src/main.rs"

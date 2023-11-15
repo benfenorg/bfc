@@ -54,3 +54,7 @@ test-cluster.workspace = true
 tempfile.workspace = true
 rand.workspace = true
 reqwest.workspace = true
+
+[[bin]]
+name = "bfc-rosetta"
+path = "src/main.rs"

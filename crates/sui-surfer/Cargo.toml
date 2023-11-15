@@ -37,3 +37,7 @@ sui-macros.workspace = true
 sui-simulator.workspace = true
 
 move-package.workspace = true
+
+[[bin]]
+name = "bfc-surfer"
+path = "src/main.rs"

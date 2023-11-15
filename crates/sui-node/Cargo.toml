@@ -53,3 +53,7 @@ workspace-hack = { version = "0.1", path = "../workspace-hack" }
 
 [target.'cfg(msim)'.dependencies]
 sui-simulator.workspace = true
+
+[[bin]]
+name = "bfc-node"
+path = "src/main.rs"

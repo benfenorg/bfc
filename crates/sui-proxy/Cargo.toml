@@ -53,3 +53,7 @@ sui-types = { workspace = true, features = ["test-utils"] }
 
 [build-dependencies]
 prost-build.workspace = true
+
+[[bin]]
+name = "bfc-proxy"
+path = "src/main.rs"

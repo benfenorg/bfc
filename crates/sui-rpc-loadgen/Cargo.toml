@@ -55,7 +55,6 @@ strum_macros.workspace = true
 [dev-dependencies]
 test-cluster.workspace = true
 
-
 [[bin]]
-name = "sui-rpc-loadgen"
+name = "bfc-rpc-loadgen"
 path = "src/main.rs"
