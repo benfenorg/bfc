@@ -19,23 +19,21 @@ mutated: object(0,2)
 gas summary: computation_cost: 100000, storage_cost: 376200,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 5 'programmable'. lines 36-41:
-created: object(5,0), object(5,1)
-mutated: object(0,0), object(2,1)
-gas summary: computation_cost: 100000, storage_cost: 769120,  storage_rebate: 291179, non_refundable_storage_fee: 2941
+Error: Transaction Effects Status: Invalid package upgrade. Digest in upgrade ticket and computed digest disagree
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: PackageUpgradeError { upgrade_error: DigestDoesNotMatch { digest: [185, 52, 177, 35, 218, 56, 44, 245, 148, 53, 50, 226, 225, 40, 10, 249, 254, 43, 81, 125, 143, 115, 59, 6, 236, 29, 220, 64, 108, 191, 32, 132] } }, source: None, command: Some(2) } }
 
 task 6 'programmable'. lines 43-45:
 Error: Transaction Effects Status: Move Runtime Abort. Location: p::n::bar (function index 0) at offset 6, Abort Code: 0
 Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: MoveAbort(MoveLocation { module: ModuleId { address: p, name: Identifier("n") }, function: 0, instruction: 6, function_name: Some("bar") }, 0), source: Some(VMError { major_status: ABORTED, sub_status: Some(0), message: Some("p::n::bar at offset 6"), exec_state: None, location: Module(ModuleId { address: p, name: Identifier("n") }), indices: [], offsets: [(FunctionDefinitionIndex(0), 6)] }), command: Some(1) } }
 
+task 7 'set-address'. lines 47-47:
+Error: INVALID TEST. Unknown object, object(5,0)
+
 task 8 'programmable'. lines 49-51:
-mutated: object(0,0)
-gas summary: computation_cost: 100000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 9 'publish'. lines 53-58:
-created: object(9,0)
-mutated: object(0,2)
-gas summary: computation_cost: 100000, storage_cost: 608760,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 10 'run'. lines 60-60:
-mutated: object(0,2)
-gas summary: computation_cost: 100000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }

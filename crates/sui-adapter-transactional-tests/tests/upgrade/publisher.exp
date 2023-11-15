@@ -11,7 +11,7 @@ gas summary: computation_cost: 100000, storage_cost: 887680,  storage_rebate: 0,
 task 2 'upgrade'. lines 19-35:
 created: object(2,0)
 mutated: object(0,0), object(1,2)
-gas summary: computation_cost: 100000, storage_cost: 801040,  storage_rebate: 291179, non_refundable_storage_fee: 2941
+gas summary: computation_cost: 100000, storage_cost: 855760,  storage_rebate: 291179, non_refundable_storage_fee: 2941
 
 task 3 'run'. lines 37-37:
 mutated: object(0,0), object(1,1)
