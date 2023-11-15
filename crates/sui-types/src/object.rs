@@ -218,6 +218,17 @@ impl MoveObject {
         u64::from_le_bytes(<[u8; 8]>::try_from(&self.contents[ID_END_INDEX..]).unwrap())
     }
 
+
+    pub fn get_scoin_value_unsafe(&self) -> u64 {
+        //debug_assert!(self.type_.is_coin());
+        // 32 bytes for object ID, 8 for balance
+        //debug_assert!(self.contents.len() == 40);
+
+        // unwrap safe because we checked that it is a coin
+        //the length = 80., so we start from 72 to get last 8.
+        u64::from_le_bytes(<[u8; 8]>::try_from(&self.contents[72..]).unwrap())
+    }
+
     /// Update the `value: u64` field of a `Coin<T>` type.
     /// Useful for updating the coin without deserializing the object into a Move value
     /// It is the caller's responsibility to check that `self` is a coin--this function
