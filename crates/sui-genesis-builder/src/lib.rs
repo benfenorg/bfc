@@ -320,6 +320,9 @@ impl Builder {
             assert!(address_to_pool_id
                 .insert(metadata.sui_address, onchain_validator.staking_pool.id)
                 .is_none());
+            assert!(address_to_pool_id
+                .insert(metadata.sui_address, onchain_validator.busd_pool.id)
+                .is_none());
             assert_eq!(validator.info.sui_address(), metadata.sui_address);
             assert_eq!(validator.info.protocol_key(), metadata.sui_pubkey_bytes());
             assert_eq!(validator.info.network_key, metadata.network_pubkey);

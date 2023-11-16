@@ -340,6 +340,48 @@ fn display_validator(validator: &SuiValidatorGenesis) {
         "Exchange Rates Size: {}",
         validator.staking_pool.exchange_rates.size
     );
+    println!("Staking BUSD Pool ID: {}", validator.busd_pool.id);
+    println!(
+        "Staking BUSD Pool Activation Epoch: {:?}",
+        validator.busd_pool.activation_epoch
+    );
+    println!(
+        "Staking BUSD Pool Deactivation Epoch: {:?}",
+        validator.busd_pool.deactivation_epoch
+    );
+    println!(
+        "Staking BUSD Pool Sui Balance: {:?}",
+        validator.busd_pool.stable_balance
+    );
+    println!(
+        "Rewards BUSD Pool: {}",
+        validator.busd_pool.rewards_pool.value()
+    );
+    println!(
+        "BUSD Pool Token Balance: {}",
+        validator.busd_pool.pool_token_balance
+    );
+    println!(
+        "BUSD Pending Delegation: {}",
+        validator.busd_pool.pending_stake
+    );
+    println!(
+        "BUSD Pending Total Sui Withdraw: {}",
+        validator.busd_pool.pending_total_sui_withdraw
+    );
+    println!(
+        "BUSD Pendign Pool Token Withdraw: {}",
+        validator.busd_pool.pending_pool_token_withdraw
+    );
+    println!(
+        "BUSD Exchange Rates ID: {}",
+        validator.busd_pool.exchange_rates.id
+    );
+    println!(
+        "BUSD Exchange Rates Size: {}",
+        validator.busd_pool.exchange_rates.size
+    );
+
     print_divider(&metadata.name);
 }
 
