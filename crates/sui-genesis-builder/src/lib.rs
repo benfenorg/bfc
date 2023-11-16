@@ -309,6 +309,7 @@ impl Builder {
             system_state.validators.active_validators.len()
         );
         let mut address_to_pool_id = BTreeMap::new();
+        let mut address_to_stable_pool_id = BTreeMap::new();
         for (validator, onchain_validator) in self
             .validators
             .values()
@@ -320,7 +321,7 @@ impl Builder {
             assert!(address_to_pool_id
                 .insert(metadata.sui_address, onchain_validator.staking_pool.id)
                 .is_none());
-            assert!(address_to_pool_id
+            assert!(address_to_stable_pool_id
                 .insert(metadata.sui_address, onchain_validator.busd_pool.id)
                 .is_none());
             assert_eq!(validator.info.sui_address(), metadata.sui_address);

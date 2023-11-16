@@ -53,7 +53,6 @@ async fn test_inner_swap()  -> Result<(), anyhow::Error> {
     );
     let gas2 = Object::new_gas_with_balance_and_owner_for_testing(1000_000_000_000, address);
     let gas3 = Object::new_gas_with_balance_and_owner_for_testing(1000_000_000_000, address);
-    let gas3_id = gas3.id();
     let test_cluster = TestClusterBuilder::new()
         .with_objects([gas_object, gas2, gas3])
         .build()
