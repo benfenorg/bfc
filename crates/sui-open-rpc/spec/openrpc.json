@@ -1423,9 +1423,6 @@
                 "address_to_u256_cost_base": {
                   "u64": "52"
                 },
-                "curve_dx_cost_base": {
-                  "u64": "52"
-                },
                 "base_tx_cost_fixed": {
                   "u64": "2000"
                 },
@@ -1456,6 +1453,9 @@
                 "consensus_bad_nodes_stake_threshold": null,
                 "crypto_invalid_arguments_cost": {
                   "u64": "100"
+                },
+                "curve_dx_cost_base": {
+                  "u64": "52"
                 },
                 "dynamic_field_add_child_object_cost_base": {
                   "u64": "100"
@@ -2737,7 +2737,7 @@
           "description": "the version of the queried object. If None, default to the latest known version",
           "required": true,
           "schema": {
-            "$ref": "#/components/schemas/SequenceNumber"
+            "$ref": "#/components/schemas/SequenceNumber2"
           }
         },
         {
@@ -4674,7 +4674,7 @@
       }
     },
     {
-      "name": "unsafe_payAllSui",
+      "name": "unsafe_payAllBfc",
       "tags": [
         {
           "name": "Transaction Builder API"
@@ -4727,7 +4727,7 @@
       }
     },
     {
-      "name": "unsafe_paySui",
+      "name": "unsafe_payBfc",
       "tags": [
         {
           "name": "Transaction Builder API"
@@ -5090,6 +5090,63 @@
       }
     },
     {
+      "name": "unsafe_transferBfc",
+      "tags": [
+        {
+          "name": "Transaction Builder API"
+        }
+      ],
+      "description": "Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.",
+      "params": [
+        {
+          "name": "signer",
+          "description": "the transaction signer's Sui address",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/SuiAddress"
+          }
+        },
+        {
+          "name": "sui_object_id",
+          "description": "the Sui coin object to be used in this transaction",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ObjectID"
+          }
+        },
+        {
+          "name": "gas_budget",
+          "description": "the gas budget, the transaction will fail if the gas cost exceed the budget",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/BigInt_for_uint64"
+          }
+        },
+        {
+          "name": "recipient",
+          "description": "the recipient's Sui address",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/SuiAddress"
+          }
+        },
+        {
+          "name": "amount",
+          "description": "the amount to be split out and transferred",
+          "schema": {
+            "$ref": "#/components/schemas/BigInt_for_uint64"
+          }
+        }
+      ],
+      "result": {
+        "name": "TransactionBlockBytes",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/TransactionBlockBytes"
+        }
+      }
+    },
+    {
       "name": "unsafe_transferObject",
       "tags": [
         {
@@ -5145,63 +5202,6 @@
           "$ref": "#/components/schemas/TransactionBlockBytes"
         }
       }
-    },
-    {
-      "name": "unsafe_transferBfc",
-      "tags": [
-        {
-          "name": "Transaction Builder API"
-        }
-      ],
-      "description": "Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.",
-      "params": [
-        {
-          "name": "signer",
-          "description": "the transaction signer's Sui address",
-          "required": true,
-          "schema": {
-            "$ref": "#/components/schemas/SuiAddress"
-          }
-        },
-        {
-          "name": "bfc_object_id",
-          "description": "the Sui coin object to be used in this transaction",
-          "required": true,
-          "schema": {
-            "$ref": "#/components/schemas/ObjectID"
-          }
-        },
-        {
-          "name": "gas_budget",
-          "description": "the gas budget, the transaction will fail if the gas cost exceed the budget",
-          "required": true,
-          "schema": {
-            "$ref": "#/components/schemas/BigInt_for_uint64"
-          }
-        },
-        {
-          "name": "recipient",
-          "description": "the recipient's Sui address",
-          "required": true,
-          "schema": {
-            "$ref": "#/components/schemas/SuiAddress"
-          }
-        },
-        {
-          "name": "amount",
-          "description": "the amount to be split out and transferred",
-          "schema": {
-            "$ref": "#/components/schemas/BigInt_for_uint64"
-          }
-        }
-      ],
-      "result": {
-        "name": "TransactionBlockBytes",
-        "required": true,
-        "schema": {
-          "$ref": "#/components/schemas/TransactionBlockBytes"
-        }
-      }
     }
   ],
   "components": {
@@ -5218,7 +5218,8 @@
         "type": "object",
         "required": [
           "action_id",
-          "name"
+          "name",
+          "status"
         ],
         "properties": {
           "action_id": {
@@ -5229,6 +5230,9 @@
           "name": {
             "description": "Name for the action",
             "type": "string"
+          },
+          "status": {
+            "type": "boolean"
           }
         }
       },
@@ -5923,7 +5927,7 @@
             "$ref": "#/components/schemas/DynamicFieldType"
           },
           "version": {
-            "$ref": "#/components/schemas/SequenceNumber"
+            "$ref": "#/components/schemas/SequenceNumber2"
           }
         }
       },
@@ -6582,7 +6586,7 @@
                     "$ref": "#/components/schemas/ObjectID"
                   },
                   "initial_shared_version": {
-                    "$ref": "#/components/schemas/SequenceNumber"
+                    "$ref": "#/components/schemas/SequenceNumber2"
                   },
                   "mutable": {
                     "default": true,
@@ -7341,7 +7345,7 @@
                     "$ref": "#/components/schemas/ObjectID"
                   },
                   {
-                    "$ref": "#/components/schemas/SequenceNumber"
+                    "$ref": "#/components/schemas/SequenceNumber2"
                   }
                 ],
                 "maxItems": 2,
@@ -7372,10 +7376,10 @@
                 ],
                 "properties": {
                   "asked_version": {
-                    "$ref": "#/components/schemas/SequenceNumber"
+                    "$ref": "#/components/schemas/SequenceNumber2"
                   },
                   "latest_version": {
-                    "$ref": "#/components/schemas/SequenceNumber"
+                    "$ref": "#/components/schemas/SequenceNumber2"
                   },
                   "object_id": {
                     "$ref": "#/components/schemas/ObjectID"
@@ -7494,7 +7498,7 @@
                 "description": "Object version.",
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/SequenceNumber"
+                    "$ref": "#/components/schemas/SequenceNumber2"
                   }
                 ]
               }
@@ -7631,7 +7635,7 @@
                     "description": "The version at which the object became shared",
                     "allOf": [
                       {
-                        "$ref": "#/components/schemas/SequenceNumber"
+                        "$ref": "#/components/schemas/SequenceNumber2"
                       }
                     ]
                   }
@@ -7902,6 +7906,7 @@
           "action",
           "action_delay",
           "against_votes",
+          "description",
           "end_time",
           "eta",
           "for_votes",
@@ -7932,6 +7937,9 @@
             "type": "integer",
             "format": "uint64",
             "minimum": 0.0
+          },
+          "description": {
+            "type": "string"
           },
           "end_time": {
             "description": "when voting ends.",
@@ -8184,7 +8192,7 @@
                 "type": "string"
               },
               "version": {
-                "$ref": "#/components/schemas/SequenceNumber"
+                "$ref": "#/components/schemas/SequenceNumber2"
               }
             }
           },
@@ -8227,7 +8235,7 @@
                 }
               },
               "version": {
-                "$ref": "#/components/schemas/SequenceNumber"
+                "$ref": "#/components/schemas/SequenceNumber2"
               }
             }
           }
@@ -8243,6 +8251,9 @@
         "type": "integer",
         "format": "uint64",
         "minimum": 0.0
+      },
+      "SequenceNumber2": {
+        "$ref": "#/components/schemas/BigInt_for_uint64"
       },
       "Signature": {
         "oneOf": [
@@ -10747,7 +10758,7 @@
             "description": "Version of the upgraded package",
             "allOf": [
               {
-                "$ref": "#/components/schemas/SequenceNumber"
+                "$ref": "#/components/schemas/SequenceNumber2"
               }
             ]
           }
