@@ -12,7 +12,7 @@ module test::m {
     use sui::object::{Self, UID};
     use sui::tx_context::TxContext;
     use sui::dynamic_object_field as ofield;
-    use std::debug;
+
     struct Obj has key, store {
         id: UID,
         value: u64,
@@ -56,7 +56,6 @@ module test::m {
     // check
 
     public fun check(grand: &Obj, v1: u64, v2: u64, v3: Option<u64>) {
-        debug::print(grand);
         assert!(grand.value == v1, 0);
         let parent: &Obj = ofield::borrow(&grand.id, KEY);
         assert!(parent.value == v2, 0);
