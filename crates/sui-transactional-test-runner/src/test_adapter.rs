@@ -96,6 +96,7 @@ const WELL_KNOWN_OBJECTS: &[ObjectID] = &[
     SUI_SYSTEM_PACKAGE_ID,
     SUI_SYSTEM_STATE_OBJECT_ID,
     SUI_CLOCK_OBJECT_ID,
+    BFC_SYSTEM_PACKAGE_ID,
     BFC_SYSTEM_STATE_OBJECT_ID,
 ];
 // TODO use the file name as a seed
@@ -743,6 +744,7 @@ impl<'a> MoveTestAdapter<'a> for SuiTestAdapter<'a> {
                             inputs,
                             commands,
                         });
+                    println!("sender_address: {:?}, {:?}", sender_address, transaction);
                     self.dev_inspect(sender_address, transaction, gas_price)
                         .await?
                 };
@@ -1579,6 +1581,7 @@ static NAMED_ADDRESSES: Lazy<BTreeMap<String, NumericalAddress>> = Lazy::new(|| 
 pub(crate) static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
     // TODO invoke package system?
     let sui_files: &Path = Path::new(DEFAULT_FRAMEWORK_PATH);
+    println!("sui_files: {:?}", sui_files);
     let sui_system_sources = {
         let mut buf = sui_files.to_path_buf();
         buf.extend(["packages", "sui-system", "sources"]);

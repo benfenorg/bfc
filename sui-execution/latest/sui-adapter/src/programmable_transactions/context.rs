@@ -1118,6 +1118,7 @@ mod checked {
             Owner::Shared { .. } => !override_as_immutable,
             Owner::Immutable => false,
             Owner::ObjectOwner(_) => {
+                println!("obj: {:?}", obj);
                 // protected by transaction input checker
                 invariant_violation!("ObjectOwner objects cannot be input")
             }
