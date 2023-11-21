@@ -10,6 +10,7 @@
 module test::m {
     use std::option::{Self, Option};
     use sui::object::{Self, UID};
+    use std::debug;
     use sui::tx_context::TxContext;
     use sui::dynamic_object_field as ofield;
 
@@ -56,6 +57,7 @@ module test::m {
     // check
 
     public fun check(grand: &Obj, v1: u64, v2: u64, v3: Option<u64>) {
+        debug::print(grand);
         assert!(grand.value == v1, 0);
         let parent: &Obj = ofield::borrow(&grand.id, KEY);
         assert!(parent.value == v2, 0);
