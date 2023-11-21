@@ -35,10 +35,9 @@ async-trait.workspace = true
 bcs.workspace = true
 hyper.workspace = true
 jsonrpsee.workspace = true
-jsonrpsee-proc-macros.workspace = true
 prometheus.workspace = true
 rand.workspace = true
 reqwest.workspace = true
 tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
-hex = "0.4.3"
+
