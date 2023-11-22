@@ -39,6 +39,7 @@
 /// the SuiSystemStateInner version, or vice versa.
 
 module sui_system::sui_system {
+    use std::ascii;
     use sui::balance::Balance;
 
     use sui::coin::{Self, Coin};
@@ -58,9 +59,14 @@ module sui_system::sui_system {
     use bfc_system::bfc_system;
     use bfc_system::busd::BUSD;
     use sui::dynamic_field;
+    use sui::vec_map::VecMap;
     use sui_system::stable_pool::StakedStable;
+    #[test_only]
+    use std::type_name;
 
     #[test_only] use sui::balance;
+    #[test_only]
+    use sui::vec_map;
     #[test_only] use sui_system::validator_set::ValidatorSet;
     #[test_only] use sui_system::validator_set;
     #[test_only] use sui::vec_set::VecSet;
@@ -601,7 +607,7 @@ module sui_system::sui_system {
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get BUSD exchange rate from bfc system
-        let stable_exchange_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
+        let stable_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
 
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
@@ -616,7 +622,7 @@ module sui_system::sui_system {
             non_refundable_storage_fee,
             storage_fund_reinvest_rate,
             reward_slashing_rate,
-            stable_exchange_rate,
+            stable_rate,
             epoch_start_timestamp_ms,
             ctx,
         );
@@ -624,7 +630,7 @@ module sui_system::sui_system {
         storage_rebate
     }
 
-    fun get_stable_rate_from_bfc(id: &UID) : u64 {
+    fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
        bfc_system::get_exchange_rate(id)
     }
 
@@ -678,9 +684,11 @@ module sui_system::sui_system {
     public fun validator_stake_amount_with_stable(
         wrapper: &mut SuiSystemState,
         validator_addr: address,
-        stable_exchange_rate: u64): u64 {
+    ): u64 {
         let self = load_system_state(wrapper);
-        sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, stable_exchange_rate)
+        let rate_map = vec_map::empty<ascii::String, u64>();
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1);
+        sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, rate_map)
     }
 
     #[test_only]

@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module sui_system::voting_power {
+    use std::ascii;
     use sui_system::validator::Validator;
     use std::vector;
+    use bfc_system::busd::BUSD;
     use sui_system::validator;
     use sui::math;
     use sui::math::divide_and_round_up;
+    use sui::vec_map::VecMap;
 
     friend sui_system::validator_set;
 
@@ -51,7 +54,7 @@ module sui_system::voting_power {
     /// at `MAX_VOTING_POWER`. If `MAX_VOTING_POWER` is not a feasible cap, we pick the lowest possible cap.
     public(friend) fun set_voting_power(
         validators: &mut vector<Validator>,
-        stable_exchange_rate:u64) {
+        stable_rate: VecMap<ascii::String, u64>) {
         // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
         // have 100%. So we bound the threshold_pct to be always enough to find a solution.
         let threshold = math::min(
@@ -59,7 +62,7 @@ module sui_system::voting_power {
             math::max(MAX_VOTING_POWER, divide_and_round_up(TOTAL_VOTING_POWER, vector::length(validators))),
         );
         let (info_list, remaining_power) =
-            init_voting_power_info(validators, threshold, stable_exchange_rate);
+            init_voting_power_info(validators, threshold, stable_rate);
         adjust_voting_power(&mut info_list, threshold, remaining_power);
         update_voting_power(validators, info_list);
         check_invariants(validators);
@@ -72,16 +75,16 @@ module sui_system::voting_power {
     fun init_voting_power_info(
         validators: &vector<Validator>,
         threshold: u64,
-        stable_exchange_rate:u64,
+        stable_rate: VecMap<ascii::String, u64>,
     ): (vector<VotingPowerInfoV2>, u64) {
-        let total_stake = total_stake(validators, stable_exchange_rate);
+        let total_stake = total_stake(validators, stable_rate);
         let i = 0;
         let len = vector::length(validators);
         let total_power = 0;
         let result = vector[];
         while (i < len) {
             let validator = vector::borrow(validators, i);
-            let stake = validator::total_stake_with_stable(validator, stable_exchange_rate);
+            let stake = validator::total_stake_with_all_stable<BUSD>(validator, stable_rate);
             let adjusted_stake = (stake as u128) * (TOTAL_VOTING_POWER as u128) / (total_stake as u128);
             let voting_power = math::min((adjusted_stake as u64), threshold);
             let info = VotingPowerInfoV2 {
@@ -97,13 +100,13 @@ module sui_system::voting_power {
     }
 
     /// Sum up the total stake of all validators.
-    fun total_stake(validators: &vector<Validator>, stable_exchange_rate:u64): u64 {
+    fun total_stake(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
         let i = 0;
         let len = vector::length(validators);
         let total_stake =0 ;
         while (i < len) {
             total_stake = total_stake +
-                validator::total_stake_with_stable(vector::borrow(validators, i), stable_exchange_rate);
+                validator::total_stake_with_all_stable<BUSD>(vector::borrow(validators, i), stable_rate);
             i = i + 1;
         };
         total_stake

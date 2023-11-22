@@ -13,6 +13,8 @@ module sui_system::validator_set_tests {
     use sui::vec_map;
     use std::ascii;
     use std::option;
+    use std::type_name;
+    use bfc_system::busd::BUSD;
     use sui::test_utils::{Self, assert_eq};
     use sui::transfer;
 
@@ -125,14 +127,14 @@ module sui_system::validator_set_tests {
             assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 0);
             //add stable stake
             let new_stake = coin::into_balance(coin::mint_for_testing(30 * MIST_PER_SUI, ctx1));
-            validator_set::request_add_stable_stake(&mut validator_set, @0x1, new_stake, ctx1)
+            validator_set::request_add_stable_stake<BUSD>(&mut validator_set, @0x1, new_stake, ctx1)
         };
 
 
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         {
             let ctx1 = test_scenario::ctx(scenario);
-            let withdraw = validator_set::request_withdraw_stable_stake(&mut validator_set, staked, ctx1);
+            let withdraw = validator_set::request_withdraw_stable_stake<BUSD>(&mut validator_set, staked, ctx1);
             transfer::public_transfer(coin::from_balance(withdraw, ctx1), @0x1);
         };
 
@@ -505,6 +507,8 @@ module sui_system::validator_set_tests {
         let dummy_computation_reward = balance::zero();
         let dummy_storage_fund_reward = balance::zero();
 
+        let rate_map = vec_map::empty<ascii::String, u64>();
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 10);
         validator_set::advance_epoch(
             validator_set,
             &mut dummy_computation_reward,
@@ -514,7 +518,7 @@ module sui_system::validator_set_tests {
             0, // low_stake_threshold
             0, // very_low_stake_threshold
             0, // low_stake_grace_period
-            10, //INIT_STABLE_EXCHANGE_RATE
+            rate_map, //INIT_STABLE_EXCHANGE_RATE
             test_scenario::ctx(scenario)
         );
 
@@ -532,6 +536,8 @@ module sui_system::validator_set_tests {
         test_scenario::next_epoch(scenario, @0x0);
         let dummy_computation_reward = balance::zero();
         let dummy_storage_fund_reward = balance::zero();
+        let rate_map = vec_map::empty<ascii::String, u64>();
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1);
         validator_set::advance_epoch(
             validator_set,
             &mut dummy_computation_reward,
@@ -541,7 +547,7 @@ module sui_system::validator_set_tests {
             low_stake_threshold * MIST_PER_SUI,
             very_low_stake_threshold * MIST_PER_SUI,
             low_stake_grace_period,
-            1,
+            rate_map,
             test_scenario::ctx(scenario)
         );
 

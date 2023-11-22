@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module sui_system::sui_system_state_inner {
+    use std::ascii;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{ID};
@@ -873,7 +874,7 @@ module sui_system::sui_system_state_inner {
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
                                          // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
-        stable_exchange_rate: u64,
+        stable_rate: VecMap<ascii::String, u64>,
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
     ) : Balance<BFC> {
@@ -953,7 +954,7 @@ module sui_system::sui_system_state_inner {
             self.parameters.validator_low_stake_threshold,
             self.parameters.validator_very_low_stake_threshold,
             self.parameters.validator_low_stake_grace_period,
-            stable_exchange_rate,
+            stable_rate,
             ctx,
         );
 
@@ -1046,8 +1047,9 @@ module sui_system::sui_system_state_inner {
     public(friend) fun validator_stake_amount_with_stable(
         self: &SuiSystemStateInnerV2,
         validator_addr: address,
-        stable_exchange_rate: u64): u64 {
-        validator_set::validator_total_stake_amount_with_stable(&self.validators, validator_addr, stable_exchange_rate)
+        stable_rate: VecMap<ascii::String, u64>
+    ): u64 {
+        validator_set::validator_total_stake_amount_with_stable<BUSD>(&self.validators, validator_addr, stable_rate)
     }
 
     /// Returns the staking pool id of a given validator.

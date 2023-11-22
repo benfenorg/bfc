@@ -1,4 +1,6 @@
 module bfc_system::bfc_system {
+    use std::ascii;
+    use std::type_name;
     use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
@@ -14,6 +16,8 @@ module bfc_system::bfc_system {
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
+    use sui::vec_map;
+    use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
     use bfc_system::vault;
@@ -119,9 +123,13 @@ module bfc_system::bfc_system {
         dynamic_field::borrow_mut(&mut self.id, self.version)
     }
 
-    public fun get_exchange_rate(id: &UID): u64 {
+    public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
-        bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner)
+        let rate_map = vec_map::empty<ascii::String, u64>();
+        //add busd rate
+        let rate = bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), rate);
+        rate_map
     }
 
     /// Getter of the gas coin exchange pool rate.

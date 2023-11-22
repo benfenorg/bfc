@@ -15,6 +15,7 @@ module sui_system::genesis {
     use sui_system::sui_system_state_inner;
     use sui_system::stake_subsidy;
     use std::option::{Option, Self};
+    use bfc_system::busd::BUSD;
 
     struct GenesisValidatorMetadata has drop, copy {
         name: vector<u8>,
@@ -248,8 +249,7 @@ module sui_system::genesis {
         let i = 0;
         while (i < count) {
             let validator = vector::borrow_mut(validators, i);
-            validator::activate(validator, 0);
-
+            validator::activate<BUSD>(validator, 0);
             i = i + 1;
         };
 

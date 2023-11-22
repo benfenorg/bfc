@@ -80,7 +80,6 @@ module sui_system::rewards_distribution_tests {
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),
             vector[125 * MIST_PER_SUI, 225 * MIST_PER_SUI, 325 * MIST_PER_SUI, 425 * MIST_PER_SUI],
-            1,
             scenario
         );
 
@@ -93,7 +92,6 @@ module sui_system::rewards_distribution_tests {
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),
             vector[175 * MIST_PER_SUI, 995 * MIST_PER_SUI, 375 * MIST_PER_SUI, 475 * MIST_PER_SUI],
-            1,
             scenario
         );
         test_scenario::end(scenario_val);
@@ -165,7 +163,6 @@ module sui_system::rewards_distribution_tests {
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),
             vector[300 * MIST_PER_SUI, 300 * MIST_PER_SUI, 300 * MIST_PER_SUI, 400 * MIST_PER_SUI],
-            1,
             scenario);
 
         // Each pool gets 30 SUI.

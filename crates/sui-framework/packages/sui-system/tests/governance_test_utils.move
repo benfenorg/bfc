@@ -75,10 +75,10 @@ module sui_system::governance_test_utils {
                 let validator = vector::borrow_mut(validators, i);
                 let addr = validator::sui_address(validator);
                 let new_stake = coin::into_balance(coin::mint_for_testing(stable, ctx));
-                let staked = validator::request_add_stable_stake(
+                let staked = validator::request_add_stable_stake<BUSD>(
                     validator, new_stake, addr, ctx);
                 transfer::public_transfer(staked, addr);
-                validator::process_pending_stable_stakes_and_withdraws(validator, ctx);
+                validator::process_pending_stable_stakes_and_withdraws<BUSD>(validator, ctx);
                 i = i+ 1;
             };
         };
@@ -361,7 +361,6 @@ module sui_system::governance_test_utils {
     public fun assert_validator_total_stake_with_stable_amounts(
         validator_addrs: vector<address>,
         stake_amounts: vector<u64>,
-        exchange_stable_rate: u64,
         scenario: &mut Scenario) {
         let i = 0;
         while (i < vector::length(&validator_addrs)) {
@@ -370,7 +369,7 @@ module sui_system::governance_test_utils {
 
             test_scenario::next_tx(scenario, validator_addr);
             let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
-            let validator_amount = sui_system::validator_stake_amount_with_stable(&mut system_state, validator_addr, exchange_stable_rate);
+            let validator_amount = sui_system::validator_stake_amount_with_stable(&mut system_state, validator_addr);
             assert!(validator_amount == amount, validator_amount);
             test_scenario::return_shared(system_state);
             i = i + 1;
