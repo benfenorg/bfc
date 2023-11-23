@@ -40,4 +40,4 @@ rand.workspace = true
 reqwest.workspace = true
 tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
-
+hex = "0.4.3"

@@ -16,6 +16,8 @@
 -  [Function `activate`](#0x3_validator_activate)
 -  [Function `adjust_stake_and_gas_price`](#0x3_validator_adjust_stake_and_gas_price)
 -  [Function `request_add_stake`](#0x3_validator_request_add_stake)
+-  [Function `get_stable_pool_mut`](#0x3_validator_get_stable_pool_mut)
+-  [Function `get_stable_pool`](#0x3_validator_get_stable_pool)
 -  [Function `request_add_stable_stake`](#0x3_validator_request_add_stable_stake)
 -  [Function `request_add_stake_at_genesis`](#0x3_validator_request_add_stake_at_genesis)
 -  [Function `request_withdraw_stake`](#0x3_validator_request_withdraw_stake)
@@ -27,6 +29,7 @@
 -  [Function `deposit_stake_rewards`](#0x3_validator_deposit_stake_rewards)
 -  [Function `deposit_stable_stake_rewards`](#0x3_validator_deposit_stable_stake_rewards)
 -  [Function `process_pending_stakes_and_withdraws`](#0x3_validator_process_pending_stakes_and_withdraws)
+-  [Function `process_pending_all_stable_stakes_and_withdraws`](#0x3_validator_process_pending_all_stable_stakes_and_withdraws)
 -  [Function `process_pending_stable_stakes_and_withdraws`](#0x3_validator_process_pending_stable_stakes_and_withdraws)
 -  [Function `is_preactive`](#0x3_validator_is_preactive)
 -  [Function `metadata`](#0x3_validator_metadata)
@@ -57,6 +60,7 @@
 -  [Function `stake_amount`](#0x3_validator_stake_amount)
 -  [Function `stable_stake_amount`](#0x3_validator_stable_stake_amount)
 -  [Function `total_stake`](#0x3_validator_total_stake)
+-  [Function `total_stake_with_all_stable`](#0x3_validator_total_stake_with_all_stable)
 -  [Function `total_stake_with_stable`](#0x3_validator_total_stake_with_stable)
 -  [Function `voting_power`](#0x3_validator_voting_power)
 -  [Function `set_voting_power`](#0x3_validator_set_voting_power)
@@ -68,6 +72,7 @@
 -  [Function `pool_stable_token_exchange_rate_at_epoch`](#0x3_validator_pool_stable_token_exchange_rate_at_epoch)
 -  [Function `staking_pool_id`](#0x3_validator_staking_pool_id)
 -  [Function `stable_pool_id`](#0x3_validator_stable_pool_id)
+-  [Function `all_stable_pool_id`](#0x3_validator_all_stable_pool_id)
 -  [Function `is_duplicate`](#0x3_validator_is_duplicate)
 -  [Function `is_equal_some_and_value`](#0x3_validator_is_equal_some_and_value)
 -  [Function `is_equal_some`](#0x3_validator_is_equal_some)
@@ -101,6 +106,8 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/bcs.md#0x1_bcs">0x1::bcs</a>;
 <b>use</b> <a href="">0x1::option</a>;
 <b>use</b> <a href="">0x1::string</a>;
+<b>use</b> <a href="">0x1::type_name</a>;
+<b>use</b> <a href="">0x1::vector</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">0x2::bag</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
@@ -109,6 +116,7 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/url.md#0x2_url">0x2::url</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="stable_pool.md#0x3_stable_pool">0x3::stable_pool</a>;
 <b>use</b> <a href="staking_pool.md#0x3_staking_pool">0x3::staking_pool</a>;
 <b>use</b> <a href="validator_cap.md#0x3_validator_cap">0x3::validator_cap</a>;
@@ -322,10 +330,16 @@
  Staking pool for this validator.
 </dd>
 <dt>
-<code>busd_pool: <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;</code>
+<code>stable_pools: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a></code>
 </dt>
 <dd>
- BUSD pool for this validator.
+ stable pool for this validator.
+</dd>
+<dt>
+<code>stable_pool_keys: <a href="">vector</a>&lt;<a href="_String">ascii::String</a>&gt;</code>
+</dt>
+<dd>
+ stable pool keys.
 </dd>
 <dt>
 <code>commission_rate: u64</code>
@@ -827,7 +841,7 @@ Max gas price a validator can set is 100K MIST.
 Deactivate this validator's staking pool
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deactivate">deactivate</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, deactivation_epoch: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deactivate">deactivate</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, deactivation_epoch: u64)
 </code></pre>
 
 
@@ -836,9 +850,16 @@ Deactivate this validator's staking pool
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deactivate">deactivate</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, deactivation_epoch: u64) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deactivate">deactivate</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, deactivation_epoch: u64) {
     <a href="staking_pool.md#0x3_staking_pool_deactivate_staking_pool">staking_pool::deactivate_staking_pool</a>(&<b>mut</b> self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>, deactivation_epoch);
-    <a href="stable_pool.md#0x3_stable_pool_deactivate_stable_pool">stable_pool::deactivate_stable_pool</a>(&<b>mut</b> self.busd_pool, deactivation_epoch)
+    <b>let</b> i = 0;
+    <b>let</b> pool_size = <a href="_length">vector::length</a>(&self.stable_pool_keys);
+    <b>while</b> (i &lt; pool_size) {
+        <b>let</b> pool_key = <a href="_borrow">vector::borrow</a>(&self.stable_pool_keys, i);
+        <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, * pool_key);
+        <a href="stable_pool.md#0x3_stable_pool_deactivate_stable_pool">stable_pool::deactivate_stable_pool</a>(pool, deactivation_epoch);
+        i = i + 1;
+    };
 }
 </code></pre>
 
@@ -852,7 +873,7 @@ Deactivate this validator's staking pool
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate">activate</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, activation_epoch: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate">activate</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, activation_epoch: u64)
 </code></pre>
 
 
@@ -861,9 +882,16 @@ Deactivate this validator's staking pool
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate">activate</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, activation_epoch: u64) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate">activate</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, activation_epoch: u64) {
     <a href="staking_pool.md#0x3_staking_pool_activate_staking_pool">staking_pool::activate_staking_pool</a>(&<b>mut</b> self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>, activation_epoch);
-    <a href="stable_pool.md#0x3_stable_pool_activate_stable_pool">stable_pool::activate_stable_pool</a>(&<b>mut</b> self.busd_pool, activation_epoch)
+    <b>let</b> i = 0;
+    <b>let</b> pool_size = <a href="_length">vector::length</a>(&self.stable_pool_keys);
+    <b>while</b> (i &lt; pool_size) {
+        <b>let</b> pool_key = <a href="_borrow">vector::borrow</a>(&self.stable_pool_keys, i);
+        <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, * pool_key);
+        <a href="stable_pool.md#0x3_stable_pool_activate_stable_pool">stable_pool::activate_stable_pool</a>(pool, activation_epoch);
+        i = i + 1;
+    };
 }
 </code></pre>
 
@@ -947,13 +975,13 @@ Request to add stake to the validator's staking pool, processed at the end of th
 
 </details>
 
-<a name="0x3_validator_request_add_stable_stake"></a>
+<a name="0x3_validator_get_stable_pool_mut"></a>
 
-## Function `request_add_stable_stake`
+## Function `get_stable_pool_mut`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_add_stable_stake">request_add_stable_stake</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stake: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, staker_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool_mut">get_stable_pool_mut</a>&lt;STABLE&gt;(<a href="../../../.././build/Sui/docs/bag.md#0x2_bag">bag</a>: &<b>mut</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a>): &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;
 </code></pre>
 
 
@@ -962,26 +990,80 @@ Request to add stake to the validator's staking pool, processed at the end of th
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_add_stable_stake">request_add_stable_stake</a>(
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool_mut">get_stable_pool_mut</a>&lt;STABLE&gt;(
+    <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">bag</a>: &<b>mut</b> Bag,
+) :&<b>mut</b> StablePool&lt;STABLE&gt; {
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(<a href="../../../.././build/Sui/docs/bag.md#0x2_bag">bag</a>, pool_key)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_get_stable_pool"></a>
+
+## Function `get_stable_pool`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(<a href="../../../.././build/Sui/docs/bag.md#0x2_bag">bag</a>: &<a href="../../../.././build/Sui/docs/bag.md#0x2_bag_Bag">bag::Bag</a>): &<a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(<a href="../../../.././build/Sui/docs/bag.md#0x2_bag">bag</a>: &Bag) :&StablePool&lt;STABLE&gt; {
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(<a href="../../../.././build/Sui/docs/bag.md#0x2_bag">bag</a>, pool_key)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_request_add_stable_stake"></a>
+
+## Function `request_add_stable_stake`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stake: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;, staker_address: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_add_stable_stake">request_add_stable_stake</a>&lt;STABLE&gt;(
     self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>,
-    stake: Balance&lt;BUSD&gt;,
+    stake: Balance&lt;STABLE&gt;,
     staker_address: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
-) : StakedStable&lt;BUSD&gt; {
+) : StakedStable&lt;STABLE&gt; {
     <b>let</b> stake_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&stake);
     <b>assert</b>!(stake_amount &gt; 0, <a href="validator.md#0x3_validator_EInvalidStakeAmount">EInvalidStakeAmount</a>);
     <b>let</b> stake_epoch = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) + 1;
-    <b>let</b> staked_sui = <a href="stable_pool.md#0x3_stable_pool_request_add_stake">stable_pool::request_add_stake</a>(
-        &<b>mut</b> self.busd_pool, stake, stake_epoch, ctx
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, pool_key);
+    <b>let</b> staked_sui = <a href="stable_pool.md#0x3_stable_pool_request_add_stake">stable_pool::request_add_stake</a>&lt;STABLE&gt;(
+        pool, stake, stake_epoch, ctx
     );
     // Process stake right away <b>if</b> stable pool is preactive.
-    <b>if</b> (<a href="stable_pool.md#0x3_stable_pool_is_preactive">stable_pool::is_preactive</a>&lt;BUSD&gt;(&self.busd_pool)) {
-        <a href="stable_pool.md#0x3_stable_pool_process_pending_stake">stable_pool::process_pending_stake</a>&lt;BUSD&gt;(&<b>mut</b> self.busd_pool);
+    <b>if</b> (<a href="stable_pool.md#0x3_stable_pool_is_preactive">stable_pool::is_preactive</a>&lt;STABLE&gt;(pool)) {
+        <a href="stable_pool.md#0x3_stable_pool_process_pending_stake">stable_pool::process_pending_stake</a>&lt;STABLE&gt;(pool);
     };
     self.next_epoch_stable_stake = self.next_epoch_stable_stake + stake_amount;
     <a href="../../../.././build/BfcSystem/docs/event.md#0x2_event_emit">event::emit</a>(
         <a href="validator.md#0x3_validator_StakingRequestEvent">StakingRequestEvent</a> {
-            pool_id: <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>(self),
+            pool_id: <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;STABLE&gt;(self),
             validator_address: self.metadata.sui_address,
             staker_address,
             epoch: <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx),
@@ -1094,7 +1176,7 @@ Request to withdraw stake from the validator's staking pool, processed at the en
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;
 </code></pre>
 
 
@@ -1103,21 +1185,23 @@ Request to withdraw stake from the validator's staking pool, processed at the en
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(
     self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>,
-    staked_sui: StakedStable&lt;BUSD&gt;,
+    staked_sui: StakedStable&lt;STABLE&gt;,
     ctx: &<b>mut</b> TxContext,
-) : Balance&lt;BUSD&gt; {
+) : Balance&lt;STABLE&gt; {
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, pool_key);
     <b>let</b> principal_amount = <a href="stable_pool.md#0x3_stable_pool_staked_sui_amount">stable_pool::staked_sui_amount</a>(&staked_sui);
     <b>let</b> stake_activation_epoch = <a href="stable_pool.md#0x3_stable_pool_stake_activation_epoch">stable_pool::stake_activation_epoch</a>(&staked_sui);
     <b>let</b> withdrawn_stake = <a href="stable_pool.md#0x3_stable_pool_request_withdraw_stake">stable_pool::request_withdraw_stake</a>(
-        &<b>mut</b> self.busd_pool, staked_sui, ctx);
+        pool, staked_sui, ctx);
     <b>let</b> withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&withdrawn_stake);
     <b>let</b> reward_amount = withdraw_amount - principal_amount;
     self.next_epoch_stable_stake = self.next_epoch_stable_stake - withdraw_amount;
     <a href="../../../.././build/BfcSystem/docs/event.md#0x2_event_emit">event::emit</a>(
         <a href="validator.md#0x3_validator_UnstakingRequestEvent">UnstakingRequestEvent</a> {
-            pool_id: <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>(self),
+            pool_id: <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;STABLE&gt;(self),
             validator_address: self.metadata.sui_address,
             staker_address: <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx),
             stake_activation_epoch,
@@ -1286,7 +1370,7 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;)
 </code></pre>
 
 
@@ -1295,9 +1379,13 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, reward: Balance&lt;BUSD&gt;) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;STABLE&gt;(
+    self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>,
+    reward: Balance&lt;STABLE&gt;,
+) {
     self.next_epoch_stable_stake = self.next_epoch_stable_stake + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward);
-    <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">stable_pool::deposit_rewards</a>(&<b>mut</b> self.busd_pool, reward);
+    <b>let</b> pool = <a href="validator.md#0x3_validator_get_stable_pool_mut">get_stable_pool_mut</a>&lt;STABLE&gt;(&<b>mut</b> self.stable_pools);
+    <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">stable_pool::deposit_rewards</a>&lt;STABLE&gt;(pool, reward);
 }
 </code></pre>
 
@@ -1331,13 +1419,13 @@ Process pending stakes and withdraws, called at the end of the epoch.
 
 </details>
 
-<a name="0x3_validator_process_pending_stable_stakes_and_withdraws"></a>
+<a name="0x3_validator_process_pending_all_stable_stakes_and_withdraws"></a>
 
-## Function `process_pending_stable_stakes_and_withdraws`
+## Function `process_pending_all_stable_stakes_and_withdraws`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_process_pending_all_stable_stakes_and_withdraws">process_pending_all_stable_stakes_and_withdraws</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1346,9 +1434,43 @@ Process pending stakes and withdraws, called at the end of the epoch.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, ctx: &<b>mut</b> TxContext) {
-    <a href="stable_pool.md#0x3_stable_pool_process_pending_stakes_and_withdraws">stable_pool::process_pending_stakes_and_withdraws</a>(&<b>mut</b> self.busd_pool, ctx);
-    <b>assert</b>!(<a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>(self) == self.next_epoch_stable_stake, <a href="validator.md#0x3_validator_EInvalidStakeAmount">EInvalidStakeAmount</a>);
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_process_pending_all_stable_stakes_and_withdraws">process_pending_all_stable_stakes_and_withdraws</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> i = 0;
+    <b>let</b> pool_size = <a href="_length">vector::length</a>(&self.stable_pool_keys);
+    <b>while</b> (i &lt; pool_size) {
+        <b>let</b> pool_key = <a href="_borrow">vector::borrow</a>(&self.stable_pool_keys, i);
+        <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, * pool_key);
+        <a href="stable_pool.md#0x3_stable_pool_process_pending_stakes_and_withdraws">stable_pool::process_pending_stakes_and_withdraws</a>(pool, ctx);
+        <b>assert</b>!(<a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self) == self.next_epoch_stable_stake, <a href="validator.md#0x3_validator_EInvalidStakeAmount">EInvalidStakeAmount</a>);
+        i = i + 1;
+    };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_process_pending_stable_stakes_and_withdraws"></a>
+
+## Function `process_pending_stable_stakes_and_withdraws`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, pool_key);
+    <a href="stable_pool.md#0x3_stable_pool_process_pending_stakes_and_withdraws">stable_pool::process_pending_stakes_and_withdraws</a>&lt;STABLE&gt;(pool, ctx);
+    <b>assert</b>!(<a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self) == self.next_epoch_stable_stake, <a href="validator.md#0x3_validator_EInvalidStakeAmount">EInvalidStakeAmount</a>);
 }
 </code></pre>
 
@@ -2027,7 +2149,7 @@ Returns true if the validator is preactive.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
 </code></pre>
 
 
@@ -2036,8 +2158,8 @@ Returns true if the validator is preactive.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
-    <a href="stable_pool.md#0x3_stable_pool_stable_balance">stable_pool::stable_balance</a>(&self.busd_pool)
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_stable_balance">stable_pool::stable_balance</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
 }
 </code></pre>
 
@@ -2070,13 +2192,13 @@ Return the total amount staked with this validator
 
 </details>
 
-<a name="0x3_validator_total_stake_with_stable"></a>
+<a name="0x3_validator_total_stake_with_all_stable"></a>
 
-## Function `total_stake_with_stable`
+## Function `total_stake_with_all_stable`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_stable">total_stake_with_stable</a>(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stable_exchange_rate: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_all_stable">total_stake_with_all_stable</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
 </code></pre>
 
 
@@ -2085,10 +2207,49 @@ Return the total amount staked with this validator
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_stable">total_stake_with_stable</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, stable_exchange_rate: u64): u64 {
-    <b>let</b> stable_stake =  <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>(self);
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_all_stable">total_stake_with_all_stable</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;): u64 {
+    <b>let</b> i = 0;
+    <b>let</b> total_stake = 0;
     <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake">total_stake</a>(self);
-    <b>let</b> total_stake = (stake <b>as</b> u128) + (stable_stake <b>as</b> u128) * (stable_exchange_rate <b>as</b> u128);
+    <b>let</b> pool_size = <a href="_length">vector::length</a>(&self.stable_pool_keys);
+    <b>while</b> (i &lt; pool_size) {
+        <b>let</b> pool_key = <a href="_borrow">vector::borrow</a>(&self.stable_pool_keys, i);
+        <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&self.stable_pools, * pool_key);
+        <b>let</b> stable_stake = <a href="stable_pool.md#0x3_stable_pool_stable_balance">stable_pool::stable_balance</a>(pool);
+        <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, pool_key);
+        total_stake = total_stake + (stable_stake <b>as</b> u128) * (*rate <b>as</b> u128);
+        i = i + 1;
+    };
+    total_stake = total_stake + (stake <b>as</b> u128);
+    (total_stake <b>as</b> u64)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_total_stake_with_stable"></a>
+
+## Function `total_stake_with_stable`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_stable">total_stake_with_stable</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_stable">total_stake_with_stable</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;): u64 {
+    <b>let</b> stable_stake =  <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self);
+    <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake">total_stake</a>(self);
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, &pool_key);
+    <b>let</b> total_stake = (stake <b>as</b> u128) + (stable_stake <b>as</b> u128) * (*rate <b>as</b> u128);
     (total_stake <b>as</b> u64)
 }
 </code></pre>
@@ -2273,7 +2434,7 @@ Set the voting power of this validator, called only from validator_set.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">pool_stable_token_exchange_rate_at_epoch</a>(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, epoch: u64): <a href="stable_pool.md#0x3_stable_pool_PoolStableTokenExchangeRate">stable_pool::PoolStableTokenExchangeRate</a>
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">pool_stable_token_exchange_rate_at_epoch</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, epoch: u64): <a href="">vector</a>&lt;<a href="stable_pool.md#0x3_stable_pool_PoolStableTokenExchangeRate">stable_pool::PoolStableTokenExchangeRate</a>&gt;
 </code></pre>
 
 
@@ -2282,8 +2443,17 @@ Set the voting power of this validator, called only from validator_set.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">pool_stable_token_exchange_rate_at_epoch</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, epoch: u64): PoolStableTokenExchangeRate {
-    <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">stable_pool::pool_token_exchange_rate_at_epoch</a>&lt;BUSD&gt;(&self.busd_pool, epoch)
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">pool_stable_token_exchange_rate_at_epoch</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, epoch: u64): <a href="">vector</a>&lt;PoolStableTokenExchangeRate&gt; {
+    <b>let</b> vec_rate = <a href="_empty">vector::empty</a>&lt;PoolStableTokenExchangeRate&gt;();
+    <b>let</b> i = 0;
+    <b>let</b> pool_size = <a href="_length">vector::length</a>(&self.stable_pool_keys);
+    <b>while</b> (i &lt; pool_size) {
+        <b>let</b> pool_key = <a href="_borrow">vector::borrow</a>(&self.stable_pool_keys, i);
+        <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&self.stable_pools, * pool_key);
+        <a href="_insert">vector::insert</a>(&<b>mut</b> vec_rate, <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">stable_pool::pool_token_exchange_rate_at_epoch</a>&lt;STABLE&gt;(pool, epoch), i);
+        i = i + 1;
+    };
+    vec_rate
 }
 </code></pre>
 
@@ -2321,7 +2491,7 @@ Set the voting power of this validator, called only from validator_set.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
 </code></pre>
 
 
@@ -2330,8 +2500,41 @@ Set the voting power of this validator, called only from validator_set.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): ID {
-    <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&self.busd_pool)
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): ID {
+    <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_all_stable_pool_id"></a>
+
+## Function `all_stable_pool_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_all_stable_pool_id">all_stable_pool_id</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): <a href="">vector</a>&lt;<a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_all_stable_pool_id">all_stable_pool_id</a>&lt;STABLE&gt;(self:&<a href="validator.md#0x3_validator_Validator">Validator</a>): <a href="">vector</a>&lt;ID&gt; {
+    <b>let</b> i = 0;
+    <b>let</b> id_vec = <a href="">vector</a>[];
+    <b>let</b> pool_size = <a href="_length">vector::length</a>(&self.stable_pool_keys);
+    <b>while</b> (i &lt; pool_size) {
+        <b>let</b> pool_key = <a href="_borrow">vector::borrow</a>(&self.stable_pool_keys, i);
+        <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&self.stable_pools, * pool_key);
+        <a href="_insert">vector::insert</a>(&<b>mut</b> id_vec ,<a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(pool), i);
+        i = i + 1;
+    };
+    id_vec
 }
 </code></pre>
 
@@ -3180,7 +3383,13 @@ Create a new validator from the given <code><a href="validator.md#0x3_validator_
     <b>let</b> sui_address = metadata.sui_address;
 
     <b>let</b> <a href="staking_pool.md#0x3_staking_pool">staking_pool</a> = <a href="staking_pool.md#0x3_staking_pool_new">staking_pool::new</a>(ctx);
-    <b>let</b> busd_pool = <a href="stable_pool.md#0x3_stable_pool_new">stable_pool::new</a>&lt;BUSD&gt;(ctx);
+    <b>let</b> stable_pools = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_new">bag::new</a>(ctx);
+    //add <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">busd</a> <b>to</b> pools
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;());
+    <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_add">bag::add</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;BUSD&gt;&gt;(&<b>mut</b> stable_pools, pool_key,<a href="stable_pool.md#0x3_stable_pool_new">stable_pool::new</a>&lt;BUSD&gt;(ctx));
+    // add stable pool key
+    <b>let</b> stable_pool_keys = <a href="_empty">vector::empty</a>&lt;<a href="_String">ascii::String</a>&gt;();
+    <a href="_insert">vector::insert</a>(&<b>mut</b> stable_pool_keys, pool_key, 0);
 
     <b>let</b> operation_cap_id = <a href="validator_cap.md#0x3_validator_cap_new_unverified_validator_operation_cap_and_transfer">validator_cap::new_unverified_validator_operation_cap_and_transfer</a>(sui_address, ctx);
     <a href="validator.md#0x3_validator_Validator">Validator</a> {
@@ -3192,7 +3401,8 @@ Create a new validator from the given <code><a href="validator.md#0x3_validator_
         operation_cap_id,
         gas_price,
         <a href="staking_pool.md#0x3_staking_pool">staking_pool</a>,
-        busd_pool,
+        stable_pools,
+        stable_pool_keys,
         commission_rate,
         next_epoch_stake: 0,
         next_epoch_stable_stake: 0,

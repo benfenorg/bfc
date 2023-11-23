@@ -91,7 +91,8 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `load_inner_maybe_upgrade`](#0x3_sui_system_load_inner_maybe_upgrade)
 
 
-<pre><code><b>use</b> <a href="">0x1::option</a>;
+<pre><code><b>use</b> <a href="">0x1::ascii</a>;
+<b>use</b> <a href="">0x1::option</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
@@ -100,6 +101,7 @@ the SuiSystemStateInner version, or vice versa.
 <b>use</b> <a href="../../../.././build/Sui/docs/table.md#0x2_table">0x2::table</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="stable_pool.md#0x3_stable_pool">0x3::stable_pool</a>;
 <b>use</b> <a href="stake_subsidy.md#0x3_stake_subsidy">0x3::stake_subsidy</a>;
 <b>use</b> <a href="staking_pool.md#0x3_staking_pool">0x3::staking_pool</a>;
@@ -1515,7 +1517,7 @@ Getter returning addresses of the currently active validators.
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
     // get BUSD exchange rate from <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> system
-    <b>let</b> stable_exchange_rate  = <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&wrapper.bfc_system_id);
+    <b>let</b> stable_rate  = <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&wrapper.bfc_system_id);
 
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     // Validator will make a special system call <b>with</b> sender set <b>as</b> 0x0.
@@ -1530,7 +1532,7 @@ Getter returning addresses of the currently active validators.
         non_refundable_storage_fee,
         storage_fund_reinvest_rate,
         reward_slashing_rate,
-        stable_exchange_rate,
+        stable_rate,
         epoch_start_timestamp_ms,
         ctx,
     );
@@ -1549,7 +1551,7 @@ Getter returning addresses of the currently active validators.
 
 
 
-<pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &<a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>): u64
+<pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &<a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>): <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;
 </code></pre>
 
 
@@ -1558,7 +1560,7 @@ Getter returning addresses of the currently active validators.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID) : u64 {
+<pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID) : VecMap&lt;<a href="_String">ascii::String</a>, u64&gt; {
    <a href="../../../.././build/BfcSystem/docs/bfc_system.md#0xc8_bfc_system_get_exchange_rate">bfc_system::get_exchange_rate</a>(id)
 }
 </code></pre>

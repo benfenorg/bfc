@@ -256,7 +256,7 @@ impl Worker {
         };
 
         let network;
-        let mut retries_left = 90;
+        let mut retries_left = 120;
         loop {
             let network_result = anemo::Network::bind(addr.clone())
                 .server_name("narwhal")

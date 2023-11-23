@@ -210,8 +210,8 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                         },
                     stable_pool_mappings:
                     Table {
-                        id: stable_pool_mappings_id,
-                        size: stable_pool_mappings_size,
+                        id: _stable_pool_mappings_id,
+                        size: _stable_pool_mappings_size,
                     },
                     inactive_validators:
                         Table {

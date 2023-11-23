@@ -27,6 +27,7 @@
 <b>use</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner">0x3::sui_system_state_inner</a>;
 <b>use</b> <a href="validator.md#0x3_validator">0x3::validator</a>;
 <b>use</b> <a href="validator_set.md#0x3_validator_set">0x3::validator_set</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
 </code></pre>
 
 
@@ -557,8 +558,7 @@ all the information we need in the system.
     <b>let</b> i = 0;
     <b>while</b> (i &lt; count) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow_mut">vector::borrow_mut</a>(validators, i);
-        <a href="validator.md#0x3_validator_activate">validator::activate</a>(<a href="validator.md#0x3_validator">validator</a>, 0);
-
+        <a href="validator.md#0x3_validator_activate">validator::activate</a>&lt;BUSD&gt;(<a href="validator.md#0x3_validator">validator</a>, 0);
         i = i + 1;
     };
 

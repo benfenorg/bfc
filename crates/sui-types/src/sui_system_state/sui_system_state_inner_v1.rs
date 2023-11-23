@@ -304,7 +304,8 @@ pub struct ValidatorV1 {
     pub operation_cap_id: ID,
     pub gas_price: u64,
     pub staking_pool: StakingPoolV1,
-    pub busd_pool: StablePoolV1,
+    pub stable_pools: Bag,
+    pub stable_pool_keys: Vec<Vec<u8>>,
     pub commission_rate: u64,
     pub next_epoch_stake: u64,
     pub next_epoch_stable_stake:u64,
@@ -371,26 +372,11 @@ impl ValidatorV1 {
                     pending_pool_token_withdraw,
                     extra_fields: _,
                 },
-            busd_pool: StablePoolV1{
-                id: stable_pool_id,
-                activation_epoch: stable_pool_activation_epoch,
-                deactivation_epoch: stable_pool_deactivation_epoch,
-                stable_balance: stable_pool_busd_balance,
-                rewards_pool: busd_pool_rewards_pool,
-                pool_token_balance:busd_pool_token_balance,
-                exchange_rates:
-                Table {
-                    id: busd_exchange_rates_id,
-                    size: busd_exchange_rates_size,
-                },
-                pending_stake:busd_pool_pending_stake,
-                pending_total_sui_withdraw:busd_pool_pending_total_sui_withdraw,
-                pending_pool_token_withdraw:busd_pending_pool_token_withdraw,
-                extra_fields: _,
-            },
+            stable_pools:_,
+            stable_pool_keys:_,
             commission_rate,
             next_epoch_stake,
-            next_epoch_stable_stake,
+            next_epoch_stable_stake: _,
             next_epoch_gas_price,
             next_epoch_commission_rate,
             extra_fields: _,
@@ -671,8 +657,8 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                         },
                     stable_pool_mappings:
                     Table {
-                        id: stable_pool_mappings_id,
-                        size: stable_pool_mappings_size,
+                        id: _stable_pool_mappings_id,
+                        size: _stable_pool_mappings_size,
                     },
                     inactive_validators:
                         Table {
