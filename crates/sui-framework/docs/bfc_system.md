@@ -15,6 +15,7 @@
 -  [Function `update_round`](#0xc8_bfc_system_update_round)
 -  [Function `load_system_state`](#0xc8_bfc_system_load_system_state)
 -  [Function `load_bfc_system_state`](#0xc8_bfc_system_load_bfc_system_state)
+-  [Function `load_bfc_system_state_mut`](#0xc8_bfc_system_load_bfc_system_state_mut)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
 -  [Function `request_get_exchange_rate`](#0xc8_bfc_system_request_get_exchange_rate)
@@ -209,7 +210,7 @@
     );
     <b>let</b> self = <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a> {
         id,
-        version: <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>
+        version: <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>,
     };
 
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
@@ -278,7 +279,8 @@
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(stable));
     // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
-
+    //<b>update</b> stable rate
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_stable_rate">bfc_system_state_inner::update_stable_rate</a>(inner_state);
     <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>));
 }
 </code></pre>
@@ -365,6 +367,30 @@
 
 </details>
 
+<a name="0xc8_bfc_system_load_bfc_system_state_mut"></a>
+
+## Function `load_bfc_system_state_mut`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id: &<b>mut</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>): &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id: &<b>mut</b> UID): &<b>mut</b> BfcSystemStateInner {
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_load_system_state_mut"></a>
 
 ## Function `load_system_state_mut`
@@ -408,10 +434,12 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_exchange_rate">get_exchange_rate</a>(id: &UID): VecMap&lt;<a href="_String">ascii::String</a>, u64&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id);
-    <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
-    //add <a href="busd.md#0xc8_busd">busd</a> rate
-    <b>let</b> rate = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stablecoin_exchange_rate">bfc_system_state_inner::get_stablecoin_exchange_rate</a>&lt;BUSD&gt;(inner);
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), rate);
+    <b>let</b> rate_map = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">bfc_system_state_inner::get_all_stable_rate</a>(inner);
+    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_is_empty">vec_map::is_empty</a>(&rate_map)) {
+        //add <a href="busd.md#0xc8_busd">busd</a> rate
+        <b>let</b> rate = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stablecoin_exchange_rate">bfc_system_state_inner::get_stablecoin_exchange_rate</a>&lt;BUSD&gt;(inner);
+        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), rate);
+    };
     rate_map
 }
 </code></pre>

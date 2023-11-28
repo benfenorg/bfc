@@ -1,4 +1,6 @@
 module bfc_system::bfc_system_state_inner {
+    use std::ascii::String;
+    use std::type_name;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
@@ -7,6 +9,7 @@ module bfc_system::bfc_system_state_inner {
     use sui::bfc::BFC;
     use sui::tx_context::TxContext;
     use sui::vec_map;
+    use sui::vec_map::VecMap;
 
     use bfc_system::exchange_inner;
     use bfc_system::exchange_inner::ExchangePool;
@@ -24,17 +27,9 @@ module bfc_system::bfc_system_state_inner {
 
     friend bfc_system::bfc_system;
 
+    const DEFAULT_STABLE_RATE: u64 = 0;
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
-    const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[
-        // @0x23027681c7d461e3db271aeed97b5da2b6e157350fa2ff659a7ff9cccb28cc00,
-        // @0x905973e8fae0c89c6c1da33751db3f828bda228e0171231b02052fbbebd48f68,
-        // @0x363e4d3ee8a6400e21bd0cb0c8ecc876f3a1fe1e0f06ffdd67369bd982d39faf,
-        // @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
-        // @0xdcbb951dc6c91cb4838876825daef3b361ca84d3f1e56e89ede66ef15975b4b8,
-        // @0x4cfd9d0cb99b422416a680868f2e4e04446a15939042c2fd42104e99fc1da57b,
-        // @0x3212e3b30a5571b6538560ece888482f2908bd5a95cbf6305ed4052ceb1899dd,
-        @0x0,
-    ];
+    const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
 
     spec module { pragma verify = false; }
 
@@ -47,6 +42,7 @@ module bfc_system::bfc_system_state_inner {
         dao: Dao,
         treasury: Treasury,
         treasury_pool: TreasuryPool,
+        stable_rate: VecMap<String, u64>
     }
 
     struct TreasuryParameters has drop, copy {
@@ -79,7 +75,7 @@ module bfc_system::bfc_system_state_inner {
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
         let (t, remain_balance) = create_treasury(usd_supply, bfc_balance, parameters, ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
-
+        let stable_rate = vec_map::empty<String, u64>();
         BfcSystemStateInner {
             round: BFC_SYSTEM_STATE_START_ROUND,
             gas_coin_map,
@@ -87,6 +83,7 @@ module bfc_system::bfc_system_state_inner {
             dao,
             treasury: t,
             treasury_pool: tp,
+            stable_rate,
         }
     }
 
@@ -331,6 +328,23 @@ module bfc_system::bfc_system_state_inner {
             balance::destroy_zero(withdraw_balance);
         };
         treasury::rebalance(&mut self.treasury, clock, ctx);
+    }
+
+    public(friend) fun update_stable_rate( self: &mut BfcSystemStateInner) {
+        //busd
+        let rate =  get_stablecoin_exchange_rate<BUSD>(self);
+        if(rate > DEFAULT_STABLE_RATE) {
+            let key = type_name::into_string(type_name::get<BUSD>());
+            if (vec_map::contains(&self.stable_rate, &key)) {
+                vec_map::remove(&mut self.stable_rate, &key);
+            };
+            vec_map::insert(&mut self.stable_rate, key, rate);
+        };
+        //other stable rate update
+    }
+
+    public(friend) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
+        self.stable_rate
     }
 
     /// X-vault

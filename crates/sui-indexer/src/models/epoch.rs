@@ -5,6 +5,7 @@ use diesel::{Insertable, Queryable};
 use jsonrpsee::core::__reexports::serde::Deserialize;
 
 use sui_json_rpc_types::{EndOfEpochInfo, EpochInfo};
+use sui_types::collection_types::VecMap;
 
 use crate::errors::IndexerError;
 use crate::models::system_state::DBValidatorSummary;
@@ -124,4 +125,5 @@ pub struct SystemEpochInfoEvent {
     pub total_gas_fees: i64,
     pub total_stake_rewards_distributed: i64,
     pub leftover_storage_fund_inflow: i64,
+    pub stable_rate: VecMap<Vec<u8>, u64>,
 }

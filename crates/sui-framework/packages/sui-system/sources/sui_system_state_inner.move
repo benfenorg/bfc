@@ -3,6 +3,7 @@
 
 module sui_system::sui_system_state_inner {
     use std::ascii;
+    use std::ascii::String;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::object::{ID};
@@ -223,6 +224,7 @@ module sui_system::sui_system_state_inner {
         total_gas_fees: u64,
         total_stake_rewards_distributed: u64,
         leftover_storage_fund_inflow: u64,
+        stable_rate: VecMap<String, u64>,
     }
 
     // Errors
@@ -1000,6 +1002,7 @@ module sui_system::sui_system_state_inner {
                 total_gas_fees: computation_charge,
                 total_stake_rewards_distributed: computation_reward_distributed + storage_fund_reward_distributed,
                 leftover_storage_fund_inflow,
+                stable_rate,
             }
         );
         self.safe_mode = false;
