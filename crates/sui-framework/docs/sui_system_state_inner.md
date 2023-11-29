@@ -605,12 +605,6 @@ the epoch advancement transaction.
 <dd>
 
 </dd>
-<dt>
-<code>stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;</code>
-</dt>
-<dd>
-
-</dd>
 </dl>
 
 
@@ -2297,7 +2291,6 @@ gas coins.
             total_gas_fees: computation_charge,
             total_stake_rewards_distributed: computation_reward_distributed + storage_fund_reward_distributed,
             leftover_storage_fund_inflow,
-            stable_rate,
         }
     );
     self.safe_mode = <b>false</b>;

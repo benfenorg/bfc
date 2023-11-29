@@ -273,6 +273,7 @@ impl MoveObjectType {
     pub fn is_gas_coin(&self) -> bool {
         match &self.0 {
             MoveObjectType_::GasCoin(tag) => GAS::is_gas_type(tag),
+            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
             MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
             }

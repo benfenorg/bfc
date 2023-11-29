@@ -4107,6 +4107,23 @@ pub async fn init_state_with_ids_and_object_basics<
     publish_object_basics(state).await
 }
 
+#[cfg(test)]
+pub async fn init_state_with_ids_and_objects_basics<
+    I: IntoIterator<Item = (SuiAddress, (ObjectID,ObjectID))>,
+>(
+    objects: I,
+) -> (Arc<AuthorityState>, ObjectRef) {
+    let state = TestAuthorityBuilder::new().build().await;
+    for (address, (object_id,stable_id)) in objects {
+        let obj = Object::with_id_owner_for_testing(object_id, address);
+        let stable_obj = Object::with_stable_id_owner_version_for_testing(stable_id, SequenceNumber::new(),address);
+
+        state.insert_genesis_object(obj).await;
+        state.insert_genesis_object(stable_obj).await;
+    }
+    publish_object_basics(state).await
+}
+
 async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
     use sui_move_build::BuildConfig;
 
