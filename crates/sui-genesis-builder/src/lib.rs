@@ -968,7 +968,7 @@ fn process_package(
         })
         .collect();
 
-    let genesis_digest = ctx.digest();
+    let _genesis_digest = ctx.digest();
     // let mut temporary_store = TemporaryStore::new(
     //     store.clone(),
     //     InputObjects::new(loaded_dependencies),

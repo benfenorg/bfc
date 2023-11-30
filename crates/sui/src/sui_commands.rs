@@ -790,7 +790,7 @@ pub async fn genesis_private(
     dir = dir.join("genesis");
     info!("dir is {:?}", dir);
     let builder1 = Builder::load(&dir)?;
-    let  validators = builder1
+    let  _validators = builder1
         .validators()
         .values()
         .map(|v| {
