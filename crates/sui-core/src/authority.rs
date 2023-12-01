@@ -25,6 +25,7 @@ use prometheus::{
     register_int_gauge_vec_with_registry, register_int_gauge_with_registry, Histogram, IntCounter,
     IntCounterVec, IntGauge, IntGaugeVec, Registry,
 };
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
