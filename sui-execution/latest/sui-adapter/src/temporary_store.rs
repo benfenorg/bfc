@@ -37,7 +37,7 @@ use sui_types::{
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper};
+use sui_types::bfc_system_state::{BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -803,6 +803,12 @@ impl<'backing> TemporaryStore<'backing> {
             .expect("System state wrapper object must exist");
         return wrapper;
     }
+
+    pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {
+        let bfc_system_state_wrapper= get_bfc_system_state_wrapper(&self.store).expect("System state wrapper object must exist");
+        return bfc_system_state_wrapper;
+    }
+
 }
 
 type ModifiedObjectInfo<'a> = (ObjectID, Option<(SequenceNumber, u64)>, Option<&'a Object>);

@@ -114,9 +114,11 @@ use sui_types::sui_system_state::SuiSystemStateTrait;
 use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
+use sui_types::gas_coin::MIST_PER_SUI;
 use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::proposal::ProposalStatus;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
+//use sui_types::{is_system_package, TypeTag};
 use typed_store::Map;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
@@ -1188,6 +1190,7 @@ impl AuthorityState {
         let transaction_data = &certificate.data().intent_message().value;
         let (kind, signer, gas) = transaction_data.execution_parts();
         //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
+
         let (inner_temp_store, effects, execution_error_opt) =
             epoch_store.executor().execute_transaction_to_effects(
                 self.database.clone(),
@@ -1247,8 +1250,25 @@ impl AuthorityState {
             }
         }
 
+        let mut is_stable_gas = false;
         // make a gas object if one was not provided
         let mut gas_object_refs = transaction.gas().to_vec();
+        if !transaction.gas().is_empty() {
+            //get gas obj
+            let gas_ids :Vec<_> = transaction.gas().iter().map(|(id, _, _)| *id).collect();
+            let gas_objs = self.get_objects(&gas_ids).await?;
+            for obj in gas_objs {
+                match obj {
+                    Some(stable)=> {
+                        if stable.is_stable_gas_coin() {
+                            is_stable_gas = true;
+                            gas_object_refs = vec![];
+                        }
+                    },
+                    _ => {},
+                };
+            };
+        };
 
         let ((gas_status, input_objects), mock_gas) = if transaction.gas().is_empty() {
             let sender = transaction.sender();
@@ -1335,30 +1355,69 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
-
-        Ok((
-            DryRunTransactionBlockResponse {
-                input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
-                    .map_err(|e| SuiError::TransactionSerializationError {
-                        error: format!(
-                            "Failed to convert transaction to SuiTransactionBlockData: {}",
-                            e
-                        ),
-                    })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
-                effects:  effects.clone().try_into()?,
-                events: SuiTransactionBlockEvents::try_from(
-                    inner_temp_store.events.clone(),
-                    tx_digest,
-                    None,
-                    &module_cache,
-                )?,
-                object_changes,
-                balance_changes,
-            },
-            inner_temp_store.written,
-            effects,
-            mock_gas,
-        ))
+        let response_effects :SuiTransactionBlockEffects = effects.clone().try_into()?;
+        if is_stable_gas {
+            let gas = transaction.gas()[0].0;
+            //get exchange rate
+            let rate = self.exchange_rates(gas).await?;
+            let mut mut_effects = response_effects.clone();
+            if rate > 0 {
+                let mut gas_cost = mut_effects.mut_gas_cost_summary();
+                let real_rate = rate / MIST_PER_SUI;
+                gas_cost.computation_cost = gas_cost.computation_cost * real_rate;
+                gas_cost.storage_cost = gas_cost.storage_cost * real_rate;
+                gas_cost.storage_rebate = gas_cost.storage_rebate * real_rate;
+                gas_cost.non_refundable_storage_fee = gas_cost.non_refundable_storage_fee * real_rate;
+                info!("stable gas coin exchange: {}", gas_cost);
+            }
+            Ok((
+                DryRunTransactionBlockResponse {
+                    input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
+                        .map_err(|e| SuiError::TransactionSerializationError {
+                            error: format!(
+                                "Failed to convert transaction to SuiTransactionBlockData: {}",
+                                e
+                            ),
+                        })?,
+                    effects: mut_effects,
+                    events: SuiTransactionBlockEvents::try_from(
+                        inner_temp_store.events.clone(),
+                        tx_digest,
+                        None,
+                        &module_cache,
+                    )?,
+                    object_changes,
+                    balance_changes,
+                },
+                inner_temp_store.written,
+                effects,
+                mock_gas,
+            ))
+        } else {
+            Ok((
+                DryRunTransactionBlockResponse {
+                    input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)
+                        .map_err(|e| SuiError::TransactionSerializationError {
+                            error: format!(
+                                "Failed to convert transaction to SuiTransactionBlockData: {}",
+                                e
+                            ),
+                        })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
+                    effects: response_effects,
+                    events: SuiTransactionBlockEvents::try_from(
+                        inner_temp_store.events.clone(),
+                        tx_digest,
+                        None,
+                        &module_cache,
+                    )?,
+                    object_changes,
+                    balance_changes,
+                },
+                inner_temp_store.written,
+                effects,
+                mock_gas,
+            ))
+        }
     }
 
     #[allow(unused)]

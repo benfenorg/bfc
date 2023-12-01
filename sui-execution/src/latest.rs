@@ -34,6 +34,7 @@ use sui_adapter_latest::programmable_transactions;
 use sui_adapter_latest::temporary_store::TemporaryStore;
 use sui_adapter_latest::type_layout_resolver::TypeLayoutResolver;
 use sui_move_natives_latest::all_natives;
+use sui_types::bfc_system_state::get_bfc_system_state_wrapper;
 use sui_types::storage::BackingStore;
 use sui_verifier_latest::meter::SuiVerifierMeter;
 

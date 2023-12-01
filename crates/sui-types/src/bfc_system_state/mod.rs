@@ -137,7 +137,6 @@ pub struct BfcSystemStateInnerV1 {
     pub dao: Dao,
     pub treasury: Treasury,
     pub treasury_pool: TreasuryPool,
-    pub stable_rate: VecMap<Vec<u8>, u64>,
 }
 
 // Rust version of the Move bfc_system::bfc_system_state_inner::ExchangePool type
@@ -214,14 +213,6 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemS
             "Unsupported BfcSystemState version: {}",
             wrapper.version
         ))),
-    }
-}
-pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Vec<u8>, u64>, SuiError> {
-    match get_bfc_system_state(object_store) {
-        Ok(BFCSystemState::V1(bfc_system_state)) => {
-            Ok(bfc_system_state.stable_rate)
-        },
-        Err(e) => Err(e),
     }
 }
 
