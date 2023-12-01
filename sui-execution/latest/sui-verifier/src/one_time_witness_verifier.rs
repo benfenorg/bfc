@@ -47,9 +47,40 @@ pub fn verify_module(
     // during genesis. It is easiest to simply special-case this module particularly that this is
     // framework code and thus deemed correct.
     let bfc_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("bfc").to_owned());
-    let stable_module = ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("stable").to_owned());
     let busd_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("busd").to_owned());
-    if bfc_module == module.self_id() || stable_module == module.self_id() || busd_module == module.self_id() {
+    let bars_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bars").to_owned());
+    let bgbp_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bgbp").to_owned());
+    let btry_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("btry").to_owned());
+    let bzar_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bzar").to_owned());
+    let bsar_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bsar").to_owned());
+    let brub_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("brub").to_owned());
+    let bmxn_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bmxn").to_owned());
+    let bkrw_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bkrw").to_owned());
+    let bjpy_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bjpy").to_owned());
+    let bidr_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bidr").to_owned());
+    let binr_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("binr").to_owned());
+    let beur_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("beur").to_owned());
+    let bcad_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bcad").to_owned());
+    let bbrl_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bbrl").to_owned());
+    let baud_module = ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("baud").to_owned());
+    if bfc_module == module.self_id() ||
+        busd_module == module.self_id() ||
+        bars_module == module.self_id() ||
+        bgbp_module == module.self_id() ||
+        btry_module == module.self_id() ||
+        bzar_module == module.self_id() ||
+        bsar_module == module.self_id() ||
+        brub_module == module.self_id() ||
+        bmxn_module == module.self_id() ||
+        bkrw_module == module.self_id() ||
+        bjpy_module == module.self_id() ||
+        bidr_module == module.self_id() ||
+        binr_module == module.self_id() ||
+        beur_module == module.self_id() ||
+        bcad_module == module.self_id() ||
+        bbrl_module == module.self_id() ||
+        baud_module == module.self_id()
+        {
         return Ok(());
     }
 
