@@ -225,7 +225,7 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(
-                            "Failed to load sui system state inner object with ID {:?} and version {:?}: {:?}",
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
                             id, wrapper.version, err
                         ))
                     },
@@ -234,7 +234,7 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
             Ok(result.dao.current_proposal_status)
         }
         _ => Err(SuiError::SuiSystemStateReadError(format!(
-            "Unsupported SuiSystemState version: {}",
+            "Unsupported BfcSystemState version: {}",
             wrapper.version
         ))),
     }

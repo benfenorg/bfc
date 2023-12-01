@@ -798,14 +798,14 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.bfc_round_safe_mode(self.store.as_object_store(),protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
-    pub fn get_bfc_system_state_temporary(& self) -> VecMap<u64, ProposalStatus> {
+    pub fn get_bfc_system_proposal_stauts_map(& self) -> VecMap<u64, ProposalStatus> {
         let wrapper = get_bfc_system_proposal_state_map(self.store.as_object_store())
             .expect("System state wrapper object must exist");
         return wrapper;
     }
 
     pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {
-        let bfc_system_state_wrapper= get_bfc_system_state_wrapper(&self.store).expect("System state wrapper object must exist");
+        let bfc_system_state_wrapper= get_bfc_system_state_wrapper(self.store.as_object_store()).expect("System state wrapper object must exist");
         return bfc_system_state_wrapper;
     }
 

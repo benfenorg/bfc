@@ -1158,7 +1158,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
         InnerTemporaryStore,
-        VecMap<u64, ProposalStatus>,
+        Option<VecMap<u64, ProposalStatus>>,
         TransactionEffects,
         Option<ExecutionError>,
     )> {
@@ -1185,9 +1185,13 @@ impl AuthorityState {
             tx_digest,
             protocol_config,
         );
-        let proposal_map = temporary_store.get_bfc_system_state_temporary();
-
         let transaction_data = &certificate.data().intent_message().value;
+        let mut proposal_map= None;
+
+        if transaction_data.is_change_epoch_tx() {
+            proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
+        };
+
         let (kind, signer, gas) = transaction_data.execution_parts();
         //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
 
@@ -4059,8 +4063,10 @@ impl AuthorityState {
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
-        let mut tmp = self.proposal_state_map.lock();
-        tmp.contents = proposal_map.contents;
+        if let Some(new_proposal_map) = proposal_map {
+            let mut tmp = self.proposal_state_map.lock();
+            tmp.contents = new_proposal_map.contents;
+        }
 
         //let system_obj = temporary_store.get_sui_system_state_object();
         let system_obj = get_sui_system_state(&temporary_store.written)
