@@ -80,8 +80,8 @@ import {
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	normalizeSuiAddress,
-} from '../utils/sui-types.js';
-import { fromB58, toB64, toHEX } from '@mysten/bcs';
+} from '../utils/bfc-types.js';
+import { fromB58, toB64, toHEX } from '@benfen/bcs';
 import { sui2BfcAddress } from '../utils/format.js';
 import type { TransactionBlock } from '../builder/index.js';
 import { isTransactionBlock } from '../builder/index.js';
@@ -160,7 +160,7 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-			method: 'suix_getCoins',
+			method: 'bfcx_getCoins',
 			params: [input.owner, input.coinType, input.cursor, input.limit],
 		});
 	}
@@ -174,7 +174,7 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-			method: 'suix_getAllCoins',
+			method: 'bfcx_getAllCoins',
 			params: [input.owner, input.cursor, input.limit],
 		});
 	}
@@ -187,7 +187,7 @@ export class SuiClient {
 			throw new Error('Invalid Sui address');
 		}
 		return await this.transport.request({
-			method: 'suix_getBalance',
+			method: 'bfcx_getBalance',
 			params: [input.owner, input.coinType],
 		});
 	}
@@ -199,7 +199,7 @@ export class SuiClient {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
-		return await this.transport.request({ method: 'suix_getAllBalances', params: [input.owner] });
+		return await this.transport.request({ method: 'bfcx_getAllBalances', params: [input.owner] });
 	}
 
 	/**
@@ -207,7 +207,7 @@ export class SuiClient {
 	 */
 	async getCoinMetadata(input: GetCoinMetadataParams): Promise<CoinMetadata | null> {
 		return await this.transport.request({
-			method: 'suix_getCoinMetadata',
+			method: 'bfcx_getCoinMetadata',
 			params: [input.coinType],
 		});
 	}
@@ -217,7 +217,7 @@ export class SuiClient {
 	 */
 	async getTotalSupply(input: GetTotalSupplyParams): Promise<CoinSupply> {
 		return await this.transport.request({
-			method: 'suix_getTotalSupply',
+			method: 'bfcx_getTotalSupply',
 			params: [input.coinType],
 		});
 	}
@@ -238,7 +238,7 @@ export class SuiClient {
 		input: GetMoveFunctionArgTypesParams,
 	): Promise<SuiMoveFunctionArgType[]> {
 		return await this.transport.request({
-			method: 'sui_getMoveFunctionArgTypes',
+			method: 'bfc_getMoveFunctionArgTypes',
 			params: [input.package, input.module, input.function],
 		});
 	}
@@ -251,7 +251,7 @@ export class SuiClient {
 		input: GetNormalizedMoveModulesByPackageParams,
 	): Promise<SuiMoveNormalizedModules> {
 		return await this.transport.request({
-			method: 'sui_getNormalizedMoveModulesByPackage',
+			method: 'bfc_getNormalizedMoveModulesByPackage',
 			params: [input.package],
 		});
 	}
@@ -263,7 +263,7 @@ export class SuiClient {
 		input: GetNormalizedMoveModuleParams,
 	): Promise<SuiMoveNormalizedModule> {
 		return await this.transport.request({
-			method: 'sui_getNormalizedMoveModule',
+			method: 'bfc_getNormalizedMoveModule',
 			params: [input.package, input.module],
 		});
 	}
@@ -275,7 +275,7 @@ export class SuiClient {
 		input: GetNormalizedMoveFunctionParams,
 	): Promise<SuiMoveNormalizedFunction> {
 		return await this.transport.request({
-			method: 'sui_getNormalizedMoveFunction',
+			method: 'bfc_getNormalizedMoveFunction',
 			params: [input.package, input.module, input.function],
 		});
 	}
@@ -287,7 +287,7 @@ export class SuiClient {
 		input: GetNormalizedMoveStructParams,
 	): Promise<SuiMoveNormalizedStruct> {
 		return await this.transport.request({
-			method: 'sui_getNormalizedMoveStruct',
+			method: 'bfc_getNormalizedMoveStruct',
 			params: [input.package, input.module, input.struct],
 		});
 	}
@@ -301,7 +301,7 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-			method: 'suix_getOwnedObjects',
+			method: 'bfcx_getOwnedObjects',
 			params: [
 				input.owner,
 				{
@@ -322,14 +322,14 @@ export class SuiClient {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({
-			method: 'sui_getObject',
+			method: 'bfc_getObject',
 			params: [input.id, input.options],
 		});
 	}
 
 	async tryGetPastObject(input: TryGetPastObjectParams): Promise<ObjectRead> {
 		return await this.transport.request({
-			method: 'sui_tryGetPastObject',
+			method: 'bfc_tryGetPastObject',
 			params: [input.id, input.version, input.options],
 		});
 	}
@@ -349,7 +349,7 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-			method: 'sui_multiGetObjects',
+			method: 'bfc_multiGetObjects',
 			params: [input.ids, input.options],
 		});
 	}
@@ -361,7 +361,7 @@ export class SuiClient {
 		input: QueryTransactionBlocksParams,
 	): Promise<PaginatedTransactionResponse> {
 		return await this.transport.request({
-			method: 'suix_queryTransactionBlocks',
+			method: 'bfcx_queryTransactionBlocks',
 			params: [
 				{
 					filter: input.filter,
@@ -381,7 +381,7 @@ export class SuiClient {
 			throw new Error('Invalid Transaction digest');
 		}
 		return await this.transport.request({
-			method: 'sui_getTransactionBlock',
+			method: 'bfc_getTransactionBlock',
 			params: [input.digest, input.options],
 		});
 	}
@@ -401,7 +401,7 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-			method: 'sui_multiGetTransactionBlocks',
+			method: 'bfc_multiGetTransactionBlocks',
 			params: [input.digests, input.options],
 		});
 	}
@@ -410,7 +410,7 @@ export class SuiClient {
 		input: ExecuteTransactionBlockParams,
 	): Promise<SuiTransactionBlockResponse> {
 		return await this.transport.request({
-			method: 'sui_executeTransactionBlock',
+			method: 'bfc_executeTransactionBlock',
 			params: [
 				typeof input.transactionBlock === 'string'
 					? input.transactionBlock
@@ -457,7 +457,7 @@ export class SuiClient {
 
 	async getTotalTransactionBlocks(): Promise<bigint> {
 		const resp = await this.transport.request<string>({
-			method: 'sui_getTotalTransactionBlocks',
+			method: 'bfc_getTotalTransactionBlocks',
 			params: [],
 		});
 		return BigInt(resp);
@@ -468,7 +468,7 @@ export class SuiClient {
 	 */
 	async getReferenceGasPrice(): Promise<bigint> {
 		const resp = await this.transport.request<string>({
-			method: 'suix_getReferenceGasPrice',
+			method: 'bfcx_getReferenceGasPrice',
 			params: [],
 		});
 		return BigInt(resp);
@@ -481,7 +481,7 @@ export class SuiClient {
 		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
 			throw new Error('Invalid Sui address');
 		}
-		return await this.transport.request({ method: 'suix_getStakes', params: [input.owner] });
+		return await this.transport.request({ method: 'bfcx_getStakes', params: [input.owner] });
 	}
 
 	/**
@@ -494,7 +494,7 @@ export class SuiClient {
 			}
 		});
 		return await this.transport.request({
-			method: 'suix_getStakesByIds',
+			method: 'bfcx_getStakesByIds',
 			params: [input.stakedSuiIds],
 		});
 	}
@@ -503,14 +503,14 @@ export class SuiClient {
 	 * Return the latest system state content.
 	 */
 	async getLatestSuiSystemState(): Promise<SuiSystemStateSummary> {
-		return await this.transport.request({ method: 'suix_getLatestSuiSystemState', params: [] });
+		return await this.transport.request({ method: 'bfcx_getLatestSuiSystemState', params: [] });
 	}
 	/**
 	 * Getting the overview for the network
 	 */
 	async getNetworkOverview(): Promise<any> {
 		const resp = await this.transport.request<string>({
-			method: 'suix_getNetworkOverview',
+			method: 'bfcx_getNetworkOverview',
 			params: [],
 		});
 		return resp;
@@ -521,7 +521,7 @@ export class SuiClient {
 	 */
 	async getInnerDao(): Promise<BfcDao> {
 		return await this.transport.request({
-			method: 'sui_getInnerDaoInfo',
+			method: 'bfc_getInnerDaoInfo',
 			params: [],
 		});
 	}
@@ -531,7 +531,7 @@ export class SuiClient {
 	 */
 	async queryEvents(input: QueryEventsParams): Promise<PaginatedEvents> {
 		return await this.transport.request({
-			method: 'suix_queryEvents',
+			method: 'bfcx_queryEvents',
 			params: [
 				input.query,
 				input.cursor,
@@ -551,8 +551,8 @@ export class SuiClient {
 		},
 	): Promise<Unsubscribe> {
 		return this.transport.subscribe({
-			method: 'suix_subscribeEvent',
-			unsubscribe: 'suix_unsubscribeEvent',
+			method: 'bfcx_subscribeEvent',
+			unsubscribe: 'bfcx_unsubscribeEvent',
 			params: [input.filter],
 			onMessage: input.onMessage,
 		});
@@ -565,8 +565,8 @@ export class SuiClient {
 		},
 	): Promise<Unsubscribe> {
 		return this.transport.subscribe({
-			method: 'suix_subscribeTransaction',
-			unsubscribe: 'suix_unsubscribeTransaction',
+			method: 'bfcx_subscribeTransaction',
+			unsubscribe: 'bfcx_unsubscribeTransaction',
 			params: [input.filter],
 			onMessage: input.onMessage,
 		});
@@ -598,7 +598,7 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-			method: 'sui_devInspectTransactionBlock',
+			method: 'bfc_devInspectTransactionBlock',
 			params: [input.sender, devInspectTxBytes, input.gasPrice, input.epoch],
 		});
 	}
@@ -610,7 +610,7 @@ export class SuiClient {
 		input: DryRunTransactionBlockParams,
 	): Promise<DryRunTransactionBlockResponse> {
 		return await this.transport.request({
-			method: 'sui_dryRunTransactionBlock',
+			method: 'bfc_dryRunTransactionBlock',
 			params: [
 				typeof input.transactionBlock === 'string'
 					? input.transactionBlock
@@ -627,7 +627,7 @@ export class SuiClient {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.transport.request({
-			method: 'suix_getDynamicFields',
+			method: 'bfcx_getDynamicFields',
 			params: [input.parentId, input.cursor, input.limit],
 		});
 	}
@@ -637,7 +637,7 @@ export class SuiClient {
 	 */
 	async getDynamicFieldObject(input: GetDynamicFieldObjectParams): Promise<SuiObjectResponse> {
 		return await this.transport.request({
-			method: 'suix_getDynamicFieldObject',
+			method: 'bfcx_getDynamicFieldObject',
 			params: [input.parentId, input.name],
 		});
 	}
@@ -647,7 +647,7 @@ export class SuiClient {
 	 */
 	async getLatestCheckpointSequenceNumber(): Promise<string> {
 		const resp = await this.transport.request({
-			method: 'sui_getLatestCheckpointSequenceNumber',
+			method: 'bfc_getLatestCheckpointSequenceNumber',
 			params: [],
 		});
 		return String(resp);
@@ -657,7 +657,7 @@ export class SuiClient {
 	 * Returns information about a given checkpoint
 	 */
 	async getCheckpoint(input: GetCheckpointParams): Promise<Checkpoint> {
-		return await this.transport.request({ method: 'sui_getCheckpoint', params: [input.id] });
+		return await this.transport.request({ method: 'bfc_getCheckpoint', params: [input.id] });
 	}
 
 	/**
@@ -667,7 +667,7 @@ export class SuiClient {
 		input: PaginationArguments<CheckpointPage['nextCursor']> & GetCheckpointsParams,
 	): Promise<CheckpointPage> {
 		return await this.transport.request({
-			method: 'sui_getCheckpoints',
+			method: 'bfc_getCheckpoints',
 			params: [input.cursor, input?.limit, input.descendingOrder],
 		});
 	}
@@ -677,24 +677,24 @@ export class SuiClient {
 	 */
 	async getCommitteeInfo(input?: GetCommitteeInfoParams): Promise<CommitteeInfo> {
 		return await this.transport.request({
-			method: 'suix_getCommitteeInfo',
+			method: 'bfcx_getCommitteeInfo',
 			params: [input?.epoch],
 		});
 	}
 
 	async getNetworkMetrics(): Promise<NetworkMetrics> {
-		return await this.transport.request({ method: 'suix_getNetworkMetrics', params: [] });
+		return await this.transport.request({ method: 'bfcx_getNetworkMetrics', params: [] });
 	}
 
 	async getAddressMetrics(): Promise<AddressMetrics> {
-		return await this.transport.request({ method: 'suix_getLatestAddressMetrics', params: [] });
+		return await this.transport.request({ method: 'bfcx_getLatestAddressMetrics', params: [] });
 	}
 
 	async getAllEpochAddressMetrics(input?: {
 		descendingOrder?: boolean;
 	}): Promise<AllEpochsAddressMetrics> {
 		return await this.transport.request({
-			method: 'suix_getAllEpochAddressMetrics',
+			method: 'bfcx_getAllEpochAddressMetrics',
 			params: [input?.descendingOrder],
 		});
 	}
@@ -708,7 +708,7 @@ export class SuiClient {
 		} & PaginationArguments<EpochPage['nextCursor']>,
 	): Promise<EpochPage> {
 		return await this.transport.request({
-			method: 'suix_getEpochs',
+			method: 'bfcx_getEpochs',
 			params: [input?.cursor, input?.limit, input?.descendingOrder],
 		});
 	}
@@ -717,21 +717,21 @@ export class SuiClient {
 	 * Returns list of top move calls by usage
 	 */
 	async getMoveCallMetrics(): Promise<MoveCallMetrics> {
-		return await this.transport.request({ method: 'suix_getMoveCallMetrics', params: [] });
+		return await this.transport.request({ method: 'bfcx_getMoveCallMetrics', params: [] });
 	}
 
 	/**
 	 * Return the committee information for the asked epoch
 	 */
 	async getCurrentEpoch(): Promise<EpochInfo> {
-		return await this.transport.request({ method: 'suix_getCurrentEpoch', params: [] });
+		return await this.transport.request({ method: 'bfcx_getCurrentEpoch', params: [] });
 	}
 
 	/**
 	 * Return the Validators APYs
 	 */
 	async getValidatorsApy(): Promise<ValidatorsApy> {
-		return await this.transport.request({ method: 'suix_getValidatorsApy', params: [] });
+		return await this.transport.request({ method: 'bfcx_getValidatorsApy', params: [] });
 	}
 
 	// TODO: Migrate this to `sui_getChainIdentifier` once it is widely available.
@@ -743,7 +743,7 @@ export class SuiClient {
 
 	async resolveNameServiceAddress(input: ResolveNameServiceAddressParams): Promise<string | null> {
 		return await this.transport.request({
-			method: 'suix_resolveNameServiceAddress',
+			method: 'bfcx_resolveNameServiceAddress',
 			params: [input.name],
 		});
 	}
@@ -752,14 +752,14 @@ export class SuiClient {
 		input: ResolveNameServiceNamesParams,
 	): Promise<ResolvedNameServiceNames> {
 		return await this.transport.request({
-			method: 'suix_resolveNameServiceNames',
+			method: 'bfcx_resolveNameServiceNames',
 			params: [input.address, input.cursor, input.limit],
 		});
 	}
 
 	async getProtocolConfig(input?: GetProtocolConfigParams): Promise<ProtocolConfig> {
 		return await this.transport.request({
-			method: 'sui_getProtocolConfig',
+			method: 'bfc_getProtocolConfig',
 			params: [input?.version],
 		});
 	}

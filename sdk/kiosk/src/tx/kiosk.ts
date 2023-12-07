@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TransactionBlock, TransactionArgument } from '@mysten/sui.js/transactions';
+import { TransactionBlock, TransactionArgument } from '@benfen/bfc.js/transactions';
 
 import { getTypeWithoutPackageAddress, objArg } from '../utils';
 import { confirmRequest, resolveKioskLockRule, resolveRoyaltyRule } from './transfer-policy';

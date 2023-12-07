@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /* eslint-disable import/no-cycle */
 
-import { fromB64 } from '@mysten/bcs';
+import { fromB64 } from '@benfen/bcs';
 import type { SerializedSignature, SignatureScheme } from './signature.js';
 import { SIGNATURE_FLAG_TO_SCHEME } from './signature.js';
 import { Secp256r1PublicKey } from '../keypairs/secp256r1/publickey.js';

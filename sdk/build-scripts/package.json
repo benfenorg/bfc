@@ -1,8 +1,7 @@
 {
-	"name": "@mysten/build-scripts",
-	"private": true,
-	"author": "Mysten Labs <build@mystenlabs.com>",
-	"description": "Build scripts for @mysten packages",
+	"name": "@benfen/build-scripts",
+	"author": "OpenBlock<developers@benfen.org>",
+	"description": "Build scripts for @benfen packages",
 	"version": "0.0.0",
 	"license": "Apache-2.0",
 	"engines": {

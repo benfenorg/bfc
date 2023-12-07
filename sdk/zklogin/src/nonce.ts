@@ -3,7 +3,7 @@
 
 import { base64url } from 'jose';
 import { toBigIntBE } from 'bigint-buffer';
-import { PublicKey } from '@mysten/sui.js/cryptography';
+import { PublicKey } from '@benfen/bfc.js/cryptography';
 import { poseidonHash } from './poseidon.js';
 import { toBufferBE } from './utils.js';
 

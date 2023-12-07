@@ -3,7 +3,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 // import { setupSuiClient, executeTransactionBlock } from './setup';
-import { fromB64, toB58 } from '@mysten/bcs';
+import { fromB64, toB58 } from '@benfen/bcs';
 // import { setup, TestToolbox } from './utils/setup';
 import { SignatureWithBytes } from '../../src/cryptography/keypair';
 import { parseSerializedSignature } from '../../src/cryptography';

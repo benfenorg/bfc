@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { getObjectDisplay } from '@benfen/bfc.js';
+import { type SuiObjectResponse } from '@benfen/bfc.js/client';
 import { getKioskIdFromOwnerCap, hasDisplayData, useGetKioskContents } from '@mysten/core';
-import { getObjectDisplay } from '@mysten/sui.js';
-import { type SuiObjectResponse } from '@mysten/sui.js/client';
 import cl from 'classnames';
 
 import { NftImage, type NftImageProps } from './NftImage';

@@ -81,7 +81,7 @@ def get_local_metric(metric: Metric):
 def await_started(start_checkpoint):
     for i in range(STARTUP_TIMEOUT_SEC):
         if get_local_metric(Metric.CHECKPOINT) != start_checkpoint:
-            print(f"sui-node started successfully after {i} seconds")
+            print(f"bfc-node started successfully after {i} seconds")
             return
         print("Awaiting sui-node startup...")
         time.sleep(1)

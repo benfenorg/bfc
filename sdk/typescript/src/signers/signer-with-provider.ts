@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64, toB64 } from '@mysten/bcs';
+import { fromB64, toB64 } from '@benfen/bcs';
 import type { TransactionBlock } from '../builder/TransactionBlock.js';
 import { isTransactionBlock } from '../builder/TransactionBlock.js';
 import { TransactionBlockDataBuilder } from '../builder/TransactionBlockData.js';
@@ -56,11 +56,11 @@ export abstract class SignerWithProvider implements Signer {
 	 * Request gas tokens from a faucet server and send to the signer
 	 * address
 	 * @param httpHeaders optional request headers
-	 * @deprecated Use `@mysten/sui.js/faucet` instead.
+	 * @deprecated Use `@benfen/bfc.js/faucet` instead.
 	 */
 	async requestSuiFromFaucet(httpHeaders?: HttpHeaders) {
 		if (!('requestSuiFromFaucet' in this.provider)) {
-			throw new Error('To request SUI from faucet, please use @mysten/sui.js/faucet instead');
+			throw new Error('To request SUI from faucet, please use @benfen/bfc.js/faucet instead');
 		}
 
 		return this.provider.requestSuiFromFaucet(await this.getAddress(), httpHeaders);

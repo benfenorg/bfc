@@ -3,7 +3,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { chunkArray } from '../utils/chunkArray';
-import { SuiObjectDataOptions } from '@mysten/sui.js/src/client';
+import { SuiObjectDataOptions } from '@benfen/bfc.js/src/client';
 import { useSuiClient } from '@mysten/dapp-kit';
 
 export function useMultiGetObjects(

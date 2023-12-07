@@ -15,9 +15,9 @@ export default function WrappedNetworkSelect({ isDarker = false }: any) {
 	const { data: binaryVersion } = useRpcApiVersion({});
 
 	const networks = [
-		{ id: Network.MAINNET, label: 'Mainnet' },
-		{ id: Network.TESTNET, label: 'Testnet' },
+		// { id: Network.MAINNET, label: 'Mainnet' },
 		{ id: Network.DEVNET, label: 'Devnet' },
+		{ id: Network.TESTNET, label: 'Testnet' },
 		{ id: Network.LOCAL, label: 'Local' },
 	].filter(Boolean) as NetworkOption[];
 

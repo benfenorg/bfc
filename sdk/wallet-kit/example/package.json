@@ -6,8 +6,8 @@
 		"build": "vite build"
 	},
 	"dependencies": {
-		"@mysten/sui.js": "workspace:*",
-		"@mysten/wallet-kit": "workspace:*",
+		"@benfen/bfc.js": "workspace:*",
+		"@benfen/wallet-kit": "workspace:*",
 		"@types/node": "^20.4.2",
 		"@types/react": "^18.2.15",
 		"@types/react-dom": "^18.2.7",

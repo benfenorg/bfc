@@ -3,11 +3,11 @@
 
 import { Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { WalletKitProvider } from '@mysten/wallet-kit';
+import { WalletKitProvider } from '@benfen/wallet-kit';
 import { Header } from './components/Base/Header';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RpcClientContext } from './context/RpcClientContext';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const queryClient = new QueryClient();
 const suiClient = new SuiClient({ url: getFullnodeUrl('testnet') });

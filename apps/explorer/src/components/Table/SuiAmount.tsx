@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { CoinFormat, useFormatCoin } from '@mysten/core';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 
 export function SuiAmount({
@@ -25,7 +25,7 @@ export function SuiAmount({
 				{formattedAmount}
 			</Text>
 			<Text variant="captionSmall/normal" color="steel-dark">
-				{coinType === 'SUI' ? 'BFC' : 'MIST'}
+				{coinType}
 			</Text>
 		</div>
 	);

@@ -363,7 +363,7 @@ module bfc_system::vault {
         };
 
         if (is_in) {
-            _vault.liquidity = _vault.liquidity - liquidity;
+            _vault.liquidity = _vault.liquidity - _delta_liquidity;
         };
 
         let (amount_a, amount_b) = clmm_math::get_amount_by_liquidity(
@@ -559,6 +559,7 @@ module bfc_system::vault {
             } else {
                 current_sqrt_price = next_sqrt_price
             };
+            swap_result.steps = swap_result.steps + 1;
             swap_result.after_sqrt_price = current_sqrt_price;
         };
         swap_result
@@ -761,7 +762,7 @@ module bfc_system::vault {
                 _vault.current_tick_index = next_tick;
                 _vault.liquidity = tick::cross_by_swap(
                     &mut _vault.tick_manager,
-                    _vault.current_tick_index,
+                    next_tick_index,
                     _a2b,
                     _vault.liquidity
                 );
@@ -1070,7 +1071,7 @@ module bfc_system::vault {
 
         if (balance1_value < total_b) {
             balance::join(&mut _balance1, balance::split(_bfc_balance, total_b - balance1_value));
-        } else if (balance1_value > total_a) {
+        } else if (balance1_value > total_b) {
             balance::join(_bfc_balance, balance::split(&mut _balance1, balance1_value - total_b));
         };
 

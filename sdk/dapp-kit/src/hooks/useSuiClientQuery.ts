@@ -4,7 +4,7 @@
 import type { UseQueryOptions } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { useSuiClientContext } from './useSuiClient.js';
-import type { SuiClient } from '@mysten/sui.js/client';
+import type { SuiClient } from '@benfen/bfc.js/client';
 
 export type SuiRpcMethodName = {
 	[K in keyof SuiClient]: SuiClient[K] extends ((input: any) => Promise<any>) | (() => Promise<any>)

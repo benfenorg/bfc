@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiClient } from '@benfen/bfc.js/client';
 import { bcs } from '../bcs';
 import { TRANSFER_POLICY_CREATED_EVENT, TRANSFER_POLICY_TYPE, TransferPolicy } from '../types';
 

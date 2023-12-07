@@ -1381,7 +1381,7 @@ mod tests {
         let faucet: &mut SimpleFaucet = &mut Arc::try_unwrap(faucet).unwrap();
 
         // Now we transfer one gas out
-        let res = SuiClientCommands::PayAllSui {
+        let res = SuiClientCommands::PayAllBfc {
             input_coins: vec![*bad_gas.id()],
             recipient: SuiAddress::random_for_testing_only(),
             gas_budget: 200_000_000,
@@ -1392,13 +1392,13 @@ mod tests {
         .await
         .unwrap();
 
-        if let SuiClientCommandResult::PayAllSui(response) = res {
+        if let SuiClientCommandResult::PayAllBfc(response) = res {
             assert!(matches!(
                 response.effects.unwrap().status(),
                 SuiExecutionStatus::Success
             ));
         } else {
-            panic!("PayAllSui command did not return SuiClientCommandResult::PayAllSui");
+            panic!("PayAllBfc command did not return SuiClientCommandResult::PayAllBfc");
         };
 
         let number_of_coins = gases.len();
@@ -1603,7 +1603,7 @@ mod tests {
         let destination_address = SuiAddress::random_for_testing_only();
         // Transfer all valid gases away except for 1
         for gas in gases.iter().take(gases.len() - 1) {
-            SuiClientCommands::TransferSui {
+            SuiClientCommands::TransferBfc {
                 to: destination_address,
                 sui_coin_object_id: *gas.id(),
                 gas_budget: 50000000,
@@ -1676,7 +1676,7 @@ mod tests {
 
         // Transfer all valid gases away
         for gas in gases {
-            SuiClientCommands::TransferSui {
+            SuiClientCommands::TransferBfc {
                 to: destination_address,
                 sui_coin_object_id: *gas.id(),
                 gas_budget: 50000000,

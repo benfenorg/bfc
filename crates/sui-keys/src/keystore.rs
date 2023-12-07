@@ -16,6 +16,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use sui_types::base_types::SuiAddress;
+use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 use sui_types::crypto::get_key_pair_from_rng;
 use sui_types::crypto::{
     enum_dispatch, EncodeDecodeBase64, PublicKey, Signature, SignatureScheme, SuiKeyPair,
@@ -132,7 +133,7 @@ impl AccountKeystore for FileBasedKeystore {
         Ok(Signature::new_hashed(
             msg,
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -148,7 +149,7 @@ impl AccountKeystore for FileBasedKeystore {
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -167,7 +168,7 @@ impl AccountKeystore for FileBasedKeystore {
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error> {
         match self.keys.get(address) {
             Some(key) => Ok(key),
-            None => Err(anyhow!("Cannot find key for address: [{address}]")),
+            None => Err(anyhow!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone()))),
         }
     }
 }
@@ -233,7 +234,7 @@ impl AccountKeystore for InMemKeystore {
         Ok(Signature::new_hashed(
             msg,
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -249,7 +250,7 @@ impl AccountKeystore for InMemKeystore {
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -267,7 +268,7 @@ impl AccountKeystore for InMemKeystore {
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error> {
         match self.keys.get(address) {
             Some(key) => Ok(key),
-            None => Err(anyhow!("Cannot find key for address: [{address}]")),
+            None => Err(anyhow!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone()))),
         }
     }
 }

@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type StakeObject } from '@benfen/bfc.js';
 import { useGetSystemState } from '@mysten/core';
 import { Plus12 } from '@mysten/icons';
-import { type StakeObject } from '@mysten/sui.js';
 import { useMemo } from 'react';
 
 import { useActiveAddress } from '../../hooks/useActiveAddress';

@@ -1,5 +1,7 @@
 #[test_only]
 module bfc_system::test_utils {
+    use std::debug;
+    use std::ascii::string;
     use sui::balance;
     use sui::coin;
     use sui::bfc::BFC;
@@ -28,7 +30,7 @@ module bfc_system::test_utils {
         ctx: &mut TxContext
     ) {
         let usd_supply = busd::new(ctx);
-        let t = treasury::create_treasury(time_interval, 3000000000_000000000,ctx);
+        let t = treasury::create_treasury(time_interval, 500000000_000_000_000,ctx);
         treasury::init_vault_with_positions(
             &mut t,
             usd_supply,
@@ -90,13 +92,25 @@ module bfc_system::test_utils {
         test_scenario::next_tx(scenario_val, owner);
 
         {
-            let bfc = balance::create_for_testing<BFC>(300000000000000000);
+            // let bfc = balance::create_for_testing<BFC>(300000000_000_000_000);
             let t = test_scenario::take_shared<Treasury>(scenario_val);
+            let required_bfc = treasury::next_epoch_bfc_required(&t);
+            debug::print(&string(b"require bfc"));
+            debug::print(&required_bfc);
+            let bfc = balance::create_for_testing<BFC>(required_bfc);
             treasury::deposit(&mut t, coin::from_balance(bfc, test_scenario::ctx(scenario_val)));
             test_scenario::return_shared(t);
         };
 
         test_scenario::next_tx(scenario_val, owner);
+    }
+
+    public(friend) fun test_rebalance_first_init(
+        scenario_val: &mut Scenario,
+    ) {
+        let t = test_scenario::take_shared<Treasury>(scenario_val);
+        treasury::rebalance_internal(&mut t, false, test_scenario::ctx(scenario_val));
+        test_scenario::return_shared(t);
     }
 
     public(friend) fun test_rebalance(

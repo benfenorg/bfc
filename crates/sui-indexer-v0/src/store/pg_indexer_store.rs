@@ -23,8 +23,9 @@ use prometheus::{Histogram, IntCounter};
 use tracing::info;
 
 use sui_json_rpc_types::{
-    CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics, MoveFunctionName,
-    NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiEvent, SuiObjectDataFilter,
+    CheckpointId, DaoProposalFilter, EpochInfo, EventFilter, EventPage, MoveCallMetrics,
+    MoveFunctionName, NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiEvent,
+    SuiObjectDataFilter,
 };
 use sui_json_rpc_types::{
     SuiTransactionBlock, SuiTransactionBlockEffects, SuiTransactionBlockEvents,
@@ -48,6 +49,7 @@ use crate::models::addresses::{ActiveAddress, Address, AddressStats, DBAddressSt
 use crate::models::checkpoint_metrics::{CheckpointMetrics, Tps};
 use crate::models::checkpoints::Checkpoint;
 use crate::models::dao_proposals::Proposal;
+use crate::models::dao_votes::Vote;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::events::Event;
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
@@ -62,8 +64,8 @@ use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Rec
 use crate::models::transactions::Transaction;
 use crate::schema::{
     active_addresses, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints,
-    dao_proposals, epochs, events, input_objects, move_calls, network_segment_metrics, objects,
-    objects_history, packages, recipients, system_states, transactions, validators,
+    dao_proposals, dao_votes, epochs, events, input_objects, move_calls, network_segment_metrics,
+    objects, objects_history, packages, recipients, system_states, transactions, validators,
 };
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
@@ -1408,6 +1410,25 @@ impl PgIndexerStore {
             }
             Ok::<(), IndexerError>(())
         })?;
+
+        let mut votes: Vec<Vote> = vec![];
+        for event in events {
+            let vote: Option<Vote> = event.try_into()?;
+            if let Some(v) = vote {
+                votes.push(v);
+            }
+        }
+        if votes.len() > 0 {
+            transactional_blocking!(&self.blocking_cp, |conn| {
+                diesel::insert_into(dao_votes::table)
+                    .values(&votes)
+                    .on_conflict_do_nothing()
+                    .execute(conn)
+                    .map_err(IndexerError::from)
+                    .context("Failed writing votes to PostgresDB")?;
+                Ok::<(), IndexerError>(())
+            })?;
+        }
         Ok(())
     }
 
@@ -1629,11 +1650,46 @@ impl PgIndexerStore {
         Ok(())
     }
 
-    fn get_dao_proposals(&self) -> Result<Vec<SuiDaoProposal>, IndexerError> {
-        let proposals = read_only_blocking!(&self.blocking_cp, |conn| {
-            dao_proposals::dsl::dao_proposals.load::<Proposal>(conn)
-        })
-        .context(&format!("Failed loading proposals"))?;
+    fn get_dao_proposals(
+        &self,
+        filter: Option<DaoProposalFilter>,
+    ) -> Result<Vec<SuiDaoProposal>, IndexerError> {
+        let proposals = match filter {
+            None => read_only_blocking!(&self.blocking_cp, |conn| {
+                dao_proposals::dsl::dao_proposals.load::<Proposal>(conn)
+            })
+            .context(&format!("Failed loading proposals"))?,
+            Some(filter) => match filter {
+                DaoProposalFilter::Proposer(address) => {
+                    read_only_blocking!(&self.blocking_cp, |conn| {
+                        dao_proposals::dsl::dao_proposals
+                            .filter(dao_proposals::dsl::proposer.eq(address.to_string()))
+                            .load::<Proposal>(conn)
+                    })
+                    .context(&format!("Failed loading proposals by proposer"))?
+                }
+                DaoProposalFilter::Voter(address) => {
+                    let votes: Vec<Vote> = read_only_blocking!(&self.blocking_cp, |conn| {
+                        dao_votes::dsl::dao_votes
+                            .filter(dao_votes::dsl::voter.eq(address.to_string()))
+                            .load::<Vote>(conn)
+                    })
+                    .context(&format!("Failed loading votes by voter"))?;
+
+                    let voted_pids: Vec<i64> = votes.iter().map(|x| x.pid).collect();
+                    if voted_pids.len() == 0 {
+                        vec![]
+                    } else {
+                        read_only_blocking!(&self.blocking_cp, |conn| {
+                            dao_proposals::dsl::dao_proposals
+                                .filter(dao_proposals::dsl::pid.eq_any(voted_pids))
+                                .load::<Proposal>(conn)
+                        })
+                        .context(&format!("Failed loading proposals by voter"))?
+                    }
+                }
+            },
+        };
         Ok(proposals
             .iter()
             .map(|p| SuiDaoProposal {
@@ -2485,8 +2541,11 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
-    async fn get_dao_proposals(&self) -> Result<Vec<SuiDaoProposal>, IndexerError> {
-        self.spawn_blocking(move |this| this.get_dao_proposals())
+    async fn get_dao_proposals(
+        &self,
+        filter: Option<DaoProposalFilter>,
+    ) -> Result<Vec<SuiDaoProposal>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_dao_proposals(filter))
             .await
     }
 

@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { parseSerializedSignature } from '../../../src/cryptography/signature';
 import { PubkeyWeightPair, combinePartialSigs } from '../../../src/cryptography/multisig';
-import { fromB64, toB64 } from '@mysten/bcs';
+import { fromB64, toB64 } from '@benfen/bcs';
 import {
 	toParsedSignaturePubkeyPair,
 	toSingleSignaturePubkeyPair,

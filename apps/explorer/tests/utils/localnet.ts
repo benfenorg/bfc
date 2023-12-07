@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // eslint-disable-next-line import/order
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { type Keypair } from '@mysten/sui.js/cryptography';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { type Keypair } from '@benfen/bfc.js/cryptography';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import 'tsconfig-paths/register';
 // eslint-disable-next-line import/order
 

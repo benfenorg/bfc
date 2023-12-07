@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { type SuiObjectChangeWithDisplay } from '@mysten/core';
-import { formatAddress } from '@mysten/sui.js/utils';
 
 import { Text } from '../../../text';
 import ExplorerLink from '_src/ui/app/components/explorer-link';

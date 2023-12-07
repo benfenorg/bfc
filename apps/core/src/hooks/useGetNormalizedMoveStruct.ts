@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useRpcClient } from '../api/RpcClientContext';
-import { type SuiMoveNormalizedStruct } from '@mysten/sui.js';
-import { normalizeSuiObjectId } from '@mysten/sui.js/utils';
+import { type SuiMoveNormalizedStruct } from '@benfen/bfc.js';
+import { normalizeSuiObjectId } from '@benfen/bfc.js/utils';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
 type GetNormalizedMoveStructOptions = {

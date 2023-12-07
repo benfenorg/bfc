@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Coin } from '@mysten/sui.js';
-import { type CoinBalance } from '@mysten/sui.js/client';
+import { Coin } from '@benfen/bfc.js';
+import { type CoinBalance } from '@benfen/bfc.js/client';
 
 // Sort tokens by symbol and total balance
 // Move this to the API backend

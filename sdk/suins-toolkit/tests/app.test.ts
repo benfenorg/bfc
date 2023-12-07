@@ -5,7 +5,7 @@
 import { describe, beforeEach, expect, it } from 'vitest';
 
 import { SuinsClient } from '../src';
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
+import { getFullnodeUrl, SuiClient } from '@benfen/bfc.js/client';
 
 const domainName = 'test.sui';
 const walletAddress = '0xfce343a643991c592c4f1a9ee415a7889293f694ab8828f78e3c81d11c9530c6';

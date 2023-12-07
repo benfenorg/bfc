@@ -3,13 +3,13 @@
 
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { Button } from '@mysten/ui';
-import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@mysten/wallet-kit';
+import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@benfen/wallet-kit';
 import { useParams } from 'react-router-dom';
 
 // This is a custom feature supported by the Sui Wallet:
 type StakeInput = { validatorAddress: string };
 type SuiWalletStakeFeature = {
-	'suiWallet:stake': {
+	'benfenWallet:stake': {
 		version: '0.0.1';
 		stake: (input: StakeInput) => Promise<void>;
 	};
@@ -25,12 +25,8 @@ export function StakeButton() {
 	if (!stakeButtonEnabled) return null;
 
 	const stakeSupportedWallets = wallets.filter((wallet) => {
-		if (!('wallet' in wallet)) {
-			return false;
-		}
-
-		const standardWallet = wallet.wallet as StakeWallet;
-		return 'suiWallet:stake' in standardWallet.features;
+		const standardWallet = wallet as StakeWallet;
+		return 'benfenWallet:stake' in standardWallet.features;
 	});
 
 	const currentWalletSupportsStake =
@@ -39,11 +35,7 @@ export function StakeButton() {
 	if (!stakeSupportedWallets.length) {
 		return (
 			<Button size="lg" asChild>
-				<a
-					href="https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil"
-					target="_blank"
-					rel="noreferrer noopener"
-				>
+				<a href="https://openblock.com/#/download" target="_blank" rel="noreferrer noopener">
 					Install BenFen Wallet to stake BFC
 				</a>
 			</Button>
@@ -77,7 +69,7 @@ export function StakeButton() {
 		<Button
 			size="lg"
 			onClick={() => {
-				(currentWallet as StakeWallet).features['suiWallet:stake']?.stake({
+				(currentWallet as StakeWallet).features['benfenWallet:stake']?.stake({
 					validatorAddress: id!,
 				});
 			}}

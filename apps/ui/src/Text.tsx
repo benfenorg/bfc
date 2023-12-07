@@ -51,6 +51,7 @@ const textStyles = cva(['break-words'], {
 			'issue-dark': 'text-issue-dark',
 			'bfc-text1': 'text-bfc-text1',
 			'bfc-text2': 'text-bfc-text2',
+			'bfc-text3': 'text-bfc-text3',
 			'bfc-green': 'text-bfc-green',
 			'bfc-red': 'text-bfc-red',
 		},

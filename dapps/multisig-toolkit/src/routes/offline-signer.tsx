@@ -13,8 +13,8 @@ import {
 	devnetConnection,
 	mainnetConnection,
 	testnetConnection,
-} from '@mysten/sui.js';
-import { useWalletKit } from '@mysten/wallet-kit';
+} from '@benfen/bfc.js';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { AlertCircle, Terminal } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';

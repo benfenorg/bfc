@@ -9,7 +9,7 @@ import {
 	TANSTACK_OWNED_KIOSK_KEY,
 } from '../utils/constants';
 import { useRpc } from '../context/RpcClientContext';
-import { SuiObjectResponse } from '@mysten/sui.js/client';
+import { SuiObjectResponse } from '@benfen/bfc.js/client';
 import {
 	Kiosk,
 	KioskData,

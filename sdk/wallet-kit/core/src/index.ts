@@ -16,7 +16,7 @@ import {
 	Wallet,
 	WalletAccount,
 	WalletWithSuiFeatures,
-} from '@mysten/wallet-standard';
+} from '@benfen/wallet-standard';
 
 import { localStorageAdapter, StorageAdapter } from './storage';
 export * from './storage';
@@ -110,8 +110,10 @@ function sortWallets(
 	preferredWallets: string[],
 	features?: string[],
 ): WalletWithSuiFeatures[] {
-	const suiWallets = wallets.filter((wallet) =>
-		isWalletWithSuiFeatures(wallet, features),
+	const suiWallets = wallets.filter(
+		(wallet) =>
+			isWalletWithSuiFeatures(wallet, features) &&
+			(wallet.name === 'OpenBlock Wallet' ? (window as any).benfenWallet === wallet : true),
 	) as WalletWithSuiFeatures[];
 
 	return [

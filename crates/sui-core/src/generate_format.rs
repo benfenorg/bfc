@@ -161,6 +161,7 @@ fn get_registry() -> Result<Registry> {
     tracer.trace_type::<CheckpointContents>(&samples)?;
     tracer.trace_type::<CheckpointSummary>(&samples)?;
 
+
     tracer.registry()
 }
 

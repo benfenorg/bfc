@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { TypeTag } from '../../bcs/index.js';
-import { normalizeSuiAddress } from '../../utils/sui-types.js';
+import { normalizeSuiAddress } from '../../utils/bfc-types.js';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;
 const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;

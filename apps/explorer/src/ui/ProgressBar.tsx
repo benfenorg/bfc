@@ -35,7 +35,9 @@ export function ProgressBar({ progress, animate }: ProgressBarProps) {
 				variants={getProgressBarVariant(progress)}
 				className={clsx(
 					'rounded-full py-1',
-					isAnimated ? 'bg-success' : 'bg-gradient-to-r from-success via-success/50 to-success',
+					isAnimated
+						? 'bg-bfc-green'
+						: 'bg-gradient-to-r from-bfc-green via-bfc-green/50 to-bfc-green',
 				)}
 				initial="initial"
 				animate="animate"

@@ -4,7 +4,7 @@
 import { useSuiClient } from '@mysten/dapp-kit';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
-import type { DelegatedStake } from '@mysten/sui.js/client';
+import type { DelegatedStake } from '@benfen/bfc.js/client';
 
 export function useGetDelegatedStake(address: string): UseQueryResult<DelegatedStake[], Error> {
 	const rpc = useSuiClient();

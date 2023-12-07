@@ -32,7 +32,7 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 	return (
 		<div className="flex flex-col gap-2 py-3 first:pt-0 only:pb-0 only:pt-0">
 			<div className="flex flex-col gap-2">
-				<div className="flex flex-wrap justify-between">
+				<div className="flex h-6 flex-wrap items-center justify-between px-[7px]">
 					<Text variant="pBody/medium" color="steel-dark">
 						Amount
 					</Text>

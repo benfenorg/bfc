@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { toB64 } from '@benfen/bcs';
 import TransportWebHID from '@ledgerhq/hw-transport-webhid';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
-import { toB64 } from '@mysten/bcs';
 import SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 

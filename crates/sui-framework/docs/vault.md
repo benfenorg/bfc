@@ -1119,7 +1119,7 @@ open <code>position_number</code> positions
     };
 
     <b>if</b> (is_in) {
-        _vault.liquidity = _vault.liquidity - liquidity;
+        _vault.liquidity = _vault.liquidity - _delta_liquidity;
     };
 
     <b>let</b> (amount_a, amount_b) = <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
@@ -1520,6 +1520,7 @@ open <code>position_number</code> positions
         } <b>else</b> {
             current_sqrt_price = next_sqrt_price
         };
+        swap_result.steps = swap_result.steps + 1;
         swap_result.after_sqrt_price = current_sqrt_price;
     };
     swap_result
@@ -1804,7 +1805,7 @@ open <code>position_number</code> positions
             _vault.current_tick_index = next_tick;
             _vault.liquidity = <a href="tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(
                 &<b>mut</b> _vault.tick_manager,
-                _vault.current_tick_index,
+                next_tick_index,
                 _a2b,
                 _vault.liquidity
             );
@@ -2532,7 +2533,7 @@ State checker
 
     <b>if</b> (balance1_value &lt; total_b) {
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _balance1, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(_bfc_balance, total_b - balance1_value));
-    } <b>else</b> <b>if</b> (balance1_value &gt; total_a) {
+    } <b>else</b> <b>if</b> (balance1_value &gt; total_b) {
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(_bfc_balance, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _balance1, balance1_value - total_b));
     };
 

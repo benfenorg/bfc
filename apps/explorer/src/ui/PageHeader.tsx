@@ -1,9 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowLeft12 } from '@mysten/icons';
 import { Heading } from '@mysten/ui';
-import { useNavigate } from 'react-router-dom';
 
 import { Badge } from './Badge';
 import { CopyToClipboard } from '~/ui/CopyToClipboard';
@@ -21,6 +19,7 @@ export interface PageHeaderProps {
 	subtitle?: string | null;
 	type: PageHeaderType;
 	status?: 'success' | 'failure';
+	statusMessage?: string;
 	loading?: boolean;
 }
 
@@ -34,16 +33,17 @@ const STATUS_TO_TEXT = {
 	failure: 'Failure',
 };
 
-export function PageHeader({ title, subtitle, type, status, loading }: PageHeaderProps) {
-	const navigate = useNavigate();
-	const pageBack = () => {
-		navigate(-1);
-	};
-
+export function PageHeader({
+	title,
+	subtitle,
+	type,
+	status,
+	statusMessage,
+	loading,
+}: PageHeaderProps) {
 	return (
 		<div data-testid="pageheader">
-			<div className="mb-5 flex cursor-pointer items-center gap-2" onClick={pageBack}>
-				<ArrowLeft12 width={20} height={20} className="text-bfc-text1" />
+			<div className="mb-5 flex items-center gap-2">
 				<Heading variant="heading4/semibold" color="bfc-text1">
 					{type in TYPE_TO_COPY ? TYPE_TO_COPY[type] : type}
 				</Heading>
@@ -60,8 +60,9 @@ export function PageHeader({ title, subtitle, type, status, loading }: PageHeade
 					</div>
 
 					{status && (
-						<div>
+						<div className="flex items-center gap-2.5">
 							<Badge variant={status}>{STATUS_TO_TEXT[status]}</Badge>
+							{statusMessage && <Badge variant={status}>{statusMessage}</Badge>}
 						</div>
 					)}
 				</div>

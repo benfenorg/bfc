@@ -29,7 +29,7 @@ wrapped: object(2,0)
 gas summary: computation_cost: 100000, storage_cost: 280440,  storage_rebate: 250549, non_refundable_storage_fee: 2531
 
 task 6 'view-object'. lines 94-94:
-Owner: Object ID: ( fake(2,0) )
+Owner: Object ID: ( BFC062510bdc247ce486b8b70c260cf7b21c5fdd623d8e4ec9fb6e9987a4e1a6ec82054 )
 Version: 4
 Contents: sui::dynamic_field::Field<u64, a::m::Counter> {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}, name: 0u64, value: a::m::Counter {id: sui::object::UID {id: sui::object::ID {bytes: _}}, count: 1u64}}
 
@@ -44,6 +44,6 @@ unwrapped_then_deleted: object(2,0)
 gas summary: computation_cost: 100000, storage_cost: 130720,  storage_rebate: 277636, non_refundable_storage_fee: 2804
 
 task 9 'view-object'. lines 100-100:
-Owner: Object ID: ( fake(2,0) )
+Owner: Object ID: ( BFC062510bdc247ce486b8b70c260cf7b21c5fdd623d8e4ec9fb6e9987a4e1a6ec82054 )
 Version: 4
 Contents: sui::dynamic_field::Field<u64, a::m::Counter> {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}, name: 0u64, value: a::m::Counter {id: sui::object::UID {id: sui::object::ID {bytes: _}}, count: 1u64}}

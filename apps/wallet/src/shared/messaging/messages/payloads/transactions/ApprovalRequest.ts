@@ -4,10 +4,10 @@
 import {
 	type SuiSignAndExecuteTransactionBlockInput,
 	type SuiSignMessageOutput,
-} from '@mysten/wallet-standard';
+} from '@benfen/wallet-standard';
 
-import type { SignedTransaction } from '@mysten/sui.js';
-import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import type { SignedTransaction } from '@benfen/bfc.js';
+import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 
 export type TransactionDataType = {
 	type: 'transaction';

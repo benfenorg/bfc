@@ -27,7 +27,7 @@ pub const SUI_CLIENT_CONFIG: &str = "client.yaml";
 pub const SUI_KEYSTORE_FILENAME: &str = "bfc.keystore";
 pub const SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME: &str = "benchmark.keystore";
 pub const SUI_GENESIS_FILENAME: &str = "genesis.blob";
-pub const SUI_DEV_NET_URL: &str = "https://fullnode.devnet.sui.io:443";
+pub const SUI_DEV_NET_URL: &str = "https://testrpc.benfen.org/";
 
 pub const AUTHORITIES_DB_NAME: &str = "authorities_db";
 pub const CONSENSUS_DB_NAME: &str = "consensus_db";

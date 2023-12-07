@@ -16,7 +16,6 @@ const DEFAULT_GAS_BUDGET: u64 = 100_000_000; // 0.1 SUI
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]
 pub enum GasCoinCommand {
-    #[clap(name = "make-validator-info")]
     AddGasCoin {
         /// Address of the gas coin.
         #[clap(name = "coin-address")]

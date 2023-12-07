@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { fromB64 } from '@mysten/sui.js/utils';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { fromB64 } from '@benfen/bfc.js/utils';
 import mitt from 'mitt';
 import { throttle } from 'throttle-debounce';
 
@@ -36,7 +36,7 @@ import {
 import { type Wallet } from '_src/shared/qredo-api';
 
 import type { UiConnection } from '../connections/UiConnection';
-import type { ExportedKeypair } from '@mysten/sui.js/cryptography';
+import type { ExportedKeypair } from '@benfen/bfc.js/cryptography';
 import type { Message } from '_messages';
 import type { ErrorPayload } from '_payloads';
 import type { KeyringPayload } from '_payloads/keyring';

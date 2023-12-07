@@ -7,8 +7,10 @@ import {
 	type Vote,
 	type VotingBfc,
 	ProposalStatus,
-} from '@mysten/sui.js/client';
-import { useWalletKit } from '@mysten/wallet-kit';
+} from '@benfen/bfc.js/client';
+import { type CoinBalance } from '@benfen/bfc.js/types';
+import { useWalletKit } from '@benfen/wallet-kit';
+import { useGetCoinBalance } from '@mysten/core';
 import * as Sentry from '@sentry/react';
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo } from 'react';
 // eslint-disable-next-line no-restricted-imports
@@ -72,6 +74,7 @@ export interface DaoContextProps {
 	manageKey: string;
 	dao?: BfcDao;
 	proposal?: ProposalRecordWithStatus;
+	balance?: CoinBalance;
 	votes: Vote[];
 	votingBfcs: VotingBfc[];
 	refetch: () => void;
@@ -88,13 +91,18 @@ export const useDaoContext = (proposalId: string): DaoContextProps => {
 	const { data: votes = [], refetch: refetchVotes } = useGetBFCDaoVote(currentAddress);
 	const { data: votingBfcs = [], refetch: refetchVotingBfcs } =
 		useGetBFCDaoVotingBfc(currentAddress);
+	const { data: balance, refetch: refetchBalance } = useGetCoinBalance(
+		'0x2::bfc::BFC',
+		currentAddress,
+	);
 	const { data: manageKey = '' } = useGetBFCDaoManageKey(currentAddress);
 
 	const refetch = useCallback(() => {
 		refetchDao();
 		refetchVotingBfcs();
 		refetchVotes();
-	}, [refetchDao, refetchVotingBfcs, refetchVotes]);
+		refetchBalance();
+	}, [refetchDao, refetchVotingBfcs, refetchVotes, refetchBalance]);
 
 	const proposal = useMemo(() => {
 		if (!daoData) {
@@ -117,5 +125,6 @@ export const useDaoContext = (proposalId: string): DaoContextProps => {
 		votes,
 		votingBfcs,
 		refetch,
+		balance,
 	};
 };

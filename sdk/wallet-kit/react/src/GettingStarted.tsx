@@ -3,28 +3,38 @@
 
 import { CopyContainer, Description, Heading } from './utils/ui';
 
-export function GettingStarted() {
+export interface Props {
+	title1?: string;
+	desc1?: string;
+	title2?: string;
+	desc2?: string;
+	title3?: string;
+	desc3?: string;
+}
+
+export function GettingStarted({ title1, title2, title3, desc1, desc2, desc3 }: Props) {
 	return (
 		<CopyContainer>
 			<div>
-				<Heading>Install the Sui extension</Heading>
+				<Heading>{title1 || 'Install the BenFen extension'}</Heading>
 				<Description>
-					We recommend pinning the Sui Wallet to your taskbar for quicker access.
+					{desc1 || 'We recommend pinning the BenFen Wallet to your taskbar for quicker access.'}
 				</Description>
 			</div>
 
 			<div>
-				<Heading>Create or Import a Wallet</Heading>
+				<Heading>{title2 || 'Create or Import a Wallet'}</Heading>
 				<Description>
-					Be sure to back up your wallet using a secure method. Never share your secret phrase with
-					anyone.
+					{desc2 ||
+						'Be sure to back up your wallet using a secure method. Never share your secret phrase with anyone.'}
 				</Description>
 			</div>
 
 			<div>
-				<Heading>Refresh Your Browser</Heading>
+				<Heading>{title3 || 'Refresh Your Browser'}</Heading>
 				<Description>
-					Once you set up your wallet, refresh this window browser to load up the extension.
+					{desc3 ||
+						'Once you set up your wallet, refresh this window browser to load up the extension.'}
 				</Description>
 			</div>
 		</CopyContainer>

@@ -1,16 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useLatestSuiSystemState, useSuiClient } from '@mysten/dapp-kit';
-import { type SuiClient, type SuiSystemStateSummary } from '@mysten/sui.js/client';
+import { type SuiClient, type SuiSystemStateSummary } from '@benfen/bfc.js/client';
 import {
 	isValidTransactionDigest,
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	normalizeSuiObjectId,
 	formatAddress,
-} from '@mysten/sui.js/utils';
+	formatDigest,
+} from '@benfen/bfc.js/utils';
+import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
+import { useLatestSuiSystemState, useSuiClient } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
@@ -23,7 +24,7 @@ const getResultsForTransaction = async (client: SuiClient, query: string) => {
 	return [
 		{
 			id: txdata.digest,
-			label: txdata.digest,
+			label: formatDigest(txdata.digest),
 			type: 'transaction',
 		},
 	];
@@ -38,7 +39,7 @@ const getResultsForObject = async (client: SuiClient, query: string) => {
 	return [
 		{
 			id: data.objectId,
-			label: data.objectId,
+			label: formatAddress(data.objectId),
 			type: 'object',
 		},
 	];
@@ -54,7 +55,7 @@ const getResultsForCheckpoint = async (client: SuiClient, query: string) => {
 	return [
 		{
 			id: digest,
-			label: digest,
+			label: formatDigest(digest),
 			type: 'checkpoint',
 		},
 	];
@@ -67,7 +68,7 @@ const getResultsForAddress = async (client: SuiClient, query: string, suiNSEnabl
 		return [
 			{
 				id: resolved,
-				label: resolved,
+				label: formatAddress(resolved),
 				type: 'address',
 			},
 		];
@@ -91,7 +92,7 @@ const getResultsForAddress = async (client: SuiClient, query: string, suiNSEnabl
 	return [
 		{
 			id: query,
-			label: query,
+			label: formatAddress(query),
 			type: 'address',
 		},
 	];
@@ -116,7 +117,7 @@ const getResultsForValidatorByPoolIdOrSuiAddress = async (
 	return [
 		{
 			id: validator.suiAddress || validator.stakingPoolId,
-			label: normalized,
+			label: formatAddress(normalized),
 			type: 'validator',
 		},
 	];
@@ -141,12 +142,7 @@ export function useSearch(query: string) {
 				])
 			).filter((r) => r.status === 'fulfilled' && r.value) as PromiseFulfilledResult<Results>[];
 
-			const resultsEnd = results.map(({ value }) => value).flat();
-			return resultsEnd.map((item) => {
-				item.label = formatAddress(item.label) || '';
-				return item;
-			});
-			// return results.map(({ value }) => value).flat();
+			return results.map(({ value }) => value).flat();
 		},
 		enabled: !!query,
 		cacheTime: 10000,

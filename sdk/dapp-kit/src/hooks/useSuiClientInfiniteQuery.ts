@@ -4,7 +4,7 @@
 import type { UseInfiniteQueryOptions } from '@tanstack/react-query';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useSuiClientContext } from './useSuiClient.js';
-import type { SuiClient } from '@mysten/sui.js/client';
+import type { SuiClient } from '@benfen/bfc.js/client';
 
 interface PaginatedResult {
 	data?: unknown;

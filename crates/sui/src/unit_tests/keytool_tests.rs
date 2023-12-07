@@ -477,7 +477,7 @@ async fn test_sign_command() -> Result<(), anyhow::Error> {
 
     // Sign an intent message for the transaction data and a passed-in intent with scope as PersonalMessage.
     KeyToolCommand::Sign {
-        address: *sender,
+        address: (*sender).to_string(),
         data: Base64::encode(bcs::to_bytes(&tx_data)?),
         intent: Some(Intent::sui_app(IntentScope::PersonalMessage)),
     }
@@ -486,7 +486,7 @@ async fn test_sign_command() -> Result<(), anyhow::Error> {
 
     // Sign an intent message for the transaction data without intent passed in, so default is used.
     KeyToolCommand::Sign {
-        address: *sender,
+        address: (*sender).to_string(),
         data: Base64::encode(bcs::to_bytes(&tx_data)?),
         intent: None,
     }

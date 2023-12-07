@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getTransactionKind, getTransactionSender } from '@mysten/sui.js';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import { getTransactionKind, getTransactionSender } from '@benfen/bfc.js';
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useMemo } from 'react';
 
 import { getAmount } from '_helpers';

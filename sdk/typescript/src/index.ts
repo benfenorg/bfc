@@ -14,105 +14,105 @@ import {
 export * from './types/index.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/keypairs/ed5519` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/ed5519` instead */
 	type Ed25519KeypairData,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/ed5519` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/ed5519` instead */
 	Ed25519Keypair,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/ed5519` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/ed5519` instead */
 	Ed25519PublicKey,
 } from './keypairs/ed25519/index.js';
 export {
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256k1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256k1` instead */
 	DEFAULT_SECP256K1_DERIVATION_PATH,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256k1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256k1` instead */
 	type Secp256k1KeypairData,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256k1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256k1` instead */
 	Secp256k1Keypair,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256k1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256k1` instead */
 	Secp256k1PublicKey,
 } from './keypairs/secp256k1/index.js';
 export {
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256r1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256r1` instead */
 	DEFAULT_SECP256R1_DERIVATION_PATH,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256r1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256r1` instead */
 	type Secp256r1KeypairData,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256r1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256r1` instead */
 	Secp256r1Keypair,
-	/** @deprecated Import from `@mysten/sui.js/keypairs/secp256k1` instead */
+	/** @deprecated Import from `@benfen/bfc.js/keypairs/secp256k1` instead */
 	Secp256r1PublicKey,
 } from './keypairs/secp256r1/index.js';
 export {
 	/** @deprecated Signing methods are now available on the KeyPair classes */
 	BaseSigner,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type ExportedKeypair,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	Keypair,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	LEGACY_PRIVATE_KEY_SIZE,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	PRIVATE_KEY_SIZE,
 } from './cryptography/keypair.js';
 export {
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	type CompressedSignature,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	MAX_SIGNER_IN_MULTISIG,
-	/** @deprecated Use the MultiSigStruct from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigStruct from `@benfen/bfc.js/multisig` instead */
 	type MultiSig,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	type MultiSigPublicKey,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	type PubkeyEnumWeightPair,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	type PubkeyWeightPair,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	type PublicKeyEnum,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	combinePartialSigs,
-	/** @deprecated Use the parseSerializedSignature from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Use the parseSerializedSignature from `@benfen/bfc.js/cryptography` instead */
 	decodeMultiSig,
-	/** @deprecated Use the MultiSigPublicKey class from `@mysten/sui.js/multisig` instead */
+	/** @deprecated Use the MultiSigPublicKey class from `@benfen/bfc.js/multisig` instead */
 	toMultiSigAddress,
 } from './cryptography/multisig.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	PublicKey,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type PublicKeyInitData,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	bytesEqual,
 } from './cryptography/publickey.js';
 export {
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	isValidBIP32Path,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	isValidHardenedPath,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	mnemonicToSeed,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	mnemonicToSeedHex,
 } from './cryptography/mnemonics.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	SIGNATURE_FLAG_TO_SCHEME,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	SIGNATURE_SCHEME_TO_FLAG,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	SIGNATURE_SCHEME_TO_SIZE,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type SerializeSignatureInput,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type SerializedSignature,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type SignatureFlag,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type SignatureScheme,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	parseSerializedSignature,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	toSerializedSignature,
 } from './cryptography/signature.js';
 
@@ -127,33 +127,33 @@ export {
 	toSingleSignaturePubkeyPair,
 } from './cryptography/utils.js';
 export {
-	/** @deprecated Use `SuiClient` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `SuiClient` from `@benfen/bfc.js/client` instead */
 	JsonRpcProvider,
-	/** @deprecated Import from `@mysten/sui.js/client` instead */
+	/** @deprecated Import from `@benfen/bfc.js/client` instead */
 	type OrderArguments,
-	/** @deprecated Import from `@mysten/sui.js/client` instead */
+	/** @deprecated Import from `@benfen/bfc.js/client` instead */
 	type PaginationArguments,
-	/** @deprecated Use `SuiClientOptions` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `SuiClientOptions` from `@benfen/bfc.js/client` instead */
 	type RpcProviderOptions,
 } from './providers/json-rpc-provider.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/client` instead */
+	/** @deprecated Import from `@benfen/bfc.js/client` instead */
 	type HttpHeaders,
 	/** @deprecated This client will not be exported in the future */
 	JsonRpcClient,
 } from './rpc/client.js';
 
 export {
-	/** @deprecated Use `getFullnodeUrl` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `getFullnodeUrl` from `@benfen/bfc.js/client` instead */
 	Connection,
-	/** @deprecated Use `getFullnodeUrl` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `getFullnodeUrl` from `@benfen/bfc.js/client` instead */
 	devnetConnection,
-	/** @deprecated Use `getFullnodeUrl` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `getFullnodeUrl` from `@benfen/bfc.js/client` instead */
 	localnetConnection,
-	/** @deprecated Use `getFullnodeUrl` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `getFullnodeUrl` from `@benfen/bfc.js/client` instead */
 	mainnetConnection,
-	/** @deprecated Use `getFullnodeUrl` from `@mysten/sui.js/client` instead */
+	/** @deprecated Use `getFullnodeUrl` from `@benfen/bfc.js/client` instead */
 	testnetConnection,
 } from './rpc/connection.js';
 
@@ -163,80 +163,80 @@ export {
 } from './builder/type-tag-serializer.js';
 
 export {
-	/** @deprecated Use KeyPair classes from `@mysten/sui.js/keypairs/*` instead */
+	/** @deprecated Use KeyPair classes from `@benfen/bfc.js/keypairs/*` instead */
 	type Signer,
 } from './signers/signer.js';
 export {
-	/** @deprecated Use KeyPair classes from `@mysten/sui.js/keypairs/*` instead */
+	/** @deprecated Use KeyPair classes from `@benfen/bfc.js/keypairs/*` instead */
 	RawSigner,
 } from './signers/raw-signer.js';
 export {
-	/** @deprecated Use KeyPair classes from `@mysten/sui.js/keypairs/*` instead */
+	/** @deprecated Use KeyPair classes from `@benfen/bfc.js/keypairs/*` instead */
 	SignerWithProvider,
 } from './signers/signer-with-provider.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	AppId,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	type Intent,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	IntentScope,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	IntentVersion,
-	/** @deprecated Import from `@mysten/sui.js/cryptography` instead */
+	/** @deprecated Import from `@benfen/bfc.js/cryptography` instead */
 	messageWithIntent,
 } from './cryptography/intent.js';
 
 export {
-	/** @deprecated Use verify methods on PublicKey classes from `@mysten/sui.js/keypairs/*` instead */
+	/** @deprecated Use verify methods on PublicKey classes from `@benfen/bfc.js/keypairs/*` instead */
 	verifyMessage,
 } from './utils/verify.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/client` instead */
+	/** @deprecated Import from `@benfen/bfc.js/client` instead */
 	RPCValidationError,
 } from './rpc/errors.js';
 
 export {
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	fromB64,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	toB64,
-} from '@mysten/bcs';
+} from '@benfen/bcs';
 
 export {
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_ADDRESS_LENGTH,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	isValidSuiAddress,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	isValidSuiObjectId,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	isValidTransactionDigest,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	normalizeStructTag,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	normalizeSuiAddress,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	normalizeSuiObjectId,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	parseStructTag,
-} from './utils/sui-types.js';
+} from './utils/bfc-types.js';
 
 export {
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	formatAddress,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	formatDigest,
 	sui2BfcAddress,
 	bfc2SuiAddress,
 } from './utils/format.js';
 
 export {
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	is,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	assert,
 } from 'superstruct';
 
@@ -262,15 +262,15 @@ export {
 } from './signers/types.js';
 
 export {
-	/** @deprecated Import from `@mysten/sui.js/transactions` instead */
+	/** @deprecated Import from `@benfen/bfc.js/transactions` instead */
 	builder,
-	/** @deprecated Import from `@mysten/sui.js/transactions` instead */
+	/** @deprecated Import from `@benfen/bfc.js/transactions` instead */
 	Transactions,
-	/** @deprecated Import from `@mysten/sui.js/transactions` instead */
+	/** @deprecated Import from `@benfen/bfc.js/transactions` instead */
 	Inputs,
-	/** @deprecated Import from `@mysten/sui.js/transactions` instead */
+	/** @deprecated Import from `@benfen/bfc.js/transactions` instead */
 	TransactionBlock,
-	/** @deprecated Import from `@mysten/sui.js/transactions` instead */
+	/** @deprecated Import from `@benfen/bfc.js/transactions` instead */
 	TransactionArgument,
 
 	/**
@@ -636,49 +636,49 @@ export {
 	 * https://github.com/MystenLabs/sui/discussions/13150
 	 */
 	isObjectDataFull,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_CLOCK_OBJECT_ID,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_FRAMEWORK_ADDRESS,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_SYSTEM_ADDRESS,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_SYSTEM_MODULE_NAME,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_SYSTEM_STATE_OBJECT_ID,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_TYPE_ARG,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	MOVE_STDLIB_ADDRESS,
 } from './framework/index.js';
 
 export {
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type CallArg,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type GasData,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type ObjectArg,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type PureArg,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type SharedObjectRef,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type StructTag,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type TransactionExpiration,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	type TypeTag,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	bcs,
-	/** @deprecated Import from @mysten/sui.js/bcs instead */
+	/** @deprecated Import from @benfen/bfc.js/bcs instead */
 	isPureArg,
 } from './bcs/index.js';
 
 export {
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	MIST_PER_SUI,
-	/** @deprecated Import from @mysten/sui.js/utils instead */
+	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	SUI_DECIMALS,
 	/** @deprecated this will be removed in future versions of the SDK */
 	ECMHLiveObjectSetDigest,

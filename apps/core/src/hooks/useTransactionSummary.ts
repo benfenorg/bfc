@@ -3,7 +3,7 @@
 import {
 	type SuiTransactionBlockResponse,
 	type DryRunTransactionBlockResponse,
-} from '@mysten/sui.js/client';
+} from '@benfen/bfc.js/client';
 
 import { useMemo } from 'react';
 

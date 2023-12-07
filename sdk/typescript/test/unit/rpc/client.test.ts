@@ -56,7 +56,7 @@ describe('JSON-RPC Client', () => {
 	it('requestWithType', async () => {
 		const client = new JsonRpcClient(MOCK_ENDPOINT);
 		const resp = await client.requestWithType(
-			'sui_getOwnedObjectsByAddress',
+			'bfc_getOwnedObjectsByAddress',
 			['0xsuccess'],
 			GetOwnedObjectsResponse,
 		);
@@ -69,7 +69,7 @@ describe('JSON-RPC Client', () => {
 
 		// NOTE: We set `console.warn` to throw in tests, so we can catch it here.
 		await expect(
-			client.requestWithType('sui_getOwnedObjectsByAddress', ['0xfail'], GetOwnedObjectsResponse),
+			client.requestWithType('bfc_getOwnedObjectsByAddress', ['0xfail'], GetOwnedObjectsResponse),
 		).rejects.toThrowError();
 	});
 
@@ -87,7 +87,7 @@ describe('JSON-RPC Client', () => {
 			const client = new JsonRpcClient(MOCK_ENDPOINT);
 
 			const result = await client.requestWithType(
-				'sui_getOwnedObjectsByAddress',
+				'bfc_getOwnedObjectsByAddress',
 				['0xfail'],
 				GetOwnedObjectsResponse,
 			);

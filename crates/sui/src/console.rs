@@ -18,11 +18,7 @@ use crate::shell::{
     install_shell_plugins, AsyncHandler, CacheKey, CommandStructure, CompletionCache, Shell,
 };
 
-const SUI: &str = "   _____       _    ______                       __
-  / ___/__  __(_)  / ____/___  ____  _________  / /__
-  \\__ \\/ / / / /  / /   / __ \\/ __ \\/ ___/ __ \\/ / _ \\
- ___/ / /_/ / /  / /___/ /_/ / / / (__  ) /_/ / /  __/
-/____/\\__,_/_/   \\____/\\____/_/ /_/____/\\____/_/\\___/";
+const SUI: &str = "Welcome to Bfc! ";
 
 #[derive(Parser)]
 #[clap(name = "", rename_all = "kebab-case", no_binary_name = true)]
@@ -46,14 +42,14 @@ pub async fn start_console(
         version.push('-');
         version.push_str(git_rev);
     }
-    writeln!(out, "--- Sui Console {version} ---")?;
+    writeln!(out, "--- Bfc Console {version} ---")?;
     writeln!(out)?;
     writeln!(out, "{}", context.config.deref())?;
 
     let client = context.get_client().await?;
     writeln!(
         out,
-        "Connecting to Sui full node. API version {}",
+        "Connecting to Bfc full node. API version {}",
         client.api_version()
     )?;
 
@@ -75,11 +71,11 @@ pub async fn start_console(
     }
 
     writeln!(out)?;
-    writeln!(out, "Welcome to the Sui interactive console.")?;
+    writeln!(out, "Welcome to the Bfc interactive console.")?;
     writeln!(out)?;
 
     let mut shell = Shell::new(
-        "sui>-$ ",
+        "bfc>-$ ",
         context,
         ClientCommandHandler,
         CommandStructure::from_clap(&install_shell_plugins(app)),
@@ -155,7 +151,7 @@ async fn handle_command(
         result,
         SuiClientCommandResult::Switch(SwitchResponse { env: Some(_), .. })
     ) {
-        println!("Sui environment switch completed, please restart Sui console.");
+        println!("Bfc environment switch completed, please restart Bfc console.");
         return Ok(true);
     }
     Ok(false)

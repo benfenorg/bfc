@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getObjectType } from '@mysten/sui.js';
+import { getObjectType } from '@benfen/bfc.js';
 
-import type { SuiObjectData, SuiMoveObject } from '@mysten/sui.js';
+import type { SuiObjectData, SuiMoveObject } from '@benfen/bfc.js';
 
 const COIN_TYPE = '0x2::coin::Coin';
 const COIN_TYPE_ARG_REGEX = /^0x2::coin::Coin<(.+)>$/;

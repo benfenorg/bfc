@@ -11,16 +11,16 @@ port4=`expr $port3 + $num1`
 
 
 
-bfc genesis-ceremony add-validator \
+bfc genesis_ceremony add-validator \
 --name "validator-$name" \
 --validator-key-file "validator-$name.key" \
 --worker-key-file "validator-$name-worker.key" \
 --account-key-file "validator-$name-account.key" \
 --network-key-file "validator-$name-network.key" \
---network-address "/ip4/$ip/tcp/$port1/http" \
+--network-address "/ip4/127.0.0.1/tcp/$port1/http" \
 --p2p-address "/ip4/$ip/udp/$port2" \
---narwhal-primary-address "/ip4/$ip/udp/$port3" \
---narwhal-worker-address "/ip4/$ip/udp/$port4" \
+--narwhal-primary-address "/ip4/127.0.0.1/udp/$port3" \
+--narwhal-worker-address "/ip4/127.0.0.1/udp/$port4" \
 --description abc \
 --image-url abc \
 --project-url abc

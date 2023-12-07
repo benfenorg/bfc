@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { useFormatCoin, useGetCoinBalance, useResolveSuiNSName } from '@mysten/core';
 import { CheckFill16 } from '@mysten/icons';
-import { formatAddress, SUI_TYPE_ARG } from '@mysten/sui.js';
 import cl from 'classnames';
 
 import { useCoinsReFetchingConfig } from '../../hooks';

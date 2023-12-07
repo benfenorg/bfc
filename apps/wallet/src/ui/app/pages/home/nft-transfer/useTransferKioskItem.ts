@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useFeatureValue } from '@growthbook/growthbook-react';
 import {
 	KioskTypes,
@@ -11,7 +12,6 @@ import {
 } from '@mysten/core';
 import { useSuiClient } from '@mysten/dapp-kit';
 import { take } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMutation } from '@tanstack/react-query';
 
 import { useActiveAddress, useSigner } from '_src/ui/app/hooks';

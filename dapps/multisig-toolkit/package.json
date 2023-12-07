@@ -41,8 +41,8 @@
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
-		"@mysten/sui.js": "workspace:*",
-		"@mysten/wallet-kit": "workspace:*",
+		"@benfen/bfc.js": "workspace:*",
+		"@benfen/wallet-kit": "workspace:*",
 		"@types/react": "^18.2.15",
 		"@types/react-dom": "^18.2.7",
 		"@vitejs/plugin-react": "^4.0.3",

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js';
 import { useResolveSuiNSName } from '@mysten/core';
 import {
 	Account24,
@@ -10,7 +11,6 @@ import {
 	Version24,
 	CopyArchiveDoNotUse24,
 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui.js';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Browser from 'webextension-polyfill';

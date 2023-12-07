@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FaucetRateLimitError, getFaucetHost } from '@mysten/sui.js/faucet';
+import { FaucetRateLimitError, getFaucetHost } from '@benfen/bfc.js/faucet';
 import { toast } from 'react-hot-toast';
 
 import FaucetMessageInfo from './FaucetMessageInfo';

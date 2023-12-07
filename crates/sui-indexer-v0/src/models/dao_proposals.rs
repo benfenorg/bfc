@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 
-use sui_types::proposal;
+use sui_types::{parse_sui_struct_tag, proposal, BFC_SYSTEM_ADDRESS};
 
 use crate::errors::IndexerError;
 
@@ -27,12 +27,15 @@ pub struct Proposal {
     pub description: String,
 }
 
-const PROPOSAL_OBJECT_TYPE: &'static str =
-    "0x00000000000000000000000000000000000000000000000000000000000000c8::bfc_dao::Proposal";
-
 impl Proposal {
     pub fn is_proposal(value: &Object) -> bool {
-        value.object_type == PROPOSAL_OBJECT_TYPE
+        if let Ok(tag) = parse_sui_struct_tag(&value.object_type) {
+            // "0x00000000000000000000000000000000000000000000000000000000000000c8::bfc_dao::Proposal"
+            return tag.address == BFC_SYSTEM_ADDRESS
+                && tag.module.as_str() == "bfc_dao"
+                && tag.name.as_str() == "Proposal";
+        }
+        false
     }
 }
 

@@ -1,20 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useZodForm } from '@mysten/core';
 import {
 	TransactionBlock,
 	getExecutionStatusError,
 	getExecutionStatusType,
 	getTransactionDigest,
-} from '@mysten/sui.js';
+} from '@benfen/bfc.js';
+import { useZodForm } from '@mysten/core';
 import { Button } from '@mysten/ui';
-import { useWalletKit } from '@mysten/wallet-kit';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { z } from 'zod';
 
 import { DaoContext } from '~/context';
+import { useDryRunTransactionBlock } from '~/hooks/useDryRunTransactionBlock';
 import { ADDRESS } from '~/utils/constants';
 
 const schema = z.object({});
@@ -22,6 +23,7 @@ const schema = z.object({});
 export function QueueProposalAction() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
 	const { manageKey, proposal, refetch } = useContext(DaoContext)!;
+	const dryRun = useDryRunTransactionBlock();
 
 	const { handleSubmit, formState } = useZodForm({
 		schema: schema,
@@ -42,6 +44,7 @@ export function QueueProposalAction() {
 				],
 			});
 
+			await dryRun(tx);
 			const result = await signAndExecuteTransactionBlock({
 				transactionBlock: tx,
 			});

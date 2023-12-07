@@ -1,4 +1,4 @@
-# @mysten/wallet-kit
+# @benfen/wallet-kit
 
 ## 0.8.0
 
@@ -29,9 +29,9 @@
 
 - Updated dependencies [24c21e1f0]
 - Updated dependencies [189e02aba]
-  - @mysten/sui.js@0.41.1
-  - @mysten/wallet-standard@0.7.1
-  - @mysten/wallet-kit-core@0.6.1
+  - @benfen/bfc.js@0.41.1
+  - @benfen/wallet-standard@0.7.1
+  - @benfen/wallet-kit-core@0.6.1
 
 ## 0.7.0
 
@@ -44,9 +44,9 @@
 - Updated dependencies [ba8e3b857]
 - Updated dependencies [f4b7b3474]
 - Updated dependencies [85f785c97]
-  - @mysten/sui.js@0.41.0
-  - @mysten/wallet-kit-core@0.6.0
-  - @mysten/wallet-standard@0.7.0
+  - @benfen/bfc.js@0.41.0
+  - @benfen/wallet-kit-core@0.6.0
+  - @benfen/wallet-standard@0.7.0
 
 ## 0.6.0
 
@@ -62,29 +62,29 @@
   - @mysten/wallet-adapter-wallet-standard@0.8.0
   - @mysten/wallet-adapter-unsafe-burner@0.10.0
   - @mysten/wallet-adapter-base@0.9.0
-  - @mysten/wallet-kit-core@0.5.0
-  - @mysten/wallet-standard@0.6.0
-  - @mysten/sui.js@0.40.0
+  - @benfen/wallet-kit-core@0.5.0
+  - @benfen/wallet-standard@0.6.0
+  - @benfen/bfc.js@0.40.0
 
 ## 0.5.1
 
 ### Patch Changes
 
 - Updated dependencies [47ea5ec7c]
-  - @mysten/sui.js@0.39.0
+  - @benfen/bfc.js@0.39.0
   - @mysten/wallet-adapter-base@0.8.1
   - @mysten/wallet-adapter-unsafe-burner@0.9.1
   - @mysten/wallet-adapter-wallet-standard@0.7.14
-  - @mysten/wallet-kit-core@0.4.14
-  - @mysten/wallet-standard@0.5.14
+  - @benfen/wallet-kit-core@0.4.14
+  - @benfen/wallet-standard@0.5.14
 
 ## 0.5.0
 
 ### Minor Changes
 
-- 6d41059c7: Update to use modular imports from @mysten/sui.js
+- 6d41059c7: Update to use modular imports from @benfen/bfc.js
 
-  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a `JsonRpcProvider`
+  Some methods now accept a `SuiClient` imported from `@benfen/bfc.js/client` rather than a `JsonRpcProvider`
 
 ### Patch Changes
 
@@ -101,24 +101,24 @@
 - Updated dependencies [6d41059c7]
 - Updated dependencies [cc6441f46]
 - Updated dependencies [001148443]
-  - @mysten/sui.js@0.38.0
+  - @benfen/bfc.js@0.38.0
   - @mysten/wallet-adapter-base@0.8.0
   - @mysten/wallet-adapter-unsafe-burner@0.9.0
   - @mysten/wallet-adapter-wallet-standard@0.7.13
-  - @mysten/wallet-kit-core@0.4.13
-  - @mysten/wallet-standard@0.5.13
+  - @benfen/wallet-kit-core@0.4.13
+  - @benfen/wallet-standard@0.5.13
 
 ## 0.4.12
 
 ### Patch Changes
 
 - Updated dependencies [34cc7d610]
-  - @mysten/sui.js@0.37.1
+  - @benfen/bfc.js@0.37.1
   - @mysten/wallet-adapter-base@0.7.12
   - @mysten/wallet-adapter-unsafe-burner@0.8.12
   - @mysten/wallet-adapter-wallet-standard@0.7.12
-  - @mysten/wallet-kit-core@0.4.12
-  - @mysten/wallet-standard@0.5.12
+  - @benfen/wallet-kit-core@0.4.12
+  - @benfen/wallet-standard@0.5.12
 
 ## 0.4.11
 
@@ -131,12 +131,12 @@
 - Updated dependencies [a17d3678a]
 - Updated dependencies [2f37537d5]
 - Updated dependencies [00484bcc3]
-  - @mysten/sui.js@0.37.0
+  - @benfen/bfc.js@0.37.0
   - @mysten/wallet-adapter-base@0.7.11
   - @mysten/wallet-adapter-unsafe-burner@0.8.11
   - @mysten/wallet-adapter-wallet-standard@0.7.11
-  - @mysten/wallet-kit-core@0.4.11
-  - @mysten/wallet-standard@0.5.11
+  - @benfen/wallet-kit-core@0.4.11
+  - @benfen/wallet-standard@0.5.11
 
 ## 0.4.10
 
@@ -146,24 +146,24 @@
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [fb3bb9118a]
-  - @mysten/sui.js@0.36.0
+  - @benfen/bfc.js@0.36.0
   - @mysten/wallet-adapter-base@0.7.10
   - @mysten/wallet-adapter-unsafe-burner@0.8.10
   - @mysten/wallet-adapter-wallet-standard@0.7.10
-  - @mysten/wallet-kit-core@0.4.10
-  - @mysten/wallet-standard@0.5.10
+  - @benfen/wallet-kit-core@0.4.10
+  - @benfen/wallet-standard@0.5.10
 
 ## 0.4.9
 
 ### Patch Changes
 
 - Updated dependencies [09d77325a9]
-  - @mysten/sui.js@0.35.1
+  - @benfen/bfc.js@0.35.1
   - @mysten/wallet-adapter-base@0.7.9
   - @mysten/wallet-adapter-unsafe-burner@0.8.9
   - @mysten/wallet-adapter-wallet-standard@0.7.9
-  - @mysten/wallet-kit-core@0.4.9
-  - @mysten/wallet-standard@0.5.9
+  - @benfen/wallet-kit-core@0.4.9
+  - @benfen/wallet-standard@0.5.9
 
 ## 0.4.8
 
@@ -179,12 +179,12 @@
 - Updated dependencies [9ce7e051b4]
 - Updated dependencies [9ce7e051b4]
 - Updated dependencies [bb50698551]
-  - @mysten/sui.js@0.35.0
-  - @mysten/wallet-kit-core@0.4.8
+  - @benfen/bfc.js@0.35.0
+  - @benfen/wallet-kit-core@0.4.8
   - @mysten/wallet-adapter-base@0.7.8
   - @mysten/wallet-adapter-unsafe-burner@0.8.8
   - @mysten/wallet-adapter-wallet-standard@0.7.8
-  - @mysten/wallet-standard@0.5.8
+  - @benfen/wallet-standard@0.5.8
 
 ## 0.4.7
 
@@ -193,12 +193,12 @@
 - Updated dependencies [85719ac933]
 - Updated dependencies [c3d9cc87f3]
 - Updated dependencies [02a6063f82]
-  - @mysten/sui.js@0.34.1
+  - @benfen/bfc.js@0.34.1
   - @mysten/wallet-adapter-base@0.7.7
   - @mysten/wallet-adapter-unsafe-burner@0.8.7
   - @mysten/wallet-adapter-wallet-standard@0.7.7
-  - @mysten/wallet-kit-core@0.4.7
-  - @mysten/wallet-standard@0.5.7
+  - @benfen/wallet-kit-core@0.4.7
+  - @benfen/wallet-standard@0.5.7
 
 ## 0.4.6
 
@@ -206,12 +206,12 @@
 
 - Updated dependencies [280821e0ab]
 - Updated dependencies [6a9abe9e38]
-  - @mysten/sui.js@0.34.0
+  - @benfen/bfc.js@0.34.0
   - @mysten/wallet-adapter-base@0.7.6
   - @mysten/wallet-adapter-unsafe-burner@0.8.6
   - @mysten/wallet-adapter-wallet-standard@0.7.6
-  - @mysten/wallet-kit-core@0.4.6
-  - @mysten/wallet-standard@0.5.6
+  - @benfen/wallet-kit-core@0.4.6
+  - @benfen/wallet-standard@0.5.6
 
 ## 0.4.5
 
@@ -226,9 +226,9 @@
 - Updated dependencies [91c63e4f8]
 - Updated dependencies [e61ed2bac]
 - Updated dependencies [5053a8dc8]
-  - @mysten/sui.js@0.33.0
-  - @mysten/wallet-standard@0.5.5
-  - @mysten/wallet-kit-core@0.4.5
+  - @benfen/bfc.js@0.33.0
+  - @benfen/wallet-standard@0.5.5
+  - @benfen/wallet-kit-core@0.4.5
   - @mysten/wallet-adapter-base@0.7.5
   - @mysten/wallet-adapter-unsafe-burner@0.8.5
   - @mysten/wallet-adapter-wallet-standard@0.7.5
@@ -246,36 +246,36 @@
 - Updated dependencies [c219e7470]
 - Updated dependencies [4e463c691]
 - Updated dependencies [b4f0bfc76]
-  - @mysten/sui.js@0.32.2
+  - @benfen/bfc.js@0.32.2
   - @mysten/wallet-adapter-wallet-standard@0.7.4
   - @mysten/wallet-adapter-unsafe-burner@0.8.4
   - @mysten/wallet-adapter-base@0.7.4
-  - @mysten/wallet-kit-core@0.4.4
-  - @mysten/wallet-standard@0.5.4
+  - @benfen/wallet-kit-core@0.4.4
+  - @benfen/wallet-standard@0.5.4
 
 ## 0.4.3
 
 ### Patch Changes
 
 - Updated dependencies [3224ffcd0]
-  - @mysten/sui.js@0.32.1
+  - @benfen/bfc.js@0.32.1
   - @mysten/wallet-adapter-base@0.7.3
   - @mysten/wallet-adapter-unsafe-burner@0.8.3
   - @mysten/wallet-adapter-wallet-standard@0.7.3
-  - @mysten/wallet-kit-core@0.4.3
-  - @mysten/wallet-standard@0.5.3
+  - @benfen/wallet-kit-core@0.4.3
+  - @benfen/wallet-standard@0.5.3
 
 ## 0.4.2
 
 ### Patch Changes
 
 - Updated dependencies [9b42d0ada]
-  - @mysten/sui.js@0.32.0
+  - @benfen/bfc.js@0.32.0
   - @mysten/wallet-adapter-base@0.7.2
   - @mysten/wallet-adapter-unsafe-burner@0.8.2
   - @mysten/wallet-adapter-wallet-standard@0.7.2
-  - @mysten/wallet-kit-core@0.4.2
-  - @mysten/wallet-standard@0.5.2
+  - @benfen/wallet-kit-core@0.4.2
+  - @benfen/wallet-standard@0.5.2
 
 ## 0.4.1
 
@@ -286,12 +286,12 @@
 - Updated dependencies [f3c096e3a]
 - Updated dependencies [5a4e3e416]
 - Updated dependencies [27dec39eb]
-  - @mysten/sui.js@0.31.0
+  - @benfen/bfc.js@0.31.0
   - @mysten/wallet-adapter-base@0.7.1
   - @mysten/wallet-adapter-unsafe-burner@0.8.1
   - @mysten/wallet-adapter-wallet-standard@0.7.1
-  - @mysten/wallet-kit-core@0.4.1
-  - @mysten/wallet-standard@0.5.1
+  - @benfen/wallet-kit-core@0.4.1
+  - @benfen/wallet-standard@0.5.1
 
 ## 0.4.0
 
@@ -374,24 +374,24 @@
 - Updated dependencies [dbe73d5a4]
 - Updated dependencies [64fb649eb]
 - Updated dependencies [a6b0c4e5f]
-  - @mysten/wallet-standard@0.5.0
-  - @mysten/sui.js@0.30.0
+  - @benfen/wallet-standard@0.5.0
+  - @benfen/bfc.js@0.30.0
   - @mysten/wallet-adapter-wallet-standard@0.7.0
   - @mysten/wallet-adapter-unsafe-burner@0.8.0
   - @mysten/wallet-adapter-base@0.7.0
-  - @mysten/wallet-kit-core@0.4.0
+  - @benfen/wallet-kit-core@0.4.0
 
 ## 0.3.3
 
 ### Patch Changes
 
 - Updated dependencies [31bfcae6a]
-  - @mysten/sui.js@0.29.1
+  - @benfen/bfc.js@0.29.1
   - @mysten/wallet-adapter-base@0.6.3
   - @mysten/wallet-adapter-unsafe-burner@0.7.1
   - @mysten/wallet-adapter-wallet-standard@0.6.3
-  - @mysten/wallet-kit-core@0.3.3
-  - @mysten/wallet-standard@0.4.3
+  - @benfen/wallet-kit-core@0.3.3
+  - @benfen/wallet-standard@0.4.3
 
 ## 0.3.2
 
@@ -406,12 +406,12 @@
 - Updated dependencies [aa650aa3b]
 - Updated dependencies [1d07807ff]
 - Updated dependencies [6ff0c785f]
-  - @mysten/sui.js@0.29.0
+  - @benfen/bfc.js@0.29.0
   - @mysten/wallet-adapter-wallet-standard@0.6.2
   - @mysten/wallet-adapter-unsafe-burner@0.7.0
   - @mysten/wallet-adapter-base@0.6.2
-  - @mysten/wallet-kit-core@0.3.2
-  - @mysten/wallet-standard@0.4.2
+  - @benfen/wallet-kit-core@0.3.2
+  - @benfen/wallet-standard@0.4.2
 
 ## 0.3.1
 
@@ -421,12 +421,12 @@
 - Updated dependencies [24bdb66c6]
 - Updated dependencies [a67cc044b]
 - Updated dependencies [a67cc044b]
-  - @mysten/sui.js@0.28.0
+  - @benfen/bfc.js@0.28.0
   - @mysten/wallet-adapter-base@0.6.1
   - @mysten/wallet-adapter-unsafe-burner@0.6.1
   - @mysten/wallet-adapter-wallet-standard@0.6.1
-  - @mysten/wallet-kit-core@0.3.1
-  - @mysten/wallet-standard@0.4.1
+  - @benfen/wallet-kit-core@0.3.1
+  - @benfen/wallet-standard@0.4.1
 
 ## 0.3.0
 
@@ -449,21 +449,21 @@
   - @mysten/wallet-adapter-wallet-standard@0.6.0
   - @mysten/wallet-adapter-unsafe-burner@0.6.0
   - @mysten/wallet-adapter-base@0.6.0
-  - @mysten/wallet-kit-core@0.3.0
-  - @mysten/wallet-standard@0.4.0
-  - @mysten/sui.js@0.27.0
+  - @benfen/wallet-kit-core@0.3.0
+  - @benfen/wallet-standard@0.4.0
+  - @benfen/bfc.js@0.27.0
 
 ## 0.2.6
 
 ### Patch Changes
 
 - Updated dependencies [97c46ca9d]
-  - @mysten/sui.js@0.26.1
+  - @benfen/bfc.js@0.26.1
   - @mysten/wallet-adapter-base@0.5.1
   - @mysten/wallet-adapter-unsafe-burner@0.5.1
   - @mysten/wallet-adapter-wallet-standard@0.5.1
-  - @mysten/wallet-kit-core@0.2.4
-  - @mysten/wallet-standard@0.3.1
+  - @benfen/wallet-kit-core@0.2.4
+  - @benfen/wallet-standard@0.3.1
 
 ## 0.2.5
 
@@ -478,12 +478,12 @@
 - Updated dependencies [e6a71882f]
 - Updated dependencies [21781ba52]
 - Updated dependencies [b3ba6dfbc]
-  - @mysten/sui.js@0.26.0
+  - @benfen/bfc.js@0.26.0
   - @mysten/wallet-adapter-wallet-standard@0.5.0
   - @mysten/wallet-adapter-unsafe-burner@0.5.0
   - @mysten/wallet-adapter-base@0.5.0
-  - @mysten/wallet-standard@0.3.0
-  - @mysten/wallet-kit-core@0.2.3
+  - @benfen/wallet-standard@0.3.0
+  - @benfen/wallet-kit-core@0.2.3
 
 ## 0.2.4
 
@@ -493,12 +493,12 @@
 - Updated dependencies [7b4bf43bc]
 - Updated dependencies [72481e759]
 - Updated dependencies [969a88669]
-  - @mysten/sui.js@0.25.0
+  - @benfen/bfc.js@0.25.0
   - @mysten/wallet-adapter-base@0.4.2
   - @mysten/wallet-adapter-unsafe-burner@0.4.2
   - @mysten/wallet-adapter-wallet-standard@0.4.2
-  - @mysten/wallet-kit-core@0.2.2
-  - @mysten/wallet-standard@0.2.11
+  - @benfen/wallet-kit-core@0.2.2
+  - @benfen/wallet-standard@0.2.11
 
 ## 0.2.3
 
@@ -509,12 +509,12 @@
 - Updated dependencies [88a687834]
 - Updated dependencies [89091ddab]
 - Updated dependencies [71bee7563]
-  - @mysten/sui.js@0.24.0
+  - @benfen/bfc.js@0.24.0
   - @mysten/wallet-adapter-base@0.4.1
   - @mysten/wallet-adapter-unsafe-burner@0.4.1
   - @mysten/wallet-adapter-wallet-standard@0.4.1
-  - @mysten/wallet-kit-core@0.2.1
-  - @mysten/wallet-standard@0.2.10
+  - @benfen/wallet-kit-core@0.2.1
+  - @benfen/wallet-standard@0.2.10
 
 ## 0.2.2
 
@@ -533,8 +533,8 @@
 - Updated dependencies [8474242af]
 - Updated dependencies [01efa8bc6]
 - Updated dependencies [f74181212]
-  - @mysten/sui.js@0.23.0
-  - @mysten/wallet-kit-core@0.2.0
+  - @benfen/bfc.js@0.23.0
+  - @benfen/wallet-kit-core@0.2.0
   - @mysten/wallet-adapter-wallet-standard@0.4.0
   - @mysten/wallet-adapter-unsafe-burner@0.4.0
   - @mysten/wallet-adapter-base@0.4.0
@@ -545,11 +545,11 @@
 
 - Updated dependencies [a55236e48]
 - Updated dependencies [8ae226dae]
-  - @mysten/sui.js@0.22.0
+  - @benfen/bfc.js@0.22.0
   - @mysten/wallet-adapter-base@0.3.9
   - @mysten/wallet-adapter-unsafe-burner@0.3.4
   - @mysten/wallet-adapter-wallet-standard@0.3.8
-  - @mysten/wallet-kit-core@0.1.1
+  - @benfen/wallet-kit-core@0.1.1
 
 ## 0.2.0
 
@@ -567,8 +567,8 @@
 - Updated dependencies [9fbe2714b]
 - Updated dependencies [d2015f815]
 - Updated dependencies [7d0f25b61]
-  - @mysten/sui.js@0.21.0
-  - @mysten/wallet-kit-core@0.1.0
+  - @benfen/bfc.js@0.21.0
+  - @benfen/wallet-kit-core@0.1.0
   - @mysten/wallet-adapter-unsafe-burner@0.3.3
   - @mysten/wallet-adapter-base@0.3.8
   - @mysten/wallet-adapter-wallet-standard@0.3.7
@@ -579,7 +579,7 @@
 
 - Updated dependencies [f93b59f3a]
 - Updated dependencies [ea71d8216]
-  - @mysten/sui.js@0.20.0
+  - @benfen/bfc.js@0.20.0
   - @mysten/wallet-adapter-base@0.3.7
   - @mysten/wallet-adapter-wallet-standard@0.3.6
   - @mysten/wallet-adapter-react@11.0.0
@@ -597,7 +597,7 @@
 - Updated dependencies [b03bfaec2]
 - Updated dependencies [f9be28a42]
 - Updated dependencies [24987df35]
-  - @mysten/sui.js@0.19.0
+  - @benfen/bfc.js@0.19.0
   - @mysten/wallet-adapter-base@0.3.6
   - @mysten/wallet-adapter-wallet-standard@0.3.5
   - @mysten/wallet-adapter-react@10.0.0
@@ -617,7 +617,7 @@
 - Updated dependencies [ce1830528]
 - Updated dependencies [7a67d61e2]
 - Updated dependencies [2a0b8e85d]
-  - @mysten/sui.js@0.18.0
+  - @benfen/bfc.js@0.18.0
   - @mysten/wallet-adapter-react@9.0.0
   - @mysten/wallet-adapter-base@0.3.5
   - @mysten/wallet-adapter-wallet-standard@0.3.4

@@ -1,4 +1,4 @@
-# @mysten/sui.js
+# @benfen/bfc.js
 
 ## 0.42.0
 
@@ -27,7 +27,7 @@
 
 ### Minor Changes
 
-- ba8e3b857: Rename TransactionBlock generated type in @mysten/sui.js/client to SuiTransactionBlock to avoid conflicting names in exports
+- ba8e3b857: Rename TransactionBlock generated type in @benfen/bfc.js/client to SuiTransactionBlock to avoid conflicting names in exports
 
 ### Patch Changes
 
@@ -37,7 +37,7 @@
 
 ### Minor Changes
 
-- a503cad34: Add exports to `@mysten/sui.js/client` for rpc method params
+- a503cad34: Add exports to `@benfen/bfc.js/client` for rpc method params
 
 ### Patch Changes
 
@@ -61,15 +61,15 @@
 - cc6441f46: The Sui TS SDK has been broken up into a set of modular exports, and all exports from the root of
   the package have been deprecated. The following export paths have been added:
 
-  - `@mysten/sui.js/client` - A client for interacting with Sui RPC nodes.
-  - `@mysten/sui.js/bcs` - A BCS builder with pre-defined types for Sui.
-  - `@mysten/sui.js/transaction` - Utilities for building and interacting with transactions.
-  - `@mysten/sui.js/keypairs/*` - Modular exports for specific KeyPair implementations.
-  - `@mysten/sui.js/verify` - Methods for verifying transactions and messages.
-  - `@mysten/sui.js/cryptography` - Shared types and classes for cryptography.
-  - `@mysten/sui.js/multisig` - Utilities for working with multisig signatures.
-  - `@mysten/sui.js/utils` - Utilities for formatting and parsing various Sui types.
-  - `@mysten/sui.js/faucet`- Methods for requesting sui from a faucet.
+  - `@benfen/bfc.js/client` - A client for interacting with Sui RPC nodes.
+  - `@benfen/bfc.js/bcs` - A BCS builder with pre-defined types for Sui.
+  - `@benfen/bfc.js/transaction` - Utilities for building and interacting with transactions.
+  - `@benfen/bfc.js/keypairs/*` - Modular exports for specific KeyPair implementations.
+  - `@benfen/bfc.js/verify` - Methods for verifying transactions and messages.
+  - `@benfen/bfc.js/cryptography` - Shared types and classes for cryptography.
+  - `@benfen/bfc.js/multisig` - Utilities for working with multisig signatures.
+  - `@benfen/bfc.js/utils` - Utilities for formatting and parsing various Sui types.
+  - `@benfen/bfc.js/faucet`- Methods for requesting sui from a faucet.
 
   As part of this refactor we are deprecating a number of existing APIs:
 
@@ -78,7 +78,7 @@
     in verifying has been moved to the KeyPair classes, and the `signAndExecuteTransactionBlock`
     method has been moved to the new `SuiClient`.
   - The `superstruct` type definitions for types used by JsonRPCProvider are being replaced with
-    generated types exported from `@mysten/sui.js/client`. The new type definitions are pure
+    generated types exported from `@benfen/bfc.js/client`. The new type definitions are pure
     typescript types and can't be used for runtime validation. By generating these as types, it will
     be easier to keep them in sync with the RPC definitions and avoid discrepancies between the type
     definitions in the SDK and the data returned by RPC methods.
@@ -108,8 +108,8 @@
   provider.
 
   ```diff
-  - import { JsonRpcProvider, devnetConnection } from '@mysten/sui.js';
-  + import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+  - import { JsonRpcProvider, devnetConnection } from '@benfen/bfc.js';
+  + import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
   - const provider = new JsonRpcProvider(localnetConnection);
   + const client = new SuiClient({ url: getFullnodeUrl('localnet')});
@@ -127,10 +127,10 @@
   -    RawSigner,
   -    TransactionBlock,
   -    localnetConnection,
-  - } from '@mysten/sui.js';
-  + import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-  + import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-  + import { TransactionBlock } from '@mysten/sui.js/transactions';
+  - } from '@benfen/bfc.js';
+  + import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+  + import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+  + import { TransactionBlock } from '@benfen/bfc.js/transactions';
 
     const keypair = new Ed25519Keypair()
   - const provider = new JsonRpcProvider(localnetConnection);
@@ -148,12 +148,12 @@
   #### Migrating faucet requests
 
   The ability to request Sui from a faucet was not added to `SuiClient`, instead you will need to use
-  a method `@mysten/sui.js/faucet` to make these requests
+  a method `@benfen/bfc.js/faucet` to make these requests
 
   ```diff
-  - import { JsonRpcProvider, devnetConnection } from '@mysten/sui.js';
+  - import { JsonRpcProvider, devnetConnection } from '@benfen/bfc.js';
   - const provider = new JsonRpcProvider(devnetConnection);
-  + import { requestSuiFromFaucetV0, getFaucetHost } from '@mysten/sui.js/faucet';
+  + import { requestSuiFromFaucetV0, getFaucetHost } from '@benfen/bfc.js/faucet';
 
   - await provider.requestSuiFromFaucet(
   -  '<YOUR SUI ADDRESS>'
@@ -164,7 +164,7 @@
   +});
   ```
 
-- 001148443: Introduce new `@mysten/sui.js/faucet` export, which should be used for all faucet interactions. This deprecates the previous `requestSuiFromFaucet` APIs that existed on the `JsonRpcProvider` and `Signer` classes.
+- 001148443: Introduce new `@benfen/bfc.js/faucet` export, which should be used for all faucet interactions. This deprecates the previous `requestSuiFromFaucet` APIs that existed on the `JsonRpcProvider` and `Signer` classes.
 
 ### Patch Changes
 
@@ -194,7 +194,7 @@
 - 2f37537d5: Update `SuiEventFilter` structure for `TimeRange` query.
 - 00484bcc3: add method to create Ed25519Keypair from a mnemonic seed
 - Updated dependencies [36f2edff3]
-  - @mysten/bcs@0.7.3
+  - @benfen/bcs@0.7.3
 
 ## 0.36.0
 
@@ -209,7 +209,7 @@
 - 1cfb1c9da3: Added `getProtocolConfig()` method to the provider.
 - Updated dependencies [ca5c72815d]
 - Updated dependencies [fdb569464e]
-  - @mysten/bcs@0.7.2
+  - @benfen/bcs@0.7.2
 
 ## 0.35.1
 
@@ -279,7 +279,7 @@
 - 4e463c691: Add `waitForTransactionBlock` API to wait for a transaction to be available over the API.
 - b4f0bfc76: Fix type definitions for package exports.
 - Updated dependencies [b4f0bfc76]
-  - @mysten/bcs@0.7.1
+  - @benfen/bcs@0.7.1
 
 ## 0.32.1
 
@@ -314,7 +314,7 @@
 - 4adfbff73: Use Blake2b instead of sha3_256 for address generation
 - 4c4573ebe: Removed DevInspectResultsType and now DevInspectResults has a property results of ExecutionResultType and a property error
 - acc2edb31: Update schema for `SuiSystemState` and `DelegatedStake`
-- 941b03af1: Change functions in transactions.ts of ts-sdk such that: `getTotalGasUsed` and `getTotalGasUsedUpperBound` of ts-sdk return a `bigint`,fields of `gasCostSummary` are defined as `string`, `epochId` is defined as `string`. In `sui-json-rpc` the corresponding types are defined as `BigInt`. Introduce `SuiEpochId` type to `sui-json-rpc` types that is a `BigInt`.
+- 941b03af1: Change functions in transactions.ts of ts-sdk such that: `getTotalGasUsed` and `getTotalGasUsedUpperBound` of ts-sdk return a `bigint`,fields of `gasCostSummary` are defined as `string`, `epochId` is defined as `string`. In `bfc-json-rpc` the corresponding types are defined as `BigInt`. Introduce `SuiEpochId` type to `bfc-json-rpc` types that is a `BigInt`.
 - a6690ac7d: Changed the default behavior of `publish` to publish an upgreadeable-by-sender package instead of immutable.
 - a211dc03a: Change object digest from Base64 encoded to Base58 encoded for rpc version >= 0.28.0
 - 4c1e331b8: Gas budget is now optional, and will automatically be computed by executing a dry-run when not provided.
@@ -324,14 +324,14 @@
 - 36c264ebb: Remove `generateTransactionDigest`. Use one of the following instead: `signer.getTransactionDigest`, `Transaction.getDigest()` or `TransactionDataBuilder.getDigestFromBytes()` instead.
 - 891abf5ed: Remove support for RPC Batch Request in favor of multiGetTransactions and multiGetObjects
 - 2e0ef59fa: Added VALIDATORS_EVENTS_QUERY
-- 33cb357e1: Change functions in json-rpc-provider.ts of ts-sdk such that: `getTotalTransactionBlocks`, `getReferenceGasPrice` return a `bigint`, `getLatestCheckpointSequenceNumber` returns a `string`, `gasPrice` of `devInspectTransactionBlock` is defined as a `string`, checkpoint sequence number of `getCheckpoint` is defined as a `string`, `cursor` of `getCheckpoints` is defined as a `string`. Introduce `SuiCheckpointSequenceNumber` type in sui-json-rpc-types that is a `BigInt` to use instead of `CheckpointSequenceNumber` of sui-types.
+- 33cb357e1: Change functions in json-rpc-provider.ts of ts-sdk such that: `getTotalTransactionBlocks`, `getReferenceGasPrice` return a `bigint`, `getLatestCheckpointSequenceNumber` returns a `string`, `gasPrice` of `devInspectTransactionBlock` is defined as a `string`, checkpoint sequence number of `getCheckpoint` is defined as a `string`, `cursor` of `getCheckpoints` is defined as a `string`. Introduce `SuiCheckpointSequenceNumber` type in bfc-json-rpc-types that is a `BigInt` to use instead of `CheckpointSequenceNumber` of bfc-types.
 - 6bd88570c: Rework all coin APIs to take objects as arguments instead of positional arguments.
 - f1e42f792: Consolidate get_object and get_raw_object into a single get_object endpoint which now takes an additional config parameter with type `SuiObjectDataOptions` and has a new return type `SuiObjectResponse`. By default, only object_id, version, and digest are fetched.
 - 272389c20: Support for new versioned TransactionData format
 - 3de8de361: Remove `getSuiSystemState` method. Use `getLatestSuiSystemState` method instead.
 - be3c4f51e: Add `display` field in `SuiObjectResponse` for frontend rendering. See more details in https://forums.sui.io/t/nft-object-display-proposal/4872
 - dbe73d5a4: Update `executeTransaction` and `signAndExecuteTransaction` to take in an additional parameter `SuiTransactionBlockResponseOptions` which is used to specify which fields to include in `SuiTransactionBlockResponse` (e.g., transaction, effects, events, etc). By default, only the transaction digest will be included.
-- c82e4b454: Introduce BigInt struct to sui-json-rpc-types to serialize and deserialize amounts to/from string. Change ts-sdk to serialize amounts of PaySui and Pay as string.
+- c82e4b454: Introduce BigInt struct to bfc-json-rpc-types to serialize and deserialize amounts to/from string. Change ts-sdk to serialize amounts of PaySui and Pay as string.
 - 7a2eaf4a3: Changing the SuiObjectResponse struct to use data/error fields instead of details/status
 - 2ef2bb59e: Deprecate getTransactionDigestsInRange. This method will be removed before April 2023, please use `getTransactions` instead
 - 9b29bef37: Pass blake2b hash to signer API
@@ -379,7 +379,7 @@
 - Updated dependencies [a0955c479]
 - Updated dependencies [0a7b42a6d]
 - Updated dependencies [77bdf907f]
-  - @mysten/bcs@0.7.0
+  - @benfen/bcs@0.7.0
 
 ## 0.29.1
 
@@ -402,7 +402,7 @@
 - 0e202a543: Remove pending delegation switches.
 - 67e503c7c: Move base58 libraries to BCS
 - Updated dependencies [0e202a543]
-  - @mysten/bcs@0.6.1
+  - @benfen/bcs@0.6.1
 
 ## 0.28.0
 
@@ -416,7 +416,7 @@
 
 - 24bdb66c6: Include client type and version in RPC client request headers
 - Updated dependencies [598f106ef]
-  - @mysten/bcs@0.6.0
+  - @benfen/bcs@0.6.0
 
 ## 0.27.0
 
@@ -584,7 +584,7 @@
 ### Patch Changes
 
 - Updated dependencies [1a0968636]
-  - @mysten/bcs@0.5.0
+  - @benfen/bcs@0.5.0
 
 ## 0.15.0
 
@@ -599,7 +599,7 @@
 - c27933292: Add constants for default API endpoints
 - Updated dependencies [1591726e8]
 - Updated dependencies [1591726e8]
-  - @mysten/bcs@0.4.0
+  - @benfen/bcs@0.4.0
 
 ## 0.14.0
 
@@ -649,7 +649,7 @@
 ### Patch Changes
 
 - Updated dependencies [d343b67e]
-  - @mysten/bcs@0.3.0
+  - @benfen/bcs@0.3.0
 
 ## 0.11.0-pre
 
@@ -665,4 +665,4 @@
 - e2aa08e9: Fix missing built files for packages.
 - Updated dependencies [c5e4851b]
 - Updated dependencies [e2aa08e9]
-  - @mysten/bcs@0.2.1
+  - @benfen/bcs@0.2.1

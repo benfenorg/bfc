@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiClient } from '@mysten/sui.js/client';
+import type { SuiClient } from '@benfen/bfc.js/client';
 import { SuiClientProvider } from 'dapp-kit/src';
 
 export function createSuiClientContextWrapper(client: SuiClient) {

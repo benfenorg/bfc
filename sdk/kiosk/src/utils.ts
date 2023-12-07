@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SharedObjectRef } from '@mysten/sui.js/bcs';
-import { SuiObjectRef, SuiObjectResponse } from '@mysten/sui.js/client';
-import { TransactionBlock, TransactionArgument } from '@mysten/sui.js/transactions';
-import { type DynamicFieldInfo } from '@mysten/sui.js/client';
+import { SharedObjectRef } from '@benfen/bfc.js/bcs';
+import { SuiObjectRef, SuiObjectResponse } from '@benfen/bfc.js/client';
+import { TransactionBlock, TransactionArgument } from '@benfen/bfc.js/transactions';
+import { type DynamicFieldInfo } from '@benfen/bfc.js/client';
 import { bcs } from './bcs';
 import { KIOSK_TYPE, Kiosk, KioskData, KioskListing, RulesEnvironmentParam } from './types';
 import { MAINNET_RULES_PACKAGE_ADDRESS, TESTNET_RULES_PACKAGE_ADDRESS } from './constants';
-import { SuiClient, PaginationArguments } from '@mysten/sui.js/client';
+import { SuiClient, PaginationArguments } from '@benfen/bfc.js/client';
 
 /* A simple map to the rule package addresses */
 // TODO: Supply the mainnet and devnet addresses.

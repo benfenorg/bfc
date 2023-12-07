@@ -27,6 +27,7 @@ use sui_types::base_types::{
     ObjectDigest, ObjectID, ObjectInfo, ObjectRef, ObjectType, SequenceNumber, SuiAddress,
     TransactionDigest,
 };
+use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 use sui_types::error::{SuiObjectResponseError, UserInputError, UserInputResult};
 use sui_types::gas_coin::GasCoin;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
@@ -251,7 +252,8 @@ impl Display for SuiObjectData {
         writeln!(
             writer,
             "{}",
-            format!("----- {type_} ({}[{}]) -----", self.object_id, self.version).bold()
+            format!("----- {type_} ({}[{}]) -----",
+                    objects_id_to_bfc_address(self.object_id), self.version).bold()
         )?;
         if let Some(owner) = self.owner {
             writeln!(writer, "{}: {}", "Owner".bold().bright_black(), owner)?;
@@ -729,7 +731,9 @@ impl Display for SuiObjectRef {
         write!(
             f,
             "Object ID: {}, version: {}, digest: {}",
-            self.object_id, self.version, self.digest
+            objects_id_to_bfc_address(self.object_id),
+            self.version,
+            self.digest
         )
     }
 }

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin, CoinFormat } from '@mysten/core';
-import { type SuiObjectResponse } from '@mysten/sui.js/client';
-import { normalizeSuiAddress, SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+import { type SuiObjectResponse } from '@benfen/bfc.js/client';
+import { normalizeSuiAddress, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { Text } from '@mysten/ui';
 import { useState, useEffect } from 'react';
 

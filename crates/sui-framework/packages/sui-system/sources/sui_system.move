@@ -56,6 +56,8 @@ module sui_system::sui_system {
     use sui_system::stake_subsidy::StakeSubsidy;
     use sui_system::staking_pool::PoolTokenExchangeRate;
     use std::option;
+    use std::type_name;
+    use std::vector;
     use bfc_system::bfc_system;
     use bfc_system::busd::BUSD;
     use sui::dynamic_field;
@@ -63,6 +65,7 @@ module sui_system::sui_system {
     use sui_system::stable_pool::StakedStable;
     #[test_only]
     use std::type_name;
+
 
     #[test_only] use sui::balance;
     #[test_only]
@@ -604,10 +607,15 @@ module sui_system::sui_system {
                                          // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
+        busd_rate : vector<u64>,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get BUSD exchange rate from bfc system
-        let stable_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
+        //let stable_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
+        let stable_rate = vec_map::empty<ascii::String, u64>();
+        //add busd rate
+        let rate = vector::pop_back(&mut busd_rate);
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BUSD>()), rate);
 
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
@@ -832,6 +840,10 @@ module sui_system::sui_system {
     ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
+        // let rate_map = vec_map::empty<ascii::String, u64>();
+        // vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1);
+        let rates = vector::empty<u64>();
+        vector::insert(&mut rates, 1, 0);
         let storage_rebate = advance_epoch(
             storage_reward,
             computation_reward,
@@ -843,6 +855,7 @@ module sui_system::sui_system {
             storage_fund_reinvest_rate,
             reward_slashing_rate,
             epoch_start_timestamp_ms,
+            rates,
             ctx,
         );
         storage_rebate

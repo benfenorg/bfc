@@ -6,9 +6,9 @@ use prometheus::{Histogram, IntCounter};
 
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
-    Checkpoint as RpcCheckpoint, CheckpointId, EpochInfo, EventFilter, EventPage, MoveCallMetrics,
-    NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiObjectData, SuiObjectDataFilter,
-    SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
+    Checkpoint as RpcCheckpoint, CheckpointId, DaoProposalFilter, EpochInfo, EventFilter,
+    EventPage, MoveCallMetrics, NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiObjectData,
+    SuiObjectDataFilter, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::CheckpointDigest;
@@ -212,7 +212,10 @@ pub trait IndexerStore {
     async fn get_network_metrics(&self) -> Result<NetworkMetrics, IndexerError>;
     async fn get_network_overview(&self) -> Result<NetworkOverview, IndexerError>;
     async fn get_move_call_metrics(&self) -> Result<MoveCallMetrics, IndexerError>;
-    async fn get_dao_proposals(&self) -> Result<Vec<SuiDaoProposal>, IndexerError>;
+    async fn get_dao_proposals(
+        &self,
+        filter: Option<DaoProposalFilter>,
+    ) -> Result<Vec<SuiDaoProposal>, IndexerError>;
 
     async fn persist_fast_path(
         &self,

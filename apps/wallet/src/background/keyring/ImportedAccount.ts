@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Keypair } from '@mysten/sui.js/cryptography';
+import { type Keypair } from '@benfen/bfc.js/cryptography';
 
 import { type Account, AccountType } from './Account';
 import { AccountKeypair } from './AccountKeypair';

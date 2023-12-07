@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { sui2BfcAddress } from '@benfen/bfc.js';
+import { type SuiSystemStateSummary } from '@benfen/bfc.js/client';
 import { useGetValidatorsApy, useGetValidatorsEvents } from '@mysten/core';
 import { useLatestSuiSystemState } from '@mysten/dapp-kit';
-import { sui2BfcAddress } from '@mysten/sui.js';
-import { type SuiSystemStateSummary } from '@mysten/sui.js/client';
-import { LoadingIndicator, Text } from '@mysten/ui';
+import { LoadingIndicator } from '@mysten/ui';
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -107,11 +107,11 @@ function ValidatorDetails() {
 	return (
 		<PageLayout
 			content={
-				<div className="mb-10">
-					<div className="flex flex-col flex-nowrap gap-5 md:flex-row md:gap-0">
+				<div className="mb-10 grid grid-cols-2 gap-8">
+					<div className="flex flex-col gap-1 md:gap-0">
 						<ValidatorMeta validatorData={validatorData} />
 					</div>
-					<div className="mt-5 md:mt-8">
+					<div className="rounded-xl border border-solid border-bfc-border p-7.5">
 						<ValidatorStats
 							validatorData={validatorData}
 							epoch={data.epoch}
@@ -120,25 +120,6 @@ function ValidatorDetails() {
 							tallyingScore={tallyingScore}
 						/>
 					</div>
-					{atRiskRemainingEpochs !== null && (
-						<div className="mt-5">
-							<Banner
-								fullWidth
-								border
-								variant="error"
-								title={
-									<Text uppercase variant="bodySmall/semibold">
-										at risk of being removed as a validator after {atRiskRemainingEpochs} epoch
-										{atRiskRemainingEpochs > 1 ? 's' : ''}
-									</Text>
-								}
-							>
-								<Text variant="bodySmall/medium">
-									Staked BFC is below the minimum BFC stake threshold to remain a validator.
-								</Text>
-							</Banner>
-						</div>
-					)}
 				</div>
 			}
 		/>

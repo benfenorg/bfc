@@ -12,13 +12,13 @@ Sui Wallet Kit is a library that makes it easy to connect your dApp to Sui walle
 To get started in a React application, you can install the following packages:
 
 ```bash
-npm install @mysten/wallet-kit
+npm install @benfen/wallet-kit
 ```
 
 At the root of your application, you can then set up the wallet kit provider:
 
 ```tsx
-import { WalletKitProvider } from '@mysten/wallet-kit';
+import { WalletKitProvider } from '@benfen/wallet-kit';
 
 export function App() {
 	return <WalletKitProvider>{/* Your application... */}</WalletKitProvider>;
@@ -28,8 +28,8 @@ export function App() {
 You can then add a **Connect Wallet** button to your page:
 
 ```tsx
-import { ConnectButton, useWalletKit } from '@mysten/wallet-kit';
-import { formatAddress } from '@mysten/sui.js/utils';
+import { ConnectButton, useWalletKit } from '@benfen/wallet-kit';
+import { formatAddress } from '@benfen/bfc.js/utils';
 
 function ConnectToWallet() {
 	const { currentAccount } = useWalletKit();
@@ -46,8 +46,8 @@ To get access to the currently connected wallet, use the `useWalletKit()` hook t
 wallet, such as proposing transactions:
 
 ```tsx
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { useWalletKit } from '@mysten/wallet-kit';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { useWalletKit } from '@benfen/wallet-kit';
 
 export function SendTransaction() {
 	const { signAndExecuteTransactionBlock } = useWalletKit();
@@ -78,7 +78,7 @@ export function SendTransaction() {
 ### Usage without React
 
 We do not currently have non-React UI libraries for connecting to wallets. The logic in the React
-library (`@mysten/wallet-kit`) can be used as reference for implementing a wallet connection UI in
+library (`@benfen/wallet-kit`) can be used as reference for implementing a wallet connection UI in
 other UI libraries.
 
 ## Supported wallets

@@ -7,10 +7,10 @@
  *  ######################################
  *
  * This file is generated from:
- * /crates/sui-open-rpc/spec/openrpc.json
+ * /crates/bfc-open-rpc/spec/openrpc.json
  */
 
-import type { DryRunTransactionBlockParams } from '@mysten/sui.js/client';
+import type { DryRunTransactionBlockParams } from '@benfen/bfc.js/client';
 import type { UseSuiClientMutationOptions } from '../useSuiClientMutation.js';
 import { useSuiClientMutation } from '../useSuiClientMutation.js';
 

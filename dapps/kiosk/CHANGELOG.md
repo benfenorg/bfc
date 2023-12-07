@@ -23,9 +23,9 @@
 ### Patch Changes
 
 - Updated dependencies [24c21e1f0]
-  - @mysten/sui.js@0.41.1
+  - @benfen/bfc.js@0.41.1
   - @mysten/kiosk@0.5.2
-  - @mysten/wallet-kit@0.7.1
+  - @benfen/wallet-kit@0.7.1
 
 ## 0.0.7
 
@@ -34,8 +34,8 @@
 - Updated dependencies [ba8e3b857]
 - Updated dependencies [f4b7b3474]
 - Updated dependencies [85f785c97]
-  - @mysten/sui.js@0.41.0
-  - @mysten/wallet-kit@0.7.0
+  - @benfen/bfc.js@0.41.0
+  - @benfen/wallet-kit@0.7.0
   - @mysten/kiosk@0.5.1
 
 ## 0.0.6
@@ -46,8 +46,8 @@
 - Updated dependencies [a503cad34]
 - Updated dependencies [210bfac58]
 - Updated dependencies [8281e3d25]
-  - @mysten/wallet-kit@0.6.0
-  - @mysten/sui.js@0.40.0
+  - @benfen/wallet-kit@0.6.0
+  - @benfen/bfc.js@0.40.0
   - @mysten/kiosk@0.5.0
 
 ## 0.0.5
@@ -55,9 +55,9 @@
 ### Patch Changes
 
 - Updated dependencies [47ea5ec7c]
-  - @mysten/sui.js@0.39.0
+  - @benfen/bfc.js@0.39.0
   - @mysten/kiosk@0.4.1
-  - @mysten/wallet-kit@0.5.1
+  - @benfen/wallet-kit@0.5.1
 
 ## 0.0.4
 
@@ -76,18 +76,18 @@
 - Updated dependencies [6d41059c7]
 - Updated dependencies [cc6441f46]
 - Updated dependencies [001148443]
-  - @mysten/sui.js@0.38.0
+  - @benfen/bfc.js@0.38.0
   - @mysten/kiosk@0.4.0
-  - @mysten/wallet-kit@0.5.0
+  - @benfen/wallet-kit@0.5.0
 
 ## 0.0.3
 
 ### Patch Changes
 
 - Updated dependencies [34cc7d610]
-  - @mysten/sui.js@0.37.1
+  - @benfen/bfc.js@0.37.1
   - @mysten/kiosk@0.3.3
-  - @mysten/wallet-kit@0.4.12
+  - @benfen/wallet-kit@0.4.12
 
 ## 0.0.2
 
@@ -100,9 +100,9 @@
 - Updated dependencies [a17d3678a]
 - Updated dependencies [2f37537d5]
 - Updated dependencies [00484bcc3]
-  - @mysten/sui.js@0.37.0
+  - @benfen/bfc.js@0.37.0
   - @mysten/kiosk@0.3.2
-  - @mysten/wallet-kit@0.4.11
+  - @benfen/wallet-kit@0.4.11
 
 ## 0.0.1
 
@@ -116,5 +116,5 @@
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [fb3bb9118a]
   - @mysten/kiosk@0.3.1
-  - @mysten/sui.js@0.36.0
-  - @mysten/wallet-kit@0.4.10
+  - @benfen/bfc.js@0.36.0
+  - @benfen/wallet-kit@0.4.10

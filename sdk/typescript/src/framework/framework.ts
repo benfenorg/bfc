@@ -162,7 +162,7 @@ export type DelegationSuiObject = Omit<SuiObjectData, 'data'> & {
 };
 
 // Class for delegation.move
-// see https://github.com/MystenLabs/fastnft/blob/161aa27fe7eb8ecf2866ec9eb192e768f25da768/crates/sui-framework/sources/governance/delegation.move
+// see https://github.com/MystenLabs/fastnft/blob/161aa27fe7eb8ecf2866ec9eb192e768f25da768/crates/bfc-framework/sources/governance/delegation.move
 export class Delegation {
 	public static readonly SUI_OBJECT_TYPE = '0x2::delegation::Delegation';
 	private suiObject: DelegationSuiObject;

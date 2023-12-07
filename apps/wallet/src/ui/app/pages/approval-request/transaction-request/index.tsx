@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useTransactionSummary } from '@mysten/core';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMemo, useState } from 'react';
 
 import { GasFees } from './GasFees';

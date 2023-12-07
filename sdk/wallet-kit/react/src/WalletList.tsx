@@ -3,7 +3,7 @@
 
 import { styled } from './stitches';
 import { Title } from './utils/Dialog';
-import { SuiIcon } from './utils/icons';
+import { BenFenLogoLight } from './utils/icons';
 import { Truncate, Panel } from './utils/ui';
 import { useWalletKit } from './WalletKitContext';
 
@@ -58,16 +58,17 @@ const WalletIcon = styled('img', {
 interface Props {
 	selected: string | null;
 	onChange(selected: string): void;
+	connectWallet?: string;
 }
 
 export const SELECTED_GETTING_STARTED = '@@internal/getting-started';
 
-export function WalletList({ selected, onChange }: Props) {
+export function WalletList({ selected, onChange, connectWallet }: Props) {
 	const { wallets } = useWalletKit();
 
 	return (
 		<Container>
-			<Title>Connect a Wallet</Title>
+			<Title>{connectWallet || 'Connect a Wallet'}</Title>
 
 			<ListContainer>
 				{wallets.length === 0 ? (
@@ -75,8 +76,8 @@ export function WalletList({ selected, onChange }: Props) {
 						onClick={() => onChange(SELECTED_GETTING_STARTED)}
 						selected={{ '@initial': false, '@md': true }}
 					>
-						<SuiIcon />
-						<Truncate>Sui Wallet</Truncate>
+						<BenFenLogoLight className="w-7 h-7" />
+						<Truncate>OpenBlock Wallet</Truncate>
 					</WalletItem>
 				) : (
 					wallets.map((wallet) => (

@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiObjectResponse } from '@mysten/sui.js/client';
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiObjectResponse } from '@benfen/bfc.js/client';
+import { SuiClient } from '@benfen/bfc.js/client';
 
 // get NFT's owner from RPC.
 export const getOwner = async (client: SuiClient, nftId: string): Promise<string | null> => {

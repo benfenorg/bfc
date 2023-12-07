@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toB58 } from '@mysten/bcs';
+import { toB58 } from '@benfen/bcs';
 import type { Infer } from 'superstruct';
 import {
 	array,
@@ -23,7 +23,7 @@ import { TransactionType, TransactionBlockInput } from './Transactions.js';
 import { BuilderCallArg, PureCallArg } from './Inputs.js';
 import { create } from './utils.js';
 import { bfc2SuiAddress } from '../utils/format.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeSuiAddress } from '../utils/bfc-types.js';
 
 export const TransactionExpiration = optional(
 	nullable(

@@ -5,8 +5,8 @@ use jsonrpsee::core::RpcResult;
 use jsonrpsee::proc_macros::rpc;
 
 use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, EpochInfo, EpochPage, MoveCallMetrics, NetworkMetrics,
-    NetworkOverview, QueryObjectsPage, SuiDaoProposal, SuiObjectResponseQuery,
+    AddressMetrics, CheckpointedObjectID, DaoProposalFilter, EpochInfo, EpochPage, MoveCallMetrics,
+    NetworkMetrics, NetworkOverview, QueryObjectsPage, SuiDaoProposal, SuiObjectResponseQuery,
 };
 use sui_open_rpc_macros::open_rpc;
 use sui_types::sui_serde::BigInt;
@@ -52,7 +52,10 @@ pub trait ExtendedApi {
 
     /// Return the list of dao proposals
     #[method(name = "getDaoProposals")]
-    async fn get_dao_proposals(&self) -> RpcResult<Vec<SuiDaoProposal>>;
+    async fn get_dao_proposals(
+        &self,
+        filter: Option<DaoProposalFilter>,
+    ) -> RpcResult<Vec<SuiDaoProposal>>;
 
     /// Return Network metrics
     #[method(name = "getMoveCallMetrics")]

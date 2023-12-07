@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { sui2BfcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@benfen/bfc.js';
 import { DEFAULT_API_ENV } from '_app/ApiProvider';
 import { getUrlWithDeviceId } from '_src/shared/analytics/amplitude';
 import { API_ENV } from '_src/shared/api-env';

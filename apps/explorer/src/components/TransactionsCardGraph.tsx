@@ -66,7 +66,7 @@ export function TransactionsCardGraph() {
 	const { data: epochMetrics, isLoading } = useEpochTransactions();
 
 	return (
-		<Card bg="white" spacing={!epochMetrics?.length ? 'lg' : 'lgGraph'} height="full">
+		<Card bg="bfcLinear" spacing={!epochMetrics?.length ? 'lg' : 'lgGraph'} height="full">
 			<div className="flex h-full flex-col gap-4 overflow-hidden">
 				<div className="heading6 font-bold text-[#171719]">Transaction Blocks</div>
 				<div

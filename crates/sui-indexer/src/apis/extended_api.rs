@@ -10,8 +10,8 @@ use sui_json_rpc::api::{
 };
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, EpochInfo, EpochPage, MoveCallMetrics, NetworkMetrics,
-    NetworkOverview, Page, QueryObjectsPage, SuiDaoProposal, SuiObjectDataFilter,
+    AddressMetrics, CheckpointedObjectID, DaoProposalFilter, EpochInfo, EpochPage, MoveCallMetrics,
+    NetworkMetrics, NetworkOverview, Page, QueryObjectsPage, SuiDaoProposal, SuiObjectDataFilter,
     SuiObjectResponse, SuiObjectResponseQuery,
 };
 use sui_open_rpc::Module;
@@ -131,7 +131,10 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         todo!()
     }
 
-    async fn get_dao_proposals(&self) -> RpcResult<Vec<SuiDaoProposal>> {
+    async fn get_dao_proposals(
+        &self,
+        filter: Option<DaoProposalFilter>,
+    ) -> RpcResult<Vec<SuiDaoProposal>> {
         todo!()
     }
 

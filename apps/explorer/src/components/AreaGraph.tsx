@@ -163,25 +163,15 @@ export function AreaGraph<D>({
 							</>
 						) : (
 							<>
-								<stop stopColor="#A3A8B5" />
-								<stop offset="40%" stopColor="#A3A8B5" stopOpacity="40%" />
-								<stop offset="100%" stopColor="#A3A8B5" stopOpacity="0%" />
+								<stop stopColor="rgba(26, 26, 100, 0.06)" />
+								<stop offset="100%" stopColor="rgba(26, 26, 100, 0.00)" />
 							</>
 						)}
 					</linearGradient>
 					<linearGradient id={lineGradientID}>
 						<stop stopColor="#171719" />
-						{/* <stop offset="100%" stopColor="#00EEAC" /> */}
 					</linearGradient>
 				</defs>
-				<PatternCircles
-					id={patternID}
-					height={5}
-					width={5}
-					radius={1}
-					fill="#000"
-					className="opacity-5"
-				/>
 				<AreaClosed<D>
 					curve={curve}
 					data={data}
@@ -190,6 +180,14 @@ export function AreaGraph<D>({
 					y={(d) => yScale(getY(d))}
 					fill={`url(#${fillGradientID})`}
 					stroke="transparent"
+				/>
+				<PatternCircles
+					id={patternID}
+					height={5}
+					width={5}
+					radius={1}
+					fill="#000"
+					className="opacity-5"
 				/>
 				<AreaClosed<D>
 					curve={curve}

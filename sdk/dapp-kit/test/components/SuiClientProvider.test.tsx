@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { screen } from '@testing-library/dom';
 import { SuiClientProvider } from '../../src/components/SuiClientProvider.js';
 import { useSuiClient, useSuiClientContext } from 'dapp-kit/src/index.js';
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiClient } from '@benfen/bfc.js/client';
 import { useState } from 'react';
 
 describe('SuiClientProvider', () => {

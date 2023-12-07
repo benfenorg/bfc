@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Button } from '@/components/ui/button';
-import { MultiSigPublicKey, publicKeyFromSuiBytes } from '@mysten/sui.js/multisig';
-import { PublicKey, SerializedSignature } from '@mysten/sui.js/cryptography';
+import { MultiSigPublicKey, publicKeyFromSuiBytes } from '@benfen/bfc.js/multisig';
+import { PublicKey, SerializedSignature } from '@benfen/bfc.js/cryptography';
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 

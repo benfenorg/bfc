@@ -34,3 +34,7 @@ mysten-metrics = { path = "../mysten-metrics" }
 move-core-types.workspace = true
 telemetry-subscribers.workspace = true
 workspace-hack = { version = "0.1", path = "../workspace-hack" }
+
+[[bin]]
+name = "bfc-oracle"
+path = "src/main.rs"

@@ -35,8 +35,6 @@
 -  [Function `treasury_balance`](#0xc8_bfc_system_state_inner_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_bfc_system_state_inner_deposit_to_treasury)
 -  [Function `rebalance`](#0xc8_bfc_system_state_inner_rebalance)
--  [Function `update_stable_rate`](#0xc8_bfc_system_state_inner_update_stable_rate)
--  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
 -  [Function `bfc_system_stat_parameter`](#0xc8_bfc_system_state_inner_bfc_system_stat_parameter)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_state_inner_create_bfcdao_action)
@@ -58,7 +56,6 @@
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
-<b>use</b> <a href="">0x1::type_name</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
@@ -131,7 +128,7 @@
 
 </dd>
 <dt>
-<code>stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;</code>
+<code>rate_map: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;</code>
 </dt>
 <dd>
 
@@ -269,15 +266,6 @@
 
 
 
-<a name="0xc8_bfc_system_state_inner_DEFAULT_STABLE_RATE"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_STABLE_RATE">DEFAULT_STABLE_RATE</a>: u64 = 0;
-</code></pre>
-
-
-
 <a name="0xc8_bfc_system_state_inner_create_inner_state"></a>
 
 ## Function `create_inner_state`
@@ -304,9 +292,9 @@
     <b>let</b> <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a> = <a href="gas_coin_map.md#0xc8_gas_coin_map_new">gas_coin_map::new</a>(init_gas_coins_map, ctx);
     <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;BUSD&gt;(ctx, 0);
     <b>let</b> dao = <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">bfc_dao::create_dao</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
-    <b>let</b> (t, remain_balance) = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, bfc_balance, parameters, ctx);
+    <b>let</b> (t, remain_balance, rate_map) = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(usd_supply, bfc_balance, parameters, ctx);
     <b>let</b> tp = <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">treasury_pool::create_treasury_pool</a>(remain_balance, ctx);
-    <b>let</b> stable_rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;String, u64&gt;();
+
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
         round: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BFC_SYSTEM_STATE_START_ROUND">BFC_SYSTEM_STATE_START_ROUND</a>,
         <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>,
@@ -314,7 +302,7 @@
         dao,
         <a href="treasury.md#0xc8_treasury">treasury</a>: t,
         <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>: tp,
-        stable_rate,
+        rate_map: rate_map,
     }
 }
 </code></pre>
@@ -680,7 +668,7 @@ Init exchange pool by add bfc coin.
 X treasury  init treasury
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, parameters: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, parameters: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;)
 </code></pre>
 
 
@@ -694,7 +682,7 @@ X treasury  init treasury
     bfc_balance: Balance&lt;BFC&gt;,
     parameters: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">BfcSystemParameters</a>,
     ctx: &<b>mut</b> TxContext
-): (Treasury, Balance&lt;BFC&gt;) {
+): (Treasury, Balance&lt;BFC&gt;, VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;) {
     <b>let</b> treasury_parameters = parameters.treasury_parameters;
     <b>let</b> t = <a href="treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(treasury_parameters.time_interval, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&bfc_balance), ctx);
 
@@ -710,12 +698,14 @@ X treasury  init treasury
         parameters.chain_start_timestamp_ms,
         ctx,
     );
+    <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
     <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;BFC&gt;(&bfc_balance) &gt; 0) {
         <b>let</b> deposit_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> bfc_balance, <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">treasury::next_epoch_bfc_required</a>(&t));
         <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(deposit_balance, ctx));
-        <a href="treasury.md#0xc8_treasury_rebalance_first_init">treasury::rebalance_first_init</a>(&<b>mut</b> t, ctx);
+        <a href="treasury.md#0xc8_treasury_rebalance_internal">treasury::rebalance_internal</a>(&<b>mut</b> t, <b>false</b>, ctx);
+        rate_map = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&t);
     };
-    (t, bfc_balance)
+    (t, bfc_balance, rate_map)
 }
 </code></pre>
 
@@ -1059,63 +1049,7 @@ X-treasury
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(withdraw_balance);
     };
     <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_update_stable_rate"></a>
-
-## Function `update_stable_rate`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_stable_rate">update_stable_rate</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_stable_rate">update_stable_rate</a>( self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>) {
-    //<a href="busd.md#0xc8_busd">busd</a>
-    <b>let</b> rate =  <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stablecoin_exchange_rate">get_stablecoin_exchange_rate</a>&lt;BUSD&gt;(self);
-    <b>if</b>(rate &gt; <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_STABLE_RATE">DEFAULT_STABLE_RATE</a>) {
-        <b>let</b> key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;());
-        <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.stable_rate, &key)) {
-            <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> self.stable_rate, &key);
-        };
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_rate, key, rate);
-    };
-    //other stable rate <b>update</b>
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_get_all_stable_rate"></a>
-
-## Function `get_all_stable_rate`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">get_all_stable_rate</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">get_all_stable_rate</a>(self: & <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): VecMap&lt;String, u64&gt; {
-    self.stable_rate
+    self.rate_map = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>
 

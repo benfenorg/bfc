@@ -30,13 +30,7 @@ function TransactionBlockCardHeader({
 	}
 
 	const headerContent = (
-		<div
-			className={clsx(
-				'flex w-full justify-between',
-				open && size === 'md' && 'pb-6',
-				open && size === 'sm' && 'pb-4.5',
-			)}
-		>
+		<div className={clsx('flex w-full justify-between px-[7px]', open && 'pb-2.5')}>
 			{typeof title === 'string' ? (
 				<Heading
 					variant={size === 'md' ? 'heading4/semibold' : 'heading6/semibold'}
@@ -81,7 +75,7 @@ export function TransactionBlockCardSection({
 		<Collapsible.Root open={open} onOpenChange={setOpen} className="flex w-full flex-col gap-3">
 			{title && (
 				<Collapsible.Trigger>
-					<div className="flex items-center gap-2">
+					<div className="flex h-6 items-center gap-2 rounded px-[7px] hover:bg-bfc-card">
 						{typeof title === 'string' ? (
 							<Text color="steel-darker" variant="bodyLarge/normal">
 								{title}
@@ -127,7 +121,7 @@ export function TransactionBlockCard({
 				<Collapsible.Root
 					open={open}
 					onOpenChange={setOpen}
-					className={clsx(size === 'md' ? 'px-6 py-7' : 'px-4 py-4.5')}
+					className={clsx('px-[7px] pb-2.5 pt-5')}
 				>
 					<TransactionBlockCardHeader
 						open={open}

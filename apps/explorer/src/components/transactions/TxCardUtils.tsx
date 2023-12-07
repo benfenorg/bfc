@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SuiClient, type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { getTotalGasUsed } from '@mysten/core';
 import { X12, Dot12 } from '@mysten/icons';
-import { type SuiClient, type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 
 import { SuiAmount } from '../Table/SuiAmount';
 import { TxTimeType } from '../tx-time/TxTimeType';

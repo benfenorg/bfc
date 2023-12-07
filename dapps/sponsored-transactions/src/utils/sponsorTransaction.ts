@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { provider } from './rpc';
-import { getFaucetHost, requestSuiFromFaucetV0 } from '@mysten/sui.js/faucet';
+import { getFaucetHost, requestSuiFromFaucetV0 } from '@benfen/bfc.js/faucet';
 
 // This simulates what a server would do to sponsor a transaction
 export async function sponsorTransaction(sender: string, transactionKindBytes: Uint8Array) {

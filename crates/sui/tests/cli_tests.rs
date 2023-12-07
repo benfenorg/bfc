@@ -1996,7 +1996,7 @@ async fn test_serialize_tx() -> Result<(), anyhow::Error> {
         .data;
     let coin = object_refs.get(1).unwrap().object().unwrap().object_id;
 
-    SuiClientCommands::TransferSui {
+    SuiClientCommands::TransferBfc {
         to: address1,
         sui_coin_object_id: coin,
         gas_budget: rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
@@ -2007,7 +2007,7 @@ async fn test_serialize_tx() -> Result<(), anyhow::Error> {
     .execute(context)
     .await?;
 
-    SuiClientCommands::TransferSui {
+    SuiClientCommands::TransferBfc {
         to: address1,
         sui_coin_object_id: coin,
         gas_budget: rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import {
 	useGetValidatorsApy,
 	useGetSystemState,
@@ -8,7 +9,6 @@ import {
 	useGetCoinBalance,
 } from '@mysten/core';
 import { ArrowLeft16 } from '@mysten/icons';
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@mysten/sui.js';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 
@@ -28,7 +28,7 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { API_ENV } from '_src/shared/api-env';
 import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
-import type { StakeObject } from '@mysten/sui.js/client';
+import type { StakeObject } from '@benfen/bfc.js/client';
 
 type DelegationDetailCardProps = {
 	validatorAddress: string;

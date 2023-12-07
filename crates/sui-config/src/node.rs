@@ -370,13 +370,13 @@ pub struct CheckpointExecutorConfig {
 pub struct ExpensiveSafetyCheckConfig {
     /// If enabled, at epoch boundary, we will check that the storage
     /// fund balance is always identical to the sum of the storage
-    /// rebate of all live objects, and that the total SUI in the network remains
+    /// rebate of all live objects, and that the total BFC in the network remains
     /// the same.
     #[serde(default)]
     enable_epoch_sui_conservation_check: bool,
 
-    /// If enabled, we will check that the total SUI in all input objects of a tx
-    /// (both the Move part and the storage rebate) matches the total SUI in all
+    /// If enabled, we will check that the total BFC in all input objects of a tx
+    /// (both the Move part and the storage rebate) matches the total BFC in all
     /// output objects of the tx + gas fees
     #[serde(default)]
     enable_deep_per_tx_sui_conservation_check: bool,

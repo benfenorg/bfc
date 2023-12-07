@@ -3,7 +3,7 @@
 
 import { useFormatCoin } from '@mysten/core';
 import { useLatestSuiSystemState } from '@mysten/dapp-kit';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { LoadingIndicator } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';

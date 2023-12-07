@@ -19,14 +19,14 @@ const header = `
  *  ######################################
  *
  * This file is generated from:
- * /crates/sui-open-rpc/spec/openrpc.json
+ * /crates/bfc-open-rpc/spec/openrpc.json
  */
 `.trim();
 
 const queryHookTemplate = /* typescript */ `
 ${header}
 
-import type { $_METHOD_TYPE_NAME_Params } from '@mysten/sui.js/client';
+import type { $_METHOD_TYPE_NAME_Params } from '@benfen/bfc.js/client';
 import type { UseSuiClientQueryOptions } from '../useSuiClientQuery.js';
 import { useSuiClientQuery } from '../useSuiClientQuery.js';
 
@@ -47,7 +47,7 @@ export function $_HOOK_NAME_(
 const infiniteQueryHookTemplate = /* typescript */ `
 ${header}
 
-import type { $_METHOD_TYPE_NAME_Params } from '@mysten/sui.js/client';
+import type { $_METHOD_TYPE_NAME_Params } from '@benfen/bfc.js/client';
 import type { UseSuiClientQueryOptions } from '../useSuiClientQuery.js';
 import type { UseSuiClientInfiniteQueryOptions } from '../useSuiClientInfiniteQuery.js';
 import { useSuiClientQuery } from '../useSuiClientQuery.js';
@@ -83,7 +83,7 @@ export function $_INFINITE_HOOK_NAME_(
 const mutationHookTemplate = /* typescript */ `
 ${header}
 
-import type { $_METHOD_TYPE_NAME_Params } from '@mysten/sui.js/client';
+import type { $_METHOD_TYPE_NAME_Params } from '@benfen/bfc.js/client';
 import type { UseSuiClientMutationOptions } from '../useSuiClientMutation.js';
 import { useSuiClientMutation } from '../useSuiClientMutation.js';
 
@@ -104,7 +104,7 @@ export function $_HOOK_NAME_(
 const dappKitRoot = path.resolve(import.meta.url.slice(5), '../../../dapp-kit');
 const openRpcSpec: OpenRpcSpec = JSON.parse(
 	await fs.readFile(
-		path.resolve(dappKitRoot, '../../crates/sui-open-rpc/spec/openrpc.json'),
+		path.resolve(dappKitRoot, '../../crates/bfc-open-rpc/spec/openrpc.json'),
 		'utf-8',
 	),
 );
@@ -116,9 +116,9 @@ export async function generateHooks() {
 				return (
 					!method.name.includes('unsafe') &&
 					!method.name.includes('subscribe') &&
-					method.name !== 'sui_tryMultiGetPastObjects' &&
-					method.name !== 'sui_getLoadedChildObjects' &&
-					method.name !== 'sui_getEvents'
+					method.name !== 'bfc_tryMultiGetPastObjects' &&
+					method.name !== 'bfc_getLoadedChildObjects' &&
+					method.name !== 'bfc_getEvents'
 				);
 			})
 			.map(generateHook),

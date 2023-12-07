@@ -14,7 +14,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 100000, storage_cost: 1792840,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 150-150:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: test::m::Parent {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,9)}}}
 
@@ -23,7 +23,7 @@ mutated: object(0,0), object(2,1), object(2,2), object(2,3), object(2,4), object
 gas summary: computation_cost: 100000, storage_cost: 1428800,  storage_rebate: 1414512, non_refundable_storage_fee: 14288
 
 task 5 'view-object'. lines 155-155:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: test::m::Parent {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,9)}}}
 
@@ -33,7 +33,7 @@ deleted: object(2,1), object(2,2), object(2,3), object(2,4), object(2,5), object
 gas summary: computation_cost: 100000, storage_cost: 255360,  storage_rebate: 1414512, non_refundable_storage_fee: 14288
 
 task 7 'view-object'. lines 160-163:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: test::m::Parent {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,9)}}}
 

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useSuiClient } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { bcs } from '@mysten/sui.js/bcs';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { bcs } from '@benfen/bfc.js/bcs';
 import BigNumber from 'bignumber.js';
 
 const VaultInfo = {
@@ -58,6 +58,7 @@ export function useTokenPrice() {
 				? new BigNumber(decoded.current_sqrt_price)
 						.div(2 ** 64)
 						.pow(2)
+						.pow(-1)
 						.dp(6)
 						.toFixed()
 				: '';

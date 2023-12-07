@@ -34,6 +34,7 @@ use crate::{
     gas_coin::GasCoin,
 };
 use sui_protocol_config::ProtocolConfig;
+use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 use crate::stable_coin::StableCoin;
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
@@ -631,10 +632,10 @@ impl Display for Owner {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::AddressOwner(address) => {
-                write!(f, "Account Address ( {} )", address)
+                write!(f, "Account Address ( {} )", sui_address_to_bfc_address(address.clone()))
             }
             Self::ObjectOwner(address) => {
-                write!(f, "Object ID: ( {} )", address)
+                write!(f, "Object ID: ( {} )", sui_address_to_bfc_address(address.clone()))
             }
             Self::Immutable => {
                 write!(f, "Immutable")

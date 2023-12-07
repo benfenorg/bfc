@@ -4,7 +4,7 @@
 import { useSuiClient } from '@mysten/dapp-kit';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
-import type { TransactionFilter } from '@mysten/sui.js/client';
+import type { TransactionFilter } from '@benfen/bfc.js/client';
 
 export const DEFAULT_TRANSACTIONS_LIMIT = 20;
 

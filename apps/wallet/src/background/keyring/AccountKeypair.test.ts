@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { RawSigner } from '@mysten/sui.js';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { Secp256k1Keypair } from '@mysten/sui.js/keypairs/secp256k1';
+import { RawSigner } from '@benfen/bfc.js';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { Secp256k1Keypair } from '@benfen/bfc.js/keypairs/secp256k1';
 import { describe, expect, it } from 'vitest';
 
 import { AccountKeypair } from './AccountKeypair';

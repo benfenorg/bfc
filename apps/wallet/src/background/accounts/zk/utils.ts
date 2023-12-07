@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type PublicKey } from '@mysten/sui.js/cryptography';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { type PublicKey } from '@benfen/bfc.js/cryptography';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import { generateNonce } from '@mysten/zklogin';
 import { randomBytes } from '@noble/hashes/utils';
 import { toBigIntBE } from 'bigint-buffer';

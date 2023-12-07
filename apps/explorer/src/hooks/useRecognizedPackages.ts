@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFeatureValue } from '@growthbook/growthbook-react';
-import { SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS } from '@mysten/sui.js/utils';
+import { SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS } from '@benfen/bfc.js/utils';
 
 import { useNetwork } from '~/context';
 import { Network } from '~/utils/api/DefaultRpcClient';

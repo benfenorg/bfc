@@ -48,7 +48,7 @@ import { DynamicFieldPage } from '../types/dynamic_fields.js';
 import type { WebsocketClientOptions } from '../rpc/websocket-client.js';
 import { DEFAULT_CLIENT_OPTIONS, WebsocketClient } from '../rpc/websocket-client.js';
 import { any, array, string, nullable } from 'superstruct';
-import { fromB58, toB64, toHEX } from '@mysten/bcs';
+import { fromB58, toB64, toHEX } from '@benfen/bcs';
 import type { SerializedSignature } from '../cryptography/signature.js';
 import type { Connection } from '../rpc/connection.js';
 import { devnetConnection } from '../rpc/connection.js';
@@ -64,7 +64,7 @@ import {
 	isValidTransactionDigest,
 	normalizeSuiAddress,
 	normalizeSuiObjectId,
-} from '../utils/sui-types.js';
+} from '../utils/bfc-types.js';
 import type { CoinMetadata } from '../framework/framework.js';
 import { CoinMetadataStruct } from '../framework/framework.js';
 
@@ -152,7 +152,7 @@ export class JsonRpcProvider {
 		return undefined;
 	}
 
-	/** @deprecated Use `@mysten/sui.js/faucet` instead. */
+	/** @deprecated Use `@benfen/bfc.js/faucet` instead. */
 	async requestSuiFromFaucet(recipient: string, headers?: HttpHeaders) {
 		if (!this.connection.faucet) {
 			throw new Error('Faucet URL is not specified');
@@ -175,7 +175,7 @@ export class JsonRpcProvider {
 		}
 
 		return await this.client.requestWithType(
-			'suix_getCoins',
+			'bfcx_getCoins',
 			[input.owner, input.coinType, input.cursor, input.limit],
 			PaginatedCoins,
 		);
@@ -194,7 +194,7 @@ export class JsonRpcProvider {
 		}
 
 		return await this.client.requestWithType(
-			'suix_getAllCoins',
+			'bfcx_getAllCoins',
 			[input.owner, input.cursor, input.limit],
 			PaginatedCoins,
 		);
@@ -212,7 +212,7 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Sui address');
 		}
 		return await this.client.requestWithType(
-			'suix_getBalance',
+			'bfcx_getBalance',
 			[input.owner, input.coinType],
 			CoinBalance,
 		);
@@ -226,7 +226,7 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Sui address');
 		}
 		return await this.client.requestWithType(
-			'suix_getAllBalances',
+			'bfcx_getAllBalances',
 			[input.owner],
 			array(CoinBalance),
 		);
@@ -237,7 +237,7 @@ export class JsonRpcProvider {
 	 */
 	async getCoinMetadata(input: { coinType: string }): Promise<CoinMetadata | null> {
 		return await this.client.requestWithType(
-			'suix_getCoinMetadata',
+			'bfcx_getCoinMetadata',
 			[input.coinType],
 			CoinMetadataStruct,
 		);
@@ -247,7 +247,7 @@ export class JsonRpcProvider {
 	 *  Fetch total supply for a coin
 	 */
 	async getTotalSupply(input: { coinType: string }): Promise<CoinSupply> {
-		return await this.client.requestWithType('suix_getTotalSupply', [input.coinType], CoinSupply);
+		return await this.client.requestWithType('bfcx_getTotalSupply', [input.coinType], CoinSupply);
 	}
 
 	/**
@@ -268,7 +268,7 @@ export class JsonRpcProvider {
 		function: string;
 	}): Promise<SuiMoveFunctionArgTypes> {
 		return await this.client.requestWithType(
-			'sui_getMoveFunctionArgTypes',
+			'bfc_getMoveFunctionArgTypes',
 			[input.package, input.module, input.function],
 			SuiMoveFunctionArgTypes,
 		);
@@ -282,7 +282,7 @@ export class JsonRpcProvider {
 		package: string;
 	}): Promise<SuiMoveNormalizedModules> {
 		return await this.client.requestWithType(
-			'sui_getNormalizedMoveModulesByPackage',
+			'bfc_getNormalizedMoveModulesByPackage',
 			[input.package],
 			SuiMoveNormalizedModules,
 		);
@@ -296,7 +296,7 @@ export class JsonRpcProvider {
 		module: string;
 	}): Promise<SuiMoveNormalizedModule> {
 		return await this.client.requestWithType(
-			'sui_getNormalizedMoveModule',
+			'bfc_getNormalizedMoveModule',
 			[input.package, input.module],
 			SuiMoveNormalizedModule,
 		);
@@ -311,7 +311,7 @@ export class JsonRpcProvider {
 		function: string;
 	}): Promise<SuiMoveNormalizedFunction> {
 		return await this.client.requestWithType(
-			'sui_getNormalizedMoveFunction',
+			'bfc_getNormalizedMoveFunction',
 			[input.package, input.module, input.function],
 			SuiMoveNormalizedFunction,
 		);
@@ -326,7 +326,7 @@ export class JsonRpcProvider {
 		struct: string;
 	}): Promise<SuiMoveNormalizedStruct> {
 		return await this.client.requestWithType(
-			'sui_getNormalizedMoveStruct',
+			'bfc_getNormalizedMoveStruct',
 			[input.package, input.module, input.struct],
 			SuiMoveNormalizedStruct,
 		);
@@ -346,7 +346,7 @@ export class JsonRpcProvider {
 		}
 
 		return await this.client.requestWithType(
-			'suix_getOwnedObjects',
+			'bfcx_getOwnedObjects',
 			[
 				input.owner,
 				{
@@ -371,7 +371,7 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.client.requestWithType(
-			'sui_getObject',
+			'bfc_getObject',
 			[input.id, input.options],
 			SuiObjectResponse,
 		);
@@ -383,7 +383,7 @@ export class JsonRpcProvider {
 		options?: SuiObjectDataOptions;
 	}): Promise<ObjectRead> {
 		return await this.client.requestWithType(
-			'sui_tryGetPastObject',
+			'bfc_tryGetPastObject',
 			[input.id, input.version, input.options],
 			ObjectRead,
 		);
@@ -407,7 +407,7 @@ export class JsonRpcProvider {
 		}
 
 		return await this.client.requestWithType(
-			'sui_multiGetObjects',
+			'bfc_multiGetObjects',
 			[input.ids, input.options],
 			array(SuiObjectResponse),
 		);
@@ -422,7 +422,7 @@ export class JsonRpcProvider {
 			OrderArguments,
 	): Promise<PaginatedTransactionResponse> {
 		return await this.client.requestWithType(
-			'suix_queryTransactionBlocks',
+			'bfcx_queryTransactionBlocks',
 			[
 				{
 					filter: input.filter,
@@ -444,7 +444,7 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Transaction digest');
 		}
 		return await this.client.requestWithType(
-			'sui_getTransactionBlock',
+			'bfc_getTransactionBlock',
 			[input.digest, input.options],
 			SuiTransactionBlockResponse,
 		);
@@ -466,7 +466,7 @@ export class JsonRpcProvider {
 		}
 
 		return await this.client.requestWithType(
-			'sui_multiGetTransactionBlocks',
+			'bfc_multiGetTransactionBlocks',
 			[input.digests, input.options],
 			array(SuiTransactionBlockResponse),
 		);
@@ -479,7 +479,7 @@ export class JsonRpcProvider {
 		requestType?: ExecuteTransactionRequestType;
 	}): Promise<SuiTransactionBlockResponse> {
 		return await this.client.requestWithType(
-			'sui_executeTransactionBlock',
+			'bfc_executeTransactionBlock',
 			[
 				typeof input.transactionBlock === 'string'
 					? input.transactionBlock
@@ -497,7 +497,7 @@ export class JsonRpcProvider {
 	 */
 
 	async getTotalTransactionBlocks(): Promise<bigint> {
-		const resp = await this.client.requestWithType('sui_getTotalTransactionBlocks', [], string());
+		const resp = await this.client.requestWithType('bfc_getTotalTransactionBlocks', [], string());
 		return BigInt(resp);
 	}
 
@@ -505,7 +505,7 @@ export class JsonRpcProvider {
 	 * Getting the reference gas price for the network
 	 */
 	async getReferenceGasPrice(): Promise<bigint> {
-		const resp = await this.client.requestWithType('suix_getReferenceGasPrice', [], string());
+		const resp = await this.client.requestWithType('bfcx_getReferenceGasPrice', [], string());
 		return BigInt(resp);
 	}
 
@@ -517,7 +517,7 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Sui address');
 		}
 		return await this.client.requestWithType(
-			'suix_getStakes',
+			'bfcx_getStakes',
 			[input.owner],
 			array(DelegatedStake),
 		);
@@ -533,7 +533,7 @@ export class JsonRpcProvider {
 			}
 		});
 		return await this.client.requestWithType(
-			'suix_getStakesByIds',
+			'bfcx_getStakesByIds',
 			[input.stakedSuiIds],
 			array(DelegatedStake),
 		);
@@ -544,7 +544,7 @@ export class JsonRpcProvider {
 	 */
 	async getLatestSuiSystemState(): Promise<SuiSystemStateSummary> {
 		return await this.client.requestWithType(
-			'suix_getLatestSuiSystemState',
+			'bfcx_getLatestSuiSystemState',
 			[],
 			SuiSystemStateSummary,
 		);
@@ -561,7 +561,7 @@ export class JsonRpcProvider {
 			OrderArguments,
 	): Promise<PaginatedEvents> {
 		return await this.client.requestWithType(
-			'suix_queryEvents',
+			'bfcx_queryEvents',
 			[input.query, input.cursor, input.limit, (input.order || 'descending') === 'descending'],
 			PaginatedEvents,
 		);
@@ -577,8 +577,8 @@ export class JsonRpcProvider {
 		onMessage: (event: SuiEvent) => void;
 	}): Promise<Unsubscribe> {
 		return this.wsClient.request({
-			method: 'suix_subscribeEvent',
-			unsubscribe: 'suix_unsubscribeEvent',
+			method: 'bfcx_subscribeEvent',
+			unsubscribe: 'bfcx_unsubscribeEvent',
 			params: [input.filter],
 			onMessage: input.onMessage,
 		});
@@ -591,8 +591,8 @@ export class JsonRpcProvider {
 		onMessage: (event: TransactionEffects) => void;
 	}): Promise<Unsubscribe> {
 		return this.wsClient.request({
-			method: 'suix_subscribeTransaction',
-			unsubscribe: 'suix_unsubscribeTransaction',
+			method: 'bfcx_subscribeTransaction',
+			unsubscribe: 'bfcx_unsubscribeTransaction',
 			params: [input.filter],
 			onMessage: input.onMessage,
 		});
@@ -629,7 +629,7 @@ export class JsonRpcProvider {
 		}
 
 		return await this.client.requestWithType(
-			'sui_devInspectTransactionBlock',
+			'bfc_devInspectTransactionBlock',
 			[input.sender, devInspectTxBytes, input.gasPrice, input.epoch],
 			DevInspectResults,
 		);
@@ -642,7 +642,7 @@ export class JsonRpcProvider {
 		transactionBlock: Uint8Array | string;
 	}): Promise<DryRunTransactionBlockResponse> {
 		return await this.client.requestWithType(
-			'sui_dryRunTransactionBlock',
+			'bfc_dryRunTransactionBlock',
 			[
 				typeof input.transactionBlock === 'string'
 					? input.transactionBlock
@@ -665,7 +665,7 @@ export class JsonRpcProvider {
 			throw new Error('Invalid Sui Object id');
 		}
 		return await this.client.requestWithType(
-			'suix_getDynamicFields',
+			'bfcx_getDynamicFields',
 			[input.parentId, input.cursor, input.limit],
 			DynamicFieldPage,
 		);
@@ -681,7 +681,7 @@ export class JsonRpcProvider {
 		name: string | DynamicFieldName;
 	}): Promise<SuiObjectResponse> {
 		return await this.client.requestWithType(
-			'suix_getDynamicFieldObject',
+			'bfcx_getDynamicFieldObject',
 			[input.parentId, input.name],
 			SuiObjectResponse,
 		);
@@ -692,7 +692,7 @@ export class JsonRpcProvider {
 	 */
 	async getLatestCheckpointSequenceNumber(): Promise<string> {
 		const resp = await this.client.requestWithType(
-			'sui_getLatestCheckpointSequenceNumber',
+			'bfc_getLatestCheckpointSequenceNumber',
 			[],
 			string(),
 		);
@@ -706,7 +706,7 @@ export class JsonRpcProvider {
 		/** The checkpoint digest or sequence number */
 		id: CheckpointDigest | string;
 	}): Promise<Checkpoint> {
-		return await this.client.requestWithType('sui_getCheckpoint', [input.id], Checkpoint);
+		return await this.client.requestWithType('bfc_getCheckpoint', [input.id], Checkpoint);
 	}
 
 	/**
@@ -719,7 +719,7 @@ export class JsonRpcProvider {
 		} & PaginationArguments<CheckpointPage['nextCursor']>,
 	): Promise<CheckpointPage> {
 		const resp = await this.client.requestWithType(
-			'sui_getCheckpoints',
+			'bfc_getCheckpoints',
 			[input.cursor, input?.limit, input.descendingOrder],
 			CheckpointPage,
 		);
@@ -734,23 +734,23 @@ export class JsonRpcProvider {
 		epoch?: string | null;
 	}): Promise<CommitteeInfo> {
 		return await this.client.requestWithType(
-			'suix_getCommitteeInfo',
+			'bfcx_getCommitteeInfo',
 			[input?.epoch],
 			CommitteeInfo,
 		);
 	}
 
 	async getNetworkMetrics() {
-		return await this.client.requestWithType('suix_getNetworkMetrics', [], NetworkMetrics);
+		return await this.client.requestWithType('bfcx_getNetworkMetrics', [], NetworkMetrics);
 	}
 
 	async getAddressMetrics() {
-		return await this.client.requestWithType('suix_getLatestAddressMetrics', [], AddressMetrics);
+		return await this.client.requestWithType('bfcx_getLatestAddressMetrics', [], AddressMetrics);
 	}
 
 	async getAllEpochAddressMetrics(input?: { descendingOrder?: boolean }) {
 		return await this.client.requestWithType(
-			'suix_getAllEpochAddressMetrics',
+			'bfcx_getAllEpochAddressMetrics',
 			[input?.descendingOrder],
 			AllEpochsAddressMetrics,
 		);
@@ -765,7 +765,7 @@ export class JsonRpcProvider {
 		} & PaginationArguments<EpochPage['nextCursor']>,
 	): Promise<EpochPage> {
 		return await this.client.requestWithType(
-			'suix_getEpochs',
+			'bfcx_getEpochs',
 			[input?.cursor, input?.limit, input?.descendingOrder],
 			EpochPage,
 		);
@@ -775,21 +775,21 @@ export class JsonRpcProvider {
 	 * Returns list of top move calls by usage
 	 */
 	async getMoveCallMetrics(): Promise<MoveCallMetrics> {
-		return await this.client.requestWithType('suix_getMoveCallMetrics', [], MoveCallMetrics);
+		return await this.client.requestWithType('bfcx_getMoveCallMetrics', [], MoveCallMetrics);
 	}
 
 	/**
 	 * Return the committee information for the asked epoch
 	 */
 	async getCurrentEpoch(): Promise<EpochInfo> {
-		return await this.client.requestWithType('suix_getCurrentEpoch', [], EpochInfo);
+		return await this.client.requestWithType('bfcx_getCurrentEpoch', [], EpochInfo);
 	}
 
 	/**
 	 * Return the Validators APYs
 	 */
 	async getValidatorsApy(): Promise<ValidatorsApy> {
-		return await this.client.requestWithType('suix_getValidatorsApy', [], ValidatorsApy);
+		return await this.client.requestWithType('bfcx_getValidatorsApy', [], ValidatorsApy);
 	}
 
 	// TODO: Migrate this to `sui_getChainIdentifier` once it is widely available.
@@ -801,7 +801,7 @@ export class JsonRpcProvider {
 
 	async resolveNameServiceAddress(input: { name: string }): Promise<string | null> {
 		return await this.client.requestWithType(
-			'suix_resolveNameServiceAddress',
+			'bfcx_resolveNameServiceAddress',
 			[input.name],
 			nullable(string()),
 		);
@@ -813,7 +813,7 @@ export class JsonRpcProvider {
 		} & PaginationArguments<ResolvedNameServiceNames['nextCursor']>,
 	): Promise<ResolvedNameServiceNames> {
 		return await this.client.requestWithType(
-			'suix_resolveNameServiceNames',
+			'bfcx_resolveNameServiceNames',
 			[input.address],
 			ResolvedNameServiceNames,
 		);
@@ -821,7 +821,7 @@ export class JsonRpcProvider {
 
 	async getProtocolConfig(input?: { version?: string }): Promise<ProtocolConfig> {
 		return await this.client.requestWithType(
-			'sui_getProtocolConfig',
+			'bfc_getProtocolConfig',
 			[input?.version],
 			ProtocolConfig,
 		);

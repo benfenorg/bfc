@@ -1,12 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fs::File;
 use anyhow::Result;
 use camino::Utf8PathBuf;
 use clap::Parser;
 use fastcrypto::encoding::{Encoding, Hex};
 use std::path::PathBuf;
+use std::str::FromStr;
 use sui_config::{genesis::UnsignedGenesis, SUI_GENESIS_FILENAME};
+use sui_config::genesis::TokenAllocation;
 use sui_genesis_builder::Builder;
 use sui_types::multiaddr::Multiaddr;
 use sui_types::{
@@ -21,6 +24,7 @@ use sui_types::{
 use sui_keys::keypair_file::{
     read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file,
 };
+use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 
 use crate::genesis_inspector::examine_genesis_checkpoint;
 
@@ -182,11 +186,46 @@ pub fn run(cmd: Ceremony) -> Result<()> {
 
         CeremonyCommand::BuildUnsignedCheckpoint => {
             let mut builder = Builder::load(&dir)?;
-            let UnsignedGenesis { checkpoint, .. } = builder.build_unsigned_genesis_checkpoint();
-            println!(
-                "Successfully built unsigned checkpoint: {}",
-                checkpoint.digest()
-            );
+            let mut customize_allocation: Vec<TokenAllocation> = Vec::new();
+            // 打开CSV文件
+            let parameters_file = dir.join("data.csv");
+            if parameters_file.exists() {
+                let file = File::open(parameters_file)?;
+
+                let mut rdr = csv::Reader::from_reader(file);
+                let mut count = 0;
+                for result in rdr.records() {
+                    count = count + 1;
+                    let record = result?;
+                    let  index = 0;
+
+                    let mut recipient_address: String = record.get(index).unwrap().to_string();
+                    recipient_address = convert_to_evm_address( recipient_address);
+
+                    let token_allocation = TokenAllocation {
+                        recipient_address: SuiAddress::from_str(recipient_address.as_str()).unwrap(),
+                        amount_mist:  record.get(index + 1).unwrap().parse::<u64>().unwrap(),
+                        staked_with_validator: None,
+                    };
+                    println!("token_allocation: {:?}", token_allocation);
+                    customize_allocation.push(token_allocation);
+                }
+
+                let UnsignedGenesis { checkpoint, .. } = builder.build_unsigned_genesis_checkpoint_with_obc_allocation(&customize_allocation);
+                println!(
+                    "Successfully built unsigned checkpoint: {}",
+                    checkpoint.digest()
+                );
+
+            } else {
+                let UnsignedGenesis { checkpoint, .. } = builder.build_unsigned_genesis_checkpoint();
+                println!(
+                    "Successfully built unsigned checkpoint: {}",
+                    checkpoint.digest()
+                );
+
+            }
+
 
             builder.save(dir)?;
         }
@@ -249,7 +288,7 @@ pub fn run(cmd: Ceremony) -> Result<()> {
 fn check_protocol_version(builder: &Builder, protocol_version: ProtocolVersion) -> Result<()> {
     // It is entirely possible for the user to sign a genesis blob with an unknown
     // protocol version, but if this happens there is almost certainly some confusion
-    // (e.g. using a `sui` binary built at the wrong commit).
+    // (e.g. using a `bfc` binary built at the wrong commit).
     if builder.protocol_version() != protocol_version {
         return Err(anyhow::anyhow!(
                         "Serialized protocol version does not match local --protocol-version argument. ({:?} vs {:?})",

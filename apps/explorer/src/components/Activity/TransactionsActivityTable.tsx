@@ -57,7 +57,7 @@ export function TransactionsActivityTable({
 					Failed to load Transactions
 				</div>
 			)}
-			<div className="flex flex-col space-y-3 text-left">
+			<div className="flex flex-col text-left">
 				{isLoading || isFetching || !cardData ? (
 					<PlaceholderTable
 						rowCount={limit}
@@ -81,7 +81,7 @@ export function TransactionsActivityTable({
 					)}
 
 					<div className="flex items-center space-x-3">
-						<Text variant="body/normal" color="steel-darker">
+						<Text variant="body/normal" color="bfc-text2">
 							{count ? numberSuffix(Number(count)) : '-'}
 							{` Total`}
 						</Text>

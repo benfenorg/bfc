@@ -77,12 +77,12 @@ export class SuiHTTPTransport implements SuiTransport {
 
 	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
 		const indexServer = [
-			'suix_getNetworkMetrics',
-			'suix_getEpochs',
-			'suix_getCurrentEpoch',
-			'suix_getMoveCallMetrics',
-			'suix_getNetworkOverview',
-			'suix_getDaoProposals',
+			'bfcx_getNetworkMetrics',
+			'bfcx_getEpochs',
+			'bfcx_getCurrentEpoch',
+			'bfcx_getMoveCallMetrics',
+			'bfcx_getNetworkOverview',
+			'bfcx_getDaoProposals',
 		];
 		const useIndexer = input?.method && indexServer.includes(input?.method) ? true : false;
 		return useIndexer ? this.rpcIndexerClient.request(input) : this.rpcClient.request(input);

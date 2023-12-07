@@ -60,8 +60,8 @@ export function PageLayout({ gradient, content, loading, isError }: PageLayoutPr
 					>
 						<div
 							className={clsx(
-								'mx-auto max-w-[1440px] py-8 lg:px-6 xl:px-10',
-								gradient.size === 'lg' && 'px-4 xl:py-12',
+								'mx-auto max-w-[1440px] py-10 lg:px-6 xl:px-10',
+								gradient.size === 'lg' && 'px-4',
 								gradient.size === 'md' && 'px-4',
 							)}
 						>

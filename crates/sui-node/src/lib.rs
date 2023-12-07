@@ -292,7 +292,7 @@ impl SuiNode {
         let prometheus_registry = registry_service.default_registry();
 
         info!(node =? config.protocol_public_key(),
-            "Initializing sui-node listening on {}", config.network_address
+            "Initializing bfc-node listening on {}", config.network_address
         );
 
         // Initialize metrics to track db usage before creating any stores
@@ -608,7 +608,7 @@ impl SuiNode {
             _kv_store_uploader_handle: kv_store_uploader_handle,
         };
 
-        info!("SuiNode started!");
+        info!("BFCNode started!");
         let node = Arc::new(node);
         let node_copy = node.clone();
         spawn_monitored_task!(async move { Self::monitor_reconfiguration(node_copy).await });
@@ -854,6 +854,7 @@ impl SuiNode {
             anemo_config.quic = Some(quic_config);
 
             let server_name = format!("sui-{}", chain_identifier);
+
             let network = Network::bind(config.p2p_config.listen_address)
                 .server_name(&server_name)
                 .private_key(config.network_key_pair().copy().private().0.to_bytes())
@@ -865,6 +866,25 @@ impl SuiNode {
                 "P2p network started on {}",
                 network.local_addr()
             );
+
+            /*
+            let p2p_port = config.p2p_config.listen_address.port();
+            let network = Network::bind(anemo::types::Address::HostAndPort {
+                host: "0.0.0.0".into(),
+                port: p2p_port,
+            })
+                .server_name(&server_name)
+                .private_key(config.network_key_pair().copy().private().0.to_bytes())
+                .config(anemo_config)
+                .outbound_request_layer(outbound_layer)
+                .start(service)?;
+            info!(
+                server_name = server_name,
+                "P2p network started on {}",
+                network.local_addr()
+            );
+
+             */
 
             network
         };

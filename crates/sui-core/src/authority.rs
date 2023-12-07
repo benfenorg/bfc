@@ -1366,7 +1366,7 @@ impl AuthorityState {
             let rate = self.exchange_rates(gas).await?;
             let mut mut_effects = response_effects.clone();
             if rate > 0 {
-                let mut gas_cost = mut_effects.mut_gas_cost_summary();
+                let gas_cost = mut_effects.mut_gas_cost_summary();
                 let real_rate = rate / MIST_PER_SUI;
                 gas_cost.computation_cost = gas_cost.computation_cost * real_rate;
                 gas_cost.storage_cost = gas_cost.storage_cost * real_rate;

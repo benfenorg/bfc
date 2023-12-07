@@ -1,34 +1,40 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useZodForm } from '@mysten/core';
 import {
 	TransactionBlock,
 	getExecutionStatusError,
 	getExecutionStatusType,
 	getTransactionDigest,
-} from '@mysten/sui.js';
-import { humanReadableToBfcDigits } from '@mysten/sui.js/utils';
+} from '@benfen/bfc.js';
+import { humanReadableToBfcDigits } from '@benfen/bfc.js/utils';
+import { useZodForm } from '@mysten/core';
 import { Button } from '@mysten/ui';
-import { useWalletKit } from '@mysten/wallet-kit';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { z } from 'zod';
 
 import { DaoContext } from '~/context';
+import { useDryRunTransactionBlock } from '~/hooks/useDryRunTransactionBlock';
 import { Input } from '~/ui/Input';
 import { ADDRESS } from '~/utils/constants';
 
-const schema = z.object({
-	amount: z
-		.string()
-		.transform(Number)
-		.refine((n) => n >= 1, 'amount should be greater than or equal to 1'),
-});
-
 export function CreateVotingBfc() {
 	const { isConnected, signAndExecuteTransactionBlock } = useWalletKit();
-	const { refetch } = useContext(DaoContext)!;
+	const { refetch, balance } = useContext(DaoContext)!;
+	const dryRun = useDryRunTransactionBlock();
+
+	const schema = z.object({
+		amount: z
+			.string()
+			.transform(Number)
+			.refine((n) => n >= 1, 'amount should be greater than or equal to 1')
+			.refine(
+				(n) => humanReadableToBfcDigits(n) <= BigInt(balance?.totalBalance || ''),
+				'insufficient balance',
+			),
+	});
 
 	const { handleSubmit, register, formState } = useZodForm({
 		schema: schema,
@@ -47,6 +53,7 @@ export function CreateVotingBfc() {
 				arguments: [tx.object(ADDRESS.BFC_SYSTEM_STATE), coin, tx.object(ADDRESS.CLOCK)],
 			});
 
+			await dryRun(tx);
 			const result = await signAndExecuteTransactionBlock({
 				transactionBlock: tx,
 			});

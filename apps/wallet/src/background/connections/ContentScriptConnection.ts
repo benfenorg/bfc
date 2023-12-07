@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SignedTransaction } from '@mysten/sui.js';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import { bfc2SuiAddress, type SignedTransaction } from '@benfen/bfc.js';
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import Browser from 'webextension-polyfill';
 
 import { Connection } from './Connection';
@@ -247,7 +247,7 @@ export class ContentScriptConnection extends Connection {
 			this.origin,
 			permissions,
 			existingPermission,
-			account,
+			account ? bfc2SuiAddress(account) : undefined,
 		);
 		if (!allowed || !existingPermission) {
 			throw new Error("Operation not allowed, dapp doesn't have the required permissions");

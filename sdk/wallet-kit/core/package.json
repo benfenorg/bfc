@@ -1,9 +1,9 @@
 {
-	"name": "@mysten/wallet-kit-core",
-	"version": "0.6.2",
+	"name": "@benfen/wallet-kit-core",
+	"version": "0.1.2",
 	"description": "TODO: Write description",
 	"license": "Apache-2.0",
-	"author": "Mysten Labs <build@mystenlabs.com>",
+	"author": "OpenBlock<developers@benfen.org>",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
@@ -35,8 +35,8 @@
 		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
 	},
 	"dependencies": {
-		"@mysten/sui.js": "workspace:*",
-		"@mysten/wallet-standard": "workspace:*"
+		"@benfen/bfc.js": "workspace:*",
+		"@benfen/wallet-standard": "workspace:*"
 	},
 	"devDependencies": {
 		"tsup": "^7.1.0",

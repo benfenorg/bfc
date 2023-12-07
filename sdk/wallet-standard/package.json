@@ -1,9 +1,9 @@
 {
-	"name": "@mysten/wallet-standard",
-	"version": "0.7.2",
+	"name": "@benfen/wallet-standard",
+	"version": "0.1.1",
 	"description": "A suite of standard utilities for implementing wallets based on the Wallet Standard.",
 	"license": "Apache-2.0",
-	"author": "Mysten Labs <build@mystenlabs.com>",
+	"author": "OpenBlock<developers@benfen.org>",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
 		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
 	},
 	"dependencies": {
-		"@mysten/sui.js": "workspace:*",
+		"@benfen/bfc.js": "workspace:*",
 		"@wallet-standard/core": "1.0.3"
 	},
 	"devDependencies": {

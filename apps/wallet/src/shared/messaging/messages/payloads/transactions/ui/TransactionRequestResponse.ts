@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiSignMessageOutput } from '@mysten/wallet-standard';
+import { type SuiSignMessageOutput } from '@benfen/wallet-standard';
 
 import { isBasePayload } from '_payloads';
 
-import type { SignedTransaction } from '@mysten/sui.js';
-import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import type { SignedTransaction } from '@benfen/bfc.js';
+import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import type { BasePayload, Payload } from '_payloads';
 
 export interface TransactionRequestResponse extends BasePayload {

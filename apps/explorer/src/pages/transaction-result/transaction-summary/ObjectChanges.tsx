@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+	type SuiObjectChangePublished,
+	type SuiObjectChange,
+	type DisplayFieldsResponse,
+} from '@benfen/bfc.js/client';
+import { parseStructTag } from '@benfen/bfc.js/utils';
+import {
 	ObjectChangeLabels,
 	type SuiObjectChangeWithDisplay,
 	type ObjectChangesByOwner,
@@ -10,12 +16,6 @@ import {
 	useResolveSuiNSName,
 } from '@mysten/core';
 import { ChevronRight12 } from '@mysten/icons';
-import {
-	type SuiObjectChangePublished,
-	type SuiObjectChange,
-	type DisplayFieldsResponse,
-} from '@mysten/sui.js/client';
-import { parseStructTag } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import clsx from 'clsx';
@@ -83,7 +83,7 @@ function ObjectDetailPanel({
 		<Collapsible.Root open={open} onOpenChange={setOpen}>
 			<div className="flex flex-wrap items-center justify-between">
 				<Collapsible.Trigger>
-					<div className="flex items-center gap-0.5">
+					<div className="flex h-6 items-center gap-0.5 rounded-md px-[7px] hover:bg-bfc-card">
 						<Text variant="pBody/medium" color="steel-dark">
 							Object
 						</Text>
@@ -122,7 +122,7 @@ function ObjectDetail({
 	return (
 		<ObjectDetailPanel
 			headerContent={
-				<div className="flex items-center">
+				<div className="flex items-center pr-[7px]">
 					<Text mono variant="body/medium" color="steel-dark">
 						{name}:
 					</Text>
@@ -130,7 +130,7 @@ function ObjectDetail({
 				</div>
 			}
 			panelContent={
-				<div className="mt-2 flex flex-col gap-2">
+				<div className="mt-2 flex flex-col gap-2 px-[7px]">
 					{objectDetailLabels.map((label) => (
 						<Item
 							key={label}
@@ -149,10 +149,9 @@ function ObjectDetail({
 interface ObjectChangeEntriesProps {
 	type: SuiObjectChangeTypes;
 	changeEntries: SuiObjectChange[];
-	isDisplay?: boolean;
 }
 
-function ObjectChangeEntries({ changeEntries, type, isDisplay }: ObjectChangeEntriesProps) {
+function ObjectChangeEntries({ changeEntries, type }: ObjectChangeEntriesProps) {
 	const title = ObjectChangeLabels[type];
 	let expandableItems = [];
 
@@ -210,17 +209,12 @@ function ObjectChangeEntries({ changeEntries, type, isDisplay }: ObjectChangeEnt
 				defaultItemsToShow={DEFAULT_ITEMS_TO_SHOW}
 				itemsLabel="Objects"
 			>
-				<div
-					className={clsx('flex max-h-[300px] gap-2 overflow-y-auto', {
-						'flex-row': isDisplay,
-						'flex-col': !isDisplay,
-					})}
-				>
+				<div className={clsx('flex flex-col gap-1.25')}>
 					<ExpandableListItems />
 				</div>
 
 				{changeEntries.length > DEFAULT_ITEMS_TO_SHOW && (
-					<div className="pt-4">
+					<div className="mt-1.25 flex h-6 items-center">
 						<ExpandableListControl />
 					</div>
 				)}
@@ -267,6 +261,8 @@ export function ObjectChangeEntriesCards({ data, type }: ObjectChangeEntriesCard
 		<>
 			{Object.entries(data).map(([ownerAddress, changes]) => {
 				const renderFooter = ['AddressOwner', 'ObjectOwner', 'Shared'].includes(changes.ownerType);
+				const entries = [...changes.changesWithDisplay, ...changes.changes];
+
 				return (
 					<TransactionBlockCard
 						key={ownerAddress}
@@ -282,16 +278,7 @@ export function ObjectChangeEntriesCards({ data, type }: ObjectChangeEntriesCard
 						}
 					>
 						<div className="flex flex-col gap-4">
-							{!!changes.changesWithDisplay.length && (
-								<ObjectChangeEntries
-									changeEntries={changes.changesWithDisplay}
-									type={type}
-									isDisplay
-								/>
-							)}
-							{!!changes.changes.length && (
-								<ObjectChangeEntries changeEntries={changes.changes} type={type} />
-							)}
+							<ObjectChangeEntries changeEntries={entries} type={type} />
 						</div>
 					</TransactionBlockCard>
 				);

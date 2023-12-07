@@ -26,7 +26,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 100000, storage_cost: 259920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 6 'view-object'. lines 73-73:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 5
 Contents: test::m1::Pub {id: sui::object::UID {id: sui::object::ID {bytes: fake(5,0)}}, value: 112u64}
 

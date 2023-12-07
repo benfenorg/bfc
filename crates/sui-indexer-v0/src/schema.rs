@@ -126,6 +126,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    dao_votes (id) {
+        id -> Int8,
+        transaction_digest -> Varchar,
+        sender -> Varchar,
+        agree -> Bool,
+        pid -> Int8,
+        vote -> Int8,
+        voter -> Varchar,
+    }
+}
+
+diesel::table! {
     epochs (epoch) {
         epoch -> Int8,
         first_checkpoint_id -> Int8,
@@ -379,6 +391,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     checkpoint_metrics,
     checkpoints,
     dao_proposals,
+    dao_votes,
     epochs,
     events,
     input_objects,

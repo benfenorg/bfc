@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { requestSuiFromFaucetV0 } from '@mysten/sui.js/faucet';
+import { requestSuiFromFaucetV0 } from '@benfen/bfc.js/faucet';
 import { useIsMutating, useMutation, type UseMutationOptions } from '@tanstack/react-query';
 
 import { useActiveAddress } from '../../hooks/useActiveAddress';

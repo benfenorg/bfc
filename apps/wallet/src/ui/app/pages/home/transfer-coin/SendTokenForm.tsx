@@ -1,6 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Coin as CoinAPI } from '@benfen/bfc.js';
+import { type CoinStruct } from '@benfen/bfc.js/client';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import {
 	useCoinMetadata,
 	useFormatCoin,
@@ -10,9 +13,6 @@ import {
 } from '@mysten/core';
 import { useSuiClient } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
-import { Coin as CoinAPI } from '@mysten/sui.js';
-import { type CoinStruct } from '@mysten/sui.js/client';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { useQuery } from '@tanstack/react-query';
 import cl from 'classnames';
 import { Field, Form, useFormikContext, Formik } from 'formik';

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toB58 } from '@mysten/bcs';
+import { toB58 } from '@benfen/bcs';
 import { it, expect } from 'vitest';
 import type { MoveCallTransaction, TransferObjectsTransaction } from '../index.js';
 import { builder, PROGRAMMABLE_CALL, TRANSACTION } from '../index.js';

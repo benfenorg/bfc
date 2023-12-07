@@ -7,10 +7,10 @@
  *  ######################################
  *
  * This file is generated from:
- * /crates/sui-open-rpc/spec/openrpc.json
+ * /crates/bfc-open-rpc/spec/openrpc.json
  */
 
-import type { ResolveNameServiceNamesParams } from '@mysten/sui.js/client';
+import type { ResolveNameServiceNamesParams } from '@benfen/bfc.js/client';
 import type { UseSuiClientQueryOptions } from '../useSuiClientQuery.js';
 import type { UseSuiClientInfiniteQueryOptions } from '../useSuiClientInfiniteQuery.js';
 import { useSuiClientQuery } from '../useSuiClientQuery.js';

@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useCoinMetadata, useGetSystemState, useGetCoinBalance } from '@mysten/core';
 import { ArrowLeft16 } from '@mysten/icons';
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@mysten/sui.js';
 import * as Sentry from '@sentry/react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Formik } from 'formik';
@@ -38,7 +38,7 @@ import { Coin } from '_redux/slices/sui-objects/Coin';
 import { ampli } from '_src/shared/analytics/ampli';
 import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
 import { FEATURES } from '_src/shared/experimentation/features';
-import type { StakeObject } from '@mysten/sui.js/client';
+import type { StakeObject } from '@benfen/bfc.js/client';
 
 import type { FormikHelpers } from 'formik';
 

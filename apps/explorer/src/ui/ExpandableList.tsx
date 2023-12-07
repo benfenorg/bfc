@@ -56,7 +56,7 @@ export function ExpandableListControl() {
 	}
 
 	return (
-		<div className="flex cursor-pointer items-center gap-1 text-steel hover:text-steel-dark">
+		<div className="flex cursor-pointer items-center gap-1 px-[7px] text-steel hover:text-steel-dark">
 			<Link variant="text" onClick={handleShowAllClick}>
 				<div className="flex items-center gap-0.5">
 					<Text variant="bodySmall/medium">{showAllText}</Text>

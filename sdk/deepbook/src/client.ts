@@ -1,16 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { OrderArguments, PaginatedEvents, PaginationArguments } from '@mysten/sui.js/client';
+import { OrderArguments, PaginatedEvents, PaginationArguments } from '@benfen/bfc.js/client';
 import {
 	SUI_CLOCK_OBJECT_ID,
 	normalizeStructTag,
 	normalizeSuiAddress,
 	normalizeSuiObjectId,
 	parseStructTag,
-} from '@mysten/sui.js/utils';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+} from '@benfen/bfc.js/utils';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import {
 	MODULE_CLOB,
 	PACKAGE_ID,
@@ -30,7 +30,7 @@ import {
 	UserPosition,
 	bcs,
 } from './types';
-import { Coin } from '@mysten/sui.js';
+import { Coin } from '@benfen/bfc.js';
 
 const DUMMY_ADDRESS = normalizeSuiAddress('0x0');
 

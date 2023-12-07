@@ -489,7 +489,7 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
 
 #[sim_test]
 async fn test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000)
         .build().await;

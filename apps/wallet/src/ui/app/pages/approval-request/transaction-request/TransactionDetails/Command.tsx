@@ -1,16 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
 import {
 	type TransactionType,
 	type MakeMoveVecTransaction,
 	type PublishTransaction,
 	TypeTagSerializer,
 	type TypeTag,
-} from '@mysten/sui.js';
-import { type TransactionArgument } from '@mysten/sui.js/transactions';
-import { formatAddress, normalizeSuiAddress, toB64 } from '@mysten/sui.js/utils';
+} from '@benfen/bfc.js';
+import { type TransactionArgument } from '@benfen/bfc.js/transactions';
+import { formatAddress, normalizeSuiAddress, toB64 } from '@benfen/bfc.js/utils';
+import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
 
 import { useState } from 'react';
 

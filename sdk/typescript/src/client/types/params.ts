@@ -7,7 +7,7 @@
  *  ######################################
  *
  * This file is generated from:
- * /crates/sui-open-rpc/spec/openrpc.json
+ * /crates/bfc-open-rpc/spec/openrpc.json
  */
 
 import type * as RpcTypes from './generated.js';

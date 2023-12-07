@@ -1,6 +1,8 @@
 
 module hello_world::counter {
     // Part 1: imports
+    use std::string;
+    use sui::event;
     use sui::transfer;
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
@@ -12,6 +14,23 @@ module hello_world::counter {
     struct Counter has key {
         id: UID,
         value: u64,
+    }
+
+
+    //
+    struct CountEvent has copy, drop, store {
+        name: string::String,
+    }
+
+
+
+    entry public fun createEvent(ctx: &mut TxContext) {
+        let data: vector<u8> = b"hello world";
+        event::emit(
+            CountEvent{
+                name: string::utf8(data),
+            }
+        );
     }
 
     // Part 3: transfer the counter object to the sender

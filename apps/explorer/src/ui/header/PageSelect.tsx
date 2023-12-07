@@ -18,6 +18,11 @@ import { ReactComponent as ChevronDownIcon } from '../icons/chevron_down.svg';
 import { ReactComponent as MenuIcon } from '../icons/menu.svg';
 import { Link } from '~/ui/Link';
 
+export interface Props {
+	isDarker: boolean;
+	highlight: boolean;
+}
+
 function ResponsiveIcon() {
 	return (
 		<div>
@@ -27,7 +32,7 @@ function ResponsiveIcon() {
 	);
 }
 
-export function PageSelect({ isDarker }: any) {
+export function PageSelect({ isDarker, highlight }: Props) {
 	const { x, y, refs, strategy } = useFloating({
 		placement: 'bottom-end',
 		middleware: [offset(5), flip(), shift()],
@@ -52,7 +57,20 @@ export function PageSelect({ isDarker }: any) {
 						isDarker={isDarker}
 						afterIcon={<ResponsiveIcon />}
 					>
-						<span className="hidden md:block">Blockchain</span>
+						<span
+							className={clsx(
+								'hidden pl-[3px] md:block',
+								highlight
+									? isDarker
+										? 'text-white'
+										: 'text-bfc'
+									: isDarker
+									? 'text-white/[0.72]'
+									: 'text-bfc-text2',
+							)}
+						>
+							Blockchain
+						</span>
 					</Popover.Button>
 					<FloatingPortal>
 						<AnimatePresence>
@@ -74,7 +92,7 @@ export function PageSelect({ isDarker }: any) {
 										scale: 0.95,
 									}}
 									transition={{ duration: 0.15 }}
-									className="z-20 flex w-52 flex-col gap-2 rounded-lg border border-steel-dark border-opacity-10 bg-white px-3 py-4 shadow-lg focus:outline-none"
+									className="z-20 flex flex-col rounded-lg border border-bfc-border bg-white p-1 shadow-[0px_16px_16px_0px_rgba(20,21,24,0.05)]"
 									style={{
 										position: strategy,
 										top: y ?? 0,
@@ -82,18 +100,16 @@ export function PageSelect({ isDarker }: any) {
 									}}
 								>
 									{pages.map((item) => (
-										<div
+										<Link
 											key={item.id}
-											role="button"
-											onClick={close}
 											className={clsx(
-												'flex items-start gap-3 rounded-md px-1.25 py-2 text-body font-semibold text-steel-dark hover:bg-gray-40 ui-active:bg-gray-40',
+												'flex h-8 items-center rounded px-1.5 text-body/[18px] font-normal text-bfc-text2 hover:bg-bfc-card ui-active:bg-bfc-card',
 											)}
+											to={item.id}
+											onClick={close}
 										>
-											<Link to={item.id} className="w-full">
-												<div className="mt-px">{item.label}</div>
-											</Link>
-										</div>
+											<div className="">{item.label}</div>
+										</Link>
 									))}
 								</Popover.Panel>
 							)}

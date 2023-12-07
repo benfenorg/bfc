@@ -12,15 +12,15 @@
     group: "sui"
     mode: 0755
   loop:
-    - /opt/sui/bin
-    - /opt/sui/config
-    - /opt/sui/db
-    - /opt/sui/key-pairs
+    - /opt/bfc/bin
+    - /opt/bfc/config
+    - /opt/bfc/db
+    - /opt/bfc/key-pairs
 
 - name: Copy validator configuration file
   copy:
     src: "{{ node_config }}"
-    dest: /opt/sui/config/validator.yaml
+    dest: /opt/bfc/config/validator.yaml
     owner: "sui"
     group: "sui"
     mode: 0644
@@ -28,7 +28,7 @@
 - name: Copy genesis.blob
   copy:
     src: "{{ genesis_blob }}"
-    dest: /opt/sui/config/genesis.blob
+    dest: /opt/bfc/config/genesis.blob
     owner: "sui"
     group: "sui"
     mode: 0644
@@ -36,7 +36,7 @@
 - name: Copy protocol.key
   copy:
     src: "{{ keypair_path }}protocol.key"
-    dest: /opt/sui/key-pairs/protocol.key
+    dest: /opt/bfc/key-pairs/protocol.key
     owner: "sui"
     group: "sui"
     mode: 0600
@@ -44,7 +44,7 @@
 - name: Copy network.key
   copy:
     src: "{{ keypair_path }}network.key"
-    dest: /opt/sui/key-pairs/network.key
+    dest: /opt/bfc/key-pairs/network.key
     owner: "sui"
     group: "sui"
     mode: 0600
@@ -52,7 +52,7 @@
 - name: Copy worker.key
   copy:
     src: "{{ keypair_path }}worker.key"
-    dest: /opt/sui/key-pairs/worker.key
+    dest: /opt/bfc/key-pairs/worker.key
     owner: "sui"
     group: "sui"
     mode: 0600
@@ -66,19 +66,19 @@
 - name: Remove authorities directory
   file:
     state: absent
-    path: "/opt/sui/db/authorities_db"
+    path: "/opt/bfc/db/authorities_db"
   when: reset_db == true
 
 - name: Remove consensus directory
   file:
     state: absent
-    path: "/opt/sui/db/consensus_db"
+    path: "/opt/bfc/db/consensus_db"
   when: reset_db == true
 
 - name: Place binary
   ansible.builtin.get_url:
     url: "https://releases.sui.io/{{ sui_release }}/sui-node"
-    dest: /opt/sui/bin/sui-node
+    dest: /opt/bfc/bin/sui-node
     force: true
     mode: "0755"
 

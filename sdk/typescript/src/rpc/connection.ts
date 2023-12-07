@@ -4,7 +4,7 @@
 interface ConnectionOptions {
 	fullnode: string;
 	websocket?: string;
-	/** @deprecated Use the new faucet APIs from `@mysten/sui.js/faucet` instead. */
+	/** @deprecated Use the new faucet APIs from `@benfen/bfc.js/faucet` instead. */
 	faucet?: string;
 }
 
@@ -23,7 +23,7 @@ export class Connection {
 		return this.#options.websocket || this.#options.fullnode;
 	}
 
-	/** @deprecated Use the new faucet APIs from `@mysten/sui.js/faucet` instead. */
+	/** @deprecated Use the new faucet APIs from `@benfen/bfc.js/faucet` instead. */
 	get faucet() {
 		return this.#options.faucet;
 	}

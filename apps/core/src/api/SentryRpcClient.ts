@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiHTTPTransport } from '@mysten/sui.js/client';
+import { SuiHTTPTransport } from '@benfen/bfc.js/client';
 import * as Sentry from '@sentry/react';
 
 export class SentryHttpTransport extends SuiHTTPTransport {

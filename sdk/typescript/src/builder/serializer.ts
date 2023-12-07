@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { isValidSuiAddress } from '../utils/sui-types.js';
+import { isValidSuiAddress } from '../utils/bfc-types.js';
 import { extractStructTag } from '../types/index.js';
 import {
 	ID_STRUCT_NAME,

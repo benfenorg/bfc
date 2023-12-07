@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getExecutionStatusType } from '@benfen/bfc.js';
 import { useSuiClient } from '@mysten/dapp-kit';
 import { Check24 } from '@mysten/icons';
-import { getExecutionStatusType } from '@mysten/sui.js';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { Navigate, useSearchParams, useNavigate, useLocation } from 'react-router-dom';

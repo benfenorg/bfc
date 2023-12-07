@@ -115,6 +115,44 @@ pub fn new_tcp_address_for_testing(host: &str) -> Multiaddr {
         .unwrap()
 }
 
+pub fn new_network_address_for_local_testing(port: u16) -> Multiaddr {
+    let host = "127.0.0.1";
+    format!("/ip4/{}/tcp/{}/http", host, port)
+        .parse()
+        .unwrap()
+}
+
+pub fn get_global_multiaddr(port: u16)-> Multiaddr {
+    let host = "0.0.0.0";
+    format!("/ip4/{}/tcp/{}/http", host, port)
+        .parse()
+        .unwrap()
+}
+
+pub fn get_global_socket_addr(port: u16) -> Option<SocketAddr> {
+    let host = "0.0.0.0";
+    let socket_address: SocketAddr = format!("{}:{}", host, port)
+        .parse()
+        .unwrap();
+    Option::Some(socket_address)
+}
+
+pub fn new_p2p_listen_address_for_local_testing(port: u16) -> Option<SocketAddr> {
+    let host = "127.0.0.1";
+    let socket_address: SocketAddr = format!("{}:{}", host, port)
+        .parse()
+        .unwrap();
+    Option::Some(socket_address)
+}
+
+/// Returns a new unique TCP address for the given host, by finding a new available port.
+pub fn new_tcp_address_for_local_testing() -> Multiaddr {
+    let host = "127.0.0.1";
+    format!("/ip4/{}/tcp/{}/http", host, get_available_port(host))
+        .parse()
+        .unwrap()
+}
+
 /// Returns a new unique UDP address for the given host, by finding a new available port.
 pub fn new_udp_address_for_testing(host: &str) -> Multiaddr {
     format!("/ip4/{}/udp/{}", host, get_available_port(host))

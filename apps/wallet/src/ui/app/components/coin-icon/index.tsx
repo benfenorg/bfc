@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { useCoinMetadata } from '@mysten/core';
 import { Logo, Unstaked } from '@mysten/icons';
-import { SUI_TYPE_ARG } from '@mysten/sui.js';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { ImageIcon } from '_app/shared/image-icon';

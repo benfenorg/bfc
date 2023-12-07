@@ -46,6 +46,6 @@
         "vitest": "^0.33.0"
     },
     "dependencies": {
-        "@mysten/sui.js": "workspace:*"
+        "@benfen/bfc.js": "workspace:*"
     }
 }

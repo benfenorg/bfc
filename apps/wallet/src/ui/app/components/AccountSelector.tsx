@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js';
 import { Popover, Transition } from '@headlessui/react';
 import { useResolveSuiNSName } from '@mysten/core';
 import { ChevronDown12, Copy12 } from '@mysten/icons';
-import { formatAddress, sui2BfcAddress } from '@mysten/sui.js';
 
 import { AccountList } from './AccountList';
 import { useAccounts } from '../hooks/useAccounts';

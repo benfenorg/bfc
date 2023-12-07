@@ -17,16 +17,17 @@ use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 use std::collections::HashMap;
-//use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
-//use sui_config::p2p::SeedPeer;
+use std::net::SocketAddr;
+use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
+use sui_config::p2p::SeedPeer;
 use sui_genesis_builder::Builder;
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig};
-//use rand::{rngs::StdRng, SeedableRng};
 
 use camino::Utf8PathBuf;
-// use sui_config::{
-//     SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_KEYSTORE_FILENAME,
-// };
+use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils};
+use sui_config::{
+    SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME,
+};
 use sui_keys::keystore::{AccountKeystore, FileBasedKeystore, Keystore};
 use sui_move::{self, execute_move_command};
 use sui_move_build::SuiPackageHooks;
@@ -42,16 +43,11 @@ use sui_types::multiaddr::Multiaddr;
 use tracing::info;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
 use crate::gas_coin_commands::GasCoinCommand;
-//use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-//use rand::{rngs::StdRng, SeedableRng};
-use sui_config::{Config, FULL_NODE_DB_PATH, local_ip_utils, PersistedConfig, SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_CLIENT_CONFIG, sui_config_dir, SUI_FULLNODE_CONFIG, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME, SUI_NETWORK_CONFIG};
-use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
-use sui_config::p2p::SeedPeer;
-//use sui_genesis_builder::Builder;
+
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Parser)]
-#[clap(rename_all = "kebab-case")]
+#[clap(rename_all = "kebab-case", name= "bfc")]
 pub enum SuiCommand {
     /// Start bfc network.
     #[clap(name = "start")]
@@ -71,36 +67,6 @@ pub enum SuiCommand {
     /// Bootstrap and initialize a new bfc network
     #[clap(name = "genesis")]
     Genesis {
-        #[clap(long, help = "Start genesis with a given config file")]
-        from_config: Option<PathBuf>,
-        #[clap(
-            long,
-            help = "Build a genesis config, write it to the specified path, and exit"
-        )]
-        write_config: Option<PathBuf>,
-        #[clap(long)]
-        working_dir: Option<PathBuf>,
-        #[clap(short, long, help = "Forces overwriting existing configuration")]
-        force: bool,
-        #[clap(long = "epoch-duration-ms")]
-        epoch_duration_ms: Option<u64>,
-        #[clap(
-            long,
-            value_name = "ADDR",
-            num_args(1..),
-            value_delimiter = ',',
-            help = "A list of ip addresses to generate a genesis suitable for benchmarks"
-        )]
-        benchmark_ips: Option<Vec<String>>,
-        #[clap(
-        long,
-        help = "Creates an extra faucet configuration for bfc-test-validator persisted runs."
-        )]
-        with_faucet: bool,
-    },
-
-    #[clap(name = "genesis_private")]
-    GenesisPrivate {
         #[clap(long, help = "Start genesis with a given config file")]
         from_config: Option<PathBuf>,
         #[clap(
@@ -129,8 +95,58 @@ pub enum SuiCommand {
         with_faucet: bool,
     },
 
+    #[clap(name = "genesis_private")]
+    GenesisPrivate {
+        #[clap(
+        long,
+        value_name = "validator-names",
+        num_args(1..),
+        value_delimiter = ',',
+        required = true,
+        help = "A list of validator names to generate "
+        )]
+        private_validator_names: Vec<String>,
 
+        #[clap(long, help = "Start genesis with a given config file")]
+        from_config: Option<PathBuf>,
+        #[clap(
+        long,
+        help = "Build a genesis config, write it to the specified path, and exit"
+        )]
+        write_config: Option<PathBuf>,
+        #[clap(long)]
+        working_dir: Option<PathBuf>,
+        #[clap(short, long, help = "Forces overwriting existing configuration")]
+        force: bool,
+        #[clap(long = "epoch-duration-ms")]
+        epoch_duration_ms: Option<u64>,
+        #[clap(
+        long,
+        value_name = "ADDR",
+        num_args(1..),
+        value_delimiter = ',',
+        help = "A list of ip addresses to generate a genesis suitable for benchmarks"
+        )]
+        benchmark_ips: Option<Vec<String>>,
+        #[clap(
+        long,
+        help = "Creates an extra faucet configuration for bfc-test-validator persisted runs."
+        )]
+        with_faucet: bool,
+
+        #[clap(
+        long,
+        help = "Creates with genesis.", default_value_t = true
+        )]
+        with_genesis: bool,
+    },
+
+
+    /// Bfc generate private genesis tool.
+    #[clap(name = "genesis_ceremony")]
     GenesisCeremony(Ceremony),
+
+
     /// Bfc keystore tool.
     #[clap(name = "keytool")]
     KeyTool {
@@ -314,7 +330,7 @@ impl SuiCommand {
                     benchmark_ips,
                     with_faucet,
                 )
-                .await
+                    .await
             }
 
             SuiCommand::GenesisPrivate {
@@ -325,6 +341,8 @@ impl SuiCommand {
                 epoch_duration_ms,
                 benchmark_ips,
                 with_faucet,
+                private_validator_names,
+                with_genesis,
             } => {
                 genesis_private(
                     from_config,
@@ -334,6 +352,8 @@ impl SuiCommand {
                     epoch_duration_ms,
                     benchmark_ips,
                     with_faucet,
+                    with_genesis,
+                    private_validator_names,
                 )
                     .await
             }
@@ -425,7 +445,9 @@ impl SuiCommand {
     }
 }
 
-async fn genesis(
+
+
+pub async fn genesis(
     from_config: Option<PathBuf>,
     write_config: Option<PathBuf>,
     working_dir: Option<PathBuf>,
@@ -474,19 +496,19 @@ async fn genesis(
                         } else {
                             fs::remove_dir_all(path)
                         }
-                        .map_err(|err| {
-                            anyhow!(err).context(format!("Cannot remove file {:?}", file.path()))
-                        })?;
+                            .map_err(|err| {
+                                anyhow!(err).context(format!("Cannot remove file {:?}", file.path()))
+                            })?;
                     }
                 }
             } else {
                 fs::remove_dir_all(sui_config_dir).map_err(|err| {
                     anyhow!(err)
-                        .context(format!("Cannot remove Sui config dir {:?}", sui_config_dir))
+                        .context(format!("Cannot remove Bfc config dir {:?}", sui_config_dir))
                 })?;
                 fs::create_dir(sui_config_dir).map_err(|err| {
                     anyhow!(err)
-                        .context(format!("Cannot create Sui config dir {:?}", sui_config_dir))
+                        .context(format!("Cannot create Bfc config dir {:?}", sui_config_dir))
                 })?;
             }
         } else if files.len() != 2 || !client_path.exists() || !keystore_path.exists() {
@@ -541,12 +563,16 @@ async fn genesis(
     if let Some(epoch_duration_ms) = epoch_duration_ms {
         genesis_conf.parameters.epoch_duration_ms = epoch_duration_ms;
     }
+
+    //todo, we can chang this validator_info to the info we generate from genesis_ceremony committee
     let mut network_config = if let Some(validators) = validator_info {
+        info!("network_config with validators.....");
         builder
             .with_genesis_config(genesis_conf)
             .with_validators(validators)
             .build()
     } else {
+        info!("network_config with default validators......");
         builder
             .committee_size(NonZeroUsize::new(DEFAULT_NUMBER_OF_AUTHORITIES).unwrap())
             .with_genesis_config(genesis_conf)
@@ -577,6 +603,9 @@ async fn genesis(
         .build(&mut OsRng, &network_config);
 
     fullnode_config.save(sui_config_dir.join(SUI_FULLNODE_CONFIG))?;
+    info!("fullnode config is stored in {:?}.", sui_config_dir.join(SUI_FULLNODE_CONFIG));
+
+
     let mut ssfn_nodes = vec![];
     if let Some(ssfn_info) = ssfn_info {
         for (i, ssfn) in ssfn_info.into_iter().enumerate() {
@@ -635,6 +664,7 @@ async fn genesis(
                 validator.network_address.clone(),
                 sui_config::validator_config_file(i),
             ));
+            info!("genesis function : validatro config  is stored in {:?}.", path.clone());
             validator.save(path)?;
         }
     }
@@ -665,8 +695,6 @@ async fn genesis(
     Ok(())
 }
 
-
-
 pub async fn genesis_private(
     from_config: Option<PathBuf>,
     write_config: Option<PathBuf>,
@@ -675,6 +703,8 @@ pub async fn genesis_private(
     epoch_duration_ms: Option<u64>,
     benchmark_ips: Option<Vec<String>>,
     with_faucet: bool,
+    with_genesis: bool,
+    private_validator_names: Vec<String>,
 ) -> Result<(), anyhow::Error> {
 
     info!("genesis_private start.....");
@@ -763,6 +793,7 @@ pub async fn genesis_private(
         }
     };
 
+
     // Adds an extra faucet account to the genesis
     if with_faucet {
         info!("Adding faucet account in genesis config...");
@@ -776,7 +807,7 @@ pub async fn genesis_private(
         return Ok(());
     }
 
-    //let mut validator_info = genesis_conf.validator_config_info.take();
+    let _validator_info = genesis_conf.validator_config_info.take();
     let ssfn_info = genesis_conf.ssfn_config_info.take();
 
     let builder = ConfigBuilder::new(sui_config_dir);
@@ -784,13 +815,14 @@ pub async fn genesis_private(
         genesis_conf.parameters.epoch_duration_ms = epoch_duration_ms;
     }
 
-    let  dir = std::env::current_dir()?;
+    let dir = std::env::current_dir()?;
     let mut dir = Utf8PathBuf::try_from(dir)?;
 
     dir = dir.join("genesis");
     info!("dir is {:?}", dir);
     let builder1 = Builder::load(&dir)?;
-    let  _validators = builder1
+    //loading the validator info from genesis_ceremony committee
+    let _validators = builder1
         .validators()
         .values()
         .map(|v| {
@@ -804,45 +836,59 @@ pub async fn genesis_private(
 
 
 
-    let mut manager = PrivateValidatorKeypairManager::default();
-    init_validator_keypair("v1", dir.clone(), &mut manager);
-    init_validator_keypair("v2", dir.clone(), &mut manager);
-    init_validator_keypair("v3", dir.clone(), &mut manager);
-    init_validator_keypair("v4", dir.clone(), &mut manager);
+      let mut manager = PrivateValidatorKeypairManager::default();
+    for private_validator_name in private_validator_names {
+        init_validator_keypair(private_validator_name, dir.clone(), &mut manager);
+    }
 
 
 
-    //const BENCHMARKS_RNG_SEED: u64 = 0;
-    //let mut rng = StdRng::seed_from_u64(BENCHMARKS_RNG_SEED);
-    let localhost = "127.0.0.1";
 
+    //convert the validator_info to the validator_private
     let mut validator_private = Vec::new();
     for validator in builder1.validators().values() {
         let default_validator_gas_price: u64 = 100;
         let name = validator.info.name.clone();
         info!("name is {:?}", name);
+        if !manager.keypair.contains_key(&*name) {
+            info!("=================skip this validator.... should not start in this node");
+            continue;
+        }
+
         let author_key_pair = manager.keypair.get(&name).unwrap();
         let worker_key_pair = manager.worker_keypair.get(&name).unwrap();
         let account_key_pair_string = manager.account_keypair.get(&name).unwrap().encode_base64();
         let network_key_pair = manager.network_keypair.get(&name).unwrap();
 
+       let _localhost =  match validator.info.network_address.clone().to_socket_addr().unwrap() {
+            SocketAddr::V4(addr) => {
+                    let ip_string = addr.clone().ip().to_string();
+                    ip_string
+                },
+           SocketAddr::V6(addr) => {
+                 let ip_string = addr.clone().ip().to_string();
+                 ip_string
+           }
+       };
         let tmp =  ValidatorGenesisConfig {
             key_pair: author_key_pair.copy(),
             worker_key_pair: worker_key_pair.copy(),
             account_key_pair: SuiKeyPair::decode_base64(&account_key_pair_string).unwrap(),
             network_key_pair: network_key_pair.copy(),
+            //network_address: local_ip_utils::new_network_address_for_local_testing(validator.info.network_address.port().unwrap()),
             network_address: validator.info.network_address.clone(),
             p2p_address: validator.info.p2p_address.clone(),
-            p2p_listen_address: None,
-            metrics_address: local_ip_utils::new_tcp_address_for_testing(&localhost)
+            //p2p_listen_address: local_ip_utils::new_p2p_listen_address_for_local_testing(validator.info.p2p_address.port().unwrap()),
+            p2p_listen_address: validator.info.p2p_address.clone().udp_multiaddr_to_listen_address(),
+            metrics_address: local_ip_utils::new_tcp_address_for_local_testing()
                 .to_socket_addr()
                 .unwrap(),
-            narwhal_metrics_address: local_ip_utils::new_tcp_address_for_testing(&localhost),
+            narwhal_metrics_address: local_ip_utils::new_tcp_address_for_local_testing(),
             gas_price: default_validator_gas_price,
             commission_rate: DEFAULT_COMMISSION_RATE,
             narwhal_primary_address: validator.info.narwhal_primary_address.clone(),
             narwhal_worker_address: validator.info.narwhal_worker_address.clone(),
-            consensus_address: local_ip_utils::new_tcp_address_for_testing(&localhost),
+            consensus_address: local_ip_utils::new_tcp_address_for_local_testing(),
             consensus_internal_worker_address: None,
             stake: sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
         };
@@ -869,6 +915,10 @@ pub async fn genesis_private(
         keystore.add_key(SuiKeyPair::Ed25519(key.copy()))?;
     }
     let active_address = keystore.addresses().pop();
+    if with_genesis {
+        let mygensis = network_config.genesis.load_gensis(&PathBuf::from("./genesis/genesis.blob")).unwrap();
+        network_config.genesis = mygensis;
+    }
 
     network_config.genesis.save(&genesis_path)?;
     for validator in &mut network_config.validator_configs {
@@ -884,9 +934,12 @@ pub async fn genesis_private(
     let fullnode_config = FullnodeConfigBuilder::new()
         .with_config_directory(FULL_NODE_DB_PATH.into())
         .with_rpc_addr(sui_config::node::default_json_rpc_address())
-        .build(&mut OsRng, &network_config);
+        .build_fulnode_config(&mut OsRng, &network_config);
 
     fullnode_config.save(sui_config_dir.join(SUI_FULLNODE_CONFIG))?;
+    info!("fullnode config is stored in {:?}.", sui_config_dir.join(SUI_FULLNODE_CONFIG));
+
+
     let mut ssfn_nodes = vec![];
     if let Some(ssfn_info) = ssfn_info {
         for (i, ssfn) in ssfn_info.into_iter().enumerate() {
@@ -900,12 +953,12 @@ pub async fn genesis_private(
                 .with_p2p_external_address(ssfn.p2p_address)
                 .with_network_key_pair(ssfn.network_key_pair)
                 .with_p2p_listen_address("0.0.0.0:8084".parse().unwrap())
-                .with_db_path(PathBuf::from("/opt/sui/db/authorities_db/full_node_db"))
+                .with_db_path(PathBuf::from("/opt/bfc/db/authorities_db/full_node_db"))
                 .with_network_address("/ip4/0.0.0.0/tcp/8080/http".parse().unwrap())
                 .with_metrics_address("0.0.0.0:9184".parse().unwrap())
                 .with_admin_interface_port(1337)
                 .with_json_rpc_address("0.0.0.0:9000".parse().unwrap())
-                .with_genesis(Genesis::new_from_file("/opt/sui/config/genesis.blob"))
+                .with_genesis(Genesis::new_from_file("/opt/bfc/config/genesis.blob"))
                 .build(&mut OsRng, &network_config);
             ssfn_nodes.push(ssfn_config.clone());
             ssfn_config.save(path)?;
@@ -945,6 +998,7 @@ pub async fn genesis_private(
                 validator.network_address.clone(),
                 sui_config::validator_config_file(i),
             ));
+            info!("genesis_private function : validator config  is stored in {:?}.", path.clone());
             validator.save(path)?;
         }
     }
@@ -974,7 +1028,6 @@ pub async fn genesis_private(
 
     Ok(())
 }
-
 
 async fn prompt_if_no_config(
     wallet_conf_path: &Path,
@@ -1059,8 +1112,8 @@ async fn prompt_if_no_config(
                 active_address: Some(new_address),
                 active_env: Some(alias),
             }
-            .persisted(wallet_conf_path)
-            .save()?;
+                .persisted(wallet_conf_path)
+                .save()?;
         }
     }
     Ok(())
@@ -1089,17 +1142,17 @@ struct PrivateValidatorKeypairManager {
     pub worker_keypair: HashMap<String, NetworkKeyPair>,
     pub network_keypair: HashMap<String, NetworkKeyPair>,
 }
-fn init_validator_keypair(name: &str, dir: Utf8PathBuf, manager: &mut PrivateValidatorKeypairManager) {
+fn init_validator_keypair(name: String, dir: Utf8PathBuf, manager: &mut PrivateValidatorKeypairManager) {
 
     read_validator_keypair(name, dir, manager).expect("TODO: panic message");
 
 }
 
-fn read_validator_keypair(name : &str, dir: Utf8PathBuf, manager: &mut PrivateValidatorKeypairManager) -> Result<(), anyhow::Error>{
-    let validator_key_file = "validator-".to_owned()+ name + ".key";
-    let account_key_file = "validator-".to_owned()+ name + "-account.key";
-    let worker_key_file = "validator-".to_owned() + name +"-worker.key";
-    let network_key_file = "validator-".to_owned() + name + "-network.key";
+fn read_validator_keypair(name : String, dir: Utf8PathBuf, manager: &mut PrivateValidatorKeypairManager) -> Result<(), anyhow::Error>{
+    let validator_key_file = "validator-".to_owned()+ &*name.clone() + ".key";
+    let account_key_file = "validator-".to_owned()+ &*name.clone() + "-account.key";
+    let worker_key_file = "validator-".to_owned() + &*name.clone() +"-worker.key";
+    let network_key_file = "validator-".to_owned() + &*name.clone() + "-network.key";
 
     let keypair: AuthorityKeyPair = read_authority_keypair_from_file(dir.join(validator_key_file))?;
     let account_keypair: SuiKeyPair = read_keypair_from_file(dir.join(account_key_file))?;
@@ -1107,7 +1160,7 @@ fn read_validator_keypair(name : &str, dir: Utf8PathBuf, manager: &mut PrivateVa
     let network_keypair: NetworkKeyPair = read_network_keypair_from_file(dir.join(network_key_file))?;
 
 
-    let key  = "validator-".to_owned() + name;
+    let key  = "validator-".to_owned() + &*name.clone();
     info!("the key is {:?}", key);
     HashMap::insert(&mut manager.keypair, key.clone(), keypair);
     HashMap::insert(&mut manager.account_keypair, key.clone(), account_keypair);

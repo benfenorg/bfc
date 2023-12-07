@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useWalletKit } from '@mysten/wallet-kit';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { KioskData } from '../components/Kiosk/KioskData';
 import { Loading } from '../components/Base/Loading';
 import { useOwnedKiosk } from '../hooks/kiosk';

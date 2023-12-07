@@ -37,7 +37,7 @@ use sui_types::{
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper};
+use sui_types::bfc_system_state::{BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper, get_stable_rate_map};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -800,6 +800,12 @@ impl<'backing> TemporaryStore<'backing> {
     }
     pub fn get_bfc_system_proposal_stauts_map(& self) -> VecMap<u64, ProposalStatus> {
         let wrapper = get_bfc_system_proposal_state_map(self.store.as_object_store())
+            .expect("System state wrapper object must exist");
+        return wrapper;
+    }
+
+    pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {
+        let wrapper = get_stable_rate_map(self.store.as_object_store())
             .expect("System state wrapper object must exist");
         return wrapper;
     }

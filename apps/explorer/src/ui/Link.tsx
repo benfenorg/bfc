@@ -10,7 +10,7 @@ const linkStyles = cva([], {
 	variants: {
 		variant: {
 			text: 'text-body font-semibold text-steel-dark hover:text-steel-darker active:text-steel disabled:text-gray-60',
-			mono: 'font-mono text-body font-medium text-bfc-link hover:text-hero-darkest break-all',
+			mono: 'font-mono text-body font-medium text-bfc-link break-all',
 			textHeroDark: 'text-pBody font-medium text-hero-dark hover:text-hero-darkest',
 			large: 'font-mono text-heading4 font-bold text-bfc-link break-all',
 			content: '',
@@ -29,7 +29,7 @@ const linkStyles = cva([], {
 	},
 });
 
-const linkContentStyles = cva(['flex-nowrap items-center'], {
+const linkContentStyles = cva(['flex-nowrap items-center hover:underline'], {
 	variants: {
 		gap: {
 			'gap-1': 'gap-1',
@@ -40,10 +40,15 @@ const linkContentStyles = cva(['flex-nowrap items-center'], {
 			block: 'block',
 			flex: 'flex',
 		},
+		underline: {
+			underline: 'hover:underline',
+			'no-underline': 'hover:no-underline',
+		},
 	},
 	defaultVariants: {
 		gap: 'gap-2',
-		display: 'inline-flex',
+		display: 'flex',
+		underline: 'underline',
 	},
 });
 
@@ -70,7 +75,13 @@ export function Link({
 }: LinkProps) {
 	return (
 		<ButtonOrLink className={linkStyles({ variant, size, uppercase })} {...props}>
-			<div className={linkContentStyles({ gap, display })}>
+			<div
+				className={linkContentStyles({
+					gap,
+					display,
+					underline: variant === 'mono' ? 'underline' : 'no-underline',
+				})}
+			>
 				{before}
 				{children}
 				{after}

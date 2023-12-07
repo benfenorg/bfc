@@ -6,17 +6,17 @@ available in both Browser and NodeJS environments.
 
 ## Install
 
-To install, add the [`@mysten/bcs`](https://www.npmjs.com/package/@mysten/bcs) package to your
+To install, add the [`@benfen/bcs`](https://www.npmjs.com/package/@benfen/bcs) package to your
 project:
 
 ```sh
-npm i @mysten/bcs
+npm i @benfen/bcs
 ```
 
 ## Quickstart
 
 ```ts
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 
 const bcs = new BCS(getSuiMoveConfig());
 
@@ -69,7 +69,7 @@ configuration:
 
 ```ts
 // Example: All options used
-import { BCS } from '@mysten/bcs';
+import { BCS } from '@benfen/bcs';
 
 const SUI_ADDRESS_LENGTH = 32;
 const bcs = new BCS({
@@ -101,7 +101,7 @@ For Sui Move there's already a pre-built configuration which can be used through
 
 ```ts
 // Example: Sui Move Config
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 
 const bcs = new BCS(getSuiMoveConfig());
 
@@ -120,7 +120,7 @@ Similar configuration exists for Rust, the difference is the `Vec<T>` for vector
 
 ```ts
 // Example: Rust Config
-import { BCS, getRustConfig } from '@mysten/bcs';
+import { BCS, getRustConfig } from '@benfen/bcs';
 
 const bcs = new BCS(getRustConfig());
 const val = [1, 2, 3, 4];
@@ -155,7 +155,7 @@ All of the type usage examples below can be used for `bcs.de(<type>, ...)` as we
 
 ```ts
 // Example: Primitive types
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 // Integers
@@ -189,7 +189,7 @@ To serialize and deserialize data to and from BCS there are two methods: `bcs.se
 
 ```ts
 // Example: Ser/de and Encoding
-import { BCS, getSuiMoveConfig, BcsWriter } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig, BcsWriter } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 // bcs.ser() returns an instance of BcsWriter which can be converted to bytes or a string
@@ -226,7 +226,7 @@ predefined schema without making changes deep in the tree.
 
 ```ts
 // Example: Alias
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 bcs.registerAlias('ObjectDigest', BCS.BASE58);
@@ -247,7 +247,7 @@ types.
 
 ```ts
 // Example: Struct
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 // register a custom type (it becomes available for using)
@@ -280,7 +280,7 @@ a string or as an Array. See below:
 
 ```ts
 // Example: Generics
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 // Container -> the name of the type
@@ -327,7 +327,7 @@ mark it (see `Option<T>` below).
 
 ```ts
 // Example: Enum
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 bcs.registerEnumType('Option<T>', {
@@ -373,7 +373,7 @@ definition can be used.
 
 ```ts
 // Example: Inline Struct
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 // Some value we want to serialize
@@ -423,7 +423,7 @@ Definition for the above should be the following:
 
 ```ts
 // Example: Simplifying UID
-import { BCS, getSuiMoveConfig } from '@mysten/bcs';
+import { BCS, getSuiMoveConfig } from '@benfen/bcs';
 const bcs = new BCS(getSuiMoveConfig());
 
 // If there's a deep nested struct we can ignore Move type

@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SuiValidatorSummary } from '@benfen/bfc.js/client';
 import { useGetValidatorsEvents, useGetValidatorsApy } from '@mysten/core';
 import { useLatestSuiSystemState } from '@mysten/dapp-kit';
 import { ArrowRight12 } from '@mysten/icons';
-import { type SuiValidatorSummary } from '@mysten/sui.js/client';
 import { Text } from '@mysten/ui';
 import { useMemo } from 'react';
 
@@ -79,14 +79,14 @@ export function TopValidatorsCard({ limit }: TopValidatorsCardProps) {
 			{isSuccess && tableData?.data && (
 				<div>
 					<TableCard data={tableData.data} columns={tableData.columns} />
-					<div className="mt-3 flex justify-between bg-bfc-card p-3.5">
+					<div className="flex justify-between bg-bfc-card p-3.5">
 						<Link to="/validators">
 							<div className="flex items-center gap-2">
 								View all
 								<ArrowRight12 fill="currentColor" className="h-3 w-3 -rotate-45" />
 							</div>
 						</Link>
-						<Text variant="body/normal" color="steel-darker">
+						<Text variant="body/normal" color="bfc-text2">
 							{data ? data.activeValidators.length : '-'}
 							{` Total`}
 						</Text>

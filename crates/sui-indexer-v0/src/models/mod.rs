@@ -5,6 +5,7 @@ pub mod addresses;
 pub mod checkpoint_metrics;
 pub mod checkpoints;
 pub mod dao_proposals;
+pub mod dao_votes;
 pub mod epoch;
 pub mod events;
 pub mod network_metrics;

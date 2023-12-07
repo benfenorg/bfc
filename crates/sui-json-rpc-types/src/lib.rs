@@ -5,6 +5,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub use balance_changes::*;
+pub use dao_proposals::*;
 pub use object_changes::*;
 pub use sui_checkpoint::*;
 pub use sui_coin::*;
@@ -23,6 +24,7 @@ use sui_types::dynamic_field::DynamicFieldInfo;
 mod rpc_types_tests;
 
 mod balance_changes;
+mod dao_proposals;
 mod object_changes;
 mod sui_checkpoint;
 mod sui_coin;

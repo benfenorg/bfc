@@ -12,8 +12,8 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@mysten/bcs': new URL('../bcs/src', import.meta.url).toString(),
-            '@mysten/sui.js': new URL('../typescript/src', import.meta.url).toString(),
+            '@benfen/bcs': new URL('../bcs/src', import.meta.url).toString(),
+            '@benfen/bfc.js': new URL('../typescript/src', import.meta.url).toString(),
         },
     },
 });

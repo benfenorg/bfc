@@ -62,6 +62,7 @@ impl TryFrom<&[u8]> for BfcAddress {
 pub mod bfc_address_util {
     //use std::collections::hash_map::DefaultHasher;
     use sha2::{Digest, Sha256};
+    use crate::base_types::{ObjectID, SuiAddress};
 
     pub fn sha256_string(input: &str) -> String {
         let mut hasher = Sha256::new();
@@ -95,7 +96,8 @@ pub mod bfc_address_util {
         //return address.to_string();
     }
 
-    pub fn convert_to_bfc_address(prefix: &str, evm_address: &str) -> String {
+    pub fn convert_to_bfc_address( evm_address: &str) -> String {
+        let prefix = "BFC";
         //let mut address = evm_address.to_string();
         let result = sha256_string(&evm_address[2..]);
         let check_sum = result.get(0..4).unwrap();
@@ -105,5 +107,18 @@ pub mod bfc_address_util {
         address.push_str(check_sum);
 
         return address;
+    }
+
+    pub fn objects_id_to_bfc_address(object_id: ObjectID) ->String{
+        let gas_suiaddress: SuiAddress = object_id.into() ;
+        let bfc_address = convert_to_bfc_address(gas_suiaddress.to_string().as_str());
+
+        bfc_address
+    }
+
+    pub fn sui_address_to_bfc_address(suiaddress: SuiAddress) ->String{
+        let bfc_address = convert_to_bfc_address(suiaddress.to_string().as_str());
+
+        bfc_address
     }
 }

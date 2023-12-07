@@ -137,6 +137,7 @@ pub struct BfcSystemStateInnerV1 {
     pub dao: Dao,
     pub treasury: Treasury,
     pub treasury_pool: TreasuryPool,
+    pub rate_map: VecMap<String, u64>,
 }
 
 // Rust version of the Move bfc_system::bfc_system_state_inner::ExchangePool type
@@ -171,6 +172,15 @@ impl BfcSystemStateTrait for BfcSystemStateInnerV1 {
 
     }
 
+}
+
+pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<String, u64>, SuiError> {
+    match get_bfc_system_state(object_store) {
+        Ok(BFCSystemState::V1(bfc_system_state)) => {
+            Ok(bfc_system_state.rate_map)
+        },
+        Err(e) => Err(e),
+    }
 }
 
 pub fn get_bfc_system_state_wrapper(

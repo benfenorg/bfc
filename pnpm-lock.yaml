@@ -84,6 +84,9 @@ importers:
       '@amplitude/analytics-types':
         specifier: ^0.20.0
         version: 0.20.0
+      '@benfen/bfc.js':
+        specifier: workspace:*
+        version: link:../../sdk/typescript
       '@growthbook/growthbook-react':
         specifier: ^0.15.0
         version: 0.15.0(react@18.2.0)
@@ -96,9 +99,6 @@ importers:
       '@mysten/kiosk':
         specifier: workspace:*
         version: link:../../sdk/kiosk
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../sdk/typescript
       '@sentry/react':
         specifier: ^7.59.2
         version: 7.59.2(react@18.2.0)
@@ -160,6 +160,12 @@ importers:
       '@amplitude/analytics-types':
         specifier: ^0.20.0
         version: 0.20.0
+      '@benfen/bfc.js':
+        specifier: workspace:*
+        version: link:../../sdk/typescript
+      '@benfen/wallet-kit':
+        specifier: workspace:*
+        version: link:../../sdk/wallet-kit/react
       '@floating-ui/react':
         specifier: ^0.23.0
         version: 0.23.0(react-dom@18.2.0)(react@18.2.0)
@@ -193,15 +199,9 @@ importers:
       '@mysten/kiosk':
         specifier: workspace:*
         version: link:../../sdk/kiosk
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../sdk/typescript
       '@mysten/ui':
         specifier: workspace:*
         version: link:../ui
-      '@mysten/wallet-kit':
-        specifier: workspace:*
-        version: link:../../sdk/wallet-kit/react
       '@noble/hashes':
         specifier: ^1.3.1
         version: 1.3.1
@@ -565,6 +565,12 @@ importers:
       '@amplitude/analytics-browser':
         specifier: ^1.10.3
         version: 1.10.3
+      '@benfen/bfc.js':
+        specifier: workspace:*
+        version: link:../../sdk/typescript
+      '@benfen/wallet-standard':
+        specifier: workspace:*
+        version: link:../../sdk/wallet-standard
       '@floating-ui/react':
         specifier: ^0.23.0
         version: 0.23.0(react-dom@18.2.0)(react@18.2.0)
@@ -613,12 +619,6 @@ importers:
       '@mysten/ledgerjs-hw-app-sui':
         specifier: workspace:*
         version: link:../../sdk/ledgerjs-hw-app-sui
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../sdk/typescript
-      '@mysten/wallet-standard':
-        specifier: workspace:*
-        version: link:../../sdk/wallet-standard
       '@mysten/zklogin':
         specifier: workspace:*
         version: link:../../sdk/zklogin
@@ -941,6 +941,12 @@ importers:
 
   dapps/kiosk:
     dependencies:
+      '@benfen/bfc.js':
+        specifier: workspace:*
+        version: link:../../sdk/typescript
+      '@benfen/wallet-kit':
+        specifier: workspace:*
+        version: link:../../sdk/wallet-kit/react
       '@headlessui/react':
         specifier: ^1.7.15
         version: 1.7.15(react-dom@18.2.0)(react@18.2.0)
@@ -950,12 +956,6 @@ importers:
       '@mysten/kiosk':
         specifier: workspace:*
         version: link:../../sdk/kiosk
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../sdk/typescript
-      '@mysten/wallet-kit':
-        specifier: workspace:*
-        version: link:../../sdk/wallet-kit/react
       '@tanstack/react-query':
         specifier: ^4.29.25
         version: 4.29.25(react-dom@18.2.0)(react@18.2.0)
@@ -1002,12 +1002,12 @@ importers:
 
   dapps/kiosk-cli:
     dependencies:
+      '@benfen/bfc.js':
+        specifier: workspace:*
+        version: link:../../sdk/typescript
       '@mysten/kiosk':
         specifier: workspace:*
         version: link:../../sdk/kiosk
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../sdk/typescript
       commander:
         specifier: ^11.0.0
         version: 11.0.0
@@ -1084,10 +1084,10 @@ importers:
         specifier: ^3.21.4
         version: 3.21.4
     devDependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../../sdk/typescript
-      '@mysten/wallet-kit':
+      '@benfen/wallet-kit':
         specifier: workspace:*
         version: link:../../sdk/wallet-kit/react
       '@types/react':
@@ -1124,10 +1124,10 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../../sdk/typescript
-      '@mysten/wallet-kit':
+      '@benfen/wallet-kit':
         specifier: workspace:*
         version: link:../../sdk/wallet-kit/react
       '@types/react':
@@ -1154,94 +1154,6 @@ importers:
       vite:
         specifier: ^4.4.4
         version: 4.4.4(@types/node@20.4.2)(sass@1.63.6)
-
-  dapps/station:
-    dependencies:
-      '@headlessui/react':
-        specifier: ^1.7.15
-        version: 1.7.15(react-dom@18.2.0)(react@18.2.0)
-      '@headlessui/tailwindcss':
-        specifier: ^0.1.3
-        version: 0.1.3(tailwindcss@3.3.3)
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../sdk/typescript
-      '@mysten/wallet-kit':
-        specifier: workspace:*
-        version: link:../../sdk/wallet-kit/react
-      '@reduxjs/toolkit':
-        specifier: ^1.9.5
-        version: 1.9.5(react-redux@8.1.1)(react@18.2.0)
-      '@stitches/react':
-        specifier: ^1.2.8
-        version: 1.2.8(react@18.2.0)
-      '@tanstack/react-query':
-        specifier: ^4.29.25
-        version: 4.29.25(react-dom@18.2.0)(react@18.2.0)
-      bignumber.js:
-        specifier: ^9.1.1
-        version: 9.1.1
-      classnames:
-        specifier: ^2.3.2
-        version: 2.3.2
-      clsx:
-        specifier: ^2.0.0
-        version: 2.0.0
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.2.0(react@18.2.0)
-      react-hot-toast:
-        specifier: ^2.4.1
-        version: 2.4.1(react-dom@18.2.0)(react@18.2.0)
-      react-redux:
-        specifier: ^8.1.1
-        version: 8.1.1(@types/react-dom@18.2.7)(@types/react@18.2.15)(react-dom@18.2.0)(react@18.2.0)
-      react-router-dom:
-        specifier: ^6.14.2
-        version: 6.14.2(react-dom@18.2.0)(react@18.2.0)
-      react-tooltip:
-        specifier: ^5.21.5
-        version: 5.21.5(react-dom@18.2.0)(react@18.2.0)
-      recharts:
-        specifier: ^2.9.0
-        version: 2.9.0(react-dom@18.2.0)(react@18.2.0)
-      redux-persist:
-        specifier: ^6.0.0
-        version: 6.0.0(react@18.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.15
-        version: 18.2.15
-      '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.2.7
-      '@vitejs/plugin-react':
-        specifier: ^4.0.3
-        version: 4.0.3(vite@4.4.4)
-      autoprefixer:
-        specifier: ^10.4.14
-        version: 10.4.14(postcss@8.4.26)
-      postcss:
-        specifier: ^8.4.26
-        version: 8.4.26
-      tailwindcss:
-        specifier: ^3.3.3
-        version: 3.3.3(ts-node@10.9.1)
-      typescript:
-        specifier: ^5.1.6
-        version: 5.1.6
-      vite:
-        specifier: ^4.4.4
-        version: 4.4.4(@types/node@20.4.2)(sass@1.63.6)
-      vite-plugin-rewrite-all:
-        specifier: ^1.0.1
-        version: 1.0.1(vite@4.4.4)
-      vite-plugin-svgr:
-        specifier: ^3.2.0
-        version: 3.2.0(vite@4.4.4)
 
   sdk/bcs:
     dependencies:
@@ -1283,11 +1195,11 @@ importers:
 
   sdk/dapp-kit:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../typescript
     devDependencies:
-      '@mysten/build-scripts':
+      '@benfen/build-scripts':
         specifier: workspace:*
         version: link:../build-scripts
       '@size-limit/preset-small-lib':
@@ -1341,7 +1253,7 @@ importers:
 
   sdk/deepbook:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../typescript
     devDependencies:
@@ -1396,7 +1308,7 @@ importers:
 
   sdk/kiosk:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../typescript
     devDependencies:
@@ -1440,7 +1352,7 @@ importers:
 
   sdk/suins-toolkit:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../typescript
     devDependencies:
@@ -1462,7 +1374,7 @@ importers:
 
   sdk/typescript:
     dependencies:
-      '@mysten/bcs':
+      '@benfen/bcs':
         specifier: workspace:*
         version: link:../bcs
       '@noble/curves':
@@ -1499,12 +1411,12 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
     devDependencies:
+      '@benfen/build-scripts':
+        specifier: workspace:*
+        version: link:../build-scripts
       '@iarna/toml':
         specifier: ^2.2.5
         version: 2.2.5
-      '@mysten/build-scripts':
-        specifier: workspace:*
-        version: link:../build-scripts
       '@size-limit/preset-small-lib':
         specifier: ^8.2.6
         version: 8.2.6(size-limit@8.2.6)
@@ -1553,10 +1465,10 @@ importers:
 
   sdk/wallet-kit/core:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../../typescript
-      '@mysten/wallet-standard':
+      '@benfen/wallet-standard':
         specifier: workspace:*
         version: link:../../wallet-standard
     devDependencies:
@@ -1569,10 +1481,10 @@ importers:
 
   sdk/wallet-kit/example:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../../typescript
-      '@mysten/wallet-kit':
+      '@benfen/wallet-kit':
         specifier: workspace:*
         version: link:../react
       '@types/node':
@@ -1603,18 +1515,18 @@ importers:
 
   sdk/wallet-kit/react:
     dependencies:
+      '@benfen/bfc.js':
+        specifier: workspace:*
+        version: link:../../typescript
+      '@benfen/wallet-kit-core':
+        specifier: workspace:*
+        version: link:../core
+      '@benfen/wallet-standard':
+        specifier: workspace:*
+        version: link:../../wallet-standard
       '@headlessui/react':
         specifier: ^1.7.15
         version: 1.7.15(react-dom@18.2.0)(react@18.2.0)
-      '@mysten/sui.js':
-        specifier: workspace:*
-        version: link:../../typescript
-      '@mysten/wallet-kit-core':
-        specifier: workspace:*
-        version: link:../core
-      '@mysten/wallet-standard':
-        specifier: workspace:*
-        version: link:../../wallet-standard
       '@stitches/react':
         specifier: ^1.2.8
         version: 1.2.8(react@18.2.0)
@@ -1640,7 +1552,7 @@ importers:
 
   sdk/wallet-standard:
     dependencies:
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../typescript
       '@wallet-standard/core':
@@ -1656,10 +1568,10 @@ importers:
 
   sdk/zklogin:
     dependencies:
-      '@mysten/bcs':
+      '@benfen/bcs':
         specifier: workspace:*
         version: link:../bcs
-      '@mysten/sui.js':
+      '@benfen/bfc.js':
         specifier: workspace:*
         version: link:../typescript
       '@noble/hashes':
@@ -1678,7 +1590,7 @@ importers:
         specifier: ^3.12.7
         version: 3.12.7
     devDependencies:
-      '@mysten/build-scripts':
+      '@benfen/build-scripts':
         specifier: workspace:*
         version: link:../build-scripts
       typescript:
@@ -7533,6 +7445,7 @@ packages:
   /@storybook/channels@7.1.0:
     resolution: {integrity: sha512-8uzjWdVG2IK18P8n6H+olAs+jnZr+HeYs1t2xiRy4NVSLhBffB71ut5F+pcWZfdDe3gyX8Tfvy68NloTNt9POg==}
     dependencies:
+      '@storybook/channels': registry.npmmirror.com/@storybook/channels@7.1.0
       '@storybook/client-logger': 7.1.0
       '@storybook/core-events': 7.1.0
       '@storybook/global': 5.0.0
@@ -7912,7 +7825,7 @@ packages:
       '@storybook/csf': 0.1.1
       '@storybook/global': 5.0.0
       '@storybook/types': 7.1.0
-      '@types/qs': 6.9.7
+      '@types/qs': 6.9.9
       dequal: 2.0.3
       lodash: 4.17.21
       memoizerific: 1.11.3
@@ -8711,10 +8624,6 @@ packages:
     resolution: {integrity: sha512-tLxQ2sfT0p6sxdG75c6f/ekqxjyYR0+LwPrsO1mbC9YDBzPJhs2HbJJRrn8Ez1DBoHRo2yx7YEATI+8V1nGMnQ==}
     dev: false
 
-  /@types/d3-ease@3.0.1:
-    resolution: {integrity: sha512-VZofjpEt8HWv3nxUAosj5o/+4JflnJ7Bbv07k17VO3T2WRuzGdZeookfaF60iVh5RdhVG49LE5w6LIshVUC6rg==}
-    dev: false
-
   /@types/d3-format@3.0.1:
     resolution: {integrity: sha512-5KY70ifCCzorkLuIkDe0Z9YTf9RR2CjBX1iaJG+rgM/cPP+sO+q9YdQ9WdhQcgPj1EQiJ2/0+yUkkziTG6Lubg==}
     dev: false
@@ -8747,22 +8656,12 @@ packages:
       '@types/d3-path': 1.0.9
     dev: false
 
-  /@types/d3-shape@3.1.4:
-    resolution: {integrity: sha512-M2/xsWPsjaZc5ifMKp1EBp0gqJG0eO/zlldJNOC85Y/5DGsBQ49gDkRJ2h5GY7ZVD6KUumvZWsylSbvTaJTqKg==}
-    dependencies:
-      '@types/d3-path': 1.0.9
-    dev: false
-
   /@types/d3-time-format@2.1.0:
     resolution: {integrity: sha512-/myT3I7EwlukNOX2xVdMzb8FRgNzRMpsZddwst9Ld/VFe6LyJyRp0s32l/V9XoUzk+Gqu56F/oGk6507+8BxrA==}
     dev: false
 
   /@types/d3-time@3.0.0:
     resolution: {integrity: sha512-sZLCdHvBUcNby1cB6Fd3ZBrABbjz3v1Vm90nysCQ6Vt7vd6e/h9Lt7SiJUoEX0l4Dzc7P5llKyhqSi1ycSf1Hg==}
-    dev: false
-
-  /@types/d3-timer@3.0.1:
-    resolution: {integrity: sha512-GGTvzKccVEhxmRfJEB6zhY9ieT4UhGVUIQaBzFpUO9OXy2ycAlnPCSJLzmGGgqt3KVjqN3QCQB4g1rsZnHsWhg==}
     dev: false
 
   /@types/debug@4.1.8:
@@ -8838,7 +8737,7 @@ packages:
     resolution: {integrity: sha512-wALWQwrgiB2AWTT91CB62b6Yt0sNHpznUXeZEcnPU3DRdlDIz74x8Qg1UUYKSVFi+va5vKOLYRBI1bRKiLLKIg==}
     dependencies:
       '@types/node': 20.4.2
-      '@types/qs': 6.9.7
+      '@types/qs': 6.9.9
       '@types/range-parser': 1.2.4
       '@types/send': 0.17.1
     dev: true
@@ -8848,7 +8747,7 @@ packages:
     dependencies:
       '@types/body-parser': 1.19.2
       '@types/express-serve-static-core': 4.17.35
-      '@types/qs': 6.9.7
+      '@types/qs': 6.9.9
       '@types/serve-static': 1.15.2
     dev: true
 
@@ -9047,8 +8946,8 @@ packages:
   /@types/prop-types@15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
-  /@types/qs@6.9.7:
-    resolution: {integrity: sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==}
+  /@types/qs@6.9.9:
+    resolution: {integrity: sha512-wYLxw35euwqGvTDx6zfY1vokBFnsK0HNrzc6xNHchxfO2hpuRg74GbkEW7e3sSmPvj0TjCDT1VCa6OtHXnubsg==}
     dev: true
 
   /@types/range-parser@1.2.4:
@@ -11716,6 +11615,7 @@ packages:
   /connect-history-api-fallback@1.6.0:
     resolution: {integrity: sha512-e54B99q/OUoH64zYYRf3HBP5z24G38h5D3qXu23JGRoigpX5Ss4r9ZnDk3g0Z8uQC2x2lPaJ+UlWBc1ZWBWdLg==}
     engines: {node: '>=0.8'}
+    dev: false
 
   /console-control-strings@1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}
@@ -12385,10 +12285,6 @@ packages:
     resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
     dev: false
 
-  /dayjs@1.11.9:
-    resolution: {integrity: sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==}
-    dev: false
-
   /debounce-fn@3.0.1:
     resolution: {integrity: sha512-aBoJh5AhpqlRoHZjHmOzZlRx+wz2xVwGL9rjs+Kj0EWUrL4/h4K7OD176thl2Tdoqui/AaA4xhHrNArGLAaI3Q==}
     engines: {node: '>=8'}
@@ -12450,10 +12346,6 @@ packages:
     resolution: {integrity: sha512-Fv96DCsdOgB6mdGl67MT5JaTNKRzrzill5OH5s8bjYJXVlcXyPYGyPsUkWyGV5p1TXI5esYIYMMeDJL0hEIwaA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dev: true
-
-  /decimal.js-light@2.5.1:
-    resolution: {integrity: sha512-qIMFpTMZmny+MMIitAB6D7iVPEorVw6YQRWkvarTkT4tBeSLLiHzcwj6q0MmYSFCiVpiqPJTJEYIrpcPzVEIvg==}
-    dev: false
 
   /decode-named-character-reference@1.0.2:
     resolution: {integrity: sha512-O8x12RzrUF8xyVcY0KJowWsmaJxQbmy0/EtnNtHRpsOcT7dFk5W598coHqBVpmWo1oQQfsCqfCmkZN5DJrZVdg==}
@@ -12721,12 +12613,6 @@ packages:
     dependencies:
       utila: 0.4.0
     dev: true
-
-  /dom-helpers@3.4.0:
-    resolution: {integrity: sha512-LnuPJ+dwqKDIyotW1VzmOZ5TONUN7CwkCR5hrgawTUbkBGYdeoNLZo6nNfGkCrjtE1nXXaj7iMMpDa8/d9WoIA==}
-    dependencies:
-      '@babel/runtime': 7.22.6
-    dev: false
 
   /dom-mutator@0.4.0:
     resolution: {integrity: sha512-H8pcE9Tmmnxs6FTZCX4aRthcweGsVdytqpBSiVIDnTnmosXXYO+jatDWwRReMbJJsAmsnAWsc0Ht4ZYGdN8gZw==}
@@ -14094,10 +13980,6 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /eventemitter3@4.0.7:
-    resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
-    dev: false
-
   /events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
@@ -14268,11 +14150,6 @@ packages:
   /fast-diff@1.3.0:
     resolution: {integrity: sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==}
     dev: true
-
-  /fast-equals@5.0.1:
-    resolution: {integrity: sha512-WF1Wi8PwwSY7/6Kx0vKXtw8RwuSGoM1bvDaJbu7MxDlR1vovZjIAKrnzyrThgAjm6JDTu0fVgWXDlMGspodfoQ==}
-    engines: {node: '>=6.0.0'}
-    dev: false
 
   /fast-glob@3.2.12:
     resolution: {integrity: sha512-DVj4CQIYYow0BlaelwK1pHl5n5cRSJfM60UA0zK891sVInoPri2Ekj7+e1CT3/3qxXenpI+nBBmQAcJPJgaj4w==}
@@ -17358,7 +17235,7 @@ packages:
       cytoscape-fcose: 2.2.0(cytoscape@3.25.0)
       d3: 7.8.5
       dagre-d3-es: 7.0.10
-      dayjs: 1.11.9
+      dayjs: 1.11.10
       dompurify: 3.0.3
       elkjs: 0.8.2
       khroma: 2.0.0
@@ -20084,10 +19961,6 @@ packages:
   /react-is@18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
 
-  /react-lifecycles-compat@3.0.4:
-    resolution: {integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==}
-    dev: false
-
   /react-number-format@5.2.2(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-wCh64Z1HCwXcO2dbgkeYIaB+Rmp/fcsH8kAeRtUkc46dv1pIrgDjie2WkOqKBw8YqyqhwNdYgNFNQuuY+iGJ/g==}
     peerDependencies:
@@ -20217,17 +20090,6 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: true
 
-  /react-resize-detector@8.1.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-S7szxlaIuiy5UqLhLL1KY3aoyGHbZzsTpYal9eYMwCyKqoqoVLCmIgAgNyIM1FhnP2KyBygASJxdhejrzjMb+w==}
-    peerDependencies:
-      react: ^16.0.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      lodash: 4.17.21
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
   /react-router-dom@6.14.2(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-5pWX0jdKR48XFZBuJqHosX3AAHjRAzygouMTyimnBPOLdY3WjzUSKhus2FVMihUFWzeLebDgr4r8UeQFAct7Bg==}
     engines: {node: '>=14'}
@@ -20249,19 +20111,6 @@ packages:
     dependencies:
       '@remix-run/router': 1.7.2
       react: 18.2.0
-    dev: false
-
-  /react-smooth@2.0.5(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-BMP2Ad42tD60h0JW6BFaib+RJuV5dsXJK9Baxiv/HlNFjvRLqA9xrNKxVWnUIZPQfzUwGXIlU/dSYLU+54YGQA==}
-    peerDependencies:
-      prop-types: ^15.6.0
-      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      fast-equals: 5.0.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      react-transition-group: 2.9.0(react-dom@18.2.0)(react@18.2.0)
     dev: false
 
   /react-style-singleton@2.2.1(@types/react@18.2.15)(react@18.2.0):
@@ -20293,32 +20142,6 @@ packages:
       use-latest: 1.2.1(@types/react@18.2.15)(react@18.2.0)
     transitivePeerDependencies:
       - '@types/react'
-    dev: false
-
-  /react-tooltip@5.21.5(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-ey70qf6pBGi4U6xpyNlZAHobAhlo2dfxmImR2Bzd/DbLTsAYWz3TEaK+RMFuUZMq6hSPRbUHQSkP2rHBq4uFVg==}
-    peerDependencies:
-      react: '>=16.14.0'
-      react-dom: '>=16.14.0'
-    dependencies:
-      '@floating-ui/dom': 1.4.1
-      classnames: 2.3.2
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
-  /react-transition-group@2.9.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-+HzNTCHpeQyl4MJ/bdE0u6XRMe9+XG/+aL4mCxVN4DnPBQ0/5bfHWPDuOZUzYdMj94daZaZdCCc1Dzt9R/xSSg==}
-    peerDependencies:
-      react: '>=15.0.0'
-      react-dom: '>=15.0.0'
-    dependencies:
-      dom-helpers: 3.4.0
-      loose-envify: 1.4.0
-      prop-types: 15.8.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      react-lifecycles-compat: 3.0.4
     dev: false
 
   /react-use-measure@2.1.1(react-dom@18.2.0)(react@18.2.0):
@@ -20439,33 +20262,6 @@ packages:
       tslib: 2.6.0
     dev: true
 
-  /recharts-scale@0.4.5:
-    resolution: {integrity: sha512-kivNFO+0OcUNu7jQquLXAxz1FIwZj8nrj+YkOKc5694NbjCvcT6aSZiIzNzd2Kul4o4rTto8QVR9lMNtxD4G1w==}
-    dependencies:
-      decimal.js-light: 2.5.1
-    dev: false
-
-  /recharts@2.9.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-cVgiAU3W5UrA8nRRV/N0JrudgZzY/vjkzrlShbH+EFo1vs4nMlXgshZWLI0DfDLmn4/p4pF7Lq7F5PU+K94Ipg==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      prop-types: ^15.6.0
-      react: ^16.0.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      classnames: 2.3.2
-      eventemitter3: 4.0.7
-      lodash: 4.17.21
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      react-is: 16.13.1
-      react-resize-detector: 8.1.0(react-dom@18.2.0)(react@18.2.0)
-      react-smooth: 2.0.5(react-dom@18.2.0)(react@18.2.0)
-      recharts-scale: 0.4.5
-      tiny-invariant: 1.3.1
-      victory-vendor: 36.6.11
-    dev: false
-
   /rechoir@0.6.2:
     resolution: {integrity: sha512-HFM8rkZ+i3zrV+4LQjwQ0W+ez98pApMGM3HUrN04j3CqzPOzl9nmP15Y8YXNm8QHGv/eacOVEjqhmWpkRV0NAw==}
     engines: {node: '>= 0.10'}
@@ -20506,18 +20302,6 @@ packages:
     resolution: {integrity: sha512-Hl/tuV2VDgWgCSEeWMLwxLZqX7OK59eU1guxXsRKTAyeYimivsKdtcV4fu3r710tpG5GmDKDhQ0HSZLExnNmyQ==}
     dependencies:
       balanced-match: 1.0.2
-    dev: false
-
-  /redux-persist@6.0.0(react@18.2.0):
-    resolution: {integrity: sha512-71LLMbUq2r02ng2We9S215LtPu3fY0KgaGE0k8WRgl6RkqxtGfl7HUozz1Dftwsb0D/5mZ8dwAaPbtnzfvbEwQ==}
-    peerDependencies:
-      react: '>=16'
-      redux: '>4.0.0'
-    peerDependenciesMeta:
-      react:
-        optional: true
-    dependencies:
-      react: 18.2.0
     dev: false
 
   /redux-thunk@2.4.2(redux@4.2.1):
@@ -22178,6 +21962,7 @@ packages:
 
   /tiny-invariant@1.3.1:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
+    dev: true
 
   /tiny-warning@1.0.3:
     resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
@@ -23181,25 +22966,6 @@ packages:
       vfile-message: 3.1.4
     dev: false
 
-  /victory-vendor@36.6.11:
-    resolution: {integrity: sha512-nT8kCiJp8dQh8g991J/R5w5eE2KnO8EAIP0xocWlh9l2okngMWglOPoMZzJvek8Q1KUc4XE/mJxTZnvOB1sTYg==}
-    dependencies:
-      '@types/d3-array': 3.0.5
-      '@types/d3-ease': 3.0.1
-      '@types/d3-interpolate': 3.0.1
-      '@types/d3-scale': 4.0.2
-      '@types/d3-shape': 3.1.4
-      '@types/d3-time': 3.0.0
-      '@types/d3-timer': 3.0.1
-      d3-array: 3.2.4
-      d3-ease: 3.0.1
-      d3-interpolate: 3.0.1
-      d3-scale: 4.0.2
-      d3-shape: 3.2.0
-      d3-time: 3.1.0
-      d3-timer: 3.0.1
-    dev: false
-
   /vite-node@0.33.0(@types/node@20.4.2)(sass@1.63.6):
     resolution: {integrity: sha512-19FpHYbwWWxDr73ruNahC+vtEdza52kA90Qb3La98yZ0xULqV8A5JLNPUff0f5zID4984tW7l3DH2przTJUZSw==}
     engines: {node: '>=v14.18.0'}
@@ -23241,6 +23007,7 @@ packages:
     dependencies:
       connect-history-api-fallback: 1.6.0
       vite: 4.4.4(@types/node@20.4.2)(sass@1.63.6)
+    dev: false
 
   /vite-plugin-svgr@3.2.0(vite@4.4.4):
     resolution: {integrity: sha512-Uvq6niTvhqJU6ga78qLKBFJSDvxWhOnyfQSoKpDPMAGxJPo5S3+9hyjExE5YDj6Lpa4uaLkGc1cBgxXov+LjSw==}
@@ -24189,3 +23956,139 @@ packages:
   /zxcvbn@4.4.2:
     resolution: {integrity: sha512-Bq0B+ixT/DMyG8kgX2xWcI5jUvCwqrMxSFam7m0lAf78nf04hv6lNCsyLYdyYTrCVMqNDY/206K7eExYCeSyUQ==}
     dev: false
+
+  registry.npmmirror.com/@storybook/channels@7.1.0:
+    resolution: {integrity: sha512-8uzjWdVG2IK18P8n6H+olAs+jnZr+HeYs1t2xiRy4NVSLhBffB71ut5F+pcWZfdDe3gyX8Tfvy68NloTNt9POg==, tarball: https://registry.npmmirror.com/@storybook/channels/-/channels-7.1.0.tgz}
+    name: '@storybook/channels'
+    version: 7.1.0
+    dependencies:
+      '@storybook/channels': 7.1.0
+      '@storybook/client-logger': registry.npmmirror.com/@storybook/client-logger@7.1.0
+      '@storybook/core-events': registry.npmmirror.com/@storybook/core-events@7.1.0
+      '@storybook/global': registry.npmmirror.com/@storybook/global@5.0.0
+      qs: registry.npmmirror.com/qs@6.11.2
+      telejson: registry.npmmirror.com/telejson@7.1.0
+      tiny-invariant: registry.npmmirror.com/tiny-invariant@1.3.1
+    dev: true
+
+  registry.npmmirror.com/@storybook/client-logger@7.1.0:
+    resolution: {integrity: sha512-br5GNTxNFmDZA4ESaCMn2VJ9ZW3ejbILEGoadOJjP2ZD40luSRNtTtWjeNiA+7762OvHMYVGwG0tnqk98f5nfg==, tarball: https://registry.npmmirror.com/@storybook/client-logger/-/client-logger-7.1.0.tgz}
+    name: '@storybook/client-logger'
+    version: 7.1.0
+    dependencies:
+      '@storybook/global': registry.npmmirror.com/@storybook/global@5.0.0
+    dev: true
+
+  registry.npmmirror.com/@storybook/core-events@7.1.0:
+    resolution: {integrity: sha512-b0kZ5ElPZj3NPqWhGsHHuLn0riA4wJXJ5mNBOe2scd8Cw52ELQr5rVHOMROhONOgpOaZBZ+QZd/MDvJDRyxTQw==, tarball: https://registry.npmmirror.com/@storybook/core-events/-/core-events-7.1.0.tgz}
+    name: '@storybook/core-events'
+    version: 7.1.0
+    dev: true
+
+  registry.npmmirror.com/@storybook/global@5.0.0:
+    resolution: {integrity: sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==, tarball: https://registry.npmmirror.com/@storybook/global/-/global-5.0.0.tgz}
+    name: '@storybook/global'
+    version: 5.0.0
+    dev: true
+
+  registry.npmmirror.com/call-bind@1.0.2:
+    resolution: {integrity: sha512-7O+FbCihrB5WGbFYesctwmTKae6rOiIzmz1icreWJ+0aA7LJfuqhEso2T9ncpcFtzMQtzXf2QGGueWJGTYsqrA==, tarball: https://registry.npmmirror.com/call-bind/-/call-bind-1.0.2.tgz}
+    name: call-bind
+    version: 1.0.2
+    dependencies:
+      function-bind: registry.npmmirror.com/function-bind@1.1.1
+      get-intrinsic: registry.npmmirror.com/get-intrinsic@1.2.1
+    dev: true
+
+  registry.npmmirror.com/function-bind@1.1.1:
+    resolution: {integrity: sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==, tarball: https://registry.npmmirror.com/function-bind/-/function-bind-1.1.1.tgz}
+    name: function-bind
+    version: 1.1.1
+    dev: true
+
+  registry.npmmirror.com/get-intrinsic@1.2.1:
+    resolution: {integrity: sha512-2DcsyfABl+gVHEfCOaTrWgyt+tb6MSEGmKq+kI5HwLbIYgjgmMcV8KQ41uaKz1xxUcn9tJtgFbQUEVcEbd0FYw==, tarball: https://registry.npmmirror.com/get-intrinsic/-/get-intrinsic-1.2.1.tgz}
+    name: get-intrinsic
+    version: 1.2.1
+    dependencies:
+      function-bind: registry.npmmirror.com/function-bind@1.1.1
+      has: registry.npmmirror.com/has@1.0.3
+      has-proto: registry.npmmirror.com/has-proto@1.0.1
+      has-symbols: registry.npmmirror.com/has-symbols@1.0.3
+    dev: true
+
+  registry.npmmirror.com/has-proto@1.0.1:
+    resolution: {integrity: sha512-7qE+iP+O+bgF9clE5+UoBFzE65mlBiVj3tKCrlNQ0Ogwm0BjpT/gK4SlLYDMybDh5I3TCTKnPPa0oMG7JDYrhg==, tarball: https://registry.npmmirror.com/has-proto/-/has-proto-1.0.1.tgz}
+    name: has-proto
+    version: 1.0.1
+    engines: {node: '>= 0.4'}
+    dev: true
+
+  registry.npmmirror.com/has-symbols@1.0.3:
+    resolution: {integrity: sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A==, tarball: https://registry.npmmirror.com/has-symbols/-/has-symbols-1.0.3.tgz}
+    name: has-symbols
+    version: 1.0.3
+    engines: {node: '>= 0.4'}
+    dev: true
+
+  registry.npmmirror.com/has@1.0.3:
+    resolution: {integrity: sha512-f2dvO0VU6Oej7RkWJGrehjbzMAjFp5/VKPp5tTpWIV4JHHZK1/BxbFRtf/siA2SWTe09caDmVtYYzWEIbBS4zw==, tarball: https://registry.npmmirror.com/has/-/has-1.0.3.tgz}
+    name: has
+    version: 1.0.3
+    engines: {node: '>= 0.4.0'}
+    dependencies:
+      function-bind: registry.npmmirror.com/function-bind@1.1.1
+    dev: true
+
+  registry.npmmirror.com/map-or-similar@1.5.0:
+    resolution: {integrity: sha512-0aF7ZmVon1igznGI4VS30yugpduQW3y3GkcgGJOp7d8x8QrizhigUxjI/m2UojsXXto+jLAH3KSz+xOJTiORjg==, tarball: https://registry.npmmirror.com/map-or-similar/-/map-or-similar-1.5.0.tgz}
+    name: map-or-similar
+    version: 1.5.0
+    dev: true
+
+  registry.npmmirror.com/memoizerific@1.11.3:
+    resolution: {integrity: sha512-/EuHYwAPdLtXwAwSZkh/Gutery6pD2KYd44oQLhAvQp/50mpyduZh8Q7PYHXTCJ+wuXxt7oij2LXyIJOOYFPog==, tarball: https://registry.npmmirror.com/memoizerific/-/memoizerific-1.11.3.tgz}
+    name: memoizerific
+    version: 1.11.3
+    dependencies:
+      map-or-similar: registry.npmmirror.com/map-or-similar@1.5.0
+    dev: true
+
+  registry.npmmirror.com/object-inspect@1.12.3:
+    resolution: {integrity: sha512-geUvdk7c+eizMNUDkRpW1wJwgfOiOeHbxBR/hLXK1aT6zmVSO0jsQcs7fj6MGw89jC/cjGfLcNOrtMYtGqm81g==, tarball: https://registry.npmmirror.com/object-inspect/-/object-inspect-1.12.3.tgz}
+    name: object-inspect
+    version: 1.12.3
+    dev: true
+
+  registry.npmmirror.com/qs@6.11.2:
+    resolution: {integrity: sha512-tDNIz22aBzCDxLtVH++VnTfzxlfeK5CbqohpSqpJgj1Wg/cQbStNAz3NuqCs5vV+pjBsK4x4pN9HlVh7rcYRiA==, tarball: https://registry.npmmirror.com/qs/-/qs-6.11.2.tgz}
+    name: qs
+    version: 6.11.2
+    engines: {node: '>=0.6'}
+    dependencies:
+      side-channel: registry.npmmirror.com/side-channel@1.0.4
+    dev: true
+
+  registry.npmmirror.com/side-channel@1.0.4:
+    resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==, tarball: https://registry.npmmirror.com/side-channel/-/side-channel-1.0.4.tgz}
+    name: side-channel
+    version: 1.0.4
+    dependencies:
+      call-bind: registry.npmmirror.com/call-bind@1.0.2
+      get-intrinsic: registry.npmmirror.com/get-intrinsic@1.2.1
+      object-inspect: registry.npmmirror.com/object-inspect@1.12.3
+    dev: true
+
+  registry.npmmirror.com/telejson@7.1.0:
+    resolution: {integrity: sha512-jFJO4P5gPebZAERPkJsqMAQ0IMA1Hi0AoSfxpnUaV6j6R2SZqlpkbS20U6dEUtA3RUYt2Ak/mTlkQzHH9Rv/hA==, tarball: https://registry.npmmirror.com/telejson/-/telejson-7.1.0.tgz}
+    name: telejson
+    version: 7.1.0
+    dependencies:
+      memoizerific: registry.npmmirror.com/memoizerific@1.11.3
+    dev: true
+
+  registry.npmmirror.com/tiny-invariant@1.3.1:
+    resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==, tarball: https://registry.npmmirror.com/tiny-invariant/-/tiny-invariant-1.3.1.tgz}
+    name: tiny-invariant
+    version: 1.3.1
+    dev: true

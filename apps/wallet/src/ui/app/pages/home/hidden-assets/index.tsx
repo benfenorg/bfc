@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getObjectDisplay } from '@benfen/bfc.js';
 import { getKioskIdFromOwnerCap, isKioskOwnerToken, useMultiGetObjects } from '@mysten/core';
 import { Check12, EyeClose16 } from '@mysten/icons';
-import { getObjectDisplay } from '@mysten/sui.js';
 import { get, set } from 'idb-keyval';
 import { useEffect, useCallback, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';

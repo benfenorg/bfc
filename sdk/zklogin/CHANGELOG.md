@@ -22,7 +22,7 @@
 - d0750ea0f: rename pin to salt
 - a82600f2d: fix nonce calculation
 - Updated dependencies [24c21e1f0]
-  - @mysten/sui.js@0.41.1
+  - @benfen/bfc.js@0.41.1
 
 ## 0.1.1
 

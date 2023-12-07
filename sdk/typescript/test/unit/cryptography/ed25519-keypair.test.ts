@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64, toB58, toB64 } from '@mysten/bcs';
+import { fromB64, toB58, toB64 } from '@benfen/bcs';
 import nacl from 'tweetnacl';
 import { describe, it, expect } from 'vitest';
 import { TransactionBlock } from '../../../src/builder';

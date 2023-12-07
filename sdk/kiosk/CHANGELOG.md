@@ -26,7 +26,7 @@
 ### Patch Changes
 
 - Updated dependencies [24c21e1f0]
-  - @mysten/sui.js@0.41.1
+  - @benfen/bfc.js@0.41.1
 
 ## 0.5.1
 
@@ -34,7 +34,7 @@
 
 - Updated dependencies [ba8e3b857]
 - Updated dependencies [f4b7b3474]
-  - @mysten/sui.js@0.41.0
+  - @benfen/bfc.js@0.41.0
 
 ## 0.5.0
 
@@ -46,23 +46,23 @@
 
 - Updated dependencies [a503cad34]
 - Updated dependencies [8281e3d25]
-  - @mysten/sui.js@0.40.0
+  - @benfen/bfc.js@0.40.0
 
 ## 0.4.1
 
 ### Patch Changes
 
 - Updated dependencies [47ea5ec7c]
-  - @mysten/sui.js@0.39.0
+  - @benfen/bfc.js@0.39.0
 
 ## 0.4.0
 
 ### Minor Changes
 
-- cc6441f46: Updated types and imports to use new modular exports from the `@mysten/sui.js` refactor
-- 6d41059c7: Update to use modular imports from @mysten/sui.js
+- cc6441f46: Updated types and imports to use new modular exports from the `@benfen/bfc.js` refactor
+- 6d41059c7: Update to use modular imports from @benfen/bfc.js
 
-  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a `JsonRpcProvider`
+  Some methods now accept a `SuiClient` imported from `@benfen/bfc.js/client` rather than a `JsonRpcProvider`
 
 ### Patch Changes
 
@@ -77,14 +77,14 @@
 - Updated dependencies [6d41059c7]
 - Updated dependencies [cc6441f46]
 - Updated dependencies [001148443]
-  - @mysten/sui.js@0.38.0
+  - @benfen/bfc.js@0.38.0
 
 ## 0.3.3
 
 ### Patch Changes
 
 - Updated dependencies [34cc7d610]
-  - @mysten/sui.js@0.37.1
+  - @benfen/bfc.js@0.37.1
 
 ## 0.3.2
 
@@ -97,7 +97,7 @@
 - Updated dependencies [a17d3678a]
 - Updated dependencies [2f37537d5]
 - Updated dependencies [00484bcc3]
-  - @mysten/sui.js@0.37.0
+  - @benfen/bfc.js@0.37.0
 
 ## 0.3.1
 
@@ -110,7 +110,7 @@
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [fb3bb9118a]
-  - @mysten/sui.js@0.36.0
+  - @benfen/bfc.js@0.36.0
 
 ## 0.3.0
 
@@ -121,7 +121,7 @@
 ### Patch Changes
 
 - Updated dependencies [09d77325a9]
-  - @mysten/sui.js@0.35.1
+  - @benfen/bfc.js@0.35.1
 
 ## 0.2.0
 
@@ -146,4 +146,4 @@
 - Updated dependencies [9ce7e051b4]
 - Updated dependencies [9ce7e051b4]
 - Updated dependencies [bb50698551]
-  - @mysten/sui.js@0.35.0
+  - @benfen/bfc.js@0.35.0

@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { useOwnedKiosk } from '../hooks/kiosk';
 import { OwnedObjectType } from '../components/Inventory/OwnedObjects';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import {
 	Kiosk,
 	createKioskAndShare,
@@ -20,7 +20,7 @@ import {
 	withdrawFromKiosk,
 } from '@mysten/kiosk';
 import { useTransactionExecution } from '../hooks/useTransactionExecution';
-import { useWalletKit } from '@mysten/wallet-kit';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { useRpc } from '../context/RpcClientContext';
 import { toast } from 'react-hot-toast';
 import { findActiveCap } from '../utils/utils';

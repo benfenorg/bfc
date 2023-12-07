@@ -57,6 +57,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
+    use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
     //use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
@@ -564,10 +565,15 @@ mod checked {
 
     pub fn construct_advance_epoch_pt(
         params: &AdvanceEpochParams,
+        rate_map: &VecMap<String, u64>
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
+
+
+        let rate_vec: Vec<_> = rate_map.contents.clone().into_iter().map(|e| (e.value)).collect();
+        // let rate_vec = vec![1u64];
 
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
@@ -580,6 +586,7 @@ mod checked {
             CallArg::Pure(bcs::to_bytes(&params.storage_fund_reinvest_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.reward_slashing_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.epoch_start_timestamp_ms).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&rate_vec).unwrap()),
         ]
         .into_iter()
         .map(|a| builder.input(a))
@@ -744,6 +751,26 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch)?;
+        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+            protocol_config,
+            metrics.clone(),
+            move_vm,
+            temporary_store,
+            tx_ctx,
+            gas_charger,
+            advance_epoch_pt,
+        );
+
+        if result.is_err() {
+            tracing::error!(
+            "Failed to execute change round transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}. Tx data: {:?}",
+            result.as_ref().err(),
+            temporary_store.objects(),
+            change_epoch,
+            );
+        }
+
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
@@ -755,7 +782,10 @@ mod checked {
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
-        let advance_epoch_pt = construct_advance_epoch_pt(&params)?;
+
+        let rate_map = temporary_store.get_stable_rate_map();
+
+        let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -857,17 +887,6 @@ mod checked {
                 temporary_store.write_object(new_package, WriteKind::Mutate);
             }
         }
-
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch)?;
-        let _result = programmable_transactions::execution::execute::<execution_mode::System>(
-            protocol_config,
-            metrics.clone(),
-            move_vm,
-            temporary_store,
-            tx_ctx,
-            gas_charger,
-            advance_epoch_pt,
-        );
 
         Ok(())
     }

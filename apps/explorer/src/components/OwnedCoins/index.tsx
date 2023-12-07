@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useAllBalances } from '@mysten/dapp-kit';
-import { type CoinBalance } from '@mysten/sui.js/client';
-import { normalizeSuiAddress } from '@mysten/sui.js/utils';
+import { type CoinBalance } from '@benfen/bfc.js/client';
+import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
 import { Heading, Text, LoadingIndicator } from '@mysten/ui';
 import { useState } from 'react';
 
@@ -32,20 +32,26 @@ export function OwnedCoins({ id }: { id: string }) {
 					<Heading color="steel-darker" variant="heading6/medium">
 						Coins
 					</Heading>
-					<div className="flex max-h-80 flex-col overflow-auto">
-						<div className="grid grid-cols-3 py-2 uppercase tracking-wider text-gray-80">
-							<Text variant="caption/medium">Type</Text>
-							<Text variant="caption/medium">Objects</Text>
-							<Text variant="caption/medium">Balance</Text>
+					{data.length === 0 ? (
+						<div className="flex w-full items-center justify-center text-bodyLarge text-bfc-text2">
+							No Coins owned
 						</div>
-						<div>
-							{data
-								.slice((currentSlice - 1) * COINS_PER_PAGE, currentSlice * COINS_PER_PAGE)
-								.map((coin) => (
-									<OwnedCoinView id={id} key={coin.coinType} coin={coin} />
-								))}
+					) : (
+						<div className="flex max-h-80 flex-col overflow-auto">
+							<div className="grid grid-cols-3 py-2 uppercase tracking-wider text-gray-80">
+								<Text variant="caption/medium">Type</Text>
+								<Text variant="caption/medium">Objects</Text>
+								<Text variant="caption/medium">Balance</Text>
+							</div>
+							<div>
+								{data
+									.slice((currentSlice - 1) * COINS_PER_PAGE, currentSlice * COINS_PER_PAGE)
+									.map((coin) => (
+										<OwnedCoinView id={id} key={coin.coinType} coin={coin} />
+									))}
+							</div>
 						</div>
-					</div>
+					)}
 					{data.length > COINS_PER_PAGE && (
 						<Pagination
 							onNext={() => setCurrentSlice(currentSlice + 1)}

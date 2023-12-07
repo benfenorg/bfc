@@ -9,9 +9,9 @@
 		"baseUrl": "..",
 		"rootDir": "src",
 		"paths": {
-			"@mysten/sui.js/transactions": ["../typescript/src/builder/export.ts"],
-			"@mysten/sui.js/*": ["../typescript/src/*"],
-			"@mysten/sui.js": ["../typescript/src/"]
+			"@benfen/bfc.js/transactions": ["../typescript/src/builder/export.ts"],
+			"@benfen/bfc.js/*": ["../typescript/src/*"],
+			"@benfen/bfc.js": ["../typescript/src/"]
 		}
 	},
 	"references": [{ "path": "../typescript" }]

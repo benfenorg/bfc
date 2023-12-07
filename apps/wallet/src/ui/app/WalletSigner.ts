@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SignedMessage, type SignedTransaction, SignerWithProvider } from '@mysten/sui.js';
+import { type SignedMessage, type SignedTransaction, SignerWithProvider } from '@benfen/bfc.js';
 import {
 	type ExecuteTransactionRequestType,
 	type SuiTransactionBlockResponse,
 	type SuiTransactionBlockResponseOptions,
-} from '@mysten/sui.js/client';
-import { type SerializedSignature } from '@mysten/sui.js/cryptography';
-import { type TransactionBlock } from '@mysten/sui.js/transactions';
+} from '@benfen/bfc.js/client';
+import { type SerializedSignature } from '@benfen/bfc.js/cryptography';
+import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 
 export abstract class WalletSigner extends SignerWithProvider {
 	abstract signData(data: Uint8Array, clientIdentifier?: string): Promise<SerializedSignature>;

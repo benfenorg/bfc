@@ -104,7 +104,15 @@ module bfc_system::vault_test {
         let balance_alice = balance::create_for_testing<BFC>(2_000_000_000);
         let alice_coin_to_mint = coin::from_balance(balance_alice, test_scenario::ctx(&mut scenario));
 
-        treasury::mint<BUSD>(&mut t, alice_coin_to_mint, &c, 1_000_000_000,0, 9999999999,test_scenario::ctx(&mut scenario));
+        treasury::mint<BUSD>(
+            &mut t,
+            alice_coin_to_mint,
+            &c,
+            1_000_000_000,
+            0,
+            9999999999,
+            test_scenario::ctx(&mut scenario)
+        );
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
 
@@ -164,6 +172,135 @@ module bfc_system::vault_test {
         };
 
         test_scenario::return_shared(t);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    public fun test_insufficient_liquidity() {
+        let owner = @0x0;
+        let scenario_val = test_scenario::begin(owner);
+
+        test_utils::setup_with_parameters(
+            3600 * 4,
+            1 << 64,
+            5_000_000_000,
+            9,
+            1,
+            2,
+            5,
+            1008611,
+            &mut scenario_val,
+            owner
+        );
+
+        // rebalance
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            test_utils::test_rebalance(&mut scenario_val);
+        };
+
+        // check info
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let info = treasury::vault_info<BUSD>(&t);
+            if (IS_DEBUG) {
+                print(&info);
+            };
+            test_scenario::return_shared(t);
+        };
+
+        // check is_exceed
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let res = treasury::calculate_swap_result<BUSD>(
+                &t,
+                false,
+                271_000_000_000,
+            );
+            let is_exceed = vault::calculated_swap_result_is_exceed(&res);
+            assert!(is_exceed, 10001);
+            test_scenario::return_shared(t);
+        };
+
+        // rebalance
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let c = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            clock::increment_for_testing(&mut c, 3600 * 4 * 3 * 1000 + 1000);
+
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario_val));
+
+            clock::destroy_for_testing(c);
+            test_scenario::return_shared(t);
+        };
+
+        // check info
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let info = treasury::vault_info<BUSD>(&t);
+            if (IS_DEBUG) {
+                print(&info);
+            };
+            test_scenario::return_shared(t);
+        };
+
+        // check is_exceed
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let res = treasury::calculate_swap_result<BUSD>(
+                &t,
+                false,
+                271_000_000_000,
+            );
+            let is_exceed = vault::calculated_swap_result_is_exceed(&res);
+            assert!(is_exceed, 10002);
+            test_scenario::return_shared(t);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    public fun test_multi_rebalance() {
+        let owner = @0x0;
+        let scenario_val = test_scenario::begin(owner);
+        test_utils::setup_with_parameters(
+            14400,
+            1 << 64,
+            50000_000_000_000,
+            9,
+            1,
+            2,
+            5,
+            1008611,
+            &mut scenario_val,
+            owner
+        );
+        test_utils::test_rebalance_first_init(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        test_utils::test_rebalance(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        test_utils::test_rebalance(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        test_utils::test_rebalance(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        test_utils::test_rebalance(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        test_utils::test_rebalance(&mut scenario_val);
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        test_utils::test_rebalance(&mut scenario_val);
+
         test_scenario::end(scenario_val);
     }
 }

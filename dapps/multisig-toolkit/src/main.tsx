@@ -6,7 +6,7 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/red-hat-mono';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { WalletKitProvider } from '@mysten/wallet-kit';
+import { WalletKitProvider } from '@benfen/wallet-kit';
 import { router } from './routes';
 import { RouterProvider } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';

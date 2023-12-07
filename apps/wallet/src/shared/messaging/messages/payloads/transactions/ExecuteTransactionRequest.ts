@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiSignTransactionBlockInput } from '@mysten/wallet-standard';
+import { type SuiSignTransactionBlockInput } from '@benfen/wallet-standard';
 
 import { type TransactionDataType } from './ApprovalRequest';
 import { isBasePayload } from '_payloads';

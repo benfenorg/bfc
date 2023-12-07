@@ -3,7 +3,7 @@
 
 import { useCookieConsentBanner } from '@mysten/core';
 import { SuiClientProvider } from '@mysten/dapp-kit';
-import { WalletKitProvider } from '@mysten/wallet-kit';
+import { WalletKitProvider } from '@benfen/wallet-kit';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Fragment } from 'react';
 import { resolveValue, Toaster, type ToastType } from 'react-hot-toast';
@@ -24,7 +24,6 @@ export function Layout() {
 	const [network, setNetwork] = useNetwork();
 
 	useCookieConsentBanner(persistableStorage, {
-		cookie_name: 'sui_explorer_cookie_consent',
 		onBeforeLoad: async () => {
 			await import('./cookieConsent.css');
 			document.body.classList.add('cookie-consent-theme');

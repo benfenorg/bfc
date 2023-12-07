@@ -61,7 +61,7 @@ export function Activity({ initialTab, initialLimit, disablePagination }: Props)
 		<div>
 			<Tabs size="md" value={activeTab} onValueChange={setActiveTab}>
 				<div className="relative">
-					<TabsList disableBottomBorder>
+					<TabsList className="gap-1 overflow-auto" disableBottomBorder>
 						<TabsTrigger value="transactions">Transaction Blocks</TabsTrigger>
 						<TabsTrigger value="epochs">Epochs</TabsTrigger>
 						<TabsTrigger value="checkpoints">Checkpoints</TabsTrigger>

@@ -13,6 +13,7 @@ const cardStyles = cva('overflow-hidden', {
 			white: 'bg-white',
 			'white/80': 'bg-white/80',
 			bfcCard: 'bg-bfc-card',
+			bfcLinear: 'bg-[linear-gradient(180deg,#F8F8FA_0%,rgba(248,248,250,0.90)_100%)]',
 		},
 		height: {
 			full: 'h-full',

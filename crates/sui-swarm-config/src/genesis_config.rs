@@ -355,4 +355,13 @@ impl GenesisConfig {
         });
         self
     }
+
+    //todo: using this to add customize account
+    pub fn add_customize_account(mut self, address: SuiAddress, gas_amounts: Vec<u64>) -> Self {
+        self.accounts.push(AccountConfig {
+            address: Some(address),
+            gas_amounts: gas_amounts,
+        });
+        self
+    }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import {
 	CoinFormat,
 	formatBalance,
@@ -9,13 +10,12 @@ import {
 	useGetNetworkOverview,
 	useFormatCoin,
 } from '@mysten/core';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { Text } from '@mysten/ui';
 
 import { ReactComponent as XCoinLogo } from '../../assets/XCoin.svg';
 import { numberSuffix } from '../../utils/numberUtil';
-import { Card } from '~/ui/Card';
 import { useTokenPrice } from '~/hooks/useTokenPrice';
+import { Card } from '~/ui/Card';
 
 export function Overview() {
 	const { data: referenceGasPrice } = useGetReferenceGasPrice();
@@ -31,17 +31,17 @@ export function Overview() {
 			: null;
 
 	return (
-		<Card bg="white" spacing="lg" height="full">
+		<Card bg="bfcLinear" spacing="lg" height="full">
 			<div className="flex flex-col">
 				<div>
 					<div>
 						<Text variant="subtitle/medium" color="gray-90">
-							Token Price
+							BFC - BUSD
 						</Text>
 					</div>
 					<div className="mt-2.5 flex gap-4 border-b border-[#E1E1E9] pb-7.5">
 						<XCoinLogo />
-						<div className="flex items-baseline">
+						<div className="flex items-center">
 							<span className="text-[32px] font-bold text-[#171719]">{price}</span>
 							<span className="px-1 text-[20px] font-bold text-[#A3A8B5]">BUSD</span>
 						</div>
@@ -71,7 +71,9 @@ export function Overview() {
 						</div>
 						<div className="mt-1.25  items-baseline">
 							<Text variant="pHeading4/semibold" color="steel-darker">
-								{overview?.totalAddresses24h ? numberSuffix(Number(overview.totalAddresses24h)) : '-'}
+								{overview?.totalAddresses24h
+									? numberSuffix(Number(overview.totalAddresses24h))
+									: '-'}
 							</Text>
 						</div>
 					</div>

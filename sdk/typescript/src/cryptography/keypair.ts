@@ -8,7 +8,7 @@ import type { SignatureScheme } from './signature.js';
 import { IntentScope, messageWithIntent } from './intent.js';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bcs } from '../bcs/index.js';
-import { toB64 } from '@mysten/bcs';
+import { toB64 } from '@benfen/bcs';
 
 export const PRIVATE_KEY_SIZE = 32;
 export const LEGACY_PRIVATE_KEY_SIZE = 64;

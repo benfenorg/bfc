@@ -1,6 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { hasPublicTransfer } from '@mysten/sui.js';
+import { hasPublicTransfer } from '@benfen/bfc.js';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { TransferNFTForm } from './TransferNFTForm';

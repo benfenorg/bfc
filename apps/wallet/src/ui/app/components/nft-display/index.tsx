@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js';
 import { isKioskOwnerToken, useGetObject } from '@mysten/core';
-import { formatAddress } from '@mysten/sui.js';
 import { cva, cx } from 'class-variance-authority';
 
 import { Kiosk } from './Kiosk';

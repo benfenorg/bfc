@@ -789,7 +789,7 @@ impl Display for Command {
 impl Display for ProgrammableTransaction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let ProgrammableTransaction { inputs, commands } = self;
-        writeln!(f, "Inputs: {inputs:?}")?;
+        writeln!(f, "ProgrammableTransaction Inputs: {inputs:?}")?;
         writeln!(f, "Commands: [")?;
         for c in commands {
             writeln!(f, "  {c},")?;

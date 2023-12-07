@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { useGetKioskContents } from '@mysten/core';
-import { formatAddress } from '@mysten/sui.js/utils';
 import { useSearchParams, Link } from 'react-router-dom';
 
 import { useActiveAddress } from '_app/hooks/useActiveAddress';

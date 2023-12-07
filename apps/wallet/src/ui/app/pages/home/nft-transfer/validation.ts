@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiClient } from '@mysten/sui.js/client';
+import { type SuiClient } from '@benfen/bfc.js/client';
 import * as Yup from 'yup';
 
 import { createSuiAddressValidation } from '_components/address-input/validation';

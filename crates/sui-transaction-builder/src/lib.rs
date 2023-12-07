@@ -33,6 +33,7 @@ use sui_types::transaction::{
 };
 use sui_types::{coin, fp_ensure, BFC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 use tracing::info;
+use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 #[async_trait]
@@ -94,7 +95,7 @@ impl TransactionBuilder {
                     return Ok(obj.object_ref());
                 }
             }
-            Err(anyhow!("Cannot find gas coin for signer address [{signer}] with amount sufficient for the required gas amount [{budget}]."))
+            Err(anyhow!("Cannot find gas coin for signer address [{}] with amount sufficient for the required gas amount [{budget}].", sui_address_to_bfc_address(signer.clone())))
         }
     }
 

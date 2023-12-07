@@ -21,7 +21,7 @@ deleted: object(2,1)
 gas summary: computation_cost: 100000, storage_cost: 620920,  storage_rebate: 443164, non_refundable_storage_fee: 4476
 
 task 4 'view-object'. lines 47-47:
-Owner: Object ID: ( fake(3,1) )
+Owner: Object ID: ( BFC6dba19d319a992e451f59f128755e62fcb78171e098612a81fae85b84b3a27db722b )
 Version: 3
 Contents: a::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}}
 
@@ -48,6 +48,6 @@ deleted: object(7,1)
 gas summary: computation_cost: 100000, storage_cost: 375440,  storage_rebate: 443164, non_refundable_storage_fee: 4476
 
 task 9 'view-object'. lines 60-60:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 7
 Contents: a::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(7,0)}}}

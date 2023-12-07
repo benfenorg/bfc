@@ -28,7 +28,8 @@
 -  [Function `next_epoch_bfc_required`](#0xc8_treasury_next_epoch_bfc_required)
 -  [Function `deposit`](#0xc8_treasury_deposit)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
--  [Function `rebalance_first_init`](#0xc8_treasury_rebalance_first_init)
+-  [Function `rebalance_internal`](#0xc8_treasury_rebalance_internal)
+-  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -42,6 +43,7 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
@@ -866,7 +868,12 @@ Rebalance
         total = total + bfc_required_per_time * times_per_day;
     };
 
-    total - <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury)
+    <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
+    <b>if</b> (total &gt; get_treasury_balance) {
+        total - get_treasury_balance
+    } <b>else</b> {
+        0
+    }
 }
 </code></pre>
 
@@ -940,16 +947,49 @@ Rebalance
 
     // <b>update</b> updated_at
     _treasury.updated_at = current_ts;
+    <a href="treasury.md#0xc8_treasury_rebalance_internal">rebalance_internal</a>(_treasury, <b>true</b>, _ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_rebalance_internal"></a>
+
+## Function `rebalance_internal`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_internal">rebalance_internal</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _update: bool, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_internal">rebalance_internal</a>(
+    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _update: bool,
+    _ctx: &<b>mut</b> TxContext
+) {
+    // BUSD
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;();
     <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;BUSD&gt;&gt;(
         &<b>mut</b> _treasury.id,
-        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;()
+        key,
     );
-    <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(usd_mut_v);
+    <b>if</b> (_update) {
+        <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(usd_mut_v);
+    };
 
+    // first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
     <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
         usd_mut_v,
         &<b>mut</b> _treasury.bfc_balance,
-        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;()),
+        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _treasury.supplies, key),
         _treasury.total_bfc_supply,
         _ctx
     );
@@ -960,13 +1000,13 @@ Rebalance
 
 </details>
 
-<a name="0xc8_treasury_rebalance_first_init"></a>
+<a name="0xc8_treasury_get_exchange_rates"></a>
 
-## Function `rebalance_first_init`
+## Function `get_exchange_rates`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_first_init">rebalance_first_init</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_get_exchange_rates">get_exchange_rates</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;
 </code></pre>
 
 
@@ -975,23 +1015,20 @@ Rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_first_init">rebalance_first_init</a>(
-    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
-    _ctx: &<b>mut</b> TxContext
-)
-{
-    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;BUSD&gt;&gt;(
-        &<b>mut</b> _treasury.id,
-        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;()
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_get_exchange_rates">get_exchange_rates</a>(
+    _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+): VecMap&lt;String, u64&gt; {
+    <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;String, u64&gt;();
+    <b>let</b> amount = 1_000_000_000;
+
+    // BUSD
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(
+        &<b>mut</b> rate_map,
+        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;(),
+        <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;BUSD&gt;(_treasury, <b>true</b>, amount)),
     );
-    // first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
-    <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
-        usd_mut_v,
-        &<b>mut</b> _treasury.bfc_balance,
-        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _treasury.supplies, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;()),
-        _treasury.total_bfc_supply,
-        _ctx
-    );
+
+    rate_map
 }
 </code></pre>
 

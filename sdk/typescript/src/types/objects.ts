@@ -435,7 +435,7 @@ export const PaginatedObjectsResponse = object({
 });
 export type PaginatedObjectsResponse = Infer<typeof PaginatedObjectsResponse>;
 
-// mirrors sui_json_rpc_types:: SuiObjectDataFilter
+// mirrors bfc_json_rpc_types:: SuiObjectDataFilter
 export type SuiObjectDataFilter =
 	| { MatchAll: SuiObjectDataFilter[] }
 	| { MatchAny: SuiObjectDataFilter[] }

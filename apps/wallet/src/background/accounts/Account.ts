@@ -5,7 +5,7 @@ import {
 	type SerializedSignature,
 	toSerializedSignature,
 	type Keypair,
-} from '@mysten/sui.js/cryptography';
+} from '@benfen/bfc.js/cryptography';
 import { blake2b } from '@noble/hashes/blake2b';
 import { accountsEvents } from './events';
 import { getDB } from '../db';

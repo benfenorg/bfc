@@ -17,11 +17,12 @@ use mysten_metrics::monitored_scope;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
-use std::fmt::{self, Display, Formatter, Write};
+use std::fmt::{self, Debug, Display, Formatter, Write};
 use sui_json::{primitive_type, SuiJsonValue};
 use sui_types::base_types::{
     EpochId, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 };
+use sui_types::base_types_bfc::bfc_address_util::{objects_id_to_bfc_address, sui_address_to_bfc_address};
 use sui_types::committee::BfcRoundId;
 use sui_types::digests::{ObjectDigest, TransactionEventsDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
@@ -44,7 +45,7 @@ use sui_types::transaction::{
     TransactionKind, VersionedProtocolMessage,
 };
 use sui_types::SUI_FRAMEWORK_ADDRESS;
-
+use std::str::FromStr;
 // similar to EpochId of sui-types but BigInt
 pub type SuiEpochId = BigInt<u64>;
 
@@ -664,14 +665,15 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
 impl Display for SuiTransactionBlockEffects {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut writer = String::new();
-        writeln!(writer, "Status : {:?}", self.status())?;
+        writeln!(writer, "SuiTransactionBlockEffect Status : {:?}", self.status())?;
         if !self.created().is_empty() {
             writeln!(writer, "Created Objects:")?;
             for oref in self.created() {
                 writeln!(
                     writer,
                     "  - ID: {} , Owner: {}",
-                    oref.reference.object_id, oref.owner
+                    objects_id_to_bfc_address(oref.reference.object_id),
+                    oref.owner
                 )?;
             }
         }
@@ -681,20 +683,23 @@ impl Display for SuiTransactionBlockEffects {
                 writeln!(
                     writer,
                     "  - ID: {} , Owner: {}",
-                    oref.reference.object_id, oref.owner
+                    objects_id_to_bfc_address(oref.reference.object_id),
+                    oref.owner
                 )?;
             }
         }
         if !self.deleted().is_empty() {
             writeln!(writer, "Deleted Objects:")?;
             for oref in self.deleted() {
-                writeln!(writer, "  - ID: {}", oref.object_id)?;
+                writeln!(writer, "  - ID: {}",
+                         objects_id_to_bfc_address(oref.object_id))?;
             }
         }
         if !self.wrapped().is_empty() {
             writeln!(writer, "Wrapped Objects:")?;
             for oref in self.wrapped() {
-                writeln!(writer, "  - ID: {}", oref.object_id)?;
+                writeln!(writer, "  - ID: {}",
+                         objects_id_to_bfc_address(oref.object_id))?;
             }
         }
         if !self.unwrapped().is_empty() {
@@ -703,7 +708,8 @@ impl Display for SuiTransactionBlockEffects {
                 writeln!(
                     writer,
                     "  - ID: {} , Owner: {}",
-                    oref.reference.object_id, oref.owner
+                    objects_id_to_bfc_address(oref.reference.object_id),
+                    oref.owner
                 )?;
             }
         }
@@ -961,13 +967,13 @@ impl Display for SuiTransactionBlockData {
         match self {
             Self::V1(data) => {
                 writeln!(f, "{}", data.transaction)?;
-                writeln!(f, "Sender: {}", data.sender)?;
+                writeln!(f, "Sender: {}", sui_address_to_bfc_address(data.sender))?;
                 write!(f, "Gas Payment: ")?;
                 for payment in &self.gas_data().payment {
                     write!(f, "{} ", payment)?;
                 }
                 writeln!(f)?;
-                writeln!(f, "Gas Owner: {}", data.gas_data.owner)?;
+                writeln!(f, "Gas Owner: {}", sui_address_to_bfc_address(data.gas_data.owner))?;
                 writeln!(f, "Gas Price: {}", data.gas_data.price)?;
                 writeln!(f, "Gas Budget: {}", data.gas_data.budget)
             }
@@ -1093,13 +1099,82 @@ pub struct SuiProgrammableTransactionBlock {
 impl Display for SuiProgrammableTransactionBlock {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let Self { inputs, commands } = self;
-        writeln!(f, "Inputs: {inputs:?}")?;
+        writeln!(f, "SuiProgrammableTransactionBlock Inputs: [")?;
+        for input in inputs.iter() {
+            writeln!(f, "  {:?},", convert_string_from_sui_call_arg(input.clone()))?;
+        }
+        writeln!(f, "]")?;
+
         writeln!(f, "Commands: [")?;
         for c in commands {
-            writeln!(f, "  {c},")?;
+            writeln!(f, "  {},", c)?;
         }
         writeln!(f, "]")
     }
+}
+fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow::Error> {
+    let mut writer = String::new();
+    match input {
+        SuiCallArg::Object(SuiObjectArg::ImmOrOwnedObject {
+                               object_id,
+                               version,
+                               digest,
+                           }) => {
+            write!(writer, "SuiCallArg Object: {} ", objects_id_to_bfc_address(object_id.clone()))?;
+            write!(writer, "version: {:?} ", version)?;
+            write!(writer, "digest: {:?} ", digest)?;
+        }
+        SuiCallArg::Object(SuiObjectArg::SharedObject {
+                               object_id,
+                               initial_shared_version,
+                               mutable,
+                           }) => {
+            write!(writer, "SuiCallArg Object: {} ", objects_id_to_bfc_address(object_id.clone()))?;
+            write!(writer, "initial_shared_version: {:?} ", initial_shared_version)?;
+            write!(writer, "mutable: {:?} ", mutable)?;
+        }
+        SuiCallArg::Pure(SuiPureValue { value_type, value }) => {
+            write!(writer, "SuiCallArg Pure: {:?} ", value_type)?;
+            let json_value = value.to_json_value();
+
+            match value_type {
+                Some(TypeTag::Address) => {
+                    //todo,
+                    if json_value.as_str() != None {
+                        //
+                        // write!(writer, "value: {:?} ", json_value)?;
+                        let address = json_value.as_str().unwrap();
+                        if address.starts_with("bfc") || address.starts_with("BFC"){
+                            write!(writer, "value: {} ", address)?;
+                        }else{
+                            let sui_address = SuiAddress::from_str(&json_value.as_str().unwrap()).unwrap();
+                            let bfc_address = sui_address_to_bfc_address(sui_address);
+                            write!(writer, "value: {} ", bfc_address)?;
+                        }
+                    }
+                }
+                Some(TypeTag::Signer) => {
+                    //todo,
+                    write!(writer, "value: {:?} ", json_value)?;
+                }
+                Some(TypeTag::Struct(_)) => {
+                    //todo,
+                    write!(writer, "value: {:?} ", json_value)?;
+                }
+                _ => {
+                    write!(writer, "value: {:?} ", json_value)?;
+                }
+            }
+
+        }
+        _ => {
+            //write!(writer, "value: {:?} ", json_value)?;
+        }
+
+
+    }
+
+    Ok(writer)
 }
 
 impl SuiProgrammableTransactionBlock {
@@ -1578,8 +1653,11 @@ impl SuiCallArg {
     }
 }
 
+
+
+
 #[serde_as]
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Eq, PartialEq,Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct SuiPureValue {
     #[schemars(with = "Option<String>")]
@@ -1597,6 +1675,9 @@ impl SuiPureValue {
         self.value_type.clone()
     }
 }
+
+
+
 
 #[serde_as]
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize, JsonSchema)]

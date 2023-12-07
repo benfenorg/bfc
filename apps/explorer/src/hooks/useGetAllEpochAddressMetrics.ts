@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SuiClient } from '@benfen/bfc.js/client';
 import { useSuiClient } from '@mysten/dapp-kit';
-import { type SuiClient } from '@mysten/sui.js/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetAllEpochAddressMetrics(

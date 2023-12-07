@@ -4,7 +4,7 @@
 import { Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { KioskOwnerCap } from '@mysten/kiosk';
-import { formatAddress } from '@mysten/sui.js/utils';
+import { formatAddress } from '@benfen/bfc.js/utils';
 import classNames from 'classnames';
 
 export function KioskSelector({

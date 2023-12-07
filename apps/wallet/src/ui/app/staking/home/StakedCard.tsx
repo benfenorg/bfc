@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG, type SuiAddress, type StakeObject } from '@benfen/bfc.js';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
-import { SUI_TYPE_ARG, type SuiAddress, type StakeObject } from '@mysten/sui.js';
 import { cx, cva, type VariantProps } from 'class-variance-authority';
 import { Link } from 'react-router-dom';
 

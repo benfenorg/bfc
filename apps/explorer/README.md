@@ -42,7 +42,7 @@ If you want to use the explorer with another network, you can select your prefer
 Start validators locally:
 
 ```bash
-cargo run --bin sui-test-validator
+cargo run --bin bfc-test-validator
 ```
 
 In a a separate terminal, you can now run the end-to-end tests:

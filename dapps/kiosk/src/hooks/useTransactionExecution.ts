@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useWalletKit } from '@mysten/wallet-kit';
-import { SuiTransactionBlockResponseOptions } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { useWalletKit } from '@benfen/wallet-kit';
+import { SuiTransactionBlockResponseOptions } from '@benfen/bfc.js/client';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 
 import { useRpc } from '../context/RpcClientContext';
 

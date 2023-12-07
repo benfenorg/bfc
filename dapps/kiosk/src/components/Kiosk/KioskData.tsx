@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useWalletKit } from '@mysten/wallet-kit';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { Tab } from '@headlessui/react';
 import { OwnedObjects } from '../Inventory/OwnedObjects';
 import { KioskItems } from './KioskItems';
-import { formatAddress } from '@mysten/sui.js/utils';
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { ExplorerLink } from '../Base/ExplorerLink';
 import { formatSui, mistToSui } from '../../utils/utils';
 import { toast } from 'react-hot-toast';

@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiClient } from '@mysten/sui.js/client';
+import { type SuiClient } from '@benfen/bfc.js/client';
 import {
 	type SerializedSignature,
 	toSerializedSignature,
 	type SignatureScheme,
-} from '@mysten/sui.js/cryptography';
-import { Ed25519PublicKey } from '@mysten/sui.js/keypairs/ed25519';
+} from '@benfen/bfc.js/cryptography';
+import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 import { WalletSigner } from './WalletSigner';
 
 import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';

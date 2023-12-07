@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { TypeName } from '@mysten/bcs';
-import { BCS } from '@mysten/bcs';
+import type { TypeName } from '@benfen/bcs';
+import { BCS } from '@benfen/bcs';
 import { bcs } from '../bcs/index.js';
 import type { TypeTag } from '../bcs/index.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
 import type { TransactionArgument, MoveCallTransaction } from './Transactions.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeSuiAddress } from '../utils/bfc-types.js';
 
 export const ARGUMENT_INNER = 'Argument';
 export const VECTOR = 'vector';
@@ -61,7 +61,7 @@ builder
 		type_arguments: [VECTOR, TYPE_TAG],
 		arguments: [VECTOR, ARGUMENT],
 	})
-	// Keep this in sync with crates/sui-types/src/messages.rs
+	// Keep this in sync with crates/bfc-types/src/messages.rs
 	.registerEnumType(TRANSACTION_INNER, {
 		/**
 		 * A Move Call - any public Move function can be called via

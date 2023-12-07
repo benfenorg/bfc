@@ -6,15 +6,30 @@ import { useEffect, useState } from 'react';
 import { styled } from './stitches';
 import { Button, Panel } from './utils/ui';
 import { BackIcon } from './utils/icons';
-import { WhatIsAWallet } from './WhatIsAWallet';
+import { WhatIsAWallet, Props as WhatIsAWalletProps } from './WhatIsAWallet';
 import { Body, CloseButton, Content, Overlay, Title } from './utils/Dialog';
 import { SELECTED_GETTING_STARTED, WalletList } from './WalletList';
-import { GettingStarted } from './GettingStarted';
+import { GettingStarted, Props as GettingStartedProps } from './GettingStarted';
 import { useWalletKit } from './WalletKitContext';
 
 export interface ConnectModalProps {
 	open: boolean;
 	onClose(): void;
+	text?: {
+		opening: string;
+		connectionFailed: string;
+		confirmConnection: string;
+		retryConnection: string;
+		getStarted: string;
+		installWallet: string;
+		whatIsAWallet?: WhatIsAWalletProps & {
+			title: string;
+		};
+		walletList?: {
+			connectWallet: string;
+		};
+		gettingStarted?: GettingStartedProps;
+	};
 }
 
 const BackButton = styled('button', {
@@ -123,7 +138,7 @@ const MobileInfoButton = styled('button', {
 
 const SELECTED_INFO = '@@internal/what-is-wallet';
 
-export function ConnectModal({ open, onClose }: ConnectModalProps) {
+export function ConnectModal({ open, onClose, text }: ConnectModalProps) {
 	const { connect, currentWallet, isConnected, isError } = useWalletKit();
 	const [selected, setSelected] = useState<string | null>(null);
 
@@ -152,9 +167,10 @@ export function ConnectModal({ open, onClose }: ConnectModalProps) {
 								setSelected(walletName);
 								connect(walletName);
 							}}
+							{...text?.walletList}
 						/>
 						<MobileInfoButton onClick={() => setSelected(SELECTED_INFO)}>
-							What is a Wallet
+							{text?.whatIsAWallet?.title || 'What is a Wallet'}
 						</MobileInfoButton>
 					</LeftPanel>
 
@@ -165,43 +181,51 @@ export function ConnectModal({ open, onClose }: ConnectModalProps) {
 
 						{!selected || selected === SELECTED_INFO ? (
 							<>
-								<Title css={{ textAlign: 'center' }}>What is a Wallet</Title>
+								<Title css={{ textAlign: 'center' }}>
+									{text?.whatIsAWallet?.title || 'What is a Wallet'}
+								</Title>
 
 								<BodyCopy>
-									<WhatIsAWallet />
+									<WhatIsAWallet {...text?.whatIsAWallet} />
 								</BodyCopy>
 							</>
 						) : selected && selected !== SELECTED_GETTING_STARTED ? (
 							<BodyCopy>
 								<SelectedWalletIcon src={currentWallet?.icon} />
-								<OpeningWalletTitle>Opening {selected}</OpeningWalletTitle>
+								<OpeningWalletTitle>
+									{text?.opening || 'Opening'} {selected}
+								</OpeningWalletTitle>
 								<ConnectionText isError={isError}>
-									{isError ? 'Connection failed' : 'Confirm connection in the wallet...'}
+									{isError
+										? text?.connectionFailed || 'Connection failed'
+										: text?.confirmConnection || 'Confirm connection in the wallet...'}
 								</ConnectionText>
 
 								{isError && (
 									<ButtonContainer>
 										<Button color="secondary" onClick={() => connect(selected)}>
-											Retry Connection
+											{text?.retryConnection || 'Retry Connection'}
 										</Button>
 									</ButtonContainer>
 								)}
 							</BodyCopy>
 						) : (
 							<>
-								<Title css={{ textAlign: 'center' }}>Get Started with Sui</Title>
+								<Title css={{ textAlign: 'center' }}>
+									{text?.getStarted || 'Get Started with BenFen'}{' '}
+								</Title>
 
 								<BodyCopy>
-									<GettingStarted />
+									<GettingStarted {...text?.gettingStarted} />
 									<ButtonContainer>
 										<Button
 											as="a"
 											color="secondary"
-											href="https://chrome.google.com/webstore/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil"
+											href="https://openblock.com/#/download"
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											Install Wallet Extension
+											{text?.installWallet || 'Install Wallet Extension'}
 										</Button>
 									</ButtonContainer>
 								</BodyCopy>

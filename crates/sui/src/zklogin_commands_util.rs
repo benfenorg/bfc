@@ -97,7 +97,7 @@ pub async fn perform_zk_login_test_tx(
         .await?
         .next_cursor
         else {
-            panic!("Faucet did not work correctly and the provided Sui address has no coins")
+            panic!("Faucet did not work correctly and the provided Bfc address has no coins")
         };
     let txb_res = sui
         .transaction_builder()

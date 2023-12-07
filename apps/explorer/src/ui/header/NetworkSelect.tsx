@@ -11,14 +11,13 @@
 import { autoUpdate, flip, FloatingPortal, offset, shift, useFloating } from '@floating-ui/react';
 import { Popover } from '@headlessui/react';
 import { useZodForm } from '@mysten/core';
-import { Text } from '@mysten/ui';
+import { TriangleDown14 } from '@mysten/icons';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 
 import { NavItem } from './NavItem';
-import { ReactComponent as CheckIcon } from '../icons/check_16x16.svg';
 import { ReactComponent as ChevronDownIcon } from '../icons/chevron_down.svg';
 import { ReactComponent as MenuIcon } from '../icons/menu.svg';
 
@@ -56,26 +55,41 @@ function SelectableNetwork({ state, children, onClick, ...props }: SelectableNet
 			role="button"
 			onClick={onClick}
 			className={clsx(
-				'flex items-start gap-3 rounded-md px-1.25 py-2 text-body font-semibold hover:bg-gray-40 ui-active:bg-gray-40',
-				state !== NetworkState.UNSELECTED ? 'text-steel-darker' : 'text-steel-dark',
+				'flex items-center rounded px-1.5 py-[7px] text-body/[18px] font-normal text-bfc-text2 hover:bg-bfc-card ui-active:bg-bfc-card',
+				state !== NetworkState.UNSELECTED ? 'text-bfc-text1' : 'text-bfc-text2',
 			)}
 			{...props}
 		>
-			<CheckIcon
-				className={clsx('flex-shrink-0', {
-					'text-success': state === NetworkState.SELECTED,
-					'text-steel': state === NetworkState.PENDING,
-					'text-gray-45': state === NetworkState.UNSELECTED,
-				})}
-			/>
-			<div className="mt-px">
-				<Text
-					variant="body/semibold"
-					color={state === NetworkState.SELECTED ? 'steel-darker' : 'steel-dark'}
-				>
-					{children}
-				</Text>
+			<div
+				className={clsx(
+					'grow text-body/[18px]',
+					state === NetworkState.SELECTED ? 'text-bfc-text1' : 'text-bfc-text2',
+				)}
+			>
+				{children}
 			</div>
+			{state === NetworkState.SELECTED && (
+				<svg
+					className="ml-1"
+					width="14"
+					height="14"
+					viewBox="0 0 14 14"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<g clipPath="url(#clip0_3216_2411)">
+						<path
+							d="M5.83343 8.85041L11.1954 3.48782L12.0208 4.31266L5.83343 10.5001L2.12109 6.78774L2.94593 5.96291L5.83343 8.85041Z"
+							fill="#171719"
+						/>
+					</g>
+					<defs>
+						<clipPath id="clip0_3216_2411">
+							<rect width="14" height="14" fill="white" />
+						</clipPath>
+					</defs>
+				</svg>
+			)}
 		</div>
 	);
 }
@@ -140,13 +154,9 @@ function NetworkVersion({
 	binaryVersion: string;
 }) {
 	return (
-		<div className="flex flex-col justify-between px-4 py-2">
-			<Text variant="subtitle/normal" color="steel">
-				BFC {label}
-			</Text>
-			<Text variant="subtitle/normal" color="steel">
-				v{binaryVersion} (Protocol {version})
-			</Text>
+		<div className="flex flex-col justify-between border-t border-bfc-border px-1.5 py-[7px] text-body/[18px] text-bfc-text3">
+			BFC {label}
+			<br />v{binaryVersion} (Protocol {version})
 		</div>
 	);
 }
@@ -225,17 +235,17 @@ export function NetworkSelect({
 		<Popover>
 			{({ open, close }) => (
 				<>
-					<Popover.Button
-						ref={refs.setReference}
-						as={NavItem}
-						isDarker={isDarker}
-						afterIcon={<ResponsiveIcon />}
-					>
-						<div className="hidden md:block">
-							<Text variant="body/semibold" color="steel-dark">
-								{selected?.label || 'Custom'}
-							</Text>
+					<Popover.Button ref={refs.setReference} className="w-full">
+						<div className="flex w-full items-center justify-center gap-1 rounded-lg bg-bfc-card p-2.5 text-bodyLarge/[20px] font-semibold text-bfc md:hidden">
+							{selected?.label || 'Custom'}
+							<TriangleDown14 className={clsx(open ? 'rotate-180' : '')} />
 						</div>
+						<NavItem isDarker={isDarker} className="hidden md:flex">
+							<div className="flex items-center gap-1">
+								{selected?.label || 'Custom'}
+								<ResponsiveIcon />
+							</div>
+						</NavItem>
 					</Popover.Button>
 					<FloatingPortal>
 						<AnimatePresence>
@@ -257,7 +267,7 @@ export function NetworkSelect({
 										scale: 0.95,
 									}}
 									transition={{ duration: 0.15 }}
-									className="z-20 flex w-52 flex-col gap-2 rounded-lg border border-steel-dark border-opacity-10 bg-white px-3 py-4 shadow-lg focus:outline-none"
+									className="z-20 flex w-[calc(100%-40px)] flex-col rounded-lg border border-bfc-border bg-white p-1 shadow-[0px_16px_16px_0px_rgba(20,21,24,0.05)] md:w-auto"
 									style={{
 										position: strategy,
 										top: y ?? 0,
@@ -273,13 +283,11 @@ export function NetworkSelect({
 										}}
 									/>
 									{!!value && version && binaryVersion ? (
-										<div className="-mx-3 -mb-4 mt-2 rounded-b-lg bg-gray-40">
-											<NetworkVersion
-												label={selected?.label ?? 'Custom RPC'}
-												binaryVersion={binaryVersion}
-												version={version}
-											/>
-										</div>
+										<NetworkVersion
+											label={selected?.label ?? 'Custom RPC'}
+											binaryVersion={binaryVersion}
+											version={version}
+										/>
 									) : null}
 								</Popover.Panel>
 							)}

@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useFeatureValue } from '@growthbook/growthbook-react';
 import { useSuiClient } from '@mysten/dapp-kit';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 import { useQuery } from '@tanstack/react-query';
 
 import { FEATURES } from '_src/shared/experimentation/features';

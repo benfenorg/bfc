@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type ApyByValidator, formatPercentageDisplay } from '@mysten/core';
-import { sui2BfcAddress } from '@mysten/sui.js';
-import { type SuiEvent, type SuiValidatorSummary } from '@mysten/sui.js/client';
+import { sui2BfcAddress } from '@benfen/bfc.js';
+import { type SuiEvent, type SuiValidatorSummary } from '@benfen/bfc.js/client';
 import { Text } from '@mysten/ui';
 
 import { StakeColumn } from '~/components/top-validators-card/StakeColumn';

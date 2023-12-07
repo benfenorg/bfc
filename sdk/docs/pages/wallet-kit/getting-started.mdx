@@ -3,20 +3,20 @@
 ### Installation
 
 To install the
-[React Sui Wallet Kit library from npm](https://www.npmjs.com/package/@mysten/wallet-kit), along
+[React Sui Wallet Kit library from npm](https://www.npmjs.com/package/@benfen/wallet-kit), along
 with the Sui TypeScript SDK:
 
 ```bash
-npm install @mysten/wallet-kit @mysten/sui.js
+npm install @benfen/wallet-kit @benfen/bfc.js
 ```
 
 ### Configuring the Sui Wallet Kit Provider
 
-After you install the `@mysten/wallet-kit` package, you need to wrap your application with the
+After you install the `@benfen/wallet-kit` package, you need to wrap your application with the
 `WalletKitProvider`.
 
 ```tsx
-import { WalletKitProvider } from '@mysten/wallet-kit';
+import { WalletKitProvider } from '@benfen/wallet-kit';
 
 function App() {
   return (
@@ -33,7 +33,7 @@ After you wrap your app with the `WalletKitProvider`, add a `ConnectButton` comp
 click to connect their wallet to your dApp.
 
 ```tsx
-import { ConnectButton } from '@mysten/wallet-kit';
+import { ConnectButton } from '@benfen/wallet-kit';
 
 export function YourApp() {
 	return <ConnectButton />;

@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { mnemonicToSeedHex } from '@mysten/sui.js/cryptography';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { mnemonicToSeedHex } from '@benfen/bfc.js/cryptography';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import { sha256 } from '@noble/hashes/sha256';
 
 import { bytesToHex } from '@noble/hashes/utils';

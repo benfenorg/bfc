@@ -15,7 +15,7 @@ import {
 	WalletKitCore,
 	WalletKitCoreOptions,
 	WalletKitCoreState,
-} from '@mysten/wallet-kit-core';
+} from '@benfen/wallet-kit-core';
 import { registerUnsafeBurnerWallet } from './UnsafeBurnerWallet';
 
 export const WalletKitContext = createContext<WalletKitCore | null>(null);

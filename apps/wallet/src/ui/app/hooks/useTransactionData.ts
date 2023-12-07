@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG } from '@benfen/bfc.js';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useFormatCoin } from '@mysten/core';
 import { useSuiClient } from '@mysten/dapp-kit';
-import { SUI_TYPE_ARG } from '@mysten/sui.js';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useQuery } from '@tanstack/react-query';
 
 export function useTransactionData(sender?: string | null, transaction?: TransactionBlock | null) {

@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiClient } from '@mysten/sui.js/client';
+import { type SuiClient } from '@benfen/bfc.js/client';
 import { WalletSigner } from '../WalletSigner';
 
 import type { BackgroundClient } from '.';
-import type { SerializedSignature } from '@mysten/sui.js/cryptography';
+import type { SerializedSignature } from '@benfen/bfc.js/cryptography';
 
 export class BackgroundServiceSigner extends WalletSigner {
 	readonly #address: string;

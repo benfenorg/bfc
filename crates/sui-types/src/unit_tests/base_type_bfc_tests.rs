@@ -26,7 +26,6 @@ mod tests {
         println!("the evm convert result is {}", result);
 
         let sui_address = bfc_address_util::convert_to_bfc_address(
-            "BFC",
             "0xd62ca040aba24f862a763851c54908cd2a0ee7d709c11b93d4a2083747b76857",
         );
         println!("the bfc convert result is {}", sui_address);

@@ -4,7 +4,7 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import classnames from 'classnames';
-import { normalizeSuiAddress } from '@mysten/sui.js/utils';
+import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
 
 export default function FindKiosk() {
 	const { id } = useParams();

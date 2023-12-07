@@ -10,7 +10,7 @@ export const EventId = object({
 	eventSeq: string(),
 });
 
-// event types mirror those in "sui-json-rpc-types/src/sui_event.rs"
+// event types mirror those in "bfc-json-rpc-types/src/sui_event.rs"
 
 export const SuiEvent = object({
 	id: EventId,
@@ -45,7 +45,7 @@ export type MoveEventField = {
  */
 export type EventId = Infer<typeof EventId>;
 
-// mirrors sui_json_rpc_types::SuiEventFilter
+// mirrors bfc_json_rpc_types::SuiEventFilter
 export type SuiEventFilter =
 	| { Package: string }
 	| { MoveModule: { package: string; module: string } }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetObject } from '@mysten/core';
-import { sui2BfcAddress } from '@mysten/sui.js';
+import { sui2BfcAddress } from '@benfen/bfc.js';
 import { LoadingIndicator } from '@mysten/ui';
 import { useParams } from 'react-router-dom';
 

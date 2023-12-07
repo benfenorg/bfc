@@ -1,12 +1,12 @@
 # SuiClient
 
-The `SuiClient` can be imported from `@mysten/sui.js/client` and is used to make RPC request to the
+The `SuiClient` can be imported from `@benfen/bfc.js/client` and is used to make RPC request to the
 Sui network.
 
 ## Usage
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 // create a client connected to devnet
 const client = new SuiClient({ url: getFullnodeUrl('devnet') });
@@ -28,7 +28,7 @@ Client has built in methods for most RPC methods, but if there are methods missi
 be called manually using the `call` method of the `SuiClient`.
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({ url: getFullnodeUrl('devnet') });
 const committeeInfo = await client.call('suix_getCommitteeInfo', []);
@@ -43,7 +43,7 @@ In addition to calling RPC methods, the `SuiClient` also supports a few methods 
 events:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -67,7 +67,7 @@ await unsubscribe();
 Similar to subscribing to events, the `SuiClient` also supports subscribing to transactions:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -94,7 +94,7 @@ You can construct a custom transport instance if you need to pass any custom opt
 headers or timeout values.
 
 ```typescript
-import { SuiClient, SuiHTTPTransport, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, SuiHTTPTransport, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	transport: new SuiHTTPTransport({

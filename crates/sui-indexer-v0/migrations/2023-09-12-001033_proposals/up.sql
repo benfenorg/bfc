@@ -18,4 +18,5 @@ CREATE TABLE dao_proposals (
   description     TEXT      NOT NULL
 );
 
-CREATE UNIQUE INDEX action_id_pid_uniq ON dao_proposals(action_id, pid);
+CREATE UNIQUE INDEX dao_proposals_pid_action_id_uniq ON dao_proposals(pid, action_id);
+CREATE INDEX dao_proposals_proposer ON dao_proposals(proposer);

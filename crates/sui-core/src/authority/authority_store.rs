@@ -1657,7 +1657,7 @@ impl AuthorityStore {
         }
 
         let executor = old_epoch_store.executor();
-        info!("Starting SUI conservation check. This may take a while..");
+        info!("Starting BFC conservation check. This may take a while..");
         let cur_time = Instant::now();
         let mut pending_objects = vec![];
         let mut count = 0;
@@ -1732,7 +1732,7 @@ impl AuthorityStore {
             .into_sui_system_state_summary();
         let storage_fund_balance = system_state.storage_fund_total_object_storage_rebates;
         info!(
-            "Total SUI amount in the network: {}, storage fund balance: {},  total storage rebate: {} at beginning of epoch {}",
+            "Total BFC amount in the network: {}, storage fund balance: {},  total storage rebate: {} at beginning of epoch {}",
             total_sui, storage_fund_balance, total_storage_rebate, system_state.epoch
         );
 
@@ -1780,7 +1780,7 @@ impl AuthorityStore {
                 total_sui == expected_sui,
                 SuiError::from(
                     format!(
-                        "Inconsistent state detected at epoch {}: total sui: {}, expecting {}",
+                        "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
                         system_state.epoch, total_sui, expected_sui
                     )
                     .as_str()

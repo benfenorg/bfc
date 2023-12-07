@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getTransactionDigest } from '@benfen/bfc.js';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useGetKioskContents, isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import { useSuiClient } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
-import { getTransactionDigest } from '@mysten/sui.js';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field, Formik } from 'formik';
 import { toast } from 'react-hot-toast';

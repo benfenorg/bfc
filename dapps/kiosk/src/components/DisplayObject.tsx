@@ -4,7 +4,7 @@
 import { ReactNode } from 'react';
 import { OwnedObjectType } from './Inventory/OwnedObjects';
 import { KioskListing } from '@mysten/kiosk';
-import { useWalletKit } from '@mysten/wallet-kit';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { formatSui, mistToSui } from '../utils/utils';
 import { ItemLockedBadge } from './Kiosk/ItemLockedBadge';
 import { DEFAULT_IMAGE } from '../utils/constants';

@@ -24,7 +24,7 @@ Here are some indicative examples on how to use the kiosk SDK.
 
 ```typescript
 import { getOwnedKiosks } from '@mysten/kiosk';
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiClient } from '@benfen/bfc.js/client';
 
 const client = new SuiClient(
   url: 'https://fullnode.testnet.sui.io:443',
@@ -46,7 +46,7 @@ const getUserKiosks = async () => {
 
 ```typescript
 import { fetchKiosk } from '@mysten/kiosk';
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiClient } from '@benfen/bfc.js/client';
 
 const client = new SuiClient(
 	url: 'https://fullnode.testnet.sui.io:443',
@@ -73,7 +73,7 @@ const getKiosk = async () => {
 
 ```typescript
 import { queryTransferPolicy, purchaseAndResolvePolicies, place, testnetEnvironment } from '@mysten/kiosk';
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiClient } from '@benfen/bfc.js/client';
 
 const client = new SuiClient(
   url: 'https://fullnode.testnet.sui.io:443',
@@ -136,7 +136,7 @@ const purchaseItem = async (item, kioskId) => {
 
 ```typescript
 import { createKioskAndShare } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 
 const createKiosk = async () => {
 	const accountAddress = '0xSomeSuiAddress';
@@ -158,7 +158,7 @@ const createKiosk = async () => {
 
 ```typescript
 import { placeAndList } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 
 const placeAndListToKiosk = async () => {
 	const kiosk = 'SomeKioskId';
@@ -183,7 +183,7 @@ const placeAndListToKiosk = async () => {
 
 ```typescript
 import { withdrawFromKiosk } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 
 const withdraw = async () => {
 	const kiosk = 'SomeKioskId';
@@ -223,7 +223,7 @@ above.
 
 ```typescript
 import { createTransferPolicy } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js';
+import { TransactionBlock } from '@benfen/bfc.js';
 
 const createPolicyForType = async () => {
 	const type = 'SomePackageId::type::MyType'; // the Type for which we're creating a Transfer Policy.
@@ -255,7 +255,7 @@ import {
 	testnetEnvironment,
 	percentageToBasisPoints,
 } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js';
+import { TransactionBlock } from '@benfen/bfc.js';
 
 // Attaches a royalty rule of 1% or 0.1 SUI (whichever is bigger)
 // as well as a kiosk lock, making the objects trade-able only from/to a kiosk.

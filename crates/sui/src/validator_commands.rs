@@ -37,6 +37,7 @@ use sui_keys::{
 };
 use sui_sdk::wallet_context::WalletContext;
 use sui_sdk::SuiClient;
+use sui_types::base_types_bfc::bfc_address_util::{objects_id_to_bfc_address, sui_address_to_bfc_address};
 use sui_types::crypto::{
     generate_proof_of_possession, get_authority_key_pair, AuthorityPublicKeyBytes,
 };
@@ -44,12 +45,11 @@ use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKe
 use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
 use crate::fire_drill::get_gas_obj_ref;
 //use crate::{call_0x5, construct_unsigned_0x5_txn};
-
 #[path = "unit_tests/validator_tests.rs"]
 #[cfg(test)]
 mod validator_tests;
 
-const DEFAULT_GAS_BUDGET: u64 = 200_000_000; // 0.2 SUI
+const DEFAULT_GAS_BUDGET: u64 = 200_000_000; // 0.2 Bfc
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]
@@ -119,7 +119,7 @@ pub enum SuiValidatorCommand {
         /// Validator's OperationCap ID can be found by using the `display-metadata` subcommand.
         #[clap(name = "operation-cap-id", long)]
         operation_cap_id: Option<ObjectID>,
-        /// The Sui Address of the validator is being reported or un-reported
+        /// The Bfc Address of the validator is being reported or un-reported
         #[clap(name = "reportee-address")]
         reportee_address: SuiAddress,
         /// If true, undo an existing report.
@@ -191,7 +191,7 @@ fn make_key_files(
         let kp = match key {
             Some(key) => {
                 println!(
-                    "Generated new key file {:?} based on sui.keystore file.",
+                    "Generated new key file {:?} based on bfc.keystore file.",
                     file_name
                 );
                 key
@@ -359,7 +359,7 @@ impl SuiValidatorCommand {
                 let validator_address = validator_address.unwrap_or(context.active_address()?);
                 // Default display with json serialization for better UX.
                 let sui_client = context.get_client().await?;
-                display_metadata(&sui_client, validator_address, json.unwrap_or(true)).await?;
+                display_metadata(&sui_client, validator_address, json.unwrap_or(false)).await?;
                 SuiValidatorCommandResponse::DisplayMetadata
             }
 
@@ -675,15 +675,30 @@ impl Display for SuiValidatorCommandResponse {
                 data,
                 serialized_data,
             } => {
-                write!(
-                    writer,
-                    "Transaction: {:?}, \nSerialized transaction: {:?}",
-                    data, serialized_data
-                )?;
+
+                convert_transaction_to_string(data, f);
+                write!(writer, "\nSerialized transaction: {:?}", serialized_data)?;
             }
         }
         write!(f, "{}", writer.trim_end_matches('\n'))
     }
+}
+
+pub fn convert_transaction_to_string(data: &TransactionData, f: &mut Formatter<'_>) -> std::fmt::Result {
+
+    let mut writer = String::new();
+    writeln!(writer, "TransactionData: ")?;
+    match data {
+        TransactionData::V1(data1) => {
+            writeln!(writer, "Transaction Kind: {}",data1.kind)?;
+            writeln!(writer, "Sender: {}, \n", data1.sender)?;
+            writeln!(writer, "Gas_data: {:?}, \n", data1.gas_data)?;
+            writeln!(writer, "Expiration: {:?}, \n", data1.expiration)?;
+        },
+        _ => {
+        }
+    }
+    write!(f, "{}", writer.trim_end_matches('\n'))
 }
 
 pub fn write_transaction_response(
@@ -785,23 +800,87 @@ pub async fn get_validator_summary(
 async fn display_metadata(
     client: &SuiClient,
     validator_address: SuiAddress,
-    json: bool,
+    _: bool,
 ) -> anyhow::Result<()> {
     match get_validator_summary(client, validator_address).await? {
-        None => println!(
-            "{} is not an active or pending Validator.",
-            validator_address
-        ),
+        None => {
+            let bfc_address = sui_address_to_bfc_address(validator_address);
+            println!("{} is not an active or pending Validator.", bfc_address)
+        },
+
         Some((status, info)) => {
-            println!("{}'s valdiator status: {:?}", validator_address, status);
-            if json {
-                println!("{}", serde_json::to_string_pretty(&info)?);
-            } else {
-                println!("{:#?}", info);
-            }
+            let bfc_address = sui_address_to_bfc_address(validator_address);
+            println!("{}'s valdiator status: {:?}", bfc_address, status);
+            let output = convert_validator_summary_to_string(&info);
+            println!("{}", output);
+
+            // if json {
+            //     println!("{}", serde_json::to_string_pretty(&info)?);
+            // } else {
+            //     println!("{:#?}", info);
+            // }
         }
     }
     Ok(())
+}
+
+fn convert_validator_summary_to_string(info: &SuiValidatorSummary) -> String {
+    let mut output = String::new();
+
+    output.push_str(&format!("Validator Summary:\n"));
+    let bfc_address = sui_address_to_bfc_address(info.sui_address.clone());
+    output.push_str(&format!("  sui_address: {}\n", bfc_address));
+    output.push_str(&format!("  protocol_pubkey_bytes: {:?}\n", info.protocol_pubkey_bytes));
+    output.push_str(&format!("  network_pubkey_bytes: {:?}\n", info.network_pubkey_bytes));
+    output.push_str(&format!("  worker_pubkey_bytes: {:?}\n", info.worker_pubkey_bytes));
+    output.push_str(&format!("  proof_of_possession_bytes: {:?}\n", info.proof_of_possession_bytes)); //proof_of_possession_bytes
+    output.push_str(&format!("  name: {}\n", info.name));
+    output.push_str(&format!("  description: {}\n", info.description));
+    output.push_str(&format!("  image_url: {}\n", info.image_url));
+    output.push_str(&format!("  project_url: {}\n", info.project_url));
+    output.push_str(&format!("  net_address: {}\n", info.net_address));
+    output.push_str(&format!("  p2p_address: {}\n", info.p2p_address));
+    output.push_str(&format!("  primary_address: {}\n", info.primary_address));
+    output.push_str(&format!("  worker_address: {}\n", info.worker_address));
+    output.push_str(&format!("  next_epoch_protocol_pubkey_bytes: {:?}\n", info.next_epoch_protocol_pubkey_bytes));
+    output.push_str(&format!("  next_epoch_proof_of_possession: {:?}\n", info.next_epoch_proof_of_possession));
+    output.push_str(&format!("  next_epoch_network_pubkey_bytes: {:?}\n", info.next_epoch_network_pubkey_bytes));
+    output.push_str(&format!("  next_epoch_worker_pubkey_bytes: {:?}\n", info.next_epoch_worker_pubkey_bytes));
+    output.push_str(&format!("  next_epoch_net_address: {:?}\n", info.next_epoch_net_address));
+    output.push_str(&format!("  next_epoch_p2p_address: {:?}\n", info.next_epoch_p2p_address));
+    output.push_str(&format!("  next_epoch_primary_address: {:?}\n", info.next_epoch_primary_address));
+    output.push_str(&format!("  next_epoch_worker_address: {:?}\n", info.next_epoch_worker_address));
+
+    output.push_str(&format!("  voting_power: {}\n", info.voting_power));
+
+    let operation_cap_id = objects_id_to_bfc_address(info.operation_cap_id.clone());
+    output.push_str(&format!("  operation_cap_id: {}\n", operation_cap_id));
+    output.push_str(&format!("  gas_price: {}\n", info.gas_price));
+    output.push_str(&format!("  commission_rate: {}\n", info.commission_rate));
+    output.push_str(&format!("  next_epoch_stake: {}\n", info.next_epoch_stake));
+    output.push_str(&format!("  next_epoch_gas_price: {}\n", info.next_epoch_gas_price));
+
+    output.push_str(&format!("  next_epoch_commission_rate: {}\n", info.next_epoch_commission_rate));
+
+    let staking_pool_id = objects_id_to_bfc_address(info.staking_pool_id.clone());
+    output.push_str(&format!("  staking_pool_id: {}\n", staking_pool_id));
+    output.push_str(&format!("  staking_pool_activation_epoch: {:?}\n", info.staking_pool_activation_epoch));
+    output.push_str(&format!("  staking_pool_deactivation_epoch: {:?}\n", info.staking_pool_deactivation_epoch));
+
+    output.push_str(&format!("  staking_pool_sui_balance: {:?}\n", info.staking_pool_sui_balance));
+    output.push_str(&format!("  rewards_pool: {:?}\n", info.rewards_pool));
+    output.push_str(&format!("  pool_token_balance: {:?}\n", info.pool_token_balance));
+    output.push_str(&format!("  pending_stake: {:?}\n", info.pending_stake));
+
+    output.push_str(&format!("  pending_total_sui_withdraw: {:?}\n", info.pending_total_sui_withdraw));
+    output.push_str(&format!("  pending_pool_token_withdraw: {:?}\n", info.pending_pool_token_withdraw));
+
+    let exchange_rates_id =  objects_id_to_bfc_address(info.exchange_rates_id.clone());
+    output.push_str(&format!("  exchange_rates_id: {}\n", exchange_rates_id));
+    output.push_str(&format!("  exchange_rates_size: {:?}\n", info.exchange_rates_size));
+
+
+    output
 }
 
 async fn get_pending_candidate_summary(
@@ -828,15 +907,18 @@ async fn get_pending_candidate_summary(
         // We always expect an objectId from the response as one of data/error should be included.
         let object_id = resp.object_id()?;
         let bcs = resp.move_object_bcs().ok_or_else(|| {
+            let bfc_address = objects_id_to_bfc_address(object_id.clone());
             anyhow::anyhow!(
                 "Object {} does not exist or does not return bcs bytes",
-                object_id
+                bfc_address
             )
         })?;
         let val = bcs::from_bytes::<ValidatorV1>(bcs).map_err(|e| {
+
+            let bfc_address = objects_id_to_bfc_address(object_id.clone());
             anyhow::anyhow!(
                 "Can't convert bcs bytes of object {} to ValidatorV1: {}",
-                object_id,
+                 bfc_address,
                 e,
             )
         })?;
@@ -1019,13 +1101,15 @@ async fn check_status(
 ) -> Result<ValidatorStatus> {
     let sui_client = context.get_client().await?;
     let validator_address = context.active_address()?;
+    let bfc_validator_address = sui_address_to_bfc_address(validator_address.clone());
+
     let summary = get_validator_summary(&sui_client, validator_address).await?;
     if summary.is_none() {
-        bail!("{validator_address} is not a Validator.");
+        bail!("{bfc_validator_address} is not a Validator.");
     }
     let (status, _summary) = summary.unwrap();
     if allowed_status.contains(&status) {
         return Ok(status);
     }
-    bail!("Validator {validator_address} is {:?}, this operation is not supported in this tool or prohibited.", status)
+    bail!("Validator {bfc_validator_address} is {:?}, this operation is not supported in this tool or prohibited.", status)
 }

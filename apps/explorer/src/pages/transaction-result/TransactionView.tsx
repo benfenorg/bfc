@@ -1,7 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import { getExecutionStatusError, getExecutionStatusType } from '@benfen/bfc.js';
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import clsx from 'clsx';
 import { type ReactNode, useState } from 'react';
 
@@ -81,8 +82,6 @@ export function TransactionView({ transaction }: { transaction: SuiTransactionBl
 		defaultSize: isProgrammableTransaction ? 65 : 50,
 	};
 
-	console.log('transactiontransaction', transaction);
-
 	return (
 		<div className={clsx(styles.txdetailsbg)}>
 			<div className="mb-10">
@@ -90,6 +89,11 @@ export function TransactionView({ transaction }: { transaction: SuiTransactionBl
 					type="Transaction"
 					title={transaction?.digest}
 					status={transaction?.effects?.status?.status}
+					statusMessage={
+						getExecutionStatusType(transaction) === 'failure'
+							? getExecutionStatusError(transaction) || 'Transaction failed'
+							: ''
+					}
 				/>
 			</div>
 			<div className="h-screen md:h-full">

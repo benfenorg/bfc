@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-// See: sui/crates/sui-types/src/intent.rs
+// See: sui/crates/bfc-types/src/intent.rs
 export enum AppId {
 	Sui = 0,
 }

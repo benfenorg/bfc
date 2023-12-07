@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB58, splitGenericParameters } from '@mysten/bcs';
+import { fromB58, splitGenericParameters } from '@benfen/bcs';
 import { bfc2SuiAddress } from './format.js';
 import BigNumber from 'bignumber.js';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';

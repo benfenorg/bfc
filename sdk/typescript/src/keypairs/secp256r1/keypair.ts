@@ -9,7 +9,7 @@ import { Secp256r1PublicKey } from './publickey.js';
 import { secp256r1 } from '@noble/curves/p256';
 import { isValidBIP32Path, mnemonicToSeed } from '../../cryptography/mnemonics.js';
 import { HDKey } from '@scure/bip32';
-import { toB64 } from '@mysten/bcs';
+import { toB64 } from '@benfen/bcs';
 import type { SignatureScheme } from '../../cryptography/signature.js';
 import { bytesToHex } from '@noble/hashes/utils';
 import { blake2b } from '@noble/hashes/blake2b';

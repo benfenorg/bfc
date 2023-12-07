@@ -12,6 +12,7 @@ module bfc_system::treasury {
     use sui::clock::{Self, Clock};
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
+    use sui::vec_map::{Self, VecMap};
 
     use bfc_system::busd::BUSD;
     use bfc_system::event;
@@ -364,7 +365,12 @@ module bfc_system::treasury {
             total = total + bfc_required_per_time * times_per_day;
         };
 
-        total - get_balance(_treasury)
+        let get_treasury_balance = get_balance(_treasury);
+        if (total > get_treasury_balance) {
+            total - get_treasury_balance
+        } else {
+            0
+        }
     }
 
     public(friend) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
@@ -398,37 +404,48 @@ module bfc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
+        rebalance_internal(_treasury, true, _ctx);
+    }
+
+    public(friend) fun rebalance_internal(
+        _treasury: &mut Treasury,
+        _update: bool,
+        _ctx: &mut TxContext
+    ) {
+        // BUSD
+        let key = get_vault_key<BUSD>();
         let usd_mut_v = dynamic_field::borrow_mut<String, Vault<BUSD>>(
             &mut _treasury.id,
-            get_vault_key<BUSD>()
+            key,
         );
-        vault::update_state(usd_mut_v);
+        if (_update) {
+            vault::update_state(usd_mut_v);
+        };
 
+        // first rebalance just place liquidity not change vault state
         vault::rebalance(
             usd_mut_v,
             &mut _treasury.bfc_balance,
-            bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, get_vault_key<BUSD>()),
+            bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, key),
             _treasury.total_bfc_supply,
             _ctx
         );
     }
 
-    public(friend) fun rebalance_first_init(
-        _treasury: &mut Treasury,
-        _ctx: &mut TxContext
-    )
-    {
-        let usd_mut_v = dynamic_field::borrow_mut<String, Vault<BUSD>>(
-            &mut _treasury.id,
-            get_vault_key<BUSD>()
+
+    public(friend) fun get_exchange_rates(
+        _treasury: &Treasury,
+    ): VecMap<String, u64> {
+        let rate_map = vec_map::empty<String, u64>();
+        let amount = 1_000_000_000;
+
+        // BUSD
+        vec_map::insert(
+            &mut rate_map,
+            get_vault_key<BUSD>(),
+            vault::calculated_swap_result_amount_out(&calculate_swap_result<BUSD>(_treasury, true, amount)),
         );
-        // first rebalance just place liquidity not change vault state
-        vault::rebalance(
-            usd_mut_v,
-            &mut _treasury.bfc_balance,
-            bag::borrow_mut<String, Supply<BUSD>>(&mut _treasury.supplies, get_vault_key<BUSD>()),
-            _treasury.total_bfc_supply,
-            _ctx
-        );
+
+        rate_map
     }
 }

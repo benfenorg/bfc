@@ -33,7 +33,7 @@ module bfc_system::bfc_system {
 
     struct BfcSystemState has key {
         id: UID,
-        version: u64,
+        version: u64
     }
 
     public entry fun create_stake_manager_key( payment: Coin<BFC>,

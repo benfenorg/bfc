@@ -17,7 +17,7 @@ import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
 import { IconTooltip } from '_src/ui/app/shared/tooltip';
 
-import type { SuiEvent } from '@mysten/sui.js/client';
+import type { SuiEvent } from '@benfen/bfc.js/client';
 
 type StakeTxnCardProps = {
 	event: SuiEvent;

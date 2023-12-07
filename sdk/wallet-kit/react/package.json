@@ -1,9 +1,9 @@
 {
-	"name": "@mysten/wallet-kit",
-	"version": "0.8.0",
+	"name": "@benfen/wallet-kit",
+	"version": "0.1.4",
 	"description": "TODO: Write description",
 	"license": "Apache-2.0",
-	"author": "Mysten Labs <build@mystenlabs.com>",
+	"author": "OpenBlock<developers@benfen.org>",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
@@ -40,9 +40,9 @@
 	},
 	"dependencies": {
 		"@headlessui/react": "^1.7.15",
-		"@mysten/sui.js": "workspace:*",
-		"@mysten/wallet-kit-core": "workspace:*",
-		"@mysten/wallet-standard": "workspace:*",
+		"@benfen/bfc.js": "workspace:*",
+		"@benfen/wallet-kit-core": "workspace:*",
+		"@benfen/wallet-standard": "workspace:*",
 		"@stitches/react": "^1.2.8"
 	},
 	"devDependencies": {

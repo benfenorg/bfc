@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { type BfcDao, type ProposalRecord, ProposalStatus } from '@benfen/bfc.js/client';
+import { bfcDigitsToHumanReadable, hexToString } from '@benfen/bfc.js/utils';
 import { ArrowRight12 } from '@mysten/icons';
-import { type BfcDao, type ProposalRecord, ProposalStatus } from '@mysten/sui.js/client';
-import { bfcDigitsToHumanReadable, hexToString } from '@mysten/sui.js/utils';
 import { Heading } from '@mysten/ui';
-import { useWalletKit, ConnectButton } from '@mysten/wallet-kit';
+import { useWalletKit, ConnectButton } from '@benfen/wallet-kit';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
 
@@ -26,8 +26,9 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 	const total = data.for_votes + data.against_votes;
 
 	return (
-		<div className="rounded-md border border-bfc-border p-5">
+		<div className="rounded-lg border border-bfc-border p-5 hover:shadow-[0px_24px_24px_0px_rgba(0,0,0,0.04)]">
 			<div className="flex gap-1">
+				{status === ProposalStatus.Extracted && <AgreeSpan />}
 				{status === ProposalStatus.Agree ? (
 					<AgreeSpan />
 				) : status === ProposalStatus.Defeat ? (
@@ -43,20 +44,6 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 				<span className="text-body text-bfc-text2">ID：</span>
 				<span className="text-body text-bfc-text1">{data.pid}</span>
 			</div>
-			<div>
-				<span className="text-body text-bfc-text2">Version：</span>
-				<span className="text-body text-bfc-text1">{data.version_id}</span>
-			</div>
-			<div>
-				<span className="text-body text-bfc-text2">Description：</span>
-				<span className="text-body text-bfc-text1">{hexToString(data.description)}</span>
-			</div>
-			<div>
-				<span className="text-body text-bfc-text2">Start Time：</span>
-				<span className="text-body text-bfc-text1">
-					{dayjs(data.start_time).format('YYYY-MM-DD HH:mm:ss')}
-				</span>
-			</div>
 			<div className="mb-3">
 				<span className="text-body text-bfc-text2">End Time：</span>
 				<span className="text-body text-bfc-text1">
@@ -67,22 +54,22 @@ function DaoItem({ data, dao }: { data: ProposalRecord; dao: BfcDao }) {
 			<div className="mt-3 flex items-center justify-between">
 				<div className="flex items-baseline gap-1">
 					<div className="text-heading4 font-semibold">
-						{bfcDigitsToHumanReadable(data.against_votes)}
-					</div>
-					<div className="text-body text-bfc-text2">Opposition</div>
-				</div>
-				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">
 						{bfcDigitsToHumanReadable(data.for_votes)}
 					</div>
 					<div className="text-body text-bfc-text2">Agree</div>
 				</div>
+				<div className="flex items-baseline gap-1">
+					<div className="text-heading4 font-semibold">
+						{bfcDigitsToHumanReadable(data.against_votes)}
+					</div>
+					<div className="text-body text-bfc-text2">Opposition</div>
+				</div>
 			</div>
-			<div className="relative my-3 flex h-1 items-stretch overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
+			<div className="relative my-3 flex h-1 items-stretch overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-red">
 				<div
-					className="h-full bg-bfc-red"
+					className="h-full bg-bfc-green"
 					style={{
-						width: total === 0 ? '50%' : (data.against_votes / total) * 100 + '%',
+						width: total === 0 ? '50%' : (data.for_votes / total) * 100 + '%',
 					}}
 				/>
 			</div>
@@ -183,7 +170,16 @@ function Dao() {
 						data-testid="home-page"
 						className="h-34 flex items-center justify-center text-2xl font-bold text-white xl:h-36"
 					>
-						DAO Proposals
+						<span
+							style={{
+								background: 'linear-gradient(180deg, #FFF 0%, rgba(255, 255, 255, 0.80) 100%)',
+								backgroundClip: 'text',
+								WebkitBackgroundClip: 'text',
+								WebkitTextFillColor: 'transparent',
+							}}
+						>
+							DAO Proposals
+						</span>
 					</div>
 				),
 				size: 'lg',

@@ -1,6 +1,6 @@
 # Docs site
 
-For more complete docs, visit the [Sui Typescript SDK docs](https://sui-typescript-docs.vercel.app/)
+For more complete docs, visit the [Sui Typescript SDK docs](https://bfc-typescript-docs.vercel.app/)
 
 # Sui TypeScript SDK
 
@@ -15,26 +15,26 @@ upcoming TestNet launch.
 
 ## Working with DevNet
 
-The SDK will be published to [npm registry](https://www.npmjs.com/package/@mysten/sui.js) with the
+The SDK will be published to [npm registry](https://www.npmjs.com/package/@benfen/bfc.js) with the
 same bi-weekly release cycle as the DevNet validators and
 [RPC Server](https://github.com/MystenLabs/sui/blob/main/doc/src/build/json-rpc.md). To use the SDK
 in your project, you can do:
 
 ```bash
-$ npm install @mysten/sui.js
+$ npm install @benfen/bfc.js
 ```
 
 You can also use your preferred npm client, such as yarn or pnpm.
 
 ## Working with local network
 
-Note that the `latest` tag for the [published SDK](https://www.npmjs.com/package/@mysten/sui.js)
+Note that the `latest` tag for the [published SDK](https://www.npmjs.com/package/@benfen/bfc.js)
 might go out of sync with the RPC server on the `main` branch until the next release. If you're
 developing against a local network, we recommend using the `experimental`-tagged packages, which
 contain the latest changes from `main`.
 
 ```bash
-npm install @mysten/sui.js@experimental
+npm install @benfen/bfc.js@experimental
 ```
 
 Refer to the [JSON RPC](https://github.com/MystenLabs/sui/blob/main/doc/src/build/json-rpc.md) topic
@@ -58,7 +58,7 @@ $ pnpm sdk build
 ## Type Doc
 
 You can view the generated [Type Doc](https://typedoc.org/) for the
-[current release of the SDK](https://www.npmjs.com/package/@mysten/sui.js) at
+[current release of the SDK](https://www.npmjs.com/package/@benfen/bfc.js) at
 http://typescript-sdk-docs.s3-website-us-east-1.amazonaws.com/.
 
 For the latest docs for the `main` branch, run `pnpm doc` and open the
@@ -109,7 +109,7 @@ read-only operations. The default URLs to connect with the RPC server are:
 - DevNet: https://fullnode.devnet.sui.io
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 // create a client connected to devnet
 const client = new SuiClient({ url: getFullnodeUrl('devnet') });
@@ -120,12 +120,12 @@ await client.getCoins({
 });
 ```
 
-For local development, you can run `cargo run --bin sui-test-validator` to spin up a local network
+For local development, you can run `cargo run --bin bfc-test-validator` to spin up a local network
 with a local validator, a fullnode, and a faucet server. Refer to
 [this guide](https://docs.sui.io/build/sui-local-network) for more information.
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 // create a client connected to devnet
 const client = new SuiClient({ url: getFullnodeUrl('localnet') });
@@ -139,7 +139,7 @@ await client.getCoins({
 You can also construct your own in custom connections, with the URL for your own fullnode
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 // create a client connected to devnet
 const client = new SuiClient({
@@ -157,7 +157,7 @@ await client.getCoins({
 You can request sui from the faucet when running against devnet, testnet, or localnet
 
 ```typescript
-import { requestSuiFromFaucetV0, getFaucetHost } from '@mysten/sui.js/faucet';
+import { requestSuiFromFaucetV0, getFaucetHost } from '@benfen/bfc.js/faucet';
 
 await requestSuiFromFaucetV0({
 	host: getFaucetHost('testnet'),
@@ -173,9 +173,9 @@ For a primer for building transactions, refer to
 ### Transfer Object
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new SuiClient({
@@ -199,9 +199,9 @@ console.log({ result });
 To transfer `1000` MIST to another address:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new SuiClient({
@@ -221,9 +221,9 @@ console.log({ result });
 ### Merge coins
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new SuiClient({
@@ -244,9 +244,9 @@ console.log({ result });
 ### Move Call
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new SuiClient({
@@ -270,9 +270,9 @@ console.log({ result });
 To publish a package:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 const { execSync } = require('child_process');
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
@@ -305,7 +305,7 @@ Fetch objects owned by the address
 `0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231`
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
 });
@@ -320,7 +320,7 @@ Fetch object details for the object with id
 `0xe19739da1a701eadc21683c5b127e62b553e833e8a15a4f292f4f48b4afea3f2`
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
 });
@@ -345,7 +345,7 @@ const txns = await client.multiGetObjects({
 Fetch transaction details from transaction digests:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -413,7 +413,7 @@ Fetch coins of type `0x65b0553a591d7b13376e03a408e112c706dc0909a79080c810b93b06f
 owned by an address:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -427,7 +427,7 @@ const coins = await client.getCoins({
 Fetch all coin objects owned by an address:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -440,7 +440,7 @@ const allCoins = await client.getAllCoins({
 Fetch the total coin balance for one coin type, owned by an address:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -458,7 +458,7 @@ Querying events created by transactions sent by account
 `0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231`
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -473,12 +473,12 @@ Subscribe to all events created by transactions sent by account
 `0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231`
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
 });
-// calls RPC method 'suix_subscribeEvent' with params:
+// calls RPC method 'bfcx_subscribeEvent' with params:
 // [ { Sender: '0xbff6ccc8707aa517b4f1b95750a2a8c666012df3' } ]
 const unsubscribe = await client.subscribeEvent({
 	filter: {
@@ -496,7 +496,7 @@ await unsubscribe();
 Subscribe to all events created by a package's `nft` module
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),

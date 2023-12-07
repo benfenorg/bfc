@@ -3,8 +3,8 @@
 
 import { bytesToHex } from '@noble/hashes/utils';
 import { blake2b } from '@noble/hashes/blake2b';
-import { SIGNATURE_SCHEME_TO_FLAG } from '@mysten/sui.js/cryptography';
-import { SUI_ADDRESS_LENGTH, normalizeSuiAddress } from '@mysten/sui.js/utils';
+import { SIGNATURE_SCHEME_TO_FLAG } from '@benfen/bfc.js/cryptography';
+import { SUI_ADDRESS_LENGTH, normalizeSuiAddress } from '@benfen/bfc.js/utils';
 import { zkBcs } from './bcs.js';
 import { decodeJwt } from 'jose';
 import { genAddressSeed, toBufferBE } from './utils.js';

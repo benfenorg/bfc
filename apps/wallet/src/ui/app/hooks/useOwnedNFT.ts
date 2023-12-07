@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { is, SuiObjectData, getObjectOwner } from '@benfen/bfc.js';
 import { useGetKioskContents, useGetObject } from '@mysten/core';
-import { is, SuiObjectData, getObjectOwner } from '@mysten/sui.js';
 import { useMemo } from 'react';
 
 export function useOwnedNFT(nftObjectId: string | null, address: string | null) {

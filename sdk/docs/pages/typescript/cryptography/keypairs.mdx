@@ -7,19 +7,19 @@ The Sui TypeScript SDK supports three signing schemes:
 
 | Sign scheme     | Class name         | Import folder                       |
 | --------------- | ------------------ | ----------------------------------- |
-| Ed25519         | `Ed25519Keypair`   | `@mysten/sui.js/keypairs/ed25519`   |
-| ECDSA Secp256k1 | `Secp256k1Keypair` | `@mysten/sui.js/keypairs/secp256k1` |
-| ECDSA Secp256r1 | `Secp256r1Keypair` | `@mysten/sui.js/keypairs/secp256r1` |
+| Ed25519         | `Ed25519Keypair`   | `@benfen/bfc.js/keypairs/ed25519`   |
+| ECDSA Secp256k1 | `Secp256k1Keypair` | `@benfen/bfc.js/keypairs/secp256k1` |
+| ECDSA Secp256r1 | `Secp256r1Keypair` | `@benfen/bfc.js/keypairs/secp256r1` |
 
 For information on these schemes, see the
 [Sui Wallet Specifications](https://docs.sui.io/testnet/learn/cryptography/sui-wallet-specs) topic.
 
-To use, import the key pair class your project uses from the `@mysten/sui.js/keypairs` folder. For
+To use, import the key pair class your project uses from the `@benfen/bfc.js/keypairs` folder. For
 example, to use the Ed25519 scheme, import the `Ed25519Keypair` class from
-`@mysten/sui.js/keypairs/ed25519`.
+`@benfen/bfc.js/keypairs/ed25519`.
 
 ```typescript
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 ```
 
 To create a random key pair (which identifies a Sui address), instantiate a new `Keypair` class. To
@@ -51,7 +51,7 @@ to retrieve its associated Sui address. You can access a `Keypair` from its `Pub
 it from the bytes (as a `Uint8Array`) of the `PublicKey`, as in the following code:
 
 ```typescript
-import { Ed25519Keypair, Ed25519PublicKey } from '@mysten/sui.js/keypairs/ed25519';
+import { Ed25519Keypair, Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 
 const keypair = new Ed25519Keypair();
 const bytes = keypair.getPublicKey().toBytes();
@@ -71,8 +71,8 @@ then verifies the message to retrieve the public key. The code then uses `toSuiA
 if the address associated with the public key matches the address that the key pair defines.
 
 ```typescript
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { verifyPersonalMessage } from '@mysten/sui.js/verify';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { verifyPersonalMessage } from '@benfen/bfc.js/verify';
 
 const keypair = new Ed25519Keypair();
 const message = new TextEncoder().encode('hello world');
@@ -91,10 +91,10 @@ Verifying transaction blocks is similar to signature verification, except you us
 `verifyTransactionBlock`:
 
 ```typescript
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { verifyTransactionBlock } from '@mysten/sui.js/verify';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { verifyTransactionBlock } from '@benfen/bfc.js/verify';
 // import SuiClient to create a network client and the getFullnodeUrl helper function
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 // see Network Interactions with SuiClient for more info on creating clients
 const client = new SuiClient({ url: getFullnodeUrl('testnet') });

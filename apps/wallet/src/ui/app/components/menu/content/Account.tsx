@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js';
 import { Copy12 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui.js';
 import { useEffect, useRef, useState } from 'react';
 import { useNextMenuUrl } from '../hooks';
 

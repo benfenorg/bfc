@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SuiClient, SuiHTTPTransport, getFullnodeUrl } from '@benfen/bfc.js/client';
 import { SentryHttpTransport } from '@mysten/core';
-import { SuiClient, SuiHTTPTransport, getFullnodeUrl } from '@mysten/sui.js/client';
 
 export enum Network {
 	LOCAL = 'LOCAL',
@@ -13,7 +13,7 @@ export enum Network {
 
 export const NetworkConfigs: Record<Network, { url: string }> = {
 	[Network.LOCAL]: { url: getFullnodeUrl('localnet') },
-	[Network.DEVNET]: { url: 'https://obcrpc.openblock.vip' },
+	[Network.DEVNET]: { url: 'https://benfen-rpc-dev.openblock.vip' },
 	[Network.TESTNET]: { url: 'https://obcrpc.openblock.vip' },
 	[Network.MAINNET]: { url: 'https://obcrpc.openblock.vip' },
 };

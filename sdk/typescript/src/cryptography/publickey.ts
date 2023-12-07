@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toB64 } from '@mysten/bcs';
+import { toB64 } from '@benfen/bcs';
 import { IntentScope, messageWithIntent } from './intent.js';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bcs } from '../bcs/index.js';
 import type { SerializedSignature } from './index.js';
-import { SUI_ADDRESS_LENGTH, normalizeSuiAddress } from '../utils/sui-types.js';
+import { SUI_ADDRESS_LENGTH, normalizeSuiAddress } from '../utils/bfc-types.js';
 import { bytesToHex } from '@noble/hashes/utils';
 
 /**

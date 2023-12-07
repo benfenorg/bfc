@@ -1,9 +1,9 @@
 {
-	"name": "@mysten/bcs",
-	"version": "0.7.3",
+	"name": "@benfen/bcs",
+	"version": "0.1.0",
 	"description": "BCS - Canonical Binary Serialization implementation for JavaScript",
 	"license": "Apache-2.0",
-	"author": "Mysten Labs <build@mystenlabs.com>",
+	"author": "OpenBlock<developers@benfen.org>",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
@@ -36,10 +36,6 @@
 		"lint": "pnpm run eslint:check && pnpm run prettier:check",
 		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/mystenlabs/sui.git"
-	},
 	"keywords": [
 		"bcs",
 		"libra",
@@ -48,9 +44,6 @@
 		"serialization",
 		"serde"
 	],
-	"bugs": {
-		"url": "https://github.com/mystenlabs/sui/issues"
-	},
 	"size-limit": [
 		{
 			"path": "dist/index.js",
@@ -61,7 +54,6 @@
 			"limit": "10 kB"
 		}
 	],
-	"homepage": "https://github.com/mystenlabs/sui#readme",
 	"devDependencies": {
 		"@size-limit/preset-small-lib": "^8.2.6",
 		"size-limit": "^8.2.6",

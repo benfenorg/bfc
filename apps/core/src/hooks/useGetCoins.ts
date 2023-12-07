@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useSuiClient } from '@mysten/dapp-kit';
-import { PaginatedCoins } from '@mysten/sui.js/client';
+import { PaginatedCoins } from '@benfen/bfc.js/client';
 import { UseInfiniteQueryResult, useInfiniteQuery } from '@tanstack/react-query';
 
 const MAX_COINS_PER_REQUEST = 10;

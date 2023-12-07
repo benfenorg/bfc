@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64 } from '@mysten/bcs';
+import { fromB64 } from '@benfen/bcs';
 import { is, mask } from 'superstruct';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
 import type { CoinStruct, SuiObjectResponse } from '../types/index.js';
@@ -28,7 +28,7 @@ import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
 import { sui2BfcAddress } from '../utils/format.js';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
+import { normalizeSuiObjectId } from '../utils/bfc-types.js';
 import { SUI_TYPE_ARG } from '../framework/framework.js';
 import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
 
@@ -149,7 +149,7 @@ export function isTransactionBlock(obj: unknown): obj is TransactionBlock {
  */
 export class TransactionBlock {
 	/** Returns `true` if the object is an instance of the Transaction builder class.
-	 * @deprecated Use `isTransactionBlock` from `@mysten/sui.js/transactions` instead.
+	 * @deprecated Use `isTransactionBlock` from `@benfen/bfc.js/transactions` instead.
 	 */
 	static is(obj: unknown): obj is TransactionBlock {
 		return !!obj && typeof obj === 'object' && (obj as any)[TRANSACTION_BRAND] === true;
@@ -192,7 +192,7 @@ export class TransactionBlock {
 
 	/**
 	 * A helper to retrieve the Transaction builder `Transactions`
-	 * @deprecated Either use the helper methods on the `TransactionBlock` class, or import `Transactions` from `@mysten/sui.js/transactions`.
+	 * @deprecated Either use the helper methods on the `TransactionBlock` class, or import `Transactions` from `@benfen/bfc.js/transactions`.
 	 */
 	static get Transactions() {
 		return Transactions;
@@ -200,7 +200,7 @@ export class TransactionBlock {
 
 	/**
 	 * A helper to retrieve the Transaction builder `Inputs`
-	 * * @deprecated Either use the helper methods on the `TransactionBlock` class, or import `Inputs` from `@mysten/sui.js/transactions`.
+	 * * @deprecated Either use the helper methods on the `TransactionBlock` class, or import `Inputs` from `@benfen/bfc.js/transactions`.
 	 */
 	static get Inputs() {
 		return Inputs;

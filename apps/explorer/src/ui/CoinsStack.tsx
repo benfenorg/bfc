@@ -3,7 +3,7 @@
 
 import { useCoinMetadata } from '@mysten/core';
 import { Sui, Unstaked } from '@mysten/icons';
-import { type CoinMetadata } from '@mysten/sui.js/client';
+import { type CoinMetadata } from '@benfen/bfc.js/client';
 import clsx from 'clsx';
 
 import { Image } from '~/ui/image/Image';

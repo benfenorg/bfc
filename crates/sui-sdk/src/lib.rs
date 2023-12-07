@@ -106,10 +106,10 @@ pub mod wallet_context;
 pub const SUI_COIN_TYPE: &str = "0x2::bfc::BFC";
 pub const SUI_LOCAL_NETWORK_URL: &str = "http://127.0.0.1:9000";
 pub const SUI_LOCAL_NETWORK_GAS_URL: &str = "http://127.0.0.1:5003/gas";
-pub const SUI_DEVNET_URL: &str = "https://fullnode.devnet.sui.io:443";
+pub const SUI_DEVNET_URL: &str = "https://testrpc.benfen.org/";
 pub const SUI_TESTNET_URL: &str = "https://fullnode.testnet.sui.io:443";
 
-/// A Sui client builder for connecting to the Sui network
+/// A Bfc client builder for connecting to the Sui network
 ///
 /// By default the `maximum concurrent requests` is set to 256 and
 /// the `request timeout` is set to 60 seconds. These can be adjusted using the

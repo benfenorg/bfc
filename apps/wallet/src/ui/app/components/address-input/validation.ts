@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SuiClient } from '@benfen/bfc.js/client';
+import { isValidSuiAddress } from '@benfen/bfc.js/utils';
 import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import { useSuiClient } from '@mysten/dapp-kit';
-import { type SuiClient } from '@mysten/sui.js/client';
-import { isValidSuiAddress } from '@mysten/sui.js/utils';
 import { useMemo } from 'react';
 import * as Yup from 'yup';
 

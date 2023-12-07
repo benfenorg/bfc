@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use bip32::DerivationPath;
 use clap::*;
 use fastcrypto::ed25519::Ed25519KeyPair;
-use fastcrypto::encoding::{decode_bytes_hex, Base64, Encoding, Hex};
+use fastcrypto::encoding::{Base64, Encoding, Hex};
 use fastcrypto::hash::HashFunction;
 use fastcrypto::secp256k1::recoverable::Secp256k1Sig;
 use fastcrypto::traits::{KeyPair, ToFromBytes};
@@ -24,6 +24,7 @@ use shared_crypto::intent::{Intent, IntentMessage};
 use std::fmt::{Debug, Display, Formatter};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use sui_keys::key_derive::generate_new_key;
 use sui_keys::keypair_file::{
     read_authority_keypair_from_file, read_keypair_from_file, write_authority_keypair_to_file,
@@ -41,6 +42,7 @@ use sui_types::transaction::TransactionData;
 use tracing::info;
 
 use rand::Rng;
+use sui_types::base_types_bfc::bfc_address_util::{convert_to_evm_address, sui_address_to_bfc_address};
 use tabled::builder::Builder;
 use tabled::settings::Rotate;
 use tabled::settings::{object::Rows, Modify, Width};
@@ -55,7 +57,7 @@ mod keytool_tests;
 #[derive(Subcommand)]
 #[clap(rename_all = "kebab-case")]
 pub enum KeyToolCommand {
-    /// Convert private key from wallet format (hex of 32 byte private key) to sui.keystore format
+    /// Convert private key from wallet format (hex of 32 byte private key) to bfc.keystore format
     /// (base64 of 33 byte flag || private key) or vice versa.
     Convert { value: String },
     /// Given a Base64 encoded transaction bytes, decode its components.
@@ -79,7 +81,7 @@ pub enum KeyToolCommand {
     ///
     /// The keypair file is output to the current directory. The content of the file is
     /// a Base64 encoded string of 33-byte `flag || privkey`. Note: To generate and add keypair
-    /// to sui.keystore, use `sui client new-address`).
+    /// to bfc.keystore, use `bfc client new-address`).
     Generate {
         key_scheme: SignatureScheme,
         word_length: Option<String>,
@@ -93,7 +95,7 @@ pub enum KeyToolCommand {
         derivation_path: Option<DerivationPath>,
     },
 
-    /// Add a new key to sui.keystore using either the input mnemonic phrase or a private key (from the Wallet),
+    /// Add a new key to bfc.keystore using either the input mnemonic phrase or a private key (from the Wallet),
     /// the key scheme flag {ed25519 | secp256k1 | secp256r1} and an optional derivation path,
     /// default to m/44'/784'/0'/0'/0' for ed25519 or m/54'/784'/0'/0/0 for secp256k1
     /// or m/74'/784'/0'/0/0 for secp256r1. Supports mnemonic phrase of word length 12, 15, 18`, 21, 24.
@@ -102,15 +104,15 @@ pub enum KeyToolCommand {
         key_scheme: SignatureScheme,
         derivation_path: Option<DerivationPath>,
     },
-    /// List all keys by its Sui address, Base64 encoded public key, key scheme name in
-    /// sui.keystore.
+    /// List all keys by its Bfc address, Base64 encoded public key, key scheme name in
+    /// bfc.keystore.
     List,
     /// This reads the content at the provided file path. The accepted format can be
     /// [enum SuiKeyPair] (Base64 encoded of 33-byte `flag || privkey`) or `type AuthorityKeyPair`
     /// (Base64 encoded `privkey`). This prints out the account keypair as Base64 encoded `flag || privkey`,
     /// the network keypair, worker keypair, protocol keypair as Base64 encoded `privkey`.
     LoadKeypair { file: PathBuf },
-    /// To MultiSig Sui Address. Pass in a list of all public keys `flag || pk` in Base64.
+    /// To MultiSig Bfc Address. Pass in a list of all public keys `flag || pk` in Base64.
     /// See `keytool list` for example public keys.
     MultiSigAddress {
         #[clap(long)]
@@ -123,7 +125,7 @@ pub enum KeyToolCommand {
     /// Provides a list of participating signatures (`flag || sig || pk` encoded in Base64),
     /// threshold, a list of all public keys and a list of their weights that define the
     /// MultiSig address. Returns a valid MultiSig signature and its sender address. The
-    /// result can be used as signature field for `sui client execute-signed-tx`. The sum
+    /// result can be used as signature field for `bfc client execute-signed-tx`. The sum
     /// of weights of all signatures must be >= the threshold.
     ///
     /// The order of `sigs` must be the same as the order of `pks`.
@@ -154,13 +156,14 @@ pub enum KeyToolCommand {
     /// [enum SuiKeyPair] (Base64 encoded of 33-byte `flag || privkey`) or `type AuthorityKeyPair`
     /// (Base64 encoded `privkey`). It prints its Base64 encoded public key and the key scheme flag.
     Show { file: PathBuf },
-    /// Create signature using the private key for for the given address in sui keystore.
+    /// Create signature using the private key for for the given address in bfc keystore.
     /// Any signature commits to a [struct IntentMessage] consisting of the Base64 encoded
     /// of the BCS serialized transaction bytes itself and its intent. If intent is absent,
     /// default will be used.
     Sign {
-        #[clap(long, value_parser = decode_bytes_hex::<SuiAddress>)]
-        address: SuiAddress,
+        //#[clap(long, value_parser = decode_bytes_hex::<SuiAddress>)]
+        #[clap(long)]
+        address: String,
         #[clap(long)]
         data: String,
         #[clap(long)]
@@ -184,7 +187,7 @@ pub enum KeyToolCommand {
     },
     /// This takes [enum SuiKeyPair] of Base64 encoded of 33-byte `flag || privkey`). It
     /// outputs the keypair into a file at the current directory where the address is the filename,
-    /// and prints out its Sui address, Base64 encoded public key, the key scheme, and the key scheme flag.
+    /// and prints out its Bfc address, Base64 encoded public key, the key scheme, and the key scheme flag.
     Unpack { keypair: String },
 
     /// Given the max_epoch, generate an OAuth url, ask user to paste the redirect with id_token, call salt server, then call the prover server,
@@ -307,7 +310,7 @@ pub struct SignData {
     // Base64 encoded blake2b hash of the intent message, this is what the signature commits to.
     digest: String,
     // Base64 encoded `flag || signature || pubkey` for a complete
-    // serialized Sui signature to be send for executing the transaction.
+    // serialized Bfc signature to be send for executing the transaction.
     sui_signature: String,
 }
 
@@ -640,6 +643,12 @@ impl KeyToolCommand {
                 data,
                 intent,
             } => {
+                let mut evm_address = address.clone();
+                if address.as_str().starts_with("bfc") || address.as_str().starts_with("BFC") {
+                    evm_address = convert_to_evm_address(address.clone());
+                }
+                let sui_address = SuiAddress::from_str(evm_address.as_str()).unwrap_or_else(|_e| panic!("Incorrect sui_address"));
+
                 let intent = intent.unwrap_or_else(Intent::sui_transaction);
                 let intent_clone = intent.clone();
                 let msg: TransactionData =
@@ -652,9 +661,11 @@ impl KeyToolCommand {
                 hasher.update(bcs::to_bytes(&intent_msg)?);
                 let digest = hasher.finalize().digest;
                 let sui_signature =
-                    keystore.sign_secure(&address, &intent_msg.value, intent_msg.intent)?;
+                    keystore.sign_secure(&sui_address, &intent_msg.value, intent_msg.intent)?;
+
+
                 CommandOutput::Sign(SignData {
-                    sui_address: address,
+                    sui_address,
                     raw_tx_data: data,
                     intent: intent_clone,
                     raw_intent_msg,
@@ -863,6 +874,7 @@ impl Display for CommandOutput {
                     .to_string();
 
                 let mut builder = Builder::default();
+                let bfc_address = sui_address_to_bfc_address(data.sui_address.clone());
                 builder
                     .set_header([
                         "suiSignature",
@@ -878,7 +890,7 @@ impl Display for CommandOutput {
                         &data.raw_intent_msg,
                         &intent_table,
                         &data.raw_tx_data,
-                        &data.sui_address.to_string(),
+                        &bfc_address,
                     ]);
                 let mut table = builder.build();
                 table.with(Rotate::Left);

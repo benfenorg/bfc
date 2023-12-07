@@ -7,10 +7,10 @@
  *  ######################################
  *
  * This file is generated from:
- * /crates/sui-open-rpc/spec/openrpc.json
+ * /crates/bfc-open-rpc/spec/openrpc.json
  */
 
-import type { MultiGetTransactionBlocksParams } from '@mysten/sui.js/client';
+import type { MultiGetTransactionBlocksParams } from '@benfen/bfc.js/client';
 import type { UseSuiClientQueryOptions } from '../useSuiClientQuery.js';
 import { useSuiClientQuery } from '../useSuiClientQuery.js';
 

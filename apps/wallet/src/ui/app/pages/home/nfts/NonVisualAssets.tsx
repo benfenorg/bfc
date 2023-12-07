@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiObjectData } from '@mysten/sui.js/client';
-import { parseStructTag, formatAddress } from '@mysten/sui.js/utils';
+import { type SuiObjectData } from '@benfen/bfc.js/client';
+import { parseStructTag, formatAddress } from '@benfen/bfc.js/utils';
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { Text } from '_src/ui/app/shared/text';

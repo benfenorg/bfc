@@ -5,7 +5,7 @@ import {
 	toSerializedSignature,
 	type SerializedSignature,
 	type Keypair,
-} from '@mysten/sui.js/cryptography';
+} from '@benfen/bfc.js/cryptography';
 import { blake2b } from '@noble/hashes/blake2b';
 
 /**

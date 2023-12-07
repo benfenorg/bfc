@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { getObjectFields } from '@benfen/bfc.js';
+import { type Vote } from '@benfen/bfc.js/client';
 import { useSuiClient } from '@mysten/dapp-kit';
-import { getObjectFields } from '@mysten/sui.js';
-import { type Vote } from '@mysten/sui.js/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetBFCDaoVote(address: string) {

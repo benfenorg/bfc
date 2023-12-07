@@ -38,7 +38,7 @@
 		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
 	},
 	"dependencies": {
-		"@mysten/sui.js": "workspace:*"
+		"@benfen/bfc.js": "workspace:*"
 	},
 	"devDependencies": {
 		"tsup": "^7.1.0",

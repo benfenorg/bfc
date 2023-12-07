@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type TransactionBlock } from '@mysten/sui.js/transactions';
+import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useQuery } from '@tanstack/react-query';
 import { useSigner } from './useSigner';
 

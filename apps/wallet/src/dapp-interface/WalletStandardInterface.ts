@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { toB64, fromB64 } from '@mysten/sui.js/utils';
+import { bfc2SuiAddress, sui2BfcAddress } from '@benfen/bfc.js';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { toB64, fromB64 } from '@benfen/bfc.js/utils';
 import {
 	BFC_CHAINS,
 	ReadonlyWalletAccount,
@@ -20,7 +21,7 @@ import {
 	type SuiSignTransactionBlockMethod,
 	type SuiSignMessageMethod,
 	BFC_MAINNET_CHAIN,
-} from '@mysten/wallet-standard';
+} from '@benfen/wallet-standard';
 import mitt, { type Emitter } from 'mitt';
 import { filter, map, type Observable } from 'rxjs';
 
@@ -166,7 +167,7 @@ export class SuiWallet implements Wallet {
 		this.#accounts = accounts.map(
 			({ address, publicKey }) =>
 				new ReadonlyWalletAccount({
-					address,
+					address: sui2BfcAddress(address),
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
 					features: ['bfc:signAndExecuteTransaction'],
@@ -254,7 +255,7 @@ export class SuiWallet implements Wallet {
 					...input,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: input.account?.address || this.#accounts[0]?.address || '',
+					account: bfc2SuiAddress(input.account?.address || this.#accounts[0]?.address || ''),
 					transaction: input.transactionBlock.serialize(),
 				},
 			}),
@@ -278,7 +279,7 @@ export class SuiWallet implements Wallet {
 					options: input.options,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: input.account?.address || this.#accounts[0]?.address || '',
+					account: bfc2SuiAddress(input.account?.address || this.#accounts[0]?.address || ''),
 				},
 			}),
 			(response) => response.result,
@@ -298,7 +299,7 @@ export class SuiWallet implements Wallet {
 				type: 'sign-message-request',
 				args: {
 					message: toB64(message),
-					accountAddress: account.address,
+					accountAddress: bfc2SuiAddress(account.address),
 				},
 			}),
 			(response) => {

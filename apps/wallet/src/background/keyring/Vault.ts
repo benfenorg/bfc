@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromExportedKeypair } from '@mysten/sui.js';
-import { mnemonicToSeedHex, type ExportedKeypair, type Keypair } from '@mysten/sui.js/cryptography';
+import { fromExportedKeypair } from '@benfen/bfc.js';
+import { mnemonicToSeedHex, type ExportedKeypair, type Keypair } from '@benfen/bfc.js/cryptography';
 
 import { encrypt, decrypt } from '_shared/cryptography/keystore';
 import {

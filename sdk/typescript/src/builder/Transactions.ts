@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { BCS, fromB64 } from '@mysten/bcs';
+import { BCS, fromB64 } from '@benfen/bcs';
 import type { Infer, Struct } from 'superstruct';
 import {
 	is,
@@ -21,7 +21,7 @@ import {
 import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
+import { normalizeSuiObjectId } from '../utils/bfc-types.js';
 
 const option = <T extends Struct<any, any>>(some: T) =>
 	union([object({ None: union([literal(true), literal(null)]) }), object({ Some: some })]);
@@ -111,7 +111,7 @@ export const PublishTransaction = object({
 export type PublishTransaction = Infer<typeof PublishTransaction>;
 
 // Keep in sync with constants in
-// crates/sui-framework/packages/sui-framework/sources/package.move
+// crates/bfc-framework/packages/sui-framework/sources/package.move
 export enum UpgradePolicy {
 	COMPATIBLE = 0,
 	ADDITIVE = 128,

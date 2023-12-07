@@ -218,6 +218,15 @@ impl Genesis {
             .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
     }
 
+    pub fn load_gensis<P: AsRef<Path>>(&self, path: P) -> Result<Self, anyhow::Error> {
+        let path = path.as_ref();
+        trace!("Reading Genesis from {}", path.display());
+        let bytes = fs::read(path)
+            .with_context(|| format!("Unable to load Genesis from {}", path.display()))?;
+        bcs::from_bytes(&bytes)
+            .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
+    }
+
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), anyhow::Error> {
         let path = path.as_ref();
         trace!("Writing Genesis to {}", path.display());
@@ -462,7 +471,10 @@ impl GenesisCeremonyParameters {
 
     fn default_epoch_duration_ms() -> u64 {
         // 24 hrs
-        24 * 60 * 60 * 1000
+        //24 * 60 * 60 * 1000
+
+        //10 mins
+        1000*60*10
     }
 
     fn default_initial_stake_subsidy_distribution_amount() -> u64 {
@@ -584,6 +596,47 @@ impl TokenDistributionSchedule {
                 }
             })
             .collect();
+
+        let schedule = Self {
+            stake_subsidy_fund_mist: supply,
+            allocations,
+        };
+
+        schedule.validate();
+        schedule
+    }
+
+    pub fn new_for_validators_with_default_allocation_and_bfc_allocation <I: IntoIterator<Item=SuiAddress>>(
+        validators: I,
+        bfc_user_allocation: &Vec<TokenAllocation>
+    ) -> Self {
+        let mut supply = TOTAL_SUPPLY_WITH_ALLOCATION_MIST;
+        let default_allocation = sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST;
+
+        let mut allocations:Vec<_> = validators
+            .into_iter()
+            .map(|a| {
+                supply -= default_allocation;
+                TokenAllocation {
+                    recipient_address: a,
+                    amount_mist: default_allocation,
+                    staked_with_validator: Some(a),
+                }
+            })
+            .collect();
+
+        for user_allocation in bfc_user_allocation {
+            let allocation = user_allocation.amount_mist;
+            let user_address = user_allocation.recipient_address;
+
+            supply -= allocation;
+            let data = TokenAllocation {
+                recipient_address: user_address,
+                amount_mist: allocation,
+                staked_with_validator: None,
+            };
+            allocations.push(data)
+        }
 
         let schedule = Self {
             stake_subsidy_fund_mist: supply,

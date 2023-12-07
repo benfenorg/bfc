@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { toB64 } from '@benfen/bfc.js';
+import { type ExportedKeypair } from '@benfen/bfc.js/cryptography';
 import { ArrowRight16 } from '@mysten/icons';
-import { toB64 } from '@mysten/sui.js';
-import { type ExportedKeypair } from '@mysten/sui.js/cryptography';
 import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
 import { ErrorMessage, Field, Form, Formik } from 'formik';

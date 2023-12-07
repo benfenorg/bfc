@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiHTTPTransport } from '@mysten/sui.js/client';
+import { SuiHTTPTransport } from '@benfen/bfc.js/client';
 import * as Sentry from '@sentry/react';
 
-const IGNORED_METHODS = ['suix_resolveNameServiceNames', 'suix_resolveNameServiceAddresses'];
+const IGNORED_METHODS = ['bfcx_resolveNameServiceNames', 'bfcx_resolveNameServiceAddresses'];
 
 export class SentryHttpTransport extends SuiHTTPTransport {
 	#url: string;

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type CoinBalance } from '@mysten/sui.js';
+import { type CoinBalance } from '@benfen/bfc.js';
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 

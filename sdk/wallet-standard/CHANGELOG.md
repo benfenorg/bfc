@@ -1,4 +1,4 @@
-# @mysten/wallet-standard
+# @benfen/wallet-standard
 
 ## 0.7.2
 
@@ -21,7 +21,7 @@
 
 - 189e02aba: Fix broken documentation link for the wallet-standard SDK
 - Updated dependencies [24c21e1f0]
-  - @mysten/sui.js@0.41.1
+  - @benfen/bfc.js@0.41.1
 
 ## 0.7.0
 
@@ -33,7 +33,7 @@
 
 - Updated dependencies [ba8e3b857]
 - Updated dependencies [f4b7b3474]
-  - @mysten/sui.js@0.41.0
+  - @benfen/bfc.js@0.41.0
 
 ## 0.6.0
 
@@ -45,14 +45,14 @@
 
 - Updated dependencies [a503cad34]
 - Updated dependencies [8281e3d25]
-  - @mysten/sui.js@0.40.0
+  - @benfen/bfc.js@0.40.0
 
 ## 0.5.14
 
 ### Patch Changes
 
 - Updated dependencies [47ea5ec7c]
-  - @mysten/sui.js@0.39.0
+  - @benfen/bfc.js@0.39.0
 
 ## 0.5.13
 
@@ -69,14 +69,14 @@
 - Updated dependencies [6d41059c7]
 - Updated dependencies [cc6441f46]
 - Updated dependencies [001148443]
-  - @mysten/sui.js@0.38.0
+  - @benfen/bfc.js@0.38.0
 
 ## 0.5.12
 
 ### Patch Changes
 
 - Updated dependencies [34cc7d610]
-  - @mysten/sui.js@0.37.1
+  - @benfen/bfc.js@0.37.1
 
 ## 0.5.11
 
@@ -89,7 +89,7 @@
 - Updated dependencies [a17d3678a]
 - Updated dependencies [2f37537d5]
 - Updated dependencies [00484bcc3]
-  - @mysten/sui.js@0.37.0
+  - @benfen/bfc.js@0.37.0
 
 ## 0.5.10
 
@@ -99,14 +99,14 @@
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [fb3bb9118a]
-  - @mysten/sui.js@0.36.0
+  - @benfen/bfc.js@0.36.0
 
 ## 0.5.9
 
 ### Patch Changes
 
 - Updated dependencies [09d77325a9]
-  - @mysten/sui.js@0.35.1
+  - @benfen/bfc.js@0.35.1
 
 ## 0.5.8
 
@@ -120,7 +120,7 @@
 - Updated dependencies [9ce7e051b4]
 - Updated dependencies [9ce7e051b4]
 - Updated dependencies [bb50698551]
-  - @mysten/sui.js@0.35.0
+  - @benfen/bfc.js@0.35.0
 
 ## 0.5.7
 
@@ -129,7 +129,7 @@
 - Updated dependencies [85719ac933]
 - Updated dependencies [c3d9cc87f3]
 - Updated dependencies [02a6063f82]
-  - @mysten/sui.js@0.34.1
+  - @benfen/bfc.js@0.34.1
 
 ## 0.5.6
 
@@ -137,7 +137,7 @@
 
 - Updated dependencies [280821e0ab]
 - Updated dependencies [6a9abe9e38]
-  - @mysten/sui.js@0.34.0
+  - @benfen/bfc.js@0.34.0
 
 ## 0.5.5
 
@@ -151,7 +151,7 @@
 - Updated dependencies [91c63e4f8]
 - Updated dependencies [e61ed2bac]
 - Updated dependencies [5053a8dc8]
-  - @mysten/sui.js@0.33.0
+  - @benfen/bfc.js@0.33.0
 
 ## 0.5.4
 
@@ -166,21 +166,21 @@
 - Updated dependencies [c219e7470]
 - Updated dependencies [4e463c691]
 - Updated dependencies [b4f0bfc76]
-  - @mysten/sui.js@0.32.2
+  - @benfen/bfc.js@0.32.2
 
 ## 0.5.3
 
 ### Patch Changes
 
 - Updated dependencies [3224ffcd0]
-  - @mysten/sui.js@0.32.1
+  - @benfen/bfc.js@0.32.1
 
 ## 0.5.2
 
 ### Patch Changes
 
 - Updated dependencies [9b42d0ada]
-  - @mysten/sui.js@0.32.0
+  - @benfen/bfc.js@0.32.0
 
 ## 0.5.1
 
@@ -191,7 +191,7 @@
 - Updated dependencies [f3c096e3a]
 - Updated dependencies [5a4e3e416]
 - Updated dependencies [27dec39eb]
-  - @mysten/sui.js@0.31.0
+  - @benfen/bfc.js@0.31.0
 
 ## 0.5.0
 
@@ -274,14 +274,14 @@
 - Updated dependencies [9b60bf700]
 - Updated dependencies [64fb649eb]
 - Updated dependencies [a6b0c4e5f]
-  - @mysten/sui.js@0.30.0
+  - @benfen/bfc.js@0.30.0
 
 ## 0.4.3
 
 ### Patch Changes
 
 - Updated dependencies [31bfcae6a]
-  - @mysten/sui.js@0.29.1
+  - @benfen/bfc.js@0.29.1
 
 ## 0.4.2
 
@@ -295,7 +295,7 @@
 - Updated dependencies [4baf554f1]
 - Updated dependencies [aa650aa3b]
 - Updated dependencies [6ff0c785f]
-  - @mysten/sui.js@0.29.0
+  - @benfen/bfc.js@0.29.0
 
 ## 0.4.1
 
@@ -305,7 +305,7 @@
 - Updated dependencies [24bdb66c6]
 - Updated dependencies [a67cc044b]
 - Updated dependencies [a67cc044b]
-  - @mysten/sui.js@0.28.0
+  - @benfen/bfc.js@0.28.0
 
 ## 0.4.0
 
@@ -322,14 +322,14 @@
 - Updated dependencies [629804d26]
 - Updated dependencies [f51c85e85]
 - Updated dependencies [e630f6832]
-  - @mysten/sui.js@0.27.0
+  - @benfen/bfc.js@0.27.0
 
 ## 0.3.1
 
 ### Patch Changes
 
 - Updated dependencies [97c46ca9d]
-  - @mysten/sui.js@0.26.1
+  - @benfen/bfc.js@0.26.1
 
 ## 0.3.0
 
@@ -347,7 +347,7 @@
 - Updated dependencies [e6a71882f]
 - Updated dependencies [21781ba52]
 - Updated dependencies [b3ba6dfbc]
-  - @mysten/sui.js@0.26.0
+  - @benfen/bfc.js@0.26.0
 
 ## 0.2.11
 
@@ -357,7 +357,7 @@
 - Updated dependencies [7b4bf43bc]
 - Updated dependencies [72481e759]
 - Updated dependencies [969a88669]
-  - @mysten/sui.js@0.25.0
+  - @benfen/bfc.js@0.25.0
 
 ## 0.2.10
 
@@ -368,7 +368,7 @@
 - Updated dependencies [88a687834]
 - Updated dependencies [89091ddab]
 - Updated dependencies [71bee7563]
-  - @mysten/sui.js@0.24.0
+  - @benfen/bfc.js@0.24.0
 
 ## 0.2.9
 
@@ -383,7 +383,7 @@
 - Updated dependencies [8474242af]
 - Updated dependencies [01efa8bc6]
 - Updated dependencies [f74181212]
-  - @mysten/sui.js@0.23.0
+  - @benfen/bfc.js@0.23.0
 
 ## 0.2.8
 
@@ -391,7 +391,7 @@
 
 - Updated dependencies [a55236e48]
 - Updated dependencies [8ae226dae]
-  - @mysten/sui.js@0.22.0
+  - @benfen/bfc.js@0.22.0
 
 ## 0.2.7
 
@@ -402,7 +402,7 @@
 - Updated dependencies [9fbe2714b]
 - Updated dependencies [d2015f815]
 - Updated dependencies [7d0f25b61]
-  - @mysten/sui.js@0.21.0
+  - @benfen/bfc.js@0.21.0
 
 ## 0.2.6
 
@@ -410,7 +410,7 @@
 
 - Updated dependencies [f93b59f3a]
 - Updated dependencies [ea71d8216]
-  - @mysten/sui.js@0.20.0
+  - @benfen/bfc.js@0.20.0
 
 ## 0.2.5
 
@@ -422,7 +422,7 @@
 - Updated dependencies [b03bfaec2]
 - Updated dependencies [f9be28a42]
 - Updated dependencies [24987df35]
-  - @mysten/sui.js@0.19.0
+  - @benfen/bfc.js@0.19.0
 
 ## 0.2.4
 
@@ -433,14 +433,14 @@
 - Updated dependencies [45293b6ff]
 - Updated dependencies [7a67d61e2]
 - Updated dependencies [2a0b8e85d]
-  - @mysten/sui.js@0.18.0
+  - @benfen/bfc.js@0.18.0
 
 ## 0.2.3
 
 ### Patch Changes
 
 - Updated dependencies [623505886]
-  - @mysten/sui.js@0.17.1
+  - @benfen/bfc.js@0.17.1
 
 ## 0.2.2
 
@@ -449,7 +449,7 @@
 - Updated dependencies [a9602e533]
 - Updated dependencies [db22728c1]
 - Updated dependencies [3b510d0fc]
-  - @mysten/sui.js@0.17.0
+  - @benfen/bfc.js@0.17.0
 
 ## 0.2.1
 
@@ -457,7 +457,7 @@
 
 - Updated dependencies [01989d3d5]
 - Updated dependencies [5e20e6569]
-  - @mysten/sui.js@0.16.0
+  - @benfen/bfc.js@0.16.0
 
 ## 0.2.0
 
@@ -472,7 +472,7 @@
 - Updated dependencies [90898d366]
 - Updated dependencies [c27933292]
 - Updated dependencies [c27933292]
-  - @mysten/sui.js@0.15.0
+  - @benfen/bfc.js@0.15.0
 
 ## 0.1.2
 
@@ -486,7 +486,7 @@
 - Updated dependencies [e45b188a8]
 - Updated dependencies [2dc594ef7]
 - Updated dependencies [4f0c611ff]
-  - @mysten/sui.js@0.14.0
+  - @benfen/bfc.js@0.14.0
 
 ## 0.1.1
 
@@ -496,7 +496,7 @@
 - Updated dependencies [b11b69262]
 - Updated dependencies [b11b69262]
 - Updated dependencies [b11b69262]
-  - @mysten/sui.js@0.13.0
+  - @benfen/bfc.js@0.13.0
 
 ## 0.1.0
 
@@ -513,4 +513,4 @@
 - Updated dependencies [4575c0a02]
 - Updated dependencies [e0b173b9e]
 - Updated dependencies [ccf7f148d]
-  - @mysten/sui.js@0.12.0
+  - @benfen/bfc.js@0.12.0

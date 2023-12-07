@@ -33,6 +33,7 @@ use sui_json_rpc_types::{
     DynamicFieldPage, SuiData, SuiObjectResponse, SuiObjectResponseQuery, SuiRawData,
     SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
+use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectDataOptions};
 use sui_keys::keystore::AccountKeystore;
 use sui_move_build::{
@@ -57,6 +58,7 @@ use sui_types::{
 use tabled::settings::Style as TableStyle;
 use tracing::info;
 use sui_types::base_types::ObjectType;
+use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 use crate::get_object_ref_with_type;
 
 
@@ -119,14 +121,6 @@ pub enum SuiClientCommands {
         #[clap(long)]
         bcs: bool,
     },
-
-
-
-
-
-
-    /// Upgrade Move modules
-    #[clap(name = "upgrade")]
 
 
 
@@ -196,7 +190,7 @@ pub enum SuiClientCommands {
         limit: usize,
     },
 
-    /// List all Sui environments
+    /// List all Bfc environments
     Envs,
 
     /// Execute a Signed Transaction. This is useful when the user prefers to sign elsewhere and use this command to execute.
@@ -256,7 +250,7 @@ pub enum SuiClientCommands {
         derivation_path: Option<DerivationPath>,
     },
 
-    /// Add new Sui environment.
+    /// Add new Bfc environment.
     #[clap(name = "new-env")]
     NewEnv {
         #[clap(long)]
@@ -272,7 +266,7 @@ pub enum SuiClientCommands {
     #[clap(name = "objects")]
     Objects {
         /// Address owning the objects
-        /// Shows all objects owned by `sui client active-address` if no argument is passed
+        /// Shows all objects owned by `bfc client active-address` if no argument is passed
         #[clap(name = "owner_address")]
         address: Option<SuiAddress>,
     },
@@ -312,9 +306,9 @@ pub enum SuiClientCommands {
         serialize_signed_transaction: bool,
     },
 
-    /// Pay all residual SUI coins to the recipient with input coins, after deducting the gas cost.
+    /// Pay all residual Bfc coins to the recipient with input coins, after deducting the gas cost.
     /// The input coins also include the coin for gas payment, so no extra gas coin is required.
-    PayAllSui {
+    PayAllBfc {
         /// The input coins to be used for pay recipients, including the gas coin.
         #[clap(long, num_args(1..))]
         input_coins: Vec<ObjectID>,
@@ -338,10 +332,10 @@ pub enum SuiClientCommands {
         serialize_signed_transaction: bool,
     },
 
-    /// Pay SUI coins to recipients following following specified amounts, with input coins.
+    /// Pay Bfc coins to recipients following following specified amounts, with input coins.
     /// Length of recipients must be the same as that of amounts.
     /// The input coins also include the coin for gas payment, so no extra gas coin is required.
-    PaySui {
+    PayBfc {
         /// The input coins to be used for pay recipients, including the gas coin.
         #[clap(long, num_args(1..))]
         input_coins: Vec<ObjectID>,
@@ -447,7 +441,7 @@ pub enum SuiClientCommands {
     /// Switch active address and network(e.g., devnet, local rpc server)
     #[clap(name = "switch")]
     Switch {
-        /// An Sui address to be used as the active address for subsequent
+        /// An Bfc address to be used as the active address for subsequent
         /// commands.
         #[clap(long)]
         address: Option<SuiAddress>,
@@ -496,16 +490,16 @@ pub enum SuiClientCommands {
         serialize_signed_transaction: bool,
     },
 
-    /// Transfer SUI, and pay gas with the same SUI coin object.
+    /// Transfer Bfc, and pay gas with the same Bfc coin object.
     /// If amount is specified, only the amount is transferred; otherwise the entire object
     /// is transferred.
-    #[clap(name = "transfer-sui")]
-    TransferSui {
+    #[clap(name = "transfer-bfc")]
+    TransferBfc {
         /// Recipient address
         #[clap(long)]
         to: SuiAddress,
 
-        /// Sui coin object to transfer, ID in 20 bytes Hex string. This is also the gas object.
+        /// Bfc coin object to transfer, ID in 20 bytes Hex string. This is also the gas object.
         #[clap(long)]
         sui_coin_object_id: ObjectID,
 
@@ -620,6 +614,7 @@ impl SuiClientCommands {
         context: &mut WalletContext,
     ) -> Result<SuiClientCommandResult, anyhow::Error> {
         let ret = Ok(match self {
+
             SuiClientCommands::Addresses => {
                 let active_address = context.active_address()?;
                 let addresses = context.config.keystore.addresses();
@@ -927,7 +922,7 @@ impl SuiClientCommands {
                 )
             }
 
-            SuiClientCommands::TransferSui {
+            SuiClientCommands::TransferBfc {
                 to,
                 sui_coin_object_id: object_id,
                 gas_budget,
@@ -947,7 +942,7 @@ impl SuiClientCommands {
                     serialize_unsigned_transaction,
                     serialize_signed_transaction,
                     context,
-                    TransferSui
+                    TransferBfc
                 )
             }
 
@@ -991,7 +986,7 @@ impl SuiClientCommands {
                 )
             }
 
-            SuiClientCommands::PaySui {
+            SuiClientCommands::PayBfc {
                 input_coins,
                 recipients,
                 amounts,
@@ -1001,11 +996,11 @@ impl SuiClientCommands {
             } => {
                 ensure!(
                     !input_coins.is_empty(),
-                    "PaySui transaction requires a non-empty list of input coins"
+                    "PayBfc transaction requires a non-empty list of input coins"
                 );
                 ensure!(
                     !recipients.is_empty(),
-                    "PaySui transaction requires a non-empty list of recipient addresses"
+                    "PayBfc transaction requires a non-empty list of recipient addresses"
                 );
                 ensure!(
                     recipients.len() == amounts.len(),
@@ -1026,11 +1021,11 @@ impl SuiClientCommands {
                     serialize_unsigned_transaction,
                     serialize_signed_transaction,
                     context,
-                    PaySui
+                    PayBfc
                 )
             }
 
-            SuiClientCommands::PayAllSui {
+            SuiClientCommands::PayAllBfc {
                 input_coins,
                 recipient,
                 gas_budget,
@@ -1039,7 +1034,7 @@ impl SuiClientCommands {
             } => {
                 ensure!(
                     !input_coins.is_empty(),
-                    "PayAllSui transaction requires a non-empty list of input coins"
+                    "PayAllBfc transaction requires a non-empty list of input coins"
                 );
                 let signer = context.get_object_owner(&input_coins[0]).await?;
                 let client = context.get_client().await?;
@@ -1053,7 +1048,7 @@ impl SuiClientCommands {
                     serialize_unsigned_transaction,
                     serialize_signed_transaction,
                     context,
-                    PayAllSui
+                    PayAllBfc
                 )
             }
 
@@ -1293,7 +1288,7 @@ impl SuiClientCommands {
 
     pub fn switch_env(config: &mut SuiClientConfig, env: &str) -> Result<(), anyhow::Error> {
         let env = Some(env.into());
-        ensure!(config.get_env(&env).is_some(), "Environment config not found for [{env:?}], add new environment config using the `sui client new-env` command.");
+        ensure!(config.get_env(&env).is_some(), "Environment config not found for [{env:?}], add new environment config using the `bfc client new-env` command.");
         config.active_env = env;
         Ok(())
     }
@@ -1481,16 +1476,16 @@ impl Display for SuiClientCommandResult {
             SuiClientCommandResult::Transfer(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
-            SuiClientCommandResult::TransferSui(response) => {
+            SuiClientCommandResult::TransferBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiClientCommandResult::Pay(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
-            SuiClientCommandResult::PaySui(response) => {
+            SuiClientCommandResult::PayBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
-            SuiClientCommandResult::PayAllSui(response) => {
+            SuiClientCommandResult::PayAllBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiClientCommandResult::Objects(object_refs) => {
@@ -1515,7 +1510,7 @@ impl Display for SuiClientCommandResult {
                             writeln!(
                                 writer,
                                 " {0: ^42} | {1: ^10} | {2: ^44} | {3: ^15} | {4: ^40}",
-                                obj.object_id,
+                                objects_id_to_bfc_address(obj.object_id),
                                 obj.version.value(),
                                 Base64::encode(obj.digest),
                                 owner_type,
@@ -1533,8 +1528,9 @@ impl Display for SuiClientCommandResult {
             // Do not use writer for new address output, which may get sent to logs.
             #[allow(clippy::print_in_format_impl)]
             SuiClientCommandResult::NewAddress((address, recovery_phrase, scheme)) => {
+                let bfc_address =  sui_address_to_bfc_address(address.clone());
                 println!(
-                    "Created new keypair for address with scheme {:?}: [{address}]",
+                    "Created new keypair for address with scheme {:?}: [{bfc_address}]",
                     scheme
                 );
                 println!("Secret Recovery Phrase : [{recovery_phrase}]");
@@ -1547,7 +1543,8 @@ impl Display for SuiClientCommandResult {
                     "----------------------------------------------------------------------------------"
                 )?;
                 for gas in gases {
-                    writeln!(writer, " {0: ^66} | {1: ^11}", gas.id(), gas.value())?;
+                    writeln!(writer, " {0: ^66} | {1: ^11}",
+                             objects_id_to_bfc_address(gas.id().clone()), gas.value())?;
                 }
             }
             SuiClientCommandResult::ChainIdentifier(ci) => {
@@ -1564,7 +1561,7 @@ impl Display for SuiClientCommandResult {
             }
             SuiClientCommandResult::ActiveAddress(response) => {
                 match response {
-                    Some(r) => write!(writer, "{}", r)?,
+                    Some(r) => write!(writer, "{}", sui_address_to_bfc_address(r.clone()))?,
                     None => write!(writer, "None")?,
                 };
             }
@@ -1575,7 +1572,7 @@ impl Display for SuiClientCommandResult {
                 write!(writer, "{}", env.as_deref().unwrap_or("None"))?;
             }
             SuiClientCommandResult::NewEnv(env) => {
-                writeln!(writer, "Added new Sui env [{}] to config.", env.alias)?;
+                writeln!(writer, "Added new Bfc env [{}] to config.", env.alias)?;
             }
             SuiClientCommandResult::Envs(envs, active) => {
                 for env in envs {
@@ -1757,7 +1754,7 @@ impl SuiClientCommandResult {
         use SuiClientCommandResult::*;
         match self {
             Upgrade(b) | Publish(b) | TransactionBlock(b) | Call(b) | Transfer(b)
-            | TransferSui(b) | Pay(b) | PaySui(b) | PayAllSui(b) | SplitCoin(b) | MergeCoin(b)
+            | TransferBfc(b) | Pay(b) | PayBfc(b) | PayAllBfc(b) | SplitCoin(b) | MergeCoin(b)
             | ExecuteSignedTx(b) => Some(b),
             _ => None,
         }
@@ -1797,8 +1794,8 @@ pub enum SuiClientCommandResult {
     Object(SuiObjectResponse),
     Objects(Vec<SuiObjectResponse>),
     Pay(SuiTransactionBlockResponse),
-    PayAllSui(SuiTransactionBlockResponse),
-    PaySui(SuiTransactionBlockResponse),
+    PayAllBfc(SuiTransactionBlockResponse),
+    PayBfc(SuiTransactionBlockResponse),
     Publish(SuiTransactionBlockResponse),
     RawObject(SuiObjectResponse),
     SerializedSignedTransaction(SenderSignedData),
@@ -1808,7 +1805,7 @@ pub enum SuiClientCommandResult {
     SyncClientState,
     TransactionBlock(SuiTransactionBlockResponse),
     Transfer(SuiTransactionBlockResponse),
-    TransferSui(SuiTransactionBlockResponse),
+    TransferBfc(SuiTransactionBlockResponse),
     Upgrade(SuiTransactionBlockResponse),
     VerifyBytecodeMeter {
         max_module_ticks: u128,
@@ -1830,7 +1827,8 @@ impl Display for SwitchResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut writer = String::new();
         if let Some(addr) = self.address {
-            writeln!(writer, "Active address switched to {addr}")?;
+            let bfc_address = sui_address_to_bfc_address(addr.clone());
+            writeln!(writer, "Active address switched to {}", bfc_address)?;
         }
         if let Some(env) = &self.env {
             writeln!(writer, "Active environment switched to [{env}]")?;

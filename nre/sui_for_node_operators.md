@@ -54,7 +54,7 @@ Configuration and guides are available for the following deployment options:
 
 Sui Node runs with a single configuration file provided as an argument, example:
 
-`./sui-node --config-path /opt/sui/config/validator.yaml`.
+`./sui-node --config-path /opt/bfc/config/validator.yaml`.
 
 Configuration templates are available here:
 
@@ -78,12 +78,12 @@ To run a validator successfully it is critical that ports 8080-8084 are open as 
 
 ## Storage
 
-All Sui Node related data is stored by default under `/opt/sui/db/`. This is controlled in the Sui Node configuration file.
+All Sui Node related data is stored by default under `/opt/bfc/db/`. This is controlled in the Sui Node configuration file.
 
 ```shell
-$ cat /opt/sui/config/validator.yaml | grep db-path
-db-path: /opt/sui/db/authorities_db
-  db-path: /opt/sui/db/consensus_db
+$ cat /opt/bfc/config/validator.yaml | grep db-path
+db-path: /opt/bfc/db/authorities_db
+  db-path: /opt/bfc/db/consensus_db
 ```
 
 Ensure that you have an appropriately sized disk mounted for the database to write to.
@@ -91,16 +91,16 @@ Ensure that you have an appropriately sized disk mounted for the database to wri
 - To check the size of the local Sui Node databases:
 
 ```shell
-du -sh /opt/sui/db/
-du -sh /opt/sui/db/authorities_db
-du -sh /opt/sui/db/consensus_db
+du -sh /opt/bfc/db/
+du -sh /opt/bfc/db/authorities_db
+du -sh /opt/bfc/db/consensus_db
 ```
 
 - To delete the local Sui Node databases:
 
 ```shell
 sudo systemctl stop sui-node
-sudo rm -rf /opt/sui/db/authorities_db /opt/sui/db/consensus_db
+sudo rm -rf /opt/bfc/db/authorities_db /opt/bfc/db/consensus_db
 ```
 
 ## Key Management

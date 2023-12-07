@@ -434,7 +434,7 @@ async fn test_pay_sui() {
 #[tokio::test]
 async fn test_pay_sui_multiple_times() {
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(36000000)
+        .with_epoch_duration_ms(360000)
         .build()
         .await;
     let sender = test_cluster.get_address_0();

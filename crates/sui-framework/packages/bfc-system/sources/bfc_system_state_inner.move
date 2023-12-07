@@ -1,6 +1,7 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii::String;
     use std::type_name;
+    use std::ascii::String;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
@@ -42,7 +43,7 @@ module bfc_system::bfc_system_state_inner {
         dao: Dao,
         treasury: Treasury,
         treasury_pool: TreasuryPool,
-        stable_rate: VecMap<String, u64>
+        rate_map: VecMap<ascii::String, u64>,
     }
 
     struct TreasuryParameters has drop, copy {
@@ -73,7 +74,7 @@ module bfc_system::bfc_system_state_inner {
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<BUSD>(ctx, 0);
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
-        let (t, remain_balance) = create_treasury(usd_supply, bfc_balance, parameters, ctx);
+        let (t, remain_balance, rate_map) = create_treasury(usd_supply, bfc_balance, parameters, ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
         let stable_rate = vec_map::empty<String, u64>();
         BfcSystemStateInner {
@@ -203,7 +204,7 @@ module bfc_system::bfc_system_state_inner {
         bfc_balance: Balance<BFC>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext
-    ): (Treasury, Balance<BFC>) {
+    ): (Treasury, Balance<BFC>, VecMap<ascii::String, u64>) {
         let treasury_parameters = parameters.treasury_parameters;
         let t = treasury::create_treasury(treasury_parameters.time_interval, balance::value(&bfc_balance), ctx);
 
@@ -219,12 +220,14 @@ module bfc_system::bfc_system_state_inner {
             parameters.chain_start_timestamp_ms,
             ctx,
         );
+        let rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
             let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
-            treasury::rebalance_first_init(&mut t, ctx);
+            treasury::rebalance_internal(&mut t, false, ctx);
+            rate_map = treasury::get_exchange_rates(&t);
         };
-        (t, bfc_balance)
+        (t, bfc_balance, rate_map)
     }
 
     /// swap bfc to stablecoin
@@ -328,6 +331,7 @@ module bfc_system::bfc_system_state_inner {
             balance::destroy_zero(withdraw_balance);
         };
         treasury::rebalance(&mut self.treasury, clock, ctx);
+        self.rate_map = treasury::get_exchange_rates(&self.treasury);
     }
 
     public(friend) fun update_stable_rate( self: &mut BfcSystemStateInner) {

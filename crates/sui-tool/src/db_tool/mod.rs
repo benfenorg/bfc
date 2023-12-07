@@ -314,7 +314,7 @@ pub fn print_checkpoint_content(
 /// Force removes a transaction and its outputs, if no other dependent transaction has executed yet.
 /// Usually this should be paired with rewind_checkpoint_execution() to re-execute the removed
 /// transaction, to repair corrupted database.
-/// Dry run with: cargo run --package sui-tool -- db-tool --db-path /opt/sui/db/authorities_db/live remove-transaction --digest xxxx
+/// Dry run with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live remove-transaction --digest xxxx
 /// Add --confirm to actually remove the transaction.
 pub fn remove_transaction(path: &Path, opt: RemoveTransactionOptions) -> anyhow::Result<()> {
     let perpetual_db = AuthorityPerpetualTables::open(&path.join("store"), None);
@@ -393,14 +393,14 @@ pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
     // Follow the below steps to test:
     //
     // Get a db snapshot. Either generate one by running stress locally and enabling db checkpoints or download one from S3 bucket (pretty big in size though).
-    // Download the snapshot for the epoch you want to restore to the local disk. You will find one snapshot per epoch in the S3 bucket. We need to place the snapshot in the dir where config is pointing to. If db-config in fullnode.yaml is /opt/sui/db/authorities_db and we want to restore from epoch 10, we want to copy the snapshot to /opt/sui/db/authorities_dblike this:
-    // aws s3 cp s3://myBucket/dir /opt/sui/db/authorities_db/ --recursive —exclude “*” —include “epoch_10*”
-    // Mark downloaded snapshot as live: mv  /opt/sui/db/authorities_db/epoch_10  /opt/sui/db/authorities_db/live
-    // Reset the downloaded db to execute from genesis with: cargo run --package sui-tool -- db-tool --db-path /opt/sui/db/authorities_db/live reset-db
+    // Download the snapshot for the epoch you want to restore to the local disk. You will find one snapshot per epoch in the S3 bucket. We need to place the snapshot in the dir where config is pointing to. If db-config in fullnode.yaml is /opt/bfc/db/authorities_db and we want to restore from epoch 10, we want to copy the snapshot to /opt/bfc/db/authorities_dblike this:
+    // aws s3 cp s3://myBucket/dir /opt/bfc/db/authorities_db/ --recursive —exclude “*” —include “epoch_10*”
+    // Mark downloaded snapshot as live: mv  /opt/bfc/db/authorities_db/epoch_10  /opt/bfc/db/authorities_db/live
+    // Reset the downloaded db to execute from genesis with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live reset-db
     // Start the sui full node: cargo run --release --bin sui-node -- --config-path ~/db_checkpoints/fullnode.yaml
     // A sample fullnode.yaml config would be:
     // ---
-    // db-path:  /opt/sui/db/authorities_db
+    // db-path:  /opt/bfc/db/authorities_db
     // network-address: /ip4/0.0.0.0/tcp/8080/http
     // json-rpc-address: "0.0.0.0:9000"
     // websocket-address: "0.0.0.0:9001"
@@ -448,7 +448,7 @@ pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
 
 /// Force sets the highest executed checkpoint.
 /// NOTE: Does not force re-execution of transactions.
-/// Run with: cargo run --package sui-tool -- db-tool --db-path /opt/sui/db/authorities_db/live rewind-checkpoint-execution --epoch 3 --checkpoint-sequence-number 300000
+/// Run with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live rewind-checkpoint-execution --epoch 3 --checkpoint-sequence-number 300000
 pub fn rewind_checkpoint_execution(
     path: &Path,
     epoch: EpochId,

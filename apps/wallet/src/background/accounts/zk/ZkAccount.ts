@@ -6,8 +6,8 @@ import {
 	type ExportedKeypair,
 	SIGNATURE_SCHEME_TO_FLAG,
 	toSerializedSignature,
-} from '@mysten/sui.js/cryptography';
-import { fromB64, toB64 } from '@mysten/sui.js/utils';
+} from '@benfen/bfc.js/cryptography';
+import { fromB64, toB64 } from '@benfen/bfc.js/utils';
 import { computeZkAddress, zkBcs } from '@mysten/zklogin';
 import { blake2b } from '@noble/hashes/blake2b';
 import { decodeJwt } from 'jose';

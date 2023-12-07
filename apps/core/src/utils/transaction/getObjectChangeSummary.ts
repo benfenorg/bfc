@@ -9,7 +9,7 @@ import {
 	DisplayFieldsResponse,
 	SuiObjectChangeDeleted,
 	SuiObjectChangeWrapped,
-} from '@mysten/sui.js/client';
+} from '@benfen/bfc.js/client';
 import { groupByOwner } from './groupByOwner';
 import { SuiObjectChangeTypes } from './types';
 

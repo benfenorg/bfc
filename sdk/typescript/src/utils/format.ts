@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toHEX } from '@mysten/bcs';
+import { toHEX } from '@benfen/bcs';
 import sha256 from 'fast-sha256';
 
 const ELLIPSIS = '\u{2026}';

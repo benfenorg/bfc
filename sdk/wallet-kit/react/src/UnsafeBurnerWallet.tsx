@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 import {
 	StandardConnectFeature,
 	StandardConnectMethod,
@@ -16,8 +16,8 @@ import {
 	Wallet,
 	BFC_CHAINS,
 	ReadonlyWalletAccount,
-} from '@mysten/wallet-standard';
-import { getFaucetHost, requestSuiFromFaucetV0 } from '@mysten/sui.js/faucet';
+} from '@benfen/wallet-standard';
+import { getFaucetHost, requestSuiFromFaucetV0 } from '@benfen/bfc.js/faucet';
 
 const WALLET_NAME = 'Unsafe Burner Wallet';
 

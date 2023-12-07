@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiClient } from '@mysten/sui.js/client';
+import { type SuiClient } from '@benfen/bfc.js/client';
 import {
 	IntentScope,
 	messageWithIntent,
 	type SerializedSignature,
-} from '@mysten/sui.js/cryptography';
-import { toB64 } from '@mysten/sui.js/utils';
+} from '@benfen/bfc.js/cryptography';
+import { toB64 } from '@benfen/bfc.js/utils';
 import mitt from 'mitt';
 
 import { WalletSigner } from './WalletSigner';

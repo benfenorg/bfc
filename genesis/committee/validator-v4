@@ -1,0 +1,17 @@
+---
+info:
+  name: validator-v4
+  account-address: BFC7d65118843fd73fc48f08926290fc72ebf59f555c8ce84e0e80cf687d93ee8a7994b
+  protocol-key: oH2NURxfVU5Ste9ADMtZyLy7rpstzKBf4ZfF4EiJYgFGPwOCN0mDnUavmdB2DVY/D8Ytr0XVTZT67dwwXTETSnFyvib+FIsCdy86PEWLLj/Wq05TEXCYgnsr0Nl0BI/D
+  worker-key: u879SDx7BlVlbZ7b4177mGwmGFc5aMc+DrQP/IB1b9A=
+  network-key: qoZ9UWK3FGOga2wsNdkermvioZiKOCy3GIwhIs/aQDU=
+  gas-price: 100
+  commission-rate: 200
+  network-address: /ip4/192.168.1.4/tcp/40000/http
+  p2p-address: /ip4/192.168.1.4/udp/40002
+  narwhal-primary-address: /ip4/192.168.1.4/udp/40004
+  narwhal-worker-address: /ip4/192.168.1.4/udp/40006
+  description: abc
+  image-url: abc
+  project-url: abc
+proof_of_possession: g0OH0kZv7I6c2hOa1jm+16e5fuTyJQrVM8tlAaRPkNFCRDuSjxgZAmzHp2Jru9VC

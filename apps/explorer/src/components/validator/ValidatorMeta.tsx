@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { sui2BfcAddress, formatAddress } from '@benfen/bfc.js';
+import { type SuiValidatorSummary } from '@benfen/bfc.js/client';
 import { ArrowUpRight12 } from '@mysten/icons';
-import { sui2BfcAddress, formatAddress } from '@mysten/sui.js';
-import { type SuiValidatorSummary } from '@mysten/sui.js/client';
 import { Heading, Text } from '@mysten/ui';
 
-import { StakeButton } from './StakeButton';
+// import { StakeButton } from './StakeButton';
 import { CopyToClipboard } from '~/ui/CopyToClipboard';
 import { DescriptionList, DescriptionItem } from '~/ui/DescriptionList';
 import { Divider } from '~/ui/Divider';
@@ -44,11 +44,11 @@ export function ValidatorMeta({ validatorData }: ValidatorMetaProps) {
 						</a>
 					)}
 				</div>
-				<div className="flex items-center">
+				{/* <div className="flex items-center">
 					<div>
 						<StakeButton />
 					</div>
-				</div>
+				</div> */}
 			</div>
 			<div className="mb-1 mt-5">
 				<Divider />

@@ -5,12 +5,12 @@ The Sui TypeScript SDK provides a `SuiClient` class to connect to a network's JS
 
 ## Connecting to a Sui network
 
-To establish a connection to a network, import `SuiClient` from `@mysten/sui.js/client` and pass the
+To establish a connection to a network, import `SuiClient` from `@benfen/bfc.js/client` and pass the
 relevant URL to the `url` parameter. The following example establishes a connection to Testnet and
 requests SUI from that network's faucet.
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 // use getFullnodeUrl to define Devnet RPC location
 const rpcUrl = getFullnodeUrl('devnet');
@@ -34,7 +34,7 @@ during development. In a production application, however, you should use the
 - `testnet`
 - `mainnet`
 
-For local development, you can run `cargo run --bin sui-test-validator` to spin up a local network
+For local development, you can run `cargo run --bin bfc-test-validator` to spin up a local network
 with a local validator, a Full node, and a faucet server. Refer to
 [the Local Network guide](https://docs.sui.io/build/sui-local-network) for more information.
 
@@ -45,7 +45,7 @@ methods are built into `SuiClient`, but you can use `call` to leverage any metho
 RPC.
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({ url: getFullnodeUrl('devnet') });
 
@@ -61,7 +61,7 @@ For a full list of available RPC methods, see the
 In addition to calling RPC methods, you can use `SuiClient` to subscribe to network events:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -86,7 +86,7 @@ await unsubscribe();
 Similar to subscribing to events, the `SuiClient` also supports subscribing to transactions:
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	url: getFullnodeUrl('testnet'),
@@ -113,7 +113,7 @@ You can construct a custom transport instance if you need to pass any custom opt
 headers or timeout values.
 
 ```typescript
-import { SuiClient, SuiHTTPTransport, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, SuiHTTPTransport, getFullnodeUrl } from '@benfen/bfc.js/client';
 
 const client = new SuiClient({
 	transport: new SuiHTTPTransport({

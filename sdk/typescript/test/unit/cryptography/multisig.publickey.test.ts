@@ -11,7 +11,7 @@ import { IntentScope, messageWithIntent } from '../../../src/cryptography/intent
 import { decodeMultiSig } from '../../../src/cryptography/multisig';
 import { bytesToHex } from '@noble/hashes/utils';
 import { blake2b } from '@noble/hashes/blake2b';
-import { normalizeSuiAddress } from '../../../src/utils/sui-types.js';
+import { normalizeSuiAddress } from '../../../src/utils/bfc-types.js';
 import {
 	MultiSigPublicKey,
 	MAX_SIGNER_IN_MULTISIG,
@@ -23,7 +23,7 @@ import {
 	SIGNATURE_SCHEME_TO_FLAG,
 } from '../../../src/cryptography/signature';
 import { builder } from '../../../src/builder/bcs.js';
-import { fromB64 } from '@mysten/bcs';
+import { fromB64 } from '@benfen/bcs';
 
 describe('Publickey', () => {
 	let k1: Ed25519Keypair,

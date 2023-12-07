@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64 } from '@mysten/bcs';
+import { fromB64 } from '@benfen/bcs';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
 import { PublicKey, bytesEqual } from '../../cryptography/publickey.js';
 import type { SerializedSignature } from '../../cryptography/signature.js';

@@ -21,6 +21,9 @@ body,
 	--steel: theme('colors.steel.DEFAULT');
 	--steel-dark: theme('colors.steel.dark');
 }
+*::-webkit-scrollbar {
+	display: none;
+}
 
 @layer base {
 	body {

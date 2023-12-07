@@ -4,6 +4,7 @@
 import { useSuiClient } from '@mysten/dapp-kit';
 import { Text, LoadingIndicator } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 
 import { CheckpointTransactionBlocks } from './CheckpointTransactionBlocks';
@@ -59,17 +60,7 @@ export default function CheckpointDetail() {
 										<DescriptionItem direction="cloumn" align="start" title="Checkpoint Timestamp">
 											<Text variant="pBody/medium" color="steel-darker">
 												{data.timestampMs
-													? new Date(Number(data.timestampMs)).toLocaleString(undefined, {
-															month: 'short',
-															day: 'numeric',
-															year: 'numeric',
-															hour: 'numeric',
-															minute: '2-digit',
-															second: '2-digit',
-															hour12: false,
-															timeZone: 'UTC',
-															timeZoneName: 'short',
-													  })
+													? dayjs(Number(data.timestampMs)).format('YYYY/MM/DD HH:mm:ss')
 													: '--'}
 											</Text>
 										</DescriptionItem>

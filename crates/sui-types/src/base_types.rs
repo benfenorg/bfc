@@ -65,8 +65,9 @@ use std::cmp::max;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
-use tracing::info;
+use tracing::{error, info};
 use crate::stable_coin::{STABLE, StableCoin};
+use crate::base_types_bfc::bfc_address_util::{convert_to_evm_address};
 
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
@@ -545,7 +546,7 @@ impl SuiAddress {
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
         //let byte_string = String::from_utf8(bytes.as_ref().to_vec()).unwrap();
-        //info!("suiAddress byte_string: {}", byte_string);
+        info!("suiAddress from_bytes");
 
         <[u8; SUI_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
             .map_err(|_| SuiError::InvalidAddress)
@@ -569,17 +570,18 @@ impl TryFrom<&[u8]> for SuiAddress {
     type Error = SuiError;
     /// Tries to convert the provided byte array into a SuiAddress.
     fn try_from(bytes: &[u8]) -> Result<Self, SuiError> {
-        //info!("tryFrom u8 for SuiAddress");
+        //error!("tryFrom u8 for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
 
 impl TryFrom<Vec<u8>> for SuiAddress {
+
     type Error = SuiError;
 
     /// Tries to convert the provided byte buffer into a SuiAddress.
     fn try_from(bytes: Vec<u8>) -> Result<Self, SuiError> {
-        //info!("tryFrom Vec<u8> for SuiAddress");
+        //error!("tryFrom Vec<u8> for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -592,8 +594,16 @@ impl AsRef<[u8]> for SuiAddress {
 
 impl FromStr for SuiAddress {
     type Err = anyhow::Error;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        decode_bytes_hex(s).map_err(|e| anyhow!(e))
+        //todo, convert BFC address to sui address
+        if s.starts_with("bfc") || s.starts_with("BFC") {
+            let evm_str = convert_to_evm_address(s.to_string());
+            decode_bytes_hex(evm_str.as_str()).map_err(|e| anyhow!(e))
+
+        }else {
+            decode_bytes_hex(s).map_err(|e| anyhow!(e))
+        }
     }
 }
 
@@ -1078,7 +1088,11 @@ impl ObjectID {
     /// Convert from hex string to ObjectID where the string is prefixed with 0x
     /// Padding 0s if the string is too short.
     pub fn from_hex_literal(literal: &str) -> Result<Self, ObjectIDParseError> {
-        if !literal.starts_with("0x") {
+        if literal.starts_with("bfc") || literal.starts_with("BFC") {
+            let bfc_str = convert_to_evm_address(literal.to_string());
+            return Self::from_hex_literal(bfc_str.as_str());
+        }
+        if !literal.starts_with("0x")  {
             return Err(ObjectIDParseError::HexLiteralPrefixMissing);
         }
 
@@ -1197,6 +1211,8 @@ impl From<AccountAddress> for ObjectID {
 
 impl fmt::Display for ObjectID {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        //let bfc_address = objects_id_to_bfc_address(self.clone());
+        //write!(f, "{}", bfc_address)
         write!(f, "0x{}", Hex::encode(self.0))
     }
 }

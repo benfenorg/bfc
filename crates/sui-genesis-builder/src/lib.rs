@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, BfcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST};
+use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, BfcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST, TokenAllocation};
 use sui_execution::{self, Executor};
 use sui_framework::BuiltInFramework;
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
@@ -44,10 +44,13 @@ use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
 use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
-use tracing::trace;
+use tracing::{info, trace};
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
 pub mod validator_info;
+
+
+extern crate csv;
 
 const GENESIS_BUILDER_COMMITTEE_DIR: &str = "committee";
 const GENESIS_BUILDER_PARAMETERS_FILE: &str = "parameters";
@@ -191,6 +194,38 @@ impl Builder {
 
         self.token_distribution_schedule = Some(token_distribution_schedule);
 
+        self.built_genesis.clone().unwrap()
+    }
+
+    pub fn build_unsigned_genesis_checkpoint_with_obc_allocation(&mut self, bfc_user_allocation:&Vec<TokenAllocation>) -> UnsignedGenesis {
+        if let Some(built_genesis) = &self.built_genesis {
+            return built_genesis.clone();
+        }
+
+        // Verify that all input data is valid
+        self.validate().unwrap();
+
+        let objects = self.objects.clone().into_values().collect::<Vec<_>>();
+        let validators = self.validators.clone().into_values().collect::<Vec<_>>();
+
+
+        let token_distribution_schedule =
+            if let Some(token_distribution_schedule) = &self.token_distribution_schedule {
+                token_distribution_schedule.clone()
+            } else {
+                TokenDistributionSchedule::new_for_validators_with_default_allocation_and_bfc_allocation(
+                    validators.iter().map(|v| v.info.sui_address()),
+                    bfc_user_allocation,
+                )
+            };
+
+        self.built_genesis = Some(build_unsigned_genesis_data(
+            &self.parameters,
+            &token_distribution_schedule,
+            &validators,
+            &objects,
+        ));
+        self.token_distribution_schedule = Some(token_distribution_schedule);
         self.built_genesis.clone().unwrap()
     }
 
@@ -436,6 +471,7 @@ impl Builder {
             .filter_map(|o| StakedSui::try_from(o).ok().map(|s| (o.id(), (o, s))))
             .collect();
 
+        info!("token_distribution_schedule: {:?}", token_distribution_schedule.allocations.len());
         for allocation in token_distribution_schedule.allocations {
             if let Some(staked_with_validator) = allocation.staked_with_validator {
                 let staking_pool_id = *address_to_pool_id
@@ -447,6 +483,7 @@ impl Builder {
                         let Owner::AddressOwner(owner) = &o.owner else {
                         panic!("gas object owner must be address owner");
                     };
+                        println!("====staked_sui_id {:?} ===owner: {:?}, allocation: {:?}",s.id(), owner, allocation);
                         *owner == allocation.recipient_address &&
                         s.principal() == allocation.amount_mist
                           && s.pool_id() == staking_pool_id
@@ -1178,6 +1215,11 @@ pub fn generate_genesis_system_object(
 
 #[cfg(test)]
 mod test {
+    use std::env;
+    use std::error::Error;
+    use std::fs::File;
+    use std::thread::sleep;
+    use std::time::Duration;
     use crate::validator_info::ValidatorInfo;
     use crate::Builder;
     use fastcrypto::traits::KeyPair;
@@ -1242,5 +1284,34 @@ mod test {
         }
         builder.save(dir.path()).unwrap();
         Builder::load(dir.path()).unwrap();
+    }
+
+    #[test]
+    fn read_from_csv() -> Result<(), Box<dyn Error>> {
+        if let Ok(current_dir) = env::current_dir() {
+            println!("Current directory: {:?}", current_dir);
+        } else {
+            println!("Failed to get current directory.");
+        }
+        // 打开CSV文件
+        let file = File::open("data.csv")?;
+        let mut rdr = csv::Reader::from_reader(file);
+
+        let mut count = 0;
+        // 迭代每一行并打印值
+        for result in rdr.records() {
+            count = count + 1;
+            let record = result?;
+            for field in record.iter() {
+                print!("{}....", field);
+            }
+            println!();
+        }
+
+        sleep(Duration::from_secs(3));
+        //Sleep(Duration::from_millis(2000));
+
+        println!("count: {}", count);
+        Ok(())
     }
 }

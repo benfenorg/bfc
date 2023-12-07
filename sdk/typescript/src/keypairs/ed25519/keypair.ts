@@ -6,7 +6,7 @@ import type { ExportedKeypair } from '../../cryptography/keypair.js';
 import { Ed25519PublicKey } from './publickey.js';
 import { isValidHardenedPath, mnemonicToSeedHex } from '../../cryptography/mnemonics.js';
 import { derivePath } from './ed25519-hd-key.js';
-import { toB64 } from '@mysten/bcs';
+import { toB64 } from '@benfen/bcs';
 import type { SignatureScheme } from '../../cryptography/signature.js';
 import { PRIVATE_KEY_SIZE, Keypair } from '../../cryptography/keypair.js';
 
@@ -65,9 +65,9 @@ export class Ed25519Keypair extends Keypair {
 	 * The sui.keystore key is a list of Base64 encoded `flag || privkey`. To import
 	 * a key from sui.keystore to typescript, decode from base64 and remove the first
 	 * flag byte after checking it is indeed the Ed25519 scheme flag 0x00 (See more
-	 * on flag for signature scheme: https://github.com/MystenLabs/sui/blob/818406c5abdf7de1b80915a0519071eec3a5b1c7/crates/sui-types/src/crypto.rs#L1650):
+	 * on flag for signature scheme: https://github.com/MystenLabs/sui/blob/818406c5abdf7de1b80915a0519071eec3a5b1c7/crates/bfc-types/src/crypto.rs#L1650):
 	 * ```
-	 * import { Ed25519Keypair, fromB64 } from '@mysten/sui.js';
+	 * import { Ed25519Keypair, fromB64 } from '@benfen/bfc.js';
 	 * const raw = fromB64(t[1]);
 	 * if (raw[0] !== 0 || raw.length !== PRIVATE_KEY_SIZE + 1) {
 	 *   throw new Error('invalid key');

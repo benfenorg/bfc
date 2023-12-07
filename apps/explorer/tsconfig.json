@@ -18,9 +18,9 @@
 		"baseUrl": ".",
 		"paths": {
 			"~/*": ["./src/*"],
-			"@mysten/sui.js/transactions": ["../../sdk/typescript/src/builder/export.ts"],
-			"@mysten/sui.js/*": ["../../sdk/typescript/src/*"],
-			"@mysten/sui.js": ["../../sdk/typescript/src/"],
+			"@benfen/bfc.js/transactions": ["../../sdk/typescript/src/builder/export.ts"],
+			"@benfen/bfc.js/*": ["../../sdk/typescript/src/*"],
+			"@benfen/bfc.js": ["../../sdk/typescript/src/"],
 			"@mysten/dapp-kit": ["../../sdk/dapp-kit/src/"]
 		}
 	},

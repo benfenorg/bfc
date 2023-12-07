@@ -54,7 +54,7 @@ export function CheckpointsTable({
 	const cardData = data ? genTableDataFromCheckpointsData(data) : undefined;
 
 	return (
-		<div className="bfc-table-container flex flex-col space-y-3 text-left">
+		<div className="bfc-table-container flex flex-col text-left">
 			{isError && (
 				<div className="px-3.5 pt-2 font-sans font-semibold text-issue-dark">
 					Failed to load Checkpoints
@@ -91,7 +91,7 @@ export function CheckpointsTable({
 				)}
 
 				<div className="flex items-center space-x-3">
-					<Text variant="body/normal" color="steel-darker">
+					<Text variant="body/normal" color="bfc-text2">
 						{count ? numberSuffix(Number(count)) : '-'}
 						{` Total`}
 					</Text>

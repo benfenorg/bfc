@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@mysten/kiosk": "workspace:*",
-    "@mysten/sui.js": "workspace:*",
+    "@benfen/bfc.js": "workspace:*",
     "commander": "^11.0.0"
   }
 }

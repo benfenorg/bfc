@@ -1,15 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin } from '@mysten/core';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 
 import { Card } from '../../shared/transaction-summary/Card';
 import { ValidatorLogo } from '_app/staking/validators/ValidatorLogo';
 import { TxnAmount } from '_components/receipt-card/TxnAmount';
 import { Text } from '_src/ui/app/shared/text';
 
-import type { SuiEvent } from '@mysten/sui.js/client';
+import type { SuiEvent } from '@benfen/bfc.js/client';
 
 type UnStakeTxnCardProps = {
 	event: SuiEvent;

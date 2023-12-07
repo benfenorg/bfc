@@ -5,7 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import type { ReactNode } from 'react';
 
-const descriptionItemStyles = cva(['flex flex-col gap-2 md:flex-row md:gap-10'], {
+const descriptionItemStyles = cva(['flex flex-col gap-2'], {
 	variants: {
 		align: {
 			start: 'md:items-start',

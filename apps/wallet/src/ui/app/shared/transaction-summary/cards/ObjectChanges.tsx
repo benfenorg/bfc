@@ -1,5 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import {
+	SuiObjectChangeTransferred,
+	formatAddress,
+	is,
+	SuiObjectChangePublished,
+} from '@benfen/bfc.js';
 import { Disclosure } from '@headlessui/react';
 import {
 	getObjectChangeLabel,
@@ -9,12 +15,6 @@ import {
 	type SuiObjectChangeTypes,
 } from '@mysten/core';
 import { ChevronDown14, ChevronRight14 } from '@mysten/icons';
-import {
-	SuiObjectChangeTransferred,
-	formatAddress,
-	is,
-	SuiObjectChangePublished,
-} from '@mysten/sui.js';
 import cx from 'classnames';
 
 import { ObjectChangeDisplay } from './objectSummary/ObjectChangeDisplay';

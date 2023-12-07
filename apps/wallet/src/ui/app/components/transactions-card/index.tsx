@@ -1,6 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { useTransactionSummary, getLabel } from '@mysten/core';
 import {
 	getExecutionStatusError,
 	getExecutionStatusType,
@@ -8,7 +7,8 @@ import {
 	getTransactionKindName,
 	getTransactionKind,
 	getTransactionSender,
-} from '@mysten/sui.js';
+} from '@benfen/bfc.js';
+import { useTransactionSummary, getLabel } from '@mysten/core';
 import { Link } from 'react-router-dom';
 
 import { TxnTypeLabel } from './TxnActionLabel';
@@ -18,7 +18,7 @@ import { Text } from '_app/shared/text';
 import { useGetTxnRecipientAddress } from '_hooks';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
 
-import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 
 export function TransactionCard({
 	txn,

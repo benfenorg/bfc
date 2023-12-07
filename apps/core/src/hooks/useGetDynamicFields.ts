@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { normalizeSuiAddress } from '@mysten/sui.js/utils';
+import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
 import { useSuiClient } from '@mysten/dapp-kit';
 
 const MAX_PAGE_SIZE = 10;

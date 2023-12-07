@@ -14,7 +14,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 100000, storage_cost: 251560,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 56-56:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,0)}}}
 
@@ -29,7 +29,7 @@ deleted: object(4,0), object(4,1)
 gas summary: computation_cost: 100000, storage_cost: 251560,  storage_rebate: 611701, non_refundable_storage_fee: 6179
 
 task 6 'view-object'. lines 62-66:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,0)}}}
 
@@ -39,7 +39,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 100000, storage_cost: 251560,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 8 'view-object'. lines 70-70:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 5
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(7,0)}}}
 
@@ -53,7 +53,7 @@ mutated: object(0,0), object(7,0), object(9,0), object(9,1)
 gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 611701, non_refundable_storage_fee: 6179
 
 task 11 'view-object'. lines 76-80:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 7
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(7,0)}}}
 
@@ -63,7 +63,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 100000, storage_cost: 251560,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 13 'view-object'. lines 84-84:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 8
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(12,0)}}}
 
@@ -79,6 +79,6 @@ wrapped: object(14,1)
 gas summary: computation_cost: 100000, storage_cost: 642200,  storage_rebate: 611701, non_refundable_storage_fee: 6179
 
 task 16 'view-object'. lines 90-90:
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 10
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(12,0)}}}

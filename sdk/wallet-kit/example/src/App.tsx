@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import './App.css';
-import { ConnectButton, useWalletKit } from '@mysten/wallet-kit';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { ConnectButton, useWalletKit } from '@benfen/wallet-kit';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useEffect } from 'react';
 import { QredoConnectButton } from './QredoConnectButton';
 

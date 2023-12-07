@@ -4,7 +4,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useRpc } from '../context/RpcClientContext';
-import { PaginatedObjectsResponse } from '@mysten/sui.js/client';
+import { PaginatedObjectsResponse } from '@benfen/bfc.js/client';
 import { parseObjectDisplays } from '../utils/utils';
 import { TANSTACK_OWNED_OBJECTS_KEY } from '../utils/constants';
 

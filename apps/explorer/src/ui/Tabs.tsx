@@ -24,7 +24,7 @@ const TabSizeContext = createContext<TabSize | null | undefined>(null);
 const tabStyles = cva(
 	[
 		'flex items-center gap-1 border-b border-transparent -mb-px',
-		'text-bfc-text2 disabled:text-steel-dark disabled:pointer-events-none hover:text-steel-darker',
+		'text-bfc-text2 disabled:text-steel-dark disabled:pointer-events-none hover:text-steel-darker whitespace-nowrap',
 	],
 	{
 		variants: {
@@ -59,15 +59,16 @@ const TabsList = forwardRef<
 		fullWidth?: boolean;
 		disableBottomBorder?: boolean;
 		lessSpacing?: boolean;
+		className?: string;
 	}
->(({ fullWidth, disableBottomBorder, lessSpacing, ...props }, ref) => (
+>(({ fullWidth, disableBottomBorder, lessSpacing, className, ...props }, ref) => (
 	<TabsPrimitive.List
 		ref={ref}
 		className={clsx(
 			'flex items-center border-gray-45',
-			lessSpacing ? 'gap-3' : 'gap-6',
 			fullWidth && 'flex-1',
 			!disableBottomBorder && 'border-b',
+			className,
 		)}
 		{...props}
 	/>

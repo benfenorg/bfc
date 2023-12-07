@@ -1,7 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { ProposalStatus } from '@mysten/sui.js/client';
-import { bfcDigitsToHumanReadable, hexToString } from '@mysten/sui.js/utils';
+import { ProposalStatus } from '@benfen/bfc.js/client';
+import { bfcDigitsToHumanReadable, hexToString } from '@benfen/bfc.js/utils';
+import { useWalletKit } from '@benfen/wallet-kit';
 import { Heading, Button } from '@mysten/ui';
 import dayjs from 'dayjs';
 import { useContext } from 'react';
@@ -49,9 +50,9 @@ function DaoContentDetail() {
 						<div className="text-pBody text-bfc-text2">Status</div>
 						<div className="text-pBody text-bfc-text1">{ProposalStatus[proposal.status]}</div>
 					</div>
-					<div className="flex justify-between">
+					<div className="flex justify-between gap-2.5">
 						<div className="text-pBody text-bfc-text2">Proposer</div>
-						<div className="text-pBody text-bfc-text1">{proposal.proposer}</div>
+						<div className="break-all text-pBody text-bfc-text1">{proposal.proposer}</div>
 					</div>
 					<div className="flex justify-between">
 						<div className="text-pBody text-bfc-text2">Start Time</div>
@@ -75,7 +76,9 @@ function DaoContentDetail() {
 				<div className="text-heading6 font-semibold text-steel-darker md:text-heading4">
 					Description
 				</div>
-				<div className="mt-5 text-pBody text-bfc-text1">{hexToString(proposal.description)}</div>
+				<div className="mt-5 break-all text-pBody text-bfc-text1">
+					{hexToString(proposal.description)}
+				</div>
 			</div>
 		</div>
 	);
@@ -83,33 +86,35 @@ function DaoContentDetail() {
 
 function PoolDetail() {
 	const { proposal, manageKey, votingBfcs, votes } = useContext(DaoContext)!;
+	const { isConnected } = useWalletKit();
 	if (!proposal) {
 		return null;
 	}
 
 	const total = proposal.for_votes + proposal.against_votes;
+	const votesInProposal = votes.filter((i) => i.vid === proposal.pid.toString());
 
 	return (
 		<div>
 			<div className="flex justify-between">
 				<div className="flex items-baseline gap-1">
 					<div className="text-heading4 font-semibold">
-						{total === 0 ? 0 : ((proposal.against_votes / total) * 100).toFixed(1) + '%'}
-					</div>
-					<div className="text-body text-bfc-text2">Opposition</div>
-				</div>
-				<div className="flex items-baseline gap-1">
-					<div className="text-heading4 font-semibold">
 						{total === 0 ? 0 : ((proposal.for_votes / total) * 100).toFixed(1) + '%'}
 					</div>
 					<div className="text-body text-bfc-text2">Agree</div>
 				</div>
+				<div className="flex items-baseline gap-1">
+					<div className="text-heading4 font-semibold">
+						{total === 0 ? 0 : ((proposal.against_votes / total) * 100).toFixed(1) + '%'}
+					</div>
+					<div className="text-body text-bfc-text2">Opposition</div>
+				</div>
 			</div>
-			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-green">
+			<div className="relative my-3 h-1 overflow-hidden rounded-br-lg rounded-tl-lg bg-bfc-red">
 				<div
-					className="absolute h-1 bg-bfc-red"
+					className="absolute h-1 bg-bfc-green"
 					style={{
-						width: total === 0 ? '50%' : (proposal.against_votes / total) * 100 + '%',
+						width: total === 0 ? '50%' : (proposal.for_votes / total) * 100 + '%',
 					}}
 				/>
 			</div>
@@ -144,52 +149,56 @@ function PoolDetail() {
 				</div>
 			</div>
 			<div className="my-3 flex flex-col gap-2">
-				<DisclosureBox title="modify proposal" defaultOpen={false}>
-					<ModifyProposalObj />
-				</DisclosureBox>
-				<DisclosureBox title="judge proposal state" defaultOpen={false}>
-					<JudgeProposalState />
-				</DisclosureBox>
-				<DisclosureBox
-					title="cast vote"
-					defaultOpen={false}
-					disabled={proposal.status !== ProposalStatus.Active}
-				>
-					{votingBfcs.length === 0 ? (
-						<Button variant="outline">
-							<Link to="/dao">Create Voting BFC</Link>
-						</Button>
-					) : (
-						<CastVote />
-					)}
-				</DisclosureBox>
-				<DisclosureBox
-					title="change vote"
-					defaultOpen={false}
-					disabled={proposal.status !== ProposalStatus.Active || votes.length === 0}
-				>
-					<ChangeVote />
-				</DisclosureBox>
-				<DisclosureBox
-					title="revoke vote"
-					defaultOpen={false}
-					disabled={proposal.status !== ProposalStatus.Active || votes.length === 0}
-				>
-					<RevokeVote />
-				</DisclosureBox>
-				<DisclosureBox
-					title="unvote votes"
-					defaultOpen={false}
-					disabled={proposal.end_time >= Date.now()}
-				>
-					<UnvoteVotes />
-				</DisclosureBox>
-				<DisclosureBox
-					title="queue proposal action"
-					disabled={!manageKey || proposal.status !== ProposalStatus.Agree}
-				>
-					<QueueProposalAction />
-				</DisclosureBox>
+				{isConnected ? (
+					<>
+						<DisclosureBox title="modify proposal" defaultOpen={false}>
+							<ModifyProposalObj />
+						</DisclosureBox>
+						<DisclosureBox title="judge proposal state" defaultOpen={false}>
+							<JudgeProposalState />
+						</DisclosureBox>
+						<DisclosureBox
+							title="cast vote"
+							defaultOpen={false}
+							disabled={proposal.status !== ProposalStatus.Active}
+						>
+							{votingBfcs.length === 0 ? (
+								<Button variant="outline">
+									<Link to="/dao">Create Voting BFC</Link>
+								</Button>
+							) : (
+								<CastVote />
+							)}
+						</DisclosureBox>
+						<DisclosureBox
+							title="change vote"
+							defaultOpen={false}
+							disabled={proposal.status !== ProposalStatus.Active || votesInProposal.length === 0}
+						>
+							<ChangeVote />
+						</DisclosureBox>
+						<DisclosureBox
+							title="revoke vote"
+							defaultOpen={false}
+							disabled={proposal.status !== ProposalStatus.Active || votesInProposal.length === 0}
+						>
+							<RevokeVote />
+						</DisclosureBox>
+						<DisclosureBox
+							title="unvote votes"
+							defaultOpen={false}
+							disabled={proposal.end_time >= Date.now() || votesInProposal.length === 0}
+						>
+							<UnvoteVotes />
+						</DisclosureBox>
+						<DisclosureBox
+							title="queue proposal action"
+							disabled={!manageKey || proposal.status !== ProposalStatus.Agree}
+						>
+							<QueueProposalAction />
+						</DisclosureBox>
+					</>
+				) : null}
 			</div>
 		</div>
 	);

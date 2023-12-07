@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 import { Tab as HeadlessTab, type TabProps } from '@headlessui/react';
-import { type TransactionBlock } from '@mysten/sui.js/transactions';
 
 import { Command } from './Command';
 import { Input } from './Input';

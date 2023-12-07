@@ -31,5 +31,19 @@ todo.
 
 
 更多的可以参考sample
+====================================
+
+编译
+bfc move build
+
+部署
+bfc client publish --gas-budget 20000000 ./
+
+Get counter
+bfc client call --function getCounter --module counter --package BFC44e41b028d1e510229576eb799b5cba2970807f1fc3094056cf30b370cbcfed81dc5 --gas-budget 100000000
+
+Incr
+bfc client call --function incr --module counter --package 0x2dd7799b671703f2470fdac80e712cb6de8807da69be0afb9d2c3aa9860a7e91 --args 0x732038fb064e8eae4d1590f142ed6308d0fe643076f52949cf88bd2135a9747f --gas-budget 100000000
+
 
 

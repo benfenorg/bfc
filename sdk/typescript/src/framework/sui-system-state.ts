@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeSuiAddress } from '../utils/bfc-types.js';
 import { TransactionBlock } from '../builder/index.js';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
 import { getObjectReference } from '../types/index.js';
