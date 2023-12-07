@@ -571,9 +571,7 @@ mod checked {
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
 
-
         let rate_vec: Vec<_> = rate_map.contents.clone().into_iter().map(|e| (e.value)).collect();
-        // let rate_vec = vec![1u64];
 
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
@@ -784,7 +782,7 @@ mod checked {
         };
 
         let rate_map = temporary_store.get_stable_rate_map();
-
+        println!("rate map: {:?}", rate_map);
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,

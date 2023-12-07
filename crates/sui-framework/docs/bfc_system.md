@@ -15,6 +15,7 @@
 -  [Function `update_round`](#0xc8_bfc_system_update_round)
 -  [Function `load_system_state`](#0xc8_bfc_system_load_system_state)
 -  [Function `load_bfc_system_state`](#0xc8_bfc_system_load_bfc_system_state)
+-  [Function `load_bfc_system_state_mut`](#0xc8_bfc_system_load_bfc_system_state_mut)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
 -  [Function `request_get_exchange_rate`](#0xc8_bfc_system_request_get_exchange_rate)
@@ -358,6 +359,30 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id: &UID): &BfcSystemStateInner {
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_load_bfc_system_state_mut"></a>
+
+## Function `load_bfc_system_state_mut`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id: &<b>mut</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>): &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id: &<b>mut</b> UID): &<b>mut</b> BfcSystemStateInner {
+    <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
 }
 </code></pre>
 

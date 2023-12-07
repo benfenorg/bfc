@@ -1,7 +1,7 @@
 module bfc_system::bfc_system_state_inner {
+    use std::ascii;
     use std::ascii::String;
     use std::type_name;
-    use std::ascii::String;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::clock::Clock;
@@ -43,7 +43,7 @@ module bfc_system::bfc_system_state_inner {
         dao: Dao,
         treasury: Treasury,
         treasury_pool: TreasuryPool,
-        rate_map: VecMap<ascii::String, u64>,
+        stable_rate: VecMap<ascii::String, u64>,
     }
 
     struct TreasuryParameters has drop, copy {
@@ -76,7 +76,7 @@ module bfc_system::bfc_system_state_inner {
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
         let (t, remain_balance, rate_map) = create_treasury(usd_supply, bfc_balance, parameters, ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
-        let stable_rate = vec_map::empty<String, u64>();
+
         BfcSystemStateInner {
             round: BFC_SYSTEM_STATE_START_ROUND,
             gas_coin_map,
@@ -84,7 +84,7 @@ module bfc_system::bfc_system_state_inner {
             dao,
             treasury: t,
             treasury_pool: tp,
-            stable_rate,
+            stable_rate: rate_map,
         }
     }
 
@@ -331,7 +331,7 @@ module bfc_system::bfc_system_state_inner {
             balance::destroy_zero(withdraw_balance);
         };
         treasury::rebalance(&mut self.treasury, clock, ctx);
-        self.rate_map = treasury::get_exchange_rates(&self.treasury);
+        self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
     public(friend) fun update_stable_rate( self: &mut BfcSystemStateInner) {

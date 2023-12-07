@@ -67,7 +67,7 @@ module bfc_system::bfc_system {
         );
         let self = BfcSystemState {
             id,
-            version: BFC_SYSTEM_STATE_VERSION_V1,
+            version: BFC_SYSTEM_STATE_VERSION_V1
         };
 
         dynamic_field::add(&mut self.id, BFC_SYSTEM_STATE_VERSION_V1, inner_state);
@@ -96,8 +96,7 @@ module bfc_system::bfc_system {
         balance::destroy_zero(coin::into_balance(stable));
         // X-treasury rebalance
         bfc_system_state_inner::rebalance(inner_state, clock, ctx);
-        //update stable rate
-        bfc_system_state_inner::update_stable_rate(inner_state);
+
         judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
@@ -130,12 +129,10 @@ module bfc_system::bfc_system {
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
-        let rate_map = bfc_system_state_inner::get_all_stable_rate(inner);
-        if (vec_map::is_empty(&rate_map)) {
-            //add busd rate
-            let rate = bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner);
-            vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), rate);
-        };
+        let rate_map = vec_map::empty<ascii::String, u64>();
+        //add busd rate
+        let rate = bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), rate);
         rate_map
     }
 

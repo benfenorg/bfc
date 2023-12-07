@@ -61,15 +61,11 @@ module sui_system::sui_system {
     use bfc_system::bfc_system;
     use bfc_system::busd::BUSD;
     use sui::dynamic_field;
+    use sui::vec_map;
     use sui::vec_map::VecMap;
     use sui_system::stable_pool::StakedStable;
-    #[test_only]
-    use std::type_name;
-
 
     #[test_only] use sui::balance;
-    #[test_only]
-    use sui::vec_map;
     #[test_only] use sui_system::validator_set::ValidatorSet;
     #[test_only] use sui_system::validator_set;
     #[test_only] use sui::vec_set::VecSet;
