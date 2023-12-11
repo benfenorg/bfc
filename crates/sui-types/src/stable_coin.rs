@@ -120,6 +120,7 @@ mod checked {
         fn from(s: StructTag) -> Self {
             match (s.module.as_str(), s.name.as_str()) {
                 ("bars", "BARS") => STABLE::BARS,
+                ("busd", "BUSD") => STABLE::BUSD,
                 ("baud", "BAUD") => STABLE::BAUD,
                 ("bbrl", "BBRL") => STABLE::BBRL,
                 ("bcad", "BCAD") => STABLE::BCAD,
