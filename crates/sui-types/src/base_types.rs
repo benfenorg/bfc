@@ -166,8 +166,8 @@ impl MoveObjectType {
     pub fn default_gas_coin() -> Self {
         Self(MoveObjectType_::GasCoin(GAS::type_tag()))
     }
-    pub fn stable_gas_coin() -> Self {
-        Self(MoveObjectType_::GasCoin(STABLE::type_tag()))
+    pub fn stable_gas_coin(tag: TypeTag) -> Self {
+        Self(MoveObjectType_::GasCoin(STABLE::from(tag).type_tag()))
     }
 
     pub fn gas_coin(tag: TypeTag) -> Self {
@@ -209,7 +209,7 @@ impl MoveObjectType {
                 if GAS::is_gas_type(tag) {
                     vec![GAS::type_tag()]
                 }else {
-                    vec![STABLE::type_tag()]
+                    vec![STABLE::from(tag.clone()).type_tag()]
                 }
             },
             MoveObjectType_::StakedSui => vec![],
@@ -224,7 +224,7 @@ impl MoveObjectType {
                 if GAS::is_gas_type(&tag) {
                     vec![GAS::type_tag()]
                 }else {
-                    vec![STABLE::type_tag()]
+                    vec![STABLE::from(tag).type_tag()]
                 }
             },
             MoveObjectType_::StakedSui => vec![],
@@ -239,7 +239,7 @@ impl MoveObjectType {
                 if GAS::is_gas_type(tag) {
                     Some(GAS::type_tag())
                 } else {
-                    Some(STABLE::type_tag())
+                    Some(STABLE::from(tag.clone()).type_tag())
                 }
             },
             MoveObjectType_::Coin(inner) => Some(inner.clone()),
@@ -273,8 +273,7 @@ impl MoveObjectType {
     /// Return true if `self` is 0x2::coin::Coin<0x2::sui::SUI>
     pub fn is_gas_coin(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin(tag) => GAS::is_gas_type(tag),
-            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
+            MoveObjectType_::GasCoin(tag) => GAS::is_gas_type(tag) || STABLE::is_gas_type(tag),
             MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
             }

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
@@ -98,6 +99,11 @@ pub struct StoreObjectValue {
     pub previous_transaction: TransactionDigest,
     pub storage_rebate: u64,
 }
+#[derive(Eq, PartialEq, Debug, Clone, Deserialize, Serialize, Hash)]
+pub struct StableCoinValue {
+    tag: TypeTag,
+    balance: u64
+}
 
 /// Forked version of [`sui_types::object::Data`]
 /// Adds extra enum value `IndirectObject`, which represents a reference to an object stored separately
@@ -107,7 +113,7 @@ pub enum StoreData {
     Package(MovePackage),
     IndirectObject(IndirectObjectMetadata),
     Coin(u64),
-    StableCoin(u64),
+    StableCoin(StableCoinValue),
 }
 
 /// Metadata of stored moved object
@@ -200,6 +206,7 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
     let data = match object.data {
         Data::Package(package) => StoreData::Package(package),
         Data::Move(move_obj) => {
+            let ojb_type = move_obj.type_();
             if indirect_objects_threshold > 0
                 && move_obj.contents().len() >= indirect_objects_threshold
             {
@@ -215,20 +222,21 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                 let digest = move_object.digest();
                 indirect_object = Some(move_object);
                 StoreData::IndirectObject(IndirectObjectMetadata { version, digest })
-            } else if move_obj.type_().is_gas_coin() {
+            } else if ojb_type.is_gas_coin() {
                 StoreData::Coin(
                     Coin::from_bcs_bytes(move_obj.contents())
                         .expect("failed to deserialize coin")
                         .balance
                         .value(),
                 )
-            }else if move_obj.type_().is_stable_gas_coin() {
-                StoreData::StableCoin(
-                    Coin::from_bcs_bytes(move_obj.contents())
+            }else if ojb_type.is_stable_gas_coin() {
+                StoreData::StableCoin( StableCoinValue {
+                    tag: TypeTag::from(move_obj.type_().clone()),
+                    balance:Coin::from_bcs_bytes(move_obj.contents())
                         .expect("failed to deserialize coin")
                         .balance
                         .value(),
-                )
+                })
             } else {
                 StoreData::Move(move_obj)
             }
@@ -273,12 +281,12 @@ pub(crate) fn try_construct_object(
                 u64::MAX,
             )?)
         },
-        (StoreData::StableCoin(balance), None) => unsafe {
+        (StoreData::StableCoin(stable), None) => unsafe {
             Data::Move(MoveObject::new_from_execution_with_limit(
-                MoveObjectType::stable_gas_coin(),
+                MoveObjectType::stable_gas_coin(stable.tag),
                 true,
                 object_key.1,
-                bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),
+                bcs::to_bytes(&(object_key.0, stable.balance)).expect("serialization failed"),
                 u64::MAX,
             )?)
         },
