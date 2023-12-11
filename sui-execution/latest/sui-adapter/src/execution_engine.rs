@@ -782,7 +782,6 @@ mod checked {
         };
 
         let rate_map = temporary_store.get_stable_rate_map();
-        println!("rate map: {:?}", rate_map);
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,

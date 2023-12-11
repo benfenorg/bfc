@@ -483,7 +483,6 @@ impl Builder {
                         let Owner::AddressOwner(owner) = &o.owner else {
                         panic!("gas object owner must be address owner");
                     };
-                        println!("====staked_sui_id {:?} ===owner: {:?}, allocation: {:?}",s.id(), owner, allocation);
                         *owner == allocation.recipient_address &&
                         s.principal() == allocation.amount_mist
                           && s.pool_id() == staking_pool_id

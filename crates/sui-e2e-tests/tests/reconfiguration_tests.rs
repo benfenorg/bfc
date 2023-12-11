@@ -14,13 +14,13 @@ use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_json_rpc_types::{SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
-use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, TestTransactionBuilder};
+use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -465,13 +465,12 @@ async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: Su
 }
 
 async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
-
-
     let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
         .with_owner()
-        .with_previous_transaction();
+        .with_previous_transaction()
+        .with_content();
     let objects = http_client
         .get_owned_objects(
             address,
@@ -2342,6 +2341,7 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
         )
         .await?;
     let effects = tx_response.effects.unwrap().clone();
+
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
             assert!(_effects.status.is_ok());
@@ -2470,6 +2470,73 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error>
     let swap_after_bfc_objects_length = bfc_objects.len();
     assert!(swap_after_bfc_objects_length > swap_before_bfc_objects_length);
     Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 ;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let mut busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+    let busd_balance_before = get_busd_balance(busd_data);
+
+    let receiver_address = test_cluster.get_address_1();
+    let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
+                                           Some(receiver_address),
+                                           Option::Some(amount), address,busd_data.object_ref()).await;
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let response = test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+
+    let gas_object_info = http_client.get_object(busd_data.object_id,Some(SuiObjectDataOptions::new().
+        with_owner().with_type().with_display().with_content())).await?;
+
+    let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
+
+    assert!(busd_balance_after < busd_balance_before);
+    Ok(())
+}
+
+fn get_busd_balance(busd_data: &SuiObjectData)->u64{
+    if let SuiParsedData::MoveObject(move_object)=busd_data.content.clone().unwrap(){
+        if let SuiMoveStruct::WithFields(data) = move_object.fields{
+            match data.get("balance").unwrap(){
+                SuiMoveValue::String(balance)=> return balance.parse().unwrap(),
+                _=>return 0,
+            }
+        }
+    }
+    0
 }
 
 #[derive(Debug, Serialize, Deserialize)]

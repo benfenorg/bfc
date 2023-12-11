@@ -409,6 +409,20 @@ pub async fn make_transfer_sui_transaction(
     )
 }
 
+pub async fn make_transfer_sui_transaction_with_gas(
+    context: &WalletContext,
+    recipient: Option<SuiAddress>,
+    amount: Option<u64>,
+    sender: SuiAddress,
+    gas_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .transfer_sui(amount, recipient.unwrap_or(sender))
+            .build(),
+    )
+}
 pub async fn make_staking_transaction(
     context: &WalletContext,
     validator_address: SuiAddress,
