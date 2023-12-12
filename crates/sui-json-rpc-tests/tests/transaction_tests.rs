@@ -328,3 +328,89 @@ async fn test_get_fullnode_transaction() -> Result<(), anyhow::Error> {
 
     Ok(())
 }
+
+#[sim_test]
+async fn test_get_transaction_block_with_stable_gascoin() -> Result<(), anyhow::Error> {
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    let gas_id = objects.last().unwrap().object().unwrap().object_id;
+
+    // Make some transactions
+    let mut tx_responses: Vec<SuiTransactionBlockResponse> = Vec::new();
+    for obj in &objects[..objects.len() - 1] {
+        let oref = obj.object().unwrap();
+        let transaction_bytes: TransactionBlockBytes = http_client
+            .transfer_object(
+                address,
+                oref.object_id,
+                Some(gas_id),
+                1_000_000.into(),
+                address,
+            )
+            .await?;
+        let tx = cluster
+            .wallet
+            .sign_transaction(&transaction_bytes.to_data()?);
+
+        let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+        let response = http_client
+            .execute_transaction_block(
+                tx_bytes,
+                signatures,
+                Some(SuiTransactionBlockResponseOptions::new()),
+                Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+            )
+            .await?;
+
+        tx_responses.push(response);
+    }
+
+    // TODO(chris): re-enable after rewriting get_transactions_in_range_deprecated with query_transactions
+    // test get_transaction_batch
+    // let batch_responses: Vec<SuiTransactionBlockResponse> = http_client
+    //     .multi_get_transaction_blocks(tx, Some(SuiTransactionBlockResponseOptions::new()))
+    //     .await?;
+
+    // assert_eq!(5, batch_responses.len());
+
+    // for r in batch_responses.iter().skip(1) {
+    //     assert!(tx_responses
+    //         .iter()
+    //         .any(|resp| matches!(resp, SuiTransactionBlockResponse {digest, ..} if *digest == r.digest)))
+    // }
+
+    // // test get_transaction
+    // for tx_digest in tx {
+    //     let response: SuiTransactionBlockResponse = http_client
+    //         .get_transaction_block(
+    //             tx_digest,
+    //             Some(SuiTransactionBlockResponseOptions::new().with_raw_input()),
+    //         )
+    //         .await?;
+    //     assert!(tx_responses.iter().any(
+    //         |resp| matches!(resp, SuiTransactionBlockResponse {digest, ..} if *digest == response.digest)
+    //     ));
+    //     let sender_signed_data: SenderSignedData =
+    //         bcs::from_bytes(&response.raw_transaction).unwrap();
+    //     assert_eq!(sender_signed_data.digest(), tx_digest);
+    // }
+
+    Ok(())
+}

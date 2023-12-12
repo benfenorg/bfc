@@ -2522,7 +2522,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
         with_owner().with_type().with_display().with_content())).await?;
 
     let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
-
+    
     assert!(busd_balance_after < busd_balance_before);
     Ok(())
 }
