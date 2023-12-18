@@ -2434,6 +2434,8 @@ async fn test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error>
 
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
 
+    let _ = sleep(Duration::from_secs(10)).await;
+
     objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
     assert!(objects.len() == 1);
     Ok(())
@@ -2469,6 +2471,8 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error>
     bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_after_bfc_objects_length = bfc_objects.len();
     assert!(swap_after_bfc_objects_length > swap_before_bfc_objects_length);
+    let _ = sleep(Duration::from_secs(10)).await;
+
     Ok(())
 }
 
@@ -2517,6 +2521,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
         .effects
         .unwrap();
 
+    let _ = sleep(Duration::from_secs(10)).await;
 
     let gas_object_info = http_client.get_object(busd_data.object_id,Some(SuiObjectDataOptions::new().
         with_owner().with_type().with_display().with_content())).await?;

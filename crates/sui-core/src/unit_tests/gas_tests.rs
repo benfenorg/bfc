@@ -465,6 +465,9 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
 
+    // authority_state.insert_genesis_object(gas_object.clone()).await;
+    authority_state.insert_genesis_object(stable_gas_object.clone()).await;
+
     let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET,true,stable_gas_object,gas_object_id_stable,
                                                             sender,recipient,sender_key.copy(),rgp,authority_state.clone()).await;
 
@@ -876,6 +879,9 @@ async fn test_move_call_gas_stable_coin() -> SuiResult {
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
     let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+
+    authority_state.insert_genesis_object(gas_object.clone()).await;
+    authority_state.insert_genesis_object(stable_gas_object.clone()).await;
 
     move_call_with_gas_object(stable_gas_object,gas_object_id_stable,sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
     move_call_with_gas_object(gas_object,gas_object_id,sender,sender_key,rgp,package_object_ref,authority_state).await?;
