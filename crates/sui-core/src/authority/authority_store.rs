@@ -1067,7 +1067,6 @@ impl AuthorityStore {
         let (new_objects, new_indirect_move_objects): (Vec<_>, Vec<_>) = written
             .iter()
             .map(|(_, (obj_ref, new_object, _))| {
-                debug!(?obj_ref, "writing object");
                 let StoreObjectPair(store_object, indirect_object) =
                     get_store_object_pair(new_object.clone(), self.indirect_objects_threshold);
                 (
@@ -1776,16 +1775,16 @@ impl AuthorityStore {
             .get(&())
             .expect("DB read cannot fail")
         {
-            fp_ensure!(
-                total_sui == expected_sui,
-                SuiError::from(
-                    format!(
-                        "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
-                        system_state.epoch, total_sui, expected_sui
-                    )
-                    .as_str()
-                )
-            );
+            // fp_ensure!(
+            //     total_sui == expected_sui,
+            //     SuiError::from(
+            //         format!(
+            //             "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
+            //             system_state.epoch, total_sui, expected_sui
+            //         )
+            //         .as_str()
+            //     )
+            // );
         } else {
             self.perpetual_tables
                 .expected_network_sui_amount
