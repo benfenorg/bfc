@@ -7,7 +7,7 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use crate::error::{UserInputError, UserInputResult};
-    use crate::gas::{self, GasCostSummary, SuiGasStatusAPI};
+    use crate::gas::{self, GasCoinType, GasCostSummary, SuiGasStatusAPI};
     use crate::gas_model::gas_predicates::{cost_table_for_version, txn_base_cost_as_multiplier};
     use crate::gas_model::units_types::CostTable;
     use crate::{
@@ -365,6 +365,7 @@ mod checked {
             assert!(sender_rebate <= self.storage_rebate);
             let non_refundable_storage_fee = self.storage_rebate - sender_rebate;
             GasCostSummary {
+                gas_coin_type: GasCoinType::BFC,
                 computation_cost: self.computation_cost,
                 storage_cost: self.storage_cost,
                 storage_rebate: sender_rebate,

@@ -123,9 +123,18 @@ pub mod checked {
     /// storage_rebate + non_refundable_storage_fee`
 
     #[serde_as]
+    #[derive(Eq, PartialEq, Clone, Debug, Default,Serialize, Deserialize, JsonSchema)]
+    #[serde(rename_all = "camelCase")]
+    pub enum GasCoinType{
+        #[default]
+        BFC,
+        STABLE
+    }
+    #[serde_as]
     #[derive(Eq, PartialEq, Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
     #[serde(rename_all = "camelCase")]
     pub struct GasCostSummary {
+        pub gas_coin_type: GasCoinType,
         /// Cost of computation/execution
         #[schemars(with = "BigInt<u64>")]
         #[serde_as(as = "Readable<BigInt<u64>, _>")]
@@ -153,6 +162,23 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
+                gas_coin_type: GasCoinType::BFC,
+                computation_cost,
+                storage_cost,
+                storage_rebate,
+                non_refundable_storage_fee,
+            }
+        }
+
+        pub fn new_with_type(
+            gas_coin_type: GasCoinType,
+            computation_cost: u64,
+            storage_cost: u64,
+            storage_rebate: u64,
+            non_refundable_storage_fee: u64,
+        ) -> GasCostSummary {
+            GasCostSummary {
+                gas_coin_type,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -200,6 +226,7 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
+                gas_coin_type: GasCoinType::BFC,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
                 storage_rebate: storage_rebates.iter().sum(),

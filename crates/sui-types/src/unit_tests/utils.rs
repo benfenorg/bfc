@@ -138,6 +138,7 @@ pub fn mock_certified_checkpoint<'a>(
         &contents,
         None,
         GasCostSummary::default(),
+        GasCostSummary::default(),
         None,
         0,
     );

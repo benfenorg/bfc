@@ -27,6 +27,8 @@ pub const BFC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round");
 pub const BFC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round_safe_mode");
 pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("bfc_system");
 
+pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas_balance");
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Bag {
     /// the ID of this bag

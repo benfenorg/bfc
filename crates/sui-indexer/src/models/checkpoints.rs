@@ -8,7 +8,7 @@ use sui_json_rpc_types::Checkpoint as RpcCheckpoint;
 use sui_types::base_types::TransactionDigest;
 use sui_types::crypto::AggregateAuthoritySignature;
 use sui_types::digests::CheckpointDigest;
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCoinType, GasCostSummary};
 use sui_types::messages_checkpoint::EndOfEpochData;
 
 use crate::errors::IndexerError;
@@ -51,9 +51,9 @@ impl Checkpoint {
         total_successful_transactions: i64,
         total_successful_transaction_blocks: i64,
     ) -> Self {
-        let total_gas_cost = checkpoint.epoch_rolling_gas_cost_summary.computation_cost as i64
-            + checkpoint.epoch_rolling_gas_cost_summary.storage_cost as i64
-            - checkpoint.epoch_rolling_gas_cost_summary.storage_rebate as i64;
+        let total_gas_cost = checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost as i64
+            + checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost as i64
+            - checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate as i64;
 
         let checkpoint_transactions: Vec<Option<String>> = contents
             .iter()
@@ -68,10 +68,10 @@ impl Checkpoint {
             previous_checkpoint_digest: checkpoint.previous_digest.map(|d| d.base58_encode()),
             end_of_epoch: checkpoint.end_of_epoch_data.is_some(),
             total_gas_cost,
-            total_computation_cost: checkpoint.epoch_rolling_gas_cost_summary.computation_cost
+            total_computation_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost
                 as i64,
-            total_storage_cost: checkpoint.epoch_rolling_gas_cost_summary.storage_cost as i64,
-            total_storage_rebate: checkpoint.epoch_rolling_gas_cost_summary.storage_rebate as i64,
+            total_storage_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost as i64,
+            total_storage_rebate: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate as i64,
             total_transaction_blocks: contents.size() as i64,
             total_transactions,
             total_successful_transaction_blocks,
@@ -137,6 +137,7 @@ impl Checkpoint {
             end_of_epoch_data,
             validator_signature: validator_sig,
             epoch_rolling_gas_cost_summary: GasCostSummary {
+                gas_coin_type:GasCoinType::BFC,
                 computation_cost: self.total_computation_cost as u64,
                 storage_cost: self.total_storage_cost as u64,
                 storage_rebate: self.total_storage_rebate as u64,

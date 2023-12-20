@@ -560,7 +560,7 @@ impl CheckpointStore {
             transaction_count: last_checkpoint.network_total_transactions
                 - prev_epoch_network_transactions,
             total_gas_reward: last_checkpoint
-                .epoch_rolling_gas_cost_summary
+                .epoch_rolling_bfc_gas_cost_summary
                 .computation_cost,
         })
     }
@@ -1027,6 +1027,7 @@ impl CheckpointBuilder {
                 network_total_transactions,
                 &contents,
                 previous_digest,
+                epoch_rolling_gas_cost_summary.clone(),
                 epoch_rolling_gas_cost_summary,
                 end_of_epoch_data,
                 timestamp_ms,
@@ -1055,7 +1056,7 @@ impl CheckpointBuilder {
         cur_checkpoint_effects: &[TransactionEffects],
     ) -> GasCostSummary {
         let (previous_epoch, previous_gas_costs) = last_checkpoint
-            .map(|c| (c.epoch, c.epoch_rolling_gas_cost_summary.clone()))
+            .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone()))
             .unwrap_or_default();
         let current_gas_costs = GasCostSummary::new_from_txn_effects(cur_checkpoint_effects.iter());
         if previous_epoch == self.epoch_store.epoch() {
@@ -1731,7 +1732,7 @@ mod tests {
         assert_eq!(c1s.previous_digest, None);
         assert_eq!(c1s.sequence_number, 0);
         assert_eq!(
-            c1s.epoch_rolling_gas_cost_summary,
+            c1s.epoch_rolling_bfc_gas_cost_summary,
             GasCostSummary::new(41, 42, 41, 1)
         );
 
@@ -1739,7 +1740,7 @@ mod tests {
         assert_eq!(c2s.previous_digest, Some(c1s.digest()));
         assert_eq!(c2s.sequence_number, 1);
         assert_eq!(
-            c2s.epoch_rolling_gas_cost_summary,
+            c2s.epoch_rolling_bfc_gas_cost_summary,
             GasCostSummary::new(104, 108, 104, 4)
         );
 

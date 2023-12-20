@@ -133,7 +133,8 @@ pub struct CheckpointSummary {
     pub previous_digest: Option<CheckpointDigest>,
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
-    pub epoch_rolling_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_stable_gas_cost_summary: GasCostSummary,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent
@@ -183,7 +184,8 @@ impl CheckpointSummary {
         network_total_transactions: u64,
         transactions: &CheckpointContents,
         previous_digest: Option<CheckpointDigest>,
-        epoch_rolling_gas_cost_summary: GasCostSummary,
+        epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
+        epoch_rolling_stable_gas_cost_summary: GasCostSummary,
         end_of_epoch_data: Option<EndOfEpochData>,
         timestamp_ms: CheckpointTimestamp,
     ) -> CheckpointSummary {
@@ -195,7 +197,8 @@ impl CheckpointSummary {
             network_total_transactions,
             content_digest,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary,
             end_of_epoch_data,
             timestamp_ms,
             version_specific_data: Vec::new(),
@@ -240,7 +243,7 @@ impl Display for CheckpointSummary {
             self.epoch,
             self.sequence_number,
             self.content_digest,
-            self.epoch_rolling_gas_cost_summary,
+            self.epoch_rolling_bfc_gas_cost_summary,
         )
     }
 }
@@ -651,6 +654,7 @@ mod tests {
                         &set,
                         None,
                         GasCostSummary::default(),
+                        GasCostSummary::default(),
                         None,
                         0,
                     ),
@@ -686,6 +690,7 @@ mod tests {
             0,
             &set,
             None,
+            GasCostSummary::default(),
             GasCostSummary::default(),
             None,
             0,
@@ -725,6 +730,7 @@ mod tests {
                         0,
                         &set,
                         None,
+                        GasCostSummary::default(),
                         GasCostSummary::default(),
                         None,
                         0,

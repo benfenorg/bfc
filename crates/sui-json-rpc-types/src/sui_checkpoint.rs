@@ -84,7 +84,7 @@ impl
             sequence_number,
             network_total_transactions,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary: epoch_rolling_gas_cost_summary,
             timestamp_ms,
             end_of_epoch_data,
             ..

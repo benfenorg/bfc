@@ -57,6 +57,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
+    use sui_types::bfc_system_state::BFC_REQUEST_BALANCE_FUNCTION_NAME;
     use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
     //use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
@@ -694,6 +695,34 @@ mod checked {
             BFC_ROUND_FUNCTION_NAME.to_owned(),
             vec![],
             arguments,
+        );
+
+        let mut arguments = vec![];
+
+        let args = vec![
+            CallArg::BFC_SYSTEM_MUT,
+            CallArg::Pure(bcs::to_bytes(&(10000 as u64)).unwrap()),
+        ] .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
+
+        arguments.append(&mut args.unwrap());
+
+        let destroy_bfc =  builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            BFC_REQUEST_BALANCE_FUNCTION_NAME.to_owned(),
+            vec![],
+            arguments,
+        );
+
+        // Step 3: Destroy the storage rebates.
+        builder.programmable_move_call(
+            SUI_FRAMEWORK_PACKAGE_ID,
+            BALANCE_MODULE_NAME.to_owned(),
+            BALANCE_DESTROY_REBATES_FUNCTION_NAME.to_owned(),
+            vec![GAS::type_tag()],
+            vec![destroy_bfc],
         );
 
         Ok(builder.finish())    
