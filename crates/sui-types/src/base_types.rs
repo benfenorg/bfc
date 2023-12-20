@@ -288,6 +288,15 @@ impl MoveObjectType {
         }
     }
 
+    pub fn get_gas_coin_name(&self) -> String {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => tag.to_canonical_string(),
+            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+                "".to_string()
+            }
+        }
+    }
+
     /// Return true if `self` is `0x2::coin::Coin<t>`
     pub fn is_coin_t(&self, t: &TypeTag) -> bool {
         match &self.0 {

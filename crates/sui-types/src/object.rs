@@ -846,6 +846,14 @@ impl Object {
         }
     }
 
+    pub fn get_gas_coin_name(&self) -> String {
+        if let Some(move_object) = self.data.try_as_move() {
+            move_object.type_().get_gas_coin_name()
+        }else {
+            "".to_string()
+        }
+    }
+
     // TODO: use `MoveObj::get_balance_unsafe` instead.
     // context: https://github.com/MystenLabs/sui/pull/10679#discussion_r1165877816
     pub fn as_coin_maybe(&self) -> Option<Coin> {

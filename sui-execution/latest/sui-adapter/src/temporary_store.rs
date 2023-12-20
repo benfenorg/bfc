@@ -806,8 +806,17 @@ impl<'backing> TemporaryStore<'backing> {
 
     pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {
         let wrapper = get_stable_rate_map(self.store.as_object_store())
-            .expect("System state wrapper object must exist");
+            .expect("System stable rate map must exist");
         return wrapper;
+    }
+
+    pub fn get_stable_rate_by_name(&self, name: String) -> u64 {
+        let wrapper = get_stable_rate_map(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        wrapper.contents.clone().into_iter()
+            .find(|e| e.key == name)
+            .map(|e| e.value)
+            .unwrap_or_default()
     }
 
     pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {

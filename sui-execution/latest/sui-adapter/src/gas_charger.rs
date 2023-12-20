@@ -20,7 +20,7 @@ pub mod checked {
         object::Data,
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
-    use tracing::trace;
+    use tracing::{trace, warn};
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
@@ -284,7 +284,20 @@ pub mod checked {
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
-                deduct_gas(&mut gas_object, gas_used);
+                if gas_object.is_stable_gas_coin() {
+                    let coin_name = gas_object.get_gas_coin_name();
+                    //read rate
+                    let rate = temporary_store.get_stable_rate_by_name(coin_name.clone());
+                    if rate > 0 {
+                        let stable_gas_used = gas_used / (rate as i64);
+                        deduct_gas(&mut gas_object, stable_gas_used);
+                    }else {
+                        warn!("get stable rate null: {}", coin_name);
+                    }
+                }else {
+                    deduct_gas(&mut gas_object, gas_used);
+                }
+
                 #[skip_checked_arithmetic]
                 trace!(gas_used, gas_obj_id =? gas_object.id(), gas_obj_ver =? gas_object.version(), "Updated gas object");
 

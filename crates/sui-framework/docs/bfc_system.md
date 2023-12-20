@@ -12,6 +12,7 @@
 -  [Function `create`](#0xc8_bfc_system_create)
 -  [Function `change_round`](#0xc8_bfc_system_change_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
+-  [Function `request_gas_balance`](#0xc8_bfc_system_request_gas_balance)
 -  [Function `update_round`](#0xc8_bfc_system_update_round)
 -  [Function `load_system_state`](#0xc8_bfc_system_load_system_state)
 -  [Function `load_bfc_system_state`](#0xc8_bfc_system_load_bfc_system_state)
@@ -281,6 +282,34 @@
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 
     <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>));
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_request_gas_balance"></a>
+
+## Function `request_gas_balance`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_gas_balance">request_gas_balance</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_gas_balance">request_gas_balance</a>(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext,
+): Balance&lt;BFC&gt; {
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_gas_balance">bfc_system_state_inner::request_gas_balance</a>(<a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper), amount, ctx)
 }
 </code></pre>
 
