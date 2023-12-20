@@ -236,11 +236,10 @@ impl MoveObjectType {
     pub fn coin_type_maybe(&self) -> Option<TypeTag> {
         match &self.0 {
             MoveObjectType_::GasCoin(tag) => {
-                if GAS::is_gas_type(tag) {
-                    Some(GAS::type_tag())
-                } else {
-                    Some(STABLE::type_tag())
-                }
+                // if GAS::is_gas_type(tag) {
+                //     Some(GAS::type_tag())
+                // }
+                Some(tag.clone())
             },
             MoveObjectType_::Coin(inner) => Some(inner.clone()),
             MoveObjectType_::StakedSui => None,

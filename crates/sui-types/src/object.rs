@@ -16,6 +16,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
+use tracing::error;
+use tracing::log::info;
 
 use crate::balance::Balance;
 use crate::base_types::{MoveObjectType, ObjectIDParseError};
@@ -35,7 +37,7 @@ use crate::{
 };
 use sui_protocol_config::ProtocolConfig;
 use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
-use crate::stable_coin::StableCoin;
+use crate::stable_coin::{STABLE, StableCoin};
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
 pub const OBJECT_START_VERSION: SequenceNumber = SequenceNumber::from_u64(1);
@@ -384,6 +386,7 @@ impl MoveObject {
     /// Get the total amount of SUI embedded in `self`. Intended for testing purposes
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
         let balances = self.get_coin_balances(layout_resolver)?;
+        error!("balances:{:?}", balances);
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
 }
@@ -391,7 +394,7 @@ impl MoveObject {
 // Helpers for extracting Coin<T> balances for all T
 impl MoveObject {
     fn is_balance(s: &StructTag) -> Option<&TypeTag> {
-        (Balance::is_balance(s) && s.type_params.len() == 1).then(|| &s.type_params[0])
+        (Balance::is_balance(s) && s.type_params.len() == 1 && GAS::is_gas_type(&s.type_params[0])).then(|| &s.type_params[0])
     }
 
     /// Get the total balances for all `Coin<T>` embedded in `self`.
@@ -439,6 +442,7 @@ impl MoveObject {
                 *balances.entry(type_tag.clone()).or_insert(0) += balance;
             }
         } else {
+            info!("get value: {:?}", s);
             for field in fields {
                 Self::get_coin_balances_in_value(&field.1, balances, value_depth)?;
             }
@@ -916,9 +920,14 @@ impl Object {
 impl Object {
     /// Get the total amount of SUI embedded in `self`, including both Move objects and the storage rebate
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
-        Ok(self.storage_rebate
-            + match &self.data {
-                Data::Move(m) => m.get_total_sui(layout_resolver)?,
+        Ok(match &self.data {
+                Data::Move(m) => {
+                    if m.type_.is_stable_gas_coin() {
+                        self.storage_rebate
+                    }else {
+                        self.storage_rebate +  m.get_total_sui(layout_resolver)?
+                    }
+                },
                 Data::Package(_) => 0,
             })
     }

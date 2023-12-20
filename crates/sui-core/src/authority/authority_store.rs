@@ -1705,11 +1705,20 @@ impl AuthorityStore {
             })
         });
         let mut layout_resolver = executor.type_layout_resolver(Box::new(self.as_ref()));
+        info!("obj sui total: XXXXX");
         for object in pending_objects {
+            let total = object.get_total_sui(layout_resolver.as_mut()).unwrap();
             total_storage_rebate += object.storage_rebate;
-            total_sui +=
-                object.get_total_sui(layout_resolver.as_mut()).unwrap() - object.storage_rebate;
+            // if object.is_stable_gas_coin() {
+                total_sui = total_sui +
+                    total - object.storage_rebate;
+            // }
+
+           if total > 0 {
+               info!("obj sui total: {:?},{:?} {}, {}", object.data.type_(), object.id(), total, object.storage_rebate);
+           }
         }
+        info!("obj sui total: YYYY: {}", total_sui);
         info!(
             "Scanned {} live objects, took {:?}",
             count,
@@ -1775,16 +1784,16 @@ impl AuthorityStore {
             .get(&())
             .expect("DB read cannot fail")
         {
-            // fp_ensure!(
-            //     total_sui == expected_sui,
-            //     SuiError::from(
-            //         format!(
-            //             "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
-            //             system_state.epoch, total_sui, expected_sui
-            //         )
-            //         .as_str()
-            //     )
-            // );
+            fp_ensure!(
+                total_sui == expected_sui,
+                SuiError::from(
+                    format!(
+                        "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
+                        system_state.epoch, total_sui, expected_sui
+                    )
+                    .as_str()
+                )
+            );
         } else {
             self.perpetual_tables
                 .expected_network_sui_amount
