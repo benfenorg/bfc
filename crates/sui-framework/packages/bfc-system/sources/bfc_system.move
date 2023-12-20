@@ -100,6 +100,14 @@ module bfc_system::bfc_system {
         judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
+    public fun request_gas_balance(
+        wrapper: &mut BfcSystemState,
+        amount: u64,
+        ctx: &mut TxContext,
+    ): Balance<BFC> {
+        bfc_system_state_inner::request_gas_balance(load_system_state_mut(wrapper), amount, ctx)
+    }
+
     //todo close
     public entry fun update_round(
         wrapper: &mut BfcSystemState,
