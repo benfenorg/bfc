@@ -386,7 +386,6 @@ impl MoveObject {
     /// Get the total amount of SUI embedded in `self`. Intended for testing purposes
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
         let balances = self.get_coin_balances(layout_resolver)?;
-        error!("balances:{:?}", balances);
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
 }
