@@ -3948,7 +3948,8 @@ impl AuthorityState {
     pub async fn create_and_execute_advance_epoch_tx(
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
-        gas_cost_summary: &GasCostSummary,
+        bfc_gas_cost_summary: &GasCostSummary,
+        stable_gas_cost_summary: &GasCostSummary,
         checkpoint: CheckpointSequenceNumber,
         epoch_start_timestamp_ms: CheckpointTimestamp,
     ) -> anyhow::Result<(SuiSystemState, TransactionEffects)> {
@@ -4011,10 +4012,14 @@ impl AuthorityState {
         let tx = VerifiedTransaction::new_change_epoch(
             next_epoch,
             next_epoch_protocol_version,
-            gas_cost_summary.storage_cost,
-            gas_cost_summary.computation_cost,
-            gas_cost_summary.storage_rebate,
-            gas_cost_summary.non_refundable_storage_fee,
+            bfc_gas_cost_summary.storage_cost,
+            bfc_gas_cost_summary.computation_cost,
+            bfc_gas_cost_summary.storage_rebate,
+            bfc_gas_cost_summary.non_refundable_storage_fee,
+            stable_gas_cost_summary.storage_cost,
+            stable_gas_cost_summary.computation_cost,
+            stable_gas_cost_summary.storage_rebate,
+            stable_gas_cost_summary.non_refundable_storage_fee,
             epoch_start_timestamp_ms,
             next_epoch_system_package_bytes,
         );
@@ -4031,10 +4036,10 @@ impl AuthorityState {
             ?next_epoch,
             ?next_epoch_protocol_version,
             ?next_epoch_system_packages,
-            computation_cost=?gas_cost_summary.computation_cost,
-            storage_cost=?gas_cost_summary.storage_cost,
-            storage_rebate=?gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee=?gas_cost_summary.non_refundable_storage_fee,
+            computation_cost=?bfc_gas_cost_summary.computation_cost,
+            storage_cost=?bfc_gas_cost_summary.storage_cost,
+            storage_rebate=?bfc_gas_cost_summary.storage_rebate,
+            non_refundable_storage_fee=?bfc_gas_cost_summary.non_refundable_storage_fee,
             ?tx_digest,
             "Creating advance epoch transaction"
         );

@@ -146,13 +146,21 @@ pub struct ChangeEpoch {
     /// The protocol version in effect in the new epoch.
     pub protocol_version: ProtocolVersion,
     /// The total amount of gas charged for storage during the epoch.
-    pub storage_charge: u64,
+    pub bfc_storage_charge: u64,
     /// The total amount of gas charged for computation during the epoch.
-    pub computation_charge: u64,
+    pub bfc_computation_charge: u64,
     /// The amount of storage rebate refunded to the txn senders.
-    pub storage_rebate: u64,
+    pub bfc_storage_rebate: u64,
     /// The non-refundable storage fee.
-    pub non_refundable_storage_fee: u64,
+    pub bfc_non_refundable_storage_fee: u64,
+
+    pub stable_storage_charge: u64,
+    /// The total amount of gas charged for computation during the epoch.
+    pub stable_computation_charge: u64,
+    /// The amount of storage rebate refunded to the txn senders.
+    pub stable_storage_rebate: u64,
+    /// The non-refundable storage fee.
+    pub stable_non_refundable_storage_fee: u64,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
@@ -850,7 +858,7 @@ impl TransactionKind {
     pub fn get_advance_epoch_tx_gas_summary(&self) -> Option<(u64, u64)> {
         match self {
             Self::ChangeEpoch(e) => {
-                Some((e.computation_charge + e.storage_charge, e.storage_rebate))
+                Some((e.bfc_computation_charge + e.bfc_storage_charge, e.bfc_storage_rebate))
             }
             _ => None,
         }
@@ -1011,9 +1019,9 @@ impl Display for TransactionKind {
             Self::ChangeEpoch(e) => {
                 writeln!(writer, "Transaction Kind : Epoch Change")?;
                 writeln!(writer, "New epoch ID : {}", e.epoch)?;
-                writeln!(writer, "Storage gas reward : {}", e.storage_charge)?;
-                writeln!(writer, "Computation gas reward : {}", e.computation_charge)?;
-                writeln!(writer, "Storage rebate : {}", e.storage_rebate)?;
+                writeln!(writer, "Storage gas reward : {}", e.bfc_storage_charge)?;
+                writeln!(writer, "Computation gas reward : {}", e.bfc_computation_charge)?;
+                writeln!(writer, "Storage rebate : {}", e.bfc_storage_rebate)?;
                 writeln!(writer, "Timestamp : {}", e.epoch_start_timestamp_ms)?;
             }
             Self::Genesis(_) => {
@@ -1978,20 +1986,28 @@ impl VerifiedTransaction {
     pub fn new_change_epoch(
         next_epoch: EpochId,
         protocol_version: ProtocolVersion,
-        storage_charge: u64,
-        computation_charge: u64,
-        storage_rebate: u64,
-        non_refundable_storage_fee: u64,
+        bfc_storage_charge: u64,
+        bfc_computation_charge: u64,
+        bfc_storage_rebate: u64,
+        bfc_non_refundable_storage_fee: u64,
+        stable_storage_charge: u64,
+        stable_computation_charge: u64,
+        stable_storage_rebate: u64,
+        stable_non_refundable_storage_fee: u64,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
         ChangeEpoch {
             epoch: next_epoch,
             protocol_version,
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge,
+            bfc_computation_charge,
+            bfc_storage_rebate,
+            bfc_non_refundable_storage_fee,
+            stable_storage_charge,
+            stable_computation_charge,
+            stable_storage_rebate,
+            stable_non_refundable_storage_fee,
             epoch_start_timestamp_ms,
             system_packages,
         }

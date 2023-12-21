@@ -331,9 +331,9 @@ impl SuiTransactionBlockKind {
         Ok(match tx {
             TransactionKind::ChangeEpoch(e) => Self::ChangeEpoch(SuiChangeEpoch {
                 epoch: e.epoch,
-                storage_charge: e.storage_charge,
-                computation_charge: e.computation_charge,
-                storage_rebate: e.storage_rebate,
+                storage_charge: e.bfc_storage_charge,
+                computation_charge: e.bfc_computation_charge,
+                storage_rebate: e.bfc_storage_rebate,
                 epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
             }),
             TransactionKind::ChangeBfcRound(o) =>  Self::ChangeBfcRound(SuiChangeBfcRound {

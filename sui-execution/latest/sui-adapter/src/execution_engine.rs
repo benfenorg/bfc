@@ -59,7 +59,7 @@ mod checked {
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
     use sui_types::bfc_system_state::BFC_REQUEST_BALANCE_FUNCTION_NAME;
     use sui_types::collection_types::VecMap;
-    use sui_types::gas::GasCostSummary;
+    use sui_types::gas::{GasCoinType, GasCostSummary};
     //use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
@@ -716,6 +716,7 @@ mod checked {
             arguments,
         );
 
+
         // Step 3: Destroy the storage rebates.
         builder.programmable_move_call(
             SUI_FRAMEWORK_PACKAGE_ID,
@@ -778,6 +779,7 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
+
         let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
@@ -801,10 +803,10 @@ mod checked {
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.storage_charge,
-            computation_charge: change_epoch.computation_charge,
-            storage_rebate: change_epoch.storage_rebate,
-            non_refundable_storage_fee: change_epoch.non_refundable_storage_fee,
+            storage_charge: change_epoch.bfc_storage_charge,
+            computation_charge: change_epoch.bfc_computation_charge,
+            storage_rebate: change_epoch.bfc_storage_rebate,
+            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,

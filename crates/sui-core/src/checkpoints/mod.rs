@@ -947,7 +947,7 @@ impl CheckpointBuilder {
             }
 
             let (mut effects, mut signatures): (Vec<_>, Vec<_>) = transactions.into_iter().unzip();
-            let epoch_rolling_gas_cost_summary =
+            let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary)=
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
             // if  first_checkpoint_of_epoch{
@@ -960,7 +960,8 @@ impl CheckpointBuilder {
             let end_of_epoch_data = if last_checkpoint_of_epoch {
                 let system_state_obj = self
                     .augment_epoch_last_checkpoint(
-                        &epoch_rolling_gas_cost_summary,
+                        &epoch_rolling_bfc_gas_cost_summary,
+                        &epoch_rolling_stable_gas_cost_summary,
                         timestamp_ms,
                         &mut effects,
                         &mut signatures,
@@ -1027,8 +1028,8 @@ impl CheckpointBuilder {
                 network_total_transactions,
                 &contents,
                 previous_digest,
-                epoch_rolling_gas_cost_summary.clone(),
-                epoch_rolling_gas_cost_summary,
+                epoch_rolling_bfc_gas_cost_summary,
+                epoch_rolling_stable_gas_cost_summary,
                 end_of_epoch_data,
                 timestamp_ms,
             );
@@ -1054,22 +1055,29 @@ impl CheckpointBuilder {
         &self,
         last_checkpoint: Option<&CheckpointSummary>,
         cur_checkpoint_effects: &[TransactionEffects],
-    ) -> GasCostSummary {
-        let (previous_epoch, previous_gas_costs) = last_checkpoint
-            .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone()))
+    ) -> (GasCostSummary,GasCostSummary) {
+        let (previous_epoch, previous_bfc_gas_costs,previous_stable_gas_costs) = last_checkpoint
+            .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone(),c.epoch_rolling_stable_gas_cost_summary.clone()))
             .unwrap_or_default();
-        let current_gas_costs = GasCostSummary::new_from_txn_effects(cur_checkpoint_effects.iter());
+        let (current_bfc_gas_costs,current_stable_gas_costs) = GasCostSummary::new_from_txn_effects(cur_checkpoint_effects.iter());
         if previous_epoch == self.epoch_store.epoch() {
             // sum only when we are within the same epoch
-            GasCostSummary::new(
-                previous_gas_costs.computation_cost + current_gas_costs.computation_cost,
-                previous_gas_costs.storage_cost + current_gas_costs.storage_cost,
-                previous_gas_costs.storage_rebate + current_gas_costs.storage_rebate,
-                previous_gas_costs.non_refundable_storage_fee
-                    + current_gas_costs.non_refundable_storage_fee,
+            (GasCostSummary::new(
+                previous_bfc_gas_costs.computation_cost + current_bfc_gas_costs.computation_cost,
+                previous_bfc_gas_costs.storage_cost + current_bfc_gas_costs.storage_cost,
+                previous_bfc_gas_costs.storage_rebate + current_bfc_gas_costs.storage_rebate,
+                previous_bfc_gas_costs.non_refundable_storage_fee
+                    + current_bfc_gas_costs.non_refundable_storage_fee,
+            ),GasCostSummary::new(
+                previous_stable_gas_costs.computation_cost + current_stable_gas_costs.computation_cost,
+                previous_stable_gas_costs.storage_cost + current_stable_gas_costs.storage_cost,
+                previous_stable_gas_costs.storage_rebate + current_stable_gas_costs.storage_rebate,
+                previous_stable_gas_costs.non_refundable_storage_fee
+                    + current_stable_gas_costs.non_refundable_storage_fee,
+            )
             )
         } else {
-            current_gas_costs
+            (current_bfc_gas_costs,current_stable_gas_costs)
         }
     }
 
@@ -1091,7 +1099,8 @@ impl CheckpointBuilder {
 
     async fn augment_epoch_last_checkpoint(
         &self,
-        epoch_total_gas_cost: &GasCostSummary,
+        epoch_bfc_gas_cost: &GasCostSummary,
+        epoch_stable_gas_cost: &GasCostSummary,
         epoch_start_timestamp_ms: CheckpointTimestamp,
         checkpoint_effects: &mut Vec<TransactionEffects>,
         signatures: &mut Vec<Vec<GenericSignature>>,
@@ -1102,7 +1111,8 @@ impl CheckpointBuilder {
             .state
             .create_and_execute_advance_epoch_tx(
                 &self.epoch_store,
-                epoch_total_gas_cost,
+                epoch_bfc_gas_cost,
+                epoch_stable_gas_cost,
                 checkpoint,
                 epoch_start_timestamp_ms,
             )
