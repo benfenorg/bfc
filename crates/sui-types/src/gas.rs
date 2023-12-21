@@ -206,6 +206,9 @@ pub mod checked {
             self.gas_used() as i64 - self.storage_rebate as i64
         }
 
+        pub fn set_gas_coin_type(& mut self, gas_coin_type: GasCoinType)  {
+            self.gas_coin_type = gas_coin_type;
+        }
         pub fn new_from_txn_effects<'a>(
             transactions: impl Iterator<Item = &'a TransactionEffects>,
         ) -> GasCostSummary {
