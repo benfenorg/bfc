@@ -60,6 +60,7 @@ fn gen_ckpts(
                     &CheckpointContents::new_with_causally_ordered_transactions(vec![]),
                     None,
                     GasCostSummary::default(),
+                    GasCostSummary::default(),
                     None,
                     0,
                 ),

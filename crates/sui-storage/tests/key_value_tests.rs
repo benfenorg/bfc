@@ -108,6 +108,7 @@ impl MockTxStore {
             &contents,
             None,
             Default::default(),
+            Default::default(),
             None,
             0,
         );
