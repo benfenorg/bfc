@@ -9,7 +9,7 @@ pub mod checked {
 
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
+    use sui_types::gas::{deduct_gas, GasCoinType, GasCostSummary, SuiGasStatus};
     use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
@@ -280,7 +280,7 @@ pub mod checked {
                     self.handle_storage_and_rebate_v1(temporary_store, execution_result)
                 }
 
-                let cost_summary = self.gas_status.summary();
+                let mut cost_summary = self.gas_status.summary();
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
@@ -294,6 +294,7 @@ pub mod checked {
                     }else {
                         warn!("get stable rate null: {}", coin_name);
                     }
+                    cost_summary.set_gas_coin_type(GasCoinType::STABLE);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }
