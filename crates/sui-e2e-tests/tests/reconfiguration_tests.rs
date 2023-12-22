@@ -24,7 +24,7 @@ use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCoinType, GasCostSummary};
 use sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST;
 use sui_types::message_envelope::Message;
 use sui_types::sui_system_state::{
@@ -60,6 +60,7 @@ async fn advance_epoch_tx_test() {
                 .create_and_execute_advance_epoch_tx(
                     &state.epoch_store_for_testing(),
                     &GasCostSummary::new(0, 0, 0, 0),
+                    &GasCostSummary::new_with_type(GasCoinType::STABLE,0, 0, 0, 0),
                     0, // checkpoint
                     0, // epoch_start_timestamp_ms
                 )

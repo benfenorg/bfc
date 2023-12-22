@@ -3,7 +3,7 @@
 
 use super::*;
 use sui_config::node::ExpensiveSafetyCheckConfig;
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCoinType, GasCostSummary};
 use tempfile::tempdir;
 
 use std::{sync::Arc, time::Duration};
@@ -456,6 +456,7 @@ async fn sync_end_of_epoch_checkpoint(
         .create_and_execute_advance_epoch_tx(
             &authority_state.epoch_store_for_testing().clone(),
             &GasCostSummary::new(0, 0, 0, 0),
+            &GasCostSummary::new_with_type(GasCoinType::STABLE,0, 0, 0, 0),
             *checkpoint.sequence_number(),
             0, // epoch_start_timestamp_ms
         )
