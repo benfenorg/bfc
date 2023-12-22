@@ -671,6 +671,7 @@ mod checked {
 
     pub fn construct_bfc_round_pt(
         round_id: u64,
+        param:AdvanceEpochParams
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -699,9 +700,10 @@ mod checked {
 
         let mut arguments = vec![];
 
+        let burn_coin=param.computation_charge+param.storage_charge;
         let args = vec![
             CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&(10000 as u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&burn_coin).unwrap()),
         ] .into_iter()
             .map(|a| builder.input(a))
             .collect::<Result<_, _>>();
@@ -738,19 +740,19 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
-        let _ = BfcRoundParams {
-            round_id:change_round.bfc_round
-        };
-        let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        let result = programmable_transactions::execution::execute::<execution_mode::System>(
-            protocol_config,
-            metrics.clone(),
-            move_vm,
-            temporary_store,
-            tx_ctx,
-            gas_charger,
-            advance_epoch_pt,
-        );
+        // let _ = BfcRoundParams {
+        //     round_id:change_round.bfc_round
+        // };
+        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
+        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
+        //     protocol_config,
+        //     metrics.clone(),
+        //     move_vm,
+        //     temporary_store,
+        //     tx_ctx,
+        //     gas_charger,
+        //     advance_epoch_pt,
+        // );
 
         #[cfg(msim)]
         let _result = maybe_modify_result(result, change_round.bfc_round);
@@ -779,8 +781,19 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
+        let params = AdvanceEpochParams {
+            epoch: change_epoch.epoch,
+            next_protocol_version: change_epoch.protocol_version,
+            storage_charge: change_epoch.stable_storage_charge,
+            computation_charge: change_epoch.stable_computation_charge,
+            storage_rebate: change_epoch.stable_storage_rebate,
+            non_refundable_storage_fee: change_epoch.stable_non_refundable_storage_fee,
+            storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
+            reward_slashing_rate: protocol_config.reward_slashing_rate(),
+            epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
+        };
 
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
