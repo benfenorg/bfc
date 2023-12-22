@@ -754,8 +754,8 @@ mod checked {
         //     advance_epoch_pt,
         // );
 
-        #[cfg(msim)]
-        let _result = maybe_modify_result(result, change_round.bfc_round);
+        // #[cfg(msim)]
+        // let _result = maybe_modify_result(result, change_round.bfc_round);
 
         // if result.is_err() {
         //     tracing::error!(
