@@ -33,7 +33,7 @@ use sui_types::crypto::{AuthoritySignInfo, AuthorityStrongQuorumSignInfo};
 use sui_types::digests::{CheckpointContentsDigest, CheckpointDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCoinType, GasCostSummary};
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::SignedCheckpointSummary;
 use sui_types::messages_checkpoint::{
@@ -1068,7 +1068,8 @@ impl CheckpointBuilder {
                 previous_bfc_gas_costs.storage_rebate + current_bfc_gas_costs.storage_rebate,
                 previous_bfc_gas_costs.non_refundable_storage_fee
                     + current_bfc_gas_costs.non_refundable_storage_fee,
-            ),GasCostSummary::new(
+            ),GasCostSummary::new_with_type(
+                GasCoinType::STABLE,
                 previous_stable_gas_costs.computation_cost + current_stable_gas_costs.computation_cost,
                 previous_stable_gas_costs.storage_cost + current_stable_gas_costs.storage_cost,
                 previous_stable_gas_costs.storage_rebate + current_stable_gas_costs.storage_rebate,

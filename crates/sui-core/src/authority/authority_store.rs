@@ -1714,9 +1714,9 @@ impl AuthorityStore {
                     total - object.storage_rebate;
             // }
 
-           if total > 0 {
-               info!("obj sui total: {:?},{:?} {}, {}", object.data.type_(), object.id(), total, object.storage_rebate);
-           }
+           // if total > 0 {
+           //     info!("obj sui total: {:?},{:?} {}, {}", object.data.type_(), object.id(), total, object.storage_rebate);
+           // }
         }
         info!("obj sui total: YYYY: {}", total_sui);
         info!(

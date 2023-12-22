@@ -2345,6 +2345,9 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
 
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
+            if _effects.status.is_err() {
+                tracing::error!("effects is {:?}",_effects);
+            }
             assert!(_effects.status.is_ok());
         },
     };
@@ -2488,7 +2491,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 ;
+    let amount  = 1_000_000_000u64 *50;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;

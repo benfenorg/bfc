@@ -701,6 +701,7 @@ mod checked {
         let mut arguments = vec![];
 
         let burn_coin=param.computation_charge+param.storage_charge;
+        tracing::error!("burn coin is {:?}",burn_coin);
         let args = vec![
             CallArg::BFC_SYSTEM_MUT,
             CallArg::Pure(bcs::to_bytes(&burn_coin).unwrap()),
@@ -717,7 +718,6 @@ mod checked {
             vec![],
             arguments,
         );
-
 
         // Step 3: Destroy the storage rebates.
         builder.programmable_move_call(
