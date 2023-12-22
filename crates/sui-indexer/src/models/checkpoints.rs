@@ -136,11 +136,18 @@ impl Checkpoint {
             previous_digest: parsed_previous_digest,
             end_of_epoch_data,
             validator_signature: validator_sig,
-            epoch_rolling_gas_cost_summary: GasCostSummary {
+            epoch_rolling_bfc_gas_cost_summary: GasCostSummary {
                 gas_coin_type:GasCoinType::BFC,
                 computation_cost: self.total_computation_cost as u64,
                 storage_cost: self.total_storage_cost as u64,
                 storage_rebate: self.total_storage_rebate as u64,
+                non_refundable_storage_fee: 0,
+            },
+            epoch_rolling_stable_gas_cost_summary: GasCostSummary {
+                gas_coin_type:GasCoinType::STABLE,
+                computation_cost: 0,
+                storage_cost: 0,
+                storage_rebate: 0,
                 non_refundable_storage_fee: 0,
             },
             network_total_transactions: self.network_total_transactions as u64,

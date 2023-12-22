@@ -55,10 +55,10 @@ impl Checkpoint {
         system_tick: bool,
     ) -> Result<Self, IndexerError> {
         let total_gas_cost = rpc_checkpoint
-            .epoch_rolling_gas_cost_summary
+            .epoch_rolling_bfc_gas_cost_summary
             .computation_cost as i64
-            + rpc_checkpoint.epoch_rolling_gas_cost_summary.storage_cost as i64
-            - rpc_checkpoint.epoch_rolling_gas_cost_summary.storage_rebate as i64;
+            + rpc_checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost as i64
+            - rpc_checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate as i64;
 
         let checkpoint_transactions: Vec<Option<String>> = rpc_checkpoint
             .transactions
@@ -75,10 +75,10 @@ impl Checkpoint {
             end_of_epoch: rpc_checkpoint.end_of_epoch_data.is_some(),
             total_gas_cost,
             total_computation_cost: rpc_checkpoint
-                .epoch_rolling_gas_cost_summary
+                .epoch_rolling_bfc_gas_cost_summary
                 .computation_cost as i64,
-            total_storage_cost: rpc_checkpoint.epoch_rolling_gas_cost_summary.storage_cost as i64,
-            total_storage_rebate: rpc_checkpoint.epoch_rolling_gas_cost_summary.storage_rebate
+            total_storage_cost: rpc_checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost as i64,
+            total_storage_rebate: rpc_checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate
                 as i64,
             total_transaction_blocks: rpc_checkpoint.transactions.len() as i64,
             total_transactions,
@@ -146,11 +146,18 @@ impl Checkpoint {
             previous_digest: parsed_previous_digest,
             end_of_epoch_data,
             validator_signature: validator_sig,
-            epoch_rolling_gas_cost_summary: GasCostSummary {
+            epoch_rolling_bfc_gas_cost_summary: GasCostSummary {
                 gas_coin_type:GasCoinType::BFC,
                 computation_cost: self.total_computation_cost as u64,
                 storage_cost: self.total_storage_cost as u64,
                 storage_rebate: self.total_storage_rebate as u64,
+                non_refundable_storage_fee: 0,
+            },
+            epoch_rolling_stable_gas_cost_summary: GasCostSummary {
+                gas_coin_type:GasCoinType::STABLE,
+                computation_cost: 0,
+                storage_cost: 0,
+                storage_rebate: 0,
                 non_refundable_storage_fee: 0,
             },
             network_total_transactions: self.network_total_transactions as u64,

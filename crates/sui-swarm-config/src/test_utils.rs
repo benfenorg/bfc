@@ -16,6 +16,7 @@ use sui_types::{
         EndOfEpochData, FullCheckpointContents, VerifiedCheckpoint, VerifiedCheckpointContents,
     },
 };
+use sui_types::gas::{GasCoinType, GasCostSummary};
 
 pub struct CommitteeFixture {
     epoch: EpochId,
@@ -98,7 +99,7 @@ impl CommitteeFixture {
                 .digest(),
             previous_digest: None,
             epoch_rolling_bfc_gas_cost_summary: Default::default(),
-            epoch_rolling_stable_gas_cost_summary: Default::default(),
+            epoch_rolling_stable_gas_cost_summary: GasCostSummary::new_with_type(GasCoinType::STABLE,0,0,0,0),
             end_of_epoch_data: None,
             timestamp_ms: 0,
             version_specific_data: Vec::new(),
@@ -181,7 +182,7 @@ impl CommitteeFixture {
                     content_digest: contents_digest,
                     previous_digest: Some(*prev.0.digest()),
                     epoch_rolling_bfc_gas_cost_summary: Default::default(),
-                    epoch_rolling_stable_gas_cost_summary: Default::default(),
+                    epoch_rolling_stable_gas_cost_summary:GasCostSummary::new_with_type(GasCoinType::STABLE,0,0,0,0),
                     end_of_epoch_data: None,
                     timestamp_ms: 0,
                     version_specific_data: Vec::new(),
@@ -232,7 +233,7 @@ impl CommitteeFixture {
                 .digest(),
             previous_digest: Some(*previous_checkpoint.digest()),
             epoch_rolling_bfc_gas_cost_summary: Default::default(),
-            epoch_rolling_stable_gas_cost_summary: Default::default(),
+            epoch_rolling_stable_gas_cost_summary: GasCostSummary::new_with_type(GasCoinType::STABLE,0,0,0,0),
             end_of_epoch_data,
             timestamp_ms: 0,
             version_specific_data: Vec::new(),

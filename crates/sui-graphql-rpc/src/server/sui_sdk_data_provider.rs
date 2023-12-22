@@ -326,9 +326,9 @@ pub(crate) fn convert_json_rpc_checkpoint(
 
     let previous_checkpoint_digest = c.previous_digest.map(|x| x.to_string());
     let network_total_transactions = Some(c.network_total_transactions);
-    let rolling_gas_summary = convert_to_gas_cost_summary(&c.epoch_rolling_gas_cost_summary).ok();
+    let rolling_gas_summary = convert_to_gas_cost_summary(&c.epoch_rolling_bfc_gas_cost_summary).ok();
     let epoch = convert_to_epoch(
-        &c.epoch_rolling_gas_cost_summary,
+        &c.epoch_rolling_bfc_gas_cost_summary,
         system_state,
         protocol_configs,
     )
