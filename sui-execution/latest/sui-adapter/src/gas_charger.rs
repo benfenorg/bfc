@@ -6,7 +6,6 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 pub mod checked {
-
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
     use sui_types::gas::{deduct_gas, GasCoinType, GasCostSummary, SuiGasStatus};
@@ -20,7 +19,7 @@ pub mod checked {
         object::Data,
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
-    use tracing::{trace, warn};
+    use tracing::{trace};
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
@@ -288,13 +287,18 @@ pub mod checked {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let rate = temporary_store.get_stable_rate_by_name(coin_name.clone());
-                    if rate > 0 {
-                        let stable_gas_used = gas_used / (rate as i64);
-                        deduct_gas(&mut gas_object, stable_gas_used);
-                    }else {
-                        warn!("get stable rate null: {}", coin_name);
-                    }
+                    let stable_rate = 1000000000u64 / rate;
+                    let stable_gas_used = gas_used * (stable_rate as i64);
+                    // error!("gas charge: {}, {} ,rate {}", stable_gas_used, gas_used, rate);
+                    deduct_gas(&mut gas_object, stable_gas_used);
                     cost_summary.set_gas_coin_type(GasCoinType::STABLE);
+                    cost_summary.computation_cost = cost_summary.computation_cost * stable_rate;
+                    cost_summary.storage_cost= cost_summary.storage_cost * stable_rate;
+                    cost_summary.storage_rebate = cost_summary.storage_rebate * stable_rate;
+                    cost_summary.non_refundable_storage_fee = cost_summary.non_refundable_storage_fee * stable_rate;
+                    //update gas object storge rebate
+                    gas_object.storage_rebate = gas_object.storage_rebate * stable_rate;
+                    // error!("cost_summary:{:?}", cost_summary);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }

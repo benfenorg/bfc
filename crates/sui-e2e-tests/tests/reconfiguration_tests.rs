@@ -34,7 +34,7 @@ use sui_types::sui_system_state::{
 use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
-use tracing::info;
+use tracing::{error, info};
 use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
@@ -2346,7 +2346,7 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
             if _effects.status.is_err() {
-                tracing::error!("effects is {:?}",_effects);
+                error!("effects is {:?}",_effects);
             }
             assert!(_effects.status.is_ok());
         },
@@ -2515,7 +2515,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
     let receiver_address = test_cluster.get_address_1();
     let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
                                            Some(receiver_address),
-                                           Option::Some(amount), address,busd_data.object_ref()).await;
+                                           Some(amount), address,busd_data.object_ref()).await;
 
     let _ = sleep(Duration::from_secs(10)).await;
 
