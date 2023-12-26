@@ -66,9 +66,9 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
 use tracing::{error, info};
-use crate::stable_coin::{STABLE, StableCoin};
+use crate::stable_coin::{StableCoin};
 use crate::base_types_bfc::bfc_address_util::{convert_to_evm_address};
-
+use crate::stable_coin::stable::checked::BUSD;
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
 #[path = "unit_tests/base_types_tests.rs"]
@@ -167,7 +167,7 @@ impl MoveObjectType {
         Self(MoveObjectType_::GasCoin(GAS::type_tag()))
     }
     pub fn stable_gas_coin() -> Self {
-        Self(MoveObjectType_::GasCoin(STABLE::type_tag()))
+        Self(MoveObjectType_::GasCoin(BUSD::type_tag()))
     }
 
     pub fn gas_coin(tag: TypeTag) -> Self {
@@ -209,7 +209,7 @@ impl MoveObjectType {
                 if GAS::is_gas_type(tag) {
                     vec![GAS::type_tag()]
                 }else {
-                    vec![STABLE::type_tag()]
+                    vec![BUSD::type_tag()]
                 }
             },
             MoveObjectType_::StakedSui => vec![],
@@ -224,7 +224,7 @@ impl MoveObjectType {
                 if GAS::is_gas_type(&tag) {
                     vec![GAS::type_tag()]
                 }else {
-                    vec![STABLE::type_tag()]
+                    vec![BUSD::type_tag()]
                 }
             },
             MoveObjectType_::StakedSui => vec![],
@@ -273,7 +273,6 @@ impl MoveObjectType {
     pub fn is_gas_coin(&self) -> bool {
         match &self.0 {
             MoveObjectType_::GasCoin(tag) => GAS::is_gas_type(tag),
-            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
             MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
             }
@@ -281,7 +280,7 @@ impl MoveObjectType {
     }
     pub fn is_stable_gas_coin(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
+            MoveObjectType_::GasCoin(tag) => BUSD::is_gas_type(tag),
             MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
             }
@@ -303,7 +302,7 @@ impl MoveObjectType {
             MoveObjectType_::GasCoin(tag) => if GAS::is_gas_type(tag) {
                 true
             } else {
-                STABLE::is_gas_type(t)
+                BUSD::is_gas_type(t)
             },
             MoveObjectType_::Coin(c) => t == c,
             MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => false,

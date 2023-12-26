@@ -274,7 +274,7 @@ pub(crate) fn try_construct_object(
                 u64::MAX,
             )?)
         },
-        (StoreData::StableCoin(ct,balance), None) => unsafe {
+        (StoreData::StableCoin(_ct,balance), None) => unsafe {
             Data::Move(MoveObject::new_from_execution_with_limit(
                 MoveObjectType::stable_gas_coin(),
                 true,

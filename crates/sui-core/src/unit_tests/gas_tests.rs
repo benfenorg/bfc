@@ -460,7 +460,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
 
     let gas_object_id = ObjectID::random();
     let gas_object_id_stable = ObjectID::random();
-    let (authority_state, package_object_ref) =
+    let (authority_state, _package_object_ref) =
         init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
