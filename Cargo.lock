@@ -1447,7 +1447,7 @@ dependencies = [
 
 [[package]]
 name = "bfc-genesis-reader"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anemo",
  "anemo-tower",
@@ -5279,7 +5279,6 @@ dependencies = [
  "ref-cast",
  "serde",
  "serde_bytes",
- "sha2 0.9.9",
  "uint",
 ]
 
@@ -9233,7 +9232,7 @@ checksum = "734676eb262c623cec13c3155096e08d1f8f29adce39ba17948b18dad1e54142"
 
 [[package]]
 name = "sui"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anemo",
  "anyhow",
@@ -9784,7 +9783,7 @@ dependencies = [
 
 [[package]]
 name = "sui-faucet"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -9943,7 +9942,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -9995,7 +9994,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-v0"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -10262,7 +10261,7 @@ dependencies = [
 
 [[package]]
 name = "sui-move"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -10426,7 +10425,7 @@ dependencies = [
 
 [[package]]
 name = "sui-node"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anemo",
  "anemo-tower",
@@ -10475,7 +10474,7 @@ dependencies = [
 
 [[package]]
 name = "sui-open-rpc"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "bcs",
@@ -10513,7 +10512,7 @@ dependencies = [
 
 [[package]]
 name = "sui-oracle"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -10732,7 +10731,7 @@ dependencies = [
 
 [[package]]
 name = "sui-rpc-loadgen"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -10781,7 +10780,7 @@ dependencies = [
 
 [[package]]
 name = "sui-sdk"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -10984,7 +10983,7 @@ dependencies = [
 
 [[package]]
 name = "sui-surfer"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "async-trait",
  "bcs",
@@ -11142,7 +11141,7 @@ dependencies = [
 
 [[package]]
 name = "sui-tool"
-version = "1.1.2"
+version = "1.9.1"
 dependencies = [
  "anemo",
  "anemo-cli",
@@ -11844,11 +11843,11 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.28.1"
+version = "1.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0aa32867d44e6f2ce3385e89dceb990188b8bb0fb25b0cf576647a6f98ac5105"
+checksum = "4f38200e3ef7995e5ef13baec2f432a6da0aa9ac495b2c0e8f3b7eec2c92d653"
 dependencies = [
- "autocfg",
+ "backtrace",
  "bytes",
  "libc",
  "mio 0.8.9",
@@ -11856,7 +11855,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "pin-project-lite",
  "signal-hook-registry",
- "socket2 0.4.10",
+ "socket2 0.5.5",
  "tokio-macros 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing",
  "windows-sys 0.48.0",

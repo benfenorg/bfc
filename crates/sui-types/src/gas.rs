@@ -128,7 +128,8 @@ pub mod checked {
     pub enum GasCoinType{
         #[default]
         BFC,
-        STABLE
+        STABLE,
+        STABLE_BY_BFC//for summary only
     }
     #[serde_as]
     #[derive(Eq, PartialEq, Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
@@ -238,7 +239,7 @@ pub mod checked {
                 non_refundable_storage_fee: 0,
             };
             let mut stable_gas_cost_summary = GasCostSummary {
-                gas_coin_type: GasCoinType::STABLE,
+                gas_coin_type: GasCoinType::STABLE_BY_BFC,
                 storage_cost: 0,
                 computation_cost: 0,
                 storage_rebate: 0,
@@ -258,6 +259,9 @@ pub mod checked {
                         stable_gas_cost_summary.computation_cost += computation_costs[index];
                         stable_gas_cost_summary.storage_rebate += storage_rebates[index];
                         stable_gas_cost_summary.non_refundable_storage_fee += non_refundable_storage_fee[index];
+                    }
+                    _ =>{
+                        panic!("Invalid gas coin type")
                     }
                 }
             }
