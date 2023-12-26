@@ -1,14 +1,33 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SUI_SYSTEM_STATE_OBJECT_ID } from '@benfen/bfc.js';
+import { type CoinStruct, SUI_SYSTEM_STATE_OBJECT_ID, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
 
-export function createStakeTransaction(amount: bigint, validator: string) {
+export function createStakeTransaction(
+	amount: bigint,
+	validator: string,
+	coinType: string = SUI_TYPE_ARG,
+	coins: CoinStruct[] = [],
+) {
 	const tx = new TransactionBlock();
-	const stakeCoin = tx.splitCoins(tx.gas, [tx.pure(amount)]);
+	let stakeCoin: ReturnType<typeof tx.splitCoins>;
+	if (coinType === SUI_TYPE_ARG) {
+		stakeCoin = tx.splitCoins(tx.gas, [tx.pure(amount)]);
+	} else {
+		const coin = coins.find((c) => BigInt(c.balance) > amount);
+		if (!coin) {
+			throw new Error('insuficient balance');
+		}
+		stakeCoin = tx.splitCoins(tx.object(coin.coinObjectId), [tx.pure(amount)]);
+	}
+	const target = {
+		[SUI_TYPE_ARG]: '0x3::sui_system::request_add_stake',
+		'0xc8::busd::BUSD': '0x3::sui_system::request_add_stable_stake',
+	}[coinType]!;
+
 	tx.moveCall({
-		target: '0x3::sui_system::request_add_stake',
+		target: target as any,
 		arguments: [
 			tx.sharedObjectRef({
 				objectId: SUI_SYSTEM_STATE_OBJECT_ID,

@@ -8,7 +8,7 @@ Error: Transaction Effects Status: Move Bytecode Verification Error. Please run 
 Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"bfc\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: None } }
 
 task 2 'programmable'. lines 55-59:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
 
 task 3 'view-object'. lines 61-61:
 Error: task 3, lines 61-61. Unbound fake id 2,0

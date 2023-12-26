@@ -17,6 +17,7 @@ use fastcrypto::traits::ToFromBytes;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use crate::sui_system_state::sui_system_state_summary::BagSummary;
 
 use super::epoch_start_sui_system_state::EpochStartValidatorInfoV1;
 use super::sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary};
@@ -372,7 +373,7 @@ impl ValidatorV1 {
                     pending_pool_token_withdraw,
                     extra_fields: _,
                 },
-            stable_pools:_,
+            stable_pools: stable_pools,
             stable_pool_keys:_,
             commission_rate,
             next_epoch_stake,
@@ -421,6 +422,10 @@ impl ValidatorV1 {
             next_epoch_stake,
             next_epoch_gas_price,
             next_epoch_commission_rate,
+            stable_pools: Some(BagSummary{
+                id: stable_pools.id,
+                size: stable_pools.size,
+            }),
         }
     }
 }

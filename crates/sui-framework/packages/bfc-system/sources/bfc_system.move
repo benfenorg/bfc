@@ -21,6 +21,22 @@ module bfc_system::bfc_system {
     use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
+    use bfc_system::bjpy::{BJPY};
+    use bfc_system::bkrw::{BKRW};
+    use bfc_system::baud::{BAUD};
+    use bfc_system::bars::{BARS};
+    use bfc_system::bbrl::{BBRL};
+    use bfc_system::bcad::{BCAD};
+    use bfc_system::beur::{BEUR};
+    use bfc_system::bgbp::{BGBP};
+    use bfc_system::bidr::{BIDR};
+    use bfc_system::binr::{BINR};
+    use bfc_system::brub::{BRUB};
+    use bfc_system::bsar::{BSAR};
+    use bfc_system::btry::{BTRY};
+    use bfc_system::bzar::{BZAR};
+    use bfc_system::bmxn::{BMXN};
+
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
@@ -54,14 +70,44 @@ module bfc_system::bfc_system {
 
     public fun create(
         id: UID,
-        usd_supply: Supply<BUSD>,
         bfc_balance: Balance<BFC>,
+        usd_supply: Supply<BUSD>,
+        jpy_supply: Supply<BJPY>,
+        krw_supply: Supply<BKRW>,
+        aud_supply: Supply<BAUD>,
+        ars_supply: Supply<BARS>,
+        brl_supply: Supply<BBRL>,
+        cad_supply: Supply<BCAD>,
+        eur_supply: Supply<BEUR>,
+        gbp_supply: Supply<BGBP>,
+        idr_supply: Supply<BIDR>,
+        inr_supply: Supply<BINR>,
+        rub_supply: Supply<BRUB>,
+        sar_supply: Supply<BSAR>,
+        try_supply: Supply<BTRY>,
+        zar_supply: Supply<BZAR>,
+        mxn_supply: Supply<BMXN>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ) {
         let inner_state = bfc_system_state_inner::create_inner_state(
-            usd_supply,
             bfc_balance,
+            usd_supply,
+            jpy_supply,
+            krw_supply,
+            aud_supply,
+            ars_supply,
+            brl_supply,
+            cad_supply,
+            eur_supply,
+            gbp_supply,
+            idr_supply,
+            inr_supply,
+            rub_supply,
+            sar_supply,
+            try_supply,
+            zar_supply,
+            mxn_supply,
             parameters,
             ctx,
         );
@@ -230,28 +276,6 @@ module bfc_system::bfc_system {
     {
         let inner_state = load_system_state(self);
         bfc_system_state_inner::get_bfc_amount(inner_state)
-    }
-
-    public(friend) fun bfc_system_stat_parameter(
-        position_number: u32,
-        tick_spacing: u32,
-        spacing_times: u32,
-        initialize_price: u128,
-        time_interval: u32,
-        base_point: u64,
-        max_counter_times: u32,
-        chain_start_timestamp_ms: u64,
-    ): BfcSystemParameters {
-        bfc_system_state_inner::bfc_system_stat_parameter(
-            position_number,
-            tick_spacing,
-            spacing_times,
-            initialize_price,
-            time_interval,
-            base_point,
-            max_counter_times,
-            chain_start_timestamp_ms,
-        )
     }
 
     public entry fun destroy_terminated_proposal(

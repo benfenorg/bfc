@@ -2,6 +2,7 @@ module bfc_system::treasury_pool {
     use sui::balance;
     use sui::balance::Balance;
     use sui::math;
+    use sui::event::emit;
     use sui::bfc::BFC;
     use sui::object;
     use sui::object::UID;
@@ -17,6 +18,15 @@ module bfc_system::treasury_pool {
     struct TreasuryPool has key, store {
         id: UID,
         balance: Balance<BFC>,
+    }
+
+    struct WithdrawEvent has copy, drop {
+        // current balance
+        balance: u64,
+        // request withdraw amount
+        request_amount: u64,
+        // withdraw amount
+        amount: u64,
     }
 
     public(friend) fun create_treasury_pool(
@@ -42,9 +52,15 @@ module bfc_system::treasury_pool {
         assert!(tx_context::sender(ctx) == @0x0, ERR_NOT_ZERO_ADDRESS);
         // Take the minimum of the amount and the remaining balance in
         // order to ensure we don't overdraft the remaining balance
-        let to_withdraw = math::min(amount, balance::value(&self.balance));
-        let withdraw_balance = balance::split(&mut self.balance, to_withdraw);
+        let current_balance = balance::value(&self.balance);
+        let to_withdraw = math::min(amount, current_balance);
 
+        let withdraw_balance = balance::split(&mut self.balance, to_withdraw);
+        emit(WithdrawEvent {
+            balance: current_balance,
+            request_amount: amount,
+            amount: to_withdraw,
+        });
         withdraw_balance
     }
 }

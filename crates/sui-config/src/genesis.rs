@@ -20,6 +20,7 @@ use sui_types::committee::CommitteeWithNetworkMetadata;
 use sui_types::crypto::DefaultHash;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
+use sui_types::collection_types::{VecMap, Entry};
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointSummary, VerifiedCheckpoint,
 };
@@ -65,9 +66,6 @@ pub struct TreasuryParameters {
     /// Ticks numbers according to spacing_times
     pub spacing_times: u32,
 
-    /// rebalance time interval in seconds
-    pub time_interval: u32,
-
     /// maximum state counter value
     pub max_counter_times: u32,
 
@@ -79,16 +77,206 @@ pub struct TreasuryParameters {
 
 }
 
-impl Default for TreasuryParameters {
-    fn default() -> Self {
-        TreasuryParameters {
-            position_numbers: 9,
-            tick_spacing: 1,
-            spacing_times: 2,
-            time_interval: 14400,
-            max_counter_times: 5,
-            base_point: 50000_000_000_000,
-            initialize_price: 2u128.pow(64),
+impl TreasuryParameters {
+    pub fn to_genesis_treasury_parameters() -> VecMap<String, TreasuryParameters> {
+        let mut parameters = vec![];
+        // usd
+        parameters.push(Entry {
+            key: "BUSD".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 18446744073709551616,
+            }
+        });
+
+        // jpy
+        parameters.push(Entry {
+            key: "BJPY".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 1532301645158183424,
+            }
+        });
+
+        // krw
+        parameters.push(Entry {
+            key: "BKRW".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 508541639258687680,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BAUD".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 14986205729530720256,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BARS".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 958520939096550912,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BBRL".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 8249634742471189504,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BCAD".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 15868489263994050560,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BEUR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 19170418781931020288,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BGBP".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 20624086856177975296,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BIDR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 10000_000_000_000,
+                initialize_price: 147573952589676416,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BINR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 2020739568339092480,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BRUB".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 1934710840443688448,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BSAR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 9585209390965510144,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BTRY".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 3401411541597386240,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BZAR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 4206504853187358208,
+            }
+        });
+
+        parameters.push(Entry {
+            key: "BMXN".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 4442564268686996992,
+            }
+        });
+
+        VecMap {
+            contents: parameters,
         }
     }
 }
@@ -399,8 +587,9 @@ pub struct GenesisChainParameters {
 #[serde(rename_all = "kebab-case")]
 pub struct BfcSystemParameters {
     pub chain_start_timestamp_ms: u64,
-
-    pub treasury_parameters: TreasuryParameters,
+    /// re-balance time interval in seconds
+    pub time_interval: u32,
+    pub treasury_parameters: VecMap<String, TreasuryParameters>,
 
 }
 
@@ -516,7 +705,9 @@ impl GenesisCeremonyParameters {
     pub fn to_bfc_system_parameters(&self) -> BfcSystemParameters {
         BfcSystemParameters {
             chain_start_timestamp_ms: self.chain_start_timestamp_ms,
-            treasury_parameters: TreasuryParameters::default(),
+            // re-balance time interval, default 4h
+            time_interval: 14400,
+            treasury_parameters: TreasuryParameters::to_genesis_treasury_parameters(),
         }
     }
 }

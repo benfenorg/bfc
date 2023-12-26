@@ -13,6 +13,9 @@ use rand::SeedableRng;
 use serde_reflection::{Registry, Result, Samples, Tracer, TracerConfig};
 use shared_crypto::intent::{Intent, IntentMessage, PersonalMessage};
 use std::{fs::File, io::Write};
+use move_core_types::account_address::AccountAddress;
+use move_core_types::identifier::Identifier;
+use move_core_types::language_storage::StructTag;
 use sui_types::execution_status::{
     CommandArgumentError, ExecutionFailureStatus, ExecutionStatus, PackageUpgradeError,
     TypeArgumentError,
@@ -131,6 +134,16 @@ fn get_registry() -> Result<Registry> {
     let ccd = CheckpointDigest::random();
     tracer.trace_value(&mut samples, &ccd)?;
 
+
+
+    //
+    tracer.trace_value::<StructTag>(&mut samples, &StructTag {
+        address: AccountAddress::random(),
+        module: Identifier::new("module").unwrap(),
+        name: Identifier::new("name").unwrap(),
+        type_params: vec![TypeTag::Bool],
+    })?;
+
     // 2. Trace the main entry point(s) + every enum separately.
     tracer.trace_type::<Owner>(&samples)?;
     tracer.trace_type::<ExecutionStatus>(&samples)?;
@@ -149,14 +162,14 @@ fn get_registry() -> Result<Registry> {
     tracer.trace_type::<MoveObjectType_>(&samples)?;
     tracer.trace_type::<base_types::SuiAddress>(&samples)?;
     tracer.trace_type::<DeleteKind>(&samples)?;
-    tracer.trace_type::<Argument>(&samples)?;
-    tracer.trace_type::<Command>(&samples)?;
-    tracer.trace_type::<CommandArgumentError>(&samples)?;
-    tracer.trace_type::<TypeArgumentError>(&samples)?;
-    tracer.trace_type::<PackageUpgradeError>(&samples)?;
-    tracer.trace_type::<TransactionExpiration>(&samples)?;
-
-    // uncomment once GenericSignature is added
+     tracer.trace_type::<Argument>(&samples)?;
+     tracer.trace_type::<Command>(&samples)?;
+     tracer.trace_type::<CommandArgumentError>(&samples)?;
+     tracer.trace_type::<TypeArgumentError>(&samples)?;
+     tracer.trace_type::<PackageUpgradeError>(&samples)?;
+     tracer.trace_type::<TransactionExpiration>(&samples)?;
+    //
+    // // uncomment once GenericSignature is added
     tracer.trace_type::<FullCheckpointContents>(&samples)?;
     tracer.trace_type::<CheckpointContents>(&samples)?;
     tracer.trace_type::<CheckpointSummary>(&samples)?;
@@ -204,3 +217,4 @@ fn main() {
         }
     }
 }
+

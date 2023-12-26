@@ -527,6 +527,16 @@ export class SuiClient {
 	}
 
 	/**
+	 * Getting dao Proposal with voter
+	 */
+	async getDaoProposalWithVoter(voter: { Voter: string }): Promise<BfcDao> {
+		return await this.transport.request({
+			method: 'bfcx_getDaoProposals',
+			params: [voter],
+		});
+	}
+
+	/**
 	 * Get events for a given query criteria
 	 */
 	async queryEvents(input: QueryEventsParams): Promise<PaginatedEvents> {

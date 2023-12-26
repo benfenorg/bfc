@@ -8,6 +8,8 @@ use crate::{with_tracing, SuiRpcModule};
 use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
+use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
+
 #[cfg(test)]
 use mockall::automock;
 use move_binary_format::{
@@ -105,7 +107,7 @@ impl MoveUtilsInternalTrait for MoveUtilsInternal {
                     }
                     _ => Err(SuiRpcInputError::GenericInvalid(format!(
                         "Object is not a package with ID {}",
-                        package
+                        objects_id_to_bfc_address(package)
                     )))?,
                 }
             }
@@ -240,7 +242,7 @@ impl MoveUtilsServer for MoveUtils {
                     }
                     _ => Err(SuiRpcInputError::GenericInvalid(format!(
                         "Object is not a package with ID {}",
-                        package
+                        objects_id_to_bfc_address(package)
                     )))?,
                 },
                 _ => Err(SuiRpcInputError::GenericNotFound(format!(

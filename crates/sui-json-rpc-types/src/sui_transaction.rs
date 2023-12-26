@@ -22,7 +22,7 @@ use sui_json::{primitive_type, SuiJsonValue};
 use sui_types::base_types::{
     EpochId, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 };
-use sui_types::base_types_bfc::bfc_address_util::{objects_id_to_bfc_address, sui_address_to_bfc_address};
+use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, objects_id_to_bfc_address, sui_address_to_bfc_address};
 use sui_types::committee::BfcRoundId;
 use sui_types::digests::{ObjectDigest, TransactionEventsDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
@@ -1324,7 +1324,8 @@ impl Display for SuiCommand {
             }
             Self::Publish(deps) => {
                 write!(f, "Publish(<modules>,")?;
-                write_sep(f, deps, ",")?;
+
+                write_sep_bfc(f, deps, ",")?;
                 write!(f, ")")
             }
             Self::Upgrade(deps, current_package_id, ticket) => {
@@ -1419,6 +1420,21 @@ pub struct SuiProgrammableMoveCall {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     /// The arguments to the function.
     pub arguments: Vec<SuiArgument>,
+}
+
+fn write_sep_bfc<T: Display>(
+    f: &mut Formatter<'_>,
+    items: impl IntoIterator<Item = T>,
+    sep: &str,
+) -> std::fmt::Result {
+    let mut xs = items.into_iter().peekable();
+    while let Some(x) = xs.next() {
+        write!(f, "{}", convert_to_bfc_address(format!("{}",x).as_str()))?;
+        if xs.peek().is_some() {
+            write!(f, "{sep}")?;
+        }
+    }
+    Ok(())
 }
 
 fn write_sep<T: Display>(

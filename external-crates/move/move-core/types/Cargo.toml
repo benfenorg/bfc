@@ -27,6 +27,7 @@ arbitrary = { version = "1.1.7", features = [ "derive_arbitrary"], optional = tr
 enum-compat-util = { path = "../../testing-infra/enum-compat-util"}
 move-proc-macros = { path = "../../testing-infra/move-proc-macros"}
 bcs.workspace = true
+sha2 = "0.9.5"
 
 [dev-dependencies]
 proptest = "1.0.0"

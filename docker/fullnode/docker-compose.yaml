@@ -2,15 +2,15 @@
 version: "3.9"
 services:
   fullnode:
-    image: mysten/sui-node:stable
+    image: xxx/bfc-dev:1.1.2
     ports:
     - "8084:8084/udp"
     - "9000:9000"
     - "9184:9184"
     volumes:
-    - ./fullnode-template.yaml:/sui/fullnode.yaml:ro
-    - ./genesis.blob:/sui/genesis.blob:ro
+    - ./fullnode.yaml:/bfc/fullnode.yaml:ro
+    - ./genesis.blob:/bfc/genesis.blob:ro
     - suidb:/sui/suidb:rw
-    command: ["/opt/bfc/bin/sui-node", "--config-path", "/opt/bfc/config/fullnode.yaml"]
+    command: ["/usr/local/bin/bfc-node", "--config-path", "/bfc/fullnode.yaml"]
 volumes:
   suidb:

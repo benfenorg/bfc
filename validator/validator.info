@@ -1,0 +1,17 @@
+---
+info:
+  name: alex
+  account-address: BFCf2861906b17388e24f534696d2fb0b36fc48afad00b534ca4da21b207ea654a52898
+  protocol-key: rI2vVvSOh/J1AtxHWxl8M3+zNSu4E69CoUq2bdQNNJbimEd/Wt6j//AON1BH91QoE4IRlW/ob6bCrA3up6O0BStJ8g11dOr4DGelplRzIJ/4Q6jYUQAAJkWg+lPWZtv9
+  worker-key: e/AnnTFRfUO94Wc8HY+KBTO2TA5aX3eMN/JHJsgA+v4=
+  network-key: WPkxJX5CYRF0mMuUjJ0AQYn62S5OWyIZlscAabIjXfc=
+  gas-price: 100
+  commission-rate: 200
+  network-address: /dns/127.0.0.1/tcp/8080/http
+  p2p-address: /dns/127.0.0.1/udp/8084
+  narwhal-primary-address: /dns/127.0.0.1/udp/8081
+  narwhal-worker-address: /dns/127.0.0.1/udp/8082
+  description: abc
+  image-url: abc
+  project-url: abc
+proof_of_possession: gvgC/6pf8/vhOVC1gCnAeUOB5bCOH0wfWea6QtLclpqBlLo2Nb+kxpecQ8s1WUA8

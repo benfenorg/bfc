@@ -21,7 +21,7 @@ else
 fi
 
 echo
-echo "Building sui-node docker image"
+echo "Building bfc-node docker image"
 echo "Dockerfile: \t$DOCKERFILE"
 echo "docker context: $REPO_ROOT"
 echo "build date: \t$BUILD_DATE"

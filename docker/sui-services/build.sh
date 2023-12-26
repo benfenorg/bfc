@@ -12,7 +12,7 @@ GIT_REVISION="$(git describe --always --dirty --exclude '*')"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 
 echo
-echo "Building sui-services docker image"
+echo "Building bfc-services docker image"
 echo "Dockerfile: \t$DOCKERFILE"
 echo "docker context: $REPO_ROOT"
 echo "build date: \t$BUILD_DATE"

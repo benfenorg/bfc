@@ -118,6 +118,20 @@ impl TestTransactionBuilder {
         )
     }
 
+    pub fn call_stable_staking(self, stake_coin: ObjectRef, validator: SuiAddress) -> Self {
+        self.move_call(
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.as_str(),
+            "request_add_stable_stake",
+            vec![
+                CallArg::SUI_SYSTEM_MUT,
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(stake_coin)),
+                CallArg::Pure(bcs::to_bytes(&validator).unwrap()),
+            ],
+        )
+    }
+
+
     pub fn call_request_add_validator(self) -> Self {
         self.move_call(
             SUI_SYSTEM_PACKAGE_ID,
@@ -438,6 +452,22 @@ pub async fn make_staking_transaction(
             .build(),
     )
 }
+
+pub async fn make_stable_staking_transaction(
+    context: &WalletContext,
+    validator_address: SuiAddress,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    stake_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_stable_staking(stake_object, validator_address)
+            .build(),
+    )
+}
+
 
 pub async fn make_publish_transaction(context: &WalletContext, path: PathBuf) -> Transaction {
     let (sender, gas_object) = context.get_one_gas_object().await.unwrap().unwrap();

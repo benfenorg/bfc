@@ -19,7 +19,7 @@ use sui_json_rpc_types::{SuiCommittee, ValidatorApy, ValidatorApys};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::committee::EpochId;
-use sui_types::dynamic_field::get_dynamic_field_from_store;
+use sui_types::dynamic_field::{DynamicFieldInfo, get_dynamic_field_from_store};
 use sui_types::error::{SuiError, UserInputError};
 use sui_types::governance::StakedSui;
 use sui_types::id::ID;
@@ -65,6 +65,10 @@ impl GovernanceReadApi {
         let obj_id = ObjectID::from(owner);
         let obj = self.state.get_object_read(&obj_id)?.into_object()?;
         Ok(Proposal::try_from(&obj)?)
+    }
+
+    async fn get_stable_pools(&self, owner: SuiAddress) -> Result<Vec<(ObjectID, DynamicFieldInfo)>, Error> {
+        Ok(self.state.get_dynamic_fields(ObjectID::from(owner), None, 100).unwrap())
     }
 
     async fn get_stakes_by_ids(
@@ -265,6 +269,11 @@ impl GovernanceReadApiServer for GovernanceReadApi {
     #[instrument(skip(self))]
     async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal> {
         with_tracing!(async move { self.get_proposal(owner).await })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>> {
+        with_tracing!(async move { self.get_stable_pools(owner).await })
     }
 
     #[instrument(skip(self))]

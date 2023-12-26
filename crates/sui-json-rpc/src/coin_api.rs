@@ -219,7 +219,7 @@ impl CoinReadApiServer for CoinReadApi {
         with_tracing!(async move {
             let coin_struct = parse_to_struct_tag(&coin_type)?;
             Ok(if GAS::is_gas(&coin_struct) {
-                Supply { value: 0 }
+                Supply { value: 10000000000 }
             } else {
                 let treasury_cap_object = self
                     .internal

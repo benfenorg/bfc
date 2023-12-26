@@ -46,7 +46,7 @@ pub fn curve_dx(
     let cost = context.gas_used();
     let x: f64 = (numerator as f64) / (denominator as f64);
 
-    println!("{:?}", x);
+    //println!("{:?}", x);
 
 
     let value = 5.0 * MATH_E.powf(-10.0f64 * x) * (Q64 as f64);

@@ -38,6 +38,7 @@ use crate::authority::authority_store_types::{
     get_store_object_pair, ObjectContentDigest, StoreObject, StoreObjectPair, StoreObjectWrapper,
 };
 use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfiguration};
+use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 
 use super::authority_store_tables::LiveObject;
 use super::{authority_store_tables::AuthorityPerpetualTables, *};
@@ -566,7 +567,10 @@ impl AuthorityStore {
                     self.get_object_by_key(&objref.0, objref.1)?
                 }
             }
-            .ok_or_else(|| SuiError::from(kind.object_not_found_error()))?;
+            .ok_or_else(|| SuiError::from(UserInputError::BFCObjectNotFound {
+                object_id: objects_id_to_bfc_address(kind.object_id()),
+                version: None,
+            }))?;
             result.push(obj);
         }
         Ok(result)

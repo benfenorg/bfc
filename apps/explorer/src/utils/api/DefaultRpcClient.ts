@@ -14,8 +14,8 @@ export enum Network {
 export const NetworkConfigs: Record<Network, { url: string }> = {
 	[Network.LOCAL]: { url: getFullnodeUrl('localnet') },
 	[Network.DEVNET]: { url: 'https://benfen-rpc-dev.openblock.vip' },
-	[Network.TESTNET]: { url: 'https://obcrpc.openblock.vip' },
-	[Network.MAINNET]: { url: 'https://obcrpc.openblock.vip' },
+	[Network.TESTNET]: { url: 'https://testrpc.benfen.org' },
+	[Network.MAINNET]: { url: 'https://testrpc.benfen.org' },
 };
 
 const defaultClientMap: Map<Network | string, SuiClient> = new Map();

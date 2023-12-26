@@ -81,6 +81,12 @@ pub mod bfc_address_util {
         address.insert_str(0, evm_prefix.as_str());
         address.truncate(address.len() - 4);
 
+        //not a valid address
+        if address.len() <= 2 {
+            println!("warning: invalid address: {}", ob_address);
+            return String::from("");
+        }
+
         let result = sha256_string(&address[2..]);
         let check_sum = result.get(0..4).unwrap();
 

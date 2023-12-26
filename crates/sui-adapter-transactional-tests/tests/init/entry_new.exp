@@ -5,4 +5,4 @@ Error: Transaction Effects Status: Sui Move Bytecode Verification Error. Please 
 Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: SuiMoveVerificationError, source: Some("_::m. 'init' cannot be 'entry'"), command: Some(0) } }
 
 task 2 'run'. lines 16-16:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }

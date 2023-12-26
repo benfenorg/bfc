@@ -6,6 +6,7 @@
 
 
 -  [Resource `TreasuryPool`](#0xc8_treasury_pool_TreasuryPool)
+-  [Struct `WithdrawEvent`](#0xc8_treasury_pool_WithdrawEvent)
 -  [Constants](#@Constants_0)
 -  [Function `create_treasury_pool`](#0xc8_treasury_pool_create_treasury_pool)
 -  [Function `withdraw_to_treasury`](#0xc8_treasury_pool_withdraw_to_treasury)
@@ -13,6 +14,7 @@
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -45,6 +47,45 @@
 </dd>
 <dt>
 <code><a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_treasury_pool_WithdrawEvent"></a>
+
+## Struct `WithdrawEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury_pool.md#0xc8_treasury_pool_WithdrawEvent">WithdrawEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>request_amount: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>amount: u64</code>
 </dt>
 <dd>
 
@@ -127,9 +168,15 @@ The <code>withdraw</code> function only called by 0x0 address.
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>);
     // Take the minimum of the amount and the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> in
     // order <b>to</b> ensure we don't overdraft the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
-    <b>let</b> to_withdraw = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(amount, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>));
-    <b>let</b> withdraw_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, to_withdraw);
+    <b>let</b> current_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
+    <b>let</b> to_withdraw = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(amount, current_balance);
 
+    <b>let</b> withdraw_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, to_withdraw);
+    emit(<a href="treasury_pool.md#0xc8_treasury_pool_WithdrawEvent">WithdrawEvent</a> {
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: current_balance,
+        request_amount: amount,
+        amount: to_withdraw,
+    });
     withdraw_balance
 }
 </code></pre>

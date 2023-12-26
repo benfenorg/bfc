@@ -1,5 +1,5 @@
 FROM rust:1.70.0 AS chef
-WORKDIR sui
+WORKDIR bfc
 ARG GIT_REVISION
 ENV GIT_REVISION=$GIT_REVISION
 RUN apt-get update && apt-get install -y cmake clang
@@ -40,14 +40,14 @@ COPY sui-execution sui-execution
 COPY narwhal narwhal
 COPY external-crates external-crates
 RUN cargo build --release \
-    --bin sui-source-validation-service
+    --bin bfc-source-validation-service
 
 # Production Image
 FROM debian:bullseye-slim AS runtime
-WORKDIR sui
+WORKDIR bfc
 RUN apt update && apt install -y git
-COPY --from=builder /sui/target/release/sui-source-validation-service /usr/local/bin
-COPY crates/sui-source-validation-service/config.toml /var/sui/
+COPY --from=builder /bfc/target/release/bfc-source-validation-service /usr/local/bin
+COPY crates/sui-source-validation-service/config.toml /var/bfc/
 
 ARG BUILD_DATE
 ARG GIT_REVISION

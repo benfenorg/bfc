@@ -349,7 +349,7 @@ module bfc_system::vault {
         let (tick_lower, tick_upper) = position::get_tick_range(mut_position);
         let _vault_id = position::get_vault_id(mut_position);
         assert!(_vault_id == expect_vault_id, ERR_POOL_INVALID);
-        let liquidity = position::decrease_liquidity(mut_position, _delta_liquidity);
+        let _ = position::decrease_liquidity(mut_position, _delta_liquidity);
         tick::decrease_liquidity(
             &mut _vault.tick_manager,
             _vault.current_tick_index,
@@ -1040,43 +1040,29 @@ module bfc_system::vault {
         _liquidities: vector<u128>
     )
     {
+        // return balance
+        balance::join(_bfc_balance, _balance1);
+        balance::decrease_supply(_supply, _balance0);
+
         let index = 0u64;
         let length = vector::length(&_liquidities);
         let position_length = position::get_total_positions(&_vault.position_manager);
         assert!(length == position_length, ERR_POSITION_LENGTH_MISMATCH);
-        let (total_a, total_b) = (0, 0);
         while (index < length) {
             let receipt = add_liquidity(
                 _vault,
                 index + 1, // position index
                 *vector::borrow(&_liquidities, index)
             );
-            let AddLiquidityReceipt {
-                vault_id: _,
-                amount_a,
-                amount_b
-            } = receipt;
-            total_a = amount_a + total_a;
-            total_b = amount_b + total_b;
+            let AddLiquidityReceipt { vault_id: _, amount_a, amount_b } = receipt;
+            if (amount_a > 0) {
+                balance::join(&mut _vault.coin_a, balance::increase_supply(_supply, amount_a));
+            };
+            if (amount_b > 0) {
+                balance::join(&mut _vault.coin_b, balance::split(_bfc_balance, amount_b));
+            };
             index = index + 1;
         };
-
-        let balance0_value = balance::value(&_balance0);
-        let balance1_value = balance::value(&_balance1);
-        if (balance0_value < total_a) {
-            balance::join(&mut _balance0, balance::increase_supply(_supply, total_a - balance0_value));
-        }  else if (balance0_value > total_a) {
-            balance::decrease_supply(_supply, balance::split(&mut _balance0, balance0_value - total_a));
-        };
-
-        if (balance1_value < total_b) {
-            balance::join(&mut _balance1, balance::split(_bfc_balance, total_b - balance1_value));
-        } else if (balance1_value > total_b) {
-            balance::join(_bfc_balance, balance::split(&mut _balance1, balance1_value - total_b));
-        };
-
-        balance::join(&mut _vault.coin_a, _balance0);
-        balance::join(&mut _vault.coin_b, _balance1);
     }
 
     public(friend) fun rebalance<StableCoinType>(
@@ -1094,7 +1080,9 @@ module bfc_system::vault {
             _vault.state_counter = 0;
         };
         if (_vault.last_bfc_rebalance_amount > balance::value(&balance1)) {
-            _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - balance::value(&balance1);
+            _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - balance::value(
+                &balance1
+            );
         };
         let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape, _treasury_total_bfc_supply);
         rebalance_internal(

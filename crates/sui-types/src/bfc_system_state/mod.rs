@@ -16,7 +16,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use crate::balance::Balance;
 use crate::base_types::ObjectID;
-use crate::collection_types::VecMap;
+use crate::collection_types::{VecMap, Bag};
 use crate::gas_coin_strategy::GasCoinMap;
 use crate::dao::Dao;
 use crate::proposal::ProposalStatus;
@@ -29,13 +29,6 @@ pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("bfc_system");
 
 pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas_balance");
 
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct Bag {
-    /// the ID of this bag
-    id: UID,
-    /// the number of key-value pairs in the bag
-    size: u64,
-}
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Treasury {
     pub id: UID,

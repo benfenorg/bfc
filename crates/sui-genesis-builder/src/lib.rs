@@ -483,6 +483,7 @@ impl Builder {
                         let Owner::AddressOwner(owner) = &o.owner else {
                         panic!("gas object owner must be address owner");
                     };
+                        println!("====staked_sui_id {:?} ===owner: {:?}, allocation: {:?}",s.id(), owner, allocation);
                         *owner == allocation.recipient_address &&
                         s.principal() == allocation.amount_mist
                           && s.pool_id() == staking_pool_id
@@ -539,6 +540,99 @@ impl Builder {
                 )
                 .expect("signature should be valid");
         }
+    }
+
+    pub fn load_private_genesis<P: AsRef<Path>>(path: P, with_genesis: bool) -> anyhow::Result<Self, anyhow::Error> {
+        let path = path.as_ref();
+        let path: &Utf8Path = path.try_into()?;
+        trace!("Reading Genesis Builder from {}", path);
+
+        if !path.is_dir() {
+            bail!("path must be a directory");
+        }
+
+        // Load parameters
+        let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
+        let parameters = serde_yaml::from_slice(
+            &fs::read(parameters_file).context("unable to read genesis parameters file")?,
+        )
+            .context("unable to deserialize genesis parameters")?;
+
+        let token_distribution_schedule_file =
+            path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE);
+        let token_distribution_schedule = if token_distribution_schedule_file.exists() {
+            Some(TokenDistributionSchedule::from_csv(fs::File::open(
+                token_distribution_schedule_file,
+            )?)?)
+        } else {
+            None
+        };
+
+        // Load validator infos
+        let mut committee = BTreeMap::new();
+        for entry in path.join(GENESIS_BUILDER_COMMITTEE_DIR).read_dir_utf8()? {
+            let entry = entry?;
+            if entry.file_name().starts_with('.') {
+                continue;
+            }
+
+            let path = entry.path();
+            let validator_info_bytes = fs::read(path)?;
+            let validator_info: GenesisValidatorInfo =
+                serde_yaml::from_slice(&validator_info_bytes)
+                    .with_context(|| format!("unable to load validator info for {path}"))?;
+            committee.insert(validator_info.info.protocol_key(), validator_info);
+        }
+
+        // Load Signatures
+        let mut signatures = BTreeMap::new();
+        for entry in path.join(GENESIS_BUILDER_SIGNATURE_DIR).read_dir_utf8()? {
+            let entry = entry?;
+            if entry.file_name().starts_with('.') {
+                continue;
+            }
+
+            let path = entry.path();
+            let signature_bytes = fs::read(path)?;
+            let sigs: AuthoritySignInfo = bcs::from_bytes(&signature_bytes)
+                .with_context(|| format!("unable to load validator signatrue for {path}"))?;
+            signatures.insert(sigs.authority, sigs);
+        }
+
+        let mut builder = Self {
+            parameters,
+            token_distribution_schedule,
+            objects: Default::default(),
+            validators: committee,
+            signatures,
+            built_genesis: None, // Leave this as none, will build and compare below
+        };
+
+        let unsigned_genesis_file = path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE);
+        if unsigned_genesis_file.exists() && with_genesis == false {
+            let unsigned_genesis_bytes = fs::read(unsigned_genesis_file)?;
+            let loaded_genesis: UnsignedGenesis = bcs::from_bytes(&unsigned_genesis_bytes)?;
+
+            // If we have a built genesis, then we must have a token_distribution_schedule present
+            // as well.
+            assert!(
+                builder.token_distribution_schedule.is_some(),
+                "If a built genesis is present, then there must also be a token-distribution-schedule present"
+            );
+
+            // Verify loaded genesis matches one build from the constituent parts
+            let built = builder.build_unsigned_genesis_checkpoint();
+            loaded_genesis.checkpoint_contents.digest(); // cache digest before compare
+            assert_eq!(
+                built, loaded_genesis,
+                "loaded genesis does not match built genesis"
+            );
+
+            // Just to double check that its set after building above
+            assert!(builder.unsigned_genesis_checkpoint().is_some());
+        }
+
+        Ok(builder)
     }
 
     pub fn load<P: AsRef<Path>>(path: P) -> anyhow::Result<Self, anyhow::Error> {
@@ -1168,10 +1262,145 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
+        let bjpy_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bjpy").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bkrw_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bkrw").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let baud_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("baud").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bars_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bars").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bbrl_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bbrl").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bcad_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bcad").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let beur_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("beur").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bgbp_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bgbp").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bidr_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bidr").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let binr_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("binr").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let brub_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("brub").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bsar_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bsar").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let btry_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("btry").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bzar_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bzar").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bmxn_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bmxn").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
         let arguments = vec![
             bfc_system_state_uid,
-            busd_supply,
             new_sui_supply,
+            busd_supply,
+            bjpy_supply,
+            bkrw_supply,
+            baud_supply,
+            bars_supply,
+            bbrl_supply,
+            bcad_supply,
+            beur_supply,
+            bgbp_supply,
+            bidr_supply,
+            binr_supply,
+            brub_supply,
+            bsar_supply,
+            btry_supply,
+            bzar_supply,
+            bmxn_supply,
             builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?
         ];
 

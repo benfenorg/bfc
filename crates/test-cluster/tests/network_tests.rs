@@ -61,11 +61,7 @@ async fn test_package_override() {
         let package_override = Object::new_package_for_testing(
             &framework_modules,
             TransactionDigest::genesis(),
-            [
-                BuiltInFramework::get_package_by_id(&MOVE_STDLIB_PACKAGE_ID).genesis_move_package(),
-                BuiltInFramework::get_package_by_id(&SUI_FRAMEWORK_PACKAGE_ID)
-                    .genesis_move_package(),
-            ],
+            BuiltInFramework::genesis_move_packages(),
         )
         .unwrap();
 

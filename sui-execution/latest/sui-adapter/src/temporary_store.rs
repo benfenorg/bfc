@@ -10,6 +10,7 @@ use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
+use tracing::info;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::committee::EpochId;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
@@ -465,6 +466,9 @@ impl<'backing> TemporaryStore<'backing> {
         {
             for (id, v1) in &loaded_child_objects {
                 if let Some(v2) = self.loaded_child_objects.get(id) {
+                    if v1!= v2 {
+                        info!("id is {:?}",id);
+                    }
                     assert_eq!(v1, v2);
                 }
             }
@@ -1036,6 +1040,7 @@ impl<'backing> Storage for TemporaryStore<'backing> {
             panic!("ExecutionResults::V2 expected in sui-execution v1 and above");
         };
         let mut object_changes = BTreeMap::new();
+        //info!("results is {:?}",results);
         for (id, object) in results.written_objects {
             let write_kind = if results.created_object_ids.contains(&id) {
                 WriteKind::Create
@@ -1061,6 +1066,7 @@ impl<'backing> Storage for TemporaryStore<'backing> {
                 DeleteKindWithOldVersion::Wrap(version),
             ));
         }
+        //info!("object_changes is {:?}",object_changes);
         self.apply_object_changes(object_changes);
 
         for event in results.user_events {

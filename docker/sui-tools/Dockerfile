@@ -6,7 +6,7 @@ FROM rust:1.70.0 AS builder
 ARG PROFILE=release
 ARG GIT_REVISION
 ENV GIT_REVISION=$GIT_REVISION
-WORKDIR "$WORKDIR/sui"
+WORKDIR "$WORKDIR/bfc"
 RUN apt-get update && apt-get install -y cmake clang
 
 COPY Cargo.toml Cargo.lock ./
@@ -16,20 +16,20 @@ COPY narwhal narwhal
 COPY external-crates external-crates
 
 RUN cargo build --profile ${PROFILE} \
-    --bin sui-node \
-    --bin sui \
-    --bin sui-faucet \
+    --bin bfc-node \
+    --bin bfc \
+    --bin bfc-faucet \
     --bin stress \
-    --bin sui-cluster-test
+    --bin bfc-cluster-test
 
 # Production Image
 FROM debian:bullseye-slim AS runtime
-WORKDIR "$WORKDIR/sui"
-COPY --from=builder /sui/target/release/sui-node /usr/local/bin
-COPY --from=builder /sui/target/release/sui /usr/local/bin
-COPY --from=builder /sui/target/release/sui-faucet /usr/local/bin
-COPY --from=builder /sui/target/release/stress /usr/local/bin
-COPY --from=builder /sui/target/release/sui-cluster-test /usr/local/bin
+WORKDIR "$WORKDIR/bfc"
+COPY --from=builder /bfc/target/release/bfc-node /usr/local/bin
+COPY --from=builder /bfc/target/release/bfc /usr/local/bin
+COPY --from=builder /bfc/target/release/bfc-faucet /usr/local/bin
+COPY --from=builder /bfc/target/release/stress /usr/local/bin
+COPY --from=builder /bfc/target/release/bfc-cluster-test /usr/local/bin
 
 ARG BUILD_DATE
 ARG GIT_REVISION

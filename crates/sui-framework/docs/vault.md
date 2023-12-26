@@ -1105,7 +1105,7 @@ open <code>position_number</code> positions
     <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
     <b>let</b> _vault_id = <a href="position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
     <b>assert</b>!(_vault_id == expect_vault_id, <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
-    <b>let</b> liquidity = <a href="position.md#0xc8_position_decrease_liquidity">position::decrease_liquidity</a>(mut_position, _delta_liquidity);
+    <b>let</b> _ = <a href="position.md#0xc8_position_decrease_liquidity">position::decrease_liquidity</a>(mut_position, _delta_liquidity);
     <a href="tick.md#0xc8_tick_decrease_liquidity">tick::decrease_liquidity</a>(
         &<b>mut</b> _vault.tick_manager,
         _vault.current_tick_index,
@@ -2502,43 +2502,29 @@ State checker
     _liquidities: <a href="">vector</a>&lt;u128&gt;
 )
 {
+    // <b>return</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(_bfc_balance, _balance1);
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(_supply, _balance0);
+
     <b>let</b> index = 0u64;
     <b>let</b> length = <a href="_length">vector::length</a>(&_liquidities);
     <b>let</b> position_length = <a href="position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager);
     <b>assert</b>!(length == position_length, <a href="vault.md#0xc8_vault_ERR_POSITION_LENGTH_MISMATCH">ERR_POSITION_LENGTH_MISMATCH</a>);
-    <b>let</b> (total_a, total_b) = (0, 0);
     <b>while</b> (index &lt; length) {
         <b>let</b> receipt = <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>(
             _vault,
             index + 1, // <a href="position.md#0xc8_position">position</a> index
             *<a href="_borrow">vector::borrow</a>(&_liquidities, index)
         );
-        <b>let</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> {
-            vault_id: _,
-            amount_a,
-            amount_b
-        } = receipt;
-        total_a = amount_a + total_a;
-        total_b = amount_b + total_b;
+        <b>let</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> { vault_id: _, amount_a, amount_b } = receipt;
+        <b>if</b> (amount_a &gt; 0) {
+            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_a, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(_supply, amount_a));
+        };
+        <b>if</b> (amount_b &gt; 0) {
+            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_b, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(_bfc_balance, amount_b));
+        };
         index = index + 1;
     };
-
-    <b>let</b> balance0_value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_balance0);
-    <b>let</b> balance1_value = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_balance1);
-    <b>if</b> (balance0_value &lt; total_a) {
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _balance0, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(_supply, total_a - balance0_value));
-    }  <b>else</b> <b>if</b> (balance0_value &gt; total_a) {
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(_supply, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _balance0, balance0_value - total_a));
-    };
-
-    <b>if</b> (balance1_value &lt; total_b) {
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _balance1, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(_bfc_balance, total_b - balance1_value));
-    } <b>else</b> <b>if</b> (balance1_value &gt; total_b) {
-        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(_bfc_balance, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _balance1, balance1_value - total_b));
-    };
-
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_a, _balance0);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_b, _balance1);
 }
 </code></pre>
 
@@ -2576,7 +2562,9 @@ State checker
         _vault.state_counter = 0;
     };
     <b>if</b> (_vault.last_bfc_rebalance_amount &gt; <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&balance1)) {
-        _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&balance1);
+        _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(
+            &balance1
+        );
     };
     <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(_vault, &ticks, shape, _treasury_total_bfc_supply);
     <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>(

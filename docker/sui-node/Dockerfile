@@ -6,7 +6,7 @@ FROM rust:1.70.0 AS builder
 ARG PROFILE=release
 ARG GIT_REVISION
 ENV GIT_REVISION=$GIT_REVISION
-WORKDIR "$WORKDIR/sui"
+WORKDIR "$WORKDIR/bfc"
 RUN apt-get update && apt-get install -y cmake clang
 
 COPY Cargo.toml Cargo.lock ./
@@ -15,7 +15,7 @@ COPY sui-execution sui-execution
 COPY narwhal narwhal
 COPY external-crates external-crates
 
-RUN cargo build --profile ${PROFILE} --bin sui-node
+RUN cargo build --profile ${PROFILE} --bin bfc-node
 
 # Production Image
 FROM debian:bullseye-slim AS runtime
@@ -23,11 +23,11 @@ FROM debian:bullseye-slim AS runtime
 RUN apt-get update && apt-get install -y libjemalloc-dev ca-certificates
 ENV LD_PRELOAD /usr/lib/x86_64-linux-gnu/libjemalloc.so
 ARG PROFILE=release
-WORKDIR "$WORKDIR/sui"
+WORKDIR "$WORKDIR/bfc"
 # Both bench and release profiles copy from release dir
-COPY --from=builder /sui/target/release/sui-node /opt/bfc/bin
+COPY --from=builder /bfc/target/release/bfc-node /opt/bfc/bin
 # Support legacy usages of /usr/local/bin/sui-node
-COPY --from=builder /sui/target/release/sui-node /usr/local/bin
+COPY --from=builder /bfc/target/release/bfc-node /usr/local/bin
 
 ARG BUILD_DATE
 ARG GIT_REVISION

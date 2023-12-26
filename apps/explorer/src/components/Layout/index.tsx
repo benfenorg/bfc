@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { WalletKitProvider } from '@benfen/wallet-kit';
 import { useCookieConsentBanner } from '@mysten/core';
 import { SuiClientProvider } from '@mysten/dapp-kit';
-import { WalletKitProvider } from '@benfen/wallet-kit';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Fragment } from 'react';
 import { resolveValue, Toaster, type ToastType } from 'react-hot-toast';

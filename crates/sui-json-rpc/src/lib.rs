@@ -67,13 +67,13 @@ pub struct JsonRpcServerBuilder {
 pub fn sui_rpc_doc(version: &str) -> Project {
     Project::new(
         version,
-        "Sui JSON-RPC",
-        "Sui JSON-RPC API for interaction with Sui Full node. Make RPC calls using https://fullnode.NETWORK.sui.io:443, where NETWORK is the network you want to use (testnet, devnet, mainnet). By default, local networks use port 9000.",
-        "Mysten Labs",
-        "https://mystenlabs.com",
-        "build@mystenlabs.com",
+        "Bfc JSON-RPC",
+        "Bfc JSON-RPC API for interaction with Bfc Full node. Make RPC calls using https://NETWORK.benfen.org:443, where NETWORK is the network you want to use (testnet, devnet, mainnet). By default, local networks use port 9000.",
+        "Benfen Labs",
+        "https://www.benfen.org",
+        "admin@benfen.org",
         "Apache-2.0",
-        "https://raw.githubusercontent.com/MystenLabs/sui/main/LICENSE",
+        "https://www.benfen.org/",
     )
 }
 

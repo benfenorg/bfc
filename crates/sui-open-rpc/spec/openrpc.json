@@ -1,18 +1,18 @@
 {
   "openrpc": "1.2.6",
   "info": {
-    "title": "Sui JSON-RPC",
-    "description": "Sui JSON-RPC API for interaction with Sui Full node. Make RPC calls using https://fullnode.NETWORK.sui.io:443, where NETWORK is the network you want to use (testnet, devnet, mainnet). By default, local networks use port 9000.",
+    "title": "Bfc JSON-RPC",
+    "description": "Bfc JSON-RPC API for interaction with Bfc Full node. Make RPC calls using https://NETWORK.benfen.org:443, where NETWORK is the network you want to use (testnet, devnet, mainnet). By default, local networks use port 9000.",
     "contact": {
-      "name": "Mysten Labs",
-      "url": "https://mystenlabs.com",
-      "email": "build@mystenlabs.com"
+      "name": "Benfen Labs",
+      "url": "https://www.benfen.org",
+      "email": "admin@benfen.org"
     },
     "license": {
       "name": "Apache-2.0",
-      "url": "https://raw.githubusercontent.com/MystenLabs/sui/main/LICENSE"
+      "url": "https://www.benfen.org/"
     },
-    "version": "1.9.1"
+    "version": "1.1.2"
   },
   "methods": [
     {
@@ -3755,6 +3755,43 @@
       ]
     },
     {
+      "name": "bfcx_getStablePools",
+      "tags": [
+        {
+          "name": "Governance Read API"
+        }
+      ],
+      "params": [
+        {
+          "name": "owner",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/SuiAddress"
+          }
+        }
+      ],
+      "result": {
+        "name": "Vec<(ObjectID,DynamicFieldInfo)>",
+        "required": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": [
+              {
+                "$ref": "#/components/schemas/ObjectID"
+              },
+              {
+                "$ref": "#/components/schemas/DynamicFieldInfo"
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2
+          }
+        }
+      }
+    },
+    {
       "name": "bfcx_getStakes",
       "tags": [
         {
@@ -5236,6 +5273,23 @@
           }
         }
       },
+      "BagSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "size"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UID"
+          },
+          "size": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        }
+      },
       "Balance": {
         "type": "object",
         "required": [
@@ -5927,7 +5981,7 @@
             "$ref": "#/components/schemas/DynamicFieldType"
           },
           "version": {
-            "$ref": "#/components/schemas/SequenceNumber2"
+            "$ref": "#/components/schemas/SequenceNumber"
           }
         }
       },
@@ -9903,6 +9957,17 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "stablePools": {
+            "description": "ID of the multiple staking pool object.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BagSummary"
+              },
+              {
+                "type": "null"
               }
             ]
           },

@@ -68,4 +68,5 @@ yarn-error.log*
 sui_programmability/examples/hello_world/output.bpl
 crates/sui-framework/packages/bfc-system/result.txt
 genesis/parameters
-
+/validator/bfc/db/*
+/validator/validator.yaml

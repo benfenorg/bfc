@@ -820,21 +820,8 @@ pub async fn genesis_private(
 
     dir = dir.join("genesis");
     info!("dir is {:?}", dir);
-    let builder1 = Builder::load(&dir)?;
+    let builder1 = Builder::load_private_genesis(&dir, with_genesis)?;
     //loading the validator info from genesis_ceremony committee
-    let _validators = builder1
-        .validators()
-        .values()
-        .map(|v| {
-            (
-                v.info.name().to_lowercase(),
-                v.info.account_address.to_string(),
-                v.info.gas_price,
-            )
-        })
-        .collect::<Vec<_>>();
-
-
 
       let mut manager = PrivateValidatorKeypairManager::default();
     for private_validator_name in private_validator_names {

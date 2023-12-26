@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@benfen/wallet-kit';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { Button } from '@mysten/ui';
-import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@benfen/wallet-kit';
 import { useParams } from 'react-router-dom';
 
 // This is a custom feature supported by the Sui Wallet:
@@ -36,7 +36,7 @@ export function StakeButton() {
 		return (
 			<Button size="lg" asChild>
 				<a href="https://openblock.com/#/download" target="_blank" rel="noreferrer noopener">
-					Install BenFen Wallet to stake BFC
+					Install BenFen Wallet to stake
 				</a>
 			</Button>
 		);
@@ -46,7 +46,7 @@ export function StakeButton() {
 		return (
 			<ConnectButton
 				className="!border !border-solid !border-steel-dark !bg-transparent !px-4 !py-3 !text-body !font-semibold !text-steel-dark !shadow-none"
-				connectText="Stake BFC"
+				connectText="Stake"
 			/>
 		);
 	}
@@ -60,7 +60,7 @@ export function StakeButton() {
 					connect(stakeSupportedWallets[0].name);
 				}}
 			>
-				Stake BFC on a supported wallet
+				Stake on a supported wallet
 			</Button>
 		);
 	}
@@ -74,7 +74,7 @@ export function StakeButton() {
 				});
 			}}
 		>
-			Stake BFC
+			Stake
 		</Button>
 	);
 }

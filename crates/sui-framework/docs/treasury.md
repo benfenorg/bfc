@@ -25,11 +25,14 @@
 -  [Function `calculate_swap_result`](#0xc8_treasury_calculate_swap_result)
 -  [Function `transfer_or_delete`](#0xc8_treasury_transfer_or_delete)
 -  [Function `swap_internal`](#0xc8_treasury_swap_internal)
--  [Function `next_epoch_bfc_required`](#0xc8_treasury_next_epoch_bfc_required)
 -  [Function `deposit`](#0xc8_treasury_deposit)
+-  [Function `next_epoch_bfc_required`](#0xc8_treasury_next_epoch_bfc_required)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
 -  [Function `rebalance_internal`](#0xc8_treasury_rebalance_internal)
 -  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
+-  [Function `one_coin_rebalance_internal`](#0xc8_treasury_one_coin_rebalance_internal)
+-  [Function `one_coin_next_epoch_bfc_required`](#0xc8_treasury_one_coin_next_epoch_bfc_required)
+-  [Function `one_coin_exchange_rate`](#0xc8_treasury_one_coin_exchange_rate)
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
@@ -44,7 +47,22 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
+<b>use</b> <a href="bars.md#0xc8_bars">0xc8::bars</a>;
+<b>use</b> <a href="baud.md#0xc8_baud">0xc8::baud</a>;
+<b>use</b> <a href="bbrl.md#0xc8_bbrl">0xc8::bbrl</a>;
+<b>use</b> <a href="bcad.md#0xc8_bcad">0xc8::bcad</a>;
+<b>use</b> <a href="beur.md#0xc8_beur">0xc8::beur</a>;
+<b>use</b> <a href="bgbp.md#0xc8_bgbp">0xc8::bgbp</a>;
+<b>use</b> <a href="bidr.md#0xc8_bidr">0xc8::bidr</a>;
+<b>use</b> <a href="binr.md#0xc8_binr">0xc8::binr</a>;
+<b>use</b> <a href="bjpy.md#0xc8_bjpy">0xc8::bjpy</a>;
+<b>use</b> <a href="bkrw.md#0xc8_bkrw">0xc8::bkrw</a>;
+<b>use</b> <a href="bmxn.md#0xc8_bmxn">0xc8::bmxn</a>;
+<b>use</b> <a href="brub.md#0xc8_brub">0xc8::brub</a>;
+<b>use</b> <a href="bsar.md#0xc8_bsar">0xc8::bsar</a>;
+<b>use</b> <a href="btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
+<b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
 <b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
@@ -840,47 +858,6 @@ Internal swap
 
 </details>
 
-<a name="0xc8_treasury_next_epoch_bfc_required"></a>
-
-## Function `next_epoch_bfc_required`
-
-Rebalance
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">next_epoch_bfc_required</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">next_epoch_bfc_required</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): u64 {
-    <b>let</b> total = 0;
-    <b>let</b> times_per_day = (3600 * 24 / _treasury.time_interval <b>as</b> u64);
-
-    // USD <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> required
-    <b>let</b> usd_vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;();
-    <b>if</b> (<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, usd_vault_key)) {
-        <b>let</b> usd_v = <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;BUSD&gt;(_treasury, usd_vault_key);
-        <b>let</b> bfc_required_per_time = <a href="vault.md#0xc8_vault_bfc_required">vault::bfc_required</a>(usd_v);
-        total = total + bfc_required_per_time * times_per_day;
-    };
-
-    <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
-    <b>if</b> (total &gt; get_treasury_balance) {
-        total - get_treasury_balance
-    } <b>else</b> {
-        0
-    }
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_treasury_deposit"></a>
 
 ## Function `deposit`
@@ -906,6 +883,55 @@ Rebalance
 
     <b>if</b> (!_treasury.init) {
         _treasury.init = <b>true</b>
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_next_epoch_bfc_required"></a>
+
+## Function `next_epoch_bfc_required`
+
+Rebalance
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">next_epoch_bfc_required</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">next_epoch_bfc_required</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): u64 {
+    <b>let</b> times_per_day = (3600 * 24 / _treasury.time_interval <b>as</b> u64);
+
+    <b>let</b> total = <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BUSD&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BJPY&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BAUD&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BKRW&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BBRL&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BCAD&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BEUR&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BGBP&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BIDR&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BINR&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BRUB&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BSAR&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BTRY&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BZAR&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BMXN&gt;(_treasury, times_per_day) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BARS&gt;(_treasury, times_per_day);
+
+    <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
+    <b>if</b> (total &gt; get_treasury_balance) {
+        total - get_treasury_balance
+    } <b>else</b> {
+        0
     }
 }
 </code></pre>
@@ -975,24 +1001,22 @@ Rebalance
     _update: bool,
     _ctx: &<b>mut</b> TxContext
 ) {
-    // BUSD
-    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;();
-    <b>let</b> usd_mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;BUSD&gt;&gt;(
-        &<b>mut</b> _treasury.id,
-        key,
-    );
-    <b>if</b> (_update) {
-        <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(usd_mut_v);
-    };
-
-    // first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
-    <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
-        usd_mut_v,
-        &<b>mut</b> _treasury.bfc_balance,
-        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _treasury.supplies, key),
-        _treasury.total_bfc_supply,
-        _ctx
-    );
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BUSD&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BJPY&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BKRW&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BAUD&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BARS&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BBRL&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BCAD&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BEUR&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BGBP&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BIDR&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BINR&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BRUB&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BSAR&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BTRY&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BZAR&gt;(_treasury, _update, _ctx);
+    <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BMXN&gt;(_treasury, _update, _ctx);
 }
 </code></pre>
 
@@ -1021,14 +1045,139 @@ Rebalance
     <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;String, u64&gt;();
     <b>let</b> amount = 1_000_000_000;
 
-    // BUSD
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(
-        &<b>mut</b> rate_map,
-        <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;(),
-        <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;BUSD&gt;(_treasury, <b>true</b>, amount)),
-    );
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BUSD&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BJPY&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BKRW&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BAUD&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BARS&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BBRL&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BCAD&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BEUR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BGBP&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BIDR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BINR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BRUB&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BSAR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BTRY&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BZAR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BMXN&gt;(_treasury, &<b>mut</b> rate_map, amount);
 
     rate_map
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_one_coin_rebalance_internal"></a>
+
+## Function `one_coin_rebalance_internal`
+
+
+
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _update: bool, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;StableCoinType&gt;(
+    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _update: bool,
+    _ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>if</b> (!<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, key)) {
+        <b>return</b>
+    };
+    <b>let</b> mut_v = <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;StableCoinType&gt;&gt;(
+        &<b>mut</b> _treasury.id,
+        key,
+    );
+    <b>if</b> (_update) {
+        <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(mut_v);
+    };
+
+    // first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
+    <a href="vault.md#0xc8_vault_rebalance">vault::rebalance</a>(
+        mut_v,
+        &<b>mut</b> _treasury.bfc_balance,
+        <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> _treasury.supplies, key),
+        _treasury.total_bfc_supply,
+        _ctx
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_one_coin_next_epoch_bfc_required"></a>
+
+## Function `one_coin_next_epoch_bfc_required`
+
+
+
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _times_per_day: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(
+    _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _times_per_day: u64
+): u64 {
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>if</b> (<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, key)) {
+        <a href="vault.md#0xc8_vault_bfc_required">vault::bfc_required</a>(<a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, key)) * _times_per_day
+    } <b>else</b> {
+        0
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_one_coin_exchange_rate"></a>
+
+## Function `one_coin_exchange_rate`
+
+
+
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _rate_map: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, _amount: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;StableCoinType&gt;(
+    _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _rate_map: &<b>mut</b> VecMap&lt;String, u64&gt;,
+    _amount: u64
+) {
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>if</b> (!<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, key)) {
+        <b>return</b>
+    };
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(
+        _rate_map,
+        key,
+        <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_treasury, <b>true</b>, _amount)),
+    );
 }
 </code></pre>
 

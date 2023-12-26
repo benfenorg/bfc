@@ -252,6 +252,16 @@ pub enum UserInputError {
 
     #[error("Transaction {0} not found")]
     TransactionCursorNotFound(u64),
+
+    #[error(
+    "Could not find the referenced object {:?} at version {:?}.",
+    object_id,
+    version
+    )]
+    BFCObjectNotFound {
+        object_id: String,
+        version: Option<SequenceNumber>,
+    },
 }
 
 #[derive(

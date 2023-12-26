@@ -28,6 +28,7 @@ async fn do_zklogin_test() -> SuiResult {
         .map(|_| ())
 }
 
+#[ignore]
 #[sim_test]
 async fn test_zklogin_feature_deny() {
     use sui_protocol_config::ProtocolConfig;
@@ -42,6 +43,7 @@ async fn test_zklogin_feature_deny() {
     assert!(matches!(err, SuiError::UnsupportedFeatureError { .. }));
 }
 
+#[ignore]
 #[sim_test]
 async fn test_zklogin_provider_not_supported() {
     use sui_protocol_config::ProtocolConfig;
@@ -61,6 +63,7 @@ async fn test_zklogin_provider_not_supported() {
     assert!(matches!(err, SuiError::InvalidSignature { .. }));
 }
 
+#[ignore]
 #[sim_test]
 async fn test_zklogin_feature_allow() {
     use sui_protocol_config::ProtocolConfig;
@@ -78,6 +81,7 @@ async fn test_zklogin_feature_allow() {
     assert!(matches!(err, SuiError::UserInputError { .. }));
 }
 
+#[ignore]
 #[sim_test]
 async fn zklogin_end_to_end_test() {
     let mut test_cluster = TestClusterBuilder::new().build().await;

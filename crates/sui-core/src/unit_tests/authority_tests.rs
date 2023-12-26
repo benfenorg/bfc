@@ -1946,7 +1946,7 @@ async fn test_publish_non_existing_dependent_module() {
         .handle_transaction(&epoch_store, transaction)
         .await;
     assert!(std::string::ToString::to_string(&response.unwrap_err())
-        .contains("DependentPackageNotFound"));
+        .contains("BFCObjectNotFound"));
     // Check that gas was not charged.
     assert_eq!(
         authority
@@ -2268,7 +2268,7 @@ async fn test_missing_package() {
         .await;
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::DependentPackageNotFound { .. }
+        UserInputError::BFCObjectNotFound { .. }
     ));
 }
 
@@ -2369,7 +2369,7 @@ async fn test_type_argument_dependencies() {
 
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::DependentPackageNotFound { .. }
+        UserInputError::BFCObjectNotFound { .. }
     ));
 }
 

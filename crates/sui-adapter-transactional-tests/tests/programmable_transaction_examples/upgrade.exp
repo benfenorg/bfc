@@ -30,10 +30,10 @@ task 7 'set-address'. lines 47-47:
 Error: INVALID TEST. Unknown object, object(5,0)
 
 task 8 'programmable'. lines 49-51:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
 
 task 9 'publish'. lines 53-58:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
 
 task 10 'run'. lines 60-60:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }

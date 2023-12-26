@@ -1,10 +1,8 @@
 {
-	"name": "@mysten/dapp-kit",
-	"private": true,
-	"author": "Mysten Labs <build@mystenlabs.com>",
-	"description": "A collection of React hooks for querying and interacting with the Sui blockchain.",
-	"homepage": "https://sui-typescript-docs.vercel.app",
-	"version": "0.0.4",
+	"name": "@benfen/dapp-kit",
+	"author": "OpenBlock<developers@benfen.org>",
+	"description": "A collection of React hooks for querying and interacting with the BenFen blockchain.",
+	"version": "0.0.2",
 	"license": "Apache-2.0",
 	"files": [
 		"CHANGELOG.md",
@@ -38,9 +36,6 @@
 		"eslint:fix": "pnpm run eslint:check --fix",
 		"lint": "pnpm run eslint:check && pnpm run prettier:check",
 		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
-	},
-	"bugs": {
-		"url": "https://github.com/MystenLabs/sui/issues/new"
 	},
 	"publishConfig": {
 		"access": "public"

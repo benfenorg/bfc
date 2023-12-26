@@ -42,7 +42,7 @@ use sui_types::crypto::{
     generate_proof_of_possession, get_authority_key_pair, AuthorityPublicKeyBytes,
 };
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair};
-use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
+use sui_types::transaction::{CallArg, GasData, ObjectArg, Transaction, TransactionData, TransactionDataV1, TransactionKind};
 use crate::fire_drill::get_gas_obj_ref;
 //use crate::{call_0x5, construct_unsigned_0x5_txn};
 #[path = "unit_tests/validator_tests.rs"]
@@ -258,16 +258,19 @@ impl SuiValidatorCommand {
                         gas_price,
                         commission_rate: sui_config::node::DEFAULT_COMMISSION_RATE,
                         network_address: Multiaddr::try_from(format!(
-                            "/dns/{}/tcp/8080/http",
+                            //"/dns/{}/tcp/8080/http",
+                            "/ip4/{}/tcp/8080/http",
                             host_name
                         ))?,
                         p2p_address: Multiaddr::try_from(format!("/dns/{}/udp/8084", host_name))?,
                         narwhal_primary_address: Multiaddr::try_from(format!(
-                            "/dns/{}/udp/8081",
+                            //"/dns/{}/udp/8081",
+                            "/ip4/{}/udp/8081",
                             host_name
                         ))?,
                         narwhal_worker_address: Multiaddr::try_from(format!(
-                            "/dns/{}/udp/8082",
+                            //"/dns/{}/udp/8082",
+                            "/ip4/{}/udp/8082",
                             host_name
                         ))?,
                         description,
@@ -676,7 +679,7 @@ impl Display for SuiValidatorCommandResponse {
                 serialized_data,
             } => {
 
-                convert_transaction_to_string(data, f);
+                convert_transaction_to_string(data, f)?;
                 write!(writer, "\nSerialized transaction: {:?}", serialized_data)?;
             }
         }
@@ -684,22 +687,69 @@ impl Display for SuiValidatorCommandResponse {
     }
 }
 
+pub fn convert_gas_data_display(f: &mut Formatter<'_>, gas : &GasData) -> std::fmt::Result {
+    write!(f, "GasData {{ payment :[(")?;
+    for input in gas.payment.iter() {
+        write!(f, "{}, {:?}, {:?}",  sui_address_to_bfc_address(input.0.into()), input.1, input.2)?;
+    }
+    write!(f, ")], ")?;
+    writeln!(f, "owner: {}, price: {}, budget: {}}},", sui_address_to_bfc_address(gas.owner), gas.price, gas.budget)
+}
+
+pub fn convert_callarg_display(f: &mut Formatter<'_>, call_arg : CallArg) -> std::fmt::Result {
+    match call_arg {
+            CallArg::Object(ObjectArg::ImmOrOwnedObject(object_ref)) => {
+                writeln!(f, "Object(ImmOrOwnedObject(({}, {:?}, {:?}))),", sui_address_to_bfc_address(object_ref.0.into()), object_ref.1, object_ref.2)?;
+            },
+
+            CallArg::Object(ObjectArg::SharedObject {
+                            id,
+                            initial_shared_version,
+                            mutable, }) => {
+                writeln!(f, "Object(SharedObject {{ id: {}, initial_shared_version: {:?}, mutable: {} }})", sui_address_to_bfc_address(id.into()), initial_shared_version, mutable)?;
+            }
+            _ => {
+                writeln!(f, "{:?}",call_arg)?;
+            },
+        }
+    write!(f, "")
+}
+
+pub fn convert_transactionkind_display(f: &mut Formatter<'_>, transaction : TransactionDataV1) -> std::fmt::Result {
+    match transaction.kind {
+        TransactionKind::ProgrammableTransaction(pt) => {
+            writeln!(f, "TransactionData:")?;
+            writeln!(f, "Transaction Kind : Programmable")?;
+            writeln!(f, "ProgrammableTransaction Inputs: [")?;
+            for input in pt.inputs.iter() {
+                convert_callarg_display(f, input.clone())?;
+            }
+            writeln!(f, "\n]")?;
+            writeln!(f, "Commands: [")?;
+            for input in  pt.commands.iter() {
+                write!(f, "{}", input)?;
+            }
+           writeln!(f, "]")?;
+        },
+        _ => {}
+    }
+    write!(f, "")
+}
 pub fn convert_transaction_to_string(data: &TransactionData, f: &mut Formatter<'_>) -> std::fmt::Result {
 
     let mut writer = String::new();
     writeln!(writer, "TransactionData: ")?;
     match data {
         TransactionData::V1(data1) => {
-            writeln!(writer, "Transaction Kind: {}",data1.kind)?;
-            writeln!(writer, "Sender: {}, \n", data1.sender)?;
-            writeln!(writer, "Gas_data: {:?}, \n", data1.gas_data)?;
+            convert_transactionkind_display(f, data1.clone())?;
+            writeln!(writer, "Sender: {}, \n", sui_address_to_bfc_address(data1.sender))?;
+            convert_gas_data_display(f, &data1.gas_data)?;
             writeln!(writer, "Expiration: {:?}, \n", data1.expiration)?;
         },
-        _ => {
-        }
     }
     write!(f, "{}", writer.trim_end_matches('\n'))
 }
+
 
 pub fn write_transaction_response(
     response: &SuiTransactionBlockResponse,

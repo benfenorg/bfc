@@ -29,7 +29,6 @@
 -  [Function `request_withdraw_stable_no_entry`](#0xc8_bfc_system_request_withdraw_stable_no_entry)
 -  [Function `init_exchange_pool`](#0xc8_bfc_system_init_exchange_pool)
 -  [Function `get_bfc_amount`](#0xc8_bfc_system_get_bfc_amount)
--  [Function `bfc_system_stat_parameter`](#0xc8_bfc_system_bfc_system_stat_parameter)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
 -  [Function `propose`](#0xc8_bfc_system_propose)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_create_bfcdao_action)
@@ -73,10 +72,25 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
+<b>use</b> <a href="bars.md#0xc8_bars">0xc8::bars</a>;
+<b>use</b> <a href="baud.md#0xc8_baud">0xc8::baud</a>;
+<b>use</b> <a href="bbrl.md#0xc8_bbrl">0xc8::bbrl</a>;
+<b>use</b> <a href="bcad.md#0xc8_bcad">0xc8::bcad</a>;
+<b>use</b> <a href="beur.md#0xc8_beur">0xc8::beur</a>;
 <b>use</b> <a href="bfc_dao.md#0xc8_bfc_dao">0xc8::bfc_dao</a>;
 <b>use</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager">0xc8::bfc_dao_manager</a>;
 <b>use</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner">0xc8::bfc_system_state_inner</a>;
+<b>use</b> <a href="bgbp.md#0xc8_bgbp">0xc8::bgbp</a>;
+<b>use</b> <a href="bidr.md#0xc8_bidr">0xc8::bidr</a>;
+<b>use</b> <a href="binr.md#0xc8_binr">0xc8::binr</a>;
+<b>use</b> <a href="bjpy.md#0xc8_bjpy">0xc8::bjpy</a>;
+<b>use</b> <a href="bkrw.md#0xc8_bkrw">0xc8::bkrw</a>;
+<b>use</b> <a href="bmxn.md#0xc8_bmxn">0xc8::bmxn</a>;
+<b>use</b> <a href="brub.md#0xc8_brub">0xc8::brub</a>;
+<b>use</b> <a href="bsar.md#0xc8_bsar">0xc8::bsar</a>;
+<b>use</b> <a href="btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
+<b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -187,7 +201,7 @@
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, parameters: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create">create</a>(id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, usd_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, jpy_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bjpy.md#0xc8_bjpy_BJPY">bjpy::BJPY</a>&gt;, krw_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bkrw.md#0xc8_bkrw_BKRW">bkrw::BKRW</a>&gt;, aud_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="baud.md#0xc8_baud_BAUD">baud::BAUD</a>&gt;, ars_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bars.md#0xc8_bars_BARS">bars::BARS</a>&gt;, brl_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bbrl.md#0xc8_bbrl_BBRL">bbrl::BBRL</a>&gt;, cad_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bcad.md#0xc8_bcad_BCAD">bcad::BCAD</a>&gt;, eur_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="beur.md#0xc8_beur_BEUR">beur::BEUR</a>&gt;, gbp_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bgbp.md#0xc8_bgbp_BGBP">bgbp::BGBP</a>&gt;, idr_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bidr.md#0xc8_bidr_BIDR">bidr::BIDR</a>&gt;, inr_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="binr.md#0xc8_binr_BINR">binr::BINR</a>&gt;, rub_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="brub.md#0xc8_brub_BRUB">brub::BRUB</a>&gt;, sar_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bsar.md#0xc8_bsar_BSAR">bsar::BSAR</a>&gt;, try_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="btry.md#0xc8_btry_BTRY">btry::BTRY</a>&gt;, zar_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;, mxn_supply: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bmxn.md#0xc8_bmxn_BMXN">bmxn::BMXN</a>&gt;, parameters: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -198,14 +212,44 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create">create</a>(
     id: UID,
-    usd_supply: Supply&lt;BUSD&gt;,
     bfc_balance: Balance&lt;BFC&gt;,
+    usd_supply: Supply&lt;BUSD&gt;,
+    jpy_supply: Supply&lt;BJPY&gt;,
+    krw_supply: Supply&lt;BKRW&gt;,
+    aud_supply: Supply&lt;BAUD&gt;,
+    ars_supply: Supply&lt;BARS&gt;,
+    brl_supply: Supply&lt;BBRL&gt;,
+    cad_supply: Supply&lt;BCAD&gt;,
+    eur_supply: Supply&lt;BEUR&gt;,
+    gbp_supply: Supply&lt;BGBP&gt;,
+    idr_supply: Supply&lt;BIDR&gt;,
+    inr_supply: Supply&lt;BINR&gt;,
+    rub_supply: Supply&lt;BRUB&gt;,
+    sar_supply: Supply&lt;BSAR&gt;,
+    try_supply: Supply&lt;BTRY&gt;,
+    zar_supply: Supply&lt;BZAR&gt;,
+    mxn_supply: Supply&lt;BMXN&gt;,
     parameters: BfcSystemParameters,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> inner_state = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_inner_state">bfc_system_state_inner::create_inner_state</a>(
-        usd_supply,
         bfc_balance,
+        usd_supply,
+        jpy_supply,
+        krw_supply,
+        aud_supply,
+        ars_supply,
+        brl_supply,
+        cad_supply,
+        eur_supply,
+        gbp_supply,
+        idr_supply,
+        inr_supply,
+        rub_supply,
+        sar_supply,
+        try_supply,
+        zar_supply,
+        mxn_supply,
         parameters,
         ctx,
     );
@@ -756,48 +800,6 @@ self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_amount">bfc_system_state_inner::get_bfc_amount</a>(inner_state)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_bfc_system_stat_parameter"></a>
-
-## Function `bfc_system_stat_parameter`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_system_stat_parameter">bfc_system_stat_parameter</a>(position_number: u32, tick_spacing: u32, spacing_times: u32, initialize_price: u128, time_interval: u32, base_point: u64, max_counter_times: u32, chain_start_timestamp_ms: u64): <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_system_stat_parameter">bfc_system_stat_parameter</a>(
-    position_number: u32,
-    tick_spacing: u32,
-    spacing_times: u32,
-    initialize_price: u128,
-    time_interval: u32,
-    base_point: u64,
-    max_counter_times: u32,
-    chain_start_timestamp_ms: u64,
-): BfcSystemParameters {
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_bfc_system_stat_parameter">bfc_system_state_inner::bfc_system_stat_parameter</a>(
-        position_number,
-        tick_spacing,
-        spacing_times,
-        initialize_price,
-        time_interval,
-        base_point,
-        max_counter_times,
-        chain_start_timestamp_ms,
-    )
 }
 </code></pre>
 

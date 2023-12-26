@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
-import { useFeatureIsOn } from '@growthbook/growthbook-react';
-import { useCoinMetadata, useGetSystemState, useGetCoinBalance } from '@mysten/core';
+import { Popover } from '@headlessui/react';
+import { useCoinMetadata, useGetSystemState, useGetAllBalances } from '@mysten/core';
 import { ArrowLeft16 } from '@mysten/icons';
+import { useSuiClient } from '@mysten/dapp-kit';
 import * as Sentry from '@sentry/react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Formik } from 'formik';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -37,7 +38,6 @@ import { useCoinsReFetchingConfig } from '_hooks';
 import { Coin } from '_redux/slices/sui-objects/Coin';
 import { ampli } from '_src/shared/analytics/ampli';
 import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
-import { FEATURES } from '_src/shared/experimentation/features';
 import type { StakeObject } from '@benfen/bfc.js/client';
 
 import type { FormikHelpers } from 'formik';
@@ -49,24 +49,24 @@ const initialValues = {
 export type FormValues = typeof initialValues;
 
 function StakingCard() {
-	const coinType = SUI_TYPE_ARG;
+	const suiClient = useSuiClient();
+	const [coinType, setCoinType] = useState(SUI_TYPE_ARG);
+
 	const accountAddress = useActiveAddress();
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-	const { data: suiBalance, isLoading: loadingSuiBalances } = useGetCoinBalance(
-		SUI_TYPE_ARG,
+	const { data, isLoading: loadingSuiBalances } = useGetAllBalances(
 		accountAddress,
 		refetchInterval,
 		staleTime,
 	);
-	const coinBalance = BigInt(suiBalance?.totalBalance || 0);
+
+	const coinData = data?.find((coin) => coin.coinType === coinType);
+	const coinBalance = BigInt(coinData?.totalBalance || 0);
 	const [searchParams] = useSearchParams();
 	const validatorAddress = searchParams.get('address');
 	const stakeSuiIdParams = searchParams.get('staked');
 	const unstake = searchParams.get('unstake') === 'true';
 	const { data: allDelegation, isLoading } = useGetDelegatedStake(accountAddress || '');
-	const effectsOnlySharedTransactions = useFeatureIsOn(
-		FEATURES.WALLET_EFFECTS_ONLY_SHARED_TRANSACTION as string,
-	);
 
 	const { data: system, isLoading: validatorsIsloading } = useGetSystemState();
 
@@ -124,14 +124,13 @@ function StakingCard() {
 			const sentryTransaction = Sentry.startTransaction({
 				name: 'stake',
 			});
+			const { data: coins } = await suiClient.getCoins({ owner: accountAddress!, coinType });
 			try {
-				const transactionBlock = createStakeTransaction(amount, validatorAddress);
+				const transactionBlock = createStakeTransaction(amount, validatorAddress, coinType, coins);
 				return await signer.signAndExecuteTransactionBlock(
 					{
 						transactionBlock,
-						requestType: effectsOnlySharedTransactions
-							? 'WaitForEffectsCert'
-							: 'WaitForLocalExecution',
+						requestType: 'WaitForLocalExecution',
 						options: {
 							showInput: true,
 							showEffects: true,
@@ -166,9 +165,7 @@ function StakingCard() {
 				return await signer.signAndExecuteTransactionBlock(
 					{
 						transactionBlock,
-						requestType: effectsOnlySharedTransactions
-							? 'WaitForEffectsCert'
-							: 'WaitForLocalExecution',
+						requestType: 'WaitForLocalExecution',
 						options: {
 							showInput: true,
 							showEffects: true,
@@ -284,7 +281,31 @@ function StakingCard() {
 					{({ isSubmitting, isValid, submitForm, errors, touched }) => (
 						<BottomMenuLayout>
 							<Content>
-								<div className="mb-5">
+								<Popover className="relative z-10 max-w-full px-5">
+									{({ close }) => (
+										<>
+											<Popover.Button className="cursor-pointer px-2 py-1 rounded border border-bfc-border outline-0 bg-white">
+												{coinType}
+											</Popover.Button>
+											<Popover.Panel className="absolute mt-2 flex flex-col items-center shadow border-bfc-border bg-white">
+												{data?.map((coin) => (
+													<button
+														key={coin.coinType}
+														className="w-full px-5 py-2 text-left hover:bg-bfc-hover"
+														onClick={() => {
+															setCoinType(coin.coinType);
+															close();
+														}}
+													>
+														{coin.coinType}
+													</button>
+												))}
+											</Popover.Panel>
+										</>
+									)}
+								</Popover>
+
+								<div className="my-5">
 									<ValidatorFormDetail validatorAddress={validatorAddress} unstake={unstake} />
 								</div>
 

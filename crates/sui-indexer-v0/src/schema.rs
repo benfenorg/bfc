@@ -370,6 +370,7 @@ diesel::table! {
         pending_pool_token_withdraw -> Int8,
         exchange_rates_id -> Text,
         exchange_rates_size -> Int8,
+        stable_pools -> Nullable<Bytea>,
     }
 }
 

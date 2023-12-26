@@ -19,7 +19,7 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, TestTransactionBuilder};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
@@ -31,14 +31,14 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
+use sui_types::transaction::{Argument, CallArg, Command, ObjectArg, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
 use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag};
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag, SUI_SYSTEM_PACKAGE_ID};
 use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
@@ -524,7 +524,9 @@ async fn test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
         SuiJsonValue::new(json!("5"))?,
     ];
 
-    do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("call change round");
+    let response = do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("response is {:?}",response);
 
     // it will be timeout, if change round transaction is unsuccessful.
     cluster
@@ -2531,7 +2533,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
         with_owner().with_type().with_display().with_content())).await?;
 
     let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
-    
+
     assert!(busd_balance_after < busd_balance_before);
     Ok(())
 }
@@ -2613,6 +2615,69 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
     };
     let r = dev_inspect_call(&test_cluster, pt.clone()).await;
     assert_eq!(r.amount_out, 99999);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_busd_staking() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let validator = test_cluster.swarm.validator_node_handles().pop().unwrap();
+    let validator_addr = validator.with(|node| node.get_config().sui_address());
+
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 100;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let mut busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+
+    let gas_coin = test_cluster
+        .wallet
+        .gas_for_owner_budget(
+            address,
+            MIN_VALIDATOR_JOINING_STAKE_MIST,
+            Default::default(),
+        )
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+
+    let gas = test_cluster
+        .wallet
+        .gas_for_owner_budget(address, 0, BTreeSet::from([gas_coin.0]))
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+
+    let stake_tx = make_stable_staking_transaction(&test_cluster.wallet,validator_addr,address,gas,busd_data.object_ref()).await;
+
+    test_cluster.execute_transaction(stake_tx).await;
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
     Ok(())
 }
 

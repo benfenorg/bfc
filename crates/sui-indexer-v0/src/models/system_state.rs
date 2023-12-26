@@ -7,7 +7,7 @@ use diesel::{Insertable, Queryable};
 
 use sui_types::base_types::{EpochId, ObjectID, SuiAddress};
 use sui_types::sui_system_state::sui_system_state_summary::{
-    SuiSystemStateSummary, SuiValidatorSummary,
+    BagSummary, SuiSystemStateSummary, SuiValidatorSummary,
 };
 
 use crate::errors::IndexerError;
@@ -113,6 +113,7 @@ pub struct DBValidatorSummary {
     pub pending_pool_token_withdraw: i64,
     pub exchange_rates_id: String,
     pub exchange_rates_size: i64,
+    pub stable_pools: Option<Vec<u8>>,
 }
 
 impl From<(EpochId, SuiValidatorSummary)> for DBValidatorSummary {
@@ -158,6 +159,7 @@ impl From<(EpochId, SuiValidatorSummary)> for DBValidatorSummary {
             pending_pool_token_withdraw: v.pending_pool_token_withdraw as i64,
             exchange_rates_id: v.exchange_rates_id.to_string(),
             exchange_rates_size: v.exchange_rates_size as i64,
+            stable_pools: v.stable_pools.and_then(|x| bcs::to_bytes(&x).ok()),
         }
     }
 }
@@ -205,6 +207,9 @@ impl TryFrom<DBValidatorSummary> for SuiValidatorSummary {
             pending_pool_token_withdraw: db.pending_pool_token_withdraw as u64,
             exchange_rates_id: ObjectID::from_str(&db.exchange_rates_id)?,
             exchange_rates_size: db.exchange_rates_size as u64,
+            stable_pools: db
+                .stable_pools
+                .and_then(|x| bcs::from_bytes::<BagSummary>(&x).ok()),
         })
     }
 }

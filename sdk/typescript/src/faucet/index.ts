@@ -115,7 +115,7 @@ export async function getFaucetRequestStatus(input: {
 export function getFaucetHost(network: 'testnet' | 'devnet' | 'localnet') {
 	switch (network) {
 		case 'testnet':
-			return 'https://obcfaucet.openblock.vip';
+			return 'https://testfaucet.benfen.org';
 		case 'devnet':
 			return 'https://benfen-faucet-dev.openblock.vip';
 		case 'localnet':

@@ -66,6 +66,7 @@ CREATE TABLE validators
     pending_pool_token_withdraw      BIGINT NOT NULL,
     exchange_rates_id                TEXT   NOT NULL,
     exchange_rates_size              BIGINT NOT NULL,
+    stable_pools                     bytea,
     CONSTRAINT validators_pk PRIMARY KEY (epoch, sui_address)
 );
 
@@ -78,10 +79,10 @@ CREATE TABLE at_risk_validators
     CONSTRAINT at_risk_validators_pk PRIMARY KEY (EPOCH, address)
 );
 
--- NOTE: this assumes that over the past 100 checkpoints, there are at least 
+-- NOTE: this assumes that over the past 100 checkpoints, there are at least
 -- 2 checkpoints with different timestamps.
 -- This is an optimization to avoid fetching & calculating all checkpoints.
-CREATE OR REPLACE VIEW real_time_tps AS 
+CREATE OR REPLACE VIEW real_time_tps AS
 WITH recent_checkpoints AS (
   SELECT
     sequence_number,
@@ -107,7 +108,7 @@ SELECT
   (total_successful_transactions * 1000.0 / time_diff)::float8 as recent_tps
 FROM
   diff_checkpoints
-WHERE 
+WHERE
   time_diff IS NOT NULL
 ORDER BY sequence_number DESC LIMIT 1;
 

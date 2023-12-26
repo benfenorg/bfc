@@ -9,8 +9,7 @@ module bfc_system::bfc_system_state_inner {
     use sui::coin::Coin;
     use sui::bfc::BFC;
     use sui::tx_context::TxContext;
-    use sui::vec_map;
-    use sui::vec_map::VecMap;
+    use sui::vec_map::{Self, VecMap};
 
     use bfc_system::exchange_inner;
     use bfc_system::exchange_inner::ExchangePool;
@@ -21,12 +20,30 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
-    use bfc_system::busd::BUSD;
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
     use bfc_system::voting_pool::VotingBfc;
 
+    use bfc_system::busd::BUSD;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::baud::BAUD;
+    use bfc_system::bars::BARS;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bcad::BCAD;
+    use bfc_system::beur::BEUR;
+    use bfc_system::bgbp::BGBP;
+    use bfc_system::bidr::BIDR;
+    use bfc_system::binr::BINR;
+    use bfc_system::brub::BRUB;
+    use bfc_system::bsar::BSAR;
+    use bfc_system::btry::BTRY;
+    use bfc_system::bzar::BZAR;
+    use bfc_system::bmxn::BMXN;
+
     friend bfc_system::bfc_system;
+    #[test_only]
+    friend bfc_system::bfc_system_tests;
 
     const DEFAULT_STABLE_RATE: u64 = 0;
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
@@ -50,7 +67,6 @@ module bfc_system::bfc_system_state_inner {
         position_number: u32,
         tick_spacing: u32,
         spacing_times: u32,
-        time_interval: u32,
         max_counter_times: u32,
         base_point: u64,
         initialize_price: u128,
@@ -58,14 +74,30 @@ module bfc_system::bfc_system_state_inner {
 
     struct BfcSystemParameters has drop, copy {
         chain_start_timestamp_ms: u64,
-        treasury_parameters: TreasuryParameters,
+        time_interval: u32,
+        treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
     }
 
     const BFC_SYSTEM_TREASURY_KEY: u64 = 1;
 
     public(friend) fun create_inner_state(
-        usd_supply: Supply<BUSD>,
         bfc_balance: Balance<BFC>,
+        usd_supply: Supply<BUSD>,
+        jpy_supply: Supply<BJPY>,
+        krw_supply: Supply<BKRW>,
+        aud_supply: Supply<BAUD>,
+        ars_supply: Supply<BARS>,
+        brl_supply: Supply<BBRL>,
+        cad_supply: Supply<BCAD>,
+        eur_supply: Supply<BEUR>,
+        gbp_supply: Supply<BGBP>,
+        idr_supply: Supply<BIDR>,
+        inr_supply: Supply<BINR>,
+        rub_supply: Supply<BRUB>,
+        sar_supply: Supply<BSAR>,
+        try_supply: Supply<BTRY>,
+        zar_supply: Supply<BZAR>,
+        mxn_supply: Supply<BMXN>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
@@ -74,7 +106,26 @@ module bfc_system::bfc_system_state_inner {
         let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
         let exchange_pool = exchange_inner::new_exchange_pool<BUSD>(ctx, 0);
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
-        let (t, remain_balance, rate_map) = create_treasury(usd_supply, bfc_balance, parameters, ctx);
+        let (t, remain_balance, rate_map) = create_treasury(
+            bfc_balance,
+            usd_supply,
+            jpy_supply,
+            krw_supply,
+            aud_supply,
+            ars_supply,
+            brl_supply,
+            cad_supply,
+            eur_supply,
+            gbp_supply,
+            idr_supply,
+            inr_supply,
+            rub_supply,
+            sar_supply,
+            try_supply,
+            zar_supply,
+            mxn_supply,
+            parameters,
+            ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
 
         BfcSystemStateInner {
@@ -198,28 +249,69 @@ module bfc_system::bfc_system_state_inner {
     exchange_inner::get_bfc_amount(&self.exchange_pool)
    }
 
+    fun init_vault_with_positions<StableCoinType>(
+        _treasury: &mut Treasury,
+        _key: ascii::String,
+        _supply: Supply<StableCoinType>,
+        _parameters: BfcSystemParameters,
+        ctx: &mut TxContext
+    ) {
+        let p = vec_map::get(&_parameters.treasury_parameters, &_key);
+        treasury::init_vault_with_positions<StableCoinType>(
+            _treasury,
+            _supply,
+            p.initialize_price,
+            p.base_point,
+            p.position_number,
+            p.tick_spacing,
+            p.spacing_times,
+            p.max_counter_times,
+            _parameters.chain_start_timestamp_ms,
+            ctx,
+        );
+    }
+
     /// X treasury  init treasury
     public(friend) fun create_treasury(
-        supply: Supply<BUSD>,
         bfc_balance: Balance<BFC>,
+        usd_supply: Supply<BUSD>,
+        jpy_supply: Supply<BJPY>,
+        krw_supply: Supply<BKRW>,
+        aud_supply: Supply<BAUD>,
+        ars_supply: Supply<BARS>,
+        brl_supply: Supply<BBRL>,
+        cad_supply: Supply<BCAD>,
+        eur_supply: Supply<BEUR>,
+        gbp_supply: Supply<BGBP>,
+        idr_supply: Supply<BIDR>,
+        inr_supply: Supply<BINR>,
+        rub_supply: Supply<BRUB>,
+        sar_supply: Supply<BSAR>,
+        try_supply: Supply<BTRY>,
+        zar_supply: Supply<BZAR>,
+        mxn_supply: Supply<BMXN>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>, VecMap<ascii::String, u64>) {
-        let treasury_parameters = parameters.treasury_parameters;
-        let t = treasury::create_treasury(treasury_parameters.time_interval, balance::value(&bfc_balance), ctx);
+        let t = treasury::create_treasury(parameters.time_interval, balance::value(&bfc_balance), ctx);
 
-        treasury::init_vault_with_positions<BUSD>(
-            &mut t,
-            supply,
-            treasury_parameters.initialize_price,
-            treasury_parameters.base_point,
-            treasury_parameters.position_number,
-            treasury_parameters.tick_spacing,
-            treasury_parameters.spacing_times,
-            treasury_parameters.max_counter_times,
-            parameters.chain_start_timestamp_ms,
-            ctx,
-        );
+        init_vault_with_positions<BUSD>(&mut t, ascii::string(b"BUSD"), usd_supply, parameters, ctx);
+        init_vault_with_positions<BJPY>(&mut t, ascii::string(b"BJPY"), jpy_supply, parameters, ctx);
+        init_vault_with_positions<BKRW>(&mut t, ascii::string(b"BKRW"), krw_supply, parameters, ctx);
+        init_vault_with_positions<BAUD>(&mut t, ascii::string(b"BAUD"), aud_supply, parameters, ctx);
+        init_vault_with_positions<BARS>(&mut t, ascii::string(b"BARS"), ars_supply, parameters, ctx);
+        init_vault_with_positions<BBRL>(&mut t, ascii::string(b"BBRL"), brl_supply, parameters, ctx);
+        init_vault_with_positions<BCAD>(&mut t, ascii::string(b"BCAD"), cad_supply, parameters, ctx);
+        init_vault_with_positions<BEUR>(&mut t, ascii::string(b"BEUR"), eur_supply, parameters, ctx);
+        init_vault_with_positions<BGBP>(&mut t, ascii::string(b"BGBP"), gbp_supply, parameters, ctx);
+        init_vault_with_positions<BIDR>(&mut t, ascii::string(b"BIDR"), idr_supply, parameters, ctx);
+        init_vault_with_positions<BINR>(&mut t, ascii::string(b"BINR"), inr_supply, parameters, ctx);
+        init_vault_with_positions<BRUB>(&mut t, ascii::string(b"BRUB"), rub_supply, parameters, ctx);
+        init_vault_with_positions<BSAR>(&mut t, ascii::string(b"BSAR"), sar_supply, parameters, ctx);
+        init_vault_with_positions<BTRY>(&mut t, ascii::string(b"BTRY"), try_supply, parameters, ctx);
+        init_vault_with_positions<BZAR>(&mut t, ascii::string(b"BZAR"), zar_supply, parameters, ctx);
+        init_vault_with_positions<BMXN>(&mut t, ascii::string(b"BMXN"), mxn_supply, parameters, ctx);
+
         let rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
             let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
@@ -323,12 +415,13 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ) {
         let amount = treasury::next_epoch_bfc_required(&self.treasury);
-        let withdraw_balance =
-            treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
-        if (balance::value(&withdraw_balance) > 0) {
-            treasury::deposit(&mut self.treasury, coin::from_balance(withdraw_balance, ctx));
-        } else {
-            balance::destroy_zero(withdraw_balance);
+        if (amount > 0) {
+            let withdraw_balance = treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
+            if (balance::value(&withdraw_balance) > 0) {
+                treasury::deposit(&mut self.treasury, coin::from_balance(withdraw_balance, ctx));
+            } else {
+                balance::destroy_zero(withdraw_balance);
+            };
         };
         treasury::rebalance(&mut self.treasury, clock, ctx);
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
@@ -364,28 +457,33 @@ module bfc_system::bfc_system_state_inner {
         treasury::vault_info<StableCoinType>(&self.treasury)
     }
 
-    public(friend) fun bfc_system_stat_parameter(
+    public(friend) fun bfc_system_parameters(
+        time_interval: u32,
+        chain_start_timestamp_ms: u64,
+        treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
+    ): BfcSystemParameters {
+        BfcSystemParameters {
+            time_interval,
+            chain_start_timestamp_ms,
+            treasury_parameters,
+        }
+    }
+
+    public(friend) fun bfc_system_treasury_parameters(
         position_number: u32,
         tick_spacing: u32,
         spacing_times: u32,
         initialize_price: u128,
-        time_interval: u32,
         base_point: u64,
         max_counter_times: u32,
-        chain_start_timestamp_ms: u64,
-    ): BfcSystemParameters {
-        let treasury_parameters = TreasuryParameters {
+    ): TreasuryParameters {
+        TreasuryParameters {
             position_number,
             tick_spacing,
             spacing_times,
             initialize_price,
-            time_interval,
-            max_counter_times,
             base_point,
-        };
-        BfcSystemParameters {
-            treasury_parameters,
-            chain_start_timestamp_ms,
+            max_counter_times,
         }
     }
 

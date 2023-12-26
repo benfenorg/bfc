@@ -728,7 +728,7 @@ mod checked {
             vec![destroy_bfc],
         );
 
-        Ok(builder.finish())    
+        Ok(builder.finish())
     }
 
     fn bfc_round(
