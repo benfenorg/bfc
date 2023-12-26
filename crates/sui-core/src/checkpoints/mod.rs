@@ -1069,7 +1069,7 @@ impl CheckpointBuilder {
                 previous_bfc_gas_costs.non_refundable_storage_fee
                     + current_bfc_gas_costs.non_refundable_storage_fee,
             ),GasCostSummary::new_with_type(
-                GasCoinType::STABLE,
+                GasCoinType::STABLE_BY_BFC,
                 previous_stable_gas_costs.computation_cost + current_stable_gas_costs.computation_cost,
                 previous_stable_gas_costs.storage_cost + current_stable_gas_costs.storage_cost,
                 previous_stable_gas_costs.storage_rebate + current_stable_gas_costs.storage_rebate,
