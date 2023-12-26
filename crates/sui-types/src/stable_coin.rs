@@ -1,10 +1,6 @@
 // Copyright (c) Openblock Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use move_core_types::{
-    language_storage::{StructTag, TypeTag},
-    value::MoveStructLayout,
-};
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use std::fmt::{Display, Formatter};
@@ -17,53 +13,19 @@ use crate::{
     id::UID,
     object::{Data, MoveObject, Object},
 };
-use crate::stable_coin::stable::checked::BUSD;
+use crate::stable_coin::stable::checked::{STABLE, STABLE::BUSD};
 
 pub mod stable;
-
-/// The number of Mist per Sui token
-pub const MIST_PER_SUI: u64 = 1_000_000_000;
-
-/// Total supply denominated in Sui
-pub const TOTAL_SUPPLY_SUI: u64 = 1_000_000_000;
-
-// Note: cannot use checked arithmetic here since `const unwrap` is still unstable.
-/// Total supply denominated in Mist
-pub const TOTAL_SUPPLY_MIST: u64 = TOTAL_SUPPLY_SUI * MIST_PER_SUI;
 
 pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
+    use move_core_types::language_storage::{StructTag, TypeTag};
+    use move_core_types::value::MoveStructLayout;
+    use crate::balance::Balance;
+    use crate::base_types::ObjectID;
     use super::*;
-    // use crate::BFC_SYSTEM_ADDRESS;
-
-    // pub struct STABLE {}
-    // impl STABLE {
-    //     pub fn type_() -> StructTag {
-    //         StructTag {
-    //             address: BFC_SYSTEM_ADDRESS,
-    //             name: GAS_STRUCT_NAME.to_owned(),
-    //             module: GAS_MODULE_NAME.to_owned(),
-    //             type_params: Vec::new(),
-    //         }
-    //     }
-    //
-    //     pub fn type_tag() -> TypeTag {
-    //         TypeTag::Struct(Box::new(Self::type_()))
-    //     }
-    //
-    //     pub fn is_gas(other: &StructTag) -> bool {
-    //         &Self::type_() == other
-    //     }
-    //
-    //     pub fn is_gas_type(other: &TypeTag) -> bool {
-    //         match other {
-    //             TypeTag::Struct(s) => Self::is_gas(s),
-    //             _ => false,
-    //         }
-    //     }
-    // }
 
     /// Rust version of the Move sui::coin::Coin<STABLE> type
     #[derive(Debug, Serialize, Deserialize)]
@@ -79,19 +41,19 @@ mod checked {
         }
 
         pub fn type_() -> StructTag {
-            Coin::type_(TypeTag::Struct(Box::new(BUSD::type_())))
+            Coin::type_(TypeTag::Struct(Box::new(BUSD.type_())))
         }
 
         /// Return `true` if `s` is the type of a gas coin (i.e., 0x2::coin::Coin<0x2::sui::SUI>)
         pub fn is_gas_coin(s: &StructTag) -> bool {
-            Coin::is_coin(s) && s.type_params.len() == 1 && BUSD::is_gas_type(&s.type_params[0])
+            Coin::is_coin(s) && s.type_params.len() == 1 && STABLE::is_gas_type(&s.type_params[0])
         }
 
         /// Return `true` if `s` is the type of a gas balance (i.e., 0x2::balance::Balance<0x2::sui::SUI>)
         pub fn is_gas_balance(s: &StructTag) -> bool {
             Balance::is_balance(s)
                 && s.type_params.len() == 1
-                && BUSD::is_gas_type(&s.type_params[0])
+                && STABLE::is_gas_type(&s.type_params[0])
         }
 
         pub fn id(&self) -> &ObjectID {
@@ -107,7 +69,7 @@ mod checked {
         }
 
         pub fn layout() -> MoveStructLayout {
-            Coin::layout(TypeTag::Struct(Box::new(BUSD::type_())))
+            Coin::layout(TypeTag::Struct(Box::new(BUSD.type_())))
         }
 
         #[cfg(test)]

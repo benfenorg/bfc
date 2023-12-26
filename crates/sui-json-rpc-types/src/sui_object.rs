@@ -33,6 +33,7 @@ use sui_types::gas_coin::GasCoin;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::move_package::{MovePackage, TypeOrigin, UpgradeInfo};
 use sui_types::object::{Data, MoveObject, Object, ObjectFormatOptions, ObjectRead, Owner};
+use sui_types::stable_coin::stable::checked::STABLE;
 use sui_types::stable_coin::StableCoin;
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_serde::SequenceNumber as AsSequenceNumber;
@@ -323,7 +324,7 @@ impl TryFrom<&SuiObjectData> for StableCoin {
             .ok_or_else(|| anyhow!("Expect object content to not be empty"))?
         {
             SuiParsedData::MoveObject(o) => {
-                if StableCoin::type_() == o.type_ {
+                if STABLE::is_gas_struct(&o.type_) {
                     return StableCoin::try_from(&o.fields);
                 }
             }

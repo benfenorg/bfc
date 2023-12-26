@@ -373,7 +373,7 @@ impl ValidatorV1 {
                     pending_pool_token_withdraw,
                     extra_fields: _,
                 },
-            stable_pools: stable_pools,
+            stable_pools,
             stable_pool_keys:_,
             commission_rate,
             next_epoch_stake,

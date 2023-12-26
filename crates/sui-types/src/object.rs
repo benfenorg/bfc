@@ -16,7 +16,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
-use tracing::error;
 use tracing::log::info;
 
 use crate::balance::Balance;
