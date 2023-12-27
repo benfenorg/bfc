@@ -11,6 +11,7 @@ use sui_types::crypto::{default_hash, Signable};
 use sui_types::error::SuiError;
 use sui_types::move_package::MovePackage;
 use sui_types::object::{Data, MoveObject, Object, Owner};
+use sui_types::stable_coin::stable::checked::STABLE;
 use sui_types::storage::ObjectKey;
 
 pub type ObjectContentDigest = ObjectDigest;
@@ -107,7 +108,7 @@ pub enum StoreData {
     Package(MovePackage),
     IndirectObject(IndirectObjectMetadata),
     Coin(u64),
-    StableCoin(u8,u64),
+    StableCoin(u8, u64),
 }
 
 /// Metadata of stored moved object
@@ -224,7 +225,7 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                 )
             }else if move_obj.type_().is_stable_gas_coin() {
                 StoreData::StableCoin(
-                    1,
+                    STABLE::from(move_obj.type_tag()).get_index(),
                     Coin::from_bcs_bytes(move_obj.contents())
                         .expect("failed to deserialize coin")
                         .balance
@@ -274,9 +275,9 @@ pub(crate) fn try_construct_object(
                 u64::MAX,
             )?)
         },
-        (StoreData::StableCoin(_ct,balance), None) => unsafe {
+        (StoreData::StableCoin(index, balance), None) => unsafe {
             Data::Move(MoveObject::new_from_execution_with_limit(
-                MoveObjectType::stable_gas_coin(),
+                MoveObjectType::stable_gas_coin(index),
                 true,
                 object_key.1,
                 bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),

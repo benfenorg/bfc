@@ -68,7 +68,7 @@ use std::str::FromStr;
 use tracing::{error, info};
 use crate::stable_coin::{StableCoin};
 use crate::base_types_bfc::bfc_address_util::{convert_to_evm_address};
-use crate::stable_coin::stable::checked::{STABLE, STABLE::BUSD};
+use crate::stable_coin::stable::checked::{STABLE};
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
 #[path = "unit_tests/base_types_tests.rs"]
@@ -166,8 +166,9 @@ impl MoveObjectType {
     pub fn default_gas_coin() -> Self {
         Self(MoveObjectType_::GasCoin(GAS::type_tag()))
     }
-    pub fn stable_gas_coin() -> Self {
-        Self(MoveObjectType_::GasCoin(BUSD.type_tag()))
+
+    pub fn stable_gas_coin(index: u8) -> Self {
+        Self(MoveObjectType_::GasCoin(STABLE::from_index(index).type_tag()))
     }
 
     pub fn gas_coin(tag: TypeTag) -> Self {

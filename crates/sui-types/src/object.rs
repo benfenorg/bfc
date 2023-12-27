@@ -188,6 +188,10 @@ impl MoveObject {
         &self.type_
     }
 
+    pub fn type_tag(&self) -> TypeTag {
+        TypeTag::Struct(Box::new(self.type_().clone().into()))
+    }
+
     pub fn is_type(&self, s: &StructTag) -> bool {
         self.type_.is(s)
     }

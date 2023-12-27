@@ -52,6 +52,49 @@ pub mod checked {
             }
         }
 
+        pub fn get_index(&self) -> u8 {
+            match self {
+                STABLE::BUSD => 0,
+                STABLE::BARS => 1,
+                STABLE::BAUD => 2,
+                STABLE::BBRL => 3,
+                STABLE::BCAD => 4,
+                STABLE::BEUR => 5,
+                STABLE::BGBP => 6,
+                STABLE::BIDR => 7,
+                STABLE::BINR => 8,
+                STABLE::BJPY => 9,
+                STABLE::BKRW => 10,
+                STABLE::BMXN => 11,
+                STABLE::BRUB => 12,
+                STABLE::BSAR => 13,
+                STABLE::BTRY => 14,
+                STABLE::BZAR => 15,
+            }
+        }
+
+        pub fn from_index(index: u8) -> Self {
+            match index {
+                0 => STABLE::BUSD,
+                1 => STABLE::BARS,
+                2 => STABLE::BAUD,
+                3 => STABLE::BBRL,
+                4 => STABLE::BCAD,
+                5 => STABLE::BEUR,
+                6 => STABLE::BGBP,
+                7 => STABLE::BIDR,
+                8 => STABLE::BINR,
+                9 => STABLE::BJPY,
+                10 => STABLE::BKRW,
+                11 => STABLE::BMXN,
+                12 => STABLE::BRUB,
+                13 => STABLE::BSAR,
+                14 => STABLE::BTRY,
+                15 => STABLE::BZAR,
+                _ => panic!("Invalid index for stable coin: {}", index),
+            }
+        }
+
         pub fn type_tag(&self) -> TypeTag {
             TypeTag::Struct(Box::new(self.type_()))
         }
@@ -123,8 +166,8 @@ pub mod checked {
                 ("bsar", "BSAR") => STABLE::BSAR,
                 ("btry", "BTRY") => STABLE::BTRY,
                 ("bzar", "BZAR") => STABLE::BZAR,
-                // 其他情况
-                _ => panic!("unknown StructTag: {:?}, {:?}", s.module, s.name),
+                // default
+                _ => STABLE::BUSD
             }
         }
     }
@@ -132,7 +175,7 @@ pub mod checked {
         fn from(s: TypeTag) -> Self {
             match s {
                 TypeTag::Struct(s) => STABLE::from(*s),
-                _ => panic!("unknown TypeTag: {:?}", s),
+                _ => panic!("unreachable tag: {:?}", s),
             }
         }
     }
