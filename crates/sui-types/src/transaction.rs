@@ -22,7 +22,7 @@ use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, 
 
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
-use itertools::Either;
+use itertools::{Either, Itertools};
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
 use move_core_types::{identifier::Identifier, language_storage::TypeTag};
@@ -35,10 +35,13 @@ use std::{
     hash::Hash,
     iter,
 };
+use std::collections::HashMap;
+use move_core_types::language_storage::StructTag;
 use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
 use tracing::trace;
+use crate::gas::GasCostSummary;
 
 // TODO: The following constants appear to be very large.
 // We should revisit them.
@@ -154,13 +157,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_storage_charge: u64,
-    /// The total amount of gas charged for computation during the epoch.
-    pub stable_computation_charge: u64,
-    /// The amount of storage rebate refunded to the txn senders.
-    pub stable_storage_rebate: u64,
-    /// The non-refundable storage fee.
-    pub stable_non_refundable_storage_fee: u64,
+    pub stable_gas_summarys:Vec<(StructTag,GasCostSummary)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
@@ -1990,13 +1987,11 @@ impl VerifiedTransaction {
         bfc_computation_charge: u64,
         bfc_storage_rebate: u64,
         bfc_non_refundable_storage_fee: u64,
-        stable_storage_charge: u64,
-        stable_computation_charge: u64,
-        stable_storage_rebate: u64,
-        stable_non_refundable_storage_fee: u64,
+        stable_gas_summary_map:HashMap<StructTag,GasCostSummary>,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
+        let stable_gas_summarys = stable_gas_summary_map.iter().map(|(k,v)|(k.clone(),v.clone())).collect_vec();
         ChangeEpoch {
             epoch: next_epoch,
             protocol_version,
@@ -2004,10 +1999,7 @@ impl VerifiedTransaction {
             bfc_computation_charge,
             bfc_storage_rebate,
             bfc_non_refundable_storage_fee,
-            stable_storage_charge,
-            stable_computation_charge,
-            stable_storage_rebate,
-            stable_non_refundable_storage_fee,
+            stable_gas_summarys,
             epoch_start_timestamp_ms,
             system_packages,
         }

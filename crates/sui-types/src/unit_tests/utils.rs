@@ -28,7 +28,7 @@ use fastcrypto::traits::KeyPair as KeypairTraits;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use shared_crypto::intent::{Intent, IntentMessage};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 pub const TEST_CLIENT_ID: &str =
     "575519204237-msop9ep45u2uo98hapqmngv8d84qdc8k.apps.googleusercontent.com";
@@ -138,7 +138,7 @@ pub fn mock_certified_checkpoint<'a>(
         &contents,
         None,
         GasCostSummary::default(),
-        GasCostSummary::default(),
+        HashMap::new(),
         None,
         0,
     );

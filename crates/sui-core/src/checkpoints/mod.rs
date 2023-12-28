@@ -23,17 +23,19 @@ use serde::{Deserialize, Serialize};
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::consensus_handler::SequencedConsensusTransactionKey;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
+use itertools::MultiUnzip;
+use move_core_types::language_storage::StructTag;
 use sui_protocol_config::ProtocolVersion;
 use sui_types::base_types::{EpochId, TransactionDigest};
 use sui_types::crypto::{AuthoritySignInfo, AuthorityStrongQuorumSignInfo};
 use sui_types::digests::{CheckpointContentsDigest, CheckpointDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::gas::{GasCoinType, GasCostSummary};
+use sui_types::gas::GasCostSummary;
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::SignedCheckpointSummary;
 use sui_types::messages_checkpoint::{
@@ -50,6 +52,7 @@ use tokio::{
     time::timeout,
 };
 use tracing::{debug, error, info, trace, warn};
+use sui_types::storage::ObjectStore;
 use typed_store::rocks::{DBMap, MetricConf, TypedStoreError};
 use typed_store::traits::{TableSummary, TypedStoreDebug};
 use typed_store::Map;
@@ -947,7 +950,7 @@ impl CheckpointBuilder {
             }
 
             let (mut effects, mut signatures): (Vec<_>, Vec<_>) = transactions.into_iter().unzip();
-            let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary)=
+            let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary_map)=
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
             // if  first_checkpoint_of_epoch{
@@ -961,7 +964,7 @@ impl CheckpointBuilder {
                 let system_state_obj = self
                     .augment_epoch_last_checkpoint(
                         &epoch_rolling_bfc_gas_cost_summary,
-                        &epoch_rolling_stable_gas_cost_summary,
+                        &epoch_rolling_stable_gas_cost_summary_map,
                         timestamp_ms,
                         &mut effects,
                         &mut signatures,
@@ -1029,7 +1032,7 @@ impl CheckpointBuilder {
                 &contents,
                 previous_digest,
                 epoch_rolling_bfc_gas_cost_summary,
-                epoch_rolling_stable_gas_cost_summary,
+                epoch_rolling_stable_gas_cost_summary_map,
                 end_of_epoch_data,
                 timestamp_ms,
             );
@@ -1055,34 +1058,90 @@ impl CheckpointBuilder {
         &self,
         last_checkpoint: Option<&CheckpointSummary>,
         cur_checkpoint_effects: &[TransactionEffects],
-    ) -> (GasCostSummary,GasCostSummary) {
-        let (previous_epoch, previous_bfc_gas_costs,previous_stable_gas_costs) = last_checkpoint
-            .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone(),c.epoch_rolling_stable_gas_cost_summary.clone()))
+    ) -> (GasCostSummary,HashMap<StructTag,GasCostSummary>) {
+        let (previous_epoch, previous_bfc_gas_costs,mut previous_stable_gas_costs_map) = last_checkpoint
+            .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone(),c.epoch_rolling_stable_gas_cost_summary_map.clone()))
             .unwrap_or_default();
-        let (current_bfc_gas_costs,current_stable_gas_costs) = GasCostSummary::new_from_txn_effects(cur_checkpoint_effects.iter());
+
+        let (current_bfc_gas_costs, current_stable_gas_costs_map) = self.new_from_txn_effects(cur_checkpoint_effects.iter());
+
         if previous_epoch == self.epoch_store.epoch() {
             // sum only when we are within the same epoch
+            current_stable_gas_costs_map.into_iter().map(|(k, current)|
+                {
+                    if previous_stable_gas_costs_map.contains_key(&k){
+                        let previous = previous_stable_gas_costs_map.get_mut(&k).unwrap();
+                        previous.computation_cost + current.computation_cost;
+                        previous.storage_cost + current.storage_cost;
+                        previous.storage_rebate + current.storage_rebate;
+                        previous.non_refundable_storage_fee + current.non_refundable_storage_fee;
+                    }else{
+                        previous_stable_gas_costs_map.insert(k, current);
+                    }
+                });
             (GasCostSummary::new(
                 previous_bfc_gas_costs.computation_cost + current_bfc_gas_costs.computation_cost,
                 previous_bfc_gas_costs.storage_cost + current_bfc_gas_costs.storage_cost,
                 previous_bfc_gas_costs.storage_rebate + current_bfc_gas_costs.storage_rebate,
                 previous_bfc_gas_costs.non_refundable_storage_fee
                     + current_bfc_gas_costs.non_refundable_storage_fee,
-            ),GasCostSummary::new_with_type(
-                GasCoinType::STABLE,
-                previous_stable_gas_costs.computation_cost + current_stable_gas_costs.computation_cost,
-                previous_stable_gas_costs.storage_cost + current_stable_gas_costs.storage_cost,
-                previous_stable_gas_costs.storage_rebate + current_stable_gas_costs.storage_rebate,
-                previous_stable_gas_costs.non_refundable_storage_fee
-                    + current_stable_gas_costs.non_refundable_storage_fee,
-            )
+            ),previous_stable_gas_costs_map
             )
         } else {
-            (current_bfc_gas_costs,current_stable_gas_costs)
+            (current_bfc_gas_costs,current_stable_gas_costs_map)
         }
     }
 
-    async fn augment_bfc_round(
+    pub fn new_from_txn_effects<'a>(&self,
+        transactions: impl Iterator<Item = &'a TransactionEffects>,
+    ) -> (GasCostSummary,HashMap<StructTag,GasCostSummary> ){
+        let authority_store = self.state.database.clone();
+
+        let mut bfc_gas_cost_summary = GasCostSummary {
+            storage_cost: 0,
+            computation_cost: 0,
+            storage_rebate: 0,
+            non_refundable_storage_fee: 0,
+        };
+        let mut stable_gas_cost_summary_map = HashMap::new();
+
+        for effect in transactions.into_iter(){
+            let gas_object_id = effect.gas_object().0.0;
+            let object = authority_store.get_object(&gas_object_id).unwrap().unwrap();
+            if object.is_gas_coin() {
+                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
+                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
+                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
+                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+            }
+            if object.is_stable_gas_coin() {
+                let struct_tag = object.struct_tag().unwrap();
+                if stable_gas_cost_summary_map.contains_key(&struct_tag) {
+                    let mut gas_cost_summary:&mut GasCostSummary = stable_gas_cost_summary_map.get_mut(&struct_tag).unwrap();
+                    gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
+                    gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
+                    gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
+                    gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                } else {
+                    let mut gas_cost_summary = GasCostSummary {
+                        storage_cost: 0,
+                        computation_cost: 0,
+                        storage_rebate: 0,
+                        non_refundable_storage_fee: 0,
+                    };
+                    gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
+                    gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
+                    gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
+                    gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                    stable_gas_cost_summary_map.insert(struct_tag.clone(),gas_cost_summary);
+                }
+            }
+        }
+        (bfc_gas_cost_summary,stable_gas_cost_summary_map)
+    }
+
+
+async fn augment_bfc_round(
         &self,
         checkpoint: CheckpointSequenceNumber,
         checkpoint_effects: &mut Vec<TransactionEffects>,
@@ -1101,7 +1160,7 @@ impl CheckpointBuilder {
     async fn augment_epoch_last_checkpoint(
         &self,
         epoch_bfc_gas_cost: &GasCostSummary,
-        epoch_stable_gas_cost: &GasCostSummary,
+        epoch_stable_gas_cost: &HashMap<StructTag,GasCostSummary>,
         epoch_start_timestamp_ms: CheckpointTimestamp,
         checkpoint_effects: &mut Vec<TransactionEffects>,
         signatures: &mut Vec<Vec<GenericSignature>>,

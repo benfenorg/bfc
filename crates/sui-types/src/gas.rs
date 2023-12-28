@@ -123,18 +123,9 @@ pub mod checked {
     /// storage_rebate + non_refundable_storage_fee`
 
     #[serde_as]
-    #[derive(Eq, PartialEq, Clone, Debug, Default,Serialize, Deserialize, JsonSchema)]
-    #[serde(rename_all = "camelCase")]
-    pub enum GasCoinType{
-        #[default]
-        BFC,
-        STABLE,
-    }
-    #[serde_as]
-    #[derive(Eq, PartialEq, Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+    #[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
     #[serde(rename_all = "camelCase")]
     pub struct GasCostSummary {
-        pub gas_coin_type: GasCoinType,
         /// Cost of computation/execution
         #[schemars(with = "BigInt<u64>")]
         #[serde_as(as = "Readable<BigInt<u64>, _>")]
@@ -162,23 +153,6 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
-                gas_coin_type: GasCoinType::BFC,
-                computation_cost,
-                storage_cost,
-                storage_rebate,
-                non_refundable_storage_fee,
-            }
-        }
-
-        pub fn new_with_type(
-            gas_coin_type: GasCoinType,
-            computation_cost: u64,
-            storage_cost: u64,
-            storage_rebate: u64,
-            non_refundable_storage_fee: u64,
-        ) -> GasCostSummary {
-            GasCostSummary {
-                gas_coin_type,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -197,8 +171,8 @@ pub mod checked {
             // `< x.5` goes to x (truncates). We replicate `f32/64::round()`
             const BASIS_POINTS: u128 = 10000;
             (((self.storage_rebate as u128 * storage_rebate_rate as u128)
-            + (BASIS_POINTS / 2)) // integer rounding adds half of the BASIS_POINTS (denominator)
-            / BASIS_POINTS) as u64
+                + (BASIS_POINTS / 2)) // integer rounding adds half of the BASIS_POINTS (denominator)
+                / BASIS_POINTS) as u64
         }
 
         /// Get net gas usage, positive number means used gas; negative number means refund.
@@ -206,14 +180,10 @@ pub mod checked {
             self.gas_used() as i64 - self.storage_rebate as i64
         }
 
-        pub fn set_gas_coin_type(& mut self, gas_coin_type: GasCoinType)  {
-            self.gas_coin_type = gas_coin_type;
-        }
         pub fn new_from_txn_effects<'a>(
-            transactions: impl Iterator<Item = &'a TransactionEffects>,
-        ) -> (GasCostSummary,GasCostSummary ){
-            let (gas_coin_types,storage_costs, computation_costs, storage_rebates, non_refundable_storage_fee): (
-                Vec<GasCoinType>,
+            transactions: impl Iterator<Item=&'a TransactionEffects>,
+        ) -> GasCostSummary {
+            let (storage_costs, computation_costs, storage_rebates, non_refundable_storage_fee): (
                 Vec<u64>,
                 Vec<u64>,
                 Vec<u64>,
@@ -221,7 +191,6 @@ pub mod checked {
             ) = transactions
                 .map(|e| {
                     (
-                        e.gas_cost_summary().gas_coin_type.clone(),
                         e.gas_cost_summary().storage_cost,
                         e.gas_cost_summary().computation_cost,
                         e.gas_cost_summary().storage_rebate,
@@ -230,38 +199,12 @@ pub mod checked {
                 })
                 .multiunzip();
 
-            let mut bfc_gas_cost_summary = GasCostSummary {
-                gas_coin_type: GasCoinType::BFC,
-                storage_cost: 0,
-                computation_cost: 0,
-                storage_rebate: 0,
-                non_refundable_storage_fee: 0,
-            };
-            let mut stable_gas_cost_summary = GasCostSummary {
-                gas_coin_type: GasCoinType::STABLE,
-                storage_cost: 0,
-                computation_cost: 0,
-                storage_rebate: 0,
-                non_refundable_storage_fee: 0,
-            };
-
-            for (index, coin_type) in gas_coin_types.iter().enumerate() {
-                match coin_type {
-                    GasCoinType::BFC => {
-                        bfc_gas_cost_summary.storage_cost += storage_costs[index];
-                        bfc_gas_cost_summary.computation_cost += computation_costs[index];
-                        bfc_gas_cost_summary.storage_rebate += storage_rebates[index];
-                        bfc_gas_cost_summary.non_refundable_storage_fee += non_refundable_storage_fee[index];
-                    }
-                    GasCoinType::STABLE => {
-                        stable_gas_cost_summary.storage_cost += storage_costs[index];
-                        stable_gas_cost_summary.computation_cost += computation_costs[index];
-                        stable_gas_cost_summary.storage_rebate += storage_rebates[index];
-                        stable_gas_cost_summary.non_refundable_storage_fee += non_refundable_storage_fee[index];
-                    }
-                }
+            GasCostSummary {
+                storage_cost: storage_costs.iter().sum(),
+                computation_cost: computation_costs.iter().sum(),
+                storage_rebate: storage_rebates.iter().sum(),
+                non_refundable_storage_fee: non_refundable_storage_fee.iter().sum(),
             }
-            (bfc_gas_cost_summary,stable_gas_cost_summary)
         }
     }
 

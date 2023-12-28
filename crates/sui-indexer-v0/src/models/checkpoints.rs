@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use diesel::prelude::*;
 
 use fastcrypto::traits::EncodeDecodeBase64;
@@ -8,7 +9,7 @@ use sui_json_rpc_types::Checkpoint as RpcCheckpoint;
 use sui_types::base_types::TransactionDigest;
 use sui_types::crypto::AggregateAuthoritySignature;
 use sui_types::digests::CheckpointDigest;
-use sui_types::gas::{GasCoinType, GasCostSummary};
+use sui_types::gas::GasCostSummary;
 use sui_types::messages_checkpoint::EndOfEpochData;
 
 use crate::errors::IndexerError;
@@ -147,19 +148,12 @@ impl Checkpoint {
             end_of_epoch_data,
             validator_signature: validator_sig,
             epoch_rolling_bfc_gas_cost_summary: GasCostSummary {
-                gas_coin_type:GasCoinType::BFC,
                 computation_cost: self.total_computation_cost as u64,
                 storage_cost: self.total_storage_cost as u64,
                 storage_rebate: self.total_storage_rebate as u64,
                 non_refundable_storage_fee: 0,
             },
-            epoch_rolling_stable_gas_cost_summary: GasCostSummary {
-                gas_coin_type:GasCoinType::STABLE,
-                computation_cost: 0,
-                storage_cost: 0,
-                storage_rebate: 0,
-                non_refundable_storage_fee: 0,
-            },
+            epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
             network_total_transactions: self.network_total_transactions as u64,
             timestamp_ms: self.timestamp_ms as u64,
             transactions: parsed_tx_digests,

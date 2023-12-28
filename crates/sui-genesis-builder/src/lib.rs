@@ -8,7 +8,7 @@ use fastcrypto::traits::KeyPair;
 use move_binary_format::CompiledModule;
 use move_core_types::ident_str;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -26,9 +26,8 @@ use sui_types::crypto::{
 };
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::epoch_data::EpochData;
-//use sui_types::gas::GasCharger;
 
-use sui_types::gas::{GasCoinType, GasCostSummary, SuiGasStatus};
+use sui_types::gas::{GasCostSummary, SuiGasStatus};
 use sui_types::gas_coin::GasCoin;
 use sui_types::gas_coin::GAS;
 use sui_types::governance::StakedSui;
@@ -891,7 +890,7 @@ fn create_genesis_checkpoint(
         content_digest: *contents.digest(),
         previous_digest: None,
         epoch_rolling_bfc_gas_cost_summary: Default::default(),
-        epoch_rolling_stable_gas_cost_summary: GasCostSummary::new_with_type(GasCoinType::STABLE,0,0,0,0),
+        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
         end_of_epoch_data: None,
         timestamp_ms: parameters.chain_start_timestamp_ms,
         version_specific_data: Vec::new(),

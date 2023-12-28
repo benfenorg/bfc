@@ -8,7 +8,7 @@ pub use checked::*;
 pub mod checked {
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
-    use sui_types::gas::{deduct_gas, GasCoinType, GasCostSummary, SuiGasStatus};
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
     use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
@@ -291,7 +291,6 @@ pub mod checked {
                     let stable_gas_used = gas_used * (stable_rate as i64);
                     // error!("gas charge: {}, {} ,rate {}", stable_gas_used, gas_used, rate);
                     deduct_gas(&mut gas_object, stable_gas_used);
-                    cost_summary.set_gas_coin_type(GasCoinType::STABLE);
                     cost_summary.computation_cost = cost_summary.computation_cost * stable_rate;
                     cost_summary.storage_cost= cost_summary.storage_cost * stable_rate;
                     cost_summary.storage_rebate = cost_summary.storage_rebate * stable_rate;
