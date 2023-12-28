@@ -59,7 +59,22 @@ module sui_system::sui_system {
     use std::type_name;
     use std::vector;
     use bfc_system::bfc_system;
+    use bfc_system::bars::BARS;
+    use bfc_system::baud::BAUD;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bcad::BCAD;
+    use bfc_system::beur::BEUR;
+    use bfc_system::bgbp::BGBP;
+    use bfc_system::bidr::BIDR;
+    use bfc_system::binr::BINR;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::bmxn::BMXN;
+    use bfc_system::brub::BRUB;
+    use bfc_system::bsar::BSAR;
+    use bfc_system::btry::BTRY;
     use bfc_system::busd::BUSD;
+    use bfc_system::bzar::BZAR;
     use sui::dynamic_field;
     use sui::vec_map;
     use sui::vec_map::VecMap;
@@ -70,6 +85,8 @@ module sui_system::sui_system {
     #[test_only] use sui_system::validator_set::ValidatorSet;
     #[test_only] use sui_system::validator_set;
     #[test_only] use sui::vec_set::VecSet;
+    #[test_only]
+    use sui_system::validator::rate_vec_map;
 
     friend sui_system::genesis;
 
@@ -86,6 +103,7 @@ module sui_system::sui_system {
 
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
+    const EWrongStableRateLength: u64 = 2;
 
     // ==== functions that can only be called by genesis ====
 
@@ -604,15 +622,28 @@ module sui_system::sui_system {
                                          // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
-        busd_rate : vector<u64>,
+        rate_vec : vector<u64>,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
-        // get BUSD exchange rate from bfc system
-        //let stable_rate  = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
+        // get stable exchange rate from bfc system
+        assert!(vector::length(&rate_vec) == 16, EWrongStableRateLength);
         let stable_rate = vec_map::empty<ascii::String, u64>();
-        //add busd rate
-        let rate = vector::pop_back(&mut busd_rate);
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BUSD>()), rate);
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BUSD>()), *vector::borrow<u64>(&rate_vec,0));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BARS>()), *vector::borrow<u64>(&rate_vec,1));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BAUD>()), *vector::borrow<u64>(&rate_vec,2));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BBRL>()), *vector::borrow<u64>(&rate_vec,3));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BCAD>()), *vector::borrow<u64>(&rate_vec,4));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BEUR>()), *vector::borrow<u64>(&rate_vec,5));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BGBP>()), *vector::borrow<u64>(&rate_vec,6));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BIDR>()), *vector::borrow<u64>(&rate_vec,7));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BINR>()), *vector::borrow<u64>(&rate_vec,8));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BJPY>()), *vector::borrow<u64>(&rate_vec,9));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BKRW>()), *vector::borrow<u64>(&rate_vec,10));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BMXN>()), *vector::borrow<u64>(&rate_vec,11));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BRUB>()), *vector::borrow<u64>(&rate_vec,12));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BSAR>()), *vector::borrow<u64>(&rate_vec,13));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BTRY>()), *vector::borrow<u64>(&rate_vec,14));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BZAR>()), *vector::borrow<u64>(&rate_vec,15));
 
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
@@ -691,8 +722,7 @@ module sui_system::sui_system {
         validator_addr: address,
     ): u64 {
         let self = load_system_state(wrapper);
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1);
+        let rate_map = rate_vec_map();
         sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, rate_map)
     }
 
@@ -837,10 +867,11 @@ module sui_system::sui_system {
     ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
-        // let rate_map = vec_map::empty<ascii::String, u64>();
-        // vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1);
         let rates = vector::empty<u64>();
-        vector::insert(&mut rates, 1, 0);
+        while (vector::length(&rates) < 16) {
+            vector::push_back(&mut rates, 1u64);
+        };
+        assert!(vector::length(&rates) == 16, EWrongStableRateLength);
         let storage_rebate = advance_epoch(
             storage_reward,
             computation_reward,

@@ -5,7 +5,6 @@ module sui_system::voting_power {
     use std::ascii;
     use sui_system::validator::Validator;
     use std::vector;
-    use bfc_system::busd::BUSD;
     use sui_system::validator;
     use sui::math;
     use sui::math::divide_and_round_up;
@@ -84,7 +83,7 @@ module sui_system::voting_power {
         let result = vector[];
         while (i < len) {
             let validator = vector::borrow(validators, i);
-            let stake = validator::total_stake_with_all_stable<BUSD>(validator, stable_rate);
+            let stake = validator::total_stake_with_all_stable(validator, stable_rate);
             let adjusted_stake = (stake as u128) * (TOTAL_VOTING_POWER as u128) / (total_stake as u128);
             let voting_power = math::min((adjusted_stake as u64), threshold);
             let info = VotingPowerInfoV2 {
@@ -106,7 +105,7 @@ module sui_system::voting_power {
         let total_stake =0 ;
         while (i < len) {
             total_stake = total_stake +
-                validator::total_stake_with_all_stable<BUSD>(vector::borrow(validators, i), stable_rate);
+                validator::total_stake_with_all_stable(vector::borrow(validators, i), stable_rate);
             i = i + 1;
         };
         total_stake

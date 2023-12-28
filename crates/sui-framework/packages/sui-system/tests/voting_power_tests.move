@@ -3,17 +3,13 @@
 
 #[test_only]
 module sui_system::voting_power_tests {
-    use std::ascii;
-    use std::type_name;
     use sui_system::governance_test_utils as gtu;
     use sui_system::voting_power;
     use sui::test_scenario;
     use sui::test_utils;
     use sui::tx_context::TxContext;
     use std::vector;
-    use bfc_system::busd::BUSD;
-    use sui::vec_map;
-    use sui_system::validator::{Self, Validator};
+    use sui_system::validator::{Self, Validator, rate_vec_map};
 
     const TOTAL_VOTING_POWER: u64 = 10_000;
     const MAX_VOTING_POWER: u64 = 1_000;
@@ -21,8 +17,7 @@ module sui_system::voting_power_tests {
 
     fun check(stakes: vector<u64>, voting_power: vector<u64>, ctx: &mut TxContext) {
         let validators = gtu::create_validators_with_stakes(stakes, ctx);
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 10);
+        let rate_map = rate_vec_map();
         voting_power::set_voting_power(&mut validators, rate_map);
         test_utils::assert_eq(get_voting_power(&validators), voting_power);
         test_utils::destroy(validators);
@@ -31,8 +26,7 @@ module sui_system::voting_power_tests {
     fun check_with_stable(stakes: vector<u64>, stables:vector<u64>, voting_power: vector<u64>, ctx: &mut TxContext) {
         let validators = gtu::create_validators_with_stakes(stakes, ctx);
         gtu::stake_stables(&mut validators, stables, ctx);
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1);
+        let rate_map = rate_vec_map();
         voting_power::set_voting_power(&mut validators, rate_map);
         test_utils::assert_eq(get_voting_power(&validators), voting_power);
         test_utils::destroy(validators);

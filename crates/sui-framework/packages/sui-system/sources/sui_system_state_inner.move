@@ -1052,7 +1052,7 @@ module sui_system::sui_system_state_inner {
         validator_addr: address,
         stable_rate: VecMap<ascii::String, u64>
     ): u64 {
-        validator_set::validator_total_stake_amount_with_stable<BUSD>(&self.validators, validator_addr, stable_rate)
+        validator_set::validator_total_stake_amount_with_stable(&self.validators, validator_addr, stable_rate)
     }
 
     /// Returns the staking pool id of a given validator.

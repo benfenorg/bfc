@@ -6,6 +6,7 @@ module sui_system::validator_set {
     use std::option::{Self, Option};
     use std::type_name;
     use std::vector;
+    use bfc_system::bjpy::BJPY;
 
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
@@ -164,6 +165,7 @@ module sui_system::validator_set {
         //add init stable rate
         let rate_map = vec_map::empty();
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 10);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BJPY>()), 10);
 
         let total_stake = calculate_total_stakes(&init_active_validators, rate_map);
         let staking_pool_mappings = table::new(ctx);
@@ -173,7 +175,7 @@ module sui_system::validator_set {
         while (i < num_validators) {
             let validator = vector::borrow(&init_active_validators, i);
             table::add(&mut staking_pool_mappings, staking_pool_id(validator), sui_address(validator));
-            let id_vec = all_stable_pool_id<BUSD>(validator);
+            let id_vec = all_stable_pool_id(validator);
             let id_len = vector::length(&id_vec);
             let j = 0;
             while (j < id_len) {
@@ -197,6 +199,7 @@ module sui_system::validator_set {
         };
         let rate_map = vec_map::empty<ascii::String, u64>();
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), INIT_STABLE_EXCHANGE_RATE);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BJPY>()), INIT_STABLE_EXCHANGE_RATE);
         voting_power::set_voting_power(&mut validators.active_validators, rate_map);
         validators
     }
@@ -250,7 +253,10 @@ module sui_system::validator_set {
         table::remove(&mut self.staking_pool_mappings, staking_pool_id);
 
         // Deactivate the staking pool.
-        validator::deactivate<BUSD>(&mut validator, tx_context::epoch(ctx));
+        let deactivation_epoch = tx_context::epoch(ctx);
+        validator::deactivate(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BUSD>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BJPY>(&mut validator, deactivation_epoch);
 
         // Add to the inactive tables.
         table::add(
@@ -602,12 +608,12 @@ module sui_system::validator_set {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::total_stake_amount(validator)
     }
-    public fun validator_total_stake_amount_with_stable<STABLE>(
+    public fun validator_total_stake_amount_with_stable(
         self: &ValidatorSet,
         validator_address: address,
         stable_rate: VecMap<ascii::String, u64>): u64 {
         let validator = get_validator_ref(&self.active_validators, validator_address);
-        validator::total_stake_with_all_stable<STABLE>(validator, stable_rate)
+        validator::total_stake_with_all_stable(validator, stable_rate)
     }
 
     public fun validator_stake_amount(self: &ValidatorSet, validator_address: address): u64 {
@@ -942,7 +948,9 @@ module sui_system::validator_set {
         );
 
         // Deactivate the validator and its staking pool
-        validator::deactivate<BUSD>(&mut validator, new_epoch);
+        validator::deactivate(&mut validator, new_epoch);
+        validator::deactivate_stable<BUSD>(&mut validator, new_epoch);
+        validator::deactivate_stable<BJPY>(&mut validator, new_epoch);
         table::add(
             &mut self.inactive_validators,
             validator_pool_id,
@@ -982,7 +990,7 @@ module sui_system::validator_set {
     ) {
         while (!table_vec::is_empty(&self.pending_active_validators)) {
             let validator = table_vec::pop_back(&mut self.pending_active_validators);
-            validator::activate<BUSD>(&mut validator, new_epoch);
+            validator::activate(&mut validator, new_epoch);
             event::emit(
                 ValidatorJoinEvent {
                     epoch: new_epoch,
@@ -1022,7 +1030,7 @@ module sui_system::validator_set {
         while (i < length) {
             let validator = vector::borrow_mut(validators, i);
             validator::process_pending_stakes_and_withdraws(validator, ctx);
-            validator::process_pending_all_stable_stakes_and_withdraws<BUSD>(validator, ctx);
+            validator::process_pending_all_stable_stakes_and_withdraws(validator, ctx);
             i = i + 1;
         }
     }
@@ -1034,7 +1042,7 @@ module sui_system::validator_set {
         let i = 0;
         while (i < length) {
             let v = vector::borrow(validators, i);
-            stake = stake + validator::total_stake_with_all_stable<BUSD>(v, stable_rate);
+            stake = stake + validator::total_stake_with_all_stable(v, stable_rate);
             i = i + 1;
         };
         stake
@@ -1291,7 +1299,7 @@ module sui_system::validator_set {
                     pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
                     storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
                     pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
-                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch<BUSD>(v, new_epoch),
+                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
                     tallying_rule_reporters,
                     tallying_rule_global_score,
                 }

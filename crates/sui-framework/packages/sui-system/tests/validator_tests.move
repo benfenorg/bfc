@@ -7,11 +7,10 @@ module sui_system::validator_tests {
     use sui::test_scenario;
     use sui::url;
     use std::string::Self;
-    use sui_system::validator::{Self, Validator};
+    use sui_system::validator::{Self, Validator, rate_vec_map};
     use sui::tx_context::TxContext;
     use std::option;
     use std::ascii;
-    use std::type_name;
     use sui::coin::{Self, Coin};
     use sui::balance;
     use sui_system::staking_pool::{Self, StakedBfc};
@@ -20,7 +19,6 @@ module sui_system::validator_tests {
     use sui::test_utils;
     use sui::bag;
     use sui::transfer;
-    use sui::vec_map;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
 
@@ -68,7 +66,7 @@ module sui_system::validator_tests {
             ctx
         );
 
-        validator::activate<BUSD>(&mut validator, 0);
+        validator::activate(&mut validator, 0);
 
         validator
     }
@@ -88,9 +86,8 @@ module sui_system::validator_tests {
         //process pending stake
         validator::process_pending_stable_stakes_and_withdraws<BUSD>(&mut validator, ctx);
         assert!( validator::stable_stake_amount<BUSD>(&validator) == 30_000_000_000, 0);
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 2);
-        assert!(validator::total_stake_with_all_stable<BUSD>(&validator, rate_map) == 61_000_000_000, 0);
+        let rate_map = rate_vec_map();
+        assert!( validator::total_stake_with_all_stable(&validator, rate_map) == 31_000_000_000, 0);
 
         test_utils::destroy(staked);
         test_utils::destroy(validator);
