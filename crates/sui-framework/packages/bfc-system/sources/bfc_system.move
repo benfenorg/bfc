@@ -146,6 +146,16 @@ module bfc_system::bfc_system {
         judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
+    public fun inner_stablecoin_to_bfc<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        balance: Balance<StableCoinType>,
+        ctx: &mut TxContext,
+    ): Balance<BFC>
+    {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(balance, ctx), ctx)
+    }
+
     public fun request_gas_balance(
         wrapper: &mut BfcSystemState,
         amount: u64,
