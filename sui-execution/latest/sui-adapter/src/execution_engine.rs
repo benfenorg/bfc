@@ -32,6 +32,7 @@ mod checked {
     use crate::type_layout_resolver::TypeLayoutResolver;
     use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
+    use move_core_types::language_storage::TypeTag;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
     use sui_types::committee::EpochId;
@@ -698,35 +699,30 @@ mod checked {
             arguments,
         );
 
-        let mut arguments = vec![];
+        for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
+            // create compute rewards in stable coin
+            let charge_arg = builder
+                .input(CallArg::Pure(
+                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost)).unwrap(),
+                ))
+                .unwrap();
+            let rewards = builder.programmable_move_call(
+                SUI_FRAMEWORK_PACKAGE_ID,
+                BALANCE_MODULE_NAME.to_owned(),
+                BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![charge_arg],
+            );
+            // exchange stable coin to bfc
+            let rewards = builder.programmable_move_call(
+                SUI_FRAMEWORK_PACKAGE_ID,
+                BALANCE_MODULE_NAME.to_owned(),
+                BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![charge_arg],
+            );
 
-        let burn_coin=0;//;param.computation_charge+param.storage_charge-param.storage_rebate;
-
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&burn_coin).unwrap()),
-        ] .into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
-
-        arguments.append(&mut args.unwrap());
-
-        let destroy_bfc =  builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_REQUEST_BALANCE_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
-
-        // // Step 3: Destroy the storage rebates.
-        // builder.programmable_move_call(
-        //     SUI_FRAMEWORK_PACKAGE_ID,
-        //     BALANCE_MODULE_NAME.to_owned(),
-        //     BALANCE_DESTROY_REBATES_FUNCTION_NAME.to_owned(),
-        //     vec![GAS::type_tag()],
-        //     vec![destroy_bfc],
-        // );
+        }
 
         Ok(builder.finish())
     }

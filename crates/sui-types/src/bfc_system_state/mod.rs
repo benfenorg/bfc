@@ -29,6 +29,8 @@ pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("bfc_system");
 
 pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas_balance");
 
+pub const STABLE_COIN_TO_BFC_FUNCTION_NAME: &IdentStr = ident_str!("swap_stablecoin_to_bfc");
+
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Treasury {
     pub id: UID,
