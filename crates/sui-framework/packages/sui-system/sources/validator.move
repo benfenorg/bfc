@@ -11,7 +11,7 @@ module sui_system::validator {
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use sui::object::{Self, ID};
-    use std::option::{Option, Self};
+    use std::option::{Option, Self, is_none};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
     use std::string::{Self, String};
     use std::type_name;
@@ -179,7 +179,7 @@ module sui_system::validator {
         /// Total amount of stake that would be active in the next epoch.
         next_epoch_stake: u64,
         /// Total amount of stable stake that would be active in the next epoch.
-        next_epoch_stable_stake: u64,
+        next_epoch_stable_stake: VecMap<ascii::String, u64>,
         /// This validator's gas price quote for the next epoch.
         next_epoch_gas_price: u64,
         /// The commission rate of the validator starting the next epoch, in basis point.
@@ -398,7 +398,13 @@ module sui_system::validator {
         if (stable_pool::is_preactive<STABLE>(pool)) {
             stable_pool::process_pending_stake<STABLE>(pool);
         };
-        self.next_epoch_stable_stake = self.next_epoch_stable_stake + stake_amount;
+        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        if (option::is_none(&next_stable_stake)) {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount);
+        } else {
+            let (_, next_stable_stake) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount + next_stable_stake);
+        };
         event::emit(
             StakingRequestEvent {
                 pool_id: stable_pool_id<STABLE>(self),
@@ -476,7 +482,11 @@ module sui_system::validator {
             pool, staked_sui, ctx);
         let withdraw_amount = balance::value(&withdrawn_stake);
         let reward_amount = withdraw_amount - principal_amount;
-        self.next_epoch_stable_stake = self.next_epoch_stable_stake - withdraw_amount;
+        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        if (option::is_some(&next_stable_stake)) {
+            let (_, next_stable) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key,next_stable - withdraw_amount);
+        };
         event::emit(
             UnstakingRequestEvent {
                 pool_id: stable_pool_id<STABLE>(self),
@@ -541,7 +551,13 @@ module sui_system::validator {
         self: &mut Validator,
         reward: Balance<STABLE>,
     ) {
-        self.next_epoch_stable_stake = self.next_epoch_stable_stake + balance::value(&reward);
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        if (option::is_none(&next_stable_stake)) {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward));
+        } else {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward) + *option::borrow(&next_stable_stake));
+        };
         let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
         stable_pool::deposit_rewards<STABLE>(pool, reward);
     }
@@ -1169,7 +1185,7 @@ module sui_system::validator {
             stable_pools,
             commission_rate,
             next_epoch_stake: 0,
-            next_epoch_stable_stake: 0,
+            next_epoch_stable_stake: vec_map::empty(),
             next_epoch_gas_price: gas_price,
             next_epoch_commission_rate: commission_rate,
             extra_fields: bag::new(ctx),
