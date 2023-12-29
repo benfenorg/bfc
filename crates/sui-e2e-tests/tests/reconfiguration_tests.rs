@@ -2519,13 +2519,13 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
                                            Some(receiver_address),
                                            Some(amount), address,busd_data.object_ref()).await;
 
-    let _ = sleep(Duration::from_secs(10)).await;
-
     let response = test_cluster
         .execute_transaction(tx.clone())
         .await
         .effects
         .unwrap();
+
+    tracing::error!("response is {:?}",response);
 
     let _ = sleep(Duration::from_secs(10)).await;
 

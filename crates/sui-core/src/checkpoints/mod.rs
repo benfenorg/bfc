@@ -1059,7 +1059,7 @@ impl CheckpointBuilder {
         last_checkpoint: Option<&CheckpointSummary>,
         cur_checkpoint_effects: &[TransactionEffects],
     ) -> (GasCostSummary,HashMap<StructTag,GasCostSummary>) {
-        let (previous_epoch, previous_bfc_gas_costs,mut previous_stable_gas_costs_map) = last_checkpoint
+        let (previous_epoch, previous_bfc_gas_costs,previous_stable_gas_costs_map) = last_checkpoint
             .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone(),c.epoch_rolling_stable_gas_cost_summary_map.clone()))
             .unwrap_or_default();
 
@@ -1067,32 +1067,40 @@ impl CheckpointBuilder {
 
         if previous_epoch == self.epoch_store.epoch() {
             // sum only when we are within the same epoch
-            current_stable_gas_costs_map.into_iter().map(|(k, current)|
-                {
-                    if previous_stable_gas_costs_map.contains_key(&k){
-                        let previous = previous_stable_gas_costs_map.get_mut(&k).unwrap();
-                        previous.computation_cost + current.computation_cost;
-                        previous.storage_cost + current.storage_cost;
-                        previous.storage_rebate + current.storage_rebate;
-                        previous.non_refundable_storage_fee + current.non_refundable_storage_fee;
-                    }else{
-                        previous_stable_gas_costs_map.insert(k, current);
-                    }
-                });
+            let result = self.merge_map(previous_stable_gas_costs_map,current_stable_gas_costs_map);
             (GasCostSummary::new(
                 previous_bfc_gas_costs.computation_cost + current_bfc_gas_costs.computation_cost,
                 previous_bfc_gas_costs.storage_cost + current_bfc_gas_costs.storage_cost,
                 previous_bfc_gas_costs.storage_rebate + current_bfc_gas_costs.storage_rebate,
                 previous_bfc_gas_costs.non_refundable_storage_fee
                     + current_bfc_gas_costs.non_refundable_storage_fee,
-            ),previous_stable_gas_costs_map
+            ),result
             )
         } else {
             (current_bfc_gas_costs,current_stable_gas_costs_map)
         }
     }
 
-    pub fn new_from_txn_effects<'a>(&self,
+    fn merge_map(&self,previous:HashMap<StructTag,GasCostSummary>,current: HashMap<StructTag,GasCostSummary>) -> HashMap<StructTag,GasCostSummary> {
+        let mut result = HashMap::new();
+        for (k,v) in previous {
+            result.insert(k.clone(),v.clone());
+        }
+        for (k,v) in current {
+            if result.contains_key(&k) {
+                let p = result.get_mut(&k).unwrap();
+                p.computation_cost + v.computation_cost;
+                p.storage_cost + v.storage_cost;
+                p.storage_rebate + v.storage_rebate;
+                p.non_refundable_storage_fee + v.non_refundable_storage_fee;
+            }else {
+                result.insert(k.clone(),v.clone());
+            }
+        }
+
+        result
+    }
+    fn new_from_txn_effects<'a>(&self,
         transactions: impl Iterator<Item = &'a TransactionEffects>,
     ) -> (GasCostSummary,HashMap<StructTag,GasCostSummary> ){
         let authority_store = self.state.database.clone();
@@ -1107,7 +1115,23 @@ impl CheckpointBuilder {
 
         for effect in transactions.into_iter(){
             let gas_object_id = effect.gas_object().0.0;
-            let object = authority_store.get_object(&gas_object_id).unwrap().unwrap();
+            let object_result = authority_store.get_object(&gas_object_id);
+            if object_result.is_err() {
+                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
+                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
+                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
+                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                continue
+            }
+            let object_op = object_result.unwrap();
+            if object_op.is_none(){
+                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
+                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
+                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
+                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                continue
+            }
+            let object = object_op.unwrap();
             if object.is_gas_coin() {
                 bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
                 bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;

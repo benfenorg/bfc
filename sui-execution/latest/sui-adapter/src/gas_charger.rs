@@ -287,17 +287,16 @@ pub mod checked {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let rate = temporary_store.get_stable_rate_by_name(coin_name.clone());
-                    let stable_rate = 1000000000u64 / rate;
-                    let stable_gas_used = gas_used * (stable_rate as i64);
-                    // error!("gas charge: {}, {} ,rate {}", stable_gas_used, gas_used, rate);
+                    let stable_gas_used = gas_used * 1000000000/(rate as i64);
+                    //tracing::error!("gas charge: {}, {} ,rate {},stable_rate {}", stable_gas_used, gas_used, rate,1000000000u64/rate);
                     deduct_gas(&mut gas_object, stable_gas_used);
-                    cost_summary.computation_cost = cost_summary.computation_cost * stable_rate;
-                    cost_summary.storage_cost= cost_summary.storage_cost * stable_rate;
-                    cost_summary.storage_rebate = cost_summary.storage_rebate * stable_rate;
-                    cost_summary.non_refundable_storage_fee = cost_summary.non_refundable_storage_fee * stable_rate;
+                    cost_summary.computation_cost = cost_summary.computation_cost * 1000000000u64/rate;
+                    cost_summary.storage_cost= cost_summary.storage_cost * 1000000000u64/rate;
+                    cost_summary.storage_rebate = cost_summary.storage_rebate * 1000000000u64/rate;
+                    cost_summary.non_refundable_storage_fee = cost_summary.non_refundable_storage_fee * 1000000000u64/rate;
                     //update gas object storge rebate
-                    gas_object.storage_rebate = gas_object.storage_rebate * stable_rate;
-                    // error!("cost_summary:{:?}", cost_summary);
+                    gas_object.storage_rebate = gas_object.storage_rebate * 1000000000u64/rate;
+                    //tracing::error!("cost_summary:{:?}", cost_summary);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }
