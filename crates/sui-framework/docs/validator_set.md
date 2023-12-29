@@ -99,6 +99,7 @@
 <b>use</b> <a href="validator_cap.md#0x3_validator_cap">0x3::validator_cap</a>;
 <b>use</b> <a href="validator_wrapper.md#0x3_validator_wrapper">0x3::validator_wrapper</a>;
 <b>use</b> <a href="voting_power.md#0x3_voting_power">0x3::voting_power</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bjpy.md#0xc8_bjpy">0xc8::bjpy</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
 </code></pre>
 
@@ -671,6 +672,7 @@ The epoch value corresponds to the first epoch this change takes place.
     //add init stable rate
     <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>();
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), 10);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BJPY&gt;()), 10);
 
     <b>let</b> total_stake = <a href="validator_set.md#0x3_validator_set_calculate_total_stakes">calculate_total_stakes</a>(&init_active_validators, rate_map);
     <b>let</b> staking_pool_mappings = <a href="../../../.././build/Sui/docs/table.md#0x2_table_new">table::new</a>(ctx);
@@ -680,7 +682,7 @@ The epoch value corresponds to the first epoch this change takes place.
     <b>while</b> (i &lt; num_validators) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow">vector::borrow</a>(&init_active_validators, i);
         <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(&<b>mut</b> staking_pool_mappings, staking_pool_id(<a href="validator.md#0x3_validator">validator</a>), sui_address(<a href="validator.md#0x3_validator">validator</a>));
-        <b>let</b> id_vec = all_stable_pool_id&lt;BUSD&gt;(<a href="validator.md#0x3_validator">validator</a>);
+        <b>let</b> id_vec = all_stable_pool_id(<a href="validator.md#0x3_validator">validator</a>);
         <b>let</b> id_len = <a href="_length">vector::length</a>(&id_vec);
         <b>let</b> j = 0;
         <b>while</b> (j &lt; id_len) {
@@ -704,6 +706,7 @@ The epoch value corresponds to the first epoch this change takes place.
     };
     <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), <a href="validator_set.md#0x3_validator_set_INIT_STABLE_EXCHANGE_RATE">INIT_STABLE_EXCHANGE_RATE</a>);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BJPY&gt;()), <a href="validator_set.md#0x3_validator_set_INIT_STABLE_EXCHANGE_RATE">INIT_STABLE_EXCHANGE_RATE</a>);
     <a href="voting_power.md#0x3_voting_power_set_voting_power">voting_power::set_voting_power</a>(&<b>mut</b> validators.active_validators, rate_map);
     validators
 }
@@ -794,7 +797,10 @@ Called by <code><a href="sui_system.md#0x3_sui_system">sui_system</a></code> to 
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.staking_pool_mappings, staking_pool_id);
 
     // Deactivate the staking pool.
-    <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx));
+    <b>let</b> deactivation_epoch = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx);
+    <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BJPY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
 
     // Add <b>to</b> the inactive tables.
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(
@@ -1428,7 +1434,7 @@ gas price, weighted by stake.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_total_stake_amount_with_stable</a>&lt;STABLE&gt;(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, validator_address: <b>address</b>, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_total_stake_amount_with_stable</a>(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, validator_address: <b>address</b>, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
 </code></pre>
 
 
@@ -1437,12 +1443,12 @@ gas price, weighted by stake.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_total_stake_amount_with_stable</a>&lt;STABLE&gt;(
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_total_stake_amount_with_stable</a>(
     self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>,
     validator_address: <b>address</b>,
     stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;): u64 {
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator_set.md#0x3_validator_set_get_validator_ref">get_validator_ref</a>(&self.active_validators, validator_address);
-    <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>&lt;STABLE&gt;(<a href="validator.md#0x3_validator">validator</a>, stable_rate)
+    <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(<a href="validator.md#0x3_validator">validator</a>, stable_rate)
 }
 </code></pre>
 
@@ -2325,7 +2331,9 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     );
 
     // Deactivate the <a href="validator.md#0x3_validator">validator</a> and its staking pool
-    <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BJPY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(
         &<b>mut</b> self.inactive_validators,
         validator_pool_id,
@@ -2405,7 +2413,7 @@ Process the pending new validators. They are activated and inserted into <code>v
 ) {
     <b>while</b> (!<a href="../../../.././build/Sui/docs/table_vec.md#0x2_table_vec_is_empty">table_vec::is_empty</a>(&self.pending_active_validators)) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="../../../.././build/Sui/docs/table_vec.md#0x2_table_vec_pop_back">table_vec::pop_back</a>(&<b>mut</b> self.pending_active_validators);
-        <a href="validator.md#0x3_validator_activate">validator::activate</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+        <a href="validator.md#0x3_validator_activate">validator::activate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
         <a href="../../../.././build/BfcSystem/docs/event.md#0x2_event_emit">event::emit</a>(
             <a href="validator_set.md#0x3_validator_set_ValidatorJoinEvent">ValidatorJoinEvent</a> {
                 epoch: new_epoch,
@@ -2485,7 +2493,7 @@ Process all active validators' pending stake deposits and withdraws.
     <b>while</b> (i &lt; length) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow_mut">vector::borrow_mut</a>(validators, i);
         <a href="validator.md#0x3_validator_process_pending_stakes_and_withdraws">validator::process_pending_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
-        <a href="validator.md#0x3_validator_process_pending_all_stable_stakes_and_withdraws">validator::process_pending_all_stable_stakes_and_withdraws</a>&lt;BUSD&gt;(<a href="validator.md#0x3_validator">validator</a>, ctx);
+        <a href="validator.md#0x3_validator_process_pending_all_stable_stakes_and_withdraws">validator::process_pending_all_stable_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
         i = i + 1;
     }
 }
@@ -2517,7 +2525,7 @@ Calculate the total active validator stake.
     <b>let</b> i = 0;
     <b>while</b> (i &lt; length) {
         <b>let</b> v = <a href="_borrow">vector::borrow</a>(validators, i);
-        stake = stake + <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>&lt;BUSD&gt;(v, stable_rate);
+        stake = stake + <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(v, stable_rate);
         i = i + 1;
     };
     stake
@@ -2914,7 +2922,7 @@ including stakes, rewards, performance, etc.
                 pool_staking_reward: *<a href="_borrow">vector::borrow</a>(pool_staking_reward_amounts, i),
                 storage_fund_staking_reward: *<a href="_borrow">vector::borrow</a>(storage_fund_staking_reward_amounts, i),
                 pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_token_exchange_rate_at_epoch">validator::pool_token_exchange_rate_at_epoch</a>(v, new_epoch),
-                stable_pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">validator::pool_stable_token_exchange_rate_at_epoch</a>&lt;BUSD&gt;(v, new_epoch),
+                stable_pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">validator::pool_stable_token_exchange_rate_at_epoch</a>(v, new_epoch),
                 tallying_rule_reporters,
                 tallying_rule_global_score,
             }

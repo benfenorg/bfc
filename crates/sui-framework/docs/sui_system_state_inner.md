@@ -2487,7 +2487,7 @@ Aborts if <code>validator_addr</code> is not an active validator.
     validator_addr: <b>address</b>,
     stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;
 ): u64 {
-    <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_set::validator_total_stake_amount_with_stable</a>&lt;BUSD&gt;(&self.validators, validator_addr, stable_rate)
+    <a href="validator_set.md#0x3_validator_set_validator_total_stake_amount_with_stable">validator_set::validator_total_stake_amount_with_stable</a>(&self.validators, validator_addr, stable_rate)
 }
 </code></pre>
 

@@ -109,8 +109,23 @@ the SuiSystemStateInner version, or vice versa.
 <b>use</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner">0x3::sui_system_state_inner</a>;
 <b>use</b> <a href="validator.md#0x3_validator">0x3::validator</a>;
 <b>use</b> <a href="validator_cap.md#0x3_validator_cap">0x3::validator_cap</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bars.md#0xc8_bars">0xc8::bars</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/baud.md#0xc8_baud">0xc8::baud</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bbrl.md#0xc8_bbrl">0xc8::bbrl</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bcad.md#0xc8_bcad">0xc8::bcad</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/beur.md#0xc8_beur">0xc8::beur</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/bfc_system.md#0xc8_bfc_system">0xc8::bfc_system</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bgbp.md#0xc8_bgbp">0xc8::bgbp</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bidr.md#0xc8_bidr">0xc8::bidr</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/binr.md#0xc8_binr">0xc8::binr</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bjpy.md#0xc8_bjpy">0xc8::bjpy</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bkrw.md#0xc8_bkrw">0xc8::bkrw</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bmxn.md#0xc8_bmxn">0xc8::bmxn</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/brub.md#0xc8_brub">0xc8::brub</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bsar.md#0xc8_bsar">0xc8::bsar</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/bzar.md#0xc8_bzar">0xc8::bzar</a>;
 </code></pre>
 
 
@@ -173,6 +188,15 @@ the SuiSystemStateInner version, or vice versa.
 
 
 <pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_EWrongInnerVersion">EWrongInnerVersion</a>: u64 = 1;
+</code></pre>
+
+
+
+<a name="0x3_sui_system_EWrongStableRateLength"></a>
+
+
+
+<pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_EWrongStableRateLength">EWrongStableRateLength</a>: u64 = 2;
 </code></pre>
 
 
@@ -1494,7 +1518,7 @@ Getter returning addresses of the currently active validators.
 
 
 
-<pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_advance_epoch">advance_epoch</a>(storage_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, computation_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, new_epoch: u64, next_protocol_version: u64, storage_rebate: u64, non_refundable_storage_fee: u64, storage_fund_reinvest_rate: u64, reward_slashing_rate: u64, epoch_start_timestamp_ms: u64, busd_rate: <a href="">vector</a>&lt;u64&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_advance_epoch">advance_epoch</a>(storage_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, computation_reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, new_epoch: u64, next_protocol_version: u64, storage_rebate: u64, non_refundable_storage_fee: u64, storage_fund_reinvest_rate: u64, reward_slashing_rate: u64, epoch_start_timestamp_ms: u64, rate_vec: <a href="">vector</a>&lt;u64&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -1515,15 +1539,28 @@ Getter returning addresses of the currently active validators.
                                      // into storage fund, in basis point.
     reward_slashing_rate: u64, // how much rewards are slashed <b>to</b> punish a <a href="validator.md#0x3_validator">validator</a>, in bps.
     epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
-    busd_rate : <a href="">vector</a>&lt;u64&gt;,
+    rate_vec : <a href="">vector</a>&lt;u64&gt;,
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
-    // get BUSD exchange rate from <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> system
-    //<b>let</b> stable_rate  = <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&wrapper.bfc_system_id);
+    // get stable exchange rate from <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> system
+    <b>assert</b>!(<a href="_length">vector::length</a>(&rate_vec) == 16, <a href="sui_system.md#0x3_sui_system_EWrongStableRateLength">EWrongStableRateLength</a>);
     <b>let</b> stable_rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
-    //add <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">busd</a> rate
-    <b>let</b> rate = <a href="_pop_back">vector::pop_back</a>(&<b>mut</b> busd_rate);
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), rate);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,0));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BARS&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,1));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BAUD&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,2));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BBRL&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,3));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BCAD&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,4));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BEUR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,5));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BGBP&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,6));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BIDR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,7));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BINR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,8));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BJPY&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,9));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BKRW&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,10));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BMXN&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,11));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BRUB&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,12));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BSAR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,13));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BTRY&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,14));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BZAR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,15));
 
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     // Validator will make a special system call <b>with</b> sender set <b>as</b> 0x0.

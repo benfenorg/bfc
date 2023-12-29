@@ -24,7 +24,6 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="validator.md#0x3_validator">0x3::validator</a>;
-<b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
 </code></pre>
 
 
@@ -247,7 +246,7 @@ Anything beyond the threshold is added to the remaining_power, which is also ret
     <b>let</b> result = <a href="">vector</a>[];
     <b>while</b> (i &lt; len) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow">vector::borrow</a>(validators, i);
-        <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>&lt;BUSD&gt;(<a href="validator.md#0x3_validator">validator</a>, stable_rate);
+        <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(<a href="validator.md#0x3_validator">validator</a>, stable_rate);
         <b>let</b> adjusted_stake = (stake <b>as</b> u128) * (<a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a> <b>as</b> u128) / (total_stake <b>as</b> u128);
         <b>let</b> <a href="voting_power.md#0x3_voting_power">voting_power</a> = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>((adjusted_stake <b>as</b> u64), threshold);
         <b>let</b> info = <a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a> {
@@ -289,7 +288,7 @@ Sum up the total stake of all validators.
     <b>let</b> total_stake =0 ;
     <b>while</b> (i &lt; len) {
         total_stake = total_stake +
-            <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>&lt;BUSD&gt;(<a href="_borrow">vector::borrow</a>(validators, i), stable_rate);
+            <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(<a href="_borrow">vector::borrow</a>(validators, i), stable_rate);
         i = i + 1;
     };
     total_stake

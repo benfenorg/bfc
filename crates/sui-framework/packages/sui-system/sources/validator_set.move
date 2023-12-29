@@ -4,15 +4,13 @@
 module sui_system::validator_set {
     use std::ascii;
     use std::option::{Self, Option};
-    use std::type_name;
     use std::vector;
-    use bfc_system::bjpy::BJPY;
 
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator, staking_pool_id, sui_address,
-        all_stable_pool_id
+        all_stable_pool_id, rate_vec_map
     };
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedBfc, pool_id};
@@ -30,7 +28,22 @@ module sui_system::validator_set {
     use sui_system::validator_wrapper;
     use sui::bag::Bag;
     use sui::bag;
+    use bfc_system::bars::BARS;
+    use bfc_system::baud::BAUD;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bcad::BCAD;
+    use bfc_system::beur::BEUR;
+    use bfc_system::bgbp::BGBP;
+    use bfc_system::bidr::BIDR;
+    use bfc_system::binr::BINR;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::bmxn::BMXN;
+    use bfc_system::brub::BRUB;
+    use bfc_system::bsar::BSAR;
+    use bfc_system::btry::BTRY;
     use bfc_system::busd::BUSD;
+    use bfc_system::bzar::BZAR;
     use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
@@ -163,10 +176,7 @@ module sui_system::validator_set {
 
     public(friend) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
         //add init stable rate
-        let rate_map = vec_map::empty();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 10);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BJPY>()), 10);
-
+        let rate_map = rate_vec_map();
         let total_stake = calculate_total_stakes(&init_active_validators, rate_map);
         let staking_pool_mappings = table::new(ctx);
         let stable_pool_mappings = table::new(ctx);
@@ -197,9 +207,7 @@ module sui_system::validator_set {
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
         };
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), INIT_STABLE_EXCHANGE_RATE);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BJPY>()), INIT_STABLE_EXCHANGE_RATE);
+        let rate_map = rate_vec_map();
         voting_power::set_voting_power(&mut validators.active_validators, rate_map);
         validators
     }
@@ -256,7 +264,22 @@ module sui_system::validator_set {
         let deactivation_epoch = tx_context::epoch(ctx);
         validator::deactivate(&mut validator, deactivation_epoch);
         validator::deactivate_stable<BUSD>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BARS>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BAUD>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BBRL>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BCAD>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BEUR>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BGBP>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BIDR>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BINR>(&mut validator, deactivation_epoch);
         validator::deactivate_stable<BJPY>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BKRW>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BMXN>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BRUB>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BSAR>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BTRY>(&mut validator, deactivation_epoch);
+        validator::deactivate_stable<BZAR>(&mut validator, deactivation_epoch);
+
 
         // Add to the inactive tables.
         table::add(
