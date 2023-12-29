@@ -182,11 +182,7 @@ module bfc_system::bfc_system {
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        //add busd rate
-        let rate = bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), rate);
-        rate_map
+        bfc_system_state_inner::get_rate_map(inner)
     }
 
     /// Getter of the gas coin exchange pool rate.

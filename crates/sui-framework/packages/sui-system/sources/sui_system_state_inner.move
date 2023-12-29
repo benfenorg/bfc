@@ -26,7 +26,6 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
-    use bfc_system::busd::BUSD;
     use sui_system::stable_pool;
     use sui_system::stable_pool::StakedStable;
 
@@ -525,12 +524,12 @@ module sui_system::sui_system_state_inner {
     }
 
     /// Add stake to a validator's stable pool.
-    public(friend) fun request_add_stable_stake(
+    public(friend) fun request_add_stable_stake<STABLE>(
         self: &mut SuiSystemStateInnerV2,
-        stake: Coin<BUSD>,
+        stake: Coin<STABLE>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) : StakedStable<BUSD> {
+    ) : StakedStable<STABLE> {
         validator_set::request_add_stable_stake(
             &mut self.validators,
             validator_address,
@@ -566,11 +565,11 @@ module sui_system::sui_system_state_inner {
         )
     }
 
-    public(friend) fun request_withdraw_stable_stake(
+    public(friend) fun request_withdraw_stable_stake<STABLE>(
         self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedStable<BUSD>,
+        staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
-    ) : Balance<BUSD> {
+    ) : Balance<STABLE> {
         assert!(
             stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
             EStakeWithdrawBeforeActivation

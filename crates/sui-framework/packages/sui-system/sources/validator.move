@@ -11,7 +11,7 @@ module sui_system::validator {
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use sui::object::{Self, ID};
-    use std::option::{Option, Self, is_none};
+    use std::option::{Option, Self};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
     use std::string::{Self, String};
     use std::type_name;

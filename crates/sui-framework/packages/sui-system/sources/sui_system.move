@@ -274,10 +274,10 @@ module sui_system::sui_system {
         transfer::public_transfer(staked_sui, tx_context::sender(ctx));
     }
 
-    /// Add stake to a validator's BUSD pool.
-    public entry fun request_add_stable_stake(
+    /// Add stake to a validator's stable pool.
+    public entry fun request_add_stable_stake<STABLE>(
         wrapper: &mut SuiSystemState,
-        stake: Coin<BUSD>,
+        stake: Coin<STABLE>,
         validator_address: address,
         ctx: &mut TxContext,
     ) {
@@ -286,12 +286,12 @@ module sui_system::sui_system {
     }
 
     /// The non-entry version of `request_add_stable_stake`, which returns the staked SUI instead of transferring it to the sender.
-    public fun request_add_stable_stake_non_entry(
+    public fun request_add_stable_stake_non_entry<STABLE>(
         wrapper: &mut SuiSystemState,
-        stake: Coin<BUSD>,
+        stake: Coin<STABLE>,
         validator_address: address,
         ctx: &mut TxContext,
-    ): StakedStable<BUSD> {
+    ): StakedStable<STABLE> {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_add_stable_stake(self, stake, validator_address, ctx)
     }
@@ -330,9 +330,9 @@ module sui_system::sui_system {
         transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
     }
 
-    public entry fun request_withdraw_stable_stake(
+    public entry fun request_withdraw_stable_stake<STABLE>(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedStable<BUSD>,
+        staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
     ) {
         let withdrawn_stake = request_withdraw_stable_stake_non_entry(wrapper, staked_sui, ctx);
@@ -340,7 +340,7 @@ module sui_system::sui_system {
     }
 
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
-    public fun request_withdraw_stake_non_entry(
+    public fun request_withdraw_stake_non_entry<>(
         wrapper: &mut SuiSystemState,
         staked_sui: StakedBfc,
         ctx: &mut TxContext,
@@ -349,11 +349,11 @@ module sui_system::sui_system {
         sui_system_state_inner::request_withdraw_stake(self, staked_sui, ctx)
     }
 
-    public fun request_withdraw_stable_stake_non_entry(
+    public fun request_withdraw_stable_stake_non_entry<STABLE>(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedStable<BUSD>,
+        staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
-    ) : Balance<BUSD> {
+    ) : Balance<STABLE> {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_withdraw_stable_stake(self, staked_sui, ctx)
     }

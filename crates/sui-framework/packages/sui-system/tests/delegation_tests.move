@@ -222,7 +222,7 @@ module sui_system::stake_tests {
             let ctx = test_scenario::ctx(scenario);
 
             // Create a stake to VALIDATOR_ADDR_1.
-            sui_system::request_add_stable_stake(
+            sui_system::request_add_stable_stake<BUSD>(
                 system_state_mut_ref, coin::mint_for_testing(60 * MIST_PER_SUI, ctx), VALIDATOR_ADDR_1, ctx);
 
             assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 101);

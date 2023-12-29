@@ -206,7 +206,7 @@ module sui_system::governance_test_utils {
 
         let ctx = test_scenario::ctx(scenario);
 
-        sui_system::request_add_stable_stake(&mut system_state, coin::mint_for_testing(amount * MIST_PER_SUI, ctx), validator, ctx);
+        sui_system::request_add_stable_stake<BUSD>(&mut system_state, coin::mint_for_testing(amount * MIST_PER_SUI, ctx), validator, ctx);
         test_scenario::return_shared(system_state);
     }
 
@@ -232,7 +232,7 @@ module sui_system::governance_test_utils {
         let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
 
         let ctx = test_scenario::ctx(scenario);
-        sui_system::request_withdraw_stable_stake(&mut system_state, staked_sui, ctx);
+        sui_system::request_withdraw_stable_stake<BUSD>(&mut system_state, staked_sui, ctx);
         test_scenario::return_shared(system_state);
     }
 

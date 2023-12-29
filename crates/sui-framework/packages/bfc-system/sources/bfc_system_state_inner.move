@@ -322,6 +322,10 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
+    public(friend) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
+        self.stable_rate
+    }
+
     /// swap bfc to stablecoin
     public(friend) fun swap_bfc_to_stablecoin<StableCoinType>(
         self: &mut BfcSystemStateInner,
