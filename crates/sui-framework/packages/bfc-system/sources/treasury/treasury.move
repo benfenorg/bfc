@@ -536,4 +536,34 @@ module bfc_system::treasury {
             vault::calculated_swap_result_amount_out(&calculate_swap_result<StableCoinType>(_treasury, true, _amount)),
         );
     }
+
+    #[test_only]
+    public(friend) fun one_coin_rebalance_test<StableCoinType>(
+        _treasury: &mut Treasury,
+        _update: bool,
+        _bfc_balance: &mut Balance<BFC>,
+        _total_bfc_supply: u64,
+        _ctx: &mut TxContext
+    ) {
+        let key = get_vault_key<StableCoinType>();
+        if (!dynamic_field::exists_(&_treasury.id, key)) {
+            return
+        };
+        let mut_v = dynamic_field::borrow_mut<String, Vault<StableCoinType>>(
+            &mut _treasury.id,
+            key,
+        );
+        if (_update) {
+            vault::update_state(mut_v);
+        };
+
+        // first rebalance just place liquidity not change vault state
+        vault::rebalance(
+            mut_v,
+            _bfc_balance,
+            bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key),
+            _total_bfc_supply,
+            _ctx
+        );
+    }
 }
