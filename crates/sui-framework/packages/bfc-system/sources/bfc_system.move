@@ -1,6 +1,7 @@
 module bfc_system::bfc_system {
     use std::ascii;
     use std::ascii::String;
+    use std::debug;
     use std::type_name;
     use sui::balance;
     use bfc_system::bfc_dao;
@@ -147,13 +148,14 @@ module bfc_system::bfc_system {
     }
 
     public fun inner_stablecoin_to_bfc<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        balance: Balance<StableCoinType>,
-        ctx: &mut TxContext,
+        _self: &mut BfcSystemState,
+        _balance: Balance<StableCoinType>,
+        _ctx: &mut TxContext,
     ): Balance<BFC>
     {
-        let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(balance, ctx), ctx)
+        /// wouldn't return remain balance<StableCoinType> to system
+        let inner_state = load_system_state_mut(_self);
+        bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), _ctx)
     }
 
     public fun request_gas_balance(
@@ -535,5 +537,24 @@ module bfc_system::bfc_system {
     ) {
         bfc_dao::add_admin(new_admin, ctx);
         //bfc::new(new_admin, ctx);
+    }
+
+    #[test_only]
+    public(friend) fun one_coin_rebalance_test<StableCoinType>(
+        self: &mut BfcSystemState,
+        _update: bool,
+        _bfc_balance: Balance<BFC>,
+        _total_bfc_supply: u64,
+        _ctx: &mut TxContext
+    ): Balance<BFC> {
+        let inner_state = load_system_state_mut(self);
+        bfc_system_state_inner::one_coin_rebalance_test<StableCoinType>(
+            inner_state,
+            _update,
+            &mut _bfc_balance,
+            _total_bfc_supply,
+            _ctx
+        );
+        _bfc_balance
     }
 }
