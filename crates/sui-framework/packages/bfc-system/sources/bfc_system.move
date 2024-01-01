@@ -1,7 +1,5 @@
 module bfc_system::bfc_system {
     use std::ascii;
-    use std::ascii::String;
-    use std::debug;
     use std::type_name;
     use sui::balance;
     use bfc_system::bfc_dao;
