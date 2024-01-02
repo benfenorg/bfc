@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use crate::accumulator::Accumulator;
 use crate::base_types::{
     random_object_ref, ExecutionData, ExecutionDigests, VerifiedExecutionData,
@@ -34,6 +35,7 @@ use shared_crypto::intent::{Intent, IntentScope};
 use std::fmt::{Debug, Display, Formatter};
 use std::slice::Iter;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use move_core_types::language_storage::StructTag;
 use tap::TapFallible;
 use tracing::warn;
 
@@ -134,7 +136,7 @@ pub struct CheckpointSummary {
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
     pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
-    pub epoch_rolling_stable_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<StructTag,GasCostSummary>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent
@@ -185,7 +187,7 @@ impl CheckpointSummary {
         transactions: &CheckpointContents,
         previous_digest: Option<CheckpointDigest>,
         epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
-        epoch_rolling_stable_gas_cost_summary: GasCostSummary,
+        epoch_rolling_stable_gas_cost_summary_map: HashMap<StructTag,GasCostSummary>,
         end_of_epoch_data: Option<EndOfEpochData>,
         timestamp_ms: CheckpointTimestamp,
     ) -> CheckpointSummary {
@@ -198,7 +200,7 @@ impl CheckpointSummary {
             content_digest,
             previous_digest,
             epoch_rolling_bfc_gas_cost_summary,
-            epoch_rolling_stable_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map,
             end_of_epoch_data,
             timestamp_ms,
             version_specific_data: Vec::new(),
@@ -654,7 +656,7 @@ mod tests {
                         &set,
                         None,
                         GasCostSummary::default(),
-                        GasCostSummary::default(),
+                        HashMap::new(),
                         None,
                         0,
                     ),
@@ -691,7 +693,7 @@ mod tests {
             &set,
             None,
             GasCostSummary::default(),
-            GasCostSummary::default(),
+            HashMap::new(),
             None,
             0,
         );
@@ -731,7 +733,7 @@ mod tests {
                         &set,
                         None,
                         GasCostSummary::default(),
-                        GasCostSummary::default(),
+                        HashMap::new(),
                         None,
                         0,
                     ),

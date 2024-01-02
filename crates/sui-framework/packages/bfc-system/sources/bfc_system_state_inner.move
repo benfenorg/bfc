@@ -627,4 +627,21 @@ module bfc_system::bfc_system_state_inner {
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
+
+    #[test_only]
+    public(friend) fun one_coin_rebalance_test<StableCoinType>(
+        self: &mut BfcSystemStateInner,
+        _update: bool,
+        _bfc_balance: &mut Balance<BFC>,
+        _total_bfc_supply: u64,
+        _ctx: &mut TxContext
+    ) {
+        treasury::one_coin_rebalance_test<StableCoinType>(
+            &mut self.treasury,
+            _update,
+            _bfc_balance,
+            _total_bfc_supply,
+            _ctx
+        )
+    }
 }

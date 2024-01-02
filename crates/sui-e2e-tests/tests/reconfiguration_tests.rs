@@ -3,7 +3,7 @@
 
 use futures::future::join_all;
 use rand::rngs::OsRng;
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use fastcrypto::encoding::Base64;
 use std::str::FromStr;
@@ -24,7 +24,7 @@ use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
-use sui_types::gas::{GasCoinType, GasCostSummary};
+use sui_types::gas::GasCostSummary;
 use sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST;
 use sui_types::message_envelope::Message;
 use sui_types::sui_system_state::{
@@ -60,7 +60,7 @@ async fn advance_epoch_tx_test() {
                 .create_and_execute_advance_epoch_tx(
                     &state.epoch_store_for_testing(),
                     &GasCostSummary::new(0, 0, 0, 0),
-                    &GasCostSummary::new_with_type(GasCoinType::STABLE,0, 0, 0, 0),
+                    &HashMap::new(),
                     0, // checkpoint
                     0, // epoch_start_timestamp_ms
                 )
@@ -2519,13 +2519,13 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
                                            Some(receiver_address),
                                            Some(amount), address,busd_data.object_ref()).await;
 
-    let _ = sleep(Duration::from_secs(10)).await;
-
     let response = test_cluster
         .execute_transaction(tx.clone())
         .await
         .effects
         .unwrap();
+
+    tracing::error!("response is {:?}",response);
 
     let _ = sleep(Duration::from_secs(10)).await;
 

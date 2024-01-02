@@ -32,6 +32,7 @@ mod checked {
     use crate::type_layout_resolver::TypeLayoutResolver;
     use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
+    use move_core_types::language_storage::TypeTag;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
     use sui_types::committee::EpochId;
@@ -43,7 +44,7 @@ mod checked {
     use sui_types::storage::WriteKind;
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
-    use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME};
+    use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME, ChangeObcRoundParams};
     use sui_types::transaction::{
         Argument, CallArg, ChangeEpoch, Command, GenesisTransaction, ProgrammableTransaction,
         TransactionKind,
@@ -57,9 +58,9 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::BFC_REQUEST_BALANCE_FUNCTION_NAME;
+    use sui_types::bfc_system_state::{BFC_REQUEST_BALANCE_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
     use sui_types::collection_types::VecMap;
-    use sui_types::gas::{GasCostSummary};
+    use sui_types::gas::GasCostSummary;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -670,7 +671,7 @@ mod checked {
 
     pub fn construct_bfc_round_pt(
         round_id: u64,
-        param:AdvanceEpochParams
+        param:ChangeObcRoundParams
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -697,35 +698,42 @@ mod checked {
             arguments,
         );
 
-        let mut arguments = vec![];
+        tracing::error!("stable gas summarys is {:?}",param.stable_gas_summarys);
+        for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
+            // create compute rewards in stable coin
+            let charge_arg = builder
+                .input(CallArg::Pure(
+                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost)).unwrap(),
+                ))
+                .unwrap();
+            let rewards = builder.programmable_move_call(
+                SUI_FRAMEWORK_PACKAGE_ID,
+                BALANCE_MODULE_NAME.to_owned(),
+                BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![charge_arg],
+            );
+            // exchange stable coin to bfc
+            let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+            let rewards_bfc = builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
+                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![system_obj,rewards],
+            );
 
-        let burn_coin=param.computation_charge+param.storage_charge-param.storage_rebate;
+            tracing::error!("rewards_bfc is {:?},rewards is {:?}",rewards_bfc,rewards);
+            // // Destroy the rewards.
+            // builder.programmable_move_call(
+            //     SUI_FRAMEWORK_PACKAGE_ID,
+            //     BALANCE_MODULE_NAME.to_owned(),
+            //     BALANCE_DESTROY_REBATES_FUNCTION_NAME.to_owned(),
+            //     vec![GAS::type_tag()],
+            //     vec![rewards_bfc],
+            // );
 
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&burn_coin).unwrap()),
-        ] .into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
-
-        arguments.append(&mut args.unwrap());
-
-        let destroy_bfc =  builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_REQUEST_BALANCE_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
-
-        // Step 3: Destroy the storage rebates.
-        builder.programmable_move_call(
-            SUI_FRAMEWORK_PACKAGE_ID,
-            BALANCE_MODULE_NAME.to_owned(),
-            BALANCE_DESTROY_REBATES_FUNCTION_NAME.to_owned(),
-            vec![GAS::type_tag()],
-            vec![destroy_bfc],
-        );
+        }
 
         Ok(builder.finish())
     }
@@ -780,16 +788,9 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let params = AdvanceEpochParams {
+        let params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
-            next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.stable_storage_charge,
-            computation_charge: change_epoch.stable_computation_charge,
-            storage_rebate: change_epoch.stable_storage_rebate,
-            non_refundable_storage_fee: change_epoch.stable_non_refundable_storage_fee,
-            storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
-            reward_slashing_rate: protocol_config.reward_slashing_rate(),
-            epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
+            stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
         };
 
         let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params)?;
@@ -815,10 +816,10 @@ mod checked {
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.bfc_storage_charge+change_epoch.stable_storage_charge,
-            computation_charge: change_epoch.bfc_computation_charge+change_epoch.stable_computation_charge,
-            storage_rebate: change_epoch.bfc_storage_rebate+change_epoch.stable_storage_rebate,
-            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee+change_epoch.stable_non_refundable_storage_fee,
+            storage_charge: change_epoch.bfc_storage_charge,
+            computation_charge: change_epoch.bfc_computation_charge,
+            storage_rebate: change_epoch.bfc_storage_rebate,
+            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,

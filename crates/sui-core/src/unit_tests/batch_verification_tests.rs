@@ -8,6 +8,7 @@ use futures::future::join_all;
 use prometheus::Registry;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
+use move_core_types::language_storage::StructTag;
 use sui_macros::sim_test;
 use sui_types::committee::Committee;
 use sui_types::crypto::{get_key_pair, AccountKeyPair, AuthorityKeyPair};
@@ -16,6 +17,7 @@ use sui_types::messages_checkpoint::{
     CheckpointContents, CheckpointSummary, SignedCheckpointSummary,
 };
 use sui_types::transaction::CertifiedTransaction;
+use std::collections::HashMap;
 
 // TODO consolidate with `gen_certs` in batch_verification_bench.rs
 fn gen_certs(
@@ -48,6 +50,7 @@ fn gen_ckpts(
         .map(|i| {
             let k = &key_pairs[i % key_pairs.len()];
             let name = k.public().into();
+            let stable_gas_map:HashMap<StructTag,GasCostSummary> = HashMap::new();
             SignedCheckpointSummary::new(
                 committee.epoch,
                 CheckpointSummary::new(
@@ -60,7 +63,7 @@ fn gen_ckpts(
                     &CheckpointContents::new_with_causally_ordered_transactions(vec![]),
                     None,
                     GasCostSummary::default(),
-                    GasCostSummary::default(),
+                    stable_gas_map,
                     None,
                     0,
                 ),

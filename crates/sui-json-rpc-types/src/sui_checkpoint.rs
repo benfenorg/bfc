@@ -1,8 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use crate::Page;
 use fastcrypto::encoding::Base64;
+use move_core_types::language_storage::StructTag;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
@@ -44,7 +46,7 @@ pub struct Checkpoint {
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
     pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
-    pub epoch_rolling_stable_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<StructTag,GasCostSummary>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent
@@ -87,7 +89,7 @@ impl
             network_total_transactions,
             previous_digest,
             epoch_rolling_bfc_gas_cost_summary: epoch_rolling_bfc_gas_cost_summary,
-            epoch_rolling_stable_gas_cost_summary: epoch_rolling_stable_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map: epoch_rolling_stable_gas_cost_summary_map,
             timestamp_ms,
             end_of_epoch_data,
             ..
@@ -100,7 +102,7 @@ impl
             network_total_transactions,
             previous_digest,
             epoch_rolling_bfc_gas_cost_summary,
-            epoch_rolling_stable_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map,
             timestamp_ms,
             end_of_epoch_data,
             transactions: contents.iter().map(|digest| digest.transaction).collect(),

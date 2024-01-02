@@ -15,7 +15,7 @@ use futures::stream::FuturesUnordered;
 use itertools::Itertools;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::GetModule;
-use move_core_types::language_storage::ModuleId;
+use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::value::MoveStructLayout;
 use mysten_metrics::{TX_TYPE_SHARED_OBJ_TX, TX_TYPE_SINGLE_WRITER_TX};
 use parking_lot::Mutex;
@@ -3906,7 +3906,7 @@ impl AuthorityState {
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         bfc_gas_cost_summary: &GasCostSummary,
-        stable_gas_cost_summary: &GasCostSummary,
+        stable_gas_cost_summarys: &HashMap<StructTag,GasCostSummary>,
         checkpoint: CheckpointSequenceNumber,
         epoch_start_timestamp_ms: CheckpointTimestamp,
     ) -> anyhow::Result<(SuiSystemState, TransactionEffects)> {
@@ -3973,10 +3973,7 @@ impl AuthorityState {
             bfc_gas_cost_summary.computation_cost,
             bfc_gas_cost_summary.storage_rebate,
             bfc_gas_cost_summary.non_refundable_storage_fee,
-            stable_gas_cost_summary.storage_cost,
-            stable_gas_cost_summary.computation_cost,
-            stable_gas_cost_summary.storage_rebate,
-            stable_gas_cost_summary.non_refundable_storage_fee,
+            stable_gas_cost_summarys.clone(),
             epoch_start_timestamp_ms,
             next_epoch_system_package_bytes,
         );

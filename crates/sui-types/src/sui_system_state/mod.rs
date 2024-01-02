@@ -20,6 +20,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
+use crate::gas::GasCostSummary;
 
 use self::sui_system_state_inner_v1::{SuiSystemStateInnerV1, ValidatorV1};
 use self::sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary};
@@ -432,6 +433,12 @@ pub struct AdvanceEpochParams {
     pub storage_fund_reinvest_rate: u64,
     pub reward_slashing_rate: u64,
     pub epoch_start_timestamp_ms: u64,
+}
+
+#[derive(Debug)]
+pub struct ChangeObcRoundParams {
+    pub epoch: u64,
+    pub stable_gas_summarys:Vec<(StructTag,GasCostSummary)>,
 }
 
 #[cfg(msim)]
