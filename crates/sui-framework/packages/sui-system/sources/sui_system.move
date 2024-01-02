@@ -340,7 +340,7 @@ module sui_system::sui_system {
     }
 
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
-    public fun request_withdraw_stake_non_entry<>(
+    public fun request_withdraw_stake_non_entry(
         wrapper: &mut SuiSystemState,
         staked_sui: StakedBfc,
         ctx: &mut TxContext,
@@ -869,7 +869,7 @@ module sui_system::sui_system {
         let computation_reward = balance::create_for_testing(computation_charge);
         let rates = vector::empty<u64>();
         while (vector::length(&rates) < 16) {
-            vector::push_back(&mut rates, 1u64);
+            vector::push_back(&mut rates, 1000000000u64);
         };
         assert!(vector::length(&rates) == 16, EWrongStableRateLength);
         let storage_rebate = advance_epoch(

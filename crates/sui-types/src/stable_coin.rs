@@ -6,8 +6,7 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt::{Display, Formatter};
 
 use crate::{
-    balance::Balance,
-    base_types::{ObjectID, SequenceNumber},
+    base_types::{SequenceNumber},
     coin::Coin,
     error::{ExecutionError, ExecutionErrorKind},
     id::UID,

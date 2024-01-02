@@ -2645,7 +2645,7 @@ async fn test_busd_staking() -> Result<(), anyhow::Error> {
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
-    let mut busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
 
     assert!(busd_response_vec.len() >= 1);
     let busd_response = busd_response_vec.get(0).unwrap();
@@ -2672,7 +2672,14 @@ async fn test_busd_staking() -> Result<(), anyhow::Error> {
         .1
         .object_ref();
 
-    let stake_tx = make_stable_staking_transaction(&test_cluster.wallet,validator_addr,address,gas,busd_data.object_ref()).await;
+    let stake_tx = make_stable_staking_transaction(
+        &test_cluster.wallet,
+        validator_addr,
+        vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+        address,
+        gas,
+        busd_data.object_ref()
+    ).await;
 
     test_cluster.execute_transaction(stake_tx).await;
 

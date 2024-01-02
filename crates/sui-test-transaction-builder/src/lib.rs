@@ -59,6 +59,25 @@ impl TestTransactionBuilder {
         self
     }
 
+    pub fn move_call_with_tag(
+        mut self,
+        package_id: ObjectID,
+        module: &'static str,
+        function: &'static str,
+        type_tags: Vec<TypeTag>,
+        args: Vec<CallArg>,
+    ) -> Self {
+        assert!(matches!(self.test_data, TestTransactionData::Empty));
+        self.test_data = TestTransactionData::Move(MoveData {
+            package_id,
+            module,
+            function,
+            args,
+            type_args: type_tags,
+        });
+        self
+    }
+
     pub fn call_counter_create(self, package_id: ObjectID) -> Self {
         self.move_call(package_id, "counter", "create", vec![])
     }
@@ -118,11 +137,12 @@ impl TestTransactionBuilder {
         )
     }
 
-    pub fn call_stable_staking(self, stake_coin: ObjectRef, validator: SuiAddress) -> Self {
-        self.move_call(
+    pub fn call_stable_staking(self, stake_coin: ObjectRef, validator: SuiAddress, tags: Vec<TypeTag>) -> Self {
+        self.move_call_with_tag(
             SUI_SYSTEM_PACKAGE_ID,
             SUI_SYSTEM_MODULE_NAME.as_str(),
             "request_add_stable_stake",
+            tags,
             vec![
                 CallArg::SUI_SYSTEM_MUT,
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(stake_coin)),
@@ -456,6 +476,7 @@ pub async fn make_staking_transaction(
 pub async fn make_stable_staking_transaction(
     context: &WalletContext,
     validator_address: SuiAddress,
+    tags: Vec<TypeTag>,
     sender :SuiAddress,
     gas_object :ObjectRef,
     stake_object: ObjectRef,
@@ -463,7 +484,7 @@ pub async fn make_stable_staking_transaction(
     let gas_price = context.get_reference_gas_price().await.unwrap();
     context.sign_transaction(
         &TestTransactionBuilder::new(sender, gas_object, gas_price)
-            .call_stable_staking(stake_object, validator_address)
+            .call_stable_staking(stake_object, validator_address, tags)
             .build(),
     )
 }

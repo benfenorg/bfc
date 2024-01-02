@@ -26,7 +26,7 @@ cargo -q run --example generate-format -- print > crates/sui-core/tests/staged/s
 
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
-use move_core_types::language_storage::{StructTag, TypeTag};
+use move_core_types::language_storage::{TypeTag};
 use serde_reflection::*;
 use serde::Serialize;
 #[derive(Serialize)]
