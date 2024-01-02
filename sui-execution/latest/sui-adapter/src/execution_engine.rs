@@ -700,7 +700,8 @@ mod checked {
 
         tracing::error!("stable gas summarys is {:?}",param.stable_gas_summarys);
         for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
-            // create compute rewards in stable coin
+            let type_tag= struct_tag.type_params[0].clone();
+            // create rewards in stable coin
             let charge_arg = builder
                 .input(CallArg::Pure(
                     bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost)).unwrap(),
@@ -710,28 +711,29 @@ mod checked {
                 SUI_FRAMEWORK_PACKAGE_ID,
                 BALANCE_MODULE_NAME.to_owned(),
                 BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
-                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![type_tag.clone()],
                 vec![charge_arg],
             );
-            // exchange stable coin to bfc
+            //exchange stable coin to bfc
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let rewards_bfc = builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
                 STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
-                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![type_tag],
                 vec![system_obj,rewards],
             );
 
-            tracing::error!("rewards_bfc is {:?},rewards is {:?}",rewards_bfc,rewards);
-            // // Destroy the rewards.
-            // builder.programmable_move_call(
-            //     SUI_FRAMEWORK_PACKAGE_ID,
-            //     BALANCE_MODULE_NAME.to_owned(),
-            //     BALANCE_DESTROY_REBATES_FUNCTION_NAME.to_owned(),
-            //     vec![GAS::type_tag()],
-            //     vec![rewards_bfc],
-            // );
+            tracing::error!("rewards is {:?}",rewards);
+            // Destroy the rewards.
+            builder.programmable_move_call(
+                SUI_FRAMEWORK_PACKAGE_ID,
+                BALANCE_MODULE_NAME.to_owned(),
+                BALANCE_DESTROY_REBATES_FUNCTION_NAME.to_owned(),
+                vec![GAS::type_tag()],
+//                vec![TypeTag::Struct(Box::new(struct_tag.clone()))],
+                vec![rewards_bfc],
+            );
 
         }
 
