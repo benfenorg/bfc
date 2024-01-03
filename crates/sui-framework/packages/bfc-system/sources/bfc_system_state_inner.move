@@ -1,6 +1,7 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use std::string;
     use std::type_name;
     use sui::balance;
     use sui::balance::{Balance, Supply};
@@ -129,6 +130,9 @@ module bfc_system::bfc_system_state_inner {
             ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
 
+        let stable_map = vec_map::empty<ascii::String, u64>();
+        vec_map::insert(&mut stable_map, ascii::string(b"aaa") , 1);
+
         BfcSystemStateInner {
             round: BFC_SYSTEM_STATE_START_ROUND,
             gas_coin_map,
@@ -137,7 +141,7 @@ module bfc_system::bfc_system_state_inner {
             treasury: t,
             treasury_pool: tp,
             stable_rate: rate_map,
-            stable_swap: vec_map::empty<ascii::String, u64>(),
+            stable_swap: stable_map,
         }
     }
 
@@ -463,7 +467,8 @@ module bfc_system::bfc_system_state_inner {
         if (vec_map::contains(&self.stable_swap, &key)) {
             vec_map::remove(&mut self.stable_swap, &key);
         };
-        vec_map::insert(&mut self.stable_swap, key, result);
+        vec_map::insert(&mut self.stable_swap, ascii::string(b"bbbb"), 1);
+        //vec_map::insert(&mut self.stable_swap, key, result);
     }
 
     public(friend) fun reset_stable_swap_map(_self: &mut BfcSystemStateInner) {
