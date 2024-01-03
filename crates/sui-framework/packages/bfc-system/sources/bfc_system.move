@@ -5,6 +5,7 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
     use sui::balance::{Balance, Supply};
+    use sui::bfc;
     use sui::coin;
     use sui::coin::Coin;
     use sui::clock::{Clock};
@@ -153,7 +154,14 @@ module bfc_system::bfc_system {
     {
         /// wouldn't return remain balance<StableCoinType> to system
         let inner_state = load_system_state_mut(_self);
-        bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), _ctx)
+        let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), _ctx);
+        bfc_system_state_inner::update_stable_swap<StableCoinType>(inner_state, balance::value(&bfc_balance));
+        bfc_balance
+    }
+    
+    public fun reset_stable_swap_map(_self: &mut BfcSystemState) {
+        let inner_state = load_system_state_mut(_self);
+        bfc_system_state_inner::reset_stable_swap_map(inner_state);
     }
 
     public fun request_gas_balance(
@@ -194,6 +202,11 @@ module bfc_system::bfc_system {
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
         bfc_system_state_inner::get_rate_map(inner)
+    }
+
+    public fun get_stable_swap(_self: &BfcSystemState): VecMap<ascii::String, u64> {
+        let inner = load_system_state(_self);
+        bfc_system_state_inner::get_stable_swap_map(inner)
     }
 
     /// Getter of the gas coin exchange pool rate.

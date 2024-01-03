@@ -17,7 +17,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::gas_coin_map::{GasCoinEntity, GasCoinMap};
     use bfc_system::bfc_dao::{Self, Dao, Proposal, Vote};
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
-    use bfc_system::treasury::{Self, Treasury};
+    use bfc_system::treasury::{Self, Treasury, get_vault_key};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -61,6 +61,7 @@ module bfc_system::bfc_system_state_inner {
         treasury: Treasury,
         treasury_pool: TreasuryPool,
         stable_rate: VecMap<ascii::String, u64>,
+        stable_swap: VecMap<ascii::String, u64>,
     }
 
     struct TreasuryParameters has drop, copy {
@@ -136,6 +137,7 @@ module bfc_system::bfc_system_state_inner {
             treasury: t,
             treasury_pool: tp,
             stable_rate: rate_map,
+            stable_swap: vec_map::empty<ascii::String, u64>(),
         }
     }
 
@@ -326,6 +328,10 @@ module bfc_system::bfc_system_state_inner {
         self.stable_rate
     }
 
+    public(friend) fun get_stable_swap_map(_self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
+        _self.stable_swap
+    }
+
     /// swap bfc to stablecoin
     public(friend) fun swap_bfc_to_stablecoin<StableCoinType>(
         self: &mut BfcSystemStateInner,
@@ -450,6 +456,18 @@ module bfc_system::bfc_system_state_inner {
             vec_map::insert(&mut self.stable_rate, key, rate);
         };
         //other stable rate update
+    }
+
+    public(friend) fun update_stable_swap<StableCoinType>(self: &mut BfcSystemStateInner, result: u64) {
+        let key = get_vault_key<StableCoinType>();
+        if (vec_map::contains(&self.stable_swap, &key)) {
+            vec_map::remove(&mut self.stable_swap, &key);
+        };
+        vec_map::insert(&mut self.stable_swap, key, result);
+    }
+
+    public(friend) fun reset_stable_swap_map(_self: &mut BfcSystemStateInner) {
+        _self.stable_swap = vec_map::empty<ascii::String, u64>();
     }
 
     public(friend) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
