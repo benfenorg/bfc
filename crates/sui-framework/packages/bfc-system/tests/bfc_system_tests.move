@@ -3,6 +3,7 @@ module bfc_system::bfc_system_tests {
 
     use std::ascii;
     use std::debug;
+    use std::type_name;
     use bfc_system::busd::BUSD;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
@@ -302,15 +303,21 @@ module bfc_system::bfc_system_tests {
             500000000_000_000_000,
             test_scenario::ctx(scenario)
         );
-        let swap_bfc_balance = bfc_system::inner_stablecoin_to_bfc(
+        bfc_system::reset_stable_swap_map(&mut system_state);
+
+        let bfc_balance = bfc_system::inner_stablecoin_to_bfc(
             &mut system_state,
             balance::create_for_testing<BUSD>(1000_000_000_000),
             test_scenario::ctx(scenario)
         );
-        assert!(balance::value(&swap_bfc_balance) > 0, 10086);
-        debug::print(&balance::value(&swap_bfc_balance));
 
-        balance::destroy_for_testing(swap_bfc_balance);
+        let stableSwapMap = bfc_system::get_stable_swap(&system_state);
+        let key = type_name::into_string(type_name::get<BUSD>());
+        let swap_balance_value = vec_map::get(&stableSwapMap, &key);
+        assert!(*swap_balance_value > 0, 10086);
+        assert!(balance::value(&bfc_balance) > 0, 10086);
+
+        balance::destroy_for_testing(bfc_balance);
         balance::destroy_for_testing(remain_bfc_balance);
         test_scenario::return_shared(system_state);
         clock::destroy_for_testing(clock);

@@ -20,6 +20,7 @@ pub mod checked {
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
     use tracing::{trace};
+    use tracing::log::warn;
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
@@ -287,16 +288,16 @@ pub mod checked {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let rate = temporary_store.get_stable_rate_by_name(coin_name.clone());
-                    let stable_gas_used = gas_used * 1000000000/(rate as i64);
-                    //tracing::error!("gas charge: {}, {} ,rate {},stable_rate {}", stable_gas_used, gas_used, rate,1000000000u64/rate);
-                    deduct_gas(&mut gas_object, stable_gas_used);
-                    cost_summary.computation_cost = cost_summary.computation_cost * 1000000000u64/rate;
-                    cost_summary.storage_cost= cost_summary.storage_cost * 1000000000u64/rate;
-                    cost_summary.storage_rebate = cost_summary.storage_rebate * 1000000000u64/rate;
-                    cost_summary.non_refundable_storage_fee = cost_summary.non_refundable_storage_fee * 1000000000u64/rate;
+                    let stable_gas_used = self.calculate_rate_cost(gas_used as u64 ,rate);
+                    // tracing::error!("gas charge: {}, {} ,rate {}, {:?}", stable_gas_used, gas_used, rate, cost_summary);
+                    deduct_gas(&mut gas_object, stable_gas_used as i64);
+                    cost_summary.computation_cost = self.calculate_rate_cost(cost_summary.computation_cost, rate);
+                    cost_summary.storage_cost= self.calculate_rate_cost(cost_summary.storage_cost ,rate);
+                    cost_summary.storage_rebate = self.calculate_rate_cost(cost_summary.storage_rebate ,rate);
+                    cost_summary.non_refundable_storage_fee = self.calculate_rate_cost(cost_summary.non_refundable_storage_fee ,rate);
                     //update gas object storge rebate
-                    gas_object.storage_rebate = gas_object.storage_rebate * 1000000000u64/rate;
-                    //tracing::error!("cost_summary:{:?}", cost_summary);
+                    gas_object.storage_rebate = self.calculate_rate_cost(gas_object.storage_rebate ,rate);
+                    // tracing::error!("cost_summary:{:?}, {:?}", cost_summary, gas_object.storage_rebate);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }
@@ -309,6 +310,15 @@ pub mod checked {
             } else {
                 GasCostSummary::default()
             }
+        }
+
+        fn calculate_rate_cost(&self, cost: u64, rate: u64) -> u64 {
+            if rate == 0 {
+                warn!("rate is zero, cost: {}, rate: {}", cost, rate);
+                return cost;
+            }
+            //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
+            ((cost as u128 * 1000000000u128) / rate as u128) as u64
         }
 
         fn handle_storage_and_rebate_v1<T>(
