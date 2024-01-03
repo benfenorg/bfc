@@ -161,23 +161,7 @@ module bfc_system::bfc_system {
     
     public fun reset_stable_swap_map(_self: &mut BfcSystemState) {
         let inner_state = load_system_state_mut(_self);
-        bfc_system_state_inner::update_stable_swap<BUSD>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BJPY>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BJPY>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BKRW>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BAUD>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BARS>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BBRL>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BCAD>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BEUR>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BGBP>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BIDR>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BINR>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BRUB>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BSAR>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BTRY>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BZAR>(inner_state, 0);
-        bfc_system_state_inner::update_stable_swap<BMXN>(inner_state, 0);
+        bfc_system_state_inner::reset_stable_swap_map(inner_state);
     }
 
     public fun request_gas_balance(

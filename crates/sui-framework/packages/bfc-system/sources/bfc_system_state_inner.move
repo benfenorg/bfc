@@ -466,6 +466,10 @@ module bfc_system::bfc_system_state_inner {
         vec_map::insert(&mut self.stable_swap, key, result);
     }
 
+    public(friend) fun reset_stable_swap_map(_self: &mut BfcSystemStateInner) {
+        _self.stable_swap = vec_map::empty<ascii::String, u64>();
+    }
+
     public(friend) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
         self.stable_rate
     }
