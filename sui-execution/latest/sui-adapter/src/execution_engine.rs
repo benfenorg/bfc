@@ -698,7 +698,6 @@ mod checked {
             arguments,
         );
 
-        tracing::error!("stable gas summarys is {:?}",param.stable_gas_summarys);
         for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
             let type_tag= struct_tag.type_params[0].clone();
             // create rewards in stable coin
@@ -724,7 +723,6 @@ mod checked {
                 vec![system_obj,rewards],
             );
 
-            tracing::error!("rewards is {:?}",rewards);
             // Destroy the rewards.
             builder.programmable_move_call(
                 SUI_FRAMEWORK_PACKAGE_ID,
