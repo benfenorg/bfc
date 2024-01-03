@@ -58,7 +58,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{BFC_REQUEST_BALANCE_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{BFC_REQUEST_BALANCE_FUNCTION_NAME, RESET_STABLE_SWAP_MAP_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
     use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
 
@@ -698,6 +698,17 @@ mod checked {
             arguments,
         );
 
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            RESET_STABLE_SWAP_MAP_FUNCTION_NAME.to_owned(),
+            vec![],
+            vec![system_obj],
+        );
+
+        tracing::error!("stable_gas_summarys is {:?}",param.stable_gas_summarys);
         for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
             let type_tag= struct_tag.type_params[0].clone();
             // create rewards in stable coin
@@ -826,6 +837,9 @@ mod checked {
         };
 
         let rate_map = temporary_store.get_stable_rate_map();
+        let swap_map = temporary_store.get_stable_swap_map();
+
+        tracing::error!("swap map is {:?}",swap_map);
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
