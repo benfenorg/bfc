@@ -13,6 +13,7 @@ mod checked {
         collections::{BTreeSet, HashSet},
         sync::Arc,
     };
+    use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
 
     use sui_types::{balance::{
@@ -791,7 +792,7 @@ mod checked {
     }
 
     fn advance_epoch(
-        change_epoch: ChangeEpoch,
+            change_epoch: ChangeEpoch,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
         move_vm: &Arc<MoveVM>,
@@ -824,11 +825,27 @@ mod checked {
             );
         }
 
+        let mut storage_charge=0u64;
+        let mut computation_charge =0u64;
+        if !change_epoch.stable_gas_summarys.is_empty() {
+            let swap_map = temporary_store.get_stable_swap_map_from_cache();
+            let mut charge_map = HashMap::new();
+            for entry in swap_map.contents.iter() {
+                charge_map.insert(entry.key.clone(),entry.value);
+            }
+            for (type_tag,gas_cost_summary) in &change_epoch.stable_gas_summarys {
+                let key = type_tag.type_params.get(0).unwrap().to_canonical_string();
+                let total_charge = charge_map.get(&key).unwrap_or(&0u64);
+                storage_charge += total_charge * gas_cost_summary.storage_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
+                computation_charge += total_charge * gas_cost_summary.computation_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
+            }
+        }
+
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.bfc_storage_charge,
-            computation_charge: change_epoch.bfc_computation_charge,
+            storage_charge: change_epoch.bfc_storage_charge+storage_charge,
+            computation_charge: change_epoch.bfc_computation_charge+computation_charge,
             storage_rebate: change_epoch.bfc_storage_rebate,
             non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
@@ -837,10 +854,6 @@ mod checked {
         };
 
         let rate_map = temporary_store.get_stable_rate_map();
-        if !change_epoch.stable_gas_summarys.is_empty() {
-            let swap_map = temporary_store.get_stable_swap_map_from_cache();
-            tracing::error!("swap_map is {:?}",swap_map);
-        }
 
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(

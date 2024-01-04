@@ -1765,15 +1765,15 @@ impl AuthorityStore {
             .get(&())
             .expect("DB read cannot fail")
         {
-            // fp_ensure!(
-            //     imbalance == expected_imbalance,
-            //     SuiError::from(
-            //         format!(
-            //             "Inconsistent state detected at epoch {}: total storage rebate: {}, storage fund balance: {}, expected imbalance: {}",
-            //             system_state.epoch, total_storage_rebate, storage_fund_balance, expected_imbalance
-            //         ).as_str()
-            //     )
-            // );
+            fp_ensure!(
+                imbalance == expected_imbalance,
+                SuiError::from(
+                    format!(
+                        "Inconsistent state detected at epoch {}: total storage rebate: {}, storage fund balance: {}, expected imbalance: {}",
+                        system_state.epoch, total_storage_rebate, storage_fund_balance, expected_imbalance
+                    ).as_str()
+                )
+            );
         } else {
             self.perpetual_tables
                 .expected_storage_fund_imbalance
@@ -1788,16 +1788,16 @@ impl AuthorityStore {
             .get(&())
             .expect("DB read cannot fail")
         {
-            // fp_ensure!(
-            //     total_sui == expected_sui,
-            //     SuiError::from(
-            //         format!(
-            //             "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
-            //             system_state.epoch, total_sui, expected_sui
-            //         )
-            //         .as_str()
-            //     )
-            // );
+            fp_ensure!(
+                total_sui == expected_sui,
+                SuiError::from(
+                    format!(
+                        "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
+                        system_state.epoch, total_sui, expected_sui
+                    )
+                    .as_str()
+                )
+            );
         } else {
             self.perpetual_tables
                 .expected_network_sui_amount

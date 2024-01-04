@@ -369,9 +369,6 @@
         ctx);
     <b>let</b> tp = <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">treasury_pool::create_treasury_pool</a>(remain_balance, ctx);
 
-    <b>let</b> stable_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_map, <a href="_string">ascii::string</a>(b"aaa") , 1);
-
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
         round: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BFC_SYSTEM_STATE_START_ROUND">BFC_SYSTEM_STATE_START_ROUND</a>,
         <a href="gas_coin_map.md#0xc8_gas_coin_map">gas_coin_map</a>,
@@ -380,7 +377,7 @@
         <a href="treasury.md#0xc8_treasury">treasury</a>: t,
         <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>: tp,
         stable_rate: rate_map,
-        stable_swap: stable_map,
+        stable_swap: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;(),
     }
 }
 </code></pre>
@@ -1326,7 +1323,6 @@ X-treasury
     <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.stable_swap, &key)) {
         <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> self.stable_swap, &key);
     };
-    //<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_swap, <a href="_string">ascii::string</a>(b"bbbb"), 1);
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_swap, key, result);
 }
 </code></pre>
