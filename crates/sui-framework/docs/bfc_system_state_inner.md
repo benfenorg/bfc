@@ -1326,8 +1326,8 @@ X-treasury
     <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.stable_swap, &key)) {
         <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> self.stable_swap, &key);
     };
-    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_swap, <a href="_string">ascii::string</a>(b"bbbb"), 1);
-    //<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_swap, key, result);
+    //<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_swap, <a href="_string">ascii::string</a>(b"bbbb"), 1);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.stable_swap, key, result);
 }
 </code></pre>
 

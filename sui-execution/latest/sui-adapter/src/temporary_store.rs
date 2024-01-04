@@ -5,7 +5,7 @@ use crate::gas_charger::GasCharger;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::GetModule;
 use move_core_types::account_address::AccountAddress;
-use move_core_types::language_storage::{ModuleId, StructTag};
+use move_core_types::language_storage::{ModuleId, StructTag, TypeTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
@@ -20,25 +20,16 @@ use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, DeleteKindWithOldVersion};
 use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
 use sui_types::type_resolver::LayoutResolver;
-use sui_types::{
-    base_types::{
-        ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
-    },
-    error::{ExecutionError, SuiError, SuiResult},
-    event::Event,
-    fp_bail,
-    gas::GasCostSummary,
-    object::Owner,
-    object::{Data, Object},
-    storage::{
-        BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
-        WriteKind,
-    },
-    transaction::InputObjects,
-};
+use sui_types::{base_types::{
+    ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
+}, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
+    BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
+    WriteKind,
+}, transaction::InputObjects, BFC_SYSTEM_STATE_OBJECT_ID};
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper, get_stable_rate_map, get_stable_swap_map};
+use sui_types::bfc_system_state::{BfcSystemStateInnerV1, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper, get_stable_rate_map, get_stable_swap_map};
+use sui_types::dynamic_field::{derive_dynamic_field_id, Field, get_dynamic_field_from_store};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -820,6 +811,15 @@ impl<'backing> TemporaryStore<'backing> {
         return wrapper;
     }
 
+    pub fn get_stable_swap_map_from_cache(&self) -> VecMap<String, u64> {
+        let system_state_obj= self.written.get(&BFC_SYSTEM_STATE_OBJECT_ID).unwrap().0.clone();
+        let wrapper = bcs::from_bytes::<BfcSystemStateWrapper>(system_state_obj.data.try_as_move().unwrap().contents()).unwrap();
+        let inner_id = derive_dynamic_field_id(wrapper.id.id.bytes, &TypeTag::U64, &bcs::to_bytes(&wrapper.version).unwrap());
+        let system_state_inner_obj = self.written.get(&inner_id.unwrap()).unwrap().0.clone();
+        let system_state_inner = bcs::from_bytes::<Field<u64, BfcSystemStateInnerV1>>(system_state_inner_obj.data.try_as_move().unwrap().contents()).unwrap();
+
+        return system_state_inner.value.swap_map;
+    }
     pub fn get_stable_rate_by_name(&self, name: String) -> u64 {
         let wrapper = get_stable_rate_map(self.store.as_object_store())
             .expect("System stable rate map must exist");

@@ -698,17 +698,16 @@ mod checked {
             arguments,
         );
 
-        // let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-        //
-        // builder.programmable_move_call(
-        //     BFC_SYSTEM_PACKAGE_ID,
-        //     BFC_SYSTEM_MODULE_NAME.to_owned(),
-        //     RESET_STABLE_SWAP_MAP_FUNCTION_NAME.to_owned(),
-        //     vec![],
-        //     vec![system_obj],
-        // );
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
 
-        tracing::error!("stable_gas_summarys is {:?}",param.stable_gas_summarys);
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            RESET_STABLE_SWAP_MAP_FUNCTION_NAME.to_owned(),
+            vec![],
+            vec![system_obj],
+        );
+
         for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
             let type_tag= struct_tag.type_params[0].clone();
             // create rewards in stable coin
@@ -724,6 +723,7 @@ mod checked {
                 vec![type_tag.clone()],
                 vec![charge_arg],
             );
+
             //exchange stable coin to bfc
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -837,9 +837,11 @@ mod checked {
         };
 
         let rate_map = temporary_store.get_stable_rate_map();
-        let swap_map = temporary_store.get_stable_swap_map();
+        if !change_epoch.stable_gas_summarys.is_empty() {
+            let swap_map = temporary_store.get_stable_swap_map_from_cache();
+            tracing::error!("swap_map is {:?}",swap_map);
+        }
 
-        tracing::error!("swap map is {:?}",swap_map);
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
