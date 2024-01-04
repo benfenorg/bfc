@@ -714,7 +714,7 @@ mod checked {
             // create rewards in stable coin
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost)).unwrap(),
+                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost-gas_cost_summary.storage_rebate)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -825,19 +825,25 @@ mod checked {
             );
         }
 
+        let rate_map = temporary_store.get_stable_rate_map();
+
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
+        let mut storage_rebate = 0u64;
         if !change_epoch.stable_gas_summarys.is_empty() {
             let swap_map = temporary_store.get_stable_swap_map_from_cache();
             let mut charge_map = HashMap::new();
             for entry in swap_map.contents.iter() {
                 charge_map.insert(entry.key.clone(),entry.value);
             }
+            let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
             for (type_tag,gas_cost_summary) in &change_epoch.stable_gas_summarys {
                 let key = type_tag.type_params.get(0).unwrap().to_canonical_string();
                 let total_charge = charge_map.get(&key).unwrap_or(&0u64);
                 storage_charge += total_charge * gas_cost_summary.storage_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
                 computation_charge += total_charge * gas_cost_summary.computation_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
+                let rate =*rate_hash_map.get(&key).unwrap_or(&1u64);
+                storage_rebate += calculate_rate_cost(gas_cost_summary.storage_rebate,rate);
             }
         }
 
@@ -852,8 +858,6 @@ mod checked {
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
-
-        let rate_map = temporary_store.get_stable_rate_map();
 
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
@@ -960,6 +964,16 @@ mod checked {
 
         Ok(())
     }
+
+    fn calculate_rate_cost(cost: u64, rate: u64) -> u64 {
+        if rate == 0 {
+            tracing::log::warn!("rate is zero, cost: {}, rate: {}", cost, rate);
+            return cost;
+        }
+        //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round  ,做逆运算
+        ((cost as u128)* ( rate as u128)/1000000000u128)  as u64
+    }
+
 
     /// Perform metadata updates in preparation for the transactions in the upcoming checkpoint:
     ///
