@@ -714,7 +714,7 @@ mod checked {
             // create rewards in stable coin
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost-gas_cost_summary.storage_rebate)).unwrap(),
+                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -830,6 +830,7 @@ mod checked {
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
         let mut storage_rebate = 0u64;
+        let mut non_refundable_storage_fee = 0u64;
         if !change_epoch.stable_gas_summarys.is_empty() {
             let swap_map = temporary_store.get_stable_swap_map_from_cache();
             let mut charge_map = HashMap::new();
@@ -844,6 +845,7 @@ mod checked {
                 computation_charge += total_charge * gas_cost_summary.computation_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
                 let rate =*rate_hash_map.get(&key).unwrap_or(&1u64);
                 storage_rebate += calculate_rate_cost(gas_cost_summary.storage_rebate,rate);
+                non_refundable_storage_fee += calculate_rate_cost(gas_cost_summary.non_refundable_storage_fee,rate);
             }
         }
 
@@ -852,8 +854,8 @@ mod checked {
             next_protocol_version: change_epoch.protocol_version,
             storage_charge: change_epoch.bfc_storage_charge+storage_charge,
             computation_charge: change_epoch.bfc_computation_charge+computation_charge,
-            storage_rebate: change_epoch.bfc_storage_rebate,
-            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee,
+            storage_rebate: change_epoch.bfc_storage_rebate+storage_rebate,
+            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee+non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
