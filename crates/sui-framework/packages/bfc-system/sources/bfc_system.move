@@ -458,6 +458,13 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
     }
 
+    public fun deposit_to_treasury_inner(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, _ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        let bfc= coin::from_balance(bfc_balance, _ctx);
+        bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
+    }
+
     public entry fun set_voting_delay(
         self: &mut BfcSystemState,
         manager_key: &BFCDaoManageKey,

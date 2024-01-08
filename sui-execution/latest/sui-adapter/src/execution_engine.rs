@@ -59,7 +59,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{BFC_REQUEST_BALANCE_FUNCTION_NAME, RESET_STABLE_SWAP_MAP_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{BFC_REQUEST_BALANCE_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, RESET_STABLE_SWAP_MAP_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
     use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
 
@@ -672,7 +672,8 @@ mod checked {
 
     pub fn construct_bfc_round_pt(
         round_id: u64,
-        param:ChangeObcRoundParams
+        param:ChangeObcRoundParams,
+        rate_map:&HashMap<String,u64>
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -709,6 +710,8 @@ mod checked {
             vec![system_obj],
         );
 
+        let mut storage_rebate = 0u64;
+
         for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
             let type_tag= struct_tag.type_params[0].clone();
             // create rewards in stable coin
@@ -731,7 +734,7 @@ mod checked {
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
                 STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
-                vec![type_tag],
+                vec![type_tag.clone()],
                 vec![system_obj,rewards],
             );
 
@@ -745,7 +748,30 @@ mod checked {
                 vec![rewards_bfc],
             );
 
+            let rate =*rate_map.get(&type_tag.to_canonical_string()).unwrap_or(&1u64);
+            storage_rebate += calculate_rate_cost(gas_cost_summary.storage_rebate,rate);
         }
+        let storage_rebate_arg = builder
+            .input(CallArg::Pure(
+                bcs::to_bytes(&storage_rebate).unwrap(),
+            ))
+            .unwrap();
+        let storage_rebate = builder.programmable_move_call(
+            SUI_FRAMEWORK_PACKAGE_ID,
+            BALANCE_MODULE_NAME.to_owned(),
+            BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+            vec![GAS::type_tag()],
+            vec![storage_rebate_arg],
+        );
+
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
+            vec![],
+            vec![system_obj,storage_rebate],
+        );
 
         Ok(builder.finish())
     }
@@ -800,12 +826,15 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
+        let rate_map = temporary_store.get_stable_rate_map();
+        let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
+
         let params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
         };
 
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params,&rate_hash_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -825,8 +854,6 @@ mod checked {
             );
         }
 
-        let rate_map = temporary_store.get_stable_rate_map();
-
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
         let mut storage_rebate = 0u64;
@@ -837,7 +864,6 @@ mod checked {
             for entry in swap_map.contents.iter() {
                 charge_map.insert(entry.key.clone(),entry.value);
             }
-            let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
             for (type_tag,gas_cost_summary) in &change_epoch.stable_gas_summarys {
                 let key = type_tag.type_params.get(0).unwrap().to_canonical_string();
                 let total_charge = charge_map.get(&key).unwrap_or(&0u64);
