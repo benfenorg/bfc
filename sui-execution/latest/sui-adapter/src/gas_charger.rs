@@ -296,7 +296,7 @@ pub mod checked {
                     cost_summary.storage_rebate = self.calculate_rate_cost(cost_summary.storage_rebate ,rate);
                     cost_summary.non_refundable_storage_fee = self.calculate_rate_cost(cost_summary.non_refundable_storage_fee ,rate);
                     //update gas object storge rebate
-                    gas_object.storage_rebate = self.calculate_rate_cost(gas_object.storage_rebate ,rate);
+                    // gas_object.storage_rebate = self.calculate_rate_cost(gas_object.storage_rebate ,rate);
                     //tracing::error!("cost_summary:{:?}, {:?}", cost_summary, gas_object.storage_rebate);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
