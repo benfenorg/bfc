@@ -14,7 +14,7 @@ mod checked {
         sync::Arc,
     };
     use std::collections::HashMap;
-    use crate::{temporary_store::TemporaryStore};
+    use crate::{calculate_stable_to_bfc_cost, temporary_store::TemporaryStore};
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
@@ -33,7 +33,6 @@ mod checked {
     use crate::type_layout_resolver::TypeLayoutResolver;
     use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
-    use move_core_types::language_storage::TypeTag;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
     use sui_types::committee::EpochId;
@@ -59,7 +58,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{BFC_REQUEST_BALANCE_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, RESET_STABLE_SWAP_MAP_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, RESET_STABLE_SWAP_MAP_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
     use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
 
@@ -749,7 +748,7 @@ mod checked {
             );
 
             let rate =*rate_map.get(&type_tag.to_canonical_string()).unwrap_or(&1u64);
-            storage_rebate += calculate_rate_cost(gas_cost_summary.storage_rebate,rate);
+            storage_rebate += calculate_stable_to_bfc_cost(gas_cost_summary.storage_rebate,rate);
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
@@ -870,8 +869,9 @@ mod checked {
                 storage_charge += total_charge * gas_cost_summary.storage_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
                 computation_charge += total_charge * gas_cost_summary.computation_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
                 let rate =*rate_hash_map.get(&key).unwrap_or(&1u64);
-                storage_rebate += calculate_rate_cost(gas_cost_summary.storage_rebate,rate);
-                non_refundable_storage_fee += calculate_rate_cost(gas_cost_summary.non_refundable_storage_fee,rate);
+                storage_charge = calculate_stable_to_bfc_cost(storage_charge, rate);
+                storage_rebate += calculate_stable_to_bfc_cost(gas_cost_summary.storage_rebate,rate);
+                non_refundable_storage_fee += calculate_stable_to_bfc_cost(gas_cost_summary.non_refundable_storage_fee,rate);
             }
         }
 
@@ -992,16 +992,6 @@ mod checked {
 
         Ok(())
     }
-
-    fn calculate_rate_cost(cost: u64, rate: u64) -> u64 {
-        if rate == 0 {
-            tracing::log::warn!("rate is zero, cost: {}, rate: {}", cost, rate);
-            return cost;
-        }
-        //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round  ,做逆运算
-        ((cost as u128)* ( rate as u128)/1000000000u128)  as u64
-    }
-
 
     /// Perform metadata updates in preparation for the transactions in the upcoming checkpoint:
     ///

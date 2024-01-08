@@ -1712,6 +1712,9 @@ impl AuthorityStore {
         info!("obj sui total: XXXXX");
         for object in pending_objects {
             let total = object.get_total_sui(layout_resolver.as_mut()).unwrap();
+            if object.storage_rebate > 0 {
+                info!("object.storage_rebate: {}, {}", total_storage_rebate, object.storage_rebate);
+            }
             total_storage_rebate += object.storage_rebate;
             // if object.is_stable_gas_coin() {
                 total_sui = total_sui +
