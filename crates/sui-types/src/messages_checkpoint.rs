@@ -35,7 +35,7 @@ use shared_crypto::intent::{Intent, IntentScope};
 use std::fmt::{Debug, Display, Formatter};
 use std::slice::Iter;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use move_core_types::language_storage::StructTag;
+use move_core_types::language_storage::{StructTag, TypeTag};
 use tap::TapFallible;
 use tracing::warn;
 
@@ -136,7 +136,7 @@ pub struct CheckpointSummary {
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
     pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
-    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<StructTag,GasCostSummary>,
+    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummary>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent
@@ -187,7 +187,7 @@ impl CheckpointSummary {
         transactions: &CheckpointContents,
         previous_digest: Option<CheckpointDigest>,
         epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
-        epoch_rolling_stable_gas_cost_summary_map: HashMap<StructTag,GasCostSummary>,
+        epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummary>,
         end_of_epoch_data: Option<EndOfEpochData>,
         timestamp_ms: CheckpointTimestamp,
     ) -> CheckpointSummary {

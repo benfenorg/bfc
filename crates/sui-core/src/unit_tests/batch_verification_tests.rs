@@ -8,7 +8,7 @@ use futures::future::join_all;
 use prometheus::Registry;
 use rand::{thread_rng, Rng};
 use std::sync::Arc;
-use move_core_types::language_storage::StructTag;
+use move_core_types::language_storage::TypeTag;
 use sui_macros::sim_test;
 use sui_types::committee::Committee;
 use sui_types::crypto::{get_key_pair, AccountKeyPair, AuthorityKeyPair};
@@ -50,7 +50,7 @@ fn gen_ckpts(
         .map(|i| {
             let k = &key_pairs[i % key_pairs.len()];
             let name = k.public().into();
-            let stable_gas_map:HashMap<StructTag,GasCostSummary> = HashMap::new();
+            let stable_gas_map:HashMap<TypeTag,GasCostSummary> = HashMap::new();
             SignedCheckpointSummary::new(
                 committee.epoch,
                 CheckpointSummary::new(

@@ -3906,7 +3906,7 @@ impl AuthorityState {
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         bfc_gas_cost_summary: &GasCostSummary,
-        stable_gas_cost_summarys: &HashMap<StructTag,GasCostSummary>,
+        stable_gas_cost_summarys: &HashMap<TypeTag,GasCostSummary>,
         checkpoint: CheckpointSequenceNumber,
         epoch_start_timestamp_ms: CheckpointTimestamp,
     ) -> anyhow::Result<(SuiSystemState, TransactionEffects)> {

@@ -28,7 +28,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 use itertools::MultiUnzip;
-use move_core_types::language_storage::StructTag;
+use move_core_types::language_storage::{StructTag, TypeTag};
 use sui_protocol_config::ProtocolVersion;
 use sui_types::base_types::{EpochId, TransactionDigest};
 use sui_types::crypto::{AuthoritySignInfo, AuthorityStrongQuorumSignInfo};
@@ -1058,7 +1058,7 @@ impl CheckpointBuilder {
         &self,
         last_checkpoint: Option<&CheckpointSummary>,
         cur_checkpoint_effects: &[TransactionEffects],
-    ) -> (GasCostSummary,HashMap<StructTag,GasCostSummary>) {
+    ) -> (GasCostSummary,HashMap<TypeTag,GasCostSummary>) {
         let (previous_epoch, previous_bfc_gas_costs,previous_stable_gas_costs_map) = last_checkpoint
             .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone(),c.epoch_rolling_stable_gas_cost_summary_map.clone()))
             .unwrap_or_default();
@@ -1081,7 +1081,7 @@ impl CheckpointBuilder {
         }
     }
 
-    fn merge_map(&self,previous:HashMap<StructTag,GasCostSummary>,current: HashMap<StructTag,GasCostSummary>) -> HashMap<StructTag,GasCostSummary> {
+    fn merge_map(&self,previous:HashMap<TypeTag,GasCostSummary>,current: HashMap<TypeTag,GasCostSummary>) -> HashMap<TypeTag,GasCostSummary> {
         let mut result = HashMap::new();
         for (k,v) in previous {
             result.insert(k.clone(),v.clone());
@@ -1102,7 +1102,7 @@ impl CheckpointBuilder {
     }
     fn new_from_txn_effects<'a>(&self,
         transactions: impl Iterator<Item = &'a TransactionEffects>,
-    ) -> (GasCostSummary,HashMap<StructTag,GasCostSummary> ){
+    ) -> (GasCostSummary,HashMap<TypeTag,GasCostSummary> ){
         let authority_store = self.state.database.clone();
 
         let mut bfc_gas_cost_summary = GasCostSummary {
@@ -1139,9 +1139,9 @@ impl CheckpointBuilder {
                 bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
             }
             if object.is_stable_gas_coin() {
-                let struct_tag = object.struct_tag().unwrap();
-                if stable_gas_cost_summary_map.contains_key(&struct_tag) {
-                    let mut gas_cost_summary:&mut GasCostSummary = stable_gas_cost_summary_map.get_mut(&struct_tag).unwrap();
+                let type_tag = object.struct_tag().unwrap().type_params.get(0).unwrap().clone();
+                if stable_gas_cost_summary_map.contains_key(&type_tag) {
+                    let mut gas_cost_summary:&mut GasCostSummary = stable_gas_cost_summary_map.get_mut(&type_tag).unwrap();
                     gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
                     gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
                     gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
@@ -1157,7 +1157,7 @@ impl CheckpointBuilder {
                     gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
                     gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
                     gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
-                    stable_gas_cost_summary_map.insert(struct_tag.clone(),gas_cost_summary);
+                    stable_gas_cost_summary_map.insert(type_tag.clone(),gas_cost_summary);
                 }
             }
         }
@@ -1184,7 +1184,7 @@ async fn augment_bfc_round(
     async fn augment_epoch_last_checkpoint(
         &self,
         epoch_bfc_gas_cost: &GasCostSummary,
-        epoch_stable_gas_cost: &HashMap<StructTag,GasCostSummary>,
+        epoch_stable_gas_cost: &HashMap<TypeTag,GasCostSummary>,
         epoch_start_timestamp_ms: CheckpointTimestamp,
         checkpoint_effects: &mut Vec<TransactionEffects>,
         signatures: &mut Vec<Vec<GenericSignature>>,

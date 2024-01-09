@@ -19,6 +19,7 @@ use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructT
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use move_core_types::language_storage::TypeTag;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use crate::gas::GasCostSummary;
 
@@ -438,7 +439,7 @@ pub struct AdvanceEpochParams {
 #[derive(Debug)]
 pub struct ChangeObcRoundParams {
     pub epoch: u64,
-    pub stable_gas_summarys:Vec<(StructTag,GasCostSummary)>,
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummary)>,
 }
 
 #[cfg(msim)]

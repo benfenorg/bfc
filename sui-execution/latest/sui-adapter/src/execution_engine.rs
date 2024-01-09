@@ -711,8 +711,7 @@ mod checked {
 
         let mut storage_rebate = 0u64;
 
-        for (struct_tag,gas_cost_summary) in param.stable_gas_summarys {
-            let type_tag= struct_tag.type_params[0].clone();
+        for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
             let charge_arg = builder
                 .input(CallArg::Pure(
@@ -864,7 +863,7 @@ mod checked {
                 charge_map.insert(entry.key.clone(),entry.value);
             }
             for (type_tag,gas_cost_summary) in &change_epoch.stable_gas_summarys {
-                let key = type_tag.type_params.get(0).unwrap().to_canonical_string();
+                let key = type_tag.to_canonical_string();
                 let total_charge = charge_map.get(&key).unwrap_or(&0u64);
                 storage_charge += total_charge * gas_cost_summary.storage_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
                 computation_charge += total_charge * gas_cost_summary.computation_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
