@@ -672,7 +672,7 @@ mod checked {
     pub fn construct_bfc_round_pt(
         round_id: u64,
         param:ChangeObcRoundParams,
-        rate_map:&HashMap<String,u64>
+        storage_rebate: u64,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
@@ -709,8 +709,6 @@ mod checked {
             vec![system_obj],
         );
 
-        let mut storage_rebate = 0u64;
-
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
             let charge_arg = builder
@@ -746,8 +744,6 @@ mod checked {
                 vec![rewards_bfc],
             );
 
-            let rate =*rate_map.get(&type_tag.to_canonical_string()).unwrap_or(&1u64);
-            storage_rebate += calculate_stable_to_bfc_cost(gas_cost_summary.storage_rebate,rate);
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
@@ -826,13 +822,22 @@ mod checked {
     ) -> Result<(), ExecutionError> {
         let rate_map = temporary_store.get_stable_rate_map();
         let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
+        let mut storage_rebate = 0u64;
+        let mut non_refundable_storage_fee = 0u64;
+
+        for (type_tag,gas_cost_summary) in &change_epoch.stable_gas_summarys {
+            let key = type_tag.to_canonical_string();
+            let rate =*rate_hash_map.get(&key).unwrap_or(&1u64);
+            storage_rebate += calculate_stable_to_bfc_cost(gas_cost_summary.storage_rebate,rate);
+            non_refundable_storage_fee += calculate_stable_to_bfc_cost(gas_cost_summary.non_refundable_storage_fee,rate);
+        }
 
         let params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
         };
 
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params,&rate_hash_map)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params,storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -854,8 +859,6 @@ mod checked {
 
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
-        let mut storage_rebate = 0u64;
-        let mut non_refundable_storage_fee = 0u64;
         if !change_epoch.stable_gas_summarys.is_empty() {
             let swap_map = temporary_store.get_stable_swap_map_from_cache();
             let mut charge_map = HashMap::new();
@@ -869,8 +872,6 @@ mod checked {
                 computation_charge += total_charge * gas_cost_summary.computation_cost/(gas_cost_summary.storage_cost+gas_cost_summary.computation_cost);
                 let rate =*rate_hash_map.get(&key).unwrap_or(&1u64);
                 storage_charge = calculate_stable_to_bfc_cost(storage_charge, rate);
-                storage_rebate += calculate_stable_to_bfc_cost(gas_cost_summary.storage_rebate,rate);
-                non_refundable_storage_fee += calculate_stable_to_bfc_cost(gas_cost_summary.non_refundable_storage_fee,rate);
             }
         }
 
