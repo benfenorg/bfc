@@ -701,16 +701,6 @@ mod checked {
             arguments,
         );
 
-        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            RESET_STABLE_SWAP_MAP_FUNCTION_NAME.to_owned(),
-            vec![],
-            vec![system_obj],
-        );
-
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
             let key = type_tag.to_canonical_string();

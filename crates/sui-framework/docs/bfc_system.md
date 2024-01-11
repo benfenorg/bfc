@@ -13,7 +13,6 @@
 -  [Function `change_round`](#0xc8_bfc_system_change_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
 -  [Function `inner_stablecoin_to_bfc`](#0xc8_bfc_system_inner_stablecoin_to_bfc)
--  [Function `reset_stable_swap_map`](#0xc8_bfc_system_reset_stable_swap_map)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_request_gas_balance)
 -  [Function `update_round`](#0xc8_bfc_system_update_round)
 -  [Function `load_system_state`](#0xc8_bfc_system_load_system_state)
@@ -21,7 +20,6 @@
 -  [Function `load_bfc_system_state_mut`](#0xc8_bfc_system_load_bfc_system_state_mut)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
--  [Function `get_stable_swap`](#0xc8_bfc_system_get_stable_swap)
 -  [Function `request_get_exchange_rate`](#0xc8_bfc_system_request_get_exchange_rate)
 -  [Function `request_add_gas_coin`](#0xc8_bfc_system_request_add_gas_coin)
 -  [Function `request_update_gas_coin`](#0xc8_bfc_system_request_update_gas_coin)
@@ -361,33 +359,7 @@
     /// wouldn't <b>return</b> remain <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>&lt;StableCoinType&gt; <b>to</b> system
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(_self);
     <b>let</b> bfc_balance = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(_balance, _ctx), expect,_ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_stable_swap">bfc_system_state_inner::update_stable_swap</a>&lt;StableCoinType&gt;(inner_state, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&bfc_balance));
     bfc_balance
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_reset_stable_swap_map"></a>
-
-## Function `reset_stable_swap_map`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_reset_stable_swap_map">reset_stable_swap_map</a>(_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_reset_stable_swap_map">reset_stable_swap_map</a>(_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>) {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(_self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_stable_swap_map">bfc_system_state_inner::reset_stable_swap_map</a>(inner_state);
 }
 </code></pre>
 
@@ -569,31 +541,6 @@
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_exchange_rate">get_exchange_rate</a>(id: &UID): VecMap&lt;<a href="_String">ascii::String</a>, u64&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">bfc_system_state_inner::get_rate_map</a>(inner)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_get_stable_swap"></a>
-
-## Function `get_stable_swap`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stable_swap">get_stable_swap</a>(_self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stable_swap">get_stable_swap</a>(_self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): VecMap&lt;<a href="_String">ascii::String</a>, u64&gt; {
-    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(_self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stable_swap_map">bfc_system_state_inner::get_stable_swap_map</a>(inner)
 }
 </code></pre>
 

@@ -139,7 +139,6 @@ pub struct BfcSystemStateInnerV1 {
     pub treasury: Treasury,
     pub treasury_pool: TreasuryPool,
     pub rate_map: VecMap<String, u64>,
-    pub swap_map: VecMap<String, u64>,
 }
 
 // Rust version of the Move bfc_system::bfc_system_state_inner::ExchangePool type
@@ -180,15 +179,6 @@ pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Stri
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok(bfc_system_state.rate_map)
-        },
-        Err(e) => Err(e),
-    }
-}
-
-pub fn get_stable_swap_map(object_store: &dyn ObjectStore) -> Result<VecMap<String, u64>, SuiError> {
-    match get_bfc_system_state(object_store) {
-        Ok(BFCSystemState::V1(bfc_system_state)) => {
-            Ok(bfc_system_state.swap_map)
         },
         Err(e) => Err(e),
     }
