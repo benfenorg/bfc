@@ -14,7 +14,8 @@ mod checked {
         sync::Arc,
     };
     use std::collections::HashMap;
-    use crate::{calculate_stable_to_bfc_cost, temporary_store::TemporaryStore};
+    use crate::{temporary_store::TemporaryStore};
+    use sui_types::gas::calculate_bfc_to_stable_cost;
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
@@ -717,7 +718,7 @@ mod checked {
 
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(crate::calculate_bfc_to_stable_cost(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost,rate)*110/100)).unwrap(),
+                    bcs::to_bytes(&(calculate_bfc_to_stable_cost(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost,rate)*110/100)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(

@@ -2,6 +2,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use tracing::warn;
 pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
@@ -21,6 +22,7 @@ pub mod checked {
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
     use sui_protocol_config::ProtocolConfig;
+    use crate::gas::calculate_bfc_to_stable_cost;
 
     #[enum_dispatch]
     pub trait SuiGasStatusAPI {
@@ -210,6 +212,16 @@ pub mod checked {
                 non_refundable_storage_fee: non_refundable_storage_fee.iter().sum(),
             }
         }
+
+        pub fn into_rpc(&self) -> GasCostSummary  {
+            GasCostSummary {
+                rate:self.rate,
+                storage_cost:calculate_bfc_to_stable_cost(self.storage_cost, self.rate),
+                computation_cost: calculate_bfc_to_stable_cost(self.computation_cost, self.rate),
+                storage_rebate: calculate_bfc_to_stable_cost(self.storage_rebate, self.rate),
+                non_refundable_storage_fee: calculate_bfc_to_stable_cost(self.non_refundable_storage_fee, self.rate),
+            }
+        }
     }
 
     impl std::fmt::Display for GasCostSummary {
@@ -254,5 +266,50 @@ pub mod checked {
                 object_id: gas_object.id(),
             })
         }
+    }
+}
+
+pub fn calculate_bfc_to_stable_cost(cost: u64, rate: u64) -> u64 {
+    if rate == 0 {
+        warn!("rate is zero, cost: {}, rate: {}", cost, rate);
+        return cost;
+    }
+    //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
+    ((cost as u128 * 1000000000u128) / rate as u128) as u64
+}
+
+pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
+    if rate == 0 {
+        warn!("rate is zero, cost: {}, rate: {}", cost, rate);
+        return cost;
+    }
+    let num = cost as u128 * rate as u128;
+    let denom = 1000000000u128;
+    let quotient = num / denom;
+    let remained = num % denom;
+    if remained > 0 {
+        (quotient + 1) as u64
+    } else {
+        quotient as u64
+    }
+}
+
+#[cfg(test)]
+mod test{
+    use crate::gas::{calculate_bfc_to_stable_cost, calculate_stable_to_bfc_cost};
+    #[test]
+    fn test_calculate_stable_rate() {
+        let cost = 132240;
+        let rate = 1000000032u64;
+        let result = calculate_bfc_to_stable_cost(cost, rate);
+        println!("result: {}", result);
+        let result = calculate_stable_to_bfc_cost(result, rate);
+        println!("result: {}", result);
+        assert_eq!(cost, result);
+        let cost_u64_max = u64::MAX;
+        let result = calculate_bfc_to_stable_cost(cost_u64_max, rate);
+        println!("result: {}", result);
+        let result = calculate_stable_to_bfc_cost(result, rate);
+        assert_eq!(cost_u64_max, result);
     }
 }

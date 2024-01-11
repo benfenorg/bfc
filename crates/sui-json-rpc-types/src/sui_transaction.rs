@@ -628,7 +628,7 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                             }
                         })
                         .collect(),
-                    gas_used: effect.gas_cost_summary().clone(),
+                    gas_used: effect.gas_cost_summary().into_rpc(),
                     shared_objects: to_sui_object_ref(
                         effect
                             .input_shared_objects()

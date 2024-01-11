@@ -8,7 +8,7 @@ pub use checked::*;
 pub mod checked {
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus,calculate_bfc_to_stable_cost};
     use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
@@ -20,7 +20,6 @@ pub mod checked {
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
     use tracing::{trace};
-    use crate::calculate_bfc_to_stable_cost;
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
