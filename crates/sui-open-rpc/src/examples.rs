@@ -729,6 +729,7 @@ impl RpcExampleProvider {
                     executed_epoch: 0,
                     modified_at_versions: vec![],
                     gas_used: GasCostSummary {
+                        rate:1,
                         computation_cost: 100,
                         storage_cost: 100,
                         storage_rebate: 10,

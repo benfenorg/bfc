@@ -126,6 +126,8 @@ pub mod checked {
     #[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
     #[serde(rename_all = "camelCase")]
     pub struct GasCostSummary {
+
+        pub rate:u64,
         /// Cost of computation/execution
         #[schemars(with = "BigInt<u64>")]
         #[serde_as(as = "Readable<BigInt<u64>, _>")]
@@ -153,6 +155,7 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
+                rate:1,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -200,6 +203,7 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
+                rate:1,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
                 storage_rebate: storage_rebates.iter().sum(),

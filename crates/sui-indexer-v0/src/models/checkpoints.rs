@@ -148,6 +148,7 @@ impl Checkpoint {
             end_of_epoch_data,
             validator_signature: validator_sig,
             epoch_rolling_bfc_gas_cost_summary: GasCostSummary {
+                rate:1,
                 computation_cost: self.total_computation_cost as u64,
                 storage_cost: self.total_storage_cost as u64,
                 storage_rebate: self.total_storage_rebate as u64,

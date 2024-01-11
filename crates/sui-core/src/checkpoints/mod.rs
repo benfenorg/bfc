@@ -1106,6 +1106,7 @@ impl CheckpointBuilder {
         let authority_store = self.state.database.clone();
 
         let mut bfc_gas_cost_summary = GasCostSummary {
+            rate:1,
             storage_cost: 0,
             computation_cost: 0,
             storage_rebate: 0,
@@ -1148,6 +1149,7 @@ impl CheckpointBuilder {
                     gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
                 } else {
                     let mut gas_cost_summary = GasCostSummary {
+                        rate: effect.gas_cost_summary().rate,
                         storage_cost: 0,
                         computation_cost: 0,
                         storage_rebate: 0,

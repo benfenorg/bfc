@@ -288,6 +288,7 @@ pub mod checked {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let rate = temporary_store.get_stable_rate_by_name(coin_name.clone());
+                    cost_summary.rate = rate;
                     let stable_gas_used = calculate_bfc_to_stable_cost(gas_used as u64 ,rate)*110/100;
                     //tracing::error!("gas charge: {}, {} ,rate {}, {:?}", stable_gas_used, gas_used, rate, cost_summary);
                     deduct_gas(&mut gas_object, stable_gas_used as i64);
