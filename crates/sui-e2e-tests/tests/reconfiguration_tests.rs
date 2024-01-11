@@ -2525,8 +2525,6 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
         .effects
         .unwrap();
 
-    tracing::error!("response is {:?}",response);
-
     let _ = sleep(Duration::from_secs(10)).await;
 
     let gas_object_info = http_client.get_object(busd_data.object_id,Some(SuiObjectDataOptions::new().

@@ -288,16 +288,16 @@ pub mod checked {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let rate = temporary_store.get_stable_rate_by_name(coin_name.clone());
-                    let stable_gas_used = calculate_bfc_to_stable_cost(gas_used as u64 ,rate);
-                    tracing::error!("gas charge: {}, {} ,rate {}, {:?}", stable_gas_used, gas_used, rate, cost_summary);
+                    let stable_gas_used = calculate_bfc_to_stable_cost(gas_used as u64 ,rate)*110/100;
+                    //tracing::error!("gas charge: {}, {} ,rate {}, {:?}", stable_gas_used, gas_used, rate, cost_summary);
                     deduct_gas(&mut gas_object, stable_gas_used as i64);
-                    cost_summary.computation_cost = calculate_bfc_to_stable_cost(cost_summary.computation_cost, rate);
-                    cost_summary.storage_cost= calculate_bfc_to_stable_cost(cost_summary.storage_cost ,rate);
-                    cost_summary.storage_rebate = calculate_bfc_to_stable_cost(cost_summary.storage_rebate ,rate);
-                    cost_summary.non_refundable_storage_fee = calculate_bfc_to_stable_cost(cost_summary.non_refundable_storage_fee ,rate);
+                    // cost_summary.computation_cost = calculate_bfc_to_stable_cost(cost_summary.computation_cost, rate);
+                    // cost_summary.storage_cost= calculate_bfc_to_stable_cost(cost_summary.storage_cost ,rate);
+                    // cost_summary.storage_rebate = cost_summary.storage_rebate;
+                    // cost_summary.non_refundable_storage_fee = calculate_bfc_to_stable_cost(cost_summary.non_refundable_storage_fee ,rate);
                     //update gas object storge rebate
-                    gas_object.storage_rebate = calculate_bfc_to_stable_cost(gas_object.storage_rebate ,rate);
-                    tracing::error!("cost_summary:{:?}, {:?}", cost_summary, gas_object.storage_rebate);
+                    //gas_object.storage_rebate = calculate_bfc_to_stable_cost(gas_object.storage_rebate ,rate);
+                    //tracing::error!("cost_summary:{:?}, {:?}", cost_summary, gas_object.storage_rebate);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }

@@ -308,6 +308,7 @@ module bfc_system::bfc_system_tests {
         let bfc_balance = bfc_system::inner_stablecoin_to_bfc(
             &mut system_state,
             balance::create_for_testing<BUSD>(1000_000_000_000),
+            1000_000_000_000,
             test_scenario::ctx(scenario)
         );
 

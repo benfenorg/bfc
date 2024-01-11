@@ -184,7 +184,7 @@ module bfc_system::bfc_system_state_inner {
             //exchange from stable swap
             let bfc_balance = swap_stablecoin_to_bfc_balance(
                 inner,
-                coin::from_balance(stable_balance, ctx),
+                coin::from_balance(stable_balance, ctx),0,
                 ctx,
             );
             //add bfc to inner exchange pool
@@ -371,10 +371,24 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun swap_stablecoin_to_bfc_balance<StableCoinType>(
         self: &mut BfcSystemStateInner,
         coin_sc: Coin<StableCoinType>,
+        expected_amount: u64,
         ctx: &mut TxContext,
     ): Balance<BFC> {
         let amount = coin::value(&coin_sc);
-        treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx)
+        let result_balance= treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
+        if (expected_amount == 0||balance::value(&result_balance) == expected_amount) {
+            return result_balance;
+        };
+        if (balance::value(&result_balance) > expected_amount) {
+            let result = balance::split(&mut result_balance, expected_amount);
+            treasury::deposit(&mut self.treasury, coin::from_balance(result_balance, ctx));
+            result
+        } else {
+            let amount = expected_amount - balance::value(&result_balance) ;
+            let result = request_gas_balance(self, amount, ctx);
+            balance::join(&mut result,result_balance);
+            result
+        }
     }
 
     public(friend) fun get_stablecoin_by_bfc<StableCoinType>(

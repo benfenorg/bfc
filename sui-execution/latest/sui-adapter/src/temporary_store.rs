@@ -457,9 +457,6 @@ impl<'backing> TemporaryStore<'backing> {
         {
             for (id, v1) in &loaded_child_objects {
                 if let Some(v2) = self.loaded_child_objects.get(id) {
-                    if v1!= v2 {
-                        info!("id is {:?}",id);
-                    }
                     assert_eq!(v1, v2);
                 }
             }

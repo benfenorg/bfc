@@ -149,12 +149,13 @@ module bfc_system::bfc_system {
     public fun inner_stablecoin_to_bfc<StableCoinType>(
         _self: &mut BfcSystemState,
         _balance: Balance<StableCoinType>,
+        expect: u64,
         _ctx: &mut TxContext,
     ): Balance<BFC>
     {
         /// wouldn't return remain balance<StableCoinType> to system
         let inner_state = load_system_state_mut(_self);
-        let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), _ctx);
+        let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), expect,_ctx);
         bfc_system_state_inner::update_stable_swap<StableCoinType>(inner_state, balance::value(&bfc_balance));
         bfc_balance
     }
@@ -253,6 +254,7 @@ module bfc_system::bfc_system {
         let balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance<BUSD>(
             inner_state,
             stable,
+            0,
             ctx);
         transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
     }

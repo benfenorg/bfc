@@ -342,7 +342,7 @@
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, expect: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -354,12 +354,13 @@
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(
     _self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     _balance: Balance&lt;StableCoinType&gt;,
+    expect: u64,
     _ctx: &<b>mut</b> TxContext,
 ): Balance&lt;BFC&gt;
 {
     /// wouldn't <b>return</b> remain <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>&lt;StableCoinType&gt; <b>to</b> system
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(_self);
-    <b>let</b> bfc_balance = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(_balance, _ctx), _ctx);
+    <b>let</b> bfc_balance = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(_balance, _ctx), expect,_ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_stable_swap">bfc_system_state_inner::update_stable_swap</a>&lt;StableCoinType&gt;(inner_state, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&bfc_balance));
     bfc_balance
 }
@@ -739,6 +740,7 @@ Request exchange stable coin to bfc.
     <b>let</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>&lt;BUSD&gt;(
         inner_state,
         stable,
+        0,
         ctx);
     <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, ctx), <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
 }
