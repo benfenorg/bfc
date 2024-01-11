@@ -378,9 +378,6 @@ where
         Ok(ChainIdentifier::from(ci).to_string())
     }
 
-    async fn get_inner_exchange_rate(&self, _gas_coin: ObjectID) -> RpcResult<BigInt<u64>> {
-        todo!()
-    }
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         self.fullnode.get_inner_dao_info().await
     }

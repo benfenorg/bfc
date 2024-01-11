@@ -27,7 +27,7 @@ use sui_types::crypto::{
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::epoch_data::EpochData;
 
-use sui_types::gas::{GasCostSummary, SuiGasStatus};
+use sui_types::gas::SuiGasStatus;
 use sui_types::gas_coin::GasCoin;
 use sui_types::gas_coin::GAS;
 use sui_types::governance::StakedSui;

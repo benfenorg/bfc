@@ -22,7 +22,7 @@ pub mod checked {
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
     use sui_protocol_config::ProtocolConfig;
-    use crate::gas::calculate_bfc_to_stable_cost;
+    use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
 
     #[enum_dispatch]
     pub trait SuiGasStatusAPI {
@@ -128,7 +128,7 @@ pub mod checked {
     #[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
     #[serde(rename_all = "camelCase")]
     pub struct GasCostSummary {
-
+        pub base_point:u64,
         pub rate:u64,
         /// Cost of computation/execution
         #[schemars(with = "BigInt<u64>")]
@@ -157,6 +157,7 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
+                base_point:0,
                 rate:1,
                 computation_cost,
                 storage_cost,
@@ -205,6 +206,7 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
+                base_point:0,
                 rate:1,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
@@ -215,11 +217,12 @@ pub mod checked {
 
         pub fn into_rpc(&self) -> GasCostSummary  {
             GasCostSummary {
+                base_point:self.base_point,
                 rate:self.rate,
-                storage_cost:calculate_bfc_to_stable_cost(self.storage_cost, self.rate),
-                computation_cost: calculate_bfc_to_stable_cost(self.computation_cost, self.rate),
-                storage_rebate: calculate_bfc_to_stable_cost(self.storage_rebate, self.rate),
-                non_refundable_storage_fee: calculate_bfc_to_stable_cost(self.non_refundable_storage_fee, self.rate),
+                storage_cost:calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point),
+                computation_cost: calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point),
+                storage_rebate: calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point),
+                non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(self.non_refundable_storage_fee, self.rate, self.base_point),
             }
         }
     }
@@ -269,13 +272,13 @@ pub mod checked {
     }
 }
 
-pub fn calculate_bfc_to_stable_cost(cost: u64, rate: u64) -> u64 {
+pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
     if rate == 0 {
         warn!("rate is zero, cost: {}, rate: {}", cost, rate);
         return cost;
     }
     //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
-    ((cost as u128 * 1000000000u128) / rate as u128) as u64
+    ((cost as u128 * 1000000000u128 * (100 + base_point) as u128) / (rate * 100u64) as u128) as u64
 }
 
 pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
@@ -296,18 +299,18 @@ pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
 
 #[cfg(test)]
 mod test{
-    use crate::gas::{calculate_bfc_to_stable_cost, calculate_stable_to_bfc_cost};
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_stable_to_bfc_cost};
     #[test]
     fn test_calculate_stable_rate() {
         let cost = 132240;
         let rate = 1000000032u64;
-        let result = calculate_bfc_to_stable_cost(cost, rate);
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost, rate, 0);
         println!("result: {}", result);
         let result = calculate_stable_to_bfc_cost(result, rate);
         println!("result: {}", result);
         assert_eq!(cost, result);
         let cost_u64_max = u64::MAX;
-        let result = calculate_bfc_to_stable_cost(cost_u64_max, rate);
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost_u64_max, rate, 0);
         println!("result: {}", result);
         let result = calculate_stable_to_bfc_cost(result, rate);
         assert_eq!(cost_u64_max, result);

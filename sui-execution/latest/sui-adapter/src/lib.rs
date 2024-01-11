@@ -4,8 +4,6 @@
 #[macro_use]
 extern crate sui_types;
 
-use tracing::warn;
-
 pub mod adapter;
 pub mod error;
 pub mod execution_engine;

@@ -158,7 +158,4 @@ pub trait ReadApi {
     /// Return the first four bytes of the chain's genesis checkpoint digest.
     #[method(name = "getChainIdentifier")]
     async fn get_chain_identifier(&self) -> RpcResult<String>;
-    #[method(name = "getInnerExchangeRate")]
-    async fn get_inner_exchange_rate(&self, gas_coin: ObjectID) -> RpcResult<BigInt<u64>>;
-
 }

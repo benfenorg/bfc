@@ -28,7 +28,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 use itertools::MultiUnzip;
-use move_core_types::language_storage::{StructTag, TypeTag};
+use move_core_types::language_storage::TypeTag;
 use sui_protocol_config::ProtocolVersion;
 use sui_types::base_types::{EpochId, TransactionDigest};
 use sui_types::crypto::{AuthoritySignInfo, AuthorityStrongQuorumSignInfo};
@@ -1106,6 +1106,7 @@ impl CheckpointBuilder {
         let authority_store = self.state.database.clone();
 
         let mut bfc_gas_cost_summary = GasCostSummary {
+            base_point:0,
             rate:1,
             storage_cost: 0,
             computation_cost: 0,
@@ -1149,6 +1150,7 @@ impl CheckpointBuilder {
                     gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
                 } else {
                     let mut gas_cost_summary = GasCostSummary {
+                        base_point:effect.gas_cost_summary().base_point,
                         rate: effect.gas_cost_summary().rate,
                         storage_cost: 0,
                         computation_cost: 0,

@@ -197,6 +197,7 @@ impl Default for TransactionEffectsV1 {
             status: ExecutionStatus::Success,
             executed_epoch: 0,
             gas_used: GasCostSummary {
+                base_point: 0,
                 rate:1,
                 computation_cost: 0,
                 storage_cost: 0,

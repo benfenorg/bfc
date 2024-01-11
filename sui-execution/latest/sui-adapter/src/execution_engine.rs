@@ -15,7 +15,7 @@ mod checked {
     };
     use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
-    use sui_types::gas::calculate_bfc_to_stable_cost;
+    use sui_types::gas::{calculate_bfc_to_stable_cost_with_base_point};
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
@@ -567,7 +567,7 @@ mod checked {
 
     pub fn construct_advance_epoch_pt(
         params: &AdvanceEpochParams,
-        rate_map: &VecMap<String, u64>
+        rate_map: &VecMap<String, u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create storage and computation rewards.
@@ -708,7 +708,7 @@ mod checked {
 
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_bfc_to_stable_cost(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost,rate)*110/100)).unwrap(),
+                    bcs::to_bytes(&(calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost,rate, gas_cost_summary.base_point))).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -819,7 +819,7 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let rate_map = temporary_store.get_stable_rate_map();
+        let (rate_map, _base_point) = temporary_store.get_stable_rate_map_with_base_point();
         let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;

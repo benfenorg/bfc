@@ -365,6 +365,7 @@ mod checked {
             assert!(sender_rebate <= self.storage_rebate);
             let non_refundable_storage_fee = self.storage_rebate - sender_rebate;
             GasCostSummary {
+                base_point:0,
                 rate:1,
                 computation_cost: self.computation_cost,
                 storage_cost: self.storage_cost,

@@ -1080,15 +1080,6 @@ impl ReadApiServer for ReadApi {
             Ok(ci.to_string())
         })
     }
-
-    #[instrument(skip(self))]
-    async fn get_inner_exchange_rate(&self, gas_coin: ObjectID) -> RpcResult<BigInt<u64>> {
-        let inner_system_state = self.state.get_db().get_bfc_system_state_object()
-            .expect("Reading bfc system state object cannot fail").inner_state();
-        let rate = inner_system_state.gas_coin_map.get_exchange_rate(gas_coin);
-         Ok(BigInt::from(rate))
-    }
-
 }
 
 impl SuiRpcModule for ReadApi {

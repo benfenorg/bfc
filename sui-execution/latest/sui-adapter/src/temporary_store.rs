@@ -5,12 +5,11 @@ use crate::gas_charger::GasCharger;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::GetModule;
 use move_core_types::account_address::AccountAddress;
-use move_core_types::language_storage::{ModuleId, StructTag, TypeTag};
+use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
-use tracing::info;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::committee::EpochId;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
@@ -25,11 +24,10 @@ use sui_types::{base_types::{
 }, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
     BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
     WriteKind,
-}, transaction::InputObjects, BFC_SYSTEM_STATE_OBJECT_ID};
+}, transaction::InputObjects};
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{BfcSystemStateInnerV1, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper, get_stable_rate_map};
-use sui_types::dynamic_field::{derive_dynamic_field_id, Field, get_dynamic_field_from_store};
+use sui_types::bfc_system_state::{BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper, get_stable_rate_map, get_stable_rate_with_base_point};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -799,7 +797,13 @@ impl<'backing> TemporaryStore<'backing> {
     pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {
         let wrapper = get_stable_rate_map(self.store.as_object_store())
             .expect("System stable rate map must exist");
-        return wrapper;
+        wrapper
+    }
+
+    pub fn get_stable_rate_map_with_base_point(&self) -> (VecMap<String, u64>, u64) {
+        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        (wrapper, base_point)
     }
 
     pub fn get_stable_rate_by_name(&self, name: String) -> u64 {
@@ -809,6 +813,16 @@ impl<'backing> TemporaryStore<'backing> {
             .find(|e| e.key == name)
             .map(|e| e.value)
             .unwrap_or_default()
+    }
+
+    pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> (u64, u64) {
+        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        let rate = wrapper.contents.clone().into_iter()
+            .find(|e| e.key == name)
+            .map(|e| e.value)
+            .unwrap_or_default();
+        (rate, base_point)
     }
 
     pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {

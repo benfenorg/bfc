@@ -14,8 +14,6 @@ module bfc_system::bfc_system_state_inner {
 
     use bfc_system::exchange_inner;
     use bfc_system::exchange_inner::ExchangePool;
-    use bfc_system::gas_coin_map;
-    use bfc_system::gas_coin_map::{GasCoinEntity, GasCoinMap};
     use bfc_system::bfc_dao::{Self, Dao, Proposal, Vote};
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::treasury::{Self, Treasury, get_vault_key};
@@ -46,7 +44,9 @@ module bfc_system::bfc_system_state_inner {
     #[test_only]
     friend bfc_system::bfc_system_tests;
 
-    const DEFAULT_STABLE_RATE: u64 = 0;
+    ///Default stable base points
+    const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
+    const DEFAULT_STABLE_RATE: u64 = 1_000_000_000;
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
 
@@ -54,8 +54,7 @@ module bfc_system::bfc_system_state_inner {
 
     struct BfcSystemStateInner has store {
         round: u64,
-        /// Contains gas coin information
-        gas_coin_map: GasCoinMap,
+        stable_base_points: u64,
         /// Exchange gas coin pool
         exchange_pool: ExchangePool<BUSD>,
         dao: Dao,
@@ -102,9 +101,7 @@ module bfc_system::bfc_system_state_inner {
         parameters: BfcSystemParameters,
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
-        // init gas coin mappings
-        let init_gas_coins_map = vec_map::empty<address, GasCoinEntity>();
-        let gas_coin_map = gas_coin_map::new(init_gas_coins_map, ctx);
+
         let exchange_pool = exchange_inner::new_exchange_pool<BUSD>(ctx, 0);
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
         let (t, remain_balance, rate_map) = create_treasury(
@@ -131,7 +128,7 @@ module bfc_system::bfc_system_state_inner {
 
         BfcSystemStateInner {
             round: BFC_SYSTEM_STATE_START_ROUND,
-            gas_coin_map,
+            stable_base_points: DEFAULT_STABLE_BASE_POINTS,
             exchange_pool,
             dao,
             treasury: t,
@@ -156,16 +153,6 @@ module bfc_system::bfc_system_state_inner {
         round: u64,
     ) {
         inner.round = round;
-    }
-
-    public(friend) fun request_exchange_stable(
-        inner: &mut BfcSystemStateInner,
-        stable: Coin<BUSD>,
-        ctx: &mut TxContext,
-    ): Balance<BFC> {
-        //get exchange rate
-        let rate = gas_coin_map::requst_get_exchange_rate<BUSD>(&inner.gas_coin_map, &stable);
-        exchange_inner::request_exchange_stable<BUSD>(rate, &mut inner.exchange_pool, stable, ctx)
     }
 
     public(friend) fun request_exchange_all(
@@ -197,43 +184,6 @@ module bfc_system::bfc_system_state_inner {
         inner: &mut BfcSystemStateInner,
     ): Balance<BUSD> {
         exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool)
-    }
-
-    /// Getter of the gas coin exchange pool rate.
-    public(friend) fun requst_get_exchange_rate<CoinType>(
-        self: &BfcSystemStateInner,
-        _stable: &Coin<CoinType>
-    ): u64 {
-        vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
-            self,
-            gas_coin_map::get_default_rate(),
-        ))
-    }
-
-    public(friend) fun request_add_gas_coin<CoinType>(
-        self: &mut BfcSystemStateInner,
-        gas_coin: &Coin<CoinType>,
-        rate: u64,
-    ) {
-        gas_coin_map::request_add_gas_coin<CoinType>(&mut self.gas_coin_map, gas_coin, rate)
-    }
-
-    public(friend) fun request_update_gas_coin<CoinType>(
-        self: &mut BfcSystemStateInner,
-        gas_coin: &Coin<CoinType>,
-    ) {
-        let rate = vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
-            self,
-            gas_coin_map::get_default_rate(),
-        ));
-        gas_coin_map::request_update_gas_coin(&mut self.gas_coin_map, gas_coin, rate)
-    }
-
-    public(friend) fun request_remove_gas_coin<CoinType>(
-        self: &mut BfcSystemStateInner,
-        gas_coin: &Coin<CoinType>,
-    ) {
-        gas_coin_map::request_remove_gas_coin<CoinType>(&mut self.gas_coin_map, gas_coin)
     }
 
     /// Init exchange pool by add bfc coin.
@@ -404,14 +354,14 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun get_bfc_exchange_rate<CoinType>(self: &BfcSystemStateInner): u64 {
         vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
             self,
-            gas_coin_map::get_default_rate(),
+            DEFAULT_STABLE_RATE,
         ))
     }
 
     public(friend) fun get_stablecoin_exchange_rate<CoinType>(self: &BfcSystemStateInner): u64 {
         vault::calculated_swap_result_amount_out(&get_bfc_by_stablecoin<CoinType>(
             self,
-            gas_coin_map::get_default_rate(),
+            DEFAULT_STABLE_RATE,
         ))
     }
 
@@ -454,18 +404,18 @@ module bfc_system::bfc_system_state_inner {
         treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx)
     }
 
-    public(friend) fun update_stable_rate( self: &mut BfcSystemStateInner) {
-        //busd
-        let rate =  get_stablecoin_exchange_rate<BUSD>(self);
-        if(rate > DEFAULT_STABLE_RATE) {
-            let key = type_name::into_string(type_name::get<BUSD>());
-            if (vec_map::contains(&self.stable_rate, &key)) {
-                vec_map::remove(&mut self.stable_rate, &key);
-            };
-            vec_map::insert(&mut self.stable_rate, key, rate);
-        };
-        //other stable rate update
-    }
+    // public(friend) fun update_stable_rate( self: &mut BfcSystemStateInner) {
+    //     //busd
+    //     let rate =  get_stablecoin_exchange_rate<BUSD>(self);
+    //     if(rate > DEFAULT_STABLE_RATE) {
+    //         let key = type_name::into_string(type_name::get<BUSD>());
+    //         if (vec_map::contains(&self.stable_rate, &key)) {
+    //             vec_map::remove(&mut self.stable_rate, &key);
+    //         };
+    //         vec_map::insert(&mut self.stable_rate, key, rate);
+    //     };
+    //     //other stable rate update
+    // }
 
     public(friend) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
         self.stable_rate

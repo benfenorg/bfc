@@ -44,7 +44,6 @@ pub mod execution_mode;
 pub mod execution_status;
 pub mod gas;
 pub mod gas_coin;
-pub mod gas_coin_strategy;
 pub mod gas_model;
 pub mod governance;
 pub mod proposal;

@@ -16,7 +16,6 @@ use sui_types::{
         EndOfEpochData, FullCheckpointContents, VerifiedCheckpoint, VerifiedCheckpointContents,
     },
 };
-use sui_types::gas::GasCostSummary;
 
 pub struct CommitteeFixture {
     epoch: EpochId,

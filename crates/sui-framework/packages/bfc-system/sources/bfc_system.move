@@ -1,11 +1,9 @@
 module bfc_system::bfc_system {
     use std::ascii;
-    use std::type_name;
     use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
     use sui::balance::{Balance, Supply};
-    use sui::bfc;
     use sui::coin;
     use sui::coin::Coin;
     use sui::clock::{Clock};
@@ -17,7 +15,6 @@ module bfc_system::bfc_system {
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
-    use sui::vec_map;
     use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
@@ -136,10 +133,6 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
         //exchange all stable to bfc.
         bfc_system_state_inner::request_exchange_all(inner_state, ctx);
-        //update inner exchange rate from stable-swap.
-        let stable = coin::zero<BUSD>(ctx);
-        bfc_system_state_inner::request_update_gas_coin(inner_state, &stable);
-        balance::destroy_zero(coin::into_balance(stable));
         // X-treasury rebalance
         bfc_system_state_inner::rebalance(inner_state, clock, ctx);
 
@@ -158,7 +151,7 @@ module bfc_system::bfc_system {
         let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), expect,_ctx);
         bfc_balance
     }
-    
+
     public fun request_gas_balance(
         wrapper: &mut BfcSystemState,
         amount: u64,
@@ -197,40 +190,6 @@ module bfc_system::bfc_system {
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
         bfc_system_state_inner::get_rate_map(inner)
-    }
-
-    /// Getter of the gas coin exchange pool rate.
-    public entry fun request_get_exchange_rate(
-        self: &BfcSystemState,
-        stable: &Coin<BUSD>
-    ): u64 {
-        let inner_state = load_system_state(self);
-        bfc_system_state_inner::requst_get_exchange_rate<BUSD>(inner_state, stable)
-    }
-
-    public entry fun request_add_gas_coin(
-        self: &mut BfcSystemState,
-        gas_coin: &Coin<BUSD>,
-        rate: u64,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_add_gas_coin(inner_state, gas_coin, rate)
-    }
-
-    public entry fun request_update_gas_coin(
-        self: &mut BfcSystemState,
-        gas_coin: &Coin<BUSD>,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_update_gas_coin(inner_state, gas_coin)
-    }
-
-    public entry fun request_remove_gas_coin(
-        self: &mut BfcSystemState,
-        gas_coin: &Coin<BUSD>,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
     }
 
     /// Request exchange stable coin to bfc.

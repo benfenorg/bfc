@@ -20,10 +20,6 @@
 -  [Function `load_bfc_system_state_mut`](#0xc8_bfc_system_load_bfc_system_state_mut)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
--  [Function `request_get_exchange_rate`](#0xc8_bfc_system_request_get_exchange_rate)
--  [Function `request_add_gas_coin`](#0xc8_bfc_system_request_add_gas_coin)
--  [Function `request_update_gas_coin`](#0xc8_bfc_system_request_update_gas_coin)
--  [Function `request_remove_gas_coin`](#0xc8_bfc_system_request_remove_gas_coin)
 -  [Function `request_exchange_stable`](#0xc8_bfc_system_request_exchange_stable)
 -  [Function `request_exchange_all`](#0xc8_bfc_system_request_exchange_all)
 -  [Function `request_withdraw_stable`](#0xc8_bfc_system_request_withdraw_stable)
@@ -319,10 +315,6 @@
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
     //exchange all stable <b>to</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>.
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_exchange_all">bfc_system_state_inner::request_exchange_all</a>(inner_state, ctx);
-    //<b>update</b> inner exchange rate from stable-swap.
-    <b>let</b> stable = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_zero">coin::zero</a>&lt;BUSD&gt;(ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_update_gas_coin">bfc_system_state_inner::request_update_gas_coin</a>(inner_state, &stable);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(stable));
     // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 
@@ -541,120 +533,6 @@
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_exchange_rate">get_exchange_rate</a>(id: &UID): VecMap&lt;<a href="_String">ascii::String</a>, u64&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">bfc_system_state_inner::get_rate_map</a>(inner)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_request_get_exchange_rate"></a>
-
-## Function `request_get_exchange_rate`
-
-Getter of the gas coin exchange pool rate.
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_get_exchange_rate">request_get_exchange_rate</a>(self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, stable: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_get_exchange_rate">request_get_exchange_rate</a>(
-    self: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    stable: &Coin&lt;BUSD&gt;
-): u64 {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_requst_get_exchange_rate">bfc_system_state_inner::requst_get_exchange_rate</a>&lt;BUSD&gt;(inner_state, stable)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_request_add_gas_coin"></a>
-
-## Function `request_add_gas_coin`
-
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_add_gas_coin">request_add_gas_coin</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, rate: u64)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_add_gas_coin">request_add_gas_coin</a>(
-    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    gas_coin: &Coin&lt;BUSD&gt;,
-    rate: u64,
-) {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_add_gas_coin">bfc_system_state_inner::request_add_gas_coin</a>(inner_state, gas_coin, rate)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_request_update_gas_coin"></a>
-
-## Function `request_update_gas_coin`
-
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_update_gas_coin">request_update_gas_coin</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_update_gas_coin">request_update_gas_coin</a>(
-    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    gas_coin: &Coin&lt;BUSD&gt;,
-) {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_update_gas_coin">bfc_system_state_inner::request_update_gas_coin</a>(inner_state, gas_coin)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_request_remove_gas_coin"></a>
-
-## Function `request_remove_gas_coin`
-
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_remove_gas_coin">request_remove_gas_coin</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, gas_coin: &<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_remove_gas_coin">request_remove_gas_coin</a>(
-    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    gas_coin: &Coin&lt;BUSD&gt;,
-) {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_remove_gas_coin">bfc_system_state_inner::request_remove_gas_coin</a>(inner_state, gas_coin)
 }
 </code></pre>
 

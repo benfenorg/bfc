@@ -1381,12 +1381,6 @@ impl AuthorityState {
         ))
     }
 
-    #[allow(unused)]
-    async fn exchange_rates(&self, gas_coin: ObjectID) -> SuiResult<u64> {
-        let system_state = self.database.get_bfc_system_state_object()?;
-        let exchange_rate = system_state.inner_state().gas_coin_map.get_exchange_rate(gas_coin);
-        Ok(exchange_rate)
-    }
     /// The object ID for gas can be any object ID, even for an uncreated object
     pub async fn dev_inspect_transaction_block(
         &self,
