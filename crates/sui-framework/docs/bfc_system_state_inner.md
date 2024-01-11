@@ -13,7 +13,6 @@
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_state_inner_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_state_inner_unstake_manager_key)
 -  [Function `update_round`](#0xc8_bfc_system_state_inner_update_round)
--  [Function `request_exchange_all`](#0xc8_bfc_system_state_inner_request_exchange_all)
 -  [Function `request_withdraw_stable`](#0xc8_bfc_system_state_inner_request_withdraw_stable)
 -  [Function `init_exchange_pool`](#0xc8_bfc_system_state_inner_init_exchange_pool)
 -  [Function `get_bfc_amount`](#0xc8_bfc_system_state_inner_get_bfc_amount)
@@ -447,50 +446,6 @@ Default stable base points
     round: u64,
 ) {
     inner.round = round;
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_request_exchange_all"></a>
-
-## Function `request_exchange_all`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_exchange_all">request_exchange_all</a>(inner: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_exchange_all">request_exchange_all</a>(
-    inner: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
-    ctx: &<b>mut</b> TxContext
-) {
-    //get <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> amount of inner exchange pool
-    <b>let</b> bfc_amount = <a href="exchange_inner.md#0xc8_exchange_inner_get_bfc_amount">exchange_inner::get_bfc_amount</a>(&inner.exchange_pool);
-    <b>if</b> (bfc_amount &gt; 0) {
-        //set pool is disactivate
-        <b>let</b> epoch = <a href="exchange_inner.md#0xc8_exchange_inner_dis_activate">exchange_inner::dis_activate</a>(&<b>mut</b> inner.exchange_pool);
-        //get stable <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
-        <b>let</b> stable_balance = <a href="exchange_inner.md#0xc8_exchange_inner_request_withdraw_all_stable">exchange_inner::request_withdraw_all_stable</a>(&<b>mut</b> inner.exchange_pool);
-        //exchange from stable swap
-        <b>let</b> bfc_balance = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">swap_stablecoin_to_bfc_balance</a>(
-            inner,
-            <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(stable_balance, ctx),0,
-            ctx,
-        );
-        //add <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> <b>to</b> inner exchange pool
-        <a href="exchange_inner.md#0xc8_exchange_inner_request_deposit_bfc_balance">exchange_inner::request_deposit_bfc_balance</a>(&<b>mut</b> inner.exchange_pool, bfc_balance);
-        // active pool
-        <a href="exchange_inner.md#0xc8_exchange_inner_activate">exchange_inner::activate</a>(&<b>mut</b> inner.exchange_pool, epoch);
-    }
 }
 </code></pre>
 

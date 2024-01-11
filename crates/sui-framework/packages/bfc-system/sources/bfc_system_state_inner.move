@@ -155,29 +155,29 @@ module bfc_system::bfc_system_state_inner {
         inner.round = round;
     }
 
-    public(friend) fun request_exchange_all(
-        inner: &mut BfcSystemStateInner,
-        ctx: &mut TxContext
-    ) {
-        //get bfc amount of inner exchange pool
-        let bfc_amount = exchange_inner::get_bfc_amount(&inner.exchange_pool);
-        if (bfc_amount > 0) {
-            //set pool is disactivate
-            let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
-            //get stable balance
-            let stable_balance = exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool);
-            //exchange from stable swap
-            let bfc_balance = swap_stablecoin_to_bfc_balance(
-                inner,
-                coin::from_balance(stable_balance, ctx),0,
-                ctx,
-            );
-            //add bfc to inner exchange pool
-            exchange_inner::request_deposit_bfc_balance(&mut inner.exchange_pool, bfc_balance);
-            // active pool
-            exchange_inner::activate(&mut inner.exchange_pool, epoch);
-        }
-    }
+    // public(friend) fun request_exchange_all(
+    //     inner: &mut BfcSystemStateInner,
+    //     ctx: &mut TxContext
+    // ) {
+    //     //get bfc amount of inner exchange pool
+    //     let bfc_amount = exchange_inner::get_bfc_amount(&inner.exchange_pool);
+    //     if (bfc_amount > 0) {
+    //         //set pool is disactivate
+    //         let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
+    //         //get stable balance
+    //         let stable_balance = exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool);
+    //         //exchange from stable swap
+    //         let bfc_balance = swap_stablecoin_to_bfc_balance(
+    //             inner,
+    //             coin::from_balance(stable_balance, ctx),0,
+    //             ctx,
+    //         );
+    //         //add bfc to inner exchange pool
+    //         exchange_inner::request_deposit_bfc_balance(&mut inner.exchange_pool, bfc_balance);
+    //         // active pool
+    //         exchange_inner::activate(&mut inner.exchange_pool, epoch);
+    //     }
+    // }
 
     ///Request withdraw stable coin.
     public(friend) fun request_withdraw_stable(

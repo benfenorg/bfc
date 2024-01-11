@@ -132,7 +132,7 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
         //exchange all stable to bfc.
-        bfc_system_state_inner::request_exchange_all(inner_state, ctx);
+        // bfc_system_state_inner::request_exchange_all(inner_state, ctx);
         // X-treasury rebalance
         bfc_system_state_inner::rebalance(inner_state, clock, ctx);
 
@@ -208,13 +208,13 @@ module bfc_system::bfc_system {
     }
 
     /// Request exchange all stable coin to bfc.
-    public entry fun request_exchange_all(
-        self: &mut BfcSystemState,
-        ctx: &mut TxContext,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_exchange_all(inner_state, ctx)
-    }
+    // public entry fun request_exchange_all(
+    //     self: &mut BfcSystemState,
+    //     ctx: &mut TxContext,
+    // ) {
+    //     let inner_state = load_system_state_mut(self);
+    //     bfc_system_state_inner::request_exchange_all(inner_state, ctx)
+    // }
 
     /// Request withdraw stable coin.
     public entry fun request_withdraw_stable(

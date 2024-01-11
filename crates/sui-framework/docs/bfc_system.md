@@ -21,7 +21,6 @@
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
 -  [Function `request_exchange_stable`](#0xc8_bfc_system_request_exchange_stable)
--  [Function `request_exchange_all`](#0xc8_bfc_system_request_exchange_all)
 -  [Function `request_withdraw_stable`](#0xc8_bfc_system_request_withdraw_stable)
 -  [Function `request_withdraw_stable_no_entry`](#0xc8_bfc_system_request_withdraw_stable_no_entry)
 -  [Function `init_exchange_pool`](#0xc8_bfc_system_init_exchange_pool)
@@ -314,7 +313,7 @@
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
     //exchange all stable <b>to</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>.
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_exchange_all">bfc_system_state_inner::request_exchange_all</a>(inner_state, ctx);
+    // bfc_system_state_inner::request_exchange_all(inner_state, ctx);
     // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 
@@ -575,39 +574,11 @@ Request exchange stable coin to bfc.
 
 </details>
 
-<a name="0xc8_bfc_system_request_exchange_all"></a>
-
-## Function `request_exchange_all`
-
-Request exchange all stable coin to bfc.
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_exchange_all">request_exchange_all</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_request_exchange_all">request_exchange_all</a>(
-    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_exchange_all">bfc_system_state_inner::request_exchange_all</a>(inner_state, ctx)
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_bfc_system_request_withdraw_stable"></a>
 
 ## Function `request_withdraw_stable`
 
+Request exchange all stable coin to bfc.
 Request withdraw stable coin.
 
 
