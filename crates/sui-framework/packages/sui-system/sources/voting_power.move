@@ -5,6 +5,7 @@ module sui_system::voting_power {
     use std::ascii;
     use sui_system::validator::Validator;
     use std::vector;
+    use bfc_system::busd::BUSD;
     use sui_system::validator;
     use sui::math;
     use sui::math::divide_and_round_up;

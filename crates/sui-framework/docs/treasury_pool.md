@@ -7,13 +7,17 @@
 
 -  [Resource `TreasuryPool`](#0xc8_treasury_pool_TreasuryPool)
 -  [Struct `WithdrawEvent`](#0xc8_treasury_pool_WithdrawEvent)
+-  [Struct `DepositEvent`](#0xc8_treasury_pool_DepositEvent)
 -  [Constants](#@Constants_0)
 -  [Function `create_treasury_pool`](#0xc8_treasury_pool_create_treasury_pool)
+-  [Function `deposit_to_treasury_pool`](#0xc8_treasury_pool_deposit_to_treasury_pool)
 -  [Function `withdraw_to_treasury`](#0xc8_treasury_pool_withdraw_to_treasury)
+-  [Function `get_balance`](#0xc8_treasury_pool_get_balance)
 
 
 <pre><code><b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
@@ -95,6 +99,39 @@
 
 </details>
 
+<a name="0xc8_treasury_pool_DepositEvent"></a>
+
+## Struct `DepositEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury_pool.md#0xc8_treasury_pool_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>deposit_amount: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
@@ -144,6 +181,40 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 </details>
 
+<a name="0xc8_treasury_pool_deposit_to_treasury_pool"></a>
+
+## Function `deposit_to_treasury_pool`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, bfc_coin: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(
+    self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
+    bfc_coin: Coin&lt;BFC&gt;
+)
+{
+    <b>let</b> origin_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
+    <b>let</b> deposit_amount = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&bfc_coin);
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(bfc_coin));
+    emit(<a href="treasury_pool.md#0xc8_treasury_pool_DepositEvent">DepositEvent</a> {
+        <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: origin_amount,
+        deposit_amount
+    });
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_treasury_pool_withdraw_to_treasury"></a>
 
 ## Function `withdraw_to_treasury`
@@ -178,6 +249,30 @@ The <code>withdraw</code> function only called by 0x0 address.
         amount: to_withdraw,
     });
     withdraw_balance
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_pool_get_balance"></a>
+
+## Function `get_balance`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>): u64 {
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>)
 }
 </code></pre>
 

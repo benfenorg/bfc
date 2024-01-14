@@ -1,12 +1,14 @@
 module bfc_system::treasury_pool {
     use sui::balance;
     use sui::balance::Balance;
-    use sui::math;
-    use sui::event::emit;
     use sui::bfc::BFC;
+    use sui::coin;
+    use sui::coin::Coin;
+    use sui::event::emit;
+    use sui::math;
     use sui::object;
     use sui::object::UID;
-    use sui::tx_context::{TxContext, Self};
+    use sui::tx_context::{Self, TxContext};
 
     use bfc_system::event;
 
@@ -29,6 +31,11 @@ module bfc_system::treasury_pool {
         amount: u64,
     }
 
+    struct DepositEvent has copy, drop {
+        balance: u64,
+        deposit_amount: u64
+    }
+
     public(friend) fun create_treasury_pool(
         balance: Balance<BFC>,
         ctx: &mut TxContext
@@ -41,6 +48,20 @@ module bfc_system::treasury_pool {
         let treasury_pool_id = object::id(&treasury_pool);
         event::init_treasury_pool(treasury_pool_id);
         treasury_pool
+    }
+
+    public(friend) fun deposit_to_treasury_pool(
+        self: &mut TreasuryPool,
+        bfc_coin: Coin<BFC>
+    )
+    {
+        let origin_amount = balance::value(&self.balance);
+        let deposit_amount = coin::value(&bfc_coin);
+        balance::join(&mut self.balance, coin::into_balance(bfc_coin));
+        emit(DepositEvent {
+            balance: origin_amount,
+            deposit_amount
+        });
     }
 
     public(friend) fun withdraw_to_treasury(
@@ -62,5 +83,9 @@ module bfc_system::treasury_pool {
             amount: to_withdraw,
         });
         withdraw_balance
+    }
+
+    public fun get_balance(self: &TreasuryPool): u64 {
+        balance::value(&self.balance)
     }
 }

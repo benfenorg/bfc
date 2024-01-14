@@ -46,6 +46,8 @@ use sui_types::base_types_bfc::bfc_address_util::{convert_to_evm_address, sui_ad
 use tabled::builder::Builder;
 use tabled::settings::Rotate;
 use tabled::settings::{object::Rows, Modify, Width};
+use sui_json_rpc_types::TransactionBlockBytes;
+use sui_types::transaction::SenderSignedData;
 
 use crate::zklogin_commands_util::{perform_zk_login_test_tx, read_cli_line};
 
@@ -62,6 +64,11 @@ pub enum KeyToolCommand {
     Convert { value: String },
     /// Given a Base64 encoded transaction bytes, decode its components.
     DecodeTxBytes {
+        #[clap(long)]
+        tx_bytes: String,
+    },
+
+    DecodeRawTransaction {
         #[clap(long)]
         tx_bytes: String,
     },
@@ -340,6 +347,7 @@ pub enum CommandOutput {
     Sign(SignData),
     SignKMS(SerializedSig),
     ZkLoginSignAndExecuteTx(ZkLoginSignAndExecuteTx),
+    DecodeRawTransaction(Base64),
 }
 
 impl KeyToolCommand {
@@ -401,6 +409,15 @@ impl KeyToolCommand {
 
                 CommandOutput::DecodeMultiSig(output)
             }
+
+            KeyToolCommand::DecodeRawTransaction { tx_bytes } => {
+                let tx_bytes = Base64::decode(&tx_bytes)
+                    .map_err(|e| anyhow!("Invalid base64 key: {:?}", e))?;
+                let orig_tx: SenderSignedData = bcs::from_bytes(&tx_bytes).unwrap();
+                let tx_block_bytes = TransactionBlockBytes::from_data(orig_tx.transaction_data().clone()).unwrap();
+                CommandOutput::DecodeRawTransaction(tx_block_bytes.tx_bytes)
+            }
+
 
             KeyToolCommand::DecodeTxBytes { tx_bytes } => {
                 let tx_bytes = Base64::decode(&tx_bytes)

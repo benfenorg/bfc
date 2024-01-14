@@ -3,37 +3,37 @@ module bfc_system::treasury {
     use std::type_name;
     use std::type_name::{ get, into_string};
 
-    use sui::transfer;
-    use sui::coin::{Self, Coin};
     use sui::bag::{Self, Bag};
     use sui::balance::{Self, Balance, Supply};
-    use sui::dynamic_field;
     use sui::bfc::BFC;
     use sui::clock::{Self, Clock};
+    use sui::coin::{Self, Coin};
+    use sui::dynamic_field;
     use sui::object::{Self, UID};
+    use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::vec_map::{Self, VecMap};
 
-    use bfc_system::busd::BUSD;
-    use bfc_system::bjpy::BJPY;
-    use bfc_system::bkrw::BKRW;
-    use bfc_system::baud::BAUD;
     use bfc_system::bars::BARS;
+    use bfc_system::baud::BAUD;
     use bfc_system::bbrl::BBRL;
     use bfc_system::bcad::BCAD;
     use bfc_system::beur::BEUR;
     use bfc_system::bgbp::BGBP;
     use bfc_system::bidr::BIDR;
     use bfc_system::binr::BINR;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::bmxn::BMXN;
     use bfc_system::brub::BRUB;
     use bfc_system::bsar::BSAR;
     use bfc_system::btry::BTRY;
+    use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
-    use bfc_system::bmxn::BMXN;
-
+    use bfc_system::mgg::MGG;
     use bfc_system::event;
-    use bfc_system::vault::{Self, Vault, VaultInfo};
     use bfc_system::tick_math;
+    use bfc_system::vault::{Self, Vault, VaultInfo};
 
     friend bfc_system::bfc_system_state_inner;
     #[test_only]
@@ -386,6 +386,7 @@ module bfc_system::treasury {
         let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
 
         let total = one_coin_next_epoch_bfc_required<BUSD>(_treasury, times_per_day) +
+            one_coin_next_epoch_bfc_required<MGG>(_treasury, times_per_day) +
             one_coin_next_epoch_bfc_required<BJPY>(_treasury, times_per_day) +
             one_coin_next_epoch_bfc_required<BAUD>(_treasury, times_per_day) +
             one_coin_next_epoch_bfc_required<BKRW>(_treasury, times_per_day) +
@@ -412,7 +413,8 @@ module bfc_system::treasury {
 
     public(friend) fun rebalance(
         _treasury: &mut Treasury,
-        clock: &Clock,
+        _pool_balance: u64,
+        _clock: &Clock,
         _ctx: &mut TxContext,
     ) {
         // check init
@@ -421,37 +423,41 @@ module bfc_system::treasury {
         };
 
         // check time_interval
-        let current_ts = clock::timestamp_ms(clock) / 1000;
+        let current_ts = clock::timestamp_ms(_clock) / 1000;
         if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
             return
         };
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        rebalance_internal(_treasury, true, _ctx);
+        let bfc_in_vault = rebalance_internal(_treasury, true, _ctx);
+        _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + balance::value(&_treasury.bfc_balance);
     }
 
     public(friend) fun rebalance_internal(
         _treasury: &mut Treasury,
         _update: bool,
         _ctx: &mut TxContext
-    ) {
-        one_coin_rebalance_internal<BUSD>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BJPY>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BKRW>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BAUD>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BARS>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BBRL>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BCAD>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BEUR>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BGBP>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BIDR>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BINR>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BRUB>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BSAR>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BTRY>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BZAR>(_treasury, _update, _ctx);
-        one_coin_rebalance_internal<BMXN>(_treasury, _update, _ctx);
+    ): u64 {
+        let bfc_in_vault = 0;
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BJPY>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BKRW>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BAUD>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BARS>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BBRL>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BCAD>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BEUR>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BGBP>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BIDR>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BINR>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BRUB>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BSAR>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BTRY>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BZAR>(_treasury, _update, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BMXN>(_treasury, _update, _ctx);
+        bfc_in_vault
     }
 
 
@@ -462,6 +468,7 @@ module bfc_system::treasury {
         let amount = 1_000_000_000;
 
         one_coin_exchange_rate<BUSD>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<MGG>(_treasury, &mut rate_map, amount);
         one_coin_exchange_rate<BJPY>(_treasury, &mut rate_map, amount);
         one_coin_exchange_rate<BKRW>(_treasury, &mut rate_map, amount);
         one_coin_exchange_rate<BAUD>(_treasury, &mut rate_map, amount);
@@ -481,15 +488,26 @@ module bfc_system::treasury {
         rate_map
     }
 
+    public(friend) fun get_total_supply<StableCoinType>(
+        _self: &Treasury
+    ): u64
+    {
+        let key = get_vault_key<StableCoinType>();
+        if (!dynamic_field::exists_(&_self.id, key)) {
+            return 0
+        };
+        let supply = bag::borrow<String, Supply<StableCoinType>>(&_self.supplies, key);
+        balance::supply_value(supply)
+    }
 
     fun one_coin_rebalance_internal<StableCoinType>(
         _treasury: &mut Treasury,
         _update: bool,
         _ctx: &mut TxContext
-    ) {
+    ): u64 {
         let key = get_vault_key<StableCoinType>();
         if (!dynamic_field::exists_(&_treasury.id, key)) {
-            return
+            return 0
         };
         let mut_v = dynamic_field::borrow_mut<String, Vault<StableCoinType>>(
             &mut _treasury.id,
@@ -506,7 +524,7 @@ module bfc_system::treasury {
             bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key),
             _treasury.total_bfc_supply,
             _ctx
-        );
+        )
     }
 
     fun one_coin_next_epoch_bfc_required<StableCoinType>(
@@ -534,36 +552,6 @@ module bfc_system::treasury {
             _rate_map,
             key,
             vault::calculated_swap_result_amount_out(&calculate_swap_result<StableCoinType>(_treasury, true, _amount)),
-        );
-    }
-
-    #[test_only]
-    public(friend) fun one_coin_rebalance_test<StableCoinType>(
-        _treasury: &mut Treasury,
-        _update: bool,
-        _bfc_balance: &mut Balance<BFC>,
-        _total_bfc_supply: u64,
-        _ctx: &mut TxContext
-    ) {
-        let key = get_vault_key<StableCoinType>();
-        if (!dynamic_field::exists_(&_treasury.id, key)) {
-            return
-        };
-        let mut_v = dynamic_field::borrow_mut<String, Vault<StableCoinType>>(
-            &mut _treasury.id,
-            key,
-        );
-        if (_update) {
-            vault::update_state(mut_v);
-        };
-
-        // first rebalance just place liquidity not change vault state
-        vault::rebalance(
-            mut_v,
-            _bfc_balance,
-            bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key),
-            _total_bfc_supply,
-            _ctx
         );
     }
 }

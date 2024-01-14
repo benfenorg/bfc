@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use tracing::log::warn;
 
-pub const DEFAULT_CONFIG_PATH: &str = "~/.sui-replay/network-config.yaml";
+pub const DEFAULT_CONFIG_PATH: &str = "~/.bfc-replay/network-config.yaml";
 
 #[serde_as]
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
@@ -108,7 +108,7 @@ impl Default for ReplayableNetworkConfigSet {
             name: "testnet".to_string(),
             epoch_zero_start_timestamp: 0,
             epoch_zero_rgp: 0,
-            public_full_node: url_from_str("https://fullnode.testnet.sui.io:443")
+            public_full_node: url_from_str("https://testrpc.benfen.org:443")
                 .expect("invalid socket address")
                 .to_string(),
         };

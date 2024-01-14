@@ -94,8 +94,8 @@ module bfc_system::vault {
 
         base_point: u64,
 
-        /// bfc accrued consume
-        bfc_accrued_consume: u64,
+        /// stable coin market cap
+        coin_market_cap: u64,
 
         /// last rebalance bfc amount
         last_bfc_rebalance_amount: u64,
@@ -120,7 +120,7 @@ module bfc_system::vault {
         is_pause: bool,
         index: u64,
         base_point: u64,
-        bfc_accrued_consume: u64,
+        coin_market_cap: u64,
         last_bfc_rebalance_amount: u64,
     }
 
@@ -163,7 +163,7 @@ module bfc_system::vault {
             index: _index,
             base_point: _base_point,
             max_counter_times: _max_counter_times,
-            bfc_accrued_consume: 0,
+            coin_market_cap: 0,
             last_bfc_rebalance_amount: 0,
         }
     }
@@ -678,11 +678,18 @@ module bfc_system::vault {
         let coin_type_out: String;
 
         if (_a2b) {
+            if (_vault.coin_market_cap >= swap_res.amount_in) {
+                _vault.coin_market_cap = _vault.coin_market_cap - swap_res.amount_in;
+            } else {
+                _vault.coin_market_cap = 0;
+            };
+
             balance_b_ret = balance::split<BFC>(&mut _vault.coin_b, swap_res.amount_out);
             balance_a_ret = balance::zero<StableCoinType>();
             coin_type_in = type_name::into_string(type_name::get<StableCoinType>());
             coin_type_out = type_name::into_string(type_name::get<BFC>());
         } else {
+            _vault.coin_market_cap = _vault.coin_market_cap + swap_res.amount_out;
             balance_a_ret = balance::split<StableCoinType>(&mut _vault.coin_a, swap_res.amount_out);
             balance_b_ret = balance::zero<BFC>();
             coin_type_in = type_name::into_string(type_name::get<BFC>());
@@ -862,7 +869,7 @@ module bfc_system::vault {
             is_pause: _vault.is_pause,
             index: _vault.index,
             base_point: _vault.base_point,
-            bfc_accrued_consume: _vault.bfc_accrued_consume,
+            coin_market_cap: _vault.coin_market_cap,
             last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
         } }
 
@@ -999,7 +1006,7 @@ module bfc_system::vault {
         _treasury_total_bfc_supply: u64,
     ): vector<u128> {
         // base point position liquidity
-        let curve_dx_q64 = curve_dx((_vault.bfc_accrued_consume as u128), (_treasury_total_bfc_supply as u128));
+        let curve_dx_q64 = curve_dx((_vault.coin_market_cap as u128), (_treasury_total_bfc_supply as u128));
         let base_point_amount = (((_vault.base_point as u128) * (Q64 + curve_dx_q64) / Q64) as u64);
         let liquidity = get_liquidity_from_base_point(_vault, _ticks, base_point_amount);
         let liquidities = vector::empty<u128>();
@@ -1071,18 +1078,13 @@ module bfc_system::vault {
         _supply: &mut Supply<StableCoinType>,
         _treasury_total_bfc_supply: u64,
         _ctx: &mut TxContext
-    ) {
+    ): u64 {
         let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
         let shape = SHAPE_EQUAL_SIZE;
         if (_vault.state_counter >= _vault.max_counter_times) {
             shape = _vault.state;
             // reset state counter
             _vault.state_counter = 0;
-        };
-        if (_vault.last_bfc_rebalance_amount > balance::value(&balance1)) {
-            _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - balance::value(
-                &balance1
-            );
         };
         let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape, _treasury_total_bfc_supply);
         rebalance_internal(
@@ -1094,5 +1096,6 @@ module bfc_system::vault {
             liquidities
         );
         _vault.last_bfc_rebalance_amount = balance::value(&_vault.coin_b);
+        _vault.last_bfc_rebalance_amount
     }
 }

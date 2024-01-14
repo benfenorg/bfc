@@ -1099,6 +1099,8 @@ impl SuiNode {
             registry_service: registry_service.clone(),
         };
 
+        info!("=============Narwhal config: {:?}", narwhal_config.storage_base_path);
+
         let metrics = NarwhalManagerMetrics::new(&registry_service.default_registry());
 
         Ok(NarwhalManager::new(narwhal_config, metrics))
@@ -1339,9 +1341,11 @@ impl SuiNode {
                     )
                     .await;
 
-                narwhal_epoch_data_remover
-                    .remove_old_data(next_epoch - 1)
-                    .await;
+                if next_epoch > 10 {
+                    narwhal_epoch_data_remover
+                        .remove_old_data(next_epoch - 10)
+                        .await;
+                }
 
                 if self.state.is_validator(&new_epoch_store) {
                     // Only restart Narwhal if this node is still a validator in the new epoch.

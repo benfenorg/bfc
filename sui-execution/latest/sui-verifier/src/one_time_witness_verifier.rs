@@ -65,6 +65,7 @@ pub fn verify_module(
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bsar").to_owned()),
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("btry").to_owned()),
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bzar").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("mgg").to_owned()),
     ];
     if bfc_modules.contains(&module.self_id()) {
         return Ok(());

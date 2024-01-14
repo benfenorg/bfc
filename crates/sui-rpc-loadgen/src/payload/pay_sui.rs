@@ -33,7 +33,7 @@ impl<'a> ProcessPayload<'a, &'a PaySui> for RpcCommandProcessor {
             SuiKeyPair::decode_base64(&encoded_keypair).expect("Decoding keypair should not fail");
 
         debug!(
-            "Transfer Sui {} time to {recipient} with {amount} MIST with {gas_payments:?}",
+            "Transfer Bfc {} time to {recipient} with {amount} MIST with {gas_payments:?}",
             gas_payments.len()
         );
 

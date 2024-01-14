@@ -21,6 +21,7 @@ use std::time::Instant;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair};
 use tokio::sync::Mutex;
+use tracing::log::info;
 
 #[derive(PartialEq)]
 enum Running {
@@ -100,6 +101,8 @@ impl NarwhalManager {
 
         let store_cache_metrics =
             CertificateStoreCacheMetrics::new(&config.registry_service.default_registry());
+
+        info!("NarwhalManager::new() - stroget path: {:?}", config.storage_base_path);
 
         Self {
             primary_node,

@@ -15,6 +15,7 @@ module bfc_system::bfc_system {
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
+    use sui::vec_map;
     use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
@@ -33,6 +34,7 @@ module bfc_system::bfc_system {
     use bfc_system::btry::{BTRY};
     use bfc_system::bzar::{BZAR};
     use bfc_system::bmxn::{BMXN};
+    use bfc_system::mgg::{MGG};
 
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
@@ -84,6 +86,7 @@ module bfc_system::bfc_system {
         try_supply: Supply<BTRY>,
         zar_supply: Supply<BZAR>,
         mxn_supply: Supply<BMXN>,
+        mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ) {
@@ -105,6 +108,7 @@ module bfc_system::bfc_system {
             try_supply,
             zar_supply,
             mxn_supply,
+            mgg_supply,
             parameters,
             ctx,
         );
@@ -189,7 +193,41 @@ module bfc_system::bfc_system {
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
-        bfc_system_state_inner::get_rate_map(inner)
+        bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner)
+    }
+
+    /// Getter of the gas coin exchange pool rate.
+    public entry fun request_get_exchange_rate(
+        self: &BfcSystemState,
+        stable: &Coin<BUSD>
+    ): u64 {
+        let inner_state = load_system_state(self);
+        bfc_system_state_inner::requst_get_exchange_rate<BUSD>(inner_state, stable)
+    }
+
+    public entry fun request_add_gas_coin(
+        self: &mut BfcSystemState,
+        gas_coin: &Coin<BUSD>,
+        rate: u64,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        bfc_system_state_inner::request_add_gas_coin(inner_state, gas_coin, rate)
+    }
+
+    public entry fun request_update_gas_coin(
+        self: &mut BfcSystemState,
+        gas_coin: &Coin<BUSD>,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        bfc_system_state_inner::request_update_gas_coin(inner_state, gas_coin)
+    }
+
+    public entry fun request_remove_gas_coin(
+        self: &mut BfcSystemState,
+        gas_coin: &Coin<BUSD>,
+    ) {
+        let inner_state = load_system_state_mut(self);
+        bfc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
     }
 
     /// Request exchange stable coin to bfc.
@@ -381,6 +419,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::vault_info<StableCoinType>(inner_state)
     }
 
+    public fun total_supply<StableCoinType>(wrapper: &BfcSystemState): u64 {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::get_total_supply<StableCoinType>(inner_state)
+    }
+
     public fun get_bfc_exchange_rate<StableCoinType>(wrapper: &BfcSystemState): u64
     {
         let system_state = load_system_state(wrapper);
@@ -413,6 +456,11 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(self);
         let bfc= coin::from_balance(bfc_balance, _ctx);
         bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
+    }
+
+    public entry fun deposit_to_treasury_pool(self: &mut BfcSystemState, bfc: Coin<BFC>) {
+        let inner_state = load_system_state_mut(self);
+        bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
     public entry fun set_voting_delay(

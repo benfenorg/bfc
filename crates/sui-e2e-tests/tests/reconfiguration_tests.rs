@@ -2784,3 +2784,28 @@ async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::
     assert_eq!(r, 999999999);
     Ok(())
 }
+
+#[sim_test]
+async fn test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("total_supply").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert!(r > 0);
+    Ok(())
+}

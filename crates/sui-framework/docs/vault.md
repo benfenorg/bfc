@@ -205,10 +205,10 @@
 
 </dd>
 <dt>
-<code>bfc_accrued_consume: u64</code>
+<code>coin_market_cap: u64</code>
 </dt>
 <dd>
- bfc accrued consume
+ stable coin market cap
 </dd>
 <dt>
 <code>last_bfc_rebalance_amount: u64</code>
@@ -346,7 +346,7 @@
 
 </dd>
 <dt>
-<code>bfc_accrued_consume: u64</code>
+<code>coin_market_cap: u64</code>
 </dt>
 <dd>
 
@@ -790,7 +790,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         index: _index,
         base_point: _base_point,
         max_counter_times: _max_counter_times,
-        bfc_accrued_consume: 0,
+        coin_market_cap: 0,
         last_bfc_rebalance_amount: 0,
     }
 }
@@ -1701,11 +1701,18 @@ open <code>position_number</code> positions
     <b>let</b> coin_type_out: String;
 
     <b>if</b> (_a2b) {
+        <b>if</b> (_vault.coin_market_cap &gt;= swap_res.amount_in) {
+            _vault.coin_market_cap = _vault.coin_market_cap - swap_res.amount_in;
+        } <b>else</b> {
+            _vault.coin_market_cap = 0;
+        };
+
         balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;BFC&gt;(&<b>mut</b> _vault.coin_b, swap_res.amount_out);
         balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
         coin_type_in = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;());
         coin_type_out = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BFC&gt;());
     } <b>else</b> {
+        _vault.coin_market_cap = _vault.coin_market_cap + swap_res.amount_out;
         balance_a_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>&lt;StableCoinType&gt;(&<b>mut</b> _vault.coin_a, swap_res.amount_out);
         balance_b_ret = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
         coin_type_in = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BFC&gt;());
@@ -2024,7 +2031,7 @@ vault info
         is_pause: _vault.is_pause,
         index: _vault.index,
         base_point: _vault.base_point,
-        bfc_accrued_consume: _vault.bfc_accrued_consume,
+        coin_market_cap: _vault.coin_market_cap,
         last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
     } }
 </code></pre>
@@ -2441,7 +2448,7 @@ State checker
     _treasury_total_bfc_supply: u64,
 ): <a href="">vector</a>&lt;u128&gt; {
     // base point <a href="position.md#0xc8_position">position</a> liquidity
-    <b>let</b> curve_dx_q64 = curve_dx((_vault.bfc_accrued_consume <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
+    <b>let</b> curve_dx_q64 = curve_dx((_vault.coin_market_cap <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
     <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> u64);
     <b>let</b> liquidity = <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>(_vault, _ticks, base_point_amount);
     <b>let</b> liquidities = <a href="_empty">vector::empty</a>&lt;u128&gt;();
@@ -2538,7 +2545,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): u64
 </code></pre>
 
 
@@ -2553,18 +2560,13 @@ State checker
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
     _treasury_total_bfc_supply: u64,
     _ctx: &<b>mut</b> TxContext
-) {
+): u64 {
     <b>let</b> (balance0, balance1, ticks) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
     <b>let</b> shape = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
     <b>if</b> (_vault.state_counter &gt;= _vault.max_counter_times) {
         shape = _vault.state;
         // reset state counter
         _vault.state_counter = 0;
-    };
-    <b>if</b> (_vault.last_bfc_rebalance_amount &gt; <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&balance1)) {
-        _vault.bfc_accrued_consume = _vault.bfc_accrued_consume + _vault.last_bfc_rebalance_amount - <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(
-            &balance1
-        );
     };
     <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(_vault, &ticks, shape, _treasury_total_bfc_supply);
     <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>(
@@ -2576,6 +2578,7 @@ State checker
         liquidities
     );
     _vault.last_bfc_rebalance_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b);
+    _vault.last_bfc_rebalance_amount
 }
 </code></pre>
 

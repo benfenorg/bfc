@@ -1261,6 +1261,14 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
+        let mgg_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("mgg").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
         let bjpy_supply = builder.programmable_move_call(
             BFC_SYSTEM_ADDRESS.into(),
             ident_str!("bjpy").to_owned(),
@@ -1400,6 +1408,7 @@ pub fn generate_genesis_system_object(
             btry_supply,
             bzar_supply,
             bmxn_supply,
+            mgg_supply,
             builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?
         ];
 

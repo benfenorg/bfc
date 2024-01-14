@@ -31,7 +31,7 @@ module bfc_system::bfc_system_tests {
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario_val);
-        treasury::rebalance(&mut t, &clock, test_scenario::ctx(&mut scenario_val));
+        treasury::rebalance(&mut t, 0, &clock, test_scenario::ctx(&mut scenario_val));
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
@@ -54,6 +54,13 @@ module bfc_system::bfc_system_tests {
             ascii::string(b"BUSD"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
                 9, 1, 2, 18446744073709551616, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"MGG"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 184467440737095516160, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
@@ -181,6 +188,7 @@ module bfc_system::bfc_system_tests {
             bfc_system::btry::new_for_test(ctx),
             bfc_system::bzar::new_for_test(ctx),
             bfc_system::bmxn::new_for_test(ctx),
+            bfc_system::mgg::new_for_test(ctx),
             bfc_system_state_inner::bfc_system_parameters(
                 3600 * 4,
                 2000,
@@ -213,6 +221,7 @@ module bfc_system::bfc_system_tests {
         // basepoint = 1000 /  position = 9 / timeinterval=4h
         let total = (
                 50000_000_000_000 * 5 * 6 * 6 + // usd
+                50000_000_000_000 * 5 * 6 * 6 + // mgg
                 50000_000_000_000 * 5 * 6 * 6 + // jpy
                 50000_000_000_000 * 5 * 6 * 6 + // krw
                 50000_000_000_000 * 5 * 6 * 6 + // aud

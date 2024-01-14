@@ -35,7 +35,7 @@ pub enum Verbosity {
 #[derive(Parser)]
 #[command(
     name = "sui-tool",
-    about = "Debugging utilities for sui",
+    about = "Debugging utilities for bfc",
     rename_all = "kebab-case",
     author,
     version
@@ -69,8 +69,8 @@ pub enum ToolCommand {
         /// prints tabular output suitable for processing with unix tools. For
         /// instance, to quickly check that all validators agree on the history of an object:
         /// ```text
-        /// $ sui-tool fetch-object --id 0x260efde76ebccf57f4c5e951157f5c361cde822c \
-        ///      --genesis $HOME/.sui/sui_config/genesis.blob \
+        /// $ bfc-tool fetch-object --id 0x260efde76ebccf57f4c5e951157f5c361cde822c \
+        ///      --genesis $HOME/.bfc/bfc_config/genesis.blob \
         ///      --verbosity concise --concise-no-header
         /// ```
         #[arg(

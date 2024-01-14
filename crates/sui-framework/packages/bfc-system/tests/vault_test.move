@@ -37,7 +37,7 @@ module bfc_system::vault_test {
         let c = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario_val);
-        treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario_val));
+        treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(&mut scenario_val));
 
         let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, type_name::into_string(type_name::get<BUSD>()));
         let (balance0, balance1) = vault::balances<BUSD>(usd_mut_vault);
@@ -54,8 +54,8 @@ module bfc_system::vault_test {
             debug::print(&amount_a);
         };
         print(&amount_b);
-        assert!(amount_b == 300000_000000000, 100);
-        assert!(amount_a == 300000_000000000, 101);
+        assert!(amount_b == 297500000000000, 100);
+        assert!(amount_a == 297500000000000, 101);
         test_scenario::return_shared(t);
         clock::destroy_for_testing(c);
         test_scenario::end(scenario_val);
@@ -80,7 +80,7 @@ module bfc_system::vault_test {
         let c = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario);
-        treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
+        treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(&mut scenario));
         let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, type_name::into_string(type_name::get<BUSD>()));
         if (IS_DEBUG) {
             let (amount_a, amount_b) = vault::get_position_amounts(usd_mut_vault, 5, true);
@@ -114,7 +114,7 @@ module bfc_system::vault_test {
             test_scenario::ctx(&mut scenario)
         );
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
-        treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario));
+        treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(&mut scenario));
 
         test_scenario::return_shared(t);
         clock::destroy_for_testing(c);
@@ -231,7 +231,7 @@ module bfc_system::vault_test {
             clock::increment_for_testing(&mut c, 3600 * 4 * 3 * 1000 + 1000);
 
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            treasury::rebalance(&mut t, &c, test_scenario::ctx(&mut scenario_val));
+            treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(&mut scenario_val));
 
             clock::destroy_for_testing(c);
             test_scenario::return_shared(t);

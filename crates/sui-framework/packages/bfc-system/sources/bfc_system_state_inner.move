@@ -5,13 +5,32 @@ module bfc_system::bfc_system_state_inner {
     use std::type_name;
     use sui::balance;
     use sui::balance::{Balance, Supply};
+    use sui::bfc::BFC;
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
-    use sui::bfc::BFC;
     use sui::tx_context::TxContext;
     use sui::vec_map::{Self, VecMap};
 
+    use bfc_system::bars::BARS;
+    use bfc_system::baud::BAUD;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bcad::BCAD;
+    use bfc_system::beur::BEUR;
+    use bfc_system::bfc_dao::{Self, Dao, Proposal, Vote};
+    use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
+    use bfc_system::bgbp::BGBP;
+    use bfc_system::bidr::BIDR;
+    use bfc_system::binr::BINR;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::bmxn::BMXN;
+    use bfc_system::brub::BRUB;
+    use bfc_system::bsar::BSAR;
+    use bfc_system::btry::BTRY;
+    use bfc_system::busd::BUSD;
+    use bfc_system::bzar::BZAR;
+    use bfc_system::mgg::MGG;
     use bfc_system::exchange_inner;
     use bfc_system::exchange_inner::ExchangePool;
     use bfc_system::bfc_dao::{Self, Dao, Proposal, Vote};
@@ -98,6 +117,7 @@ module bfc_system::bfc_system_state_inner {
         try_supply: Supply<BTRY>,
         zar_supply: Supply<BZAR>,
         mxn_supply: Supply<BMXN>,
+        mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
@@ -122,6 +142,7 @@ module bfc_system::bfc_system_state_inner {
             try_supply,
             zar_supply,
             mxn_supply,
+            mgg_supply,
             parameters,
             ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
@@ -137,8 +158,8 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
-    public (friend) fun create_stake_manager_key( payment: Coin<BFC>,
-                                                  ctx: &mut TxContext) {
+    public(friend) fun create_stake_manager_key(payment: Coin<BFC>,
+                                                ctx: &mut TxContext) {
         bfc_dao::create_stake_manager_key(payment, ctx);
     }
 
@@ -195,10 +216,10 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(friend) fun get_bfc_amount(
-        self:&BfcSystemStateInner,
-    ):u64 {
-    exchange_inner::get_bfc_amount(&self.exchange_pool)
-   }
+        self: &BfcSystemStateInner,
+    ): u64 {
+        exchange_inner::get_bfc_amount(&self.exchange_pool)
+    }
 
     fun init_vault_with_positions<StableCoinType>(
         _treasury: &mut Treasury,
@@ -241,6 +262,7 @@ module bfc_system::bfc_system_state_inner {
         try_supply: Supply<BTRY>,
         zar_supply: Supply<BZAR>,
         mxn_supply: Supply<BMXN>,
+        mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>, VecMap<ascii::String, u64>) {
@@ -262,6 +284,7 @@ module bfc_system::bfc_system_state_inner {
         init_vault_with_positions<BTRY>(&mut t, ascii::string(b"BTRY"), try_supply, parameters, ctx);
         init_vault_with_positions<BZAR>(&mut t, ascii::string(b"BZAR"), zar_supply, parameters, ctx);
         init_vault_with_positions<BMXN>(&mut t, ascii::string(b"BMXN"), mxn_supply, parameters, ctx);
+        init_vault_with_positions<MGG>(&mut t, ascii::string(b"MGG"), mgg_supply, parameters, ctx);
 
         let rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
@@ -378,6 +401,10 @@ module bfc_system::bfc_system_state_inner {
         treasury::deposit(&mut self.treasury, coin_bfc);
     }
 
+    public(friend) fun deposit_to_treasury_pool(self: &mut BfcSystemStateInner, coin_bfc: Coin<BFC>) {
+        treasury_pool::deposit_to_treasury_pool(&mut self.treasury_pool, coin_bfc);
+    }
+
     public(friend) fun rebalance(
         self: &mut BfcSystemStateInner,
         clock: &Clock,
@@ -392,7 +419,8 @@ module bfc_system::bfc_system_state_inner {
                 balance::destroy_zero(withdraw_balance);
             };
         };
-        treasury::rebalance(&mut self.treasury, clock, ctx);
+        let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
+        treasury::rebalance(&mut self.treasury, pool_balance, clock, ctx);
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
@@ -404,19 +432,6 @@ module bfc_system::bfc_system_state_inner {
         treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx)
     }
 
-    // public(friend) fun update_stable_rate( self: &mut BfcSystemStateInner) {
-    //     //busd
-    //     let rate =  get_stablecoin_exchange_rate<BUSD>(self);
-    //     if(rate > DEFAULT_STABLE_RATE) {
-    //         let key = type_name::into_string(type_name::get<BUSD>());
-    //         if (vec_map::contains(&self.stable_rate, &key)) {
-    //             vec_map::remove(&mut self.stable_rate, &key);
-    //         };
-    //         vec_map::insert(&mut self.stable_rate, key, rate);
-    //     };
-    //     //other stable rate update
-    // }
-
     public(friend) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
         self.stable_rate
     }
@@ -424,6 +439,10 @@ module bfc_system::bfc_system_state_inner {
     /// X-vault
     public fun vault_info<StableCoinType>(self: &BfcSystemStateInner): VaultInfo {
         treasury::vault_info<StableCoinType>(&self.treasury)
+    }
+
+    public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInner): u64 {
+        treasury::get_total_supply<StableCoinType>(&self.treasury)
     }
 
     public(friend) fun bfc_system_parameters(
@@ -462,7 +481,7 @@ module bfc_system::bfc_system_state_inner {
         actionName: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext) {
-        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName,clock, ctx);
+        bfc_dao::create_bfcdao_action(&mut self.dao, payment, actionName, clock, ctx);
     }
 
     public(friend) fun propose(
@@ -581,14 +600,14 @@ module bfc_system::bfc_system_state_inner {
 
     public fun withdraw_voting(system_state: &mut BfcSystemStateInner,
                                voting_bfc: VotingBfc,
-                                clock: & Clock,
+                               clock: & Clock,
                                ctx: &mut TxContext) {
         bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, clock, ctx);
     }
 
     public(friend) fun create_voting_bfc(system_state: &mut BfcSystemStateInner,
                                          coin: Coin<BFC>,
-                                        clock: & Clock,
+                                         clock: & Clock,
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }

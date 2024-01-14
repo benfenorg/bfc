@@ -93,6 +93,19 @@ impl TreasuryParameters {
             }
         });
 
+        // mg-gold
+        parameters.push(Entry {
+            key: "MGG".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 4739054358918237184,
+            }
+        });
+
         // jpy
         parameters.push(Entry {
             key: "BJPY".to_string(),
@@ -102,7 +115,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 1532301645158183424,
+                initialize_price: 1554350283925300736,
             }
         });
 
@@ -115,7 +128,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 508541639258687680,
+                initialize_price: 511876374263476416,
             }
         });
 
@@ -127,7 +140,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 14986205729530720256,
+                initialize_price: 15211574852928219136,
             }
         });
 
@@ -139,7 +152,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 958520939096550912,
+                initialize_price: 639013959397700608,
             }
         });
 
@@ -151,7 +164,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 8249634742471189504,
+                initialize_price: 8453360104325207040,
             }
         });
 
@@ -163,7 +176,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 15868489263994050560,
+                initialize_price: 16081498650931548160,
             }
         });
 
@@ -175,7 +188,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 19170418781931020288,
+                initialize_price: 19347108404436885504,
             }
         });
 
@@ -187,7 +200,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 20624086856177975296,
+                initialize_price: 20788424807800897536,
             }
         });
 
@@ -199,7 +212,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 10000_000_000_000,
-                initialize_price: 147573952589676416,
+                initialize_price: 148722405339145184,
             }
         });
 
@@ -259,7 +272,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 4206504853187358208,
+                initialize_price: 4286635955353647104,
             }
         });
 
@@ -271,7 +284,7 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 4442564268686996992,
+                initialize_price: 4480698567002177536,
             }
         });
 
@@ -398,6 +411,15 @@ impl Genesis {
     }
 
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, anyhow::Error> {
+        let path = path.as_ref();
+        trace!("Reading Genesis from {}", path.display());
+        let bytes = fs::read(path)
+            .with_context(|| format!("Unable to load Genesis from {}", path.display()))?;
+        bcs::from_bytes(&bytes)
+            .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
+    }
+
+    pub fn load_gensis<P: AsRef<Path>>(&self, path: P) -> Result<Self, anyhow::Error> {
         let path = path.as_ref();
         trace!("Reading Genesis from {}", path.display());
         let bytes = fs::read(path)
@@ -663,12 +685,12 @@ impl GenesisCeremonyParameters {
         //24 * 60 * 60 * 1000
 
         //10 mins
-        1000*60*10
+        1000*60*5
     }
 
     fn default_initial_stake_subsidy_distribution_amount() -> u64 {
-        // 1M Sui
-        1_000_00 * sui_types::gas_coin::MIST_PER_SUI
+        // 10000 Sui
+        10000 * sui_types::gas_coin::MIST_PER_SUI
     }
 
     fn default_stake_subsidy_period_length() -> u64 {

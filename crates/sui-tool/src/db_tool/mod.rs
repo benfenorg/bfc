@@ -397,7 +397,7 @@ pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
     // aws s3 cp s3://myBucket/dir /opt/bfc/db/authorities_db/ --recursive —exclude “*” —include “epoch_10*”
     // Mark downloaded snapshot as live: mv  /opt/bfc/db/authorities_db/epoch_10  /opt/bfc/db/authorities_db/live
     // Reset the downloaded db to execute from genesis with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live reset-db
-    // Start the sui full node: cargo run --release --bin sui-node -- --config-path ~/db_checkpoints/fullnode.yaml
+    // Start the bfc full node: cargo run --release --bin bfc-node -- --config-path ~/db_checkpoints/fullnode.yaml
     // A sample fullnode.yaml config would be:
     // ---
     // db-path:  /opt/bfc/db/authorities_db
@@ -448,7 +448,7 @@ pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
 
 /// Force sets the highest executed checkpoint.
 /// NOTE: Does not force re-execution of transactions.
-/// Run with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live rewind-checkpoint-execution --epoch 3 --checkpoint-sequence-number 300000
+/// Run with: cargo run --package bfc-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live rewind-checkpoint-execution --epoch 3 --checkpoint-sequence-number 300000
 pub fn rewind_checkpoint_execution(
     path: &Path,
     epoch: EpochId,

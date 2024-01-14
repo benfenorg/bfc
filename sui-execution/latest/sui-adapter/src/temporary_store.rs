@@ -10,6 +10,7 @@ use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
+use tracing::info;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::committee::EpochId;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
@@ -455,6 +456,9 @@ impl<'backing> TemporaryStore<'backing> {
         {
             for (id, v1) in &loaded_child_objects {
                 if let Some(v2) = self.loaded_child_objects.get(id) {
+                    if v1!= v2 {
+                        info!("id is {:?}",id);
+                    }
                     assert_eq!(v1, v2);
                 }
             }

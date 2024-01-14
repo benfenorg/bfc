@@ -313,7 +313,7 @@ module sui_system::validator {
     }
 
     /// Deactivate this validator's staking pool
-    public(friend) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
+    public(friend) fun deactivate<STABLE>(self: &mut Validator, deactivation_epoch: u64) {
         staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch);
     }
 
@@ -323,7 +323,7 @@ module sui_system::validator {
         stable_pool::deactivate_stable_pool(pool, deactivation_epoch);
     }
 
-    public(friend) fun activate(self: &mut Validator, activation_epoch: u64) {
+    public(friend) fun activate<STABLE>(self: &mut Validator, activation_epoch: u64) {
         staking_pool::activate_staking_pool(&mut self.staking_pool, activation_epoch);
     }
 
@@ -548,6 +548,13 @@ module sui_system::validator {
         staking_pool::deposit_rewards(&mut self.staking_pool, reward);
     }
 
+    public(friend) fun deposit_stable_stake_rewards<STABLE>(
+        self: &mut Validator,
+        reward: Balance<STABLE>,
+    ) {
+        self.next_epoch_stable_stake = self.next_epoch_stable_stake + balance::value(&reward);
+        let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
+        stable_pool::deposit_rewards<STABLE>(pool, reward);
     public(friend) fun deposit_stable_stake_rewards<STABLE>(
         self: &mut Validator,
         reward: Balance<STABLE>,

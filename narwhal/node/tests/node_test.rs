@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::env;
 use config::Parameters;
 use fastcrypto::traits::KeyPair;
 use mysten_metrics::RegistryService;
@@ -10,12 +11,14 @@ use narwhal_node::worker_node::WorkerNodes;
 use network::client::NetworkClient;
 use prometheus::Registry;
 use std::num::NonZeroUsize;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 use storage::NodeStorage;
 use test_utils::{latest_protocol_version, temp_dir, CommitteeFixture};
 use tokio::sync::mpsc::channel;
 use tokio::time::sleep;
+use tracing::log::info;
 use worker::TrivialTransactionValidator;
 
 #[tokio::test]
@@ -183,4 +186,26 @@ async fn primary_node_restart() {
     let result = response.text().await.unwrap();
 
     assert_ne!(result, "");
+}
+
+
+#[ignore]
+#[tokio::test]
+async fn read_from_store() {
+    telemetry_subscribers::init_for_testing();
+    //let path = PathBuf::from(r"/data/11");
+    let current_dir = env::current_dir().expect("Failed to get current directory");
+    info!("the current dir is {}", current_dir.display());
+    let path = Path::new("tests/data/11");
+    let path2 = current_dir.join(path);
+    let nodeStore =  NodeStorage::reopen(path2, None);
+
+    //nodeStore.
+    let last = nodeStore.consensus_store.get_latest_sub_dag_index();
+    info!("the last proposed batch index is {}", last);
+
+    let summary = nodeStore
+        .batch_store.table_summary();
+    info!("the summary is {},", summary.unwrap().num_keys);
+
 }

@@ -567,7 +567,7 @@ mod checked {
 
     pub fn construct_advance_epoch_pt(
         params: &AdvanceEpochParams,
-        rate_map: &VecMap<String, u64>,
+        rate_map: &VecMap<String, u64>
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create storage and computation rewards.

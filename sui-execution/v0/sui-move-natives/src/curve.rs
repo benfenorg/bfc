@@ -48,7 +48,8 @@ pub fn curve_dx(
 
     //println!("{:?}", x);
 
-    let value = 5.0 * MATH_E.powf(-10.0f64 * x) * (Q64 as f64);
+    //let value = 5.0 * MATH_E.powf(-10.0f64 * x) * (Q64 as f64);
+    let value = (0.6 * x + 1.0f64 / (x + 0.16) - 1.3) * (Q64 as f64);
     Ok(NativeResult::ok(
         cost,
         smallvec![Value::u128(value as u128)]

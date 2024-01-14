@@ -558,7 +558,7 @@ async fn prepare_new_signer_and_coins(
     let sender = SuiAddress::from(&primary_keypair.public());
     let (coin, balance) = get_coin_with_max_balance(client, sender).await;
     // The balance needs to cover `pay_amount` plus
-    // 1. gas fee for pay_sui from the primary address to the burner address
+    // 1. gas fee for pay_bfc from the primary address to the burner address
     // 2. gas fee for splitting the primary coin into `num_coins`
     let required_balance = pay_amount + gas_fee_for_split + gas_fee_for_pay_sui;
     if required_balance > balance {
@@ -719,7 +719,7 @@ async fn pay_sui(
         .transaction_builder()
         .pay(sender, input_coins, recipients, amounts, None, gas_budget)
         .await
-        .expect("Failed to construct pay sui transaction");
+        .expect("Failed to construct pay bfc transaction");
     sign_and_execute(
         client,
         keypair,
