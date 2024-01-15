@@ -114,6 +114,7 @@
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/bzar.md#0xc8_bzar">0xc8::bzar</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/mgg.md#0xc8_mgg">0xc8::mgg</a>;
 </code></pre>
 
 
@@ -823,7 +824,7 @@ Called by <code><a href="sui_system.md#0x3_sui_system">sui_system</a></code> to 
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BSAR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BTRY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BZAR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
-
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;MGG&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
 
     // Add <b>to</b> the inactive tables.
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(
@@ -2357,6 +2358,21 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BJPY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BARS&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BEUR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BKRW&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BAUD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BBRL&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BCAD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BGBP&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BIDR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BMXN&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BINR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BRUB&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BSAR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BTRY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BZAR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;MGG&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(
         &<b>mut</b> self.inactive_validators,
         validator_pool_id,

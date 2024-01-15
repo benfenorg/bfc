@@ -139,6 +139,7 @@
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/bzar.md#0xc8_bzar">0xc8::bzar</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/mgg.md#0xc8_mgg">0xc8::mgg</a>;
 </code></pre>
 
 
@@ -1524,6 +1525,7 @@ Process pending stakes and withdraws, called at the end of the epoch.
     <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>&lt;BTRY&gt;(self, ctx);
     <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>&lt;BZAR&gt;(self, ctx);
     <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>&lt;BJPY&gt;(self, ctx);
+    <a href="validator.md#0x3_validator_process_pending_stable_stakes_and_withdraws">process_pending_stable_stakes_and_withdraws</a>&lt;MGG&gt;(self, ctx);
 }
 </code></pre>
 
@@ -2306,6 +2308,7 @@ Return the total amount staked with this validator
     total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BTRY&gt;(self, stable_rate);
     total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BZAR&gt;(self, stable_rate);
     total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BJPY&gt;(self, stable_rate);
+    total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;MGG&gt;(self, stable_rate);
     total_stake
 }
 </code></pre>
@@ -2545,6 +2548,7 @@ Set the voting power of this validator, called only from validator_set.
     <a href="_insert">vector::insert</a>(&<b>mut</b> vec_rate, <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">stable_pool::pool_token_exchange_rate_at_epoch</a>&lt;BSAR&gt;(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>(&self.stable_pools), epoch), 13);
     <a href="_insert">vector::insert</a>(&<b>mut</b> vec_rate, <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">stable_pool::pool_token_exchange_rate_at_epoch</a>&lt;BTRY&gt;(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>(&self.stable_pools), epoch), 14);
     <a href="_insert">vector::insert</a>(&<b>mut</b> vec_rate, <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">stable_pool::pool_token_exchange_rate_at_epoch</a>&lt;BZAR&gt;(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>(&self.stable_pools), epoch), 15);
+    <a href="_insert">vector::insert</a>(&<b>mut</b> vec_rate, <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">stable_pool::pool_token_exchange_rate_at_epoch</a>&lt;MGG&gt;(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>(&self.stable_pools), epoch), 16);
     vec_rate
 }
 </code></pre>
@@ -2634,6 +2638,7 @@ Set the voting power of this validator, called only from validator_set.
     <a href="_insert">vector::insert</a>(&<b>mut</b> id_vec ,<a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;BSAR&gt;(self), 13);
     <a href="_insert">vector::insert</a>(&<b>mut</b> id_vec ,<a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;BTRY&gt;(self), 14);
     <a href="_insert">vector::insert</a>(&<b>mut</b> id_vec ,<a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;BZAR&gt;(self), 15);
+    <a href="_insert">vector::insert</a>(&<b>mut</b> id_vec ,<a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;MGG&gt;(self), 16);
     id_vec
 }
 </code></pre>
@@ -3517,6 +3522,8 @@ Create a new validator from the given <code><a href="validator.md#0x3_validator_
     <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_add">bag::add</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;BTRY&gt;&gt;(&<b>mut</b> stable_pools, pool_key,<a href="stable_pool.md#0x3_stable_pool_new">stable_pool::new</a>&lt;BTRY&gt;(ctx));
     pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BZAR&gt;());
     <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_add">bag::add</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;BZAR&gt;&gt;(&<b>mut</b> stable_pools, pool_key,<a href="stable_pool.md#0x3_stable_pool_new">stable_pool::new</a>&lt;BZAR&gt;(ctx));
+    pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;MGG&gt;());
+    <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_add">bag::add</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;MGG&gt;&gt;(&<b>mut</b> stable_pools, pool_key,<a href="stable_pool.md#0x3_stable_pool_new">stable_pool::new</a>&lt;MGG&gt;(ctx));
 
 
     <b>let</b> operation_cap_id = <a href="validator_cap.md#0x3_validator_cap_new_unverified_validator_operation_cap_and_transfer">validator_cap::new_unverified_validator_operation_cap_and_transfer</a>(sui_address, ctx);
@@ -3577,6 +3584,7 @@ Create a new validator from the given <code><a href="validator.md#0x3_validator_
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BSAR&gt;()), 1000000000);
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BTRY&gt;()), 1000000000);
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BZAR&gt;()), 1000000000);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> rate_map, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;MGG&gt;()), 1000000000);
     rate_map
 }
 </code></pre>

@@ -317,8 +317,6 @@
 ) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
-    //exchange all stable <b>to</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>.
-    // bfc_system_state_inner::request_exchange_all(inner_state, ctx);
     // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
 
@@ -583,7 +581,6 @@ Request exchange stable coin to bfc.
 
 ## Function `request_withdraw_stable`
 
-Request exchange all stable coin to bfc.
 Request withdraw stable coin.
 
 

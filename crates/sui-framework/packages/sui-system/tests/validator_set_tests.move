@@ -13,8 +13,23 @@ module sui_system::validator_set_tests {
     use sui::vec_map;
     use std::ascii;
     use std::option;
+    use bfc_system::bars::BARS;
+    use bfc_system::baud::BAUD;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bcad::BCAD;
+    use bfc_system::beur::BEUR;
+    use bfc_system::bgbp::BGBP;
+    use bfc_system::bidr::BIDR;
+    use bfc_system::binr::BINR;
     use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::bmxn::BMXN;
+    use bfc_system::brub::BRUB;
+    use bfc_system::bsar::BSAR;
+    use bfc_system::btry::BTRY;
     use bfc_system::busd::BUSD;
+    use bfc_system::bzar::BZAR;
+    use bfc_system::mgg::MGG;
     use sui::test_utils::{Self, assert_eq};
     use sui::transfer;
 
@@ -170,7 +185,7 @@ module sui_system::validator_set_tests {
 
         let scenario_val = test_scenario::begin(@0x1);
         let scenario = &mut scenario_val;
-        let staked = {
+        let  (staked1, staked2, staked3, staked4, staked5, staked6, staked7, staked8, staked9, staked10, staked11, staked12, staked13, staked14, staked15, staked16, staked17) = {
             let ctx1 = test_scenario::ctx(scenario);
             let stake = validator_set::request_add_stake(
                 &mut validator_set,
@@ -183,22 +198,87 @@ module sui_system::validator_set_tests {
             // should not change total stake.
             assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 1);
             //add stable stake
+            let new_stake1 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked1 = validator_set::request_add_stable_stake<BAUD>(&mut validator_set, @0x1, new_stake1, ctx1);
+            let new_stake2 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked2 =validator_set::request_add_stable_stake<BARS>(&mut validator_set, @0x1, new_stake2, ctx1);
+            let new_stake3 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked3 =validator_set::request_add_stable_stake<BBRL>(&mut validator_set, @0x1, new_stake3, ctx1);
+            let new_stake4 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked4 =validator_set::request_add_stable_stake<BAUD>(&mut validator_set, @0x1, new_stake4, ctx1);
             let new_stake = coin::into_balance(coin::mint_for_testing(300 * MIST_PER_SUI, ctx1));
-            validator_set::request_add_stable_stake<BJPY>(&mut validator_set, @0x1, new_stake, ctx1)
+            let staked5 = validator_set::request_add_stable_stake<BJPY>(&mut validator_set, @0x1, new_stake, ctx1);
+            let new_stake6 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked6 =validator_set::request_add_stable_stake<BCAD>(&mut validator_set, @0x1, new_stake6, ctx1);
+            let new_stake7 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked7 =validator_set::request_add_stable_stake<BEUR>(&mut validator_set, @0x1, new_stake7, ctx1);
+            let new_stake8 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked8 =validator_set::request_add_stable_stake<BGBP>(&mut validator_set, @0x1, new_stake8, ctx1);
+            let new_stake9 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked9 =validator_set::request_add_stable_stake<BINR>(&mut validator_set, @0x1, new_stake9, ctx1);
+            let new_stake10 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked10 =validator_set::request_add_stable_stake<BIDR>(&mut validator_set, @0x1, new_stake10, ctx1);
+            let new_stake11 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked11 =validator_set::request_add_stable_stake<BKRW>(&mut validator_set, @0x1, new_stake11, ctx1);
+            let new_stake12 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked12 =validator_set::request_add_stable_stake<BMXN>(&mut validator_set, @0x1, new_stake12, ctx1);
+            let new_stake13 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked13 =validator_set::request_add_stable_stake<BRUB>(&mut validator_set, @0x1, new_stake13, ctx1);
+            let new_stake14 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked14 =validator_set::request_add_stable_stake<BTRY>(&mut validator_set, @0x1, new_stake14, ctx1);
+            let new_stake15 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked15 =validator_set::request_add_stable_stake<BZAR>(&mut validator_set, @0x1, new_stake15, ctx1);
+            let new_stake16 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked16 =validator_set::request_add_stable_stake<MGG>(&mut validator_set, @0x1, new_stake16, ctx1);
+            let new_stake17 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
+            let staked17 =validator_set::request_add_stable_stake<BSAR>(&mut validator_set, @0x1, new_stake17, ctx1);
+            (staked1, staked2, staked3, staked4, staked5, staked6, staked7, staked8, staked9, staked10, staked11, staked12, staked13, staked14, staked15, staked16, staked17)
         };
 
 
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         {
             let ctx1 = test_scenario::ctx(scenario);
-            let withdraw = validator_set::request_withdraw_stable_stake<BJPY>(&mut validator_set, staked, ctx1);
-            transfer::public_transfer(coin::from_balance(withdraw, ctx1), @0x1);
+            let withdraw1 = validator_set::request_withdraw_stable_stake<BAUD>(&mut validator_set, staked1, ctx1);
+            let withdraw2 = validator_set::request_withdraw_stable_stake<BARS>(&mut validator_set, staked2, ctx1);
+            let withdraw3 = validator_set::request_withdraw_stable_stake<BBRL>(&mut validator_set, staked3, ctx1);
+            let withdraw4 = validator_set::request_withdraw_stable_stake<BAUD>(&mut validator_set, staked4, ctx1);
+            let withdraw5 = validator_set::request_withdraw_stable_stake<BJPY>(&mut validator_set, staked5, ctx1);
+            let withdraw6 = validator_set::request_withdraw_stable_stake<BCAD>(&mut validator_set, staked6, ctx1);
+            let withdraw7 = validator_set::request_withdraw_stable_stake<BEUR>(&mut validator_set, staked7, ctx1);
+            let withdraw8 = validator_set::request_withdraw_stable_stake<BGBP>(&mut validator_set, staked8, ctx1);
+            let withdraw9 = validator_set::request_withdraw_stable_stake<BINR>(&mut validator_set, staked9, ctx1);
+            let withdraw10 = validator_set::request_withdraw_stable_stake<BIDR>(&mut validator_set, staked10, ctx1);
+            let withdraw11 = validator_set::request_withdraw_stable_stake<BKRW>(&mut validator_set, staked11, ctx1);
+            let withdraw12 = validator_set::request_withdraw_stable_stake<BMXN>(&mut validator_set, staked12, ctx1);
+            let withdraw13 = validator_set::request_withdraw_stable_stake<BRUB>(&mut validator_set, staked13, ctx1);
+            let withdraw14 = validator_set::request_withdraw_stable_stake<BTRY>(&mut validator_set, staked14, ctx1);
+            let withdraw15 = validator_set::request_withdraw_stable_stake<BZAR>(&mut validator_set, staked15, ctx1);
+            let withdraw16 = validator_set::request_withdraw_stable_stake<MGG>(&mut validator_set, staked16, ctx1);
+            let withdraw17 = validator_set::request_withdraw_stable_stake<BSAR>(&mut validator_set, staked17, ctx1);
+            transfer::public_transfer(coin::from_balance(withdraw1, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw2, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw3, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw4, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw5, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw6, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw7, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw8, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw9, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw10, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw11, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw12, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw13, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw14, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw15, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw16, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(withdraw17, ctx1), @0x1);
         };
 
 
         // Total stake for these should be the stable stake + init stake +
         // the 500 staked with validator 1 in addition to the starting stake.(300 + 100 + 500)
-        assert!(validator_set::total_stake(&validator_set) == 900 * MIST_PER_SUI, 2);
+        assert!(validator_set::total_stake(&validator_set) == 8900 * MIST_PER_SUI, 2);
 
         test_scenario::next_tx(scenario, @0x1);
 

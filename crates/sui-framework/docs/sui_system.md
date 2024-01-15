@@ -126,6 +126,7 @@ the SuiSystemStateInner version, or vice versa.
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="../../../.././build/BfcSystem/docs/bzar.md#0xc8_bzar">0xc8::bzar</a>;
+<b>use</b> <a href="../../../.././build/BfcSystem/docs/mgg.md#0xc8_mgg">0xc8::mgg</a>;
 </code></pre>
 
 
@@ -1543,7 +1544,7 @@ Getter returning addresses of the currently active validators.
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
     // get stable exchange rate from <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> system
-    <b>assert</b>!(<a href="_length">vector::length</a>(&rate_vec) == 16, <a href="sui_system.md#0x3_sui_system_EWrongStableRateLength">EWrongStableRateLength</a>);
+    <b>assert</b>!(<a href="_length">vector::length</a>(&rate_vec) == 17, <a href="sui_system.md#0x3_sui_system_EWrongStableRateLength">EWrongStableRateLength</a>);
     <b>let</b> stable_rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BUSD&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,0));
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BARS&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,1));
@@ -1561,6 +1562,7 @@ Getter returning addresses of the currently active validators.
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BSAR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,13));
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BTRY&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,14));
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;BZAR&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,15));
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> stable_rate, <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;MGG&gt;()), *<a href="_borrow">vector::borrow</a>&lt;u64&gt;(&rate_vec,16));
 
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     // Validator will make a special system call <b>with</b> sender set <b>as</b> 0x0.
