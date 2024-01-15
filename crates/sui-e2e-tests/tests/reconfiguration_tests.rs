@@ -2493,7 +2493,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 *50;
+    let amount  = 1_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
