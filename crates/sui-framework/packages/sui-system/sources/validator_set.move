@@ -632,7 +632,7 @@ module sui_system::validator_set {
         let validator = get_validator_ref(&self.active_validators, validator_address);
         validator::total_stake_amount(validator)
     }
-    public fun validator_total_stake_amount_with_stable<STABLE>(
+    public fun validator_total_stake_amount_with_stable(
         self: &ValidatorSet,
         validator_address: address,
         stable_rate: VecMap<ascii::String, u64>): u64 {
@@ -1014,7 +1014,7 @@ module sui_system::validator_set {
     ) {
         while (!table_vec::is_empty(&self.pending_active_validators)) {
             let validator = table_vec::pop_back(&mut self.pending_active_validators);
-            validator::activate<BUSD>(&mut validator, new_epoch);
+            validator::activate(&mut validator, new_epoch);
             event::emit(
                 ValidatorJoinEvent {
                     epoch: new_epoch,
@@ -1323,7 +1323,7 @@ module sui_system::validator_set {
                     pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
                     storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
                     pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
-                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch<BUSD>(v, new_epoch),
+                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
                     tallying_rule_reporters,
                     tallying_rule_global_score,
                 }

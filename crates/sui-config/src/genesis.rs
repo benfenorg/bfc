@@ -428,15 +428,6 @@ impl Genesis {
             .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
     }
 
-    pub fn load_gensis<P: AsRef<Path>>(&self, path: P) -> Result<Self, anyhow::Error> {
-        let path = path.as_ref();
-        trace!("Reading Genesis from {}", path.display());
-        let bytes = fs::read(path)
-            .with_context(|| format!("Unable to load Genesis from {}", path.display()))?;
-        bcs::from_bytes(&bytes)
-            .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
-    }
-
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), anyhow::Error> {
         let path = path.as_ref();
         trace!("Writing Genesis to {}", path.display());

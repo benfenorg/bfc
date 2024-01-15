@@ -193,42 +193,9 @@ module bfc_system::bfc_system {
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
-        bfc_system_state_inner::get_stablecoin_exchange_rate<BUSD>(inner)
+        bfc_system_state_inner::get_rate_map(inner)
     }
 
-    /// Getter of the gas coin exchange pool rate.
-    public entry fun request_get_exchange_rate(
-        self: &BfcSystemState,
-        stable: &Coin<BUSD>
-    ): u64 {
-        let inner_state = load_system_state(self);
-        bfc_system_state_inner::requst_get_exchange_rate<BUSD>(inner_state, stable)
-    }
-
-    public entry fun request_add_gas_coin(
-        self: &mut BfcSystemState,
-        gas_coin: &Coin<BUSD>,
-        rate: u64,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_add_gas_coin(inner_state, gas_coin, rate)
-    }
-
-    public entry fun request_update_gas_coin(
-        self: &mut BfcSystemState,
-        gas_coin: &Coin<BUSD>,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_update_gas_coin(inner_state, gas_coin)
-    }
-
-    public entry fun request_remove_gas_coin(
-        self: &mut BfcSystemState,
-        gas_coin: &Coin<BUSD>,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_remove_gas_coin(inner_state, gas_coin)
-    }
 
     /// Request exchange stable coin to bfc.
     public entry fun request_exchange_stable(
@@ -549,24 +516,5 @@ module bfc_system::bfc_system {
     ) {
         bfc_dao::add_admin(new_admin, ctx);
         //bfc::new(new_admin, ctx);
-    }
-
-    #[test_only]
-    public(friend) fun one_coin_rebalance_test<StableCoinType>(
-        self: &mut BfcSystemState,
-        _update: bool,
-        _bfc_balance: Balance<BFC>,
-        _total_bfc_supply: u64,
-        _ctx: &mut TxContext
-    ): Balance<BFC> {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::one_coin_rebalance_test<StableCoinType>(
-            inner_state,
-            _update,
-            &mut _bfc_balance,
-            _total_bfc_supply,
-            _ctx
-        );
-        _bfc_balance
     }
 }

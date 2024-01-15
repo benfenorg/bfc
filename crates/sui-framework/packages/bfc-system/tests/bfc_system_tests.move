@@ -2,9 +2,6 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
-    use std::debug;
-    use std::type_name;
-    use bfc_system::busd::BUSD;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
@@ -283,50 +280,5 @@ module bfc_system::bfc_system_tests {
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
-    }
-
-    #[test]
-    fun test_inner_swap_stablecoin_to_bfc() {
-        let bfc_addr = @0x0;
-        let scenario_val = test_scenario::begin(bfc_addr);
-        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
-        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
-
-        let scenario = &mut scenario_val;
-        let ctx = test_scenario::ctx(scenario);
-        create_sui_system_state_for_testing(ctx);
-        test_scenario::next_tx(scenario, bfc_addr);
-        let system_state = test_scenario::take_shared<BfcSystemState>(scenario);
-        let amount = bfc_system::next_epoch_bfc_required(&system_state);
-        let bfc = balance::create_for_testing<BFC>(amount);
-        bfc_system::deposit_to_treasury(
-            &mut system_state,
-            coin::from_balance(bfc, test_scenario::ctx(scenario)),
-        );
-
-        let deposit_bfc_balance = balance::create_for_testing<BFC>(50000_000_000_000 * 5 * 6 * 6);
-        let remain_bfc_balance = bfc_system::one_coin_rebalance_test<BUSD>(
-            &mut system_state,
-            true,
-            deposit_bfc_balance,
-            500000000_000_000_000,
-            test_scenario::ctx(scenario)
-        );
-
-        let bfc_balance = bfc_system::inner_stablecoin_to_bfc(
-            &mut system_state,
-            balance::create_for_testing<BUSD>(1000_000_000_000),
-            1000_000_000_000,
-            test_scenario::ctx(scenario)
-        );
-
-        let key = type_name::into_string(type_name::get<BUSD>());
-        assert!(balance::value(&bfc_balance) > 0, 10086);
-
-        balance::destroy_for_testing(bfc_balance);
-        balance::destroy_for_testing(remain_bfc_balance);
-        test_scenario::return_shared(system_state);
-        clock::destroy_for_testing(clock);
-        test_scenario::end(scenario_val);
     }
 }

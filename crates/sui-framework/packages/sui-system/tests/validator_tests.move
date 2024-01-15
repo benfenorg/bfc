@@ -11,7 +11,6 @@ module sui_system::validator_tests {
     use sui::tx_context::TxContext;
     use std::option;
     use std::ascii;
-    use std::type_name;
     use sui::coin::{Self, Coin};
     use sui::balance;
     use sui_system::staking_pool::{Self, StakedBfc};
@@ -20,7 +19,6 @@ module sui_system::validator_tests {
     use sui::test_utils;
     use sui::bag;
     use sui::transfer;
-    use sui::vec_map;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
 
@@ -68,7 +66,7 @@ module sui_system::validator_tests {
             ctx
         );
 
-        validator::activate<BUSD>(&mut validator, 0);
+        validator::activate(&mut validator, 0);
 
         validator
     }

@@ -33,31 +33,13 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::mgg::MGG;
     use bfc_system::exchange_inner;
     use bfc_system::exchange_inner::ExchangePool;
-    use bfc_system::bfc_dao::{Self, Dao, Proposal, Vote};
-    use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
-    use bfc_system::treasury::{Self, Treasury, get_vault_key};
+    use bfc_system::treasury::{Self, Treasury};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
     use bfc_system::voting_pool::VotingBfc;
 
-    use bfc_system::busd::BUSD;
-    use bfc_system::bjpy::BJPY;
-    use bfc_system::bkrw::BKRW;
-    use bfc_system::baud::BAUD;
-    use bfc_system::bars::BARS;
-    use bfc_system::bbrl::BBRL;
-    use bfc_system::bcad::BCAD;
-    use bfc_system::beur::BEUR;
-    use bfc_system::bgbp::BGBP;
-    use bfc_system::bidr::BIDR;
-    use bfc_system::binr::BINR;
-    use bfc_system::brub::BRUB;
-    use bfc_system::bsar::BSAR;
-    use bfc_system::btry::BTRY;
-    use bfc_system::bzar::BZAR;
-    use bfc_system::bmxn::BMXN;
 
     friend bfc_system::bfc_system;
     #[test_only]
@@ -610,22 +592,5 @@ module bfc_system::bfc_system_state_inner {
                                          clock: & Clock,
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
-    }
-
-    #[test_only]
-    public(friend) fun one_coin_rebalance_test<StableCoinType>(
-        self: &mut BfcSystemStateInner,
-        _update: bool,
-        _bfc_balance: &mut Balance<BFC>,
-        _total_bfc_supply: u64,
-        _ctx: &mut TxContext
-    ) {
-        treasury::one_coin_rebalance_test<StableCoinType>(
-            &mut self.treasury,
-            _update,
-            _bfc_balance,
-            _total_bfc_supply,
-            _ctx
-        )
     }
 }

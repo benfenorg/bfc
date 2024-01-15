@@ -39,15 +39,15 @@ Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,8
 
 task 8 'programmable'. lines 142-143:
 mutated: object(_), object(2,8)
-gas summary: computation_cost: 50000, storage_cost: 422560,  storage_rebate: 288922, non_refundable_storage_fee: 2918
+gas summary: computation_cost: 50000000000000, storage_cost: 422560000000000,  storage_rebate: 288922000000000, non_refundable_storage_fee: 2918000000000
 
 task 9 'programmable'. lines 145-146:
 mutated: object(_), object(2,8)
-gas summary: computation_cost: 50000, storage_cost: 422560,  storage_rebate: 288922, non_refundable_storage_fee: 2918
+gas summary: computation_cost: 50000000000000, storage_cost: 422560000000000,  storage_rebate: 288922000000000, non_refundable_storage_fee: 2918000000000
 
 task 10 'programmable'. lines 148-152:
 mutated: object(_), object(2,8)
-gas summary: computation_cost: 50000, storage_cost: 422560,  storage_rebate: 288922, non_refundable_storage_fee: 2918
+gas summary: computation_cost: 50000000000000, storage_cost: 422560000000000,  storage_rebate: 288922000000000, non_refundable_storage_fee: 2918000000000
 
 task 11 'programmable'. lines 154-155:
 Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 10, instruction: 12, function_name: Some("check_") }, 0) in command 0

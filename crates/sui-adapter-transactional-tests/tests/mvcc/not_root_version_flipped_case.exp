@@ -41,13 +41,13 @@ task 8 'programmable'. lines 81-86:
 created: object(8,0)
 mutated: object(_), object(2,0)
 wrapped: object(4,1)
-gas summary: computation_cost: 50000, storage_cost: 444600,  storage_rebate: 239263, non_refundable_storage_fee: 2417
+gas summary: computation_cost: 50000000000000, storage_cost: 444600000000000,  storage_rebate: 239263000000000, non_refundable_storage_fee: 2417000000000
 
 task 9 'programmable'. lines 88-92:
 created: object(8,0)
 mutated: object(_), object(2,0)
 wrapped: object(4,1)
-gas summary: computation_cost: 50000, storage_cost: 444600,  storage_rebate: 239263, non_refundable_storage_fee: 2417
+gas summary: computation_cost: 50000000000000, storage_cost: 444600000000000,  storage_rebate: 239263000000000, non_refundable_storage_fee: 2417000000000
 
 task 10 'programmable'. lines 94-98:
 Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 4, instruction: 13, function_name: Some("check") }, 0) in command 1
