@@ -15,7 +15,6 @@ module sui_system::genesis {
     use sui_system::sui_system_state_inner;
     use sui_system::stake_subsidy;
     use std::option::{Option, Self};
-    use bfc_system::busd::BUSD;
 
     struct GenesisValidatorMetadata has drop, copy {
         name: vector<u8>,

@@ -21,6 +21,7 @@ pub mod checked {
         BSAR,
         BTRY,
         BZAR,
+        MGG,
     }
 
     impl STABLE {
@@ -42,6 +43,7 @@ pub mod checked {
                 STABLE::BSAR => (ident_str!("bsar"), ident_str!("BSAR")),
                 STABLE::BTRY => (ident_str!("btry"), ident_str!("BTRY")),
                 STABLE::BZAR => (ident_str!("bzar"), ident_str!("BZAR")),
+                STABLE::MGG => (ident_str!("mgg"), ident_str!("MGG")),
             };
 
             StructTag {
@@ -70,6 +72,7 @@ pub mod checked {
                 STABLE::BSAR => 13,
                 STABLE::BTRY => 14,
                 STABLE::BZAR => 15,
+                STABLE::MGG => 16,
             }
         }
 
@@ -91,6 +94,7 @@ pub mod checked {
                 13 => STABLE::BSAR,
                 14 => STABLE::BTRY,
                 15 => STABLE::BZAR,
+                16 => STABLE::MGG,
                 _ => panic!("Invalid index for stable coin: {}", index),
             }
         }
@@ -116,6 +120,7 @@ pub mod checked {
                 STABLE::BRUB,
                 STABLE::BSAR,
                 STABLE::BTRY,
+                STABLE::MGG,
             ]
                 .iter()
                 .map(|stable_type| stable_type.type_tag())
@@ -139,6 +144,7 @@ pub mod checked {
                 STABLE::BRUB,
                 STABLE::BSAR,
                 STABLE::BTRY,
+                STABLE::MGG,
             ]
                 .iter()
                 .map(|stable_type| stable_type.type_())
@@ -166,6 +172,7 @@ pub mod checked {
                 ("bsar", "BSAR") => STABLE::BSAR,
                 ("btry", "BTRY") => STABLE::BTRY,
                 ("bzar", "BZAR") => STABLE::BZAR,
+                ("mgg", "MGG") => STABLE::MGG,
                 // default
                 _ => STABLE::BUSD
             }

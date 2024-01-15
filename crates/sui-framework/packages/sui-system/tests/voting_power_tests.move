@@ -3,8 +3,6 @@
 
 #[test_only]
 module sui_system::voting_power_tests {
-    use std::ascii;
-    use std::type_name;
     use sui_system::governance_test_utils as gtu;
     use sui_system::voting_power;
     use sui::test_scenario;

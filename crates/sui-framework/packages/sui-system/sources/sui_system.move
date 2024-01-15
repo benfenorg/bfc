@@ -75,6 +75,7 @@ module sui_system::sui_system {
     use bfc_system::btry::BTRY;
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
+    use bfc_system::mgg::MGG;
     use sui::dynamic_field;
     use sui::vec_map;
     use sui::vec_map::VecMap;
@@ -626,7 +627,7 @@ module sui_system::sui_system {
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get stable exchange rate from bfc system
-        assert!(vector::length(&rate_vec) == 16, EWrongStableRateLength);
+        assert!(vector::length(&rate_vec) == 17, EWrongStableRateLength);
         let stable_rate = vec_map::empty<ascii::String, u64>();
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BUSD>()), *vector::borrow<u64>(&rate_vec,0));
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BARS>()), *vector::borrow<u64>(&rate_vec,1));
@@ -644,6 +645,7 @@ module sui_system::sui_system {
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BSAR>()), *vector::borrow<u64>(&rate_vec,13));
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BTRY>()), *vector::borrow<u64>(&rate_vec,14));
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BZAR>()), *vector::borrow<u64>(&rate_vec,15));
+        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<MGG>()), *vector::borrow<u64>(&rate_vec,16));
 
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
@@ -868,10 +870,10 @@ module sui_system::sui_system {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
         let rates = vector::empty<u64>();
-        while (vector::length(&rates) < 16) {
+        while (vector::length(&rates) < 17) {
             vector::push_back(&mut rates, 1000000000u64);
         };
-        assert!(vector::length(&rates) == 16, EWrongStableRateLength);
+        assert!(vector::length(&rates) == 17, EWrongStableRateLength);
         let storage_rebate = advance_epoch(
             storage_reward,
             computation_reward,

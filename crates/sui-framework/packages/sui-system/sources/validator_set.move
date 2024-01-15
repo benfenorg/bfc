@@ -4,7 +4,6 @@
 module sui_system::validator_set {
     use std::ascii;
     use std::option::{Self, Option};
-    use std::type_name;
     use std::vector;
 
     use sui::balance::{Self, Balance};
@@ -45,6 +44,7 @@ module sui_system::validator_set {
     use bfc_system::btry::BTRY;
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
+    use bfc_system::mgg::MGG;
     use sui_system::stable_pool::StakedStable;
 
     friend sui_system::genesis;
@@ -280,7 +280,7 @@ module sui_system::validator_set {
         validator::deactivate_stable<BSAR>(&mut validator, deactivation_epoch);
         validator::deactivate_stable<BTRY>(&mut validator, deactivation_epoch);
         validator::deactivate_stable<BZAR>(&mut validator, deactivation_epoch);
-
+        validator::deactivate_stable<MGG>(&mut validator, deactivation_epoch);
 
         // Add to the inactive tables.
         table::add(
@@ -975,6 +975,21 @@ module sui_system::validator_set {
         validator::deactivate(&mut validator, new_epoch);
         validator::deactivate_stable<BUSD>(&mut validator, new_epoch);
         validator::deactivate_stable<BJPY>(&mut validator, new_epoch);
+        validator::deactivate_stable<BARS>(&mut validator, new_epoch);
+        validator::deactivate_stable<BEUR>(&mut validator, new_epoch);
+        validator::deactivate_stable<BKRW>(&mut validator, new_epoch);
+        validator::deactivate_stable<BAUD>(&mut validator, new_epoch);
+        validator::deactivate_stable<BBRL>(&mut validator, new_epoch);
+        validator::deactivate_stable<BCAD>(&mut validator, new_epoch);
+        validator::deactivate_stable<BGBP>(&mut validator, new_epoch);
+        validator::deactivate_stable<BIDR>(&mut validator, new_epoch);
+        validator::deactivate_stable<BMXN>(&mut validator, new_epoch);
+        validator::deactivate_stable<BINR>(&mut validator, new_epoch);
+        validator::deactivate_stable<BRUB>(&mut validator, new_epoch);
+        validator::deactivate_stable<BSAR>(&mut validator, new_epoch);
+        validator::deactivate_stable<BTRY>(&mut validator, new_epoch);
+        validator::deactivate_stable<BZAR>(&mut validator, new_epoch);
+        validator::deactivate_stable<MGG>(&mut validator, new_epoch);
         table::add(
             &mut self.inactive_validators,
             validator_pool_id,

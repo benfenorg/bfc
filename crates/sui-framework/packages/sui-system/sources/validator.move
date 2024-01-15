@@ -31,6 +31,7 @@ module sui_system::validator {
     use bfc_system::btry::BTRY;
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
+    use bfc_system::mgg::MGG;
     use sui::transfer;
     use sui::url::Url;
     use sui::url;
@@ -586,6 +587,7 @@ module sui_system::validator {
         process_pending_stable_stakes_and_withdraws<BTRY>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BZAR>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BJPY>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<MGG>(self, ctx);
     }
 
     public(friend) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &mut TxContext) {
@@ -742,6 +744,7 @@ module sui_system::validator {
         total_stake = total_stake + total_stake_of_stable<BTRY>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BZAR>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BJPY>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<MGG>(self, stable_rate);
         total_stake
     }
 
@@ -801,6 +804,7 @@ module sui_system::validator {
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BSAR>(get_stable_pool(&self.stable_pools), epoch), 13);
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BTRY>(get_stable_pool(&self.stable_pools), epoch), 14);
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BZAR>(get_stable_pool(&self.stable_pools), epoch), 15);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<MGG>(get_stable_pool(&self.stable_pools), epoch), 16);
         vec_rate
     }
 
@@ -829,6 +833,7 @@ module sui_system::validator {
         vector::insert(&mut id_vec ,stable_pool_id<BSAR>(self), 13);
         vector::insert(&mut id_vec ,stable_pool_id<BTRY>(self), 14);
         vector::insert(&mut id_vec ,stable_pool_id<BZAR>(self), 15);
+        vector::insert(&mut id_vec ,stable_pool_id<MGG>(self), 16);
         id_vec
     }
 
@@ -1171,6 +1176,8 @@ module sui_system::validator {
         bag::add<ascii::String, StablePool<BTRY>>(&mut stable_pools, pool_key,stable_pool::new<BTRY>(ctx));
         pool_key = type_name::into_string(type_name::get<BZAR>());
         bag::add<ascii::String, StablePool<BZAR>>(&mut stable_pools, pool_key,stable_pool::new<BZAR>(ctx));
+        pool_key = type_name::into_string(type_name::get<MGG>());
+        bag::add<ascii::String, StablePool<MGG>>(&mut stable_pools, pool_key,stable_pool::new<MGG>(ctx));
 
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
@@ -1270,6 +1277,7 @@ module sui_system::validator {
             activate_stable<BSAR>(&mut validator, 0);
             activate_stable<BTRY>(&mut validator, 0);
             activate_stable<BZAR>(&mut validator, 0);
+            activate_stable<MGG>(&mut validator, 0);
         };
 
         validator
@@ -1293,6 +1301,7 @@ module sui_system::validator {
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BSAR>()), 1000000000);
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BTRY>()), 1000000000);
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BZAR>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<MGG>()), 1000000000);
         rate_map
     }
 }
