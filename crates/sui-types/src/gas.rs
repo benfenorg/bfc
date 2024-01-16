@@ -272,6 +272,14 @@ pub mod checked {
     }
 }
 
+pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
+    if reward_rate == 0 {
+        warn!("reward rate is zero, reward: {}", reward);
+        return reward;
+    }
+    (reward as u128 * reward_rate as u128 / 100u128 ) as u64
+}
+
 pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
     if rate == 0 {
         warn!("rate is zero, cost: {}, rate: {}", cost, rate);

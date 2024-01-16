@@ -120,6 +120,12 @@
 
 </dd>
 <dt>
+<code>reward_rate: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>exchange_pool: <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;</code>
 </dt>
 <dd>
@@ -282,6 +288,16 @@
 
 
 
+<a name="0xc8_bfc_system_state_inner_DEFAULT_REWARD_RATE"></a>
+
+Default reward rate 50% ,base point is 100
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_REWARD_RATE">DEFAULT_REWARD_RATE</a>: u64 = 50;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_DEFAULT_STABLE_BASE_POINTS"></a>
 
 Default stable base points
@@ -367,6 +383,7 @@ Default stable base points
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
         round: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BFC_SYSTEM_STATE_START_ROUND">BFC_SYSTEM_STATE_START_ROUND</a>,
         stable_base_points: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_STABLE_BASE_POINTS">DEFAULT_STABLE_BASE_POINTS</a>,
+        reward_rate: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_REWARD_RATE">DEFAULT_REWARD_RATE</a>,
         exchange_pool,
         dao,
         <a href="treasury.md#0xc8_treasury">treasury</a>: t,

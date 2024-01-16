@@ -133,6 +133,7 @@ pub trait BfcSystemStateTrait {
 pub struct BfcSystemStateInnerV1 {
     pub round: u64,
     pub stable_base_points: u64,
+    pub reward_rate: u64,
     pub exchange_pool: ExchangePoolV1,
     pub dao: Dao,
     pub treasury: Treasury,
@@ -187,6 +188,15 @@ pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok((bfc_system_state.rate_map, bfc_system_state.stable_base_points))
+        },
+        Err(e) => Err(e),
+    }
+}
+
+pub fn get_stable_rate_and_reward_rate(object_store: &dyn ObjectStore) -> Result<(VecMap<String, u64>, u64), SuiError> {
+    match get_bfc_system_state(object_store) {
+        Ok(BFCSystemState::V1(bfc_system_state)) => {
+            Ok((bfc_system_state.rate_map, bfc_system_state.reward_rate))
         },
         Err(e) => Err(e),
     }

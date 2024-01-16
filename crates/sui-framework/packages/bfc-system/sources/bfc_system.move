@@ -1,6 +1,5 @@
 module bfc_system::bfc_system {
     use std::ascii;
-    use sui::balance;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
     use sui::balance::{Balance, Supply};
@@ -15,7 +14,6 @@ module bfc_system::bfc_system {
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
-    use sui::vec_map;
     use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
@@ -504,6 +502,5 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         bfc_dao::add_admin(new_admin, ctx);
-        //bfc::new(new_admin, ctx);
     }
 }

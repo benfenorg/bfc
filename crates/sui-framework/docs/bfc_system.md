@@ -1586,7 +1586,6 @@ X treasury  swap stablecoin to bfc
     ctx: &<b>mut</b> TxContext,
 ) {
     <a href="bfc_dao.md#0xc8_bfc_dao_add_admin">bfc_dao::add_admin</a>(new_admin, ctx);
-    //<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_new">bfc::new</a>(new_admin, ctx);
 }
 </code></pre>
 

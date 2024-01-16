@@ -1,8 +1,6 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
-    use std::string;
-    use std::type_name;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::bfc::BFC;
@@ -47,6 +45,8 @@ module bfc_system::bfc_system_state_inner {
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
+    ///Default reward rate 50% ,base point is 100
+    const DEFAULT_REWARD_RATE: u64 = 50;
     const DEFAULT_STABLE_RATE: u64 = 1_000_000_000;
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
@@ -56,6 +56,7 @@ module bfc_system::bfc_system_state_inner {
     struct BfcSystemStateInner has store {
         round: u64,
         stable_base_points: u64,
+        reward_rate: u64,
         /// Exchange gas coin pool
         exchange_pool: ExchangePool<BUSD>,
         dao: Dao,
@@ -132,6 +133,7 @@ module bfc_system::bfc_system_state_inner {
         BfcSystemStateInner {
             round: BFC_SYSTEM_STATE_START_ROUND,
             stable_base_points: DEFAULT_STABLE_BASE_POINTS,
+            reward_rate: DEFAULT_REWARD_RATE,
             exchange_pool,
             dao,
             treasury: t,
@@ -157,30 +159,6 @@ module bfc_system::bfc_system_state_inner {
     ) {
         inner.round = round;
     }
-
-    // public(friend) fun request_exchange_all(
-    //     inner: &mut BfcSystemStateInner,
-    //     ctx: &mut TxContext
-    // ) {
-    //     //get bfc amount of inner exchange pool
-    //     let bfc_amount = exchange_inner::get_bfc_amount(&inner.exchange_pool);
-    //     if (bfc_amount > 0) {
-    //         //set pool is disactivate
-    //         let epoch = exchange_inner::dis_activate(&mut inner.exchange_pool);
-    //         //get stable balance
-    //         let stable_balance = exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool);
-    //         //exchange from stable swap
-    //         let bfc_balance = swap_stablecoin_to_bfc_balance(
-    //             inner,
-    //             coin::from_balance(stable_balance, ctx),0,
-    //             ctx,
-    //         );
-    //         //add bfc to inner exchange pool
-    //         exchange_inner::request_deposit_bfc_balance(&mut inner.exchange_pool, bfc_balance);
-    //         // active pool
-    //         exchange_inner::activate(&mut inner.exchange_pool, epoch);
-    //     }
-    // }
 
     ///Request withdraw stable coin.
     public(friend) fun request_withdraw_stable(
