@@ -440,6 +440,7 @@ pub struct AdvanceEpochParams {
 pub struct ChangeObcRoundParams {
     pub epoch: u64,
     pub stable_gas_summarys:Vec<(TypeTag,GasCostSummary)>,
+    pub bfc_computation_charge: u64
 }
 
 #[cfg(msim)]

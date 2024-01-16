@@ -708,7 +708,7 @@ mod checked {
 
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost,rate, gas_cost_summary.base_point))).unwrap(),
+                    bcs::to_bytes(&(calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.computation_cost/2+gas_cost_summary.storage_cost,rate, gas_cost_summary.base_point))).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -723,7 +723,7 @@ mod checked {
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(gas_cost_summary.computation_cost+gas_cost_summary.storage_cost)).unwrap(),
+                    bcs::to_bytes(&(gas_cost_summary.computation_cost/2+gas_cost_summary.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -746,7 +746,7 @@ mod checked {
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&storage_rebate).unwrap(),
+                bcs::to_bytes(&(storage_rebate+param.bfc_computation_charge/2)).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -829,13 +829,14 @@ mod checked {
         for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
             storage_rebate += gas_cost_summary.storage_rebate;
             non_refundable_storage_fee += gas_cost_summary.non_refundable_storage_fee;
-            computation_charge += gas_cost_summary.computation_cost;
+            computation_charge += gas_cost_summary.computation_cost-gas_cost_summary.computation_cost/2;
             storage_charge += gas_cost_summary.storage_cost;
         }
 
         let params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
+            bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
         let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch,params,rate_hash_map,storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
@@ -861,7 +862,7 @@ mod checked {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
             storage_charge: change_epoch.bfc_storage_charge+storage_charge,
-            computation_charge: change_epoch.bfc_computation_charge+computation_charge,
+            computation_charge:  change_epoch.bfc_computation_charge-change_epoch.bfc_computation_charge/2+computation_charge,
             storage_rebate: change_epoch.bfc_storage_rebate+storage_rebate,
             non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee+non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
