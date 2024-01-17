@@ -36,7 +36,6 @@ use std::{
     iter,
 };
 use std::collections::HashMap;
-use move_core_types::language_storage::StructTag;
 use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;

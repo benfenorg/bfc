@@ -14,11 +14,8 @@ use sui_types::transaction::{
     TEST_ONLY_GAS_UNIT_FOR_PUBLISH, TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN,
     TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
 };
-use sui_types::governance::{ADD_GAS_COIN_FUN_NAME, INIT_EXCHANGE_FUN_NAME};
 use tokio::time::sleep;
 use tracing::info;
-use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID};
-use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 
 use sui::client_commands::SwitchResponse;
 use sui::{
@@ -566,7 +563,6 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-#[ignore] //todo should work run add swap pool init
 async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     let obj_id = ObjectID::random();
     let (address, keypair): (SuiAddress, AccountKeyPair) =
@@ -597,41 +593,6 @@ async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         .config
         .keystore
         .add_key(SuiKeyPair::Ed25519(keypair))?;
-    // add stable gas coin to config map
-    let args = vec![
-        SuiJsonValue::new(json!(BFC_SYSTEM_STATE_OBJECT_ID))?,
-        SuiJsonValue::new(json!(obj_id))?,
-        SuiJsonValue::new(json!(1000000000))?,
-    ];
-    let resp = SuiClientCommands::Call {
-        package: BFC_SYSTEM_PACKAGE_ID,
-        module: BFC_SYSTEM_MODULE_NAME.to_string(),
-        function: ADD_GAS_COIN_FUN_NAME.to_string(),
-        type_args: vec![],
-        args,
-        gas: None,
-        gas_budget: TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
-        serialize_unsigned_transaction: false,
-        serialize_signed_transaction: false,
-    }.execute(context).await?;
-    resp.print(true);
-    //add bfc to exchange pool
-    let args = vec![
-        SuiJsonValue::new(json!(BFC_SYSTEM_STATE_OBJECT_ID))?,
-        SuiJsonValue::new(json!(exchange_id))?,
-    ];
-    let resp = SuiClientCommands::Call {
-        package: BFC_SYSTEM_PACKAGE_ID,
-        module: BFC_SYSTEM_MODULE_NAME.to_string(),
-        function: INIT_EXCHANGE_FUN_NAME.to_string(),
-        type_args: vec![],
-        args,
-        gas: None,
-        gas_budget: TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
-        serialize_unsigned_transaction: false,
-        serialize_signed_transaction: false,
-    }.execute(context).await?;
-    resp.print(true);
 
     let mut package_path = PathBuf::from(TEST_DATA_DIR);
     package_path.push("move_call_args_linter");

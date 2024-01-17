@@ -59,7 +59,7 @@ mod checked {
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, RESET_STABLE_SWAP_MAP_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
     use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
 

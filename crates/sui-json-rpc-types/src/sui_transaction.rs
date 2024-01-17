@@ -1167,9 +1167,6 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
             }
 
         }
-        _ => {
-            //write!(writer, "value: {:?} ", json_value)?;
-        }
 
 
     }
