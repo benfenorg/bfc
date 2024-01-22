@@ -37,7 +37,7 @@ module bfc_system::bfc_dao {
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
-    const DEFAULT_VOTE_QUORUM_RATE: u8 = 40; // 40% default quorum rate
+    const DEFAULT_VOTE_QUORUM_RATE: u8 = 10; // 10% default quorum rate
     const DEFAULT_START_PROPOSAL_VERSION_ID : u64 = 19;
     const MAX_TIME_PERIOD: u64 = 1000 * 60 * 60 * 24 * 365 * 100; // 100 years
 
