@@ -174,14 +174,14 @@ pub mod checked {
                 ("bzar", "BZAR") => STABLE::BZAR,
                 ("mgg", "MGG") => STABLE::MGG,
                 // default
-                _ => STABLE::BUSD
+                _ => panic!("unreachable tag: {:?}", s),
             }
         }
     }
     impl From<TypeTag> for STABLE {
         fn from(s: TypeTag) -> Self {
             match s {
-                TypeTag::Struct(s) => STABLE::from(*s),
+                TypeTag::Struct(s1) => STABLE::from(*s1),
                 _ => panic!("unreachable tag: {:?}", s),
             }
         }

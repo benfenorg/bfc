@@ -285,6 +285,15 @@ impl MoveObjectType {
         }
     }
 
+    pub fn get_stable_gas_tag(&self) -> TypeTag {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => tag.clone(),
+            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+                panic!("not stable gas coin")
+            }
+        }
+    }
+
     pub fn get_gas_coin_name(&self) -> String {
         match &self.0 {
             MoveObjectType_::GasCoin(tag) => tag.to_canonical_string(),
@@ -300,7 +309,7 @@ impl MoveObjectType {
             MoveObjectType_::GasCoin(tag) => if GAS::is_gas_type(tag) {
                 true
             } else {
-                STABLE::is_gas_type(t)
+                STABLE::is_gas_type(tag)
             },
             MoveObjectType_::Coin(c) => t == c,
             MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => false,
@@ -378,7 +387,7 @@ impl From<MoveObjectType> for StructTag {
             MoveObjectType_::GasCoin(inner) => if inner == GAS::type_tag() {
                 GasCoin::type_()
             }else {
-                StableCoin::type_()
+                StableCoin::type_with_tag(inner)
             },
             MoveObjectType_::StakedSui => StakedSui::type_(),
             MoveObjectType_::Coin(inner) => Coin::type_(inner),

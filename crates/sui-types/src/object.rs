@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display, Formatter};
 use std::mem::size_of;
+use std::str::FromStr;
 
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::layout::TypeLayoutBuilder;
@@ -1072,6 +1073,27 @@ impl Object {
             has_public_transfer: true,
             version,
             contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
+        });
+        Self {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }
+    }
+
+    pub fn with_stable_tag_id_owner_version_for_testing(
+        id: ObjectID,
+        version: SequenceNumber,
+        owner: SuiAddress,
+        stable_tag: StructTag,
+        amount: u64,
+    ) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: stable_tag.into(),
+            has_public_transfer: true,
+            version,
+            contents: StableCoin::new(id, amount).to_bcs_bytes(),
         });
         Self {
             owner: Owner::AddressOwner(owner),

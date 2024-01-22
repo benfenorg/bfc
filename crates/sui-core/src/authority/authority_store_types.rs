@@ -225,7 +225,7 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                 )
             }else if move_obj.type_().is_stable_gas_coin() {
                 StoreData::StableCoin(
-                    STABLE::from(move_obj.type_tag()).get_index(),
+                    STABLE::from(move_obj.type_().get_stable_gas_tag()).get_index(),
                     Coin::from_bcs_bytes(move_obj.contents())
                         .expect("failed to deserialize coin")
                         .balance

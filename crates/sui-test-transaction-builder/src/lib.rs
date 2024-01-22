@@ -488,6 +488,23 @@ pub async fn make_stable_staking_transaction(
             .build(),
     )
 }
+pub async fn make_and_sign_stable_staking_transaction(
+    key: AccountKeyPair,
+    context: &WalletContext,
+    validator_address: SuiAddress,
+    tags: Vec<TypeTag>,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    stake_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    let txn_data = TestTransactionBuilder::new(sender, gas_object, gas_price)
+        .call_stable_staking(stake_object, validator_address, tags)
+        .build();
+    let msg = bcs::to_bytes(&txn_data).unwrap();
+    let sig= key.sign(&msg);
+    Transaction::from_data(txn_data.clone(), Intent::sui_transaction(), vec![sig])
+}
 
 
 pub async fn make_publish_transaction(context: &WalletContext, path: PathBuf) -> Transaction {

@@ -2296,6 +2296,11 @@ async fn test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
 }
 
 async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+    swap_bfc_to_stablecoin_with_tag(test_cluster, http_client, address, SuiTypeTag::new("0xc8::busd::BUSD".to_string())).await?;
+    Ok(())
+}
+
+async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, type_tag: SuiTypeTag) -> Result<(), anyhow::Error> {
     let objects = http_client
         .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
             SuiObjectDataOptions::full_content()
@@ -2323,7 +2328,7 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
             package_id,
             module,
             function,
-            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
+            vec![type_tag],
             args,
             Some(gas.object_id),
             10_000_00000.into(),
@@ -2685,6 +2690,63 @@ async fn test_busd_staking() -> Result<(), anyhow::Error> {
 
     let _ = sleep(Duration::from_secs(10)).await;
 
+    Ok(())
+}
+
+#[sim_test]
+async fn test_multiple_stable_staking() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+
+    let validator = test_cluster.swarm.validator_node_handles().pop().unwrap();
+    let validator_addr = validator.with(|node| node.get_config().sui_address());
+
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, sender, SuiTypeTag::new("0xc8::bjpy::BJPY".to_string())).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::bjpy::BJPY>", http_client, sender).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+    let gas_coin = test_cluster
+        .wallet
+        .gas_for_owner_budget(
+            sender,
+            MIN_VALIDATOR_JOINING_STAKE_MIST,
+            Default::default(),
+        )
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+    let gas = test_cluster
+        .wallet
+        .gas_for_owner_budget(sender, 0, BTreeSet::from([gas_coin.0]))
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+
+    let stake_tx = make_stable_staking_transaction(
+        &test_cluster.wallet,
+        validator_addr,
+        vec![TypeTag::from_str("0xc8::bjpy::BJPY")?],
+        sender,
+        gas,
+        busd_data.object_ref()
+    ).await;
+
+   let response =  test_cluster.execute_transaction(stake_tx).await;
+    let _ = sleep(Duration::from_secs(10)).await;
+    assert_eq!(response.status_ok().unwrap(), true);
     Ok(())
 }
 

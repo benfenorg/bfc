@@ -42,6 +42,9 @@ mod checked {
         pub fn type_() -> StructTag {
             Coin::type_(TypeTag::Struct(Box::new(BUSD.type_())))
         }
+        pub fn type_with_tag(tag: TypeTag) -> StructTag {
+            Coin::type_(tag)
+        }
 
         /// Return `true` if `s` is the type of a gas coin (i.e., 0x2::coin::Coin<0x2::sui::SUI>)
         pub fn is_gas_coin(s: &StructTag) -> bool {
