@@ -9765,6 +9765,7 @@ dependencies = [
  "sui-verifier-latest",
  "sui-verifier-suivm",
  "sui-verifier-v0",
+ "tracing",
  "workspace-hack",
 ]
 

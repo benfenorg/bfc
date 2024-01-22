@@ -2568,7 +2568,6 @@ async fn test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 
 async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64, token_name : String) -> Result<(), Error> {
     swap_bfc_to_stablecoin(&test_cluster, http_client, address, token_name.clone()).await?;
-    tracing::error!("here");
 
     let _ = sleep(Duration::from_secs(10)).await;
 

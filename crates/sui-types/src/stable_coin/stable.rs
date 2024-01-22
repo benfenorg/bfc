@@ -155,26 +155,32 @@ pub mod checked {
 
     impl From<StructTag> for STABLE {
         fn from(s: StructTag) -> Self {
-            match (s.module.as_str(), s.name.as_str()) {
-                ("bars", "BARS") => STABLE::BARS,
-                ("busd", "BUSD") => STABLE::BUSD,
-                ("baud", "BAUD") => STABLE::BAUD,
-                ("bbrl", "BBRL") => STABLE::BBRL,
-                ("bcad", "BCAD") => STABLE::BCAD,
-                ("beur", "BEUR") => STABLE::BEUR,
-                ("bgbp", "BGBP") => STABLE::BGBP,
-                ("bidr", "BIDR") => STABLE::BIDR,
-                ("binr", "BINR") => STABLE::BINR,
-                ("bjpy", "BJPY") => STABLE::BJPY,
-                ("bkrw", "BKRW") => STABLE::BKRW,
-                ("bmxn", "BMXN") => STABLE::BMXN,
-                ("brub", "BRUB") => STABLE::BRUB,
-                ("bsar", "BSAR") => STABLE::BSAR,
-                ("btry", "BTRY") => STABLE::BTRY,
-                ("bzar", "BZAR") => STABLE::BZAR,
-                ("mgg", "MGG") => STABLE::MGG,
-                // default
-                _ => STABLE::BUSD
+            let type_tag = s.type_params.get(0).expect("invalid stable coin type tag");
+
+            if let TypeTag::Struct(s) = type_tag {
+                match (s.module.as_str(), s.name.as_str()) {
+                    ("bars", "BARS") => STABLE::BARS,
+                    ("busd", "BUSD") => STABLE::BUSD,
+                    ("baud", "BAUD") => STABLE::BAUD,
+                    ("bbrl", "BBRL") => STABLE::BBRL,
+                    ("bcad", "BCAD") => STABLE::BCAD,
+                    ("beur", "BEUR") => STABLE::BEUR,
+                    ("bgbp", "BGBP") => STABLE::BGBP,
+                    ("bidr", "BIDR") => STABLE::BIDR,
+                    ("binr", "BINR") => STABLE::BINR,
+                    ("bjpy", "BJPY") => STABLE::BJPY,
+                    ("bkrw", "BKRW") => STABLE::BKRW,
+                    ("bmxn", "BMXN") => STABLE::BMXN,
+                    ("brub", "BRUB") => STABLE::BRUB,
+                    ("bsar", "BSAR") => STABLE::BSAR,
+                    ("btry", "BTRY") => STABLE::BTRY,
+                    ("bzar", "BZAR") => STABLE::BZAR,
+                    ("mgg", "MGG") => STABLE::MGG,
+                    // default
+                    _ => panic!("unreachable tag: {:?}", s),
+                }
+            } else {
+                panic!("unreachable tag: {:?}", s);
             }
         }
     }
