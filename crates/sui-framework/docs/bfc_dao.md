@@ -1012,7 +1012,7 @@ Proposal state
 
 
 
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_VOTE_QUORUM_RATE">DEFAULT_VOTE_QUORUM_RATE</a>: u8 = 40;
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_VOTE_QUORUM_RATE">DEFAULT_VOTE_QUORUM_RATE</a>: u8 = 10;
 </code></pre>
 
 

@@ -9,6 +9,7 @@ use fastcrypto::encoding::Base64;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
+use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
@@ -2295,7 +2296,7 @@ async fn test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress,stable_coin_type: String) -> Result<(), anyhow::Error> {
     let objects = http_client
         .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
             SuiObjectDataOptions::full_content()
@@ -2323,7 +2324,7 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
             package_id,
             module,
             function,
-            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
+            vec![SuiTypeTag::new(stable_coin_type)],
             args,
             Some(gas.object_id),
             10_000_00000.into(),
@@ -2438,7 +2439,7 @@ async fn test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error>
     let mut objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
     assert!(objects.len() == 0);
 
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address,"0xc8::busd::BUSD".to_string()).await?;
 
     let _ = sleep(Duration::from_secs(10)).await;
 
@@ -2468,7 +2469,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error>
         .effects
         .unwrap();
 
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address,"0xc8::busd::BUSD".to_string()).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
     let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
@@ -2503,7 +2504,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
         .effects
         .unwrap();
 
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address,"0xc8::busd::BUSD".to_string()).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
     let mut busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
@@ -2528,6 +2529,71 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
     let _ = sleep(Duration::from_secs(10)).await;
 
     let gas_object_info = http_client.get_object(busd_data.object_id,Some(SuiObjectDataOptions::new().
+        with_owner().with_type().with_display().with_content())).await?;
+
+    let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    assert!(busd_balance_after < busd_balance_before);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_stable_gas() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    //transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string()).await?;
+
+    Ok(())
+}
+
+async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64, token_name : String) -> Result<(), Error> {
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address, token_name.clone()).await?;
+    tracing::error!("here");
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let mut busd_response_vec = do_get_owned_objects_with_filter(format!("0x2::coin::Coin<{}>",token_name.as_str()).as_str(), http_client, address).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+    let busd_balance_before = get_busd_balance(busd_data);
+
+    let receiver_address = test_cluster.get_address_1();
+    let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
+                                                    Some(receiver_address),
+                                                    Some(amount), address, busd_data.object_ref()).await;
+
+    let _response = test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let gas_object_info = http_client.get_object(busd_data.object_id, Some(SuiObjectDataOptions::new().
         with_owner().with_type().with_display().with_content())).await?;
 
     let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
@@ -2642,7 +2708,7 @@ async fn test_busd_staking() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
 
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address,"0xc8::busd::BUSD".to_string()).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
     let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
