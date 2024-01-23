@@ -5,7 +5,6 @@ use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::fmt::{Debug, Display, Formatter};
 use std::mem::size_of;
-use std::str::FromStr;
 
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::layout::TypeLayoutBuilder;

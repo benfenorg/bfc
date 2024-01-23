@@ -151,6 +151,19 @@ impl TestTransactionBuilder {
         )
     }
 
+    pub fn call_stable_withdraw_stake(self, staked_coin: ObjectRef, tags: Vec<TypeTag>) -> Self {
+        self.move_call_with_tag(
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.as_str(),
+            "request_withdraw_stable_stake",
+            tags,
+            vec![
+                CallArg::SUI_SYSTEM_MUT,
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(staked_coin)),
+            ],
+        )
+    }
+
 
     pub fn call_request_add_validator(self) -> Self {
         self.move_call(
@@ -488,6 +501,22 @@ pub async fn make_stable_staking_transaction(
             .build(),
     )
 }
+
+pub async fn make_stable_withdraw_stake_transaction(
+    context: &WalletContext,
+    tags: Vec<TypeTag>,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    stake_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_stable_withdraw_stake(stake_object, tags)
+            .build(),
+    )
+}
+
 pub async fn make_and_sign_stable_staking_transaction(
     key: AccountKeyPair,
     context: &WalletContext,
