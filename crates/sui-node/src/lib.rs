@@ -1341,9 +1341,9 @@ impl SuiNode {
                     )
                     .await;
 
-                if next_epoch > 10 {
+                if next_epoch > 3 {
                     narwhal_epoch_data_remover
-                        .remove_old_data(next_epoch - 10)
+                        .remove_old_data(next_epoch - 3)
                         .await;
                 }
 

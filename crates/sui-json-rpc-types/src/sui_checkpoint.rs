@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use crate::Page;
 use fastcrypto::encoding::Base64;
-use move_core_types::language_storage::{StructTag, TypeTag};
+use move_core_types::language_storage::TypeTag;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;

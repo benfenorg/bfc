@@ -133,7 +133,7 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
 
     async fn get_dao_proposals(
         &self,
-        filter: Option<DaoProposalFilter>,
+        _filter: Option<DaoProposalFilter>,
     ) -> RpcResult<Vec<SuiDaoProposal>> {
         todo!()
     }

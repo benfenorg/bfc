@@ -2566,8 +2566,9 @@ async fn test_bfc_stable_gas() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
 
-    //transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string()).await?;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string()).await?;
 
     Ok(())
 }
@@ -2575,7 +2576,7 @@ async fn test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64, token_name : String) -> Result<(), Error> {
     swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, address, SuiTypeTag::new(token_name.clone())).await?;
 
-    let _ = sleep(Duration::from_secs(10)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
 
     let busd_response_vec = do_get_owned_objects_with_filter(format!("0x2::coin::Coin<{}>",token_name.as_str()).as_str(), http_client, address).await?;
 
@@ -2596,14 +2597,14 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
         .effects
         .unwrap();
 
-    let _ = sleep(Duration::from_secs(10)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
 
     let gas_object_info = http_client.get_object(busd_data.object_id, Some(SuiObjectDataOptions::new().
         with_owner().with_type().with_display().with_content())).await?;
 
     let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
 
-    let _ = sleep(Duration::from_secs(10)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
 
     assert!(busd_balance_after < busd_balance_before);
     Ok(())
