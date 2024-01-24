@@ -1253,23 +1253,6 @@ impl AuthorityState {
 
         // make a gas object if one was not provided
         let mut gas_object_refs = transaction.gas().to_vec();
-        // if !transaction.gas().is_empty() {
-        //     //get gas obj
-        //     let gas_ids :Vec<_> = transaction.gas().iter().map(|(id, _, _)| *id).collect();
-        //     let gas_objs = self.get_objects(&gas_ids).await?;
-        //     for obj in gas_objs {
-        //         match obj {
-        //             Some(stable)=> {
-        //                 if stable.is_stable_gas_coin() {
-        //                     is_stable_gas = true;
-        //                     gas_object_refs = vec![];
-        //                 }
-        //             },
-        //             _ => {},
-        //         };
-        //     };
-        // };
-
         let ((gas_status, input_objects), mock_gas) = if transaction.gas().is_empty() {
             let sender = transaction.sender();
             // use a 1B sui coin
@@ -1355,7 +1338,6 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
-
         Ok((
             DryRunTransactionBlockResponse {
                 input: SuiTransactionBlockData::try_from(transaction.clone(), &module_cache)

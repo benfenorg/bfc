@@ -21,6 +21,7 @@ use sui_types::object::GAS_VALUE_FOR_TESTING;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::utils::to_sender_signed_transaction;
 use sui_types::{base_types::dbg_addr, crypto::get_key_pair};
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 
 // The cost table is used only to get the max budget available which is not dependent on
 // the gas price
@@ -465,7 +466,6 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
 
-    // authority_state.insert_genesis_object(gas_object.clone()).await;
     authority_state.insert_genesis_object(stable_gas_object.clone()).await;
 
     let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET,true,stable_gas_object,gas_object_id_stable,
@@ -488,9 +488,10 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
         .get_object(&result.gas_object_id)
         .await?
         .unwrap();
+    let stable_gas_used = calculate_bfc_to_stable_cost_with_base_point(gas_cost.gas_used(), gas_cost.rate, gas_cost.base_point);
     assert_eq!(
         GasCoin::try_from(&gas_object)?.value(),
-        GAS_VALUE_FOR_TESTING - gas_cost.gas_used()
+        GAS_VALUE_FOR_TESTING - stable_gas_used
     );
 
     let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
@@ -974,7 +975,12 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
     assert!(gas_cost.storage_cost > 0);
     assert_eq!(gas_cost.storage_rebate, 0);
     let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
-    let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_cost.net_gas_usage() as u64;
+    let gas_used = if !gas_object.is_stable_gas_coin() {
+        gas_cost.net_gas_usage() as u64
+    } else {
+        calculate_bfc_to_stable_cost_with_base_point(gas_cost.net_gas_usage().try_into().unwrap(), gas_cost.rate, gas_cost.base_point) as u64
+    };
+    let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_used;
     assert_eq!(
         GasCoin::try_from(&gas_object)?.value(),
         expected_gas_balance,
