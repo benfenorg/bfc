@@ -57,9 +57,7 @@ use sui_types::{
 
 use tabled::settings::Style as TableStyle;
 use tracing::info;
-use sui_types::base_types::ObjectType;
 use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
-use crate::get_object_ref_with_type;
 
 
 macro_rules! serialize_or_execute {
