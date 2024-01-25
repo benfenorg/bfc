@@ -1383,32 +1383,32 @@
           "result": {
             "name": "Result",
             "value": {
-              "minSupportedProtocolVersion": "19",
+              "minSupportedProtocolVersion": "1",
               "maxSupportedProtocolVersion": "23",
-              "protocolVersion": "19",
+              "protocolVersion": "6",
               "featureFlags": {
                 "advance_epoch_start_time_in_safe_mode": true,
-                "advance_to_highest_supported_protocol_version": true,
-                "ban_entry_init": true,
-                "commit_root_state_digest": true,
+                "advance_to_highest_supported_protocol_version": false,
+                "ban_entry_init": false,
+                "commit_root_state_digest": false,
                 "consensus_order_end_of_epoch_last": true,
-                "disable_invariant_violation_check_in_swap_loc": true,
-                "disallow_adding_abilities_on_upgrade": true,
-                "disallow_change_struct_type_params_on_upgrade": true,
+                "disable_invariant_violation_check_in_swap_loc": false,
+                "disallow_adding_abilities_on_upgrade": false,
+                "disallow_change_struct_type_params_on_upgrade": false,
                 "loaded_child_object_format": false,
                 "loaded_child_object_format_type": false,
                 "loaded_child_objects_fixed": true,
                 "missing_type_is_compatibility_error": true,
                 "narwhal_new_leader_election_schedule": false,
-                "narwhal_versioned_metadata": true,
-                "no_extraneous_module_bytes": true,
-                "package_digest_hash_module": true,
+                "narwhal_versioned_metadata": false,
+                "no_extraneous_module_bytes": false,
+                "package_digest_hash_module": false,
                 "package_upgrades": true,
                 "scoring_decision_with_validity_cutoff": true,
-                "simplified_unwrap_then_delete": true,
-                "txn_base_cost_as_multiplier": true,
-                "upgraded_multisig_supported": true,
-                "zklogin_auth": true
+                "simplified_unwrap_then_delete": false,
+                "txn_base_cost_as_multiplier": false,
+                "upgraded_multisig_supported": false,
+                "zklogin_auth": false
               },
               "attributes": {
                 "address_from_bytes_cost_base": {
@@ -1421,7 +1421,7 @@
                   "u64": "52"
                 },
                 "base_tx_cost_fixed": {
-                  "u64": "100"
+                  "u64": "2000"
                 },
                 "base_tx_cost_per_byte": {
                   "u64": "0"
@@ -1613,15 +1613,11 @@
                 "event_emit_value_size_derivation_cost_per_byte": {
                   "u64": "2"
                 },
-                "execution_version": {
-                  "u64": "1"
-                },
+                "execution_version": null,
                 "gas_model_version": {
-                  "u64": "6"
+                  "u64": "5"
                 },
-                "gas_rounding_step": {
-                  "u64": "100"
-                },
+                "gas_rounding_step": null,
                 "groth16_prepare_verifying_key_bls12381_cost_base": {
                   "u64": "52"
                 },
@@ -1691,9 +1687,7 @@
                 "max_event_emit_size": {
                   "u64": "256000"
                 },
-                "max_event_emit_size_total": {
-                  "u64": "65536000"
-                },
+                "max_event_emit_size_total": null,
                 "max_fields_in_struct": {
                   "u64": "32"
                 },
@@ -1722,23 +1716,19 @@
                   "u64": "5"
                 },
                 "max_meter_ticks_per_module": {
-                  "u64": "16000000"
+                  "u64": "6000000"
                 },
                 "max_modules_in_publish": {
                   "u32": "128"
                 },
-                "max_move_identifier_len": {
-                  "u64": "128"
-                },
+                "max_move_identifier_len": null,
                 "max_move_object_size": {
                   "u64": "256000"
                 },
                 "max_move_package_size": {
                   "u64": "102400"
                 },
-                "max_move_value_depth": {
-                  "u64": "128"
-                },
+                "max_move_value_depth": null,
                 "max_move_vector_len": {
                   "u64": "262144"
                 },
@@ -1749,7 +1739,7 @@
                   "u64": "32768"
                 },
                 "max_num_event_emit": {
-                  "u64": "1024"
+                  "u64": "256"
                 },
                 "max_num_new_move_object_ids": {
                   "u64": "2048"
@@ -1809,7 +1799,7 @@
                   "u64": "1024"
                 },
                 "max_verifier_meter_ticks_per_function": {
-                  "u64": "16000000"
+                  "u64": "6000000"
                 },
                 "move_binary_format_version": {
                   "u32": "6"
