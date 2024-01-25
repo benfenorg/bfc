@@ -374,7 +374,7 @@ async fn test_bfc_dao_update_system_package_blocked(){
     // });
     ProtocolConfig::poison_get_for_min_version();
 
-    let start_version = 18u64;
+    let start_version = 19u64;
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_protocol_version(ProtocolVersion::new(start_version))
@@ -418,7 +418,7 @@ async fn test_bfc_dao_update_system_package_blocked(){
 
     //waiting for....
 
-    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+    //test_cluster.wait_for_all_nodes_upgrade_to(20u64).await;
 
 
     sleep(Duration::from_secs(10)).await;
