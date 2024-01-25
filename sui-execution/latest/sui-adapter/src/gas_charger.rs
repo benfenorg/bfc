@@ -289,9 +289,16 @@ pub mod checked {
                     let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
                     cost_summary.rate = rate;
                     cost_summary.base_point = base_point;
-                    let stable_gas_used = calculate_bfc_to_stable_cost_with_base_point(gas_used as u64 ,rate, base_point);
-                    //error!(stable_gas_used, gas_used, "gas used");
-                    deduct_gas(&mut gas_object, stable_gas_used as i64);
+                    let stable_gas_used= calculate_bfc_to_stable_cost_with_base_point(gas_used.abs() as u64 ,rate, base_point);
+                    if gas_used > 0 {
+                        deduct_gas(&mut gas_object, stable_gas_used as i64);
+                    }else {
+                        if stable_gas_used <= i64::MAX as u64 {
+                            deduct_gas(&mut gas_object, -(stable_gas_used as i64));
+                        }else {
+                            panic!("stable_gas_used: {}, gas_used: {:?}", stable_gas_used, gas_used);
+                        }
+                    }
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }

@@ -1142,7 +1142,7 @@ impl CheckpointBuilder {
             if object.is_stable_gas_coin() {
                 let type_tag = object.struct_tag().unwrap().type_params.get(0).unwrap().clone();
                 if stable_gas_cost_summary_map.contains_key(&type_tag) {
-                    let mut gas_cost_summary:&mut GasCostSummary = stable_gas_cost_summary_map.get_mut(&type_tag).unwrap();
+                    let gas_cost_summary:&mut GasCostSummary = stable_gas_cost_summary_map.get_mut(&type_tag).unwrap();
                     gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
                     gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
                     gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;

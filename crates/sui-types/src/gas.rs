@@ -281,12 +281,16 @@ pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
 }
 
 pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
-    if rate == 0 {
-        warn!("rate is zero, cost: {}, rate: {}", cost, rate);
+    if rate == 0 || rate == 1 {
+        warn!("rate is default value, cost: {}, rate: {}", cost, rate);
         return cost;
     }
     //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
     ((cost as u128 * 1000000000u128 * (100 + base_point) as u128) / (rate * 100u64) as u128) as u64
+}
+
+pub fn calculate_stable_to_bfc_cost_with_base_point(stable_cost: u64, rate: u64, base_point: u64) -> u64 {
+    stable_cost * (rate * 100u64) / (1000000000u128 * (100 + base_point) as u128) as u64
 }
 
 pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
@@ -322,5 +326,9 @@ mod test{
         println!("result: {}", result);
         let result = calculate_stable_to_bfc_cost(result, rate);
         assert_eq!(cost_u64_max, result);
+        let cost = -87119i64;
+        let rate = 999999999u64;
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost.abs() as u64, rate, 10);
+        println!("result: {}", result);
     }
 }

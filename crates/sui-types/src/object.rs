@@ -938,7 +938,7 @@ impl Object {
                         self.storage_rebate +  m.get_total_sui(layout_resolver)?
                     }
                 },
-                Data::Package(_) => 0,
+                Data::Package(_) => self.storage_rebate,
             })
     }
 
