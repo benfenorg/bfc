@@ -92,6 +92,8 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
+                  "basePoint": 0,
+                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -235,6 +237,8 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
+                  "basePoint": 0,
+                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -437,6 +441,8 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
+                  "basePoint": 0,
+                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -564,12 +570,15 @@
               "digest": "G6Dtzr1ZSfHFhotGsTE3cLENa7L1ooe1BBvknAUsARbV",
               "networkTotalTransactions": "792385",
               "previousDigest": "6tBy8RXZKrdrB4XkMQn7J3MNG4fQCo9XcRduFFvYrL5Z",
-              "epochRollingGasCostSummary": {
+              "epochRollingBfcGasCostSummary": {
+                "basePoint": 0,
+                "rate": 0,
                 "computationCost": "0",
                 "storageCost": "0",
                 "storageRebate": "0",
                 "nonRefundableStorageFee": "0"
               },
+              "epochRollingStableGasCostSummaryMap": {},
               "timestampMs": "1676911928",
               "transactions": [
                 "mN8YNBgVR3wB7vfXmjVgDRF4oqxVRRjzmJ6U4mzbq77"
@@ -649,12 +658,15 @@
                   "digest": "9zA7Q9Ka1ykvYjSQGhQCdCf32FZkcWNWx7L22JczXGsk",
                   "networkTotalTransactions": "792385",
                   "previousDigest": "8BLFxLTjWZ2KqaGc3FjR1o9aL6kbyYrmhuNfJLU1ehYt",
-                  "epochRollingGasCostSummary": {
+                  "epochRollingBfcGasCostSummary": {
+                    "basePoint": 0,
+                    "rate": 0,
                     "computationCost": "0",
                     "storageCost": "0",
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
+                  "epochRollingStableGasCostSummaryMap": {},
                   "timestampMs": "1676911928",
                   "transactions": [
                     "7RudGLkQDBNJyqrptkrNU66Zd3pvq8MHVAHYz9WpBm59"
@@ -668,12 +680,15 @@
                   "digest": "FAUWHyWacmb4Vg4QGi9a6gqeVb7ixAZiL73FaGd6WpoV",
                   "networkTotalTransactions": "792385",
                   "previousDigest": "6Pn25cieaE62AT6BwCeBoca13AGZuneucaaTGqt3gNCo",
-                  "epochRollingGasCostSummary": {
+                  "epochRollingBfcGasCostSummary": {
+                    "basePoint": 0,
+                    "rate": 0,
                     "computationCost": "0",
                     "storageCost": "0",
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
+                  "epochRollingStableGasCostSummaryMap": {},
                   "timestampMs": "1676911928",
                   "transactions": [
                     "7r7tmP5hzgrusiN6cucFwfTveqDb7K75tMJ7oNCyoDmy"
@@ -687,12 +702,15 @@
                   "digest": "B3mzC6gy87SomUQwPsmVY7mtwkZLxfm5WwNi3kKyEb3x",
                   "networkTotalTransactions": "792385",
                   "previousDigest": "CnHTfdUJr1UUqwXkYUhbQjXeM16xR33UR62jE72toCis",
-                  "epochRollingGasCostSummary": {
+                  "epochRollingBfcGasCostSummary": {
+                    "basePoint": 0,
+                    "rate": 0,
                     "computationCost": "0",
                     "storageCost": "0",
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
+                  "epochRollingStableGasCostSummaryMap": {},
                   "timestampMs": "1676911928",
                   "transactions": [
                     "Gb1UDqhmKMzMJ5FL37kBqCcuy4TtBL2ay3qec8tEUBLj"
@@ -706,12 +724,15 @@
                   "digest": "HunuJWKu7azBfS47rJTq9FHTMvUDNVo2SK4hQeh5brXp",
                   "networkTotalTransactions": "792385",
                   "previousDigest": "38fLUfuigyzLPEDrsmRhcQmhKtbEUohuFBP9NDcWBmFz",
-                  "epochRollingGasCostSummary": {
+                  "epochRollingBfcGasCostSummary": {
+                    "basePoint": 0,
+                    "rate": 0,
                     "computationCost": "0",
                     "storageCost": "0",
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
+                  "epochRollingStableGasCostSummaryMap": {},
                   "timestampMs": "1676911928",
                   "transactions": [
                     "GWTS9QR7mjNz9fBWGkk4JZU3mrzMXrmj74uS59Cd5und"
@@ -806,30 +827,6 @@
         "required": true,
         "schema": {
           "$ref": "#/components/schemas/DaoRPC"
-        }
-      }
-    },
-    {
-      "name": "bfc_getInnerExchangeRate",
-      "tags": [
-        {
-          "name": "Read API"
-        }
-      ],
-      "params": [
-        {
-          "name": "gas_coin",
-          "required": true,
-          "schema": {
-            "$ref": "#/components/schemas/ObjectID"
-          }
-        }
-      ],
-      "result": {
-        "name": "BigInt<u64>",
-        "required": true,
-        "schema": {
-          "$ref": "#/components/schemas/BigInt_for_uint64"
         }
       }
     },
@@ -1386,32 +1383,32 @@
           "result": {
             "name": "Result",
             "value": {
-              "minSupportedProtocolVersion": "1",
+              "minSupportedProtocolVersion": "19",
               "maxSupportedProtocolVersion": "23",
-              "protocolVersion": "6",
+              "protocolVersion": "19",
               "featureFlags": {
                 "advance_epoch_start_time_in_safe_mode": true,
-                "advance_to_highest_supported_protocol_version": false,
-                "ban_entry_init": false,
-                "commit_root_state_digest": false,
+                "advance_to_highest_supported_protocol_version": true,
+                "ban_entry_init": true,
+                "commit_root_state_digest": true,
                 "consensus_order_end_of_epoch_last": true,
-                "disable_invariant_violation_check_in_swap_loc": false,
-                "disallow_adding_abilities_on_upgrade": false,
-                "disallow_change_struct_type_params_on_upgrade": false,
+                "disable_invariant_violation_check_in_swap_loc": true,
+                "disallow_adding_abilities_on_upgrade": true,
+                "disallow_change_struct_type_params_on_upgrade": true,
                 "loaded_child_object_format": false,
                 "loaded_child_object_format_type": false,
                 "loaded_child_objects_fixed": true,
                 "missing_type_is_compatibility_error": true,
                 "narwhal_new_leader_election_schedule": false,
-                "narwhal_versioned_metadata": false,
-                "no_extraneous_module_bytes": false,
-                "package_digest_hash_module": false,
+                "narwhal_versioned_metadata": true,
+                "no_extraneous_module_bytes": true,
+                "package_digest_hash_module": true,
                 "package_upgrades": true,
                 "scoring_decision_with_validity_cutoff": true,
-                "simplified_unwrap_then_delete": false,
-                "txn_base_cost_as_multiplier": false,
-                "upgraded_multisig_supported": false,
-                "zklogin_auth": false
+                "simplified_unwrap_then_delete": true,
+                "txn_base_cost_as_multiplier": true,
+                "upgraded_multisig_supported": true,
+                "zklogin_auth": true
               },
               "attributes": {
                 "address_from_bytes_cost_base": {
@@ -1424,7 +1421,7 @@
                   "u64": "52"
                 },
                 "base_tx_cost_fixed": {
-                  "u64": "2000"
+                  "u64": "100"
                 },
                 "base_tx_cost_per_byte": {
                   "u64": "0"
@@ -1616,11 +1613,15 @@
                 "event_emit_value_size_derivation_cost_per_byte": {
                   "u64": "2"
                 },
-                "execution_version": null,
-                "gas_model_version": {
-                  "u64": "5"
+                "execution_version": {
+                  "u64": "1"
                 },
-                "gas_rounding_step": null,
+                "gas_model_version": {
+                  "u64": "6"
+                },
+                "gas_rounding_step": {
+                  "u64": "100"
+                },
                 "groth16_prepare_verifying_key_bls12381_cost_base": {
                   "u64": "52"
                 },
@@ -1690,7 +1691,9 @@
                 "max_event_emit_size": {
                   "u64": "256000"
                 },
-                "max_event_emit_size_total": null,
+                "max_event_emit_size_total": {
+                  "u64": "65536000"
+                },
                 "max_fields_in_struct": {
                   "u64": "32"
                 },
@@ -1719,19 +1722,23 @@
                   "u64": "5"
                 },
                 "max_meter_ticks_per_module": {
-                  "u64": "6000000"
+                  "u64": "16000000"
                 },
                 "max_modules_in_publish": {
                   "u32": "128"
                 },
-                "max_move_identifier_len": null,
+                "max_move_identifier_len": {
+                  "u64": "128"
+                },
                 "max_move_object_size": {
                   "u64": "256000"
                 },
                 "max_move_package_size": {
                   "u64": "102400"
                 },
-                "max_move_value_depth": null,
+                "max_move_value_depth": {
+                  "u64": "128"
+                },
                 "max_move_vector_len": {
                   "u64": "262144"
                 },
@@ -1742,7 +1749,7 @@
                   "u64": "32768"
                 },
                 "max_num_event_emit": {
-                  "u64": "256"
+                  "u64": "1024"
                 },
                 "max_num_new_move_object_ids": {
                   "u64": "2048"
@@ -1802,7 +1809,7 @@
                   "u64": "1024"
                 },
                 "max_verifier_meter_ticks_per_function": {
-                  "u64": "6000000"
+                  "u64": "16000000"
                 },
                 "move_binary_format_version": {
                   "u32": "6"
@@ -2046,6 +2053,8 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
+                  "basePoint": 0,
+                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -2424,6 +2433,8 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
+                    "basePoint": 0,
+                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -2540,6 +2551,8 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
+                    "basePoint": 0,
+                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -2656,6 +2669,8 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
+                    "basePoint": 0,
+                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -5365,7 +5380,8 @@
           "checkpointCommitments",
           "digest",
           "epoch",
-          "epochRollingGasCostSummary",
+          "epochRollingBfcGasCostSummary",
+          "epochRollingStableGasCostSummaryMap",
           "networkTotalTransactions",
           "sequenceNumber",
           "timestampMs",
@@ -5407,13 +5423,19 @@
               }
             ]
           },
-          "epochRollingGasCostSummary": {
+          "epochRollingBfcGasCostSummary": {
             "description": "The running total gas costs of all transactions included in the current epoch so far until this checkpoint.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/GasCostSummary"
               }
             ]
+          },
+          "epochRollingStableGasCostSummaryMap": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GasCostSummary"
+            }
           },
           "networkTotalTransactions": {
             "description": "Total number of transactions committed since genesis, including those in this checkpoint.",
@@ -6449,12 +6471,19 @@
         "description": "Summary of the charges in a transaction. Storage is charged independently of computation. There are 3 parts to the storage charges: `storage_cost`: it is the charge of storage at the time the transaction is executed. The cost of storage is the number of bytes of the objects being mutated multiplied by a variable storage cost per byte `storage_rebate`: this is the amount a user gets back when manipulating an object. The `storage_rebate` is the `storage_cost` for an object minus fees. `non_refundable_storage_fee`: not all the value of the object storage cost is given back to user and there is a small fraction that is kept by the system. This value tracks that charge.\n\nWhen looking at a gas cost summary the amount charged to the user is `computation_cost + storage_cost - storage_rebate` and that is the amount that is deducted from the gas coins. `non_refundable_storage_fee` is collected from the objects being mutated/deleted and it is tracked by the system in storage funds.\n\nObjects deleted, including the older versions of objects mutated, have the storage field on the objects added up to a pool of \"potential rebate\". This rebate then is reduced by the \"nonrefundable rate\" such that: `potential_rebate(storage cost of deleted/mutated objects) = storage_rebate + non_refundable_storage_fee`",
         "type": "object",
         "required": [
+          "basePoint",
           "computationCost",
           "nonRefundableStorageFee",
+          "rate",
           "storageCost",
           "storageRebate"
         ],
         "properties": {
+          "basePoint": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
           "computationCost": {
             "description": "Cost of computation/execution",
             "allOf": [
@@ -6470,6 +6499,11 @@
                 "$ref": "#/components/schemas/BigInt_for_uint64"
               }
             ]
+          },
+          "rate": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
           },
           "storageCost": {
             "description": "Storage cost, it's the sum of all storage cost for all objects created or mutated.",
