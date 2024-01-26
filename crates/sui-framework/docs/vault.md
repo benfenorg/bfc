@@ -881,19 +881,13 @@ open <code>position_number</code> positions
     _ctx: &<b>mut</b> TxContext
 ) {
     <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> position_id = <a href="position.md#0xc8_position_open_position">position::open_position</a>&lt;StableCoinType&gt;(
+    <a href="position.md#0xc8_position_open_position">position::open_position</a>&lt;StableCoinType&gt;(
         &<b>mut</b> _vault.position_manager,
         _vault.index,
         _tick_lower,
         _tick_upper,
         _ctx,
     );
-    event::open_position(
-        <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
-        position_id,
-        _tick_lower,
-        _tick_upper,
-    )
 }
 </code></pre>
 
@@ -926,7 +920,6 @@ open <code>position_number</code> positions
         &<b>mut</b> _vault.position_manager,
         _index
     );
-    event::close_position(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _index)
 }
 </code></pre>
 
@@ -1006,16 +999,6 @@ open <code>position_number</code> positions
         <b>assert</b>!(<a href="math_u128.md#0xc8_math_u128_add_check">math_u128::add_check</a>(_vault.liquidity, liquidity), <a href="vault.md#0xc8_vault_ERR_MAX_LIQUIDITY">ERR_MAX_LIQUIDITY</a>);
         _vault.liquidity = _vault.liquidity + liquidity;
     };
-    event::add_liquidity(
-        _vault_id,
-        _index,
-        tick_lower,
-        tick_upper,
-        liquidity_delta,
-        _vault.liquidity,
-        amount_a,
-        amount_b
-    );
     <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
         vault_id: _vault_id,
         amount_a,
@@ -1132,16 +1115,6 @@ open <code>position_number</code> positions
     );
     <b>let</b> balance_a = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _vault.coin_a, amount_a);
     <b>let</b> balance_b = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _vault.coin_b, amount_b);
-    event::remove_liquidity(
-        _vault_id,
-        _index,
-        tick_lower,
-        tick_upper,
-        _delta_liquidity,
-        _vault.liquidity,
-        amount_a,
-        amount_b
-    );
     (balance_a, balance_b)
 }
 </code></pre>
@@ -2329,12 +2302,6 @@ State checker
     };
 
     _vault.last_sqrt_price = price;
-    event::update_state(
-        price,
-        last_price,
-        _vault.state,
-        _vault.state_counter,
-    );
 }
 </code></pre>
 
