@@ -86,11 +86,11 @@ module bfc_system::event {
     }
 
     public(friend) fun init_treasury(vaults_id: ID) {
-        emit(InitTreasuryEvent { vaults_id })
+        //emit(InitTreasuryEvent { vaults_id })
     }
 
     public(friend) fun init_treasury_pool(treasury_pool_id: ID) {
-        emit(InitTreasuryPoolEvent { treasury_pool_id })
+        //emit(InitTreasuryPoolEvent { treasury_pool_id })
     }
 
     public(friend) fun create_vault(
@@ -102,6 +102,7 @@ module bfc_system::event {
         spacing_times: u32,
         index: u64,
     ) {
+        /*
         emit(CreateVaultEvent {
             vault_id,
             vault_key,
@@ -111,6 +112,7 @@ module bfc_system::event {
             spacing_times,
             index,
         })
+        */
     }
 
     public(friend) fun open_position(
@@ -119,6 +121,7 @@ module bfc_system::event {
         tick_lower: I32,
         tick_upper: I32
     ) {
+        /*
         emit(
             OpenPositionEvent {
                 vault: vault_id,
@@ -127,18 +130,21 @@ module bfc_system::event {
                 tick_upper
             }
         )
+        */
     }
 
     public(friend) fun close_position(
         vault_id: ID,
         position_id: u64
     ) {
+        /*
         emit(
             ClosePositionEvent {
                 vault: vault_id,
                 position: position_id
             }
         )
+        */
     }
 
     public(friend) fun add_liquidity(
@@ -151,6 +157,7 @@ module bfc_system::event {
         amount_a: u64,
         amount_b: u64
     ) {
+        /*
         emit(
             LiquidityEvent {
                 vault: vault_id,
@@ -164,6 +171,7 @@ module bfc_system::event {
                 action: ascii::string(b"add")
             }
         )
+        */
     }
 
     public(friend) fun remove_liquidity(
@@ -176,6 +184,7 @@ module bfc_system::event {
         amount_a: u64,
         amount_b: u64
     ) {
+        /*
         emit(
             LiquidityEvent {
                 vault: vault_id,
@@ -189,6 +198,7 @@ module bfc_system::event {
                 action: ascii::string(b"remove")
             }
         )
+        */
     }
 
     public(friend) fun swap(
