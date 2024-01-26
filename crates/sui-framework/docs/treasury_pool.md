@@ -22,6 +22,7 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
 </code></pre>
 
 
@@ -170,6 +171,8 @@ The <code>withdraw</code> function only called by 0x0 address.
         id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>,
     };
+    <b>let</b> treasury_pool_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
+    event::init_treasury_pool(treasury_pool_id);
     <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>
 }
 </code></pre>

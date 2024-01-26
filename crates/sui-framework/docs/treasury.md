@@ -64,6 +64,7 @@
 <b>use</b> <a href="btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
+<b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
 <b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
@@ -226,6 +227,8 @@
         init: <b>false</b>,
         total_bfc_supply: total_bfc_supply,
     };
+    <b>let</b> treasury_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&<a href="treasury.md#0xc8_treasury">treasury</a>);
+    event::init_treasury(treasury_id);
     <a href="treasury.md#0xc8_treasury">treasury</a>
 }
 </code></pre>

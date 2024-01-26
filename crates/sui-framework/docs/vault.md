@@ -2302,6 +2302,12 @@ State checker
     };
 
     _vault.last_sqrt_price = price;
+    event::update_state(
+        price,
+        last_price,
+        _vault.state,
+        _vault.state_counter,
+    );
 }
 </code></pre>
 

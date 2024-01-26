@@ -1,0 +1,16 @@
+#!/bin/bash
+
+cargo simtest test_full_node_bootstrap_from_snapshot
+cargo simtest test_upgraded_multisig_feature_deny
+cargo simtest advance_epoch_tx_test
+cargo simtest test_bfc_dao_change_round
+cargo simtest test_bfc_dao_update_system_package_blocked
+cargo simtest test_bfc_stable_gas
+cargo simtest test_bfc_treasury_basic_creation
+cargo simtest test_bfc_treasury_swap_bfc_to_stablecoin
+cargo simtest test_bfc_treasury_swap_stablecoin_to_bfc
+cargo simtest test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas
+cargo simtest test_busd_staking
+cargo simtest test_multiple_stable_staking
+cargo simtest test_passive_reconfig
+cargo simtest test_reconfig_with_committee_change_stress
