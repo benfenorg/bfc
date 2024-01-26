@@ -1,14 +1,15 @@
 module bfc_system::event {
-    use std::ascii::{Self, String};
+    use std::ascii::String;
 
     use sui::event::emit;
     use sui::object::ID;
 
-    use bfc_system::i32::I32;
-
     friend bfc_system::treasury;
     friend bfc_system::treasury_pool;
     friend bfc_system::vault;
+
+    spec module { pragma verify = false; }
+
 
     struct InitTreasuryEvent has copy, drop {
         vaults_id: ID
@@ -29,33 +30,6 @@ module bfc_system::event {
         tick_spacing: u32,
         spacing_times: u32,
         index: u64
-    }
-
-    // Position opened event
-    struct OpenPositionEvent has copy, drop {
-        vault: ID,
-        position: u64,
-        tick_lower: I32,
-        tick_upper: I32
-    }
-
-    // Position closed event
-    struct ClosePositionEvent has copy, drop {
-        vault: ID,
-        position: u64
-    }
-
-    // Liquidity event
-    struct LiquidityEvent has copy, drop {
-        vault: ID,
-        position: u64,
-        tick_lower: I32,
-        tick_upper: I32,
-        liquidity: u128,
-        after_liquidity: u128,
-        amount_a: u64,
-        amount_b: u64,
-        action: String
     }
 
     // Swap
@@ -86,11 +60,11 @@ module bfc_system::event {
     }
 
     public(friend) fun init_treasury(vaults_id: ID) {
-        //emit(InitTreasuryEvent { vaults_id })
+        emit(InitTreasuryEvent { vaults_id })
     }
 
     public(friend) fun init_treasury_pool(treasury_pool_id: ID) {
-        //emit(InitTreasuryPoolEvent { treasury_pool_id })
+        emit(InitTreasuryPoolEvent { treasury_pool_id })
     }
 
     public(friend) fun create_vault(
@@ -102,7 +76,6 @@ module bfc_system::event {
         spacing_times: u32,
         index: u64,
     ) {
-        /*
         emit(CreateVaultEvent {
             vault_id,
             vault_key,
@@ -112,94 +85,9 @@ module bfc_system::event {
             spacing_times,
             index,
         })
-        */
     }
 
-    public(friend) fun open_position(
-        vault_id: ID,
-        position_id: u64,
-        tick_lower: I32,
-        tick_upper: I32
-    ) {
-        /*
-        emit(
-            OpenPositionEvent {
-                vault: vault_id,
-                position: position_id,
-                tick_lower,
-                tick_upper
-            }
-        )
-        */
-    }
 
-    public(friend) fun close_position(
-        vault_id: ID,
-        position_id: u64
-    ) {
-        /*
-        emit(
-            ClosePositionEvent {
-                vault: vault_id,
-                position: position_id
-            }
-        )
-        */
-    }
-
-    public(friend) fun add_liquidity(
-        vault_id: ID,
-        position_id: u64,
-        tick_lower: I32,
-        tick_upper: I32,
-        liquidity: u128,
-        after_liquidity: u128,
-        amount_a: u64,
-        amount_b: u64
-    ) {
-        /*
-        emit(
-            LiquidityEvent {
-                vault: vault_id,
-                position: position_id,
-                tick_lower,
-                tick_upper,
-                liquidity,
-                after_liquidity,
-                amount_a,
-                amount_b,
-                action: ascii::string(b"add")
-            }
-        )
-        */
-    }
-
-    public(friend) fun remove_liquidity(
-        vault_id: ID,
-        position_id: u64,
-        tick_lower: I32,
-        tick_upper: I32,
-        liquidity: u128,
-        after_liquidity: u128,
-        amount_a: u64,
-        amount_b: u64
-    ) {
-        /*
-        emit(
-            LiquidityEvent {
-                vault: vault_id,
-                position: position_id,
-                tick_lower,
-                tick_upper,
-                liquidity,
-                after_liquidity,
-                amount_a,
-                amount_b,
-                action: ascii::string(b"remove")
-            }
-        )
-        */
-    }
 
     public(friend) fun swap(
         vault_id: ID,

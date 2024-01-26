@@ -64,7 +64,6 @@
 <b>use</b> <a href="btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
-<b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
 <b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
@@ -227,8 +226,6 @@
         init: <b>false</b>,
         total_bfc_supply: total_bfc_supply,
     };
-    <b>let</b> treasury_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&<a href="treasury.md#0xc8_treasury">treasury</a>);
-    event::init_treasury(treasury_id);
     <a href="treasury.md#0xc8_treasury">treasury</a>
 }
 </code></pre>
@@ -562,7 +559,6 @@ creat vault for ordered A & B
         _ts,
         _ctx,
     );
-    <b>let</b> vault_id = <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(&new_vault);
 
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(
         &<b>mut</b> _treasury.id,
@@ -570,16 +566,6 @@ creat vault for ordered A & B
         new_vault,
     );
     <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_add">bag::add</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> _treasury.supplies, vault_key, _supply);
-
-    event::create_vault(
-        vault_id,
-        vault_key,
-        into_string(get&lt;StableCoinType&gt;()),
-        into_string(get&lt;BFC&gt;()),
-        _tick_spacing,
-        _spacing_times,
-        _treasury.index,
-    );
     vault_key
 }
 </code></pre>
@@ -881,7 +867,6 @@ Internal swap
     <b>let</b> input_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&input);
     <b>assert</b>!(input_amount &gt;= min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _treasury.bfc_balance, input);
-    event::deposit(input_amount);
 
     <b>if</b> (!_treasury.init) {
         _treasury.init = <b>true</b>

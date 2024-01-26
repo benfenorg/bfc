@@ -202,19 +202,13 @@ module bfc_system::vault {
         _ctx: &mut TxContext
     ) {
         assert!(!_vault.is_pause, ERR_POOL_IS_PAUSE);
-        let position_id = position::open_position<StableCoinType>(
+        position::open_position<StableCoinType>(
             &mut _vault.position_manager,
             _vault.index,
             _tick_lower,
             _tick_upper,
             _ctx,
         );
-        event::open_position(
-            vault_id(_vault),
-            position_id,
-            _tick_lower,
-            _tick_upper,
-        )
     }
 
     public(friend) fun close_position<StableCoinType>(
@@ -227,7 +221,6 @@ module bfc_system::vault {
             &mut _vault.position_manager,
             _index
         );
-        event::close_position(vault_id(_vault), _index)
     }
 
     /// Flash loan resource for add_liquidity
@@ -297,16 +290,6 @@ module bfc_system::vault {
             assert!(math_u128::add_check(_vault.liquidity, liquidity), ERR_MAX_LIQUIDITY);
             _vault.liquidity = _vault.liquidity + liquidity;
         };
-        event::add_liquidity(
-            _vault_id,
-            _index,
-            tick_lower,
-            tick_upper,
-            liquidity_delta,
-            _vault.liquidity,
-            amount_a,
-            amount_b
-        );
         AddLiquidityReceipt<StableCoinType> {
             vault_id: _vault_id,
             amount_a,
@@ -376,16 +359,6 @@ module bfc_system::vault {
         );
         let balance_a = balance::split(&mut _vault.coin_a, amount_a);
         let balance_b = balance::split(&mut _vault.coin_b, amount_b);
-        event::remove_liquidity(
-            _vault_id,
-            _index,
-            tick_lower,
-            tick_upper,
-            _delta_liquidity,
-            _vault.liquidity,
-            amount_a,
-            amount_b
-        );
         (balance_a, balance_b)
     }
 

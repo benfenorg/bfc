@@ -1,7 +1,6 @@
 module bfc_system::treasury {
     use std::ascii::String;
     use std::type_name;
-    use std::type_name::{ get, into_string};
 
     use sui::bag::{Self, Bag};
     use sui::balance::{Self, Balance, Supply};
@@ -215,7 +214,6 @@ module bfc_system::treasury {
             _ts,
             _ctx,
         );
-        let vault_id = object::id(&new_vault);
 
         dynamic_field::add(
             &mut _treasury.id,
@@ -223,16 +221,6 @@ module bfc_system::treasury {
             new_vault,
         );
         bag::add<String, Supply<StableCoinType>>(&mut _treasury.supplies, vault_key, _supply);
-
-        event::create_vault(
-            vault_id,
-            vault_key,
-            into_string(get<StableCoinType>()),
-            into_string(get<BFC>()),
-            _tick_spacing,
-            _spacing_times,
-            _treasury.index,
-        );
         vault_key
     }
 
@@ -374,7 +362,6 @@ module bfc_system::treasury {
         let input_amount = balance::value(&input);
         assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
         balance::join(&mut _treasury.bfc_balance, input);
-        event::deposit(input_amount);
 
         if (!_treasury.init) {
             _treasury.init = true
