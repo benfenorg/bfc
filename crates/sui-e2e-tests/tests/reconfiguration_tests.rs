@@ -47,7 +47,7 @@ use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 
 
 #[sim_test]
-async fn advance_epoch_tx_test() {
+async fn sim_advance_epoch_tx_test() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let states = test_cluster
         .swarm
@@ -276,7 +276,7 @@ async fn reconfig_with_revert_end_to_end_test() {
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
-async fn test_passive_reconfig() {
+async fn sim_test_passive_reconfig() {
     telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
@@ -367,7 +367,7 @@ async fn test_change_bfc_round() {
 
 
 #[sim_test]
-async fn test_bfc_dao_update_system_package_blocked(){
+async fn sim_test_bfc_dao_update_system_package_blocked(){
     // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
     //     config.set_commit_root_state_digest_supported(true);
     //     config
@@ -490,7 +490,7 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
 }
 
 #[sim_test]
-async fn test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
+async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
     //telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000)
@@ -2029,7 +2029,7 @@ async fn test_reconfig_with_committee_change_basic() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_committee_change_stress() {
+async fn sim_test_reconfig_with_committee_change_stress() {
     let mut candidates = (0..6)
         .map(|_| ValidatorGenesisConfigBuilder::new().build(&mut OsRng))
         .collect::<Vec<_>>();
@@ -2270,7 +2270,7 @@ async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_vali
 }
 
 #[sim_test]
-async fn test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
@@ -2422,7 +2422,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
 }
 
 #[sim_test]
-async fn test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -2455,7 +2455,7 @@ async fn test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error>
 }
 
 #[sim_test]
-async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -2490,7 +2490,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error>
 }
 
 #[sim_test]
-async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(3000)
@@ -2546,7 +2546,7 @@ async fn test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), any
 }
 
 #[sim_test]
-async fn test_bfc_stable_gas() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
@@ -2691,7 +2691,7 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
 }
 
 #[sim_test]
-async fn test_busd_staking() -> Result<(), anyhow::Error> {
+async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -2761,7 +2761,7 @@ async fn test_busd_staking() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_multiple_stable_staking() -> Result<(), Error> {
+async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)

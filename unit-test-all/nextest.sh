@@ -1,3 +1,3 @@
 #!/bin/bash
-cargo nextest run --profile ci  --retries 1
+cargo nextest run 'not(bfc_sim(/))' --profile ci  --retries 1
 

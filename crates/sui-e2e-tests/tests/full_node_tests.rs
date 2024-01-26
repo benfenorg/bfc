@@ -1151,7 +1151,7 @@ async fn test_get_objects_read() -> Result<(), anyhow::Error> {
 
 // Test for restoring a full node from a db snapshot
 #[sim_test]
-async fn test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(10_000)
