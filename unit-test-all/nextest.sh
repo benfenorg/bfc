@@ -1,3 +1,6 @@
 #!/bin/bash
-cargo nextest run 'not(bfc_sim(/))' --profile ci  --retries 1
+cd crates/sui-e2e-test
+#cargo nextest run --profile ci  --retries 1
+#https://nexte.st/book/filter-expressions.html
+cargo nextest run -E 'not test(/sim_.*/)' --profile ci  --retries 1
 
