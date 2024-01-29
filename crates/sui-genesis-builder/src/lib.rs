@@ -470,7 +470,6 @@ impl Builder {
             .filter_map(|o| StakedSui::try_from(o).ok().map(|s| (o.id(), (o, s))))
             .collect();
 
-        info!("token_distribution_schedule: {:?}", token_distribution_schedule.allocations.len());
         for allocation in token_distribution_schedule.allocations {
             if let Some(staked_with_validator) = allocation.staked_with_validator {
                 let staking_pool_id = *address_to_pool_id
@@ -482,7 +481,6 @@ impl Builder {
                         let Owner::AddressOwner(owner) = &o.owner else {
                         panic!("gas object owner must be address owner");
                     };
-                        println!("====staked_sui_id {:?} ===owner: {:?}, allocation: {:?}",s.id(), owner, allocation);
                         *owner == allocation.recipient_address &&
                         s.principal() == allocation.amount_mist
                           && s.pool_id() == staking_pool_id

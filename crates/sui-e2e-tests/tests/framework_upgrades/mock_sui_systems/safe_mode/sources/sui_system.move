@@ -18,10 +18,12 @@ module sui_system::sui_system {
     struct SuiSystemState has key {
         id: UID,
         version: u64,
+        bfc_system_id: UID,
     }
 
     public(friend) fun create(
         id: UID,
+        bfc_system_id: UID,
         validators: vector<Validator>,
         storage_fund: Balance<BFC>,
         protocol_version: u64,
@@ -41,6 +43,7 @@ module sui_system::sui_system {
         let self = SuiSystemState {
             id,
             version,
+            bfc_system_id,
         };
         dynamic_field::add(&mut self.id, version, system_state);
         transfer::share_object(self);

@@ -65,6 +65,7 @@ module sui_system::genesis {
 
     fun create(
         sui_system_state_id: UID,
+        bfc_system_id: UID,
         sui_supply: Balance<BFC>,
         genesis_chain_parameters: GenesisChainParameters,
         genesis_validators: vector<GenesisValidatorMetadata>,
@@ -115,6 +116,7 @@ module sui_system::genesis {
 
         sui_system::create(
             sui_system_state_id,
+            bfc_system_id,
             validators,
             sui_supply,     // storage_fund
             genesis_chain_parameters.protocol_version,
