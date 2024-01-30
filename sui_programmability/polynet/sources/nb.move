@@ -1,7 +1,5 @@
 module poly::nb {
     use std::string;
-    //use std::error;
-    //use std::signer;
 
     use sui::coin::{Self, BurnCapability, FreezeCapability, MintCapability};
 

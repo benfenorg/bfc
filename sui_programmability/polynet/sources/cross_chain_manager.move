@@ -312,8 +312,7 @@ module poly::cross_chain_manager {
         });
 
         let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit_event(
-            &mut event_store.init_book_keeper_event,
+        event::emit(
             InitBookKeeperEvent{
                 height: startHeight,
                 keepers: keepers,

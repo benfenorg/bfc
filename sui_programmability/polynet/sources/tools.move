@@ -4,14 +4,13 @@ module poly::tools {
     use poly_bridge::wrapper_v1;
 
     use std::vector;
-    use std::signer;
 
     // mainnet
     public entry fun init_as_mainnet(account: address) {
         init_mainnet_ccm(account);
         wrapper_v1::init(account);
         lock_proxy::init(account);
-        issue_license_to_lock_proxy(account, signer::address_of(account));
+        issue_license_to_lock_proxy(account, (account));
     }
 
     public entry fun init_mainnet_ccm(account: address) {
@@ -35,7 +34,7 @@ module poly::tools {
         init_testnet_ccm(account);
         wrapper_v1::init(account);
         lock_proxy::init(account);
-        issue_license_to_lock_proxy(account, signer::address_of(account));
+        issue_license_to_lock_proxy(account, (account));
     }
 
     public entry fun init_testnet_ccm(account: address) {
