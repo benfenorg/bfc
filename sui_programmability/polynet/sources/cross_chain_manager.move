@@ -2,6 +2,7 @@ module poly::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
+    use sui::event;
     use std::acl::{ACL, Self};
     use sui::table::{Table, Self};
     use sui::event;
@@ -139,17 +140,17 @@ module poly::cross_chain_manager {
         verify_header_and_execute_tx_event: event::EventHandle<VerifyHeaderAndExecuteTxEvent>,
     }
 
-    struct InitBookKeeperEvent has store, drop {
+    struct InitBookKeeperEvent has store, drop, copy {
         height: u64,
         keepers: vector<vector<u8>>
     }
 
-    struct ChangeBookKeeperEvent has store, drop {
+    struct ChangeBookKeeperEvent has store, drop, copy {
         height: u64,
         keepers: vector<vector<u8>>
     }
 
-    struct CrossChainEvent has store, drop {
+    struct CrossChainEvent has store, drop, copy {
         sender: address,
         tx_id: vector<u8>,
         proxy_or_asset_contract: vector<u8>,
@@ -158,7 +159,7 @@ module poly::cross_chain_manager {
         raw_data: vector<u8>,
     }
 
-    struct VerifyHeaderAndExecuteTxEvent has store, drop {
+    struct VerifyHeaderAndExecuteTxEvent has store, drop, copy {
         from_chain_id: u64,
         to_contract: vector<u8>,
         cross_chain_tx_hash: vector<u8>,
@@ -334,8 +335,7 @@ module poly::cross_chain_manager {
         putCurEpochStartHeight(startHeight);
 
         let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit_event(
-            &mut event_store.change_book_keeper_event,
+        event::emit(
             ChangeBookKeeperEvent{
                 height: startHeight,
                 keepers: keepers,
@@ -374,8 +374,7 @@ module poly::cross_chain_manager {
 
         // emit event
         let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit_event(
-            &mut event_store.cross_chain_event,
+        event::emit(
             CrossChainEvent{
                 sender: account,
                 tx_id: param_tx_hash,
@@ -488,8 +487,7 @@ module poly::cross_chain_manager {
 
         // emit event
         let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit_event(
-            &mut event_store.verify_header_and_execute_tx_event,
+        event::emit(
             VerifyHeaderAndExecuteTxEvent{
                 from_chain_id: from_chain_id,
                 to_contract: to_contract,

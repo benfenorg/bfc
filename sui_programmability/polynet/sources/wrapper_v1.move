@@ -14,7 +14,7 @@ module poly_bridge::wrapper_v1 {
         lock_with_fee_event: event::EventHandle<LockWithFeeEvent>
     }
 
-    struct LockWithFeeEvent has store, drop {
+    struct LockWithFeeEvent has store, drop, copy{
         from_asset: TypeInfo,
         from_address: address,
         to_chain_id: u64,
@@ -79,8 +79,7 @@ module poly_bridge::wrapper_v1 {
         coin::deposit<BFC>(feeCollector(), fee);
         lock_proxy::lock(account, fund, toChainId, toAddress);
         let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
-        event::emit_event(
-            &mut config_ref.lock_with_fee_event,
+        event::emit(
             LockWithFeeEvent{
                 from_asset: type_info::type_of<Coin<CoinType>>(),
                 from_address: (account),
