@@ -1,7 +1,8 @@
 module poly_bridge::wrapper_v1 {
     use sui::bfc::BFC;
     use sui::event;
-    use sui::type_info::{TypeInfo, Self};
+    //use sui::type_info::{TypeInfo, Self};
+    use std::type_name::{Self, TypeName};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
 
@@ -16,7 +17,7 @@ module poly_bridge::wrapper_v1 {
     }
 
     struct LockWithFeeEvent has store, drop, copy{
-        from_asset: TypeInfo,
+        from_asset: TypeName,
         from_address: address,
         to_chain_id: u64,
         to_address: vector<u8>,
@@ -83,7 +84,7 @@ module poly_bridge::wrapper_v1 {
         let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         event::emit(
             LockWithFeeEvent{
-                from_asset: type_info::type_of<Coin<CoinType>>(),
+                from_asset: type_name::get<Coin<CoinType>>(),
                 from_address: (account),
                 to_chain_id: toChainId,
                 to_address: *toAddress,

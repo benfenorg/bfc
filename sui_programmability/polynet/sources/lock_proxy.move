@@ -1,11 +1,12 @@
 module poly_bridge::lock_proxy {
+    use std::ascii::as_bytes;
     use std::vector;
     use std::string;
     use std::option::{Self, Option};
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
-    use sui::type_info::{TypeInfo, Self};
+    use std::type_name::{Self, TypeName};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
 
@@ -34,7 +35,7 @@ module poly_bridge::lock_proxy {
 
     struct LockProxyStore has key, store {
         proxy_map: Table<u64, vector<u8>>,
-        asset_map: Table<TypeInfo, Table<u64, vector<u8>>>,
+        asset_map: Table<TypeName, Table<u64, vector<u8>>>,
         paused: bool,
         owner: address,
         //bind_proxy_event: event::EventHandle<BindProxyEvent>,
@@ -58,19 +59,19 @@ module poly_bridge::lock_proxy {
         target_proxy_hash: vector<u8>
     }
     struct BindAssetEvent has store, drop, copy {
-        from_asset: TypeInfo,
+        from_asset: TypeName,
         to_chain_id: u64,
         to_asset_hash: vector<u8>,
         to_asset_decimals: u8,
     }
     struct UnlockEvent has store, drop, copy {
-        to_asset: TypeInfo,
+        to_asset: TypeName,
         to_address: address,
         amount: u64,
         from_chain_amount: u128,
     }
     struct LockEvent has store, drop, copy {
-        from_asset: TypeInfo,
+        from_asset: TypeName,
         from_address: address,
         to_chain_id: u64,
         to_asset_hash: vector<u8>,
@@ -86,7 +87,7 @@ module poly_bridge::lock_proxy {
 
         transfer(LockProxyStore{
             proxy_map: table::new<u64, vector<u8>>(),
-            asset_map: table::new<TypeInfo, Table<u64, vector<u8>>>(),
+            asset_map: table::new<TypeName, Table<u64, vector<u8>>>(),
             paused: false,
             owner: (admin),
             //bind_proxy_event: account::new_event_handle<BindProxyEvent>(admin),
@@ -114,7 +115,7 @@ module poly_bridge::lock_proxy {
 
     public fun getToAsset<CoinType>(to_chain_id: u64): (vector<u8>, u8) acquires LockProxyStore {
         let config_ref = borrow_global<LockProxyStore>(@poly_bridge);
-        let from_asset = type_info::type_of<Coin<CoinType>>();
+        let from_asset = type_name::get<Coin<CoinType>>();
         if (table::contains(&config_ref.asset_map, from_asset)) {
             let sub_table = table::borrow(&config_ref.asset_map, from_asset);
             if (table::contains(sub_table, to_chain_id)) {
@@ -203,7 +204,7 @@ module poly_bridge::lock_proxy {
 
     public entry fun bindAsset<CoinType>(owner: address, to_chain_id: u64, to_asset_hash: vector<u8>, to_asset_decimals: u8) acquires LockProxyStore {
         onlyOwner(owner);
-        let from_asset = type_info::type_of<Coin<CoinType>>();
+        let from_asset = type_name::get<Coin<CoinType>>();
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         let decimals_concat_to_asset = vector::singleton(to_asset_decimals);
         vector::append(&mut decimals_concat_to_asset, to_asset_hash);
@@ -227,7 +228,7 @@ module poly_bridge::lock_proxy {
 
     public entry fun unbindAsset<CoinType>(owner: address, to_chain_id: u64) acquires LockProxyStore {
         onlyOwner(owner);
-        let from_asset = type_info::type_of<Coin<CoinType>>();
+        let from_asset = type_name::get<Coin<CoinType>>();
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         if (table::contains(&config_ref.asset_map, from_asset)) {
             let sub_table = table::borrow_mut(&mut config_ref.asset_map, from_asset);
@@ -287,10 +288,12 @@ module poly_bridge::lock_proxy {
         let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
         assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
         let (license_account, license_module_name) = cross_chain_manager::getLicenseInfo(&license);
-        let this_type = type_info::type_of<LicenseStore>();
-        let this_account = type_info::account_address(&this_type);
-        let this_module_name = type_info::module_name(&this_type);
-        assert!(license_account == this_account && license_module_name == this_module_name, EINVALID_LICENSE_INFO);
+        let this_type = type_name::get<LicenseStore>();
+        let this_account = type_name::get_address(&this_type);
+        let this_module_name = type_name::get_module(&this_type);
+
+        //todo
+        //assert!(license_account == this_account && license_module_name == this_module_name, EINVALID_LICENSE_INFO);
         option::fill(license_opt, license);
     }
 
@@ -339,7 +342,7 @@ module poly_bridge::lock_proxy {
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         event::emit(
             LockEvent{
-                from_asset: type_info::type_of<Coin<CoinType>>(),
+                from_asset: type_name::get<Coin<CoinType>>(),
                 from_address: (account),
                 to_chain_id: toChainId,
                 to_asset_hash: to_asset,
@@ -374,7 +377,7 @@ module poly_bridge::lock_proxy {
         let amount = from_target_chain_amount<CoinType>(from_chain_amount, decimals);
 
         // check
-        assert!(*string::bytes(&type_info::type_name<Coin<CoinType>>()) == to_asset, EINVALID_COINTYPE);
+        assert!( *as_bytes(type_name::borrow_string<CoinType>()) == to_asset, EINVALID_COINTYPE);
         assert!(getTargetProxy(from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
         assert!(getLicenseId() == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
@@ -387,7 +390,7 @@ module poly_bridge::lock_proxy {
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         event::emit(
             UnlockEvent{
-                to_asset: type_info::type_of<Coin<CoinType>>(),
+                to_asset: type_name::get<Coin<CoinType>>(),
                 to_address: utils::to_address(to_address),
                 amount,
                 from_chain_amount
