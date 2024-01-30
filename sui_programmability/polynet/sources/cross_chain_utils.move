@@ -2,8 +2,8 @@ module poly::cross_chain_utils {
     use std::hash;
     use std::vector;
     use std::option;
-    use aptos_std::secp256k1;
     use poly::utils as putil;
+    use sui::ecdsa_k1;
 
     const MERKLE_PROOF_NODE_LEN: u64 = 33;
     const POLYCHAIN_SIGNATURE_LEN: u64 = 65;
@@ -90,7 +90,7 @@ module poly::cross_chain_utils {
         while (index < sigCount) {
             sig = secp256k1::ecdsa_signature_from_bytes(putil::slice<u8>(sigList, index*POLYCHAIN_SIGNATURE_LEN, APTOS_SIGNATURE_LEN));
             recovery_id = *vector::borrow<u8>(sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
-            let signer_opt = secp256k1::ecdsa_recover(hash::sha2_256(headerHash), recovery_id, &sig);
+            let signer_opt = sui::ecdsa_k1::ecdsa_recover(hash::sha2_256(headerHash), recovery_id, &sig);
             if (option::is_none(&signer_opt)) {
                 return false
             };

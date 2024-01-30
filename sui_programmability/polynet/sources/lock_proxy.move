@@ -3,12 +3,11 @@ module poly_bridge::lock_proxy {
     use std::vector;
     use std::string;
     use std::option::{Self, Option};
-    use aptos_std::event;
-    use aptos_std::math128;
-    use aptos_std::table::{Table, Self};
-    use aptos_std::type_info::{TypeInfo, Self};
-    use aptos_framework::coin::{Coin, Self}; 
-    use aptos_framework::account;
+    use sui::event;
+    use sui::math;
+    use sui::table::{Table, Self};
+    use sui::type_info::{TypeInfo, Self};
+    use sui::coin::{Coin, Self};
 
     use poly::cross_chain_manager;
     use poly::zero_copy_sink;

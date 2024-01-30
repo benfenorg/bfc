@@ -3,7 +3,7 @@ module poly_bridge::bridge_coin {
     use std::error;
     use std::signer;
 
-    use aptos_framework::coin;
+    use sui::coin;
 
     use poly_bridge::lock_proxy;
 

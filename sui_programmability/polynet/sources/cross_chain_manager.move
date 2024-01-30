@@ -4,9 +4,8 @@ module poly::cross_chain_manager {
     use std::hash;
     use std::bcs;
     use std::acl::{ACL, Self};
-    use aptos_std::table::{Table, Self};
-    use aptos_std::event;
-    use aptos_framework::account;
+    use sui::table::{Table, Self};
+    use sui::event;
 
     use poly::zero_copy_sink;
     use poly::cross_chain_utils;

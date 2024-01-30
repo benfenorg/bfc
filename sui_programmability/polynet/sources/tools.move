@@ -7,14 +7,14 @@ module poly::tools {
     use std::signer;
 
     // mainnet
-    public entry fun init_as_mainnet(account: &signer) {
+    public entry fun init_as_mainnet(account: address) {
         init_mainnet_ccm(account);
         wrapper_v1::init(account);
         lock_proxy::init(account);
         issue_license_to_lock_proxy(account, signer::address_of(account));
     }
 
-    public entry fun init_mainnet_ccm(account: &signer) {
+    public entry fun init_mainnet_ccm(account: address) {
         let polyId: u64 = 41;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();

@@ -1,10 +1,8 @@
 module poly_bridge::wrapper_v1 {
     use std::signer;
-    use aptos_std::event;
-    use aptos_std::type_info::{TypeInfo, Self};
-    use aptos_framework::account;
-    use aptos_framework::coin::{Coin, Self}; 
-    use aptos_framework::aptos_coin::AptosCoin;
+    use sui::event;
+    use sui::type_info::{TypeInfo, Self};
+    use sui::coin::{Coin, Self};
 
     use poly_bridge::lock_proxy;
 

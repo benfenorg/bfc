@@ -1,9 +1,9 @@
 module poly::utils {
     use std::vector;
-    use aptos_std::from_bcs;
-    use aptos_std::any;
+    use sui::from_bcs;
+    use sui::any;
     use std::string::{String, Self};
-    use aptos_std::type_info;
+    use sui::type_info;
     // use std::option;
 
     const EUNSUPPORT_GENERIC_TYPE: u64 = 1;

@@ -3,7 +3,7 @@ module poly::nb {
     use std::error;
     use std::signer;
 
-    use aptos_framework::coin::{Self, BurnCapability, FreezeCapability, MintCapability};
+    use sui::coin::{Self, BurnCapability, FreezeCapability, MintCapability};
 
     const ENOT_ADMIN: u64 = 1;
 
