@@ -51,7 +51,7 @@ fn test_protocol_overrides_2() {
     );
 }
 
-#[cfg(msim)]
+#[cfg(any(msim, feature="bfc_skip_dao_update"))]
 mod sim_only_tests {
 
     use super::*;

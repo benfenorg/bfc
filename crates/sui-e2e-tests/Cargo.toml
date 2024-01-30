@@ -36,7 +36,7 @@ telemetry-subscribers.workspace = true
 fastcrypto.workspace = true
 move-core-types.workspace = true
 
-sui-core.workspace = true
+sui-core = { workspace = true, features = ["bfc_skip_dao_update"] }
 sui-framework.workspace = true
 sui-json-rpc.workspace = true
 sui-node.workspace = true
