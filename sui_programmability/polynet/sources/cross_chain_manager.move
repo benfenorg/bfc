@@ -1,6 +1,5 @@
 module poly::cross_chain_manager {
     use std::vector;
-    //use std::signer;
     use std::hash;
     use std::bcs;
     use std::acl::{ACL, Self};
@@ -346,7 +345,7 @@ module poly::cross_chain_manager {
 
     
     // cross chain
-    public fun crossChain(account: &signer, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>) acquires CrossChainGlobalConfig, ACLStore, EventStore {
+    public fun crossChain(account: address, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>) acquires CrossChainGlobalConfig, ACLStore, EventStore {
         assert!(!paused(), EPAUSED);
 
         // check license
@@ -378,7 +377,7 @@ module poly::cross_chain_manager {
         event::emit_event(
             &mut event_store.cross_chain_event,
             CrossChainEvent{
-                sender: signer::address_of(account),
+                sender: account,
                 tx_id: param_tx_hash,
                 proxy_or_asset_contract: msg_sender,
                 to_chain_id: toChainId,

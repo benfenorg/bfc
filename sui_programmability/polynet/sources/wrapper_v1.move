@@ -1,6 +1,4 @@
 module poly_bridge::wrapper_v1 {
-    //use std::signer;
-    //use sui::bfc;
     use sui::bfc::BFC;
     use sui::event;
     use sui::type_info::{TypeInfo, Self};
@@ -58,7 +56,7 @@ module poly_bridge::wrapper_v1 {
 
     // for user
     public entry fun lock_and_pay_fee<CoinType>(
-        account: &signer, 
+        account: address,
         amount: u64, 
         fee_amount: u64,
         toChainId: u64, 
@@ -70,7 +68,7 @@ module poly_bridge::wrapper_v1 {
     }
 
     public fun lock_and_pay_fee_with_fund<CoinType>(
-        account: &signer, 
+        account: address,
         fund: Coin<CoinType>, 
         fee: Coin<BFC>,
         toChainId: u64, 
@@ -94,7 +92,7 @@ module poly_bridge::wrapper_v1 {
         );
     }
 
-    public entry fun register_coin<CoinType>(account: &signer) {
+    public entry fun register_coin<CoinType>(account: address) {
         coin::register<CoinType>(account);
     }
 }

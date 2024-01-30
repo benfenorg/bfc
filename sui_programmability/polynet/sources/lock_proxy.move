@@ -1,5 +1,4 @@
 module poly_bridge::lock_proxy {
-    use std::signer;
     use std::vector;
     use std::string;
     use std::option::{Self, Option};

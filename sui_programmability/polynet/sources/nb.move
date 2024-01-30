@@ -31,7 +31,7 @@ module poly::nb {
         coin::destroy_mint_cap(mint_cap);
     }
 
-    public entry fun register(account: &signer) {
+    public entry fun register(account: address) {
         coin::register<NBCoin>(account);
     }
 
