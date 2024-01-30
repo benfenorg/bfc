@@ -119,3 +119,4 @@ harness = false
 
 [features]
 test-utils = []
+bfc_skip_dao_update = []
