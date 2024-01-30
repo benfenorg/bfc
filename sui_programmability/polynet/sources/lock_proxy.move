@@ -53,23 +53,23 @@ module poly_bridge::lock_proxy {
 
 
     // events
-    struct BindProxyEvent has store, drop {
+    struct BindProxyEvent has store, drop, copy {
         to_chain_id: u64,
         target_proxy_hash: vector<u8>
     }
-    struct BindAssetEvent has store, drop {
+    struct BindAssetEvent has store, drop, copy {
         from_asset: TypeInfo,
         to_chain_id: u64,
         to_asset_hash: vector<u8>,
         to_asset_decimals: u8,
     }
-    struct UnlockEvent has store, drop {
+    struct UnlockEvent has store, drop, copy {
         to_asset: TypeInfo,
         to_address: address,
         amount: u64,
         from_chain_amount: u128,
     }
-    struct LockEvent has store, drop {
+    struct LockEvent has store, drop, copy {
         from_asset: TypeInfo,
         from_address: address,
         to_chain_id: u64,
@@ -174,8 +174,7 @@ module poly_bridge::lock_proxy {
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         table::upsert(&mut config_ref.proxy_map, to_chain_id, target_proxy_hash);
 
-        event::emit_event(
-            &mut config_ref.bind_proxy_event,
+        event::emit(
             BindProxyEvent{
                 to_chain_id: to_chain_id,
                 target_proxy_hash,
@@ -192,8 +191,7 @@ module poly_bridge::lock_proxy {
             abort ETARGET_PROXY_NOT_BIND
         };
 
-        event::emit_event(
-            &mut config_ref.bind_proxy_event,
+        event::emit(
             BindProxyEvent{
                 to_chain_id: to_chain_id,
                 target_proxy_hash: vector::empty<u8>(),
@@ -215,8 +213,7 @@ module poly_bridge::lock_proxy {
             table::add(&mut config_ref.asset_map, from_asset, subTable);
         };
 
-        event::emit_event(
-            &mut config_ref.bind_asset_event,
+        event::emit(
             BindAssetEvent{
                 from_asset: from_asset,
                 to_chain_id: to_chain_id,
@@ -241,8 +238,7 @@ module poly_bridge::lock_proxy {
             abort ETARGET_ASSET_NOT_BIND
         };
 
-        event::emit_event(
-            &mut config_ref.bind_asset_event,
+        event::emit(
             BindAssetEvent{
                 from_asset: from_asset,
                 to_chain_id: to_chain_id,
@@ -339,8 +335,7 @@ module poly_bridge::lock_proxy {
 
         // emit event 
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        event::emit_event(
-            &mut config_ref.lock_event,
+        event::emit(
             LockEvent{
                 from_asset: type_info::type_of<Coin<CoinType>>(),
                 from_address: (account),
@@ -388,8 +383,7 @@ module poly_bridge::lock_proxy {
 
         // emit event
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        event::emit_event(
-            &mut config_ref.unlock_event,
+        event::emit(
             UnlockEvent{
                 to_asset: type_info::type_of<Coin<CoinType>>(),
                 to_address: utils::to_address(to_address),
