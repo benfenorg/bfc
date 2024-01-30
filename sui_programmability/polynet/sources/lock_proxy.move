@@ -37,10 +37,10 @@ module poly_bridge::lock_proxy {
         asset_map: Table<TypeInfo, Table<u64, vector<u8>>>,
         paused: bool,
         owner: address,
-        bind_proxy_event: event::EventHandle<BindProxyEvent>,
-        bind_asset_event: event::EventHandle<BindAssetEvent>,
-        lock_event: event::EventHandle<LockEvent>,
-        unlock_event: event::EventHandle<UnlockEvent>
+        //bind_proxy_event: event::EventHandle<BindProxyEvent>,
+        //bind_asset_event: event::EventHandle<BindAssetEvent>,
+        //lock_event: event::EventHandle<LockEvent>,
+        //unlock_event: event::EventHandle<UnlockEvent>
     }
 
     struct Treasury<phantom CoinType> has key, store {
@@ -89,10 +89,12 @@ module poly_bridge::lock_proxy {
             asset_map: table::new<TypeInfo, Table<u64, vector<u8>>>(),
             paused: false,
             owner: (admin),
-            bind_proxy_event: account::new_event_handle<BindProxyEvent>(admin),
-            bind_asset_event: account::new_event_handle<BindAssetEvent>(admin),
-            lock_event: account::new_event_handle<LockEvent>(admin),
-            unlock_event: account::new_event_handle<UnlockEvent>(admin), }, admin);
+            //bind_proxy_event: account::new_event_handle<BindProxyEvent>(admin),
+            //bind_asset_event: account::new_event_handle<BindAssetEvent>(admin),
+            //lock_event: account::new_event_handle<LockEvent>(admin),
+            //unlock_event: account::new_event_handle<UnlockEvent>(admin),
+            },
+             admin);
 
         transfer(LicenseStore{
             license: option::none<cross_chain_manager::License>(),

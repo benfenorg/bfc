@@ -2,13 +2,12 @@ module poly::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
-    use polynet::acl::ACL;
-    use polynet::acl;
     use sui::event;
     use sui::table::{Table, Self};
-    use sui::event;
     use sui::transfer::transfer;
 
+    use polynet::acl::ACL;
+    use polynet::acl;
     use poly::zero_copy_sink;
     use poly::cross_chain_utils;
 
@@ -136,10 +135,10 @@ module poly::cross_chain_manager {
 
     // event 
     struct EventStore has key, store {
-        init_book_keeper_event: event::EventHandle<InitBookKeeperEvent>,
-        change_book_keeper_event: event::EventHandle<ChangeBookKeeperEvent>,
-        cross_chain_event: event::EventHandle<CrossChainEvent>,
-        verify_header_and_execute_tx_event: event::EventHandle<VerifyHeaderAndExecuteTxEvent>,
+        //init_book_keeper_event: event::EventHandle<InitBookKeeperEvent>,
+        //change_book_keeper_event: event::EventHandle<ChangeBookKeeperEvent>,
+        //cross_chain_event: event::EventHandle<CrossChainEvent>,
+        //verify_header_and_execute_tx_event: event::EventHandle<VerifyHeaderAndExecuteTxEvent>,
     }
 
     struct InitBookKeeperEvent has store, drop, copy {
@@ -309,10 +308,10 @@ module poly::cross_chain_manager {
 
         // init event store
         transfer(EventStore{
-            init_book_keeper_event: account::new_event_handle<InitBookKeeperEvent>(account),
-            change_book_keeper_event: account::new_event_handle<ChangeBookKeeperEvent>(account),
-            cross_chain_event: account::new_event_handle<CrossChainEvent>(account),
-            verify_header_and_execute_tx_event: account::new_event_handle<VerifyHeaderAndExecuteTxEvent>(account),
+            //init_book_keeper_event: account::new_event_handle<InitBookKeeperEvent>(account),
+            //change_book_keeper_event: account::new_event_handle<ChangeBookKeeperEvent>(account),
+            //cross_chain_event: account::new_event_handle<CrossChainEvent>(account),
+            //verify_header_and_execute_tx_event: account::new_event_handle<VerifyHeaderAndExecuteTxEvent>(account),
         }, account);
 
         let event_store = borrow_global_mut<EventStore>(@poly);

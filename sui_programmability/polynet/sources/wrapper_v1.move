@@ -12,7 +12,7 @@ module poly_bridge::wrapper_v1 {
 
     struct WrapperStore has key, store{
         fee_collector: address,
-        lock_with_fee_event: event::EventHandle<LockWithFeeEvent>
+        //lock_with_fee_event: event::EventHandle<LockWithFeeEvent>
     }
 
     struct LockWithFeeEvent has store, drop, copy{
@@ -30,7 +30,7 @@ module poly_bridge::wrapper_v1 {
 
         transfer(WrapperStore{
             fee_collector: @poly_bridge,
-            lock_with_fee_event: account::new_event_handle<LockWithFeeEvent>(admin)
+            //lock_with_fee_event: account::new_event_handle<LockWithFeeEvent>(admin)
         }, admin);
     }
 
