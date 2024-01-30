@@ -1,7 +1,7 @@
 module poly::nb {
     use std::string;
-    use std::error;
-    use std::signer;
+    //use std::error;
+    //use std::signer;
 
     use sui::coin::{Self, BurnCapability, FreezeCapability, MintCapability};
 
@@ -15,7 +15,7 @@ module poly::nb {
         mint_cap: MintCapability<NBCoin>,
     }
 
-    public entry fun initialize(admin: &signer) {
+    public entry fun initialize(admin: address) {
         only_admin(admin);
 
         let (burn_cap, freeze_cap, mint_cap) = coin::initialize<NBCoin>(
@@ -38,49 +38,49 @@ module poly::nb {
     }
 
     public entry fun mint(
-        admin: &signer,
+        admin: address,
         dst_addr: address,
         amount: u64,
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let mint_cap = &borrow_global<NBCapStore>(signer::address_of(admin)).mint_cap;
+        let mint_cap = &borrow_global<NBCapStore>((admin)).mint_cap;
         let coins_minted = coin::mint<NBCoin>(amount, mint_cap);
         coin::deposit<NBCoin>(dst_addr, coins_minted);
     }
 
     public entry fun burn(
-        admin: &signer,
+        admin: address,
         amount: u64,
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let admin_addr = signer::address_of(admin);
+        let admin_addr = (admin);
         let burn_cap = &borrow_global<NBCapStore>(admin_addr).burn_cap;
         coin::burn_from<NBCoin>(admin_addr, amount, burn_cap);
     }
 
     public entry fun freeze_coin_store(
-        admin: &signer,
+        admin: address,
         freeze_addr: address,
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let freeze_cap = &borrow_global<NBCapStore>(signer::address_of(admin)).freeze_cap;
+        let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
         coin::freeze_coin_store<NBCoin>(freeze_addr, freeze_cap);
     }
 
     public entry fun unfreeze_coin_store(
-        admin: &signer,
+        admin: address,
         unfreeze_addr: address,
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let freeze_cap = &borrow_global<NBCapStore>(signer::address_of(admin)).freeze_cap;
+        let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
         coin::unfreeze_coin_store<NBCoin>(unfreeze_addr, freeze_cap);
     }
 
-    fun only_admin(account: &signer) {
-        assert!(signer::address_of(account) == @poly, error::permission_denied(ENOT_ADMIN));
+    fun only_admin(account: address) {
+        assert!((account) == @poly, ENOT_ADMIN);
     }
 }

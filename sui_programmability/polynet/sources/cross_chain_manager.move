@@ -1,6 +1,6 @@
 module poly::cross_chain_manager {
     use std::vector;
-    use std::signer;
+    //use std::signer;
     use std::hash;
     use std::bcs;
     use std::acl::{ACL, Self};
@@ -50,8 +50,8 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun grantRole(admin: &signer, role: u64, account: address) acquires ACLStore {
-        assert!(hasRole(ADMIN_ROLE, signer::address_of(admin)), ENOT_ADMIN);
+    public entry fun grantRole(admin: address, role: u64, account: address) acquires ACLStore {
+        assert!(hasRole(ADMIN_ROLE, admin), ENOT_ADMIN);
         assert!(!hasRole(role, account), EALREADY_HAS_ROLE);
         let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         if (table::contains(&acl_store_ref.role_acls, role)) {
@@ -64,8 +64,8 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun revokeRole(admin: &signer, role: u64, account: address) acquires ACLStore {
-        assert!(hasRole(ADMIN_ROLE, signer::address_of(admin)), ENOT_ADMIN);
+    public entry fun revokeRole(admin: address, role: u64, account: address) acquires ACLStore {
+        assert!(hasRole(ADMIN_ROLE, admin), ENOT_ADMIN);
         assert!(hasRole(role, account), ENOT_HAS_ROLE);
         let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let role_acl = table::borrow_mut(&mut acl_store_ref.role_acls, role);
@@ -79,8 +79,8 @@ module poly::cross_chain_manager {
         module_name: vector<u8>
     }
 
-    public fun issueLicense(ca: &signer, account: address, module_name: vector<u8>): License acquires ACLStore {
-        assert!(hasRole(CA_ROLE, signer::address_of(ca)), ENOT_CA_ROLE);
+    public fun issueLicense(ca: address, account: address, module_name: vector<u8>): License acquires ACLStore {
+        assert!(hasRole(CA_ROLE, ca), ENOT_CA_ROLE);
         License{
             account: account,
             module_name: module_name,
@@ -124,8 +124,8 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(ca: &signer, license_id: vector<u8>, access_level: u8) acquires ACLStore {
-        assert!(hasRole(CA_ROLE, signer::address_of(ca)), ENOT_CA_ROLE);
+    public entry fun setBlackList(ca: address, license_id: vector<u8>, access_level: u8) acquires ACLStore {
+        assert!(hasRole(CA_ROLE, ca), ENOT_CA_ROLE);
         let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let v_ref = table::borrow_mut_with_default(&mut acl_store_ref.license_black_list, license_id, access_level);
         *v_ref = access_level;
@@ -255,22 +255,22 @@ module poly::cross_chain_manager {
         return config_ref.paused
     }
 
-    public fun pause(account: &signer) acquires CrossChainGlobalConfig, ACLStore {
-        assert!(hasRole(PAUSE_ROLE, signer::address_of(account)), ENOT_PAUSE_ROLE);
+    public fun pause(account: address) acquires CrossChainGlobalConfig, ACLStore {
+        assert!(hasRole(PAUSE_ROLE, account), ENOT_PAUSE_ROLE);
         let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.paused = true;
     }
 
-    public fun unpause(account: &signer) acquires CrossChainGlobalConfig, ACLStore {
-        assert!(hasRole(PAUSE_ROLE, signer::address_of(account)), ENOT_PAUSE_ROLE);
+    public fun unpause(account: address) acquires CrossChainGlobalConfig, ACLStore {
+        assert!(hasRole(PAUSE_ROLE, (account)), ENOT_PAUSE_ROLE);
         let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.paused = false;
     }
 
 
     // initialize
-    public fun init(account: &signer, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64) acquires EventStore {
-        assert!(signer::address_of(account) == @poly, EINVALID_SIGNER);
+    public fun init(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64) acquires EventStore {
+        assert!((account) == @poly, EINVALID_SIGNER);
         
         // init access control lists
         let acls = table::new<u64, ACL>();
@@ -323,15 +323,15 @@ module poly::cross_chain_manager {
 
     
     // set poly id
-    public entry fun setPolyId(account: &signer, polyId: u64) acquires CrossChainGlobalConfig, ACLStore {
-        assert!(hasRole(CHANGE_KEEPER_ROLE, signer::address_of(account)), ENOT_CHANGE_KEEPER_ROLE);
+    public entry fun setPolyId(account: address, polyId: u64) acquires CrossChainGlobalConfig, ACLStore {
+        assert!(hasRole(CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
         putPolyId(polyId);
     }
 
 
     // change book keeper
-    public entry fun changeBookKeeper(account: &signer, keepers: vector<vector<u8>>, startHeight: u64) acquires CrossChainGlobalConfig, EventStore, ACLStore {
-        assert!(hasRole(CHANGE_KEEPER_ROLE, signer::address_of(account)), ENOT_CHANGE_KEEPER_ROLE);
+    public entry fun changeBookKeeper(account: address, keepers: vector<vector<u8>>, startHeight: u64) acquires CrossChainGlobalConfig, EventStore, ACLStore {
+        assert!(hasRole(CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
         putCurBookKeepers(&keepers);
         putCurEpochStartHeight(startHeight);
 

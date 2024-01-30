@@ -25,20 +25,20 @@ module poly::tools {
         cross_chain_manager::init(account, keepers, startHeight, polyId);
     }
 
-    public entry fun issue_license_to_lock_proxy(account: &signer, bridge_addr: address) {
+    public entry fun issue_license_to_lock_proxy(account: address, bridge_addr: address) {
         let license = cross_chain_manager::issueLicense(account, bridge_addr, b"lock_proxy");
         lock_proxy::receiveLicense(license);
     }
 
     // testnet
-    public entry fun init_as_testnet(account: &signer) {
+    public entry fun init_as_testnet(account: address) {
         init_testnet_ccm(account);
         wrapper_v1::init(account);
         lock_proxy::init(account);
         issue_license_to_lock_proxy(account, signer::address_of(account));
     }
 
-    public entry fun init_testnet_ccm(account: &signer) {
+    public entry fun init_testnet_ccm(account: address) {
         let polyId: u64 = 998;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();

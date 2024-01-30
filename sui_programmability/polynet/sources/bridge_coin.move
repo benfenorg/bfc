@@ -1,18 +1,16 @@
 module poly_bridge::bridge_coin {
     use std::string::{String};
-    use std::error;
-    use std::signer;
 
     use sui::coin;
 
     use poly_bridge::lock_proxy;
 
-    const ENOT_BRIDGE_ADMIN: u64 = 1;
+    const ENOT_BRIDGE_ADMIN: u64 = 4001;
 
     const HUGE_U64: u64 = 10000000000000000000;
 
     public entry fun initialize<BridgeCoinType>(
-        admin: &signer,
+        admin: address,
         name: String,
         symbol: String,
         decimals: u8,
@@ -36,7 +34,7 @@ module poly_bridge::bridge_coin {
         coin::destroy_mint_cap(mint_cap);
     }
 
-    fun only_admin(account: &signer) {
-        assert!(lock_proxy::is_admin(signer::address_of(account)), error::permission_denied(ENOT_BRIDGE_ADMIN));
+    fun only_admin(account: address) {
+        assert!(lock_proxy::is_admin(account), ENOT_BRIDGE_ADMIN);
     }
 }

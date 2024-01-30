@@ -1,5 +1,7 @@
 module poly_bridge::wrapper_v1 {
-    use std::signer;
+    //use std::signer;
+    //use sui::bfc;
+    use sui::bfc::BFC;
     use sui::event;
     use sui::type_info::{TypeInfo, Self};
     use sui::coin::{Coin, Self};
@@ -24,16 +26,16 @@ module poly_bridge::wrapper_v1 {
     }
 
     // for admin
-    public entry fun init(admin: &signer) {
-        assert!(signer::address_of(admin) == @poly_bridge, EINVALID_SIGNER);
+    public entry fun init(admin: address) {
+        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
         move_to(admin, WrapperStore{
             fee_collector: @poly_bridge,
             lock_with_fee_event: account::new_event_handle<LockWithFeeEvent>(admin)
         });
     }
 
-    public entry fun setFeeCollector(admin: &signer, new_fee_collector: address) acquires WrapperStore {
-        assert!(signer::address_of(admin) == @poly_bridge, EINVALID_SIGNER);
+    public entry fun setFeeCollector(admin: address, new_fee_collector: address) acquires WrapperStore {
+        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
         let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         config_ref.fee_collector = new_fee_collector;
     }
@@ -70,20 +72,20 @@ module poly_bridge::wrapper_v1 {
     public fun lock_and_pay_fee_with_fund<CoinType>(
         account: &signer, 
         fund: Coin<CoinType>, 
-        fee: Coin<AptosCoin>,
+        fee: Coin<BFC>,
         toChainId: u64, 
         toAddress: &vector<u8>
     ) acquires WrapperStore { 
         let amount = coin::value(&fund);
         let fee_amount = coin::value(&fee);
-        coin::deposit<AptosCoin>(feeCollector(), fee);
+        coin::deposit<BFC>(feeCollector(), fee);
         lock_proxy::lock(account, fund, toChainId, toAddress);
         let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         event::emit_event(
             &mut config_ref.lock_with_fee_event,
             LockWithFeeEvent{
                 from_asset: type_info::type_of<Coin<CoinType>>(),
-                from_address: signer::address_of(account),
+                from_address: (account),
                 to_chain_id: toChainId,
                 to_address: *toAddress,
                 amount: amount,
