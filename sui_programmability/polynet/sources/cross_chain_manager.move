@@ -5,6 +5,7 @@ module poly::cross_chain_manager {
     use std::acl::{ACL, Self};
     use sui::table::{Table, Self};
     use sui::event;
+    use sui::transfer::transfer;
 
     use poly::zero_copy_sink;
     use poly::cross_chain_utils;
@@ -285,10 +286,11 @@ module poly::cross_chain_manager {
         table::add(&mut acls, PAUSE_ROLE, pause_acl);
         table::add(&mut acls, CA_ROLE, ca_acl);
         table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
-        move_to<ACLStore>(account, ACLStore{ 
-            role_acls: acls, 
-            license_black_list: table::new<vector<u8>, u8>() 
-        });
+
+        transfer(ACLStore{
+            role_acls: acls,
+            license_black_list: table::new<vector<u8>, u8>()
+        }, account);
 
         // init global config
         let config = CrossChainGlobalConfig{
@@ -300,15 +302,16 @@ module poly::cross_chain_manager {
             ethToPolyTxHashMap: table::new<u128, vector<u8>>(),
             fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>()
         };
-        move_to<CrossChainGlobalConfig>(account, config);
+        
+        transfer(config, account);
 
         // init event store
-        move_to<EventStore>(account, EventStore{
+        transfer(EventStore{
             init_book_keeper_event: account::new_event_handle<InitBookKeeperEvent>(account),
             change_book_keeper_event: account::new_event_handle<ChangeBookKeeperEvent>(account),
             cross_chain_event: account::new_event_handle<CrossChainEvent>(account),
             verify_header_and_execute_tx_event: account::new_event_handle<VerifyHeaderAndExecuteTxEvent>(account),
-        });
+        }, account);
 
         let event_store = borrow_global_mut<EventStore>(@poly);
         event::emit(

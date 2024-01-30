@@ -3,6 +3,7 @@ module poly_bridge::wrapper_v1 {
     use sui::event;
     use sui::type_info::{TypeInfo, Self};
     use sui::coin::{Coin, Self};
+    use sui::transfer::transfer;
 
     use poly_bridge::lock_proxy;
 
@@ -26,10 +27,11 @@ module poly_bridge::wrapper_v1 {
     // for admin
     public entry fun init(admin: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        move_to(admin, WrapperStore{
+
+        transfer(WrapperStore{
             fee_collector: @poly_bridge,
             lock_with_fee_event: account::new_event_handle<LockWithFeeEvent>(admin)
-        });
+        }, admin);
     }
 
     public entry fun setFeeCollector(admin: address, new_fee_collector: address) acquires WrapperStore {
@@ -63,7 +65,7 @@ module poly_bridge::wrapper_v1 {
         toAddress: vector<u8>
     ) acquires WrapperStore {
         let fund = coin::withdraw<CoinType>(account, amount);
-        let fee = coin::withdraw<AptosCoin>(account, fee_amount);
+        let fee = coin::withdraw<BFC>(account, fee_amount);
         lock_and_pay_fee_with_fund<CoinType>(account, fund, fee, toChainId, &toAddress);
     }
 

@@ -2,6 +2,7 @@ module poly::nb {
     use std::string;
 
     use sui::coin::{Self, BurnCapability, FreezeCapability, MintCapability};
+    use sui::transfer::transfer;
 
     const ENOT_ADMIN: u64 = 1;
 
@@ -24,7 +25,7 @@ module poly::nb {
             true, /* monitor_supply */
         );
 
-        move_to(admin, NBCapStore { burn_cap, freeze_cap, mint_cap });
+        transfer(NBCapStore { burn_cap, freeze_cap, mint_cap }, admin);
 
         coin::destroy_burn_cap(burn_cap);
         coin::destroy_freeze_cap(freeze_cap);

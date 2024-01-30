@@ -7,6 +7,7 @@ module poly_bridge::lock_proxy {
     use sui::table::{Table, Self};
     use sui::type_info::{TypeInfo, Self};
     use sui::coin::{Coin, Self};
+    use sui::transfer::transfer;
 
     use poly::cross_chain_manager;
     use poly::zero_copy_sink;
@@ -83,7 +84,7 @@ module poly_bridge::lock_proxy {
     public entry fun init(admin: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
 
-        move_to<LockProxyStore>(admin, LockProxyStore{
+        transfer(LockProxyStore{
             proxy_map: table::new<u64, vector<u8>>(),
             asset_map: table::new<TypeInfo, Table<u64, vector<u8>>>(),
             paused: false,
@@ -91,12 +92,11 @@ module poly_bridge::lock_proxy {
             bind_proxy_event: account::new_event_handle<BindProxyEvent>(admin),
             bind_asset_event: account::new_event_handle<BindAssetEvent>(admin),
             lock_event: account::new_event_handle<LockEvent>(admin),
-            unlock_event: account::new_event_handle<UnlockEvent>(admin),
-        });
+            unlock_event: account::new_event_handle<UnlockEvent>(admin), }, admin);
 
-        move_to<LicenseStore>(admin, LicenseStore{
+        transfer(LicenseStore{
             license: option::none<cross_chain_manager::License>(),
-        });
+        }, admin);
     }
 
 
@@ -257,9 +257,9 @@ module poly_bridge::lock_proxy {
     public entry fun initTreasury<CoinType>(admin: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
         assert!(!exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_ALREADY_EXIST);
-        move_to(admin, Treasury<CoinType> {
-            coin: coin::zero<CoinType>()
-        });
+
+
+        transfer(Treasury<CoinType> { coin: coin::zero<CoinType>() }, admin);
     }
 
     public fun is_treasury_initialzed<CoinType>(): bool {
