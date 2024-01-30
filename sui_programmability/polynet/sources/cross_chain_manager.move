@@ -2,8 +2,9 @@ module poly::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
+    use polynet::acl::ACL;
+    use polynet::acl;
     use sui::event;
-    use std::acl::{ACL, Self};
     use sui::table::{Table, Self};
     use sui::event;
     use sui::transfer::transfer;
