@@ -54,7 +54,7 @@ module poly_bridge::wrapper_v1 {
         headerProof: vector<u8>, 
         curRawHeader: vector<u8>, 
         headerSig: vector<u8>,
-        ctx: &mut TxContext 
+        ctx: &mut TxContext
     ) {
         lock_proxy::relay_unlock_tx<CoinType>(proof, rawHeader, headerProof, curRawHeader, headerSig, ctx);
     }

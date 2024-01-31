@@ -1,18 +1,14 @@
 module poly::nb {
     use std::string;
 
-    use sui::coin::{Self};
+    use sui::coin::{Self, Coin};
     use sui::transfer::transfer;
 
-    const ENOT_ADMIN: u64 = 1;
+    const ENOT_ADMIN: u64 = 4001;
 
     struct NBCoin has key {}
 
-    struct NBCapStore has key {
-        //burn_cap: BurnCapability<NBCoin>,
-        //freeze_cap: FreezeCapability<NBCoin>,
-        //mint_cap: MintCapability<NBCoin>,
-    }
+
 
     public entry fun initialize(admin: address) {
         only_admin(admin);
@@ -25,7 +21,7 @@ module poly::nb {
             true, /* monitor_supply */
         );
 
-        transfer(NBCapStore { }, admin);
+
 
         //coin::destroy_burn_cap(burn_cap);
         //coin::destroy_freeze_cap(freeze_cap);
@@ -40,30 +36,31 @@ module poly::nb {
         admin: address,
         dst_addr: address,
         amount: u64,
-    ) acquires NBCapStore {
+    )  {
         only_admin(admin);
 
         //let mint_cap = &borrow_global<NBCapStore>((admin)).mint_cap;
         let coins_minted = coin::mint<NBCoin>(amount);
-        coin::deposit<NBCoin>(dst_addr, coins_minted);
+        //coin::deposit<NBCoin>(dst_addr, coins_minted);
+        transfer(coins_minted, dst_addr);
     }
 
     public entry fun burn(
         admin: address,
-        amount: u64,
-    ) acquires NBCapStore {
+        amount: Coin<NBCoin>,
+    )  {
         only_admin(admin);
 
         let admin_addr = (admin);
         //let burn_cap = &borrow_global<NBCapStore>(admin_addr).burn_cap;
-        coin::burn_from<NBCoin>(admin_addr, amount, burn_cap);
-        coin::burn(amount, );
+        //coin::burn_from<NBCoin>(admin_addr, amount, burn_cap);
+        coin::burn( ,amount);
     }
 
     public entry fun freeze_coin_store(
         admin: address,
         freeze_addr: address,
-    ) acquires NBCapStore {
+    )  {
         only_admin(admin);
 
         //let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
@@ -73,7 +70,7 @@ module poly::nb {
     public entry fun unfreeze_coin_store(
         admin: address,
         unfreeze_addr: address,
-    ) acquires NBCapStore {
+    )  {
         only_admin(admin);
 
         //let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
