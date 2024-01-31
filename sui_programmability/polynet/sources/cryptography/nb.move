@@ -54,7 +54,7 @@ module poly::nb {
         let admin_addr = (admin);
         //let burn_cap = &borrow_global<NBCapStore>(admin_addr).burn_cap;
         //coin::burn_from<NBCoin>(admin_addr, amount, burn_cap);
-        coin::burn( ,amount);
+        //coin::burn( ,amount);
     }
 
     public entry fun freeze_coin_store(
@@ -64,7 +64,7 @@ module poly::nb {
         only_admin(admin);
 
         //let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
-        coin::freeze_coin_store<NBCoin>(freeze_addr, freeze_cap);
+        //coin::freeze_coin_store<NBCoin>(freeze_addr, freeze_cap);
     }
 
     public entry fun unfreeze_coin_store(
@@ -74,7 +74,7 @@ module poly::nb {
         only_admin(admin);
 
         //let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
-        coin::unfreeze_coin_store<NBCoin>(unfreeze_addr, freeze_cap);
+        //coin::unfreeze_coin_store<NBCoin>(unfreeze_addr, freeze_cap);
     }
 
     fun only_admin(account: address) {

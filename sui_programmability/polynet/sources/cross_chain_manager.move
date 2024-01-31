@@ -291,7 +291,7 @@ module poly::cross_chain_manager {
 
         transfer(ACLStore{
             role_acls: acls,
-            license_black_list: table::new<vector<u8>, u8>()
+            license_black_list: table::new<vector<u8>, u8>(ctx)
         }, account);
 
         // init global config
