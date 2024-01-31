@@ -377,7 +377,8 @@ module poly_bridge::lock_proxy {
         let amount = from_target_chain_amount<CoinType>(from_chain_amount, decimals);
 
         // check
-        assert!( *as_bytes(type_name::borrow_string<CoinType>()) == to_asset, EINVALID_COINTYPE);
+        //type_name::get<Coin<CoinType>>()
+        assert!( *as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
         assert!(getTargetProxy(from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
         assert!(getLicenseId() == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
