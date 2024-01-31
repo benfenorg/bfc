@@ -1,10 +1,11 @@
 module poly::utils {
-    use std::ascii::try_string;
+    //use std::ascii::try_string;
     use std::vector;
-    use sui::from_bcs;
-    use sui::any;
+    //use sui::from_bcs;
+    //use sui::any;
     use std::string::{String, Self};
-    use std::type_name;
+    use sui::bcs;
+    //use std::type_name;
     // use std::option;
 
     const EUNSUPPORT_GENERIC_TYPE: u64 = 1;
@@ -25,51 +26,58 @@ module poly::utils {
     }
 
     public fun to_bool(v: vector<u8>): bool {
-        return from_bcs::to_bool(v)
+        let data = bcs::new(v);
+        return bcs::peel_bool(&mut data)
     }
 
     public fun to_u8(v: vector<u8>): u8 {
-        return from_bcs::to_u8(v)
+        let data = bcs::new(v);
+        return   bcs::peel_u8(&mut data)
+
     }
 
     public fun to_u64(v: vector<u8>): u64 {
-        return from_bcs::to_u64(v)
+        let data = bcs::new(v);
+        return bcs::peel_u64(&mut data)
     }
 
     public fun to_u128(v: vector<u8>): u128 {
-        return from_bcs::to_u128(v)
+        let data = bcs::new(v);
+        return bcs::peel_u128(&mut data)
     }
 
     public fun to_address(v: vector<u8>): address {
-        return from_bcs::to_address(v)
+        let data = bcs::new(v);
+        return bcs::peel_address(&mut data)
     }
 
     public fun to_string(v: vector<u8>): String {
-        return from_bcs::to_string(v)
+        let data = string::utf8(v);
+        return data
     }
 
-    public fun from_bytes<T>(v: vector<u8>): T {
-        let type = type_name::into_string(type_name::get<T>());
-        if (type == string::to_ascii(string::utf8(b"bool")) ) {
-            let res = from_bcs::to_bool(v);
-            return any::unpack<T>(any::pack(res))
-        } else if (type == string::to_ascii(string::utf8(b"u8"))) {
-            let res = from_bcs::to_u8(v);
-            return any::unpack<T>(any::pack(res))
-        } else if (type == string::to_ascii(string::utf8(b"u64"))) {
-            let res = from_bcs::to_u64(v);
-            return any::unpack<T>(any::pack(res))
-        } else if (type == string::to_ascii(string::utf8(b"u128"))) {
-            let res = from_bcs::to_u128(v);
-            return any::unpack<T>(any::pack(res))
-        } else if (type == string::to_ascii(string::utf8(b"address"))) {
-            let res = from_bcs::to_address(v);
-            return any::unpack<T>(any::pack(res))
-        } else if (type == string::to_ascii(string::utf8(b"0x1::string::String"))) {
-            let res = from_bcs::to_string(v);
-            return any::unpack<T>(any::pack(res))
-        } else {
-            abort EUNSUPPORT_GENERIC_TYPE
-        }
-    }
+    // public fun from_bytes<T>(v: vector<u8>): T {
+    //     let type = type_name::into_string(type_name::get<T>());
+    //     if (type == string::to_ascii(string::utf8(b"bool")) ) {
+    //         let res = from_bcs::to_bool(v);
+    //         return any::unpack<T>(any::pack(res))
+    //     } else if (type == string::to_ascii(string::utf8(b"u8"))) {
+    //         let res = from_bcs::to_u8(v);
+    //         return any::unpack<T>(any::pack(res))
+    //     } else if (type == string::to_ascii(string::utf8(b"u64"))) {
+    //         let res = from_bcs::to_u64(v);
+    //         return any::unpack<T>(any::pack(res))
+    //     } else if (type == string::to_ascii(string::utf8(b"u128"))) {
+    //         let res = from_bcs::to_u128(v);
+    //         return any::unpack<T>(any::pack(res))
+    //     } else if (type == string::to_ascii(string::utf8(b"address"))) {
+    //         let res = from_bcs::to_address(v);
+    //         return any::unpack<T>(any::pack(res))
+    //     } else if (type == string::to_ascii(string::utf8(b"0x1::string::String"))) {
+    //         let res = from_bcs::to_string(v);
+    //         return any::unpack<T>(any::pack(res))
+    //     } else {
+    //         abort EUNSUPPORT_GENERIC_TYPE
+    //     }
+    // }
 }
