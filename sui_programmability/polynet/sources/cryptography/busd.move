@@ -1,4 +1,4 @@
-module bfc_crosschain::busd {
+module polynet::busd {
     use std::option;
     use sui::transfer;
     use sui::coin;

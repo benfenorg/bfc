@@ -27,7 +27,7 @@ module poly_bridge::wrapper_v1 {
     }
 
     // for admin
-    public entry fun init(admin: address) {
+    public entry fun init_wrapper(admin: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
 
         transfer(WrapperStore{

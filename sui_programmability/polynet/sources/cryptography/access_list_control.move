@@ -1,7 +1,7 @@
 module polynet::acl {
     use polynet::acl;
 
-    //todo: implement ACL
+    //todo: implement ACL access control list
     struct ACL{
 
     }
