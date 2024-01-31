@@ -9,6 +9,7 @@ module poly_bridge::lock_proxy {
     use std::type_name::{Self, TypeName};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
+    use sui::tx_context::TxContext;
 
     use poly::cross_chain_manager;
     use poly::zero_copy_sink;
@@ -82,7 +83,7 @@ module poly_bridge::lock_proxy {
 
 
     // init
-    public entry fun init(admin: address) {
+    public entry fun init(admin: address, ctx: &mut TxContext) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
 
         transfer(LockProxyStore{
@@ -202,7 +203,7 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun bindAsset<CoinType>(owner: address, to_chain_id: u64, to_asset_hash: vector<u8>, to_asset_decimals: u8) acquires LockProxyStore {
+    public entry fun bindAsset<CoinType>(owner: address, to_chain_id: u64, to_asset_hash: vector<u8>, to_asset_decimals: u8, ctx: &mut TxContext) acquires LockProxyStore {
         onlyOwner(owner);
         let from_asset = type_name::get<Coin<CoinType>>();
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
@@ -211,7 +212,7 @@ module poly_bridge::lock_proxy {
         if (table::contains(&config_ref.asset_map, from_asset)) {
             table::upsert(table::borrow_mut(&mut config_ref.asset_map, from_asset), to_chain_id, decimals_concat_to_asset);
         } else {
-            let subTable = table::new<u64, vector<u8>>();
+            let subTable = table::new<u64, vector<u8>>(ctx);
             table::add(&mut subTable, to_chain_id, decimals_concat_to_asset);
             table::add(&mut config_ref.asset_map, from_asset, subTable);
         };
@@ -404,7 +405,8 @@ module poly_bridge::lock_proxy {
         rawHeader: vector<u8>, 
         headerProof: vector<u8>, 
         curRawHeader: vector<u8>, 
-        headerSig: vector<u8>
+        headerSig: vector<u8>,
+        ctx: &mut TxContext
     ) acquires Treasury, LicenseStore, LockProxyStore {
         // borrow license
         assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
@@ -412,7 +414,7 @@ module poly_bridge::lock_proxy {
         assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(license_opt);
 
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig);
+        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
         unlock<CoinType>(certificate);
     }
 
