@@ -1,7 +1,7 @@
 module poly::nb {
     use std::string;
 
-    use sui::coin::{Self, BurnCapability, FreezeCapability, MintCapability};
+    use sui::coin::{Self};
     use sui::transfer::transfer;
 
     const ENOT_ADMIN: u64 = 1;
@@ -9,9 +9,9 @@ module poly::nb {
     struct NBCoin has key {}
 
     struct NBCapStore has key {
-        burn_cap: BurnCapability<NBCoin>,
-        freeze_cap: FreezeCapability<NBCoin>,
-        mint_cap: MintCapability<NBCoin>,
+        //burn_cap: BurnCapability<NBCoin>,
+        //freeze_cap: FreezeCapability<NBCoin>,
+        //mint_cap: MintCapability<NBCoin>,
     }
 
     public entry fun initialize(admin: address) {
@@ -25,15 +25,15 @@ module poly::nb {
             true, /* monitor_supply */
         );
 
-        transfer(NBCapStore { burn_cap, freeze_cap, mint_cap }, admin);
+        transfer(NBCapStore { }, admin);
 
-        coin::destroy_burn_cap(burn_cap);
-        coin::destroy_freeze_cap(freeze_cap);
-        coin::destroy_mint_cap(mint_cap);
+        //coin::destroy_burn_cap(burn_cap);
+        //coin::destroy_freeze_cap(freeze_cap);
+        //coin::destroy_mint_cap(mint_cap);
     }
 
     public entry fun register(account: address) {
-        coin::register<NBCoin>(account);
+        //coin::register<NBCoin>(account);
     }
 
     public entry fun mint(
@@ -43,8 +43,8 @@ module poly::nb {
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let mint_cap = &borrow_global<NBCapStore>((admin)).mint_cap;
-        let coins_minted = coin::mint<NBCoin>(amount, mint_cap);
+        //let mint_cap = &borrow_global<NBCapStore>((admin)).mint_cap;
+        let coins_minted = coin::mint<NBCoin>(amount);
         coin::deposit<NBCoin>(dst_addr, coins_minted);
     }
 
@@ -55,8 +55,9 @@ module poly::nb {
         only_admin(admin);
 
         let admin_addr = (admin);
-        let burn_cap = &borrow_global<NBCapStore>(admin_addr).burn_cap;
+        //let burn_cap = &borrow_global<NBCapStore>(admin_addr).burn_cap;
         coin::burn_from<NBCoin>(admin_addr, amount, burn_cap);
+        coin::burn(amount, );
     }
 
     public entry fun freeze_coin_store(
@@ -65,7 +66,7 @@ module poly::nb {
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
+        //let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
         coin::freeze_coin_store<NBCoin>(freeze_addr, freeze_cap);
     }
 
@@ -75,7 +76,7 @@ module poly::nb {
     ) acquires NBCapStore {
         only_admin(admin);
 
-        let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
+        //let freeze_cap = &borrow_global<NBCapStore>((admin)).freeze_cap;
         coin::unfreeze_coin_store<NBCoin>(unfreeze_addr, freeze_cap);
     }
 

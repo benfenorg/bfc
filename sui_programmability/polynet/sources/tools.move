@@ -7,10 +7,10 @@ module poly::tools {
     use sui::tx_context::TxContext;
 
     // mainnet
-    public entry fun init_as_mainnet(account: address) {
-        init_mainnet_ccm(account);
+    public entry fun init_as_mainnet(account: address, ctx: &mut TxContext) {
+        init_mainnet_ccm(account, ctx);
         wrapper_v1::init(account);
-        lock_proxy::init(account);
+        lock_proxy::init(account, ctx);
         issue_license_to_lock_proxy(account, (account));
     }
 
@@ -31,10 +31,10 @@ module poly::tools {
     }
 
     // testnet
-    public entry fun init_as_testnet(account: address) {
-        init_testnet_ccm(account);
+    public entry fun init_as_testnet(account: address, ctx: &mut TxContext) {
+        init_testnet_ccm(account, ctx);
         wrapper_v1::init(account);
-        lock_proxy::init(account);
+        lock_proxy::init(account, ctx);
         issue_license_to_lock_proxy(account, (account));
     }
 
