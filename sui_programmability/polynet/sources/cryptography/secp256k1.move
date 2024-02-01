@@ -25,13 +25,13 @@ module polynet::secp256k1 {
 
     /// Constructs an ECDSASignature struct from the given 64 bytes.
     public fun ecdsa_signature_from_bytes(bytes: vector<u8>): ECDSASignature {
-        assert!(std::vector::length(&bytes) == SIGNATURE_NUM_BYTES, std::error::invalid_argument(E_DESERIALIZE));
+        assert!(std::vector::length(&bytes) == SIGNATURE_NUM_BYTES, E_DESERIALIZE);
         ECDSASignature { bytes }
     }
 
     /// Constructs an ECDSARawPublicKey struct, given a 64-byte raw representation.
     public fun ecdsa_raw_public_key_from_64_bytes(bytes: vector<u8>): ECDSARawPublicKey {
-        assert!(std::vector::length(&bytes) == RAW_PUBLIC_KEY_NUM_BYTES, std::error::invalid_argument(E_DESERIALIZE));
+        assert!(std::vector::length(&bytes) == RAW_PUBLIC_KEY_NUM_BYTES, E_DESERIALIZE);
         ECDSARawPublicKey { bytes }
     }
 

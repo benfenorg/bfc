@@ -83,7 +83,7 @@ module poly_bridge::lock_proxy {
 
 
     // init
-    public entry fun init(admin: address, ctx: &mut TxContext) {
+    public entry fun init_lock(admin: address, ctx: &mut TxContext) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
 
         transfer(LockProxyStore{

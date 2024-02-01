@@ -1,5 +1,5 @@
 #[allow(unused_use)]
-module bfc_system::kkusd {
+module polynet::kkusd {
     use std::option;
     use sui::transfer;
     use sui::coin;

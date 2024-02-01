@@ -7,7 +7,7 @@ module poly::cross_chain_manager {
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
-    use polynet::acl::ACL;
+    use polynet::acl::Access_control_list;
     use polynet::acl;
     use poly::zero_copy_sink;
     use poly::cross_chain_utils;
@@ -33,7 +33,7 @@ module poly::cross_chain_manager {
 
     // access control
     struct ACLStore has key, store {
-        role_acls: Table<u64, ACL>,
+        role_acls: Table<u64, Access_control_list>,
         license_black_list: Table<vector<u8>, u8>
     }
 
@@ -271,11 +271,11 @@ module poly::cross_chain_manager {
 
 
     // initialize
-    public fun init(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64, ctx: &mut TxContext) acquires EventStore {
+    public fun init_manager(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64, ctx: &mut TxContext) acquires EventStore {
         assert!((account) == @poly, EINVALID_SIGNER);
         
         // init access control lists
-        let acls = table::new<u64, ACL>(ctx);
+        let acls = table::new<u64, Access_control_list>(ctx);
         let admin_acl = acl::empty();
         let pause_acl = acl::empty();
         let ca_acl = acl::empty();

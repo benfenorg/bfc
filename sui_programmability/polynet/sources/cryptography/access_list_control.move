@@ -2,22 +2,22 @@ module polynet::acl {
     use polynet::acl;
 
     //todo: implement ACL access control list
-    struct ACL{
+    struct Access_control_list has store{
 
     }
 
-    public fun empty(): acl::ACL{
-       ACL{}
+    public fun empty(): acl::Access_control_list{
+        Access_control_list{}
     }
 
-    public fun contains(acl: &ACL, addr: address): bool{
+    public fun contains(acl: &Access_control_list, addr: address): bool{
 
         return false
     }
-    public fun add(acl: &ACL, addr: address){
+    public fun add(acl: &Access_control_list, addr: address){
 
     }
-    public fun remove(acl: &ACL, addr: address){
+    public fun remove(acl: &Access_control_list, addr: address){
 
     }
 }
