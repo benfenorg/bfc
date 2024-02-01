@@ -57,7 +57,7 @@ module poly::utils {
         return data
     }
 
-    public fun upsert<K: copy + drop + store, V: store>(tb: &mut Table<K, V>, k: K, v: V) {
+    public fun upsert<K: copy + drop + store, V:  drop + store>(tb: &mut Table<K, V>, k: K, v: V) {
         if (table::contains(tb, k)) {
             table::remove(tb, k);
         };
