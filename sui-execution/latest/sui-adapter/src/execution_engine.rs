@@ -745,28 +745,30 @@ mod checked {
             );
 
         }
-        let storage_rebate_arg = builder
-            .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
-            ))
-            .unwrap();
-        let storage_rebate = builder.programmable_move_call(
-            SUI_FRAMEWORK_PACKAGE_ID,
-            BALANCE_MODULE_NAME.to_owned(),
-            BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
-            vec![GAS::type_tag()],
-            vec![storage_rebate_arg],
-        );
+        let storage_rebate_value = storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, reward_rate);
+        if storage_rebate_value > 0 {
+            let storage_rebate_arg = builder
+                .input(CallArg::Pure(
+                    bcs::to_bytes(&(storage_rebate_value)).unwrap(),
+                ))
+                .unwrap();
+            let storage_rebate = builder.programmable_move_call(
+                SUI_FRAMEWORK_PACKAGE_ID,
+                BALANCE_MODULE_NAME.to_owned(),
+                BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                vec![GAS::type_tag()],
+                vec![storage_rebate_arg],
+            );
 
-        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
-            vec![],
-            vec![system_obj,storage_rebate],
-        );
-
+            let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
+                vec![],
+                vec![system_obj,storage_rebate],
+            );
+        }
         Ok(builder.finish())
     }
 
