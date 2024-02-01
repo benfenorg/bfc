@@ -64,6 +64,13 @@ module poly::utils {
         table::add(tb, k, v);
     }
 
+    public fun borrow_mut_with_default<K: copy + drop + store, V: drop + store>(table: &mut Table<K, V>, key: K, default: V): &mut V {
+        if (!table::contains(table, key)) {
+            table::add(table, copy key, default)
+        };
+        table::borrow_mut(table, key)
+    }
+
     // public fun from_bytes<T>(v: vector<u8>): T {
     //     let type = type_name::into_string(type_name::get<T>());
     //     if (type == string::to_ascii(string::utf8(b"bool")) ) {
