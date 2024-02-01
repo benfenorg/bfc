@@ -128,10 +128,11 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(acl_store_ref:&ACLStore, ca: address, license_id: vector<u8>, access_level: u8) {
+
+    public entry fun setBlackList(acl_store_ref:& ACLStore,  ca: address, license_id: vector<u8>, access_level: u8)  {
         assert!(hasRole(acl_store_ref, CA_ROLE, ca), ENOT_CA_ROLE);
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
-        let v_ref = table::borrow_mut_with_default(&mut acl_store_ref.license_black_list, license_id, access_level);
+        let v_ref = utils::borrow_mut_with_default(&mut acl_store_ref.license_black_list, license_id, access_level);
         *v_ref = access_level;
     }
  
