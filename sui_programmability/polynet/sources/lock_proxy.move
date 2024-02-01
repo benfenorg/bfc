@@ -204,7 +204,7 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun bindAsset<CoinType>(config_ref:&LockProxyStore,
+    public entry fun bindAsset<CoinType>(config_ref:&mut LockProxyStore,
                                         owner: address,
                                          to_chain_id: u64,
                                          to_asset_hash: vector<u8>,
@@ -233,7 +233,7 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun unbindAsset<CoinType>(config_ref:&LockProxyStore,  owner: address, to_chain_id: u64) {
+    public entry fun unbindAsset<CoinType>(config_ref:&mut LockProxyStore,  owner: address, to_chain_id: u64) {
         onlyOwner(config_ref, owner);
         let from_asset = type_name::get<Coin<CoinType>>();
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
@@ -276,7 +276,7 @@ module poly_bridge::lock_proxy {
         account == @poly_bridge
     }
 
-    public fun deposit<CoinType>(treasury_ref: &Treasury<CoinType>,  fund: Coin<CoinType>)  {
+    public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
         //assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
         //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
 

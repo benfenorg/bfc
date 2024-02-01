@@ -33,7 +33,7 @@ module poly::cross_chain_manager {
 
 
     // access control
-    struct ACLStore has key, store {
+    struct ACLStore has key, store{
         role_acls: Table<u64, Access_control_list>,
         license_black_list: Table<vector<u8>, u8>
     }
@@ -128,7 +128,6 @@ module poly::cross_chain_manager {
         }
     }
 
-
     public entry fun setBlackList(acl_store_ref:&mut ACLStore,  ca: address, license_id: vector<u8>, access_level: u8)  {
         assert!(hasRole(acl_store_ref, CA_ROLE, ca), ENOT_CA_ROLE);
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
@@ -213,7 +212,7 @@ module poly::cross_chain_manager {
         return config_ref.curBookKeepers
     }
 
-    fun  markFromChainTxExist(config_ref:&CrossChainGlobalConfig, fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) {
+    fun  markFromChainTxExist(config_ref:&mut CrossChainGlobalConfig, fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         if (table::contains(&config_ref.fromChainTxExist, fromChainId)) {
             utils::upsert(table::borrow_mut(&mut config_ref.fromChainTxExist, fromChainId), *fromChainTx, true);
