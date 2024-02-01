@@ -43,8 +43,9 @@ module poly::cross_chain_manager {
     const CA_ROLE: u64 = 3;
     const CHANGE_KEEPER_ROLE: u64 = 4;
 
-    public fun hasRole(role: u64, account: address): bool acquires ACLStore {
-        let acl_store_ref = borrow_global<ACLStore>(@poly);
+    public fun hasRole(acl_store_ref: &ACLStore, role: u64, account: address): bool  {
+        //let acl_store_ref = borrow_global<ACLStore>(@poly);
+
         if (table::contains(&acl_store_ref.role_acls, role)) {
             let role_acl = table::borrow(&acl_store_ref.role_acls, role);
             return acl::contains(role_acl, account)
@@ -53,10 +54,10 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun grantRole(admin: address, role: u64, account: address) acquires ACLStore {
-        assert!(hasRole(ADMIN_ROLE, admin), ENOT_ADMIN);
-        assert!(!hasRole(role, account), EALREADY_HAS_ROLE);
-        let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
+    public entry fun grantRole(acl_store_ref:&ACLStore,  admin: address, role: u64, account: address) {
+        assert!(hasRole(acl_store_ref, ADMIN_ROLE, admin), ENOT_ADMIN);
+        assert!(!hasRole(acl_store_ref, role, account), EALREADY_HAS_ROLE);
+        //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         if (table::contains(&acl_store_ref.role_acls, role)) {
             let role_acl = table::borrow_mut(&mut acl_store_ref.role_acls, role);
             acl::add(role_acl, account);
@@ -67,10 +68,10 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun revokeRole(admin: address, role: u64, account: address) acquires ACLStore {
-        assert!(hasRole(ADMIN_ROLE, admin), ENOT_ADMIN);
-        assert!(hasRole(role, account), ENOT_HAS_ROLE);
-        let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
+    public entry fun revokeRole(acl_store_ref:&ACLStore, admin: address, role: u64, account: address)  {
+        assert!(hasRole(acl_store_ref, ADMIN_ROLE, admin), ENOT_ADMIN);
+        assert!(hasRole(acl_store_ref, role, account), ENOT_HAS_ROLE);
+        //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let role_acl = table::borrow_mut(&mut acl_store_ref.role_acls, role);
         acl::remove(role_acl, account);
     }
@@ -82,8 +83,8 @@ module poly::cross_chain_manager {
         module_name: vector<u8>
     }
 
-    public fun issueLicense(ca: address, account: address, module_name: vector<u8>): License acquires ACLStore {
-        assert!(hasRole(CA_ROLE, ca), ENOT_CA_ROLE);
+    public fun issueLicense(acl_store_ref: &ACLStore, ca: address, account: address, module_name: vector<u8>): License {
+        assert!(hasRole(acl_store_ref, CA_ROLE, ca), ENOT_CA_ROLE);
         License{
             account: account,
             module_name: module_name,
@@ -107,8 +108,8 @@ module poly::cross_chain_manager {
 
     // black list
     // access level: 0b000000xy , x means blackListed as fromContract , y means blackListed as toContract
-    public fun isBlackListedFrom(license_id: vector<u8>): bool acquires ACLStore {
-        let acl_store_ref = borrow_global<ACLStore>(@poly);
+    public fun isBlackListedFrom(acl_store_ref:&ACLStore, license_id: vector<u8>): bool  {
+        //let acl_store_ref = borrow_global<ACLStore>(@poly);
         if (table::contains(&acl_store_ref.license_black_list, license_id)) {
             let access_level = *table::borrow(&acl_store_ref.license_black_list, license_id);
             return (access_level & 0x02) != 0
@@ -117,8 +118,8 @@ module poly::cross_chain_manager {
         }
     }
 
-    public fun isBlackListedTo(license_id: vector<u8>): bool acquires ACLStore {
-        let acl_store_ref = borrow_global<ACLStore>(@poly);
+    public fun isBlackListedTo(acl_store_ref:&ACLStore, license_id: vector<u8>): bool  {
+        //let acl_store_ref = borrow_global<ACLStore>(@poly);
         if (table::contains(&acl_store_ref.license_black_list, license_id)) {
             let access_level = *table::borrow(&acl_store_ref.license_black_list, license_id);
             return (access_level & 0x01) != 0
@@ -127,9 +128,9 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(ca: address, license_id: vector<u8>, access_level: u8) acquires ACLStore {
-        assert!(hasRole(CA_ROLE, ca), ENOT_CA_ROLE);
-        let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
+    public entry fun setBlackList(acl_store_ref:&ACLStore, ca: address, license_id: vector<u8>, access_level: u8) {
+        assert!(hasRole(acl_store_ref, CA_ROLE, ca), ENOT_CA_ROLE);
+        //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let v_ref = table::borrow_mut_with_default(&mut acl_store_ref.license_black_list, license_id, access_level);
         *v_ref = access_level;
     }

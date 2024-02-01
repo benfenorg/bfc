@@ -36,14 +36,14 @@ module poly_bridge::wrapper_v1 {
         }, admin);
     }
 
-    public entry fun setFeeCollector(admin: address, new_fee_collector: address) acquires WrapperStore {
+    public entry fun setFeeCollector(config_ref:&WrapperStore, admin: address, new_fee_collector: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
+        ///let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         config_ref.fee_collector = new_fee_collector;
     }
 
-    public fun feeCollector(): address acquires WrapperStore {
-        let config_ref = borrow_global<WrapperStore>(@poly_bridge);
+    public fun feeCollector(config_ref:&WrapperStore): address {
+        //let config_ref = borrow_global<WrapperStore>(@poly_bridge);
         return config_ref.fee_collector
     }
     
@@ -66,7 +66,10 @@ module poly_bridge::wrapper_v1 {
         fee: Coin<BFC>,
         toChainId: u64, 
         toAddress: vector<u8>
-    ) acquires WrapperStore {
+    )  {
+
+        //todo: add check?
+
         //let fund = coin::withdraw<CoinType>(account, amount);
         //let fee = coin::withdraw<BFC>(account, fee_amount);
         lock_and_pay_fee_with_fund<CoinType>(account, fund, fee, toChainId, &toAddress);
@@ -78,7 +81,7 @@ module poly_bridge::wrapper_v1 {
         fee: Coin<BFC>,
         toChainId: u64, 
         toAddress: &vector<u8>
-    ) acquires WrapperStore { 
+    )  {
         let amount = coin::value(&fund);
         let fee_amount = coin::value(&fee);
 
@@ -88,7 +91,7 @@ module poly_bridge::wrapper_v1 {
         transfer(fee, feeCollector);
 
         lock_proxy::lock(account, fund, toChainId, toAddress);
-        let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         event::emit(
             LockWithFeeEvent{
                 from_asset: type_name::get<Coin<CoinType>>(),
