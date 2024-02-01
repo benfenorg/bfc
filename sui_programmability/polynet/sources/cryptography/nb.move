@@ -1,10 +1,10 @@
 module poly::nb {
     use std::option;
-    use std::string;
+    //use std::string;
 
     use sui::coin::{Self, Coin, TreasuryCap};
     use sui::transfer;
-    use sui::transfer::transfer;
+    //use sui::transfer::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
 

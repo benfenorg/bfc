@@ -1,7 +1,6 @@
 module poly_bridge::lock_proxy {
     use std::ascii::as_bytes;
     use std::vector;
-    use std::string;
     use std::option::{Self, Option};
     use sui::event;
     use sui::math;

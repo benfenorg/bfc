@@ -18,7 +18,7 @@ module poly_bridge::bridge_coin {
     struct BFC_USDT has drop {}
     struct BFC_USDC has drop {}
 
-    public entry fun initialize<BridgeCoinType>(
+    public entry fun initialize(
         admin: address,
         name: String,
         symbol: String,
