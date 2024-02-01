@@ -17,6 +17,8 @@ module poly_bridge::bridge_coin {
     ) {
         only_admin(admin);
 
+
+        //create_currency
         let (burn_cap, freeze_cap, mint_cap) = coin::initialize<BridgeCoinType>(
             admin,
             name,
@@ -29,9 +31,9 @@ module poly_bridge::bridge_coin {
         lock_proxy::initTreasury<BridgeCoinType>(admin);
         lock_proxy::deposit<BridgeCoinType>(initial_lock);
 
-        coin::destroy_burn_cap(burn_cap);
-        coin::destroy_freeze_cap(freeze_cap);
-        coin::destroy_mint_cap(mint_cap);
+        //coin::destroy_burn_cap(burn_cap);
+        //coin::destroy_freeze_cap(freeze_cap);
+        //coin::destroy_mint_cap(mint_cap);
     }
 
     fun only_admin(account: address) {

@@ -2,8 +2,9 @@ module poly::cross_chain_utils {
     use std::hash;
     use std::vector;
     use std::option;
+    use polynet::secp256k1;
     use poly::utils as putil;
-    use sui::ecdsa_k1;
+    //use sui::ecdsa_k1;
 
     const MERKLE_PROOF_NODE_LEN: u64 = 33;
     const POLYCHAIN_SIGNATURE_LEN: u64 = 65;

@@ -2,13 +2,13 @@ module poly::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
-    use polynet::acl::ACL;
-    use polynet::acl;
     use sui::event;
     use sui::table::{Table, Self};
-    use sui::event;
     use sui::transfer::transfer;
+    use sui::tx_context::TxContext;
 
+    use polynet::acl::ACL;
+    use polynet::acl;
     use poly::zero_copy_sink;
     use poly::cross_chain_utils;
 
@@ -136,10 +136,10 @@ module poly::cross_chain_manager {
 
     // event 
     struct EventStore has key, store {
-        init_book_keeper_event: event::EventHandle<InitBookKeeperEvent>,
-        change_book_keeper_event: event::EventHandle<ChangeBookKeeperEvent>,
-        cross_chain_event: event::EventHandle<CrossChainEvent>,
-        verify_header_and_execute_tx_event: event::EventHandle<VerifyHeaderAndExecuteTxEvent>,
+        //init_book_keeper_event: event::EventHandle<InitBookKeeperEvent>,
+        //change_book_keeper_event: event::EventHandle<ChangeBookKeeperEvent>,
+        //cross_chain_event: event::EventHandle<CrossChainEvent>,
+        //verify_header_and_execute_tx_event: event::EventHandle<VerifyHeaderAndExecuteTxEvent>,
     }
 
     struct InitBookKeeperEvent has store, drop, copy {
@@ -210,13 +210,13 @@ module poly::cross_chain_manager {
         return config_ref.curBookKeepers
     }
 
-    fun markFromChainTxExist(fromChainId: u64, fromChainTx: &vector<u8>) acquires CrossChainGlobalConfig {
+    fun markFromChainTxExist(fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) acquires CrossChainGlobalConfig {
         let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         if (table::contains(&config_ref.fromChainTxExist, fromChainId)) {
             table::upsert(table::borrow_mut(&mut config_ref.fromChainTxExist, fromChainId), *fromChainTx, true);
             return
         } else {
-            let subTable = table::new<vector<u8>, bool>();
+            let subTable = table::new<vector<u8>, bool>(ctx);
             table::add(&mut subTable, *fromChainTx, true);
             table::add(&mut config_ref.fromChainTxExist, fromChainId, subTable);
             return
@@ -271,11 +271,11 @@ module poly::cross_chain_manager {
 
 
     // initialize
-    public fun init(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64) acquires EventStore {
+    public fun init(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64, ctx: &mut TxContext) acquires EventStore {
         assert!((account) == @poly, EINVALID_SIGNER);
         
         // init access control lists
-        let acls = table::new<u64, ACL>();
+        let acls = table::new<u64, ACL>(ctx);
         let admin_acl = acl::empty();
         let pause_acl = acl::empty();
         let ca_acl = acl::empty();
@@ -291,7 +291,7 @@ module poly::cross_chain_manager {
 
         transfer(ACLStore{
             role_acls: acls,
-            license_black_list: table::new<vector<u8>, u8>()
+            license_black_list: table::new<vector<u8>, u8>(ctx)
         }, account);
 
         // init global config
@@ -301,18 +301,18 @@ module poly::cross_chain_manager {
             ethToPolyTxHashIndex: 0,
             curBookKeepers: keepers,
             curEpochStartHeight: startHeight,
-            ethToPolyTxHashMap: table::new<u128, vector<u8>>(),
-            fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>()
+            ethToPolyTxHashMap: table::new<u128, vector<u8>>(ctx),
+            fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>(ctx)
         };
         
         transfer(config, account);
 
         // init event store
         transfer(EventStore{
-            init_book_keeper_event: account::new_event_handle<InitBookKeeperEvent>(account),
-            change_book_keeper_event: account::new_event_handle<ChangeBookKeeperEvent>(account),
-            cross_chain_event: account::new_event_handle<CrossChainEvent>(account),
-            verify_header_and_execute_tx_event: account::new_event_handle<VerifyHeaderAndExecuteTxEvent>(account),
+            //init_book_keeper_event: account::new_event_handle<InitBookKeeperEvent>(account),
+            //change_book_keeper_event: account::new_event_handle<ChangeBookKeeperEvent>(account),
+            //cross_chain_event: account::new_event_handle<CrossChainEvent>(account),
+            //verify_header_and_execute_tx_event: account::new_event_handle<VerifyHeaderAndExecuteTxEvent>(account),
         }, account);
 
         let event_store = borrow_global_mut<EventStore>(@poly);
@@ -418,7 +418,7 @@ module poly::cross_chain_manager {
 
 
     // verify header and execute tx
-    public fun verifyHeaderAndExecuteTx(license: &License, proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>): Certificate acquires CrossChainGlobalConfig, ACLStore, EventStore {
+    public fun verifyHeaderAndExecuteTx(license: &License, proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>, ctx: &mut TxContext): Certificate acquires CrossChainGlobalConfig, ACLStore, EventStore {
         assert!(!paused(), EPAUSED);
 
         let (
@@ -477,7 +477,7 @@ module poly::cross_chain_manager {
 
         // double-spending check/mark
         assert!(!checkIfFromChainTxExist(from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
-        markFromChainTxExist(from_chain_id, &poly_tx_hash);
+        markFromChainTxExist(from_chain_id, &poly_tx_hash, ctx);
 
         // check to chain id
         assert!(to_chain_id == getPolyId(), ENOT_TARGET_CHAIN);
