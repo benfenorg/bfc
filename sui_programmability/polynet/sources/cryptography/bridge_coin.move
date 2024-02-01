@@ -1,6 +1,6 @@
 module poly_bridge::bridge_coin {
     use std::option;
-    use std::string::{String};
+    //use std::string::{String};
 
     use sui::coin;
     use sui::transfer;
@@ -20,8 +20,6 @@ module poly_bridge::bridge_coin {
 
     public entry fun initialize(
         admin: address,
-        name: String,
-        symbol: String,
         decimals: u8,
         ctx: &mut TxContext,
     ) {
@@ -51,7 +49,7 @@ module poly_bridge::bridge_coin {
 
         let initial_lock = coin::mint<BFC_USDT>(&mut cap, HUGE_U64, ctx);
         lock_proxy::initTreasury<BFC_USDT>(admin, ctx);
-        lock_proxy::deposit<BFC_USDT>(initial_lock);
+        lock_proxy::deposit<BFC_USDT>( initial_lock);
 
         transfer::public_transfer(cap, tx_context::sender(ctx));
 

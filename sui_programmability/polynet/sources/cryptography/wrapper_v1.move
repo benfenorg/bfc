@@ -3,6 +3,8 @@ module poly_bridge::wrapper_v1 {
     use sui::event;
     //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
+    use poly_bridge::lock_proxy::{LockProxyStore, LicenseStore, Treasury};
+    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
@@ -36,19 +38,24 @@ module poly_bridge::wrapper_v1 {
         }, admin);
     }
 
-    public entry fun setFeeCollector(config_ref:&WrapperStore, admin: address, new_fee_collector: address) {
+    public entry fun setFeeCollector(config_ref:&mut WrapperStore, admin: address, new_fee_collector: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        ///let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         config_ref.fee_collector = new_fee_collector;
     }
 
-    public fun feeCollector(config_ref:&WrapperStore): address {
+    public fun feeCollector(config_ref:&mut WrapperStore): address {
         //let config_ref = borrow_global<WrapperStore>(@poly_bridge);
         return config_ref.fee_collector
     }
     
     // for relayer 
     public entry fun relay_unlock_tx<CoinType>(
+        crosschain_config_ref:&CrossChainGlobalConfig,
+        acl_store_ref:&ACLStore,
+        lock_config_ref:&LockProxyStore,
+        license_opt:&LicenseStore,
+        treasury_ref:&Treasury<CoinType>,
         proof: vector<u8>, 
         rawHeader: vector<u8>, 
         headerProof: vector<u8>, 
@@ -56,7 +63,9 @@ module poly_bridge::wrapper_v1 {
         headerSig: vector<u8>,
         ctx: &mut TxContext
     ) {
-        lock_proxy::relay_unlock_tx<CoinType>(proof, rawHeader, headerProof, curRawHeader, headerSig, ctx);
+        lock_proxy::relay_unlock_tx<CoinType>(
+            crosschain_config_ref,acl_store_ref, lock_config_ref, license_opt,treasury_ref,
+            proof, rawHeader, headerProof, curRawHeader, headerSig, ctx);
     }
 
     // for user
@@ -104,7 +113,7 @@ module poly_bridge::wrapper_v1 {
         );
     }
 
-    public entry fun register_coin<CoinType>(account: address) {
-        //coin::register<CoinType>(account);
-    }
+    // public entry fun register_coin<CoinType>(account: address) {
+    //     //coin::register<CoinType>(account);
+    // }
 }

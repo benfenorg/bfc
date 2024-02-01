@@ -59,7 +59,7 @@ module poly::nb {
 
     public entry fun freeze_coin_store(
         admin: address,
-        freeze_addr: address,
+        _freeze_addr: address,
     )  {
         only_admin(admin);
 
@@ -69,7 +69,7 @@ module poly::nb {
 
     public entry fun unfreeze_coin_store(
         admin: address,
-        unfreeze_addr: address,
+        _unfreeze_addr: address,
     )  {
         only_admin(admin);
 

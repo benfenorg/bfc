@@ -156,25 +156,25 @@ module poly_bridge::lock_proxy {
         assert!((owner) == config_ref.owner, ENOT_OWNER);
     }
 
-    public entry fun transferOwnerShip(config_ref: &LockProxyStore, owner: address, new_owner: address) {
+    public entry fun transferOwnerShip(config_ref: &mut LockProxyStore, owner: address, new_owner: address) {
         onlyOwner(config_ref, owner);
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         config_ref.owner = new_owner;
     }
 
-    public entry fun pause(config_ref:&LockProxyStore,  owner: address) {
+    public entry fun pause(config_ref:&mut LockProxyStore,  owner: address) {
         onlyOwner(config_ref, owner);
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         config_ref.paused = true;
     }
 
-    public entry fun unpause(config_ref: &LockProxyStore, owner: address)  {
+    public entry fun unpause(config_ref: &mut LockProxyStore, owner: address)  {
         onlyOwner(config_ref, owner);
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         config_ref.paused = false;
     }
 
-    public entry fun bindProxy(config_ref:&LockProxyStore,  owner: address, to_chain_id: u64, target_proxy_hash: vector<u8>)  {
+    public entry fun bindProxy(config_ref:&mut LockProxyStore,  owner: address, to_chain_id: u64, target_proxy_hash: vector<u8>)  {
         onlyOwner(config_ref, owner);
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         utils::upsert(&mut config_ref.proxy_map, to_chain_id, target_proxy_hash);
@@ -187,7 +187,7 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun unbindProxy(config_ref:&LockProxyStore, owner: address, to_chain_id: u64) {
+    public entry fun unbindProxy(config_ref:&mut LockProxyStore, owner: address, to_chain_id: u64) {
         onlyOwner(config_ref, owner);
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         if (table::contains(&config_ref.proxy_map, to_chain_id)) {
@@ -327,7 +327,7 @@ module poly_bridge::lock_proxy {
     public fun lock<CoinType>(
         treasury_ref:&Treasury<CoinType>,
         license_opt:&LicenseStore,
-        crosschain_config_ref:&CrossChainGlobalConfig,
+        crosschain_config_ref:&mut CrossChainGlobalConfig,
         acl_store_ref:&ACLStore,
         lock_config_ref:&LockProxyStore,
                                 account: address,
