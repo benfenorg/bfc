@@ -1,5 +1,5 @@
 #[allow(unused_use)]
-module bfc_system::kkusd {
+module tokens::busd {
     use std::option;
     use sui::transfer;
     use sui::coin;
@@ -44,16 +44,6 @@ module bfc_system::kkusd {
     public entry fun transfer(c: coin::Coin<COIN_TESTS>, recipient: address) {
         transfer::public_transfer(c, recipient)
     }
-
-
-
-    public entry fun freezz(){
-
-    }
-    public entry fun unfreezz(){
-
-    }
-
 
     #[test_only]
     public fun new_for_test(ctx: &mut TxContext): Supply<COIN_TESTS> {

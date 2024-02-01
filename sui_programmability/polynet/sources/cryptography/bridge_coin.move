@@ -18,7 +18,7 @@ module poly_bridge::bridge_coin {
         only_admin(admin);
 
 
-        //create_currency
+
         let (burn_cap, freeze_cap, mint_cap) = coin::initialize<BridgeCoinType>(
             admin,
             name,
