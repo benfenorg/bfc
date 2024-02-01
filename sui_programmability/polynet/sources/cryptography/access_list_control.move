@@ -18,8 +18,8 @@ module polynet::acl {
         Access_control_list{ list: vector::empty<address>() }
     }
 
-    public fun contains(acl: &mut Access_control_list, addr: address): bool{
 
+    public fun contains(acl: &mut Access_control_list, addr: address): bool{
         vector::contains(&acl.list, &addr)
     }
     public fun add(acl: &mut Access_control_list, addr: address){

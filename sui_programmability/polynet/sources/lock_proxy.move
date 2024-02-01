@@ -6,6 +6,7 @@ module poly_bridge::lock_proxy {
     use sui::math;
     use sui::table::{Table, Self};
     use std::type_name::{Self, TypeName};
+    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
@@ -283,18 +284,19 @@ module poly_bridge::lock_proxy {
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
     }
 
-    fun withdraw<CoinType>(amount: u64): Coin<CoinType> acquires Treasury {
+    fun withdraw<CoinType>(treasury_ref:&Treasury<CoinType>, amount: u64): Coin<CoinType> {
         assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
-        let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
+        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
         return coin::extract<CoinType>(&mut treasury_ref.coin, amount)
     }
 
 
     // license function
-    public fun receiveLicense(license: cross_chain_manager::License) acquires LicenseStore {
+    public fun receiveLicense(license_opt:&mut LicenseStore, license: cross_chain_manager::License)   {
         assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_STORE_NOT_EXIST);
-        let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
+        //let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
+        //assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
+
         let (license_account, license_module_name) = cross_chain_manager::getLicenseInfo(&license);
         let this_type = type_name::get<LicenseStore>();
         let this_account = type_name::get_address(&this_type);
@@ -305,10 +307,10 @@ module poly_bridge::lock_proxy {
         option::fill(license_opt, license);
     }
 
-    public fun removeLicense(admin: address): cross_chain_manager::License acquires LicenseStore {
+    public fun removeLicense(license_opt:&mut LicenseStore, admin: address): cross_chain_manager::License {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
         assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
+        //let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
         assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
         option::extract<cross_chain_manager::License>(license_opt)
     }
@@ -317,28 +319,34 @@ module poly_bridge::lock_proxy {
         //assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        return cross_chain_manager::getLicenseId(option::borrow(license_opt))
+        return cross_chain_manager::getLicenseId(option::borrow(&license_opt.license))
     }
     
 
     // lock
-    public fun lock<CoinType>(account: address,
+    public fun lock<CoinType>(
+        treasury_ref:&Treasury<CoinType>,
+        license_opt:&LicenseStore,
+        crosschain_config_ref:&CrossChainGlobalConfig,
+        acl_store_ref:&ACLStore,
+        lock_config_ref:&LockProxyStore,
+                                account: address,
                               fund: Coin<CoinType>,
                               toChainId: u64,
-                              toAddress: &vector<u8>) acquires Treasury, LicenseStore, LockProxyStore {
+                              toAddress: &vector<u8>)  {
         // lock fund
         let amount = coin::value(&fund);
-        deposit(fund);
+        deposit(treasury_ref, fund);
         
         // borrow license
         assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+        //let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
+        assert!(option::is_some<cross_chain_manager::License>(&license_opt.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(license_opt);
 
         // get target proxy/asset
-        let to_proxy = getTargetProxy(toChainId);
-        let (to_asset, to_asset_decimals) = getToAsset<CoinType>(toChainId);
+        let to_proxy = getTargetProxy(lock_config_ref, toChainId);
+        let (to_asset, to_asset_decimals) = getToAsset<CoinType>(lock_config_ref, toChainId);
 
         // precision conversion
         let target_chain_amount = to_target_chain_amount<CoinType>(amount, to_asset_decimals);
@@ -347,10 +355,10 @@ module poly_bridge::lock_proxy {
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
 
         // cross chain
-        cross_chain_manager::crossChain(account, license_ref, toChainId, &to_proxy, &b"unlock", &tx_data);
+        cross_chain_manager::crossChain(crosschain_config_ref,acl_store_ref, account, license_ref, toChainId, &to_proxy, &b"unlock", &tx_data);
 
         // emit event 
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         event::emit(
             LockEvent{
                 from_asset: type_name::get<Coin<CoinType>>(),
@@ -366,7 +374,9 @@ module poly_bridge::lock_proxy {
 
 
     // unlock
-    public fun unlock<CoinType>(certificate: cross_chain_manager::Certificate) acquires Treasury, LicenseStore, LockProxyStore {
+    public fun unlock<CoinType>(config_ref:&LockProxyStore, license_opt:&LicenseStore,
+                                treasury_ref:&Treasury<CoinType>,
+                                certificate: cross_chain_manager::Certificate)  {
         // read certificate
         let (
             from_contract,
@@ -384,22 +394,22 @@ module poly_bridge::lock_proxy {
         ) = deserializeTxArgs(&args);
 
         // precision conversion
-        let (_, decimals) = getToAsset<CoinType>(from_chain_id);
+        let (_, decimals) = getToAsset<CoinType>(config_ref, from_chain_id);
         let amount = from_target_chain_amount<CoinType>(from_chain_amount, decimals);
 
         // check
         //type_name::get<Coin<CoinType>>()
         assert!( *as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
-        assert!(getTargetProxy(from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
-        assert!(getLicenseId() == target_license_id, EINVALID_TARGET_LICENSE_ID);
+        assert!(getTargetProxy(config_ref, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
+        assert!(getLicenseId(license_opt) == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
         // unlock fund
-        let fund = withdraw<CoinType>(amount);
+        let fund = withdraw<CoinType>(treasury_ref, amount);
         transfer(fund, utils::to_address(to_address));
 
         // emit event
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
         event::emit(
             UnlockEvent{
                 to_asset: type_name::get<Coin<CoinType>>(),
@@ -411,21 +421,26 @@ module poly_bridge::lock_proxy {
     }
 
     public entry fun relay_unlock_tx<CoinType>(
+        config_ref:&CrossChainGlobalConfig,
+        acl_store_ref:&ACLStore,
+        lock_config_ref:&LockProxyStore,
+        license_opt:&LicenseStore,
+        treasury_ref:&Treasury<CoinType>,
         proof: vector<u8>, 
         rawHeader: vector<u8>, 
         headerProof: vector<u8>, 
         curRawHeader: vector<u8>, 
         headerSig: vector<u8>,
         ctx: &mut TxContext
-    ) acquires Treasury, LicenseStore, LockProxyStore {
+    )  {
         // borrow license
         assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+        //let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
+        assert!(option::is_some<cross_chain_manager::License>(&license_opt.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(license_opt);
 
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
-        unlock<CoinType>(certificate);
+        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(config_ref, acl_store_ref,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
+        unlock<CoinType>(lock_config_ref,license_opt, treasury_ref, certificate);
     }
 
 

@@ -47,7 +47,7 @@ module poly::cross_chain_manager {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
 
         if (table::contains(&acl_store_ref.role_acls, role)) {
-            let role_acl = table::borrow(&acl_store_ref.role_acls, role);
+            let role_acl = table::borrow_mut(&mut acl_store_ref.role_acls, role);
             return acl::contains(role_acl, account)
         } else {
             return false
@@ -183,38 +183,38 @@ module poly::cross_chain_manager {
         fromChainTxExist: Table<u64, Table<vector<u8>, bool>>,
     }
 
-    fun putPolyId(polyId: u64) acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    fun putPolyId(config_ref:&CrossChainGlobalConfig, polyId: u64) {
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.polyId = polyId;
     }
 
-    public fun getPolyId(): u64 acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun getPolyId(config_ref:&CrossChainGlobalConfig): u64 {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return config_ref.polyId
     }
 
-    fun putCurEpochStartHeight(height: u64) acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    fun putCurEpochStartHeight(config_ref:&CrossChainGlobalConfig,height: u64)  {
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.curEpochStartHeight = height;
     }
 
-    public fun getCurEpochStartHeight(): u64 acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun getCurEpochStartHeight(config_ref:&CrossChainGlobalConfig): u64  {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return config_ref.curEpochStartHeight
     }
 
-    fun putCurBookKeepers(keepers: &vector<vector<u8>>) acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    fun putCurBookKeepers(config_ref:&CrossChainGlobalConfig,keepers: &vector<vector<u8>>){
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.curBookKeepers = *keepers;
     }
 
-    public fun getCurBookKeepers(): vector<vector<u8>> acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun getCurBookKeepers(config_ref:&CrossChainGlobalConfig): vector<vector<u8>> {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return config_ref.curBookKeepers
     }
 
-    fun markFromChainTxExist(fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    fun  markFromChainTxExist(config_ref:&CrossChainGlobalConfig, fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) {
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         if (table::contains(&config_ref.fromChainTxExist, fromChainId)) {
             utils::upsert(table::borrow_mut(&mut config_ref.fromChainTxExist, fromChainId), *fromChainTx, true);
             return
@@ -226,8 +226,8 @@ module poly::cross_chain_manager {
         }
     }
 
-    public fun checkIfFromChainTxExist(fromChainId: u64, fromChainTx: &vector<u8>): bool acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun checkIfFromChainTxExist(config_ref:&CrossChainGlobalConfig, fromChainId: u64, fromChainTx: &vector<u8>): bool {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         if (table::contains(&config_ref.fromChainTxExist, fromChainId)) {
             if (table::contains(table::borrow(&config_ref.fromChainTxExist, fromChainId), *fromChainTx)) {
                 return *table::borrow(table::borrow(&config_ref.fromChainTxExist, fromChainId), *fromChainTx)
@@ -236,45 +236,45 @@ module poly::cross_chain_manager {
         return false
     }
 
-    public fun getEthTxHashIndex(): u128 acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun getEthTxHashIndex(config_ref:&CrossChainGlobalConfig): u128 {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return config_ref.ethToPolyTxHashIndex
     }
 
-    fun putEthTxHash(hash: &vector<u8>) acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    fun putEthTxHash(config_ref:&CrossChainGlobalConfig, hash: &vector<u8>) {
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         let index = config_ref.ethToPolyTxHashIndex;
         utils::upsert(&mut config_ref.ethToPolyTxHashMap, index, *hash);
         config_ref.ethToPolyTxHashIndex = index + 1;
     }
 
-    public fun getEthTxHash(ethHashIndex: u128): vector<u8> acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun getEthTxHash(config_ref:&CrossChainGlobalConfig, ethHashIndex: u128): vector<u8>  {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return *table::borrow(&config_ref.ethToPolyTxHashMap, ethHashIndex)
     }
 
 
     // pause/unpause
-    public fun paused(): bool acquires CrossChainGlobalConfig {
-        let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+    public fun paused(config_ref:&CrossChainGlobalConfig): bool  {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return config_ref.paused
     }
 
-    public fun pause(account: address) acquires CrossChainGlobalConfig, ACLStore {
-        assert!(hasRole(PAUSE_ROLE, account), ENOT_PAUSE_ROLE);
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    public fun pause(config_ref:&CrossChainGlobalConfig, acl_store_ref:&ACLStore, account: address)  {
+        assert!(hasRole(acl_store_ref, PAUSE_ROLE, account), ENOT_PAUSE_ROLE);
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.paused = true;
     }
 
-    public fun unpause(account: address) acquires CrossChainGlobalConfig, ACLStore {
-        assert!(hasRole(PAUSE_ROLE, (account)), ENOT_PAUSE_ROLE);
-        let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+    public fun unpause(config_ref:&CrossChainGlobalConfig, acl_store_ref:&ACLStore, account: address)  {
+        assert!(hasRole(acl_store_ref, PAUSE_ROLE, (account)), ENOT_PAUSE_ROLE);
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         config_ref.paused = false;
     }
 
 
     // initialize
-    public fun init_manager(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64, ctx: &mut TxContext) acquires EventStore {
+    public fun init_manager(account: address, keepers: vector<vector<u8>>, startHeight: u64, polyId: u64, ctx: &mut TxContext)  {
         assert!((account) == @poly, EINVALID_SIGNER);
         
         // init access control lists
@@ -318,7 +318,7 @@ module poly::cross_chain_manager {
             //verify_header_and_execute_tx_event: account::new_event_handle<VerifyHeaderAndExecuteTxEvent>(account),
         }, account);
 
-        let event_store = borrow_global_mut<EventStore>(@poly);
+        //let event_store = borrow_global_mut<EventStore>(@poly);
         event::emit(
             InitBookKeeperEvent{
                 height: startHeight,
@@ -329,19 +329,19 @@ module poly::cross_chain_manager {
 
     
     // set poly id
-    public entry fun setPolyId(account: address, polyId: u64) acquires CrossChainGlobalConfig, ACLStore {
-        assert!(hasRole(CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
-        putPolyId(polyId);
+    public entry fun setPolyId(config_ref:&CrossChainGlobalConfig, acl_store_ref:&ACLStore, account: address, polyId: u64)  {
+        assert!(hasRole(acl_store_ref, CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
+        putPolyId(config_ref, polyId);
     }
 
 
     // change book keeper
-    public entry fun changeBookKeeper(account: address, keepers: vector<vector<u8>>, startHeight: u64) acquires CrossChainGlobalConfig, EventStore, ACLStore {
-        assert!(hasRole(CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
-        putCurBookKeepers(&keepers);
-        putCurEpochStartHeight(startHeight);
+    public entry fun changeBookKeeper(config_ref:&CrossChainGlobalConfig, acl_store_ref:&ACLStore, account: address, keepers: vector<vector<u8>>, startHeight: u64)  {
+        assert!(hasRole(acl_store_ref, CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
+        putCurBookKeepers(config_ref, &keepers);
+        putCurEpochStartHeight(config_ref, startHeight);
 
-        let event_store = borrow_global_mut<EventStore>(@poly);
+        //let event_store = borrow_global_mut<EventStore>(@poly);
         event::emit(
             ChangeBookKeeperEvent{
                 height: startHeight,
@@ -352,15 +352,15 @@ module poly::cross_chain_manager {
 
     
     // cross chain
-    public fun crossChain(account: address, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>) acquires CrossChainGlobalConfig, ACLStore, EventStore {
-        assert!(!paused(), EPAUSED);
+    public fun crossChain(config_ref:&CrossChainGlobalConfig, acl_store_ref:&ACLStore, account: address, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>)  {
+        assert!(!paused(config_ref), EPAUSED);
 
         // check license
         let msg_sender = getLicenseId(license);
-        assert!(!isBlackListedFrom(msg_sender), EBLACKLISTED_FROM);
+        assert!(!isBlackListedFrom(acl_store_ref, msg_sender), EBLACKLISTED_FROM);
 
         // pack args
-        let tx_hash_index = getEthTxHashIndex();
+        let tx_hash_index = getEthTxHashIndex(config_ref);
         let param_tx_hash = bcs::to_bytes(&tx_hash_index);
         vector::reverse(&mut param_tx_hash);
 
@@ -377,10 +377,10 @@ module poly::cross_chain_manager {
         vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(txData));
 
         // mark
-        putEthTxHash(&hash::sha2_256(copy raw_param));
+        putEthTxHash(config_ref, &hash::sha2_256(copy raw_param));
 
         // emit event
-        let event_store = borrow_global_mut<EventStore>(@poly);
+        //let event_store = borrow_global_mut<EventStore>(@poly);
         event::emit(
             CrossChainEvent{
                 sender: account,
@@ -421,8 +421,11 @@ module poly::cross_chain_manager {
 
 
     // verify header and execute tx
-    public fun verifyHeaderAndExecuteTx(license: &License, proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>, ctx: &mut TxContext): Certificate acquires CrossChainGlobalConfig, ACLStore, EventStore {
-        assert!(!paused(), EPAUSED);
+    public fun verifyHeaderAndExecuteTx(config_ref:&CrossChainGlobalConfig,
+                                        acl_store_ref:&ACLStore,
+                                        license: &License,
+                                        proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>, ctx: &mut TxContext): Certificate  {
+        assert!(!paused(config_ref), EPAUSED);
 
         let (
             _,
@@ -437,8 +440,8 @@ module poly::cross_chain_manager {
             _,
             _
         ) = cross_chain_utils::deserializeHeader(rawHeader);
-        let keepers = getCurBookKeepers();
-        let cur_epoch_start_height = getCurEpochStartHeight();
+        let keepers = getCurBookKeepers(config_ref);
+        let cur_epoch_start_height = getCurEpochStartHeight(config_ref);
         let n = vector::length(&keepers);
         let threshold = n - ( n - 1) / 3;
 
@@ -479,21 +482,21 @@ module poly::cross_chain_manager {
         ) = cross_chain_utils::deserializeMerkleValue(&to_merkle_value_bytes);
 
         // double-spending check/mark
-        assert!(!checkIfFromChainTxExist(from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
-        markFromChainTxExist(from_chain_id, &poly_tx_hash, ctx);
+        assert!(!checkIfFromChainTxExist(config_ref, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
+        markFromChainTxExist(config_ref, from_chain_id, &poly_tx_hash, ctx);
 
         // check to chain id
-        assert!(to_chain_id == getPolyId(), ENOT_TARGET_CHAIN);
+        assert!(to_chain_id == getPolyId(config_ref), ENOT_TARGET_CHAIN);
 
         // check verifier
         let msg_sender = getLicenseId(license);
         assert!(msg_sender == to_contract, EVERIFIER_NOT_RECEIVER);
 
         // check black list
-        assert!(!isBlackListedTo(to_contract), EBLACKLISTED_TO);
+        assert!(!isBlackListedTo(acl_store_ref, to_contract), EBLACKLISTED_TO);
 
         // emit event
-        let event_store = borrow_global_mut<EventStore>(@poly);
+        //let event_store = borrow_global_mut<EventStore>(@poly);
         event::emit(
             VerifyHeaderAndExecuteTxEvent{
                 from_chain_id: from_chain_id,
