@@ -5,11 +5,14 @@ use jsonrpsee::core::RpcResult;
 use jsonrpsee::proc_macros::rpc;
 
 use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, DaoProposalFilter, EpochInfo, EpochPage, MoveCallMetrics,
-    NetworkMetrics, NetworkOverview, QueryObjectsPage, SuiDaoProposal, SuiObjectResponseQuery,
+    AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
+    MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, QueryObjectsPage,
+    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter,
+    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
+    SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc_macros::open_rpc;
-use sui_types::sui_serde::BigInt;
+use sui_types::{base_types::SuiAddress, sui_serde::BigInt};
 
 #[open_rpc(namespace = "bfcx", tag = "Extended API")]
 #[rpc(server, client, namespace = "bfcx")]
@@ -74,4 +77,41 @@ pub trait ExtendedApi {
 
     #[method(name = "getTotalTransactions")]
     async fn get_total_transactions(&self) -> RpcResult<BigInt<u64>>;
+
+    #[method(name = "getNFTStakingOverview")]
+    async fn get_nft_staking_overview(&self) -> RpcResult<NFTStakingOverview>;
+
+    #[method(name = "getOwnedMiningNFTs")]
+    async fn get_owned_mining_nfts(
+        &self,
+        address: SuiAddress,
+        /// optional current page
+        page: Option<usize>,
+        /// maximum number of items per page
+        limit: Option<usize>,
+        filter: Option<SuiOwnedMiningNFTFilter>,
+    ) -> RpcResult<ClassicPage<SuiMiningNFT>>;
+
+    #[method(name = "getOwnedMiningNFTOverview")]
+    async fn get_owned_mining_nft_overview(
+        &self,
+        address: SuiAddress,
+    ) -> RpcResult<SuiOwnedMiningNFTOverview>;
+
+    #[method(name = "getOwnedMiningNFTProfits")]
+    async fn get_owned_mining_nft_profits(
+        &self,
+        address: SuiAddress,
+        limit: usize,
+    ) -> RpcResult<Vec<SuiOwnedMiningNFTProfit>>;
+
+    #[method(name = "getMiningNFTMarketplaceOrders")]
+    async fn get_mining_nft_marketplace_orders(
+        &self,
+        /// optional current page
+        page: Option<usize>,
+        /// maximum number of items per page
+        limit: Option<usize>,
+        filter: Option<SuiMiningNFTOrderFilter>,
+    ) -> RpcResult<ClassicPage<SuiMiningNFTMarketplaceOrder>>;
 }

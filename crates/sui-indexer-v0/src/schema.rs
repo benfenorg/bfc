@@ -383,6 +383,62 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    price_history(ts, coin) {
+        ts -> Int8,
+        coin -> Varchar,
+        price -> Int8,
+    }
+}
+
+diesel::table! {
+    mining_nfts (id) {
+        id -> Int8,
+        owner -> Varchar,
+        miner_id -> Varchar,
+        miner_url -> Varchar,
+        miner_name -> Varchar,
+        token_id -> Varchar,
+        power -> Int8,
+        mint_at -> Int8,
+        earliest_held_at -> Int8,
+        mint_duration -> Int8,
+        mining_ticket_id -> Nullable<Varchar>,
+        mining_started_at -> Int8,
+        total_mint_bfc -> Int8,
+        yesterday_mint_bfc -> Int8,
+        yesterday_dt_ms -> Int8,
+        market_order_id -> Nullable<Varchar>,
+        market_order_price -> Nullable<Int8>,
+        market_order_coin -> Nullable<Varchar>,
+        market_order_dealed -> Bool,
+        market_order_updated_at -> Int8,
+    }
+}
+
+diesel::table! {
+    mining_nft_staking(ticket_id) {
+        ticket_id -> Varchar,
+        owner -> Varchar,
+        miner_id -> Varchar,
+        staked_at -> Int8,
+        unstaked_at -> Nullable<Int8>,
+        total_mint_bfc -> Int8,
+    }
+}
+
+diesel::table! {
+    mining_nft_history_profits (owner, dt_timestamp_ms, miner_id) {
+        owner -> Varchar,
+        miner_id -> Varchar,
+        dt_timestamp_ms -> Int8,
+        mint_bfc -> Int8,
+        mint_usd -> Int8,
+        pending_reward -> Int8,
+        claimed_reward -> Int8,
+    }
+}
+
 diesel::allow_tables_to_appear_in_same_query!(
     active_addresses,
     address_stats,
@@ -405,4 +461,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     transactions,
     validators,
     network_segment_metrics,
+    price_history,
+    mining_nfts,
 );

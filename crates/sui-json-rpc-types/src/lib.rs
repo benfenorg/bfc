@@ -47,3 +47,12 @@ pub struct Page<T, C> {
     pub next_cursor: Option<C>,
     pub has_next_page: bool,
 }
+
+#[derive(Clone, Debug, JsonSchema, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ClassicPage<T> {
+    pub data: Vec<T>,
+    pub next_page: Option<usize>,
+    pub prev_page: Option<usize>,
+    pub total: usize,
+}

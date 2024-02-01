@@ -24,6 +24,7 @@ prometheus.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 regex.workspace = true
+reqwest.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 tokio = { workspace = true, features = ["full"] }
@@ -50,6 +51,7 @@ move-bytecode-utils.workspace = true
 
 diesel_migrations.workspace = true
 cached.workspace = true
+rust_decimal.workspace = true
 
 [features]
 pg_integration = []

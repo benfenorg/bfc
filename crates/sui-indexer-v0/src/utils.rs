@@ -53,6 +53,12 @@ pub fn reset_database(conn: &mut PgPoolConnection, drop_all: bool) -> Result<(),
     Ok(())
 }
 
+pub fn run_migrations(conn: &mut PgPoolConnection) -> Result<(), anyhow::Error> {
+    conn.run_pending_migrations(MIGRATIONS)
+        .map_err(|e| anyhow!("Failed to run migrations {e}"))?;
+    Ok(())
+}
+
 pub fn drop_all_tables(conn: &mut PgConnection) -> Result<(), diesel::result::Error> {
     info!("Dropping all tables in the database");
     let table_names: Vec<String> = diesel::dsl::sql::<diesel::sql_types::Text>(

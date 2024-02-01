@@ -10,11 +10,14 @@ use sui_json_rpc::api::{
 };
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, DaoProposalFilter, EpochInfo, EpochPage, MoveCallMetrics,
-    NetworkMetrics, NetworkOverview, Page, QueryObjectsPage, SuiDaoProposal, SuiObjectDataFilter,
-    SuiObjectResponse, SuiObjectResponseQuery,
+    AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
+    MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage,
+    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter,
+    SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
+use sui_types::base_types::SuiAddress;
 use sui_types::sui_serde::BigInt;
 
 use crate::errors::IndexerError;
@@ -128,6 +131,44 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
     }
 
     async fn get_network_overview(&self) -> RpcResult<NetworkOverview> {
+        todo!()
+    }
+
+    async fn get_nft_staking_overview(&self) -> RpcResult<NFTStakingOverview> {
+        todo!()
+    }
+
+    async fn get_mining_nft_marketplace_orders(
+        &self,
+        _page: Option<usize>,
+        _limit: Option<usize>,
+        _filter: Option<SuiMiningNFTOrderFilter>,
+    ) -> RpcResult<ClassicPage<SuiMiningNFTMarketplaceOrder>> {
+        todo!()
+    }
+
+    async fn get_owned_mining_nfts(
+        &self,
+        _address: SuiAddress,
+        _page: Option<usize>,
+        _limit: Option<usize>,
+        _filter: Option<SuiOwnedMiningNFTFilter>,
+    ) -> RpcResult<ClassicPage<SuiMiningNFT>> {
+        todo!()
+    }
+
+    async fn get_owned_mining_nft_overview(
+        &self,
+        _address: SuiAddress,
+    ) -> RpcResult<SuiOwnedMiningNFTOverview> {
+        todo!()
+    }
+
+    async fn get_owned_mining_nft_profits(
+        &self,
+        _address: SuiAddress,
+        _limit: usize,
+    ) -> RpcResult<Vec<SuiOwnedMiningNFTProfit>> {
         todo!()
     }
 

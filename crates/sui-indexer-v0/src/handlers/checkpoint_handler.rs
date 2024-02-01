@@ -1,14 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::BTreeMap;
 use std::sync::Arc;
+use std::{collections::BTreeMap, time::Duration};
 
+use chrono::Utc;
 use fastcrypto::traits::ToFromBytes;
 use futures::future::join_all;
 use futures::FutureExt;
 use itertools::Itertools;
 use jsonrpsee::http_client::HttpClient;
+use move_core_types::parser::parse_struct_tag;
 use move_core_types::{account_address::AccountAddress, ident_str};
 use tokio::sync::{
     mpsc::{self, Receiver, Sender},
@@ -36,8 +38,10 @@ use crate::metrics::IndexerMetrics;
 use crate::models::checkpoints::Checkpoint;
 use crate::models::dao_proposals::Proposal;
 use crate::models::epoch::{DBEpochInfo, SystemEpochInfoEvent};
+use crate::models::mining_nft::{self, MiningNFT, MiningNFTHistoryProfit};
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
+use crate::models::prices::PriceHistory;
 use crate::models::transactions::Transaction;
 use crate::store::{
     CheckpointData, IndexerStore, TemporaryCheckpointStore, TemporaryEpochStore,
@@ -45,7 +49,7 @@ use crate::store::{
 };
 use crate::types::{CheckpointTransactionBlockResponse, TemporaryTransactionBlockResponseStore};
 use crate::utils::multi_get_full_transactions;
-use crate::IndexerConfig;
+use crate::{benfen, IndexerConfig};
 use crate::{errors::IndexerError, models::transaction_index::ChangedObject};
 
 const MAX_PARALLEL_DOWNLOADS: usize = 24;
@@ -104,6 +108,7 @@ where
 
     pub fn spawn(self) -> JoinHandle<()> {
         info!("Indexer checkpoint handler started...");
+        self.spawn_periodical_tasks();
         let tx_download_handler = self.clone();
         spawn_monitored_task!(async move {
             let mut checkpoint_download_index_res = tx_download_handler
@@ -433,7 +438,7 @@ where
                     );
                     continue;
                 }
-
+                let indexed_checkpoint_nft = indexed_checkpoint.clone();
                 // Write checkpoint to DB
                 let TemporaryCheckpointStore {
                     checkpoint,
@@ -480,6 +485,49 @@ where
                         .await;
                         package_commit_res =
                             packages_handler.state.persist_packages(&packages).await;
+                    }
+                });
+
+                let proposals = object_changes
+                    .iter()
+                    .flat_map(|x| x.changed_objects.iter())
+                    .filter(|x| Proposal::is_proposal(x))
+                    .map(|object| object.clone().try_into())
+                    .map_ok(|x| x)
+                    .collect::<Result<Vec<Proposal>, IndexerError>>()?;
+
+                let proposal_handler = self.clone();
+                spawn_monitored_task!(async move {
+                    info!("got proposals {:?}", proposals);
+                    let mut proposals_commit_res =
+                        proposal_handler.state.persist_proposals(&proposals).await;
+                    while let Err(e) = proposals_commit_res {
+                        warn!("Indexer proposals commit failed with error: {:?}, retrying fater {:?} milli-secs",
+                              e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
+                        tokio::time::sleep(std::time::Duration::from_millis(
+                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                        ))
+                        .await;
+                        proposals_commit_res =
+                            proposal_handler.state.persist_proposals(&proposals).await;
+                    }
+                });
+
+                let mining_nft_handler = self.clone();
+                spawn_monitored_task!(async move {
+                    let mut mining_nft_commit_res = mining_nft_handler
+                        .index_mining_nfts(indexed_checkpoint_nft.clone())
+                        .await;
+                    while let Err(e) = mining_nft_commit_res {
+                        warn!("Indexer mining NFTs commit failed with error: {:?}, retrying fater {:?} milli-secs",
+                              e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
+                        tokio::time::sleep(std::time::Duration::from_millis(
+                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                        ))
+                        .await;
+                        mining_nft_commit_res = mining_nft_handler
+                            .index_mining_nfts(indexed_checkpoint_nft.clone())
+                            .await;
                     }
                 });
 
@@ -543,16 +591,6 @@ where
                         )
                         .await;
                 }
-
-                let proposals = object_changes
-                    .iter()
-                    .flat_map(|x| x.changed_objects.iter())
-                    .filter(|x| Proposal::is_proposal(x))
-                    .map(|object| object.clone().try_into())
-                    .map_ok(|x| x)
-                    .collect::<Result<Vec<Proposal>, IndexerError>>()?;
-                info!("got proposals {:?}", proposals);
-                self.state.persist_proposals(&proposals).await?;
                 checkpoint_tx_db_guard.stop_and_record();
                 self.metrics
                     .latest_tx_checkpoint_sequence_number
@@ -1044,6 +1082,217 @@ where
             })
             .flatten()
             .collect()
+    }
+
+    fn spawn_periodical_tasks(&self) {
+        let handler = self.clone();
+        spawn_monitored_task!(async move {
+            handler.start_persisting_bfc_history_price().await;
+        });
+
+        let handler = self.clone();
+        spawn_monitored_task!(async move {
+            handler.start_persisting_btc_history_price().await;
+        });
+        let handler = self.clone();
+        spawn_monitored_task!(async move {
+            handler.start_settling_minging_nft_profits().await;
+        });
+    }
+
+    async fn start_settling_minging_nft_profits(&self) {
+        let mut interval = tokio::time::interval(Duration::from_secs(600));
+        loop {
+            interval.tick().await;
+            info!("Indexer starts to settle the historic profits of mining NFTs...");
+            if let Err(err) = self.settle_mining_nft_profits().await {
+                warn!(
+                    "Failed to settle the historic profits of mining NFTs with erorr: {:?}",
+                    err
+                );
+            }
+        }
+    }
+
+    async fn settle_mining_nft_profits(&self) -> Result<(), IndexerError> {
+        let dt_timestamp_ms = benfen::get_yesterday_started_at();
+        let pendings = self.state.get_unsettle_mining_nfts(dt_timestamp_ms).await?;
+        let mut results = vec![];
+        let price = benfen::get_bfc_price_in_usd(self.http_client.clone()).await?;
+        for nft in pendings.iter() {
+            let current = self
+                .state
+                .get_mining_nft_profit(nft, dt_timestamp_ms)
+                .await?;
+            let previous = self
+                .state
+                .get_mining_nft_profit(nft, dt_timestamp_ms - 86_400_000)
+                .await?;
+            let pending_bfc = if nft.mining_ticket_id.is_some() {
+                benfen::get_mining_nft_pending_reward(
+                    self.http_client.clone(),
+                    &self.config.mining_nft_contract,
+                    &self.config.mining_nft_global,
+                    &nft.mining_ticket_id.clone().unwrap_or_default(),
+                )
+                .await?
+            } else {
+                0
+            };
+            let mint_bfc = if current.claimed_reward > 0 {
+                current.claimed_reward - previous.pending_reward + pending_bfc as i64
+            } else {
+                pending_bfc as i64 - previous.pending_reward
+            };
+            results.push(MiningNFTHistoryProfit {
+                owner: nft.owner.clone(),
+                miner_id: nft.miner_id.clone(),
+                dt_timestamp_ms,
+                mint_bfc,
+                mint_usd: (mint_bfc as f64 * price) as i64,
+                pending_reward: pending_bfc as i64,
+                claimed_reward: current.claimed_reward,
+            });
+        }
+        self.state.persist_mining_nft_profits(results).await?;
+        Ok(())
+    }
+
+    async fn start_persisting_bfc_history_price(&self) {
+        let mut interval = tokio::time::interval(Duration::from_secs(600));
+        loop {
+            interval.tick().await;
+            info!("Indexer starts to maintain BFC price history periodically...");
+            match benfen::get_bfc_price_in_usd(self.http_client.clone()).await {
+                Ok(price) => {
+                    let result = self
+                        .state
+                        .persist_price(PriceHistory {
+                            ts: Utc::now().timestamp_millis(),
+                            coin: "BFC".to_owned(),
+                            price: (price * 10000f64) as i64,
+                        })
+                        .await;
+                    if let Err(err) = result {
+                        warn!("Failed to get BFC price with error: {:?}", err);
+                    }
+                }
+                Err(err) => warn!("Failed to get BFC price with error: {:?}", err),
+            }
+        }
+    }
+
+    async fn start_persisting_btc_history_price(&self) {
+        let mut interval = tokio::time::interval(Duration::from_secs(600));
+        info!("Indexer starts to fill the prices of past 180 days...");
+        let started_at = benfen::get_yesterday_started_at();
+        let a_day_milis = 86_400_000;
+        for d in 0..180 {
+            let timestamp_ms = started_at - (d * a_day_milis);
+            if let Err(err) = self.persist_btc_price_if_absent(timestamp_ms).await {
+                warn!("Failed to persist btc price with error {:?}", err);
+            }
+        }
+        loop {
+            interval.tick().await;
+
+            info!("Indexer starts to maintain BTC price history peridocially...");
+            let timestamp_ms = benfen::get_yesterday_started_at();
+            if let Err(err) = self.persist_btc_price_if_absent(timestamp_ms).await {
+                warn!("Failed to persist btc price with error {:?}", err);
+            }
+        }
+    }
+
+    async fn persist_btc_price_if_absent(&self, timestamp_ms: i64) -> Result<(), IndexerError> {
+        if let Err(_) = self
+            .state
+            .get_historic_price(timestamp_ms, "BTC".to_owned(), true)
+            .await
+        {
+            let mut price_res = self.persist_btc_price(timestamp_ms).await;
+            while let Err(err) = price_res {
+                warn!(
+                    "Failed to persist BTC history price with error: {:?}, retrying...",
+                    err
+                );
+                tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+                price_res = self.persist_btc_price(timestamp_ms).await;
+            }
+        }
+        Ok(())
+    }
+
+    async fn persist_btc_price(&self, timestamp_ms: i64) -> Result<(), IndexerError> {
+        let price = benfen::get_btc_price_in_usd(Some(timestamp_ms)).await?;
+
+        self.state
+            .persist_price(PriceHistory {
+                ts: timestamp_ms,
+                coin: "BTC".to_owned(),
+                price: (price * 10000.0) as i64,
+            })
+            .await?;
+        Ok(())
+    }
+
+    async fn index_mining_nfts(
+        &self,
+        indexed_checkpoint: TemporaryCheckpointStore,
+    ) -> Result<(), IndexerError> {
+        let TemporaryCheckpointStore {
+            checkpoint,
+            transactions: _,
+            events,
+            object_changes,
+            packages: _,
+            input_objects: _,
+            changed_objects: _,
+            move_calls: _,
+            recipients: _,
+        } = indexed_checkpoint;
+
+        let mut extracted_nfts =
+            mining_nft::extract_from_events(&self.config.mining_nft_event_package, &events)?;
+        let operations = mining_nft::extract_operations_from_events(
+            &self.config.mining_nft_event_package,
+            &events,
+        )?;
+        // Some operations like listing on marketplace will also change the miner object.
+        // So we should avoid to extract transfer nfts if there're operations in the txn.
+        if operations.len() == 0 {
+            let transfered_nfts = object_changes
+                .iter()
+                .flat_map(|x| x.changed_objects.iter())
+                .filter(|x| mining_nft::is_miner(&self.config.mining_nft_contract, x))
+                .map(|object| object.clone().into())
+                .collect::<Vec<mining_nft::ExtractedMiningNFT>>();
+            extracted_nfts.extend(transfered_nfts);
+        }
+
+        for e in extracted_nfts.into_iter() {
+            let mut mining_nft: MiningNFT = (checkpoint.clone(), e).into();
+            let object_id = ObjectID::from_hex_literal(&mining_nft.miner_id)?;
+            let display = benfen::get_nft_display(self.http_client.clone(), object_id).await?;
+            mining_nft.miner_name = display.name.clone();
+            mining_nft.miner_url = display.image_url.clone();
+            let coin = if let Some(market_order_coin) = &mining_nft.market_order_coin {
+                Some(parse_struct_tag(&format!("0x{}", market_order_coin))?.to_string())
+            } else {
+                None
+            };
+            mining_nft.market_order_coin = coin;
+            self.state
+                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft))
+                .await?;
+        }
+        for p in operations.into_iter() {
+            self.state
+                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p))
+                .await?;
+        }
+
+        Ok(())
     }
 }
 
