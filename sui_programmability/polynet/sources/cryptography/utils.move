@@ -5,6 +5,7 @@ module poly::utils {
     //use sui::any;
     use std::string::{String, Self};
     use sui::bcs;
+    use sui::table::{Table, Self};
     //use std::type_name;
     // use std::option;
 
@@ -54,6 +55,13 @@ module poly::utils {
     public fun to_string(v: vector<u8>): String {
         let data = string::utf8(v);
         return data
+    }
+
+    public fun upsert<K: copy + drop + store, V: store>(tb: &mut Table<K, V>, k: K, v: V) {
+        if (table::contains(tb, k)) {
+            table::remove(tb, k);
+        };
+        table::add(tb, k, v);
     }
 
     // public fun from_bytes<T>(v: vector<u8>): T {

@@ -2,6 +2,7 @@ module poly::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
+    use poly::utils;
     use sui::event;
     use sui::table::{Table, Self};
     use sui::transfer::transfer;
@@ -213,7 +214,7 @@ module poly::cross_chain_manager {
     fun markFromChainTxExist(fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) acquires CrossChainGlobalConfig {
         let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         if (table::contains(&config_ref.fromChainTxExist, fromChainId)) {
-            table::upsert(table::borrow_mut(&mut config_ref.fromChainTxExist, fromChainId), *fromChainTx, true);
+            utils::upsert(table::borrow_mut(&mut config_ref.fromChainTxExist, fromChainId), *fromChainTx, true);
             return
         } else {
             let subTable = table::new<vector<u8>, bool>(ctx);
@@ -241,7 +242,7 @@ module poly::cross_chain_manager {
     fun putEthTxHash(hash: &vector<u8>) acquires CrossChainGlobalConfig {
         let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         let index = config_ref.ethToPolyTxHashIndex;
-        table::upsert(&mut config_ref.ethToPolyTxHashMap, index, *hash);
+        utils::upsert(&mut config_ref.ethToPolyTxHashMap, index, *hash);
         config_ref.ethToPolyTxHashIndex = index + 1;
     }
 

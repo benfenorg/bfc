@@ -176,7 +176,7 @@ module poly_bridge::lock_proxy {
     public entry fun bindProxy(owner: address, to_chain_id: u64, target_proxy_hash: vector<u8>) acquires LockProxyStore {
         onlyOwner(owner);
         let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        table::upsert(&mut config_ref.proxy_map, to_chain_id, target_proxy_hash);
+        utils::upsert(&mut config_ref.proxy_map, to_chain_id, target_proxy_hash);
 
         event::emit(
             BindProxyEvent{
@@ -210,7 +210,7 @@ module poly_bridge::lock_proxy {
         let decimals_concat_to_asset = vector::singleton(to_asset_decimals);
         vector::append(&mut decimals_concat_to_asset, to_asset_hash);
         if (table::contains(&config_ref.asset_map, from_asset)) {
-            table::upsert(table::borrow_mut(&mut config_ref.asset_map, from_asset), to_chain_id, decimals_concat_to_asset);
+            utils::upsert(table::borrow_mut(&mut config_ref.asset_map, from_asset), to_chain_id, decimals_concat_to_asset);
         } else {
             let subTable = table::new<u64, vector<u8>>(ctx);
             table::add(&mut subTable, to_chain_id, decimals_concat_to_asset);
