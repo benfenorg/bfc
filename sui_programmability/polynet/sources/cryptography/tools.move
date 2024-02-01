@@ -9,7 +9,7 @@ module poly::tools {
     // mainnet
     public entry fun init_as_mainnet(account: address, ctx: &mut TxContext) {
         init_mainnet_ccm(account, ctx);
-        wrapper_v1::init(account);
+        wrapper_v1::init_wrapper(account);
         lock_proxy::init(account, ctx);
         issue_license_to_lock_proxy(account, (account));
     }
@@ -33,7 +33,7 @@ module poly::tools {
     // testnet
     public entry fun init_as_testnet(account: address, ctx: &mut TxContext) {
         init_testnet_ccm(account, ctx);
-        wrapper_v1::init(account);
+        wrapper_v1::init_wrapper(account);
         lock_proxy::init(account, ctx);
         issue_license_to_lock_proxy(account, (account));
     }
