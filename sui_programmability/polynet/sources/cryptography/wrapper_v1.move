@@ -1,15 +1,15 @@
-module poly_bridge::wrapper_v1 {
+module polynet::wrapper_v1 {
     use sui::bfc::BFC;
     use sui::event;
     //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
-    use poly_bridge::lock_proxy::{LockProxyStore, LicenseStore, Treasury};
-    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore, CrossChainManager};
+    use polynet::lock_proxy::{Treasury, LockProxyManager};
+    use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
-    use poly_bridge::lock_proxy;
+    use polynet::lock_proxy;
 
     const DEPRECATED: u64 = 1;
     const EINVALID_SIGNER: u64 = 2;
@@ -49,8 +49,7 @@ module poly_bridge::wrapper_v1 {
     // for relayer 
     public entry fun relay_unlock_tx<CoinType>(
         ccManager:&CrossChainManager,
-        lock_config_ref:&LockProxyStore,
-        license_opt:&LicenseStore,
+        lpManager: &LockProxyManager,
         treasury_ref:&Treasury<CoinType>,
         proof: vector<u8>, 
         rawHeader: vector<u8>, 
@@ -60,12 +59,16 @@ module poly_bridge::wrapper_v1 {
         ctx: &mut TxContext
     ) {
         lock_proxy::relay_unlock_tx<CoinType>(
-            ccManager, lock_config_ref, license_opt,treasury_ref,
+            ccManager, lpManager,treasury_ref,
             proof, rawHeader, headerProof, curRawHeader, headerSig, ctx);
     }
 
     // for user
     public entry fun lock_and_pay_fee<CoinType>(
+        ccManager:&CrossChainManager,
+        lpManager: &LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        wrapperstore:&mut WrapperStore,
         account: address,
         fund: Coin<CoinType>,
         fee: Coin<BFC>,
@@ -77,10 +80,14 @@ module poly_bridge::wrapper_v1 {
 
         //let fund = coin::withdraw<CoinType>(account, amount);
         //let fee = coin::withdraw<BFC>(account, fee_amount);
-        lock_and_pay_fee_with_fund<CoinType>(account, fund, fee, toChainId, &toAddress);
+        lock_and_pay_fee_with_fund<CoinType>(ccManager, lpManager,treasury_ref,wrapperstore, account, fund, fee, toChainId, &toAddress);
     }
 
     public fun lock_and_pay_fee_with_fund<CoinType>(
+        ccManager:&CrossChainManager,
+        lpManager: &LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        wrapperstore:&mut WrapperStore,
         account: address,
         fund: Coin<CoinType>, 
         fee: Coin<BFC>,
@@ -92,10 +99,10 @@ module poly_bridge::wrapper_v1 {
 
         //coin::deposit<BFC>(feeCollector(), fee);
 
-        let feeCollector = feeCollector();
+        let feeCollector = feeCollector(wrapperstore);
         transfer(fee, feeCollector);
 
-        lock_proxy::lock(account, fund, toChainId, toAddress);
+        lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress);
         //let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
         event::emit(
             LockWithFeeEvent{

@@ -1,4 +1,4 @@
-module poly_bridge::bridge_coin {
+module polynet::bridge_coin {
     use std::option;
     //use std::string::{String};
 
@@ -7,7 +7,7 @@ module poly_bridge::bridge_coin {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use poly_bridge::lock_proxy;
+    use polynet::lock_proxy;
 
     const ENOT_BRIDGE_ADMIN: u64 = 4001;
 

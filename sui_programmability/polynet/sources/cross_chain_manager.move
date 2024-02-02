@@ -1,4 +1,4 @@
-module poly::cross_chain_manager {
+module polynet::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
@@ -8,7 +8,7 @@ module poly::cross_chain_manager {
     use sui::object::UID;
     use sui::table::{Table, Self};
     use sui::transfer;
-    use sui::transfer::transfer;
+    //use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
     use polynet::acl::Access_control_list;
@@ -40,7 +40,7 @@ module poly::cross_chain_manager {
     const EVERIFIER_NOT_RECEIVER: u64 = 4015;
 
 
-    struct CrossChainManager has key{
+    struct CrossChainManager has key, store{
         id: UID,
         acl_store: ACLStore,
         config: CrossChainGlobalConfig
@@ -48,14 +48,14 @@ module poly::cross_chain_manager {
 
 
     // access control
-    struct ACLStore has key {
+    struct ACLStore has key, store {
         id: UID,
         role_acls: Table<u64, Access_control_list>,
         license_black_list: Table<vector<u8>, u8>
     }
 
     // data store
-    struct CrossChainGlobalConfig has key {
+    struct CrossChainGlobalConfig has key,store{
         id: UID,
         polyId: u64,
         paused: bool,
@@ -133,7 +133,7 @@ module poly::cross_chain_manager {
 
 
 
-    public fun hasRole(ccManager:&CrossChainManager, role: u64, account: address): bool  {
+    public fun hasRole(ccManager:&mut CrossChainManager, role: u64, account: address): bool  {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
 
         if (table::contains(&ccManager.acl_store.role_acls, role)) {
@@ -144,7 +144,7 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun grantRole(ccManager:&CrossChainManager,  admin: address, role: u64, account: address) {
+    public entry fun grantRole(ccManager:&mut CrossChainManager,  admin: address, role: u64, account: address) {
         assert!(hasRole(ccManager, ADMIN_ROLE, admin), ENOT_ADMIN);
         assert!(!hasRole(ccManager, role, account), EALREADY_HAS_ROLE);
 
@@ -158,7 +158,7 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun revokeRole(ccManager:&CrossChainManager, admin: address, role: u64, account: address)  {
+    public entry fun revokeRole(ccManager:&mut CrossChainManager, admin: address, role: u64, account: address)  {
         assert!(hasRole(ccManager, ADMIN_ROLE, admin), ENOT_ADMIN);
         assert!(hasRole(ccManager, role, account), ENOT_HAS_ROLE);
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
@@ -173,7 +173,7 @@ module poly::cross_chain_manager {
         module_name: vector<u8>
     }
 
-    public fun issueLicense(ccManager:&CrossChainManager,
+    public fun issueLicense(ccManager:&mut CrossChainManager,
                             ca: address,
                             account: address,
                             module_name: vector<u8>): License {
@@ -221,7 +221,7 @@ module poly::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(ccManager:&CrossChainManager,  ca: address, license_id: vector<u8>, access_level: u8)  {
+    public entry fun setBlackList(ccManager:&mut CrossChainManager,  ca: address, license_id: vector<u8>, access_level: u8)  {
         assert!(hasRole(ccManager, CA_ROLE, ca), ENOT_CA_ROLE);
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let v_ref = utils::borrow_mut_with_default(&mut ccManager.acl_store.license_black_list, license_id, access_level);
@@ -259,7 +259,7 @@ module poly::cross_chain_manager {
     
 
 
-    fun putPolyId(ccManager:&CrossChainManager, polyId: u64) {
+    fun putPolyId(ccManager:&mut CrossChainManager, polyId: u64) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.polyId = polyId;
     }
@@ -269,7 +269,7 @@ module poly::cross_chain_manager {
         return ccManager.config.polyId
     }
 
-    fun putCurEpochStartHeight(ccManager:&CrossChainManager,height: u64)  {
+    fun putCurEpochStartHeight(ccManager:&mut CrossChainManager,height: u64)  {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.curEpochStartHeight = height;
     }
@@ -279,7 +279,7 @@ module poly::cross_chain_manager {
         return ccManager.config.curEpochStartHeight
     }
 
-    fun putCurBookKeepers(ccManager:&CrossChainManager,keepers: &vector<vector<u8>>){
+    fun putCurBookKeepers(ccManager:&mut CrossChainManager,keepers: &vector<vector<u8>>){
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.curBookKeepers = *keepers;
     }
@@ -289,7 +289,7 @@ module poly::cross_chain_manager {
         return ccManager.config.curBookKeepers
     }
 
-    fun  markFromChainTxExist(ccManager:&CrossChainManager, fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) {
+    fun  markFromChainTxExist(ccManager:&mut CrossChainManager, fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         if (table::contains(&ccManager.config.fromChainTxExist, fromChainId)) {
             utils::upsert(table::borrow_mut(&mut ccManager.config.fromChainTxExist, fromChainId), *fromChainTx, true);
@@ -317,7 +317,7 @@ module poly::cross_chain_manager {
         return ccManager.config.ethToPolyTxHashIndex
     }
 
-    fun putEthTxHash(ccManager:&CrossChainManager, hash: &vector<u8>) {
+    fun putEthTxHash(ccManager:&mut CrossChainManager, hash: &vector<u8>) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         let index = ccManager.config.ethToPolyTxHashIndex;
         utils::upsert(&mut ccManager.config.ethToPolyTxHashMap, index, *hash);
@@ -336,13 +336,13 @@ module poly::cross_chain_manager {
         return ccManager.config.paused
     }
 
-    public fun pause(ccManager:&CrossChainManager, account: address)  {
+    public fun pause(ccManager:&mut CrossChainManager, account: address)  {
         assert!(hasRole(ccManager, PAUSE_ROLE, account), ENOT_PAUSE_ROLE);
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.paused = true;
     }
 
-    public fun unpause(ccManager:&CrossChainManager, account: address)  {
+    public fun unpause(ccManager:&mut CrossChainManager, account: address)  {
         assert!(hasRole(ccManager, PAUSE_ROLE, (account)), ENOT_PAUSE_ROLE);
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.paused = false;
@@ -352,14 +352,14 @@ module poly::cross_chain_manager {
 
     
     // set poly id
-    public entry fun setPolyId(ccManager:&CrossChainManager, account: address, polyId: u64)  {
+    public entry fun setPolyId(ccManager:&mut CrossChainManager, account: address, polyId: u64)  {
         assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
         putPolyId(ccManager, polyId);
     }
 
 
     // change book keeper
-    public entry fun changeBookKeeper(ccManager:&CrossChainManager, account: address, keepers: vector<vector<u8>>, startHeight: u64)  {
+    public entry fun changeBookKeeper(ccManager:&mut CrossChainManager, account: address, keepers: vector<vector<u8>>, startHeight: u64)  {
         assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
         putCurBookKeepers(ccManager, &keepers);
         putCurEpochStartHeight(ccManager, startHeight);

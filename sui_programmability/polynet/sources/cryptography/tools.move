@@ -1,18 +1,21 @@
 module poly::tools {
-    use poly::cross_chain_manager;
-    use poly_bridge::lock_proxy;
-    use poly_bridge::wrapper_v1;
+    use polynet::cross_chain_manager;
+    use polynet::lock_proxy;
+    use polynet::wrapper_v1;
 
     use std::vector;
-    use poly::cross_chain_manager::{ACLStore, CrossChainManager};
+    use polynet::lock_proxy::LockProxyManager;
+    use polynet::cross_chain_manager::{CrossChainManager};
     use sui::tx_context::TxContext;
 
     // mainnet
-    public entry fun init_as_mainnet(ccManager: &CrossChainManager, account: address, ctx: &mut TxContext) {
+    public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
+                                     lpManager:&LockProxyManager,
+                                     account: address, ctx: &mut TxContext) {
         init_mainnet_ccm(account, ctx);
         wrapper_v1::init_wrapper(account);
         lock_proxy::init_lock_proxy_manager(account, ctx);
-        issue_license_to_lock_proxy(ccManager, account, (account));
+        issue_license_to_lock_proxy(ccManager,lpManager, account, (account));
     }
 
     public entry fun init_mainnet_ccm(account: address, ctx: &mut TxContext) {
@@ -26,17 +29,22 @@ module poly::tools {
         cross_chain_manager::init_crosschain_manager(account, keepers, startHeight, polyId, ctx);
     }
 
-    public entry fun issue_license_to_lock_proxy(ccManager:&CrossChainManager , account: address, bridge_addr: address) {
+    public entry fun issue_license_to_lock_proxy(ccManager:&mut CrossChainManager,
+                                                 lpManager:&LockProxyManager,
+                                                 account: address,
+                                                 bridge_addr: address) {
         let license = cross_chain_manager::issueLicense(ccManager, account, bridge_addr, b"lock_proxy");
-        lock_proxy::receiveLicense(license);
+        lock_proxy::receiveLicense(lpManager,license);
     }
 
     // testnet
-    public entry fun init_as_testnet(ccManager:&CrossChainManager, account: address, ctx: &mut TxContext) {
+    public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
+                                     lpManager:&LockProxyManager,
+                                     account: address, ctx: &mut TxContext) {
         init_testnet_ccm(account, ctx);
         wrapper_v1::init_wrapper(account);
         lock_proxy::init_lock_proxy_manager(account, ctx);
-        issue_license_to_lock_proxy(ccManager, account, (account));
+        issue_license_to_lock_proxy(ccManager,lpManager, account, (account));
     }
 
     public entry fun init_testnet_ccm(account: address, ctx: &mut TxContext) {
