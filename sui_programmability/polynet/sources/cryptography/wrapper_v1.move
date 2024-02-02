@@ -6,6 +6,8 @@ module polynet::wrapper_v1 {
     use polynet::lock_proxy::{Treasury, LockProxyManager};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
+    use sui::object;
+    use sui::object::UID;
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
@@ -15,6 +17,7 @@ module polynet::wrapper_v1 {
     const EINVALID_SIGNER: u64 = 2;
 
     struct WrapperStore has key, store{
+        id: UID,
         fee_collector: address,
     }
 
@@ -28,10 +31,12 @@ module polynet::wrapper_v1 {
     }
 
     // for admin
-    public entry fun init_wrapper(admin: address) {
+    public entry fun init_wrapper(admin: address , ctx: &mut TxContext) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
 
-        transfer(WrapperStore{ fee_collector: @poly_bridge,
+        transfer(WrapperStore{
+            id: object::new(ctx),
+            fee_collector: @poly_bridge,
         }, admin);
     }
 

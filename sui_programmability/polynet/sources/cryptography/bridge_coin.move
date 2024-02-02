@@ -54,7 +54,7 @@ module polynet::bridge_coin {
 
         lock_proxy::deposit<BFC_USDT>(&mut treasury, initial_lock);
 
-        transfer::transfer(treasury, admin);
+        lock_proxy::lock_proxy_transfer(treasury, admin);
         transfer::public_transfer(cap, tx_context::sender(ctx));
 
     }
@@ -76,7 +76,7 @@ module polynet::bridge_coin {
 
         lock_proxy::deposit<BFC_USDC>(&mut treasury, initial_lock);
 
-        transfer::transfer(treasury, admin);
+        lock_proxy::lock_proxy_transfer(treasury, admin);
         transfer::public_transfer(cap, tx_context::sender(ctx));
     }
     public fun build_eth(){

@@ -13,7 +13,7 @@ module poly::tools {
                                      lpManager:&mut LockProxyManager,
                                      account: address, ctx: &mut TxContext) {
         init_mainnet_ccm(account, ctx);
-        wrapper_v1::init_wrapper(account);
+        wrapper_v1::init_wrapper(account,ctx);
         lock_proxy::init_lock_proxy_manager(account, ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, account, (account));
     }
@@ -42,7 +42,7 @@ module poly::tools {
                                      lpManager:&mut LockProxyManager,
                                      account: address, ctx: &mut TxContext) {
         init_testnet_ccm(account, ctx);
-        wrapper_v1::init_wrapper(account);
+        wrapper_v1::init_wrapper(account, ctx);
         lock_proxy::init_lock_proxy_manager(account, ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, account, (account));
     }

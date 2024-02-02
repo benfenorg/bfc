@@ -52,6 +52,7 @@ module polynet::lock_proxy {
     }
 
     struct Treasury<phantom CoinType> has key, store {
+        id: UID,
         coin: Coin<CoinType>
     }
 
@@ -283,11 +284,16 @@ module polynet::lock_proxy {
 
 
         let treasury = Treasury<CoinType>{
+            id: object::new(ctx),
             coin: coin::zero<CoinType>(ctx),
         };
 
         treasury
 
+    }
+
+    public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>,admin: address) {
+        transfer::transfer(treasury, admin)
     }
 
     public fun is_treasury_initialzed<CoinType>(): bool {
@@ -329,7 +335,7 @@ module polynet::lock_proxy {
 
         //todo
         //assert!(license_account == this_account && license_module_name == this_module_name, EINVALID_LICENSE_INFO);
-        option::fill(&mut lpManager.license_store, license);
+        option::fill(&mut lpManager.license_store.license, license);
     }
 
     public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {

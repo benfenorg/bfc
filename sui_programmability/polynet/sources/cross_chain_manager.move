@@ -168,7 +168,8 @@ module polynet::cross_chain_manager {
 
 
     // cross chain license
-    struct License has key, store {
+    struct License has store, copy, drop {
+
         account: address,
         module_name: vector<u8>
     }
@@ -185,7 +186,8 @@ module polynet::cross_chain_manager {
     }
 
     public fun destroyLicense(license: License) {
-        let License{ account: _, module_name: _ } = license;
+        let License{
+            account: _, module_name: _ } = license;
     }
 
     public fun getLicenseId(license: &License): vector<u8> {
