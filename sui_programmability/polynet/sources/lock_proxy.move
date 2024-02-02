@@ -1,3 +1,4 @@
+#[allow(unused_field)]
 module polynet::lock_proxy {
     use std::ascii::as_bytes;
     use std::vector;
@@ -280,7 +281,7 @@ module polynet::lock_proxy {
     public  fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext): Treasury<CoinType> {
 
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        assert!(!exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_ALREADY_EXIST);
+        //assert!(!exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_ALREADY_EXIST);
 
 
         let treasury = Treasury<CoinType>{
@@ -297,7 +298,8 @@ module polynet::lock_proxy {
     }
 
     public fun is_treasury_initialzed<CoinType>(): bool {
-        exists<Treasury<CoinType>>(@poly_bridge)
+        true
+        //exists<Treasury<CoinType>>(@poly_bridge)
     }
 
     public fun is_admin(account: address): bool {
@@ -305,7 +307,7 @@ module polynet::lock_proxy {
     }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
-        assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
+        //assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
         //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
 
 
@@ -313,7 +315,7 @@ module polynet::lock_proxy {
     }
 
     fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
-        assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
+        //assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
         //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
 
         return coin::split(&mut treasury_ref.coin, amount, ctx)
@@ -324,7 +326,7 @@ module polynet::lock_proxy {
     // license function
     public fun receiveLicense(lpManager: &mut LockProxyManager,
                               license: cross_chain_manager::License)   {
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_STORE_NOT_EXIST);
+        //assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_STORE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
         //assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
 
@@ -340,7 +342,7 @@ module polynet::lock_proxy {
 
     public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
+        //assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         option::extract<cross_chain_manager::License>(&mut lpManager.license_store.license)
@@ -368,7 +370,7 @@ module polynet::lock_proxy {
         deposit(treasury_ref, fund);
         
         // borrow license
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
+        //assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(&lpManager.license_store.license);
@@ -442,6 +444,9 @@ module polynet::lock_proxy {
 
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
+
+        //todo need transfer.
+
         transfer(fund, utils::to_address(to_address));
 
         // emit event
@@ -468,7 +473,7 @@ module polynet::lock_proxy {
         ctx: &mut TxContext
     )  {
         // borrow license
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
+        //assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(&lpManager.license_store.license);
 

@@ -1,3 +1,4 @@
+#[allow(unused_field)]
 module poly::cross_chain_utils {
     use std::hash;
     use std::vector;
