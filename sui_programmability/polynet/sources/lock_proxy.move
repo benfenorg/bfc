@@ -6,7 +6,7 @@ module poly_bridge::lock_proxy {
     use sui::math;
     use sui::table::{Table, Self};
     use std::type_name::{Self, TypeName};
-    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore};
+    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore, CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
     use sui::object::UID;
@@ -303,7 +303,7 @@ module poly_bridge::lock_proxy {
         assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
         //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
 
-        return coin::split(&mut treasury_ref.coin, amount, ctx);
+        return coin::split(&mut treasury_ref.coin, amount, ctx)
         //return coin::extract<CoinType>(&mut treasury_ref.coin, amount)
     }
 
@@ -343,10 +343,9 @@ module poly_bridge::lock_proxy {
 
     // lock
     public fun lock<CoinType>(
+        ccManager:&CrossChainManager,
         treasury_ref:&Treasury<CoinType>,
         license_opt:&LicenseStore,
-        crosschain_config_ref:&mut CrossChainGlobalConfig,
-        acl_store_ref:&ACLStore,
         lock_config_ref:&LockProxyStore,
                                 account: address,
                               fund: Coin<CoinType>,
@@ -373,7 +372,7 @@ module poly_bridge::lock_proxy {
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
 
         // cross chain
-        cross_chain_manager::crossChain(crosschain_config_ref,acl_store_ref, account, license_ref, toChainId, &to_proxy, &b"unlock", &tx_data);
+        cross_chain_manager::crossChain(ccManager, account, license_ref, toChainId, &to_proxy, &b"unlock", &tx_data);
 
         // emit event 
         //let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
@@ -439,8 +438,7 @@ module poly_bridge::lock_proxy {
     }
 
     public entry fun relay_unlock_tx<CoinType>(
-        config_ref:&CrossChainGlobalConfig,
-        acl_store_ref:&ACLStore,
+        ccManager:&CrossChainManager,
         lock_config_ref:&LockProxyStore,
         license_opt:&LicenseStore,
         treasury_ref:&Treasury<CoinType>,
@@ -453,11 +451,10 @@ module poly_bridge::lock_proxy {
     )  {
         // borrow license
         assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        //let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
         assert!(option::is_some<cross_chain_manager::License>(&license_opt.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(license_opt);
 
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(config_ref, acl_store_ref,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
+        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(ccManager,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
         unlock<CoinType>(lock_config_ref,license_opt, treasury_ref, certificate);
     }
 

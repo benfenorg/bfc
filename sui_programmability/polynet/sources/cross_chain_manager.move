@@ -445,7 +445,6 @@ module poly::cross_chain_manager {
 
     // verify header and execute tx
     public fun verifyHeaderAndExecuteTx(ccManager:&CrossChainManager,
-                                        acl_store_ref:&ACLStore,
                                         license: &License,
                                         proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>, ctx: &mut TxContext): Certificate  {
         assert!(!paused(ccManager), EPAUSED);
