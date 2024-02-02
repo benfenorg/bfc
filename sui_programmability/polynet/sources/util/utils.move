@@ -1,9 +1,10 @@
-module poly::utils {
+module polynet::utils {
     //use std::ascii::try_string;
     use std::vector;
     //use sui::from_bcs;
     //use sui::any;
     use std::string::{String, Self};
+    use polynet::acl::add;
     use sui::bcs;
     use sui::table::{Table, Self};
     //use std::type_name;
@@ -14,6 +15,7 @@ module poly::utils {
     const EINVALID_FROM_BYTES_TO_U8: u64 = 4003;
     const EINVALID_FROM_BYTES_TO_U64: u64 = 4004;
     const EINVALID_FROM_BYTES_TO_U128: u64 = 4005;
+    const POLY_BRIDGE: address = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
 
     public fun slice<Element: copy>(v: &vector<Element>, offset: u64, length: u64): vector<Element> {
         let res = vector::empty<Element>();
@@ -24,6 +26,14 @@ module poly::utils {
             offset = offset + 1;
         };
         return res
+    }
+
+    public fun get_bridge_address() :address{
+        return POLY_BRIDGE
+    }
+
+    public fun get_poly_address(): address {
+        return POLY_BRIDGE
     }
 
     public fun to_bool(v: vector<u8>): bool {

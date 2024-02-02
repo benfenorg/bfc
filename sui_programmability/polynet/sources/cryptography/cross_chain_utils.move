@@ -1,10 +1,10 @@
 #[allow(unused_field)]
-module poly::cross_chain_utils {
+module polynet::cross_chain_utils {
     use std::hash;
     use std::vector;
     use std::option;
     use polynet::secp256k1;
-    use poly::utils as putil;
+    use polynet::utils as putil;
     //use sui::ecdsa_k1;
 
     const MERKLE_PROOF_NODE_LEN: u64 = 33;
@@ -47,15 +47,15 @@ module poly::cross_chain_utils {
     public fun merkleProve(auditPath: &vector<u8>, root: &vector<u8>): vector<u8> {
         let offset: u64 = 0;
         let value: vector<u8>;
-        (value, offset) = poly::zero_copy_source::next_var_bytes(auditPath, offset);
+        (value, offset) = polynet::zero_copy_source::next_var_bytes(auditPath, offset);
         let hash: vector<u8> = hashLeaf(&value);
         let size: u64 = (vector::length(auditPath) - offset) / MERKLE_PROOF_NODE_LEN;
         let nodeHash: vector<u8>;
         let index: u64 = 0;
         let pos: u8;
         while (index < size) {
-            (pos, offset) = poly::zero_copy_source::next_byte(auditPath, offset);
-            (nodeHash, offset) = poly::zero_copy_source::next_hash(auditPath, offset);
+            (pos, offset) = polynet::zero_copy_source::next_byte(auditPath, offset);
+            (nodeHash, offset) = polynet::zero_copy_source::next_hash(auditPath, offset);
             hash = if (pos == 0) {
                 hashChildren(&nodeHash, &hash)
             } else if (pos == 1) {
@@ -137,16 +137,16 @@ module poly::cross_chain_utils {
         let txParam_args: vector<u8>;
         let offset: u64 = 0;
 
-        (txHash, offset) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
-        (fromChainID, offset) = poly::zero_copy_source::next_u64(valueBs, offset);
+        (txHash, offset) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
+        (fromChainID, offset) = polynet::zero_copy_source::next_u64(valueBs, offset);
 
-        (txParam_txHash, offset) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
-        (txParam_crossChainId, offset) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
-        (txParam_fromContract, offset) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
-        (txParam_toChainId, offset) = poly::zero_copy_source::next_u64(valueBs, offset);
-        (txParam_toContract, offset) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
-        (txParam_method, offset) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
-        (txParam_args, _) = poly::zero_copy_source::next_var_bytes(valueBs, offset);
+        (txParam_txHash, offset) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
+        (txParam_crossChainId, offset) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
+        (txParam_fromContract, offset) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
+        (txParam_toChainId, offset) = polynet::zero_copy_source::next_u64(valueBs, offset);
+        (txParam_toContract, offset) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
+        (txParam_method, offset) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
+        (txParam_args, _) = polynet::zero_copy_source::next_var_bytes(valueBs, offset);
 
         return (
             txHash,
@@ -187,17 +187,17 @@ module poly::cross_chain_utils {
         let nextBookkeeper: vector<u8>;
         let offset: u64 = 0;
 
-        (version, offset) = poly::zero_copy_source::next_u32(headerBs , offset);
-        (chainId, offset) = poly::zero_copy_source::next_u64(headerBs , offset);
-        (prevBlockHash, offset) = poly::zero_copy_source::next_hash(headerBs , offset);
-        (transactionsRoot, offset) = poly::zero_copy_source::next_hash(headerBs , offset);
-        (crossStatesRoot, offset) = poly::zero_copy_source::next_hash(headerBs , offset);
-        (blockRoot, offset) = poly::zero_copy_source::next_hash(headerBs , offset);
-        (timestamp, offset) = poly::zero_copy_source::next_u32(headerBs , offset);
-        (height, offset) = poly::zero_copy_source::next_u32(headerBs , offset);
-        (consensusData, offset) = poly::zero_copy_source::next_u64(headerBs , offset);
-        (consensusPayload, offset) = poly::zero_copy_source::next_var_bytes(headerBs , offset);
-        (nextBookkeeper, _) = poly::zero_copy_source::next_bytes20(headerBs , offset);
+        (version, offset) = polynet::zero_copy_source::next_u32(headerBs , offset);
+        (chainId, offset) = polynet::zero_copy_source::next_u64(headerBs , offset);
+        (prevBlockHash, offset) = polynet::zero_copy_source::next_hash(headerBs , offset);
+        (transactionsRoot, offset) = polynet::zero_copy_source::next_hash(headerBs , offset);
+        (crossStatesRoot, offset) = polynet::zero_copy_source::next_hash(headerBs , offset);
+        (blockRoot, offset) = polynet::zero_copy_source::next_hash(headerBs , offset);
+        (timestamp, offset) = polynet::zero_copy_source::next_u32(headerBs , offset);
+        (height, offset) = polynet::zero_copy_source::next_u32(headerBs , offset);
+        (consensusData, offset) = polynet::zero_copy_source::next_u64(headerBs , offset);
+        (consensusPayload, offset) = polynet::zero_copy_source::next_var_bytes(headerBs , offset);
+        (nextBookkeeper, _) = polynet::zero_copy_source::next_bytes20(headerBs , offset);
         
         return (
             version,

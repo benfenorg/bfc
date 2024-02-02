@@ -1,5 +1,6 @@
-module poly::nb {
+module polynet::nb {
     use std::option;
+    use polynet::utils::get_poly_address;
     //use std::string;
 
     use sui::coin::{Self, Coin, TreasuryCap};
@@ -78,6 +79,6 @@ module poly::nb {
     }
 
     fun only_admin(account: address) {
-        assert!((account) == @poly, ENOT_ADMIN);
+        assert!((account) == get_poly_address(), ENOT_ADMIN);
     }
 }

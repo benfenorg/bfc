@@ -2,7 +2,7 @@ module polynet::cross_chain_manager {
     use std::vector;
     use std::hash;
     use std::bcs;
-    use poly::utils;
+    use polynet::utils;
     use sui::event;
     use sui::object;
     use sui::object::UID;
@@ -13,8 +13,8 @@ module polynet::cross_chain_manager {
 
     use polynet::acl::Access_control_list;
     use polynet::acl;
-    use poly::zero_copy_sink;
-    use poly::cross_chain_utils;
+    use polynet::zero_copy_sink;
+    use polynet::cross_chain_utils;
 
 
     const ADMIN_ROLE: u64 = 1;
@@ -73,7 +73,7 @@ module polynet::cross_chain_manager {
                                              startHeight: u64,
                                              polyId: u64,
                                              ctx: &mut TxContext)  {
-        assert!((account) == @poly, EINVALID_SIGNER);
+        assert!((account) == utils::get_poly_address(), EINVALID_SIGNER);
 
         // init access control lists
         let acls = table::new<u64, Access_control_list>(ctx);
@@ -81,10 +81,10 @@ module polynet::cross_chain_manager {
         let pause_acl = acl::empty();
         let ca_acl = acl::empty();
         let keeper_acl = acl::empty();
-        acl::add(&mut admin_acl, @poly);
-        acl::add(&mut pause_acl, @poly);
-        acl::add(&mut ca_acl, @poly);
-        acl::add(&mut keeper_acl, @poly);
+        acl::add(&mut admin_acl, utils::get_poly_address());
+        acl::add(&mut pause_acl, utils::get_poly_address());
+        acl::add(&mut ca_acl, utils::get_poly_address());
+        acl::add(&mut keeper_acl, utils::get_poly_address());
         table::add(&mut acls, ADMIN_ROLE, admin_acl);
         table::add(&mut acls, PAUSE_ROLE, pause_acl);
         table::add(&mut acls, CA_ROLE, ca_acl);

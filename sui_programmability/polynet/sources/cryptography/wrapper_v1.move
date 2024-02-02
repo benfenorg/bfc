@@ -3,11 +3,13 @@ module polynet::wrapper_v1 {
     use sui::event;
     //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
+    use polynet::utils;
     use polynet::lock_proxy::{Treasury, LockProxyManager};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
     use sui::object::UID;
+    use sui::transfer;
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
@@ -15,7 +17,6 @@ module polynet::wrapper_v1 {
 
     const DEPRECATED: u64 = 1;
     const EINVALID_SIGNER: u64 = 2;
-
     struct WrapperStore has key, store{
         id: UID,
         fee_collector: address,
@@ -32,22 +33,22 @@ module polynet::wrapper_v1 {
 
     // for admin
     public entry fun init_wrapper(admin: address , ctx: &mut TxContext) {
-        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
+        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
 
         transfer(WrapperStore{
             id: object::new(ctx),
-            fee_collector: @poly_bridge,
+            fee_collector: utils::get_bridge_address(),
         }, admin);
     }
 
     public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, admin: address, new_fee_collector: address) {
-        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        //let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
+        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+        //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         wrapperstore.fee_collector = new_fee_collector;
     }
 
     public fun feeCollector(wrapperstore:&mut WrapperStore): address {
-        //let config_ref = borrow_global<WrapperStore>(@poly_bridge);
+        //let config_ref = borrow_global<WrapperStore>(POLY_BRIDGE);
         return wrapperstore.fee_collector
     }
     
@@ -105,10 +106,10 @@ module polynet::wrapper_v1 {
         //coin::deposit<BFC>(feeCollector(), fee);
 
         let feeCollector = feeCollector(wrapperstore);
-        transfer(fee, feeCollector);
+        transfer::public_transfer(fee, feeCollector);
 
         lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress);
-        //let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         event::emit(
             LockWithFeeEvent{
                 from_asset: type_name::get<Coin<CoinType>>(),

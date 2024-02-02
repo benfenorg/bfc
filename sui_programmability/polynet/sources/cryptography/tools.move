@@ -1,4 +1,4 @@
-module poly::tools {
+module polynet::tools {
     use polynet::cross_chain_manager;
     use polynet::lock_proxy;
     use polynet::wrapper_v1;
