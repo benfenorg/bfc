@@ -4,7 +4,7 @@ module poly_bridge::wrapper_v1 {
     //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
     use poly_bridge::lock_proxy::{LockProxyStore, LicenseStore, Treasury};
-    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore};
+    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore, CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
@@ -16,7 +16,6 @@ module poly_bridge::wrapper_v1 {
 
     struct WrapperStore has key, store{
         fee_collector: address,
-        //lock_with_fee_event: event::EventHandle<LockWithFeeEvent>
     }
 
     struct LockWithFeeEvent has store, drop, copy{
@@ -32,27 +31,24 @@ module poly_bridge::wrapper_v1 {
     public entry fun init_wrapper(admin: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
 
-        transfer(WrapperStore{
-            fee_collector: @poly_bridge,
-            //lock_with_fee_event: account::new_event_handle<LockWithFeeEvent>(admin)
+        transfer(WrapperStore{ fee_collector: @poly_bridge,
         }, admin);
     }
 
-    public entry fun setFeeCollector(config_ref:&mut WrapperStore, admin: address, new_fee_collector: address) {
+    public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, admin: address, new_fee_collector: address) {
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
         //let config_ref = borrow_global_mut<WrapperStore>(@poly_bridge);
-        config_ref.fee_collector = new_fee_collector;
+        wrapperstore.fee_collector = new_fee_collector;
     }
 
-    public fun feeCollector(config_ref:&mut WrapperStore): address {
+    public fun feeCollector(wrapperstore:&mut WrapperStore): address {
         //let config_ref = borrow_global<WrapperStore>(@poly_bridge);
-        return config_ref.fee_collector
+        return wrapperstore.fee_collector
     }
     
     // for relayer 
     public entry fun relay_unlock_tx<CoinType>(
-        crosschain_config_ref:&CrossChainGlobalConfig,
-        acl_store_ref:&ACLStore,
+        ccManager:&CrossChainManager,
         lock_config_ref:&LockProxyStore,
         license_opt:&LicenseStore,
         treasury_ref:&Treasury<CoinType>,
@@ -64,7 +60,7 @@ module poly_bridge::wrapper_v1 {
         ctx: &mut TxContext
     ) {
         lock_proxy::relay_unlock_tx<CoinType>(
-            crosschain_config_ref,acl_store_ref, lock_config_ref, license_opt,treasury_ref,
+            ccManager, lock_config_ref, license_opt,treasury_ref,
             proof, rawHeader, headerProof, curRawHeader, headerSig, ctx);
     }
 

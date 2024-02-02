@@ -9,11 +9,11 @@ module poly::utils {
     //use std::type_name;
     // use std::option;
 
-    const EUNSUPPORT_GENERIC_TYPE: u64 = 1;
-    const EINVALID_FROM_BYTES_TO_BOOL: u64 = 2;
-    const EINVALID_FROM_BYTES_TO_U8: u64 = 3;
-    const EINVALID_FROM_BYTES_TO_U64: u64 = 4;
-    const EINVALID_FROM_BYTES_TO_U128: u64 = 5;
+    const EUNSUPPORT_GENERIC_TYPE: u64 = 4001;
+    const EINVALID_FROM_BYTES_TO_BOOL: u64 = 4002;
+    const EINVALID_FROM_BYTES_TO_U8: u64 = 4003;
+    const EINVALID_FROM_BYTES_TO_U64: u64 = 4004;
+    const EINVALID_FROM_BYTES_TO_U128: u64 = 4005;
 
     public fun slice<Element: copy>(v: &vector<Element>, offset: u64, length: u64): vector<Element> {
         let res = vector::empty<Element>();

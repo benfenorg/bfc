@@ -10,8 +10,8 @@ module polynet::kkusd {
 
     struct COIN_TESTS has drop {}
 
-    const EAlreadyMinted: u64 = 0;
-    const ENotSystemAddress: u64 = 1;
+    const EAlreadyMinted: u64 = 4001;
+    const ENotSystemAddress: u64 = 4002;
 
     spec module { pragma verify = false; }
 
