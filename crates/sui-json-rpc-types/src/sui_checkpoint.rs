@@ -47,8 +47,8 @@ pub struct Checkpoint {
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
     pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
-    #[schemars(with = "schemars::Map<TypeTag, GasCostSummary>")]
-    #[serde_as(as = "Vec<(Readable<SuiTypeTag,_>,_)>")]
+    // #[schemars(with = "schemars::Map<TypeTag, GasCostSummary>")]
+    // #[serde_as(as = "Vec<(Readable<SuiTypeTag,_>,_)>")]
     pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummary>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
