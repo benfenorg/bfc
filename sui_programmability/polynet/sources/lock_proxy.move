@@ -19,22 +19,22 @@ module poly_bridge::lock_proxy {
     use poly::zero_copy_source;
     use poly::utils;
 
-    const DEPRECATED: u64 = 1;
-    const ENOT_OWNER: u64 = 2;
-    const ETREASURY_ALREADY_EXIST: u64 = 3;
-    const ETREASURY_NOT_EXIST: u64 = 4;
-    const ELICENSE_ALREADY_EXIST: u64 = 5;
-    const ELICENSE_NOT_EXIST: u64 = 6;
-    const ETARGET_PROXY_NOT_BIND: u64 = 7;
-    const ETARGET_ASSET_NOT_BIND: u64 = 8;
-    const EINVALID_COINTYPE: u64 = 9;
-    const EINVALID_FROM_CONTRACT: u64 = 10;
-    const EINVALID_TARGET_LICENSE_ID: u64 = 11;
-    const EINVALID_METHOD: u64 = 12;
-    const ELICENSE_STORE_ALREADY_EXIST: u64 = 13;
-    const EINVALID_LICENSE_INFO: u64 = 14;
-    const EINVALID_SIGNER: u64 = 15;
-    const ELICENSE_STORE_NOT_EXIST: u64 = 16;
+    const DEPRECATED: u64 = 4001;
+    const ENOT_OWNER: u64 = 4002;
+    const ETREASURY_ALREADY_EXIST: u64 = 4003;
+    const ETREASURY_NOT_EXIST: u64 = 4004;
+    const ELICENSE_ALREADY_EXIST: u64 = 4005;
+    const ELICENSE_NOT_EXIST: u64 = 4006;
+    const ETARGET_PROXY_NOT_BIND: u64 = 4007;
+    const ETARGET_ASSET_NOT_BIND: u64 = 4008;
+    const EINVALID_COINTYPE: u64 = 4009;
+    const EINVALID_FROM_CONTRACT: u64 = 4010;
+    const EINVALID_TARGET_LICENSE_ID: u64 = 4011;
+    const EINVALID_METHOD: u64 = 4012;
+    const ELICENSE_STORE_ALREADY_EXIST: u64 = 4013;
+    const EINVALID_LICENSE_INFO: u64 = 4014;
+    const EINVALID_SIGNER: u64 = 4015;
+    const ELICENSE_STORE_NOT_EXIST: u64 = 4016;
 
 
     struct LockProxyManager has key{

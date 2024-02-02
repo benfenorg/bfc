@@ -4,7 +4,7 @@ module poly_bridge::wrapper_v1 {
     //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
     use poly_bridge::lock_proxy::{LockProxyStore, LicenseStore, Treasury};
-    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore};
+    use poly::cross_chain_manager::{CrossChainGlobalConfig, ACLStore, CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::transfer::transfer;
     use sui::tx_context::TxContext;
@@ -48,8 +48,7 @@ module poly_bridge::wrapper_v1 {
     
     // for relayer 
     public entry fun relay_unlock_tx<CoinType>(
-        crosschain_config_ref:&CrossChainGlobalConfig,
-        acl_store_ref:&ACLStore,
+        ccManager:&CrossChainManager,
         lock_config_ref:&LockProxyStore,
         license_opt:&LicenseStore,
         treasury_ref:&Treasury<CoinType>,
@@ -61,7 +60,7 @@ module poly_bridge::wrapper_v1 {
         ctx: &mut TxContext
     ) {
         lock_proxy::relay_unlock_tx<CoinType>(
-            crosschain_config_ref,acl_store_ref, lock_config_ref, license_opt,treasury_ref,
+            ccManager, lock_config_ref, license_opt,treasury_ref,
             proof, rawHeader, headerProof, curRawHeader, headerSig, ctx);
     }
 

@@ -3,9 +3,9 @@ module polynet::acl {
     use std::vector;
 
     /// The ACL already contains the address.
-    const ECONTAIN: u64 = 0;
+    const ECONTAIN: u64 = 4000;
     /// The ACL does not contain the address.
-    const ENOT_CONTAIN: u64 = 1;
+    const ENOT_CONTAIN: u64 = 4001;
 
 
     //todo: implement ACL access control list
