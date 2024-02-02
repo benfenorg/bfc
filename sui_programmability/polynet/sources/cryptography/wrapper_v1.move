@@ -48,9 +48,9 @@ module polynet::wrapper_v1 {
     
     // for relayer 
     public entry fun relay_unlock_tx<CoinType>(
-        ccManager:&CrossChainManager,
-        lpManager: &LockProxyManager,
-        treasury_ref:&Treasury<CoinType>,
+        ccManager:&mut CrossChainManager,
+        lpManager: &mut LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
         proof: vector<u8>, 
         rawHeader: vector<u8>, 
         headerProof: vector<u8>, 
@@ -65,8 +65,8 @@ module polynet::wrapper_v1 {
 
     // for user
     public entry fun lock_and_pay_fee<CoinType>(
-        ccManager:&CrossChainManager,
-        lpManager: &LockProxyManager,
+        ccManager:&mut CrossChainManager,
+        lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         wrapperstore:&mut WrapperStore,
         account: address,
@@ -84,7 +84,7 @@ module polynet::wrapper_v1 {
     }
 
     public fun lock_and_pay_fee_with_fund<CoinType>(
-        ccManager:&CrossChainManager,
+        ccManager:&mut CrossChainManager,
         lpManager: &LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         wrapperstore:&mut WrapperStore,

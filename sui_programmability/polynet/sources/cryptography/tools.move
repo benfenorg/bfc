@@ -10,7 +10,7 @@ module poly::tools {
 
     // mainnet
     public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
-                                     lpManager:&LockProxyManager,
+                                     lpManager:&mut LockProxyManager,
                                      account: address, ctx: &mut TxContext) {
         init_mainnet_ccm(account, ctx);
         wrapper_v1::init_wrapper(account);
@@ -30,7 +30,7 @@ module poly::tools {
     }
 
     public entry fun issue_license_to_lock_proxy(ccManager:&mut CrossChainManager,
-                                                 lpManager:&LockProxyManager,
+                                                 lpManager:&mut LockProxyManager,
                                                  account: address,
                                                  bridge_addr: address) {
         let license = cross_chain_manager::issueLicense(ccManager, account, bridge_addr, b"lock_proxy");
@@ -39,7 +39,7 @@ module poly::tools {
 
     // testnet
     public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
-                                     lpManager:&LockProxyManager,
+                                     lpManager:&mut LockProxyManager,
                                      account: address, ctx: &mut TxContext) {
         init_testnet_ccm(account, ctx);
         wrapper_v1::init_wrapper(account);

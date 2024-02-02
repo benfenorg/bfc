@@ -375,7 +375,7 @@ module polynet::cross_chain_manager {
 
     
     // cross chain
-    public fun crossChain(ccManager:&CrossChainManager, account: address, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>)  {
+    public fun crossChain(ccManager:&mut CrossChainManager, account: address, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>)  {
         assert!(!paused(ccManager), EPAUSED);
 
         // check license
@@ -444,7 +444,7 @@ module polynet::cross_chain_manager {
 
 
     // verify header and execute tx
-    public fun verifyHeaderAndExecuteTx(ccManager:&CrossChainManager,
+    public fun verifyHeaderAndExecuteTx(ccManager:&mut CrossChainManager,
                                         license: &License,
                                         proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>, ctx: &mut TxContext): Certificate  {
         assert!(!paused(ccManager), EPAUSED);

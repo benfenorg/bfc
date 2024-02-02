@@ -350,7 +350,7 @@ module polynet::lock_proxy {
 
     // lock
     public fun lock<CoinType>(
-        ccManager:&CrossChainManager,
+        ccManager:&mut CrossChainManager,
         lpManager: &LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         account: address,
@@ -451,7 +451,7 @@ module polynet::lock_proxy {
     }
 
     public entry fun relay_unlock_tx<CoinType>(
-        ccManager:&CrossChainManager,
+        ccManager:&mut CrossChainManager,
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         proof: vector<u8>, 
