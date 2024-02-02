@@ -275,13 +275,18 @@ module polynet::lock_proxy {
 
 
     // treasury function
-    public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext) {
+    //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
+    public  fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext): Treasury<CoinType> {
+
         assert!((admin) == @poly_bridge, EINVALID_SIGNER);
         assert!(!exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_ALREADY_EXIST);
 
 
-        transfer(Treasury<CoinType> { coin: coin::zero<CoinType>(ctx) }, admin);
+        let treasury = Treasury<CoinType>{
+            coin: coin::zero<CoinType>(ctx),
+        };
 
+        treasury
 
     }
 
@@ -369,7 +374,7 @@ module polynet::lock_proxy {
 
         //todo,, decimals
         // precision conversion
-        let target_chain_amount = to_target_chain_amount<CoinType>(amount, to_asset_decimals, to_asset_decimals);
+        let target_chain_amount = to_target_chain_amount(amount, to_asset_decimals, to_asset_decimals);
 
         // pack args
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
@@ -420,7 +425,7 @@ module polynet::lock_proxy {
 
 
         //todo, decimals
-        let amount = from_target_chain_amount<CoinType>(from_chain_amount, decimals, decimals);
+        let amount = from_target_chain_amount(from_chain_amount, decimals, decimals);
 
         // check
         //type_name::get<Coin<CoinType>>()
