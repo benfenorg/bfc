@@ -952,12 +952,12 @@ impl CheckpointBuilder {
             let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary_map)=
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
-            // if  first_checkpoint_of_epoch{
-            //     self.augment_bfc_round(sequence_number,
-            //                                       &mut effects,
-            //                                       &mut signatures,
-            //     ).await?;
-            // }
+            if  first_checkpoint_of_epoch{
+                self.augment_bfc_round(sequence_number,
+                                                  &mut effects,
+                                                  &mut signatures,
+                ).await?;
+            }
 
             let end_of_epoch_data = if last_checkpoint_of_epoch {
                 let system_state_obj = self

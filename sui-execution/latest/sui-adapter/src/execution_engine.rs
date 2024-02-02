@@ -28,7 +28,7 @@ mod checked {
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{info, instrument, trace, warn};
+    use tracing::{error, info, instrument, trace, warn};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -670,13 +670,7 @@ mod checked {
         Ok(builder.finish())
     }
 
-    pub fn construct_bfc_round_pt(
-        round_id: u64,
-        param: ChangeObcRoundParams,
-        rate_map: &HashMap<String,u64>,
-        reward_rate: u64,
-        storage_rebate: u64
-    ) -> Result<ProgrammableTransaction, ExecutionError> {
+    pub fn construct_bfc_round_pt(round_id: u64) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
         let mut arguments = vec![];
@@ -686,8 +680,8 @@ mod checked {
             CallArg::CLOCK_IMM,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
         ] .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<Result<_, _>>();
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
 
         arguments.append(&mut args.unwrap());
 
@@ -700,6 +694,17 @@ mod checked {
             vec![],
             arguments,
         );
+        Ok(builder.finish())
+    }
+
+    pub fn construct_stable_reward_pt(
+        _round_id: u64,
+        param: ChangeObcRoundParams,
+        rate_map: &HashMap<String,u64>,
+        reward_rate: u64,
+        storage_rebate: u64
+    ) -> Result<ProgrammableTransaction, ExecutionError> {
+        let mut builder = ProgrammableTransactionBuilder::new();
 
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
@@ -781,20 +786,17 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
-        // let _ = BfcRoundParams {
-        //     round_id:change_round.bfc_round
-        // };
-        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
-        //     protocol_config,
-        //     metrics.clone(),
-        //     move_vm,
-        //     temporary_store,
-        //     tx_ctx,
-        //     gas_charger,
-        //     advance_epoch_pt,
-        // );
-
+        let bfc_round_pt = construct_bfc_round_pt(change_round.bfc_round)?;
+        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+            protocol_config,
+            metrics.clone(),
+            move_vm,
+            temporary_store,
+            tx_ctx,
+            gas_charger,
+            bfc_round_pt,
+        );
+        error!("bfc_round result: {:?}",result);
         // #[cfg(msim)]
         // let _result = maybe_modify_result(result, change_round.bfc_round);
 
@@ -841,7 +843,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, rate_hash_map, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_stable_reward_pt(change_epoch.epoch, params, rate_hash_map, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
