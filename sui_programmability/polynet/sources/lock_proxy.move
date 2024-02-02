@@ -1,4 +1,4 @@
-#[allow(unused_field)]
+#[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
     use std::ascii::as_bytes;
     use std::vector;
