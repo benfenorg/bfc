@@ -7,7 +7,7 @@ use fastcrypto::encoding::Base64;
 use move_core_types::language_storage::TypeTag;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
+use serde_with::{serde_as,Map};
 use sui_types::base_types::TransactionDigest;
 use sui_types::committee::EpochId;
 use sui_types::crypto::AggregateAuthoritySignature;
@@ -18,7 +18,8 @@ use sui_types::messages_checkpoint::{
     CheckpointCommitment, CheckpointContents, CheckpointSequenceNumber, CheckpointSummary,
     CheckpointTimestamp, EndOfEpochData,
 };
-use sui_types::sui_serde::BigInt;
+use sui_types::sui_serde::{BigInt,SuiTypeTag,Readable};
+
 pub type CheckpointPage = Page<Checkpoint, BigInt<u64>>;
 
 #[serde_as]
@@ -46,6 +47,8 @@ pub struct Checkpoint {
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
     pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
+    #[schemars(with = "schemars::Map<TypeTag, GasCostSummary>")]
+    #[serde_as(as = "Vec<(Readable<SuiTypeTag,_>,_)>")]
     pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummary>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch

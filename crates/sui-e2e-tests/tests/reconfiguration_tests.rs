@@ -15,7 +15,7 @@ use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_json_rpc_types::{Checkpoint, CheckpointId, CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
@@ -487,6 +487,22 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
         .await?
         .data;
     Ok(objects)
+}
+
+async fn get_checkpoint(http_client: &HttpClient,id: CheckpointId) -> Result<Checkpoint,Error> {
+    let check_point = http_client
+        .get_checkpoint(
+            id)
+        .await?;
+    Ok(check_point)
+}
+
+async fn get_checkpoints(http_client: &HttpClient,descending_order: bool) -> Result<CheckpointPage,Error> {
+    let check_point_page = http_client
+        .get_checkpoints(
+            Option::None,Option::None,descending_order)
+        .await?;
+    Ok(check_point_page)
 }
 
 #[sim_test]
@@ -2597,6 +2613,8 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
         .effects
         .unwrap();
 
+    let check_point_page = get_checkpoints(http_client,true).await?;
+    assert!(check_point_page.data.len()>0);
     let _ = sleep(Duration::from_secs(2)).await;
 
     let gas_object_info = http_client.get_object(busd_data.object_id, Some(SuiObjectDataOptions::new().
@@ -2607,6 +2625,7 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
     let _ = sleep(Duration::from_secs(2)).await;
 
     assert!(busd_balance_after < busd_balance_before);
+
     Ok(())
 }
 
