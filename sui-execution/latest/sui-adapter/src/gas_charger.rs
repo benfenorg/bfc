@@ -131,23 +131,19 @@ pub mod checked {
                 return;
             }
 
-            error!("gas coins is {:?}",self.gas_coins());
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
                 .iter()
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
-                    error!("obj is {:?} ,with id {:?}",obj,obj.id());
 
                     let Data::Move(move_obj) = &obj.data else {
-                        error!("Provided non-gas coin object as input for gas! 1111");
                     return Err(ExecutionError::invariant_violation(
                         "Provided non-gas coin object as input for gas!"
                     ));
                 };
-                    if !move_obj.type_().is_gas_coin() || !move_obj.type_().is_stable_gas_coin(){
-                        error!("Provided non-gas coin object as input for gas! 2222");
+                    if !move_obj.type_().is_gas_coin() && !move_obj.type_().is_stable_gas_coin(){
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
