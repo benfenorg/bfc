@@ -280,6 +280,9 @@ pub mod checked {
                 }
 
                 let mut cost_summary = self.gas_status.summary();
+                cost_summary.rate = 1;
+                cost_summary.base_point = 0;
+
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
