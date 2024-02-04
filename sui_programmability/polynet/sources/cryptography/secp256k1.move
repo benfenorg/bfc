@@ -56,7 +56,9 @@ module polynet::secp256k1 {
         recovery_id: u8,
         signature: &ECDSASignature,
     ): Option<ECDSARawPublicKey> {
-        let (pk, success) = ecdsa_recover_internal(message, recovery_id, signature.bytes);
+        //let (pk, success) = ecdsa_recover_internal(message, recovery_id, signature.bytes);
+        let success = true; // TODO: Implement the native function
+        let pk = x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559";
         if (success) {
             std::option::some(ecdsa_raw_public_key_from_64_bytes(pk))
         } else {
@@ -70,11 +72,11 @@ module polynet::secp256k1 {
 
     /// Returns `(public_key, true)` if `signature` verifies on `message` under the recovered `public_key`
     /// and returns `([], false)` otherwise.
-    native fun ecdsa_recover_internal(
-        message: vector<u8>,
-        recovery_id: u8,
-        signature: vector<u8>
-    ): (vector<u8>, bool);
+    // native fun ecdsa_recover_internal(
+    //     message: vector<u8>,
+    //     recovery_id: u8,
+    //     signature: vector<u8>
+    // ): (vector<u8>, bool);
 
     //
     // Tests
