@@ -19,7 +19,7 @@ pub mod checked {
         object::Data,
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
-    use tracing::{trace};
+    use tracing::{error, trace};
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
@@ -130,12 +130,16 @@ pub mod checked {
             if gas_coin_count == 1 {
                 return;
             }
+
+            error!("gas coins is {:?}",self.gas_coins());
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
                 .iter()
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
+                    error!("obj is {:?} ,with id {:?}",obj,obj.id());
+
                     let Data::Move(move_obj) = &obj.data else {
                     return Err(ExecutionError::invariant_violation(
                         "Provided non-gas coin object as input for gas!"
