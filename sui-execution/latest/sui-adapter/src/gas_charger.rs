@@ -8,7 +8,7 @@ pub use checked::*;
 pub mod checked {
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus,calculate_bfc_to_stable_cost_with_base_point};
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
     use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
@@ -292,16 +292,8 @@ pub mod checked {
                     let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
                     cost_summary.rate = rate;
                     cost_summary.base_point = base_point;
-                    let stable_gas_used= calculate_bfc_to_stable_cost_with_base_point(gas_used.abs() as u64 ,rate, base_point);
-                    if gas_used > 0 {
-                        deduct_gas(&mut gas_object, stable_gas_used as i64);
-                    }else {
-                        if stable_gas_used <= i64::MAX as u64 {
-                            deduct_gas(&mut gas_object, -(stable_gas_used as i64));
-                        }else {
-                            panic!("stable_gas_used: {}, gas_used: {:?}", stable_gas_used, gas_used);
-                        }
-                    }
+                    let stable_gas_used= calculate_stable_net_used_with_base_point(cost_summary.clone());
+                    deduct_gas(&mut gas_object, stable_gas_used);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }
