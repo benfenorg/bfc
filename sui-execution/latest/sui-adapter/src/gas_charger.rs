@@ -141,11 +141,13 @@ pub mod checked {
                     error!("obj is {:?} ,with id {:?}",obj,obj.id());
 
                     let Data::Move(move_obj) = &obj.data else {
+                        error!("Provided non-gas coin object as input for gas! 1111");
                     return Err(ExecutionError::invariant_violation(
                         "Provided non-gas coin object as input for gas!"
                     ));
                 };
                     if !move_obj.type_().is_gas_coin() || !move_obj.type_().is_stable_gas_coin(){
+                        error!("Provided non-gas coin object as input for gas! 2222");
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
