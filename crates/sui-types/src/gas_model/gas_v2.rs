@@ -276,6 +276,7 @@ mod checked {
         // 1. Gas object has an address owner.
         // 2. Gas budget is between min and max budget allowed
         // 3. Gas balance (all gas coins together) is bigger or equal to budget
+        // 4. Gas Coin type should be same type for all gas objects
         pub(crate) fn check_gas_balance(
             &self,
             gas_objs: &[&Object],
@@ -302,6 +303,19 @@ mod checked {
                     gas_budget,
                     min_budget: self.cost_table.min_transaction_cost,
                 });
+            }
+
+            //4. Gas Coin type should be same type for all gas objects
+            if gas_objs.len() >1 {
+                let gas_coin_type = gas_objs[0].coin_type_maybe().unwrap();
+                for gas_object in gas_objs {
+                    if gas_object.coin_type_maybe().unwrap() != gas_coin_type {
+                        return Err(UserInputError::GasCoinTypeMismatch {
+                            coin_type: gas_object.coin_type_maybe().unwrap().to_canonical_string(),
+                            second_coin_type: gas_coin_type.to_canonical_string(),
+                        });
+                    }
+                }
             }
 
             // 3. Gas balance (all gas coins together) is bigger or equal to budget
