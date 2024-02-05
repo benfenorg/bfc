@@ -62,8 +62,17 @@ module polynet::secp256k1 {
         let pubkey = ecdsa_k1::secp256k1_ecrecover(& signature.bytes, &message, 1);
             //ecdsa_recover_internal(message, recovery_id, signature.bytes);
         let uncompressed = ecdsa_k1::decompress_pubkey(&pubkey);
-        if (vector::is_empty(&uncompressed) == false) {
-            std::option::some(ecdsa_raw_public_key_from_64_bytes(uncompressed))
+
+        let uncompressed_64 = vector::empty<u8>();
+        let i = 1;
+        while (i < 65) {
+            let value = vector::borrow(&uncompressed, i);
+            vector::push_back(&mut uncompressed_64, *value);
+            i = i + 1;
+        };
+
+        if (vector::is_empty(&uncompressed_64) == false) {
+            std::option::some(ecdsa_raw_public_key_from_64_bytes(uncompressed_64))
         } else {
             std::option::none<ECDSARawPublicKey>()
         }
