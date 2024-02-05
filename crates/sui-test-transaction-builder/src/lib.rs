@@ -298,11 +298,11 @@ impl TestTransactionBuilder {
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
-            TestTransactionData::TransferSui(data) => TransactionData::new_transfer_sui(
+            TestTransactionData::TransferSui(data) => TransactionData::new_transfer_sui_with_gas_coins(
                 data.recipient,
                 self.sender,
                 data.amount,
-                self.gas_objects[0],
+                self.gas_objects,
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
@@ -475,6 +475,21 @@ pub async fn make_transfer_sui_transaction_with_gas(
     let gas_price = context.get_reference_gas_price().await.unwrap();
     context.sign_transaction(
         &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .transfer_sui(amount, recipient.unwrap_or(sender))
+            .build(),
+    )
+}
+
+pub async fn make_transfer_sui_transaction_with_gas_coins(
+    context: &WalletContext,
+    recipient: Option<SuiAddress>,
+    amount: Option<u64>,
+    sender: SuiAddress,
+    gas_objects: Vec<ObjectRef>,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new_with_gas_objects(sender, gas_objects, gas_price)
             .transfer_sui(amount, recipient.unwrap_or(sender))
             .build(),
     )

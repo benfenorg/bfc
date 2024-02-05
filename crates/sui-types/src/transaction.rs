@@ -1274,6 +1274,25 @@ impl TransactionData {
         )
     }
 
+    pub fn new_transfer_sui_with_gas_coins(
+        recipient: SuiAddress,
+        sender: SuiAddress,
+        amount: Option<u64>,
+        gas_payment: Vec<ObjectRef>,
+        gas_budget: u64,
+        gas_price: u64,
+    ) -> Self {
+        Self::new_transfer_sui_allow_sponsor_with_gas_coins(
+            recipient,
+            sender,
+            amount,
+            gas_payment,
+            gas_budget,
+            gas_price,
+            sender,
+        )
+    }
+
     pub fn new_transfer_sui_allow_sponsor(
         recipient: SuiAddress,
         sender: SuiAddress,
@@ -1291,6 +1310,30 @@ impl TransactionData {
         Self::new_programmable_allow_sponsor(
             sender,
             vec![gas_payment],
+            pt,
+            gas_budget,
+            gas_price,
+            gas_sponsor,
+        )
+    }
+
+    pub fn new_transfer_sui_allow_sponsor_with_gas_coins(
+        recipient: SuiAddress,
+        sender: SuiAddress,
+        amount: Option<u64>,
+        gas_payment: Vec<ObjectRef>,
+        gas_budget: u64,
+        gas_price: u64,
+        gas_sponsor: SuiAddress,
+    ) -> Self {
+        let pt = {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            builder.transfer_sui(recipient, amount);
+            builder.finish()
+        };
+        Self::new_programmable_allow_sponsor(
+            sender,
+            gas_payment,
             pt,
             gas_budget,
             gas_price,
