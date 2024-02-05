@@ -58,7 +58,7 @@ module polynet::secp256k1 {
         recovery_id: u8,
         signature: &ECDSASignature,
     ): Option<ECDSARawPublicKey> {
-
+        //hash : 1 for sha256, 0 for keccak256
         let pubkey = ecdsa_k1::secp256k1_ecrecover(& signature.bytes, &message, 1);
             //ecdsa_recover_internal(message, recovery_id, signature.bytes);
         let uncompressed = ecdsa_k1::decompress_pubkey(&pubkey);
@@ -129,8 +129,13 @@ module polynet::secp256k1 {
             hash::sha2_256(b"test aptos secp256k1"),
             0,
             // NOTE: A '7' was flipped to an 'f' here
+
             &ECDSASignature { bytes: x"f7ad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c7f7c423a1d2849baafd7ff6a9930814a43c3f80d59db56f" },
         );
+
+
+
+
         assert!(std::option::is_some(&pk), 1);
         assert!(std::option::extract(&mut pk).bytes != x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559", 1);
 

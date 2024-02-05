@@ -16,7 +16,7 @@ module polynet::tools {
         // sender address
         let sender = tx_context::sender(ctx);
         init_mainnet_ccm(sender, ctx);
-        wrapper_v1::init_wrapper(sender,ctx);
+        wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
@@ -47,7 +47,7 @@ module polynet::tools {
                                      lpManager:&mut LockProxyManager,
                                      account: address, ctx: &mut TxContext) {
         init_testnet_ccm(account, ctx);
-        wrapper_v1::init_wrapper(account, ctx);
+        wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
