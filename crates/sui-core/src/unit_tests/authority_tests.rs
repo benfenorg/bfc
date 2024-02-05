@@ -508,9 +508,9 @@ async fn test_dev_inspect_unowned_object() {
 #[tokio::test]
 async fn test_dev_inspect_dynamic_field() {
     let (test_object1_bytes, test_object2_bytes) = {
-        let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+        let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_object_id = ObjectID::random();
-        let (validator, fullnode, object_basics) =
+        let (_validator, _fullnode, _object_basics) =
             init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)])
                 .await;
         macro_rules! mk_obj {
@@ -4124,7 +4124,7 @@ pub async fn init_state_with_ids_and_objects_basics<
     publish_object_basics(state).await
 }
 
-async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
+pub(crate) async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
     use sui_move_build::BuildConfig;
 
     // add object_basics package object to genesis, since lots of test use it

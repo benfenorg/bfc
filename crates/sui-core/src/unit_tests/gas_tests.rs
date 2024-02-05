@@ -881,11 +881,35 @@ async fn test_move_call_gas_stable_coin() -> SuiResult {
     let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
 
-    authority_state.insert_genesis_object(gas_object.clone()).await;
-    authority_state.insert_genesis_object(stable_gas_object.clone()).await;
-
     move_call_with_gas_object(stable_gas_object,gas_object_id_stable,sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
     move_call_with_gas_object(gas_object,gas_object_id,sender,sender_key,rgp,package_object_ref,authority_state).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_move_call_with_multiple_stable_coin() -> SuiResult {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let gas_object_id_stable = ObjectID::random();
+    let gas_object_id_stable2 = ObjectID::random();
+    let state = TestAuthorityBuilder::new().build().await;
+    let obj = Object::with_id_owner_for_testing(gas_object_id, sender);
+    let stable_obj = Object::with_stable_id_owner_version_for_testing(gas_object_id_stable, SequenceNumber::new(), sender);
+    let stable_obj2 = Object::with_stable_id_owner_version_for_testing(gas_object_id_stable2, SequenceNumber::new(), sender);
+
+    state.insert_genesis_object(obj).await;
+    state.insert_genesis_object(stable_obj).await;
+    state.insert_genesis_object(stable_obj2).await;
+    let (authority_state, package_object_ref) = authority_tests::publish_object_basics(state).await;
+
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await?.unwrap();
+
+    move_call_with_gas_objects(
+        vec![stable_gas_object.compute_object_reference(), stable_gas_object2.compute_object_reference()],
+        sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
 
     Ok(())
 }
@@ -943,6 +967,33 @@ async fn execute_transfer_with_gas_object_and_price(
         response,
         rgp,
     }
+}
+async fn move_call_with_gas_objects(gas_objects: Vec<ObjectRef>,sender: SuiAddress,
+                                   sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
+    let module = ident_str!("object_basics").to_owned();
+    let function = ident_str!("create").to_owned();
+    let args = vec![
+        CallArg::Pure(16u64.to_le_bytes().to_vec()),
+        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+    ];
+    let data = TransactionData::new_move_call_with_gas_coins(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        function.clone(),
+        Vec::new(),
+        gas_objects,
+        args.clone(),
+        *MAX_GAS_BUDGET,
+        rgp,
+    )
+        .unwrap();
+
+    let tx = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    let effects = response.1.into_data();
+    assert!(effects.status().is_ok());
+    Ok(())
 }
 
 async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
