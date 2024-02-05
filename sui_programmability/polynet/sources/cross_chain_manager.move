@@ -8,6 +8,7 @@ module polynet::cross_chain_manager {
     use sui::object::UID;
     use sui::table::{Table, Self};
     use sui::transfer;
+    use sui::tx_context;
     //use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
@@ -68,12 +69,16 @@ module polynet::cross_chain_manager {
 
 
     // initialize
-    public entry fun init_crosschain_manager(account: address,
+    public entry fun init_crosschain_manager(
                                              keepers: vector<vector<u8>>,
                                              startHeight: u64,
                                              polyId: u64,
                                              ctx: &mut TxContext)  {
-        assert!((account) == utils::get_poly_address(), EINVALID_SIGNER);
+
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        assert!((sender) == utils::get_poly_address(), EINVALID_SIGNER);
 
         // init access control lists
         let acls = table::new<u64, Access_control_list>(ctx);
@@ -144,8 +149,11 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun grantRole(ccManager:&mut CrossChainManager,  admin: address, role: u64, account: address) {
-        assert!(hasRole(ccManager, ADMIN_ROLE, admin), ENOT_ADMIN);
+    public entry fun grantRole(ccManager:&mut CrossChainManager, role: u64, account: address, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        assert!(hasRole(ccManager, ADMIN_ROLE, sender), ENOT_ADMIN);
         assert!(!hasRole(ccManager, role, account), EALREADY_HAS_ROLE);
 
         if (table::contains(&ccManager.acl_store.role_acls, role)) {
@@ -158,8 +166,11 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun revokeRole(ccManager:&mut CrossChainManager, admin: address, role: u64, account: address)  {
-        assert!(hasRole(ccManager, ADMIN_ROLE, admin), ENOT_ADMIN);
+    public entry fun revokeRole(ccManager:&mut CrossChainManager, role: u64, account: address, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        assert!(hasRole(ccManager, ADMIN_ROLE, sender), ENOT_ADMIN);
         assert!(hasRole(ccManager, role, account), ENOT_HAS_ROLE);
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let role_acl = table::borrow_mut(&mut ccManager.acl_store.role_acls, role);
@@ -175,12 +186,13 @@ module polynet::cross_chain_manager {
     }
 
     public fun issueLicense(ccManager:&mut CrossChainManager,
-                            ca: address,
-                            account: address,
-                            module_name: vector<u8>): License {
-        assert!(hasRole(ccManager, CA_ROLE, ca), ENOT_CA_ROLE);
+                            module_name: vector<u8>, ctx: &mut TxContext ): License {
+
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(hasRole(ccManager, CA_ROLE, sender), ENOT_CA_ROLE);
         License{
-            account: account,
+            account: sender,
             module_name: module_name,
         }
     }
@@ -223,8 +235,12 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(ccManager:&mut CrossChainManager,  ca: address, license_id: vector<u8>, access_level: u8)  {
-        assert!(hasRole(ccManager, CA_ROLE, ca), ENOT_CA_ROLE);
+    public entry fun setBlackList(ccManager:&mut CrossChainManager, license_id: vector<u8>, access_level: u8, ctx: &mut TxContext)  {
+
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        assert!(hasRole(ccManager, CA_ROLE, sender), ENOT_CA_ROLE);
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let v_ref = utils::borrow_mut_with_default(&mut ccManager.acl_store.license_black_list, license_id, access_level);
         *v_ref = access_level;
@@ -338,14 +354,18 @@ module polynet::cross_chain_manager {
         return ccManager.config.paused
     }
 
-    public fun pause(ccManager:&mut CrossChainManager, account: address)  {
-        assert!(hasRole(ccManager, PAUSE_ROLE, account), ENOT_PAUSE_ROLE);
+    public fun pause(ccManager:&mut CrossChainManager, ctx: &mut TxContext){
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(hasRole(ccManager, PAUSE_ROLE, sender), ENOT_PAUSE_ROLE);
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.paused = true;
     }
 
-    public fun unpause(ccManager:&mut CrossChainManager, account: address)  {
-        assert!(hasRole(ccManager, PAUSE_ROLE, (account)), ENOT_PAUSE_ROLE);
+    public fun unpause(ccManager:&mut CrossChainManager, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(hasRole(ccManager, PAUSE_ROLE, (sender)), ENOT_PAUSE_ROLE);
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         ccManager.config.paused = false;
     }
@@ -354,15 +374,19 @@ module polynet::cross_chain_manager {
 
     
     // set poly id
-    public entry fun setPolyId(ccManager:&mut CrossChainManager, account: address, polyId: u64)  {
-        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
+    public entry fun setPolyId(ccManager:&mut CrossChainManager, polyId: u64, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
         putPolyId(ccManager, polyId);
     }
 
 
     // change book keeper
-    public entry fun changeBookKeeper(ccManager:&mut CrossChainManager, account: address, keepers: vector<vector<u8>>, startHeight: u64)  {
-        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (account)), ENOT_CHANGE_KEEPER_ROLE);
+    public entry fun changeBookKeeper(ccManager:&mut CrossChainManager, keepers: vector<vector<u8>>, startHeight: u64, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
         putCurBookKeepers(ccManager, &keepers);
         putCurEpochStartHeight(ccManager, startHeight);
 
@@ -377,7 +401,16 @@ module polynet::cross_chain_manager {
 
     
     // cross chain
-    public fun crossChain(ccManager:&mut CrossChainManager, account: address, license: &License, toChainId: u64, toContract: &vector<u8>, method: &vector<u8>, txData: &vector<u8>)  {
+    public fun crossChain(ccManager:&mut CrossChainManager,
+                          license: &License,
+                          toChainId: u64,
+                          toContract: &vector<u8>,
+                          method: &vector<u8>,
+                          txData: &vector<u8>,
+                          ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
         assert!(!paused(ccManager), EPAUSED);
 
         // check license
@@ -408,7 +441,7 @@ module polynet::cross_chain_manager {
         //let event_store = borrow_global_mut<EventStore>(@poly);
         event::emit(
             CrossChainEvent{
-                sender: account,
+                sender: sender,
                 tx_id: param_tx_hash,
                 proxy_or_asset_contract: msg_sender,
                 to_chain_id: toChainId,
@@ -448,7 +481,12 @@ module polynet::cross_chain_manager {
     // verify header and execute tx
     public fun verifyHeaderAndExecuteTx(ccManager:&mut CrossChainManager,
                                         license: &License,
-                                        proof: &vector<u8>, rawHeader: &vector<u8>, headerProof: &vector<u8>, curRawHeader: &vector<u8>, headerSig: &vector<u8>, ctx: &mut TxContext): Certificate  {
+                                        proof: &vector<u8>,
+                                        rawHeader: &vector<u8>,
+                                        headerProof: &vector<u8>,
+                                        curRawHeader: &vector<u8>,
+                                        headerSig: &vector<u8>,
+                                        ctx: &mut TxContext): Certificate  {
         assert!(!paused(ccManager), EPAUSED);
 
         let (

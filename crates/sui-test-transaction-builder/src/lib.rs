@@ -27,7 +27,7 @@ use sui_types::{TypeTag, SUI_SYSTEM_PACKAGE_ID};
 pub struct TestTransactionBuilder {
     test_data: TestTransactionData,
     sender: SuiAddress,
-    gas_object: ObjectRef,
+    gas_objects: Vec<ObjectRef>,
     gas_price: u64,
 }
 
@@ -36,7 +36,16 @@ impl TestTransactionBuilder {
         Self {
             test_data: TestTransactionData::Empty,
             sender,
-            gas_object,
+            gas_objects:vec![gas_object],
+            gas_price,
+        }
+    }
+
+    pub fn new_with_gas_objects(sender: SuiAddress, gas_objects: Vec<ObjectRef>, gas_price: u64) -> Self {
+        Self {
+            test_data: TestTransactionData::Empty,
+            sender,
+            gas_objects,
             gas_price,
         }
     }
@@ -269,13 +278,13 @@ impl TestTransactionBuilder {
 
     pub fn build(self) -> TransactionData {
         match self.test_data {
-            TestTransactionData::Move(data) => TransactionData::new_move_call(
+            TestTransactionData::Move(data) => TransactionData::new_move_call_with_gas_coins(
                 self.sender,
                 data.package_id,
                 ident_str!(data.module).to_owned(),
                 ident_str!(data.function).to_owned(),
                 data.type_args,
-                self.gas_object,
+                self.gas_objects,
                 data.args,
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
                 self.gas_price,
@@ -285,7 +294,7 @@ impl TestTransactionBuilder {
                 data.recipient,
                 data.object,
                 self.sender,
-                self.gas_object,
+                self.gas_objects[0],
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
@@ -293,7 +302,7 @@ impl TestTransactionBuilder {
                 data.recipient,
                 self.sender,
                 data.amount,
-                self.gas_object,
+                self.gas_objects[0],
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
@@ -305,7 +314,7 @@ impl TestTransactionBuilder {
 
                 TransactionData::new_module(
                     self.sender,
-                    self.gas_object,
+                    self.gas_objects[0],
                     all_module_bytes,
                     dependencies,
                     self.gas_price * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
@@ -314,7 +323,7 @@ impl TestTransactionBuilder {
             }
             TestTransactionData::Programmable(pt) => TransactionData::new_programmable(
                 self.sender,
-                vec![self.gas_object],
+                self.gas_objects,
                 pt,
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
                 self.gas_price,
@@ -480,7 +489,7 @@ pub async fn make_staking_transaction(
     let stake_object = accounts_and_objs[0].1[1];
     let gas_price = context.get_reference_gas_price().await.unwrap();
     context.sign_transaction(
-        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+        &TestTransactionBuilder::new(sender,gas_object, gas_price)
             .call_staking(stake_object, validator_address)
             .build(),
     )
