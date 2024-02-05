@@ -12,6 +12,7 @@ module polynet::lock_proxy {
     use sui::object;
     use sui::object::UID;
     use sui::transfer;
+    use sui::tx_context;
     use sui::tx_context::TxContext;
 
     use polynet::cross_chain_manager;
@@ -91,15 +92,18 @@ module polynet::lock_proxy {
 
 
     // init
-    public entry fun init_lock_proxy_manager(admin: address, ctx: &mut TxContext) {
-        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+    public entry fun init_lock_proxy_manager(ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
 
         let lockproxystore = LockProxyStore{
             id: object::new(ctx),
             proxy_map: table::new<u64, vector<u8>>(ctx),
             asset_map: table::new<TypeName, Table<u64, vector<u8>>>(ctx),
             paused: false,
-            owner: (admin),
+            owner: (sender),
             };
 
         let licensestore = LicenseStore{
@@ -172,26 +176,35 @@ module polynet::lock_proxy {
         assert!((owner) == lpManager.lock_proxy_store.owner, ENOT_OWNER);
     }
 
-    public entry fun transferOwnerShip(lpManager: &mut LockProxyManager, owner: address, new_owner: address) {
-        onlyOwner(lpManager, owner);
+    public entry fun transferOwnerShip(lpManager: &mut LockProxyManager, new_owner: address, ctx:&mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.owner = new_owner;
     }
 
-    public entry fun pause(lpManager: &mut LockProxyManager,  owner: address) {
-        onlyOwner(lpManager, owner);
+    public entry fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = true;
     }
 
-    public entry fun unpause(lpManager: &mut LockProxyManager, owner: address)  {
-        onlyOwner(lpManager, owner);
+    public entry fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = false;
     }
 
-    public entry fun bindProxy(lpManager: &mut LockProxyManager,  owner: address, to_chain_id: u64, target_proxy_hash: vector<u8>)  {
-        onlyOwner(lpManager, owner);
+    public entry fun bindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, target_proxy_hash: vector<u8>, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         utils::upsert(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id, target_proxy_hash);
 
@@ -203,8 +216,10 @@ module polynet::lock_proxy {
         );
     }
 
-    public entry fun unbindProxy(lpManager: &mut LockProxyManager, owner: address, to_chain_id: u64) {
-        onlyOwner(lpManager, owner);
+    public entry fun unbindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         if (table::contains(&lpManager.lock_proxy_store.proxy_map, to_chain_id)) {
             table::remove(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id);
@@ -221,12 +236,13 @@ module polynet::lock_proxy {
     }
 
     public entry fun bindAsset<CoinType>(lpManager: &mut LockProxyManager,
-                                        owner: address,
                                          to_chain_id: u64,
                                          to_asset_hash: vector<u8>,
                                          to_asset_decimals: u8,
                                          ctx: &mut TxContext)  {
-        onlyOwner(lpManager, owner);
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         let from_asset = type_name::get<Coin<CoinType>>();
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         let decimals_concat_to_asset = vector::singleton(to_asset_decimals);
@@ -249,8 +265,10 @@ module polynet::lock_proxy {
         );
     }
 
-    public entry fun unbindAsset<CoinType>(lpManager: &mut LockProxyManager,  owner: address, to_chain_id: u64) {
-        onlyOwner(lpManager, owner);
+    public entry fun unbindAsset<CoinType>(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         let from_asset = type_name::get<Coin<CoinType>>();
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
@@ -277,7 +295,7 @@ module polynet::lock_proxy {
 
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
-    public  fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext): Treasury<CoinType> {
+    public  fun initTreasury<CoinType>(admin:address, ctx: &mut TxContext): Treasury<CoinType> {
 
         assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
         //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
@@ -365,7 +383,7 @@ module polynet::lock_proxy {
         account: address,
                               fund: Coin<CoinType>,
                               toChainId: u64,
-                              toAddress: &vector<u8>)  {
+                              toAddress: &vector<u8>, ctx: &mut TxContext)  {
         // lock fund
         let amount = coin::value(&fund);
         deposit(treasury_ref, fund);
@@ -389,7 +407,8 @@ module polynet::lock_proxy {
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
 
         // cross chain
-        cross_chain_manager::crossChain(ccManager, account, license_ref, toChainId, &to_proxy, &b"unlock", &tx_data);
+        cross_chain_manager::crossChain(ccManager, license_ref, toChainId,
+                            &to_proxy, &b"unlock", &tx_data, ctx);
 
         // emit event 
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);

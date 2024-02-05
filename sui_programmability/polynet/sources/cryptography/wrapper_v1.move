@@ -79,14 +79,15 @@ module polynet::wrapper_v1 {
         fund: Coin<CoinType>,
         fee: Coin<BFC>,
         toChainId: u64, 
-        toAddress: vector<u8>
+        toAddress: vector<u8>,
+        ctx: &mut TxContext
     )  {
 
         //todo: add check?
 
         //let fund = coin::withdraw<CoinType>(account, amount);
         //let fee = coin::withdraw<BFC>(account, fee_amount);
-        lock_and_pay_fee_with_fund<CoinType>(ccManager, lpManager,treasury_ref,wrapperstore, account, fund, fee, toChainId, &toAddress);
+        lock_and_pay_fee_with_fund<CoinType>(ccManager, lpManager,treasury_ref,wrapperstore, account, fund, fee, toChainId, &toAddress,ctx);
     }
 
     public fun lock_and_pay_fee_with_fund<CoinType>(
@@ -98,7 +99,8 @@ module polynet::wrapper_v1 {
         fund: Coin<CoinType>, 
         fee: Coin<BFC>,
         toChainId: u64, 
-        toAddress: &vector<u8>
+        toAddress: &vector<u8>,
+        ctx: &mut TxContext
     )  {
         let amount = coin::value(&fund);
         let fee_amount = coin::value(&fee);
@@ -108,7 +110,7 @@ module polynet::wrapper_v1 {
         let feeCollector = feeCollector(wrapperstore);
         transfer::public_transfer(fee, feeCollector);
 
-        lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress);
+        lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,ctx);
         //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         event::emit(
             LockWithFeeEvent{

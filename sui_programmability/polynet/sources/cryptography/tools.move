@@ -4,6 +4,7 @@ module polynet::tools {
     use polynet::wrapper_v1;
 
     use std::vector;
+    use sui::tx_context;
     use polynet::lock_proxy::LockProxyManager;
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::tx_context::TxContext;
@@ -11,11 +12,13 @@ module polynet::tools {
     // mainnet
     public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
-                                     account: address, ctx: &mut TxContext) {
-        init_mainnet_ccm(account, ctx);
-        wrapper_v1::init_wrapper(account,ctx);
-        lock_proxy::init_lock_proxy_manager(account, ctx);
-        issue_license_to_lock_proxy(ccManager,lpManager, account, (account));
+                                     ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        init_mainnet_ccm(sender, ctx);
+        wrapper_v1::init_wrapper(sender,ctx);
+        lock_proxy::init_lock_proxy_manager(ctx);
+        issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
     public entry fun init_mainnet_ccm(account: address, ctx: &mut TxContext) {
@@ -26,14 +29,16 @@ module polynet::tools {
         vector::push_back(&mut keepers, x"09c6475ce07577ab72a1f96c263e5030cb53a843b00ca1238a093d9dcb183e2fec837e621b7ec6db7658c9b9808da304aed599043de1b433d490ff74f577c53d");
         vector::push_back(&mut keepers, x"e68a6e54bdfa0af47bd18465f4352f5151dc729c61a7399909f1cd1c6d816c0241800e782bb05f6f803b9f958930ebcee0b67d3af27845b4fbfa09e926cf17ae");
         vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
-        cross_chain_manager::init_crosschain_manager(account, keepers, startHeight, polyId, ctx);
+        cross_chain_manager::init_crosschain_manager( keepers, startHeight, polyId, ctx);
     }
 
     public entry fun issue_license_to_lock_proxy(ccManager:&mut CrossChainManager,
                                                  lpManager:&mut LockProxyManager,
-                                                 account: address,
-                                                 bridge_addr: address) {
-        let license = cross_chain_manager::issueLicense(ccManager, account, bridge_addr, b"lock_proxy");
+                                                 ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        //todo , add admin check..
+        let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", ctx);
         lock_proxy::receiveLicense(lpManager,license);
     }
 
@@ -43,8 +48,8 @@ module polynet::tools {
                                      account: address, ctx: &mut TxContext) {
         init_testnet_ccm(account, ctx);
         wrapper_v1::init_wrapper(account, ctx);
-        lock_proxy::init_lock_proxy_manager(account, ctx);
-        issue_license_to_lock_proxy(ccManager,lpManager, account, (account));
+        lock_proxy::init_lock_proxy_manager(ctx);
+        issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
     public entry fun init_testnet_ccm(account: address, ctx: &mut TxContext) {
@@ -58,6 +63,6 @@ module polynet::tools {
         vector::push_back(&mut keepers, x"a4f44dd65cbcc52b1d1ac51747378a7f84753b5f7bf2760ca21390ced6b172bbf4d03e2cf4e0e79e46f7a757058d240e542853341e88feb1610ff03ba785cfc1");
         vector::push_back(&mut keepers, x"d0d0e883c73d8256cf4314822ddd973c0179b73d8ed3df85aad38d36a8b2b0c7696f0c66330d243b1bc7bc8d05e694b4d642ac68f741d2b7f6ea4037ef46b992");
         vector::push_back(&mut keepers, x"ef44beba84422bd76a599531c9fe50969a929a0fee35df66690f370ce19fa8c00ed4b649691d116b7deeb79b714156d18981916e58ae40c0ebacbf3bd0b87877");
-        cross_chain_manager::init_crosschain_manager(account, keepers, startHeight, polyId, ctx);
+        cross_chain_manager::init_crosschain_manager(keepers, startHeight, polyId, ctx);
     }
 }

@@ -2,6 +2,10 @@
 #[allow(unused_variable,unused_assignment,unused_function)]
 module tokens::secp256k1 {
     use std::option::Option;
+    #[test_only]
+    use sui::ecdsa_k1;
+    #[test_only]
+    use sui::test_utils::{print, assert_eq};
 
     /// An error occurred while deserializing, for example due to wrong input size.
     const E_DESERIALIZE: u64 = 1;   // This code must be the same, if ever returned from the native Rust implementation.
@@ -72,11 +76,74 @@ module tokens::secp256k1 {
 
     /// Returns `(public_key, true)` if `signature` verifies on `message` under the recovered `public_key`
     /// and returns `([], false)` otherwise.
-    native fun ecdsa_recover_internal(
-        message: vector<u8>,
-        recovery_id: u8,
-        signature: vector<u8>
-    ): (vector<u8>, bool);
+    // native fun ecdsa_recover_internal(
+    //     message: vector<u8>,
+    //     recovery_id: u8,
+    //     signature: vector<u8>
+    // ): (vector<u8>, bool);
 
 
+    #[test]
+    fun test_ecrecover_pubkey() {
+        let msg = b"Hello, world!";
+
+        // recover with keccak256 hash
+        let sig = x"7e4237ebfbc36613e166bfc5f6229360a9c1949242da97ca04867e4de57b2df30c8340bcb320328cf46d71bda51fcb519e3ce53b348eec62de852e350edbd88600";
+        let pubkey_bytes = x"02337cca2171fdbfcfd657fa59881f46269f1e590b5ffab6023686c7ad2ecc2c1c";
+        let pubkey = ecdsa_k1::secp256k1_ecrecover(&sig, &msg, 0);
+        assert!(pubkey == pubkey_bytes, 0);
+        // test case generated against fastcrypto/fastcrypto/src/tests/secp256k1_recoverable_tests.rs at f9e64dc028040f863a53a6a88072bda71a
+        // let msg = b"test aptos secp256k1";
+        //
+        // // recover with keccak256 hash
+        // let sig = x"f7ad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c777c423a1d2849baafd7ff6a9930814a43c3f80d59db56f";
+        // let pubkey_bytes = x"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        // let pubkey = ecdsa_k1::secp256k1_ecrecover(&sig, &msg, 1);
+        //
+        // print(b"======");
+        // print(pubkey);
+        // //assert!(pubkey == x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559", 0);
+        // assert_eq(pubkey, x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559");
+        // // assert!(pubkey == pubkey_bytes, 0);
+
+        // recover with sha256 hash
+        // let sig = x"e5847245b38548547f613aaea3421ad47f5b95a222366fb9f9b8c57568feb19c7077fc31e7d83e00acc1347d08c3e1ad50a4eeb6ab044f25c861ddc7be5b8f9f01";
+        // let pubkey_bytes = x"02337cca2171fdbfcfd657fa59881f46269f1e590b5ffab6023686c7ad2ecc2c1c";
+        // let pubkey = ecdsa_k1::secp256k1_ecrecover(&sig, &msg, 1);
+        // assert!(pubkey == pubkey_bytes, 0);
+    }
+
+    #[test]
+    /// Test on a valid secp256k1 ECDSA signature created using sk = x"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    fun test_ecdsa_recover() {
+        use std::hash;
+
+        let pk = ecdsa_recover(
+            hash::sha2_256(b"test aptos secp256k1"),
+            0,
+            &ECDSASignature { bytes: x"f7ad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c777c423a1d2849baafd7ff6a9930814a43c3f80d59db56f" },
+        );
+
+
+        assert!(std::option::is_some(&pk), 1);
+        assert!(std::option::extract(&mut pk).bytes == x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559", 1);
+
+        // Flipped bits; Signature stays valid
+        let pk = ecdsa_recover(
+            hash::sha2_256(b"test aptos secp256k1"),
+            0,
+            // NOTE: A '7' was flipped to an 'f' here
+            &ECDSASignature { bytes: x"f7ad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c7f7c423a1d2849baafd7ff6a9930814a43c3f80d59db56f" },
+        );
+        assert!(std::option::is_some(&pk), 1);
+        assert!(std::option::extract(&mut pk).bytes != x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559", 1);
+
+        // Flipped bits; Signature becomes invalid
+        let pk = ecdsa_recover(
+            hash::sha2_256(b"test aptos secp256k1"),
+            0,
+            &ECDSASignature { bytes: x"ffad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c7f7c423a1d2849baafd7ff6a9930814a43c3f80d59db56f" },
+        );
+        assert!(std::option::is_none(&pk), 1);
+    }
 }
