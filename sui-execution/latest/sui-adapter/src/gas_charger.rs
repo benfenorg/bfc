@@ -131,7 +131,7 @@ pub mod checked {
                 return;
             }
             let gas_coin_obj = temporary_store.objects().get(&gas_coin_id).unwrap();
-            let gas_coint_type = gas_coin_obj.coin_type_maybe().unwrap();
+            let gas_coin_type = gas_coin_obj.coin_type_maybe().unwrap();
 
             // sum the value of all gas coins
             let new_balance = self
@@ -140,7 +140,7 @@ pub mod checked {
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
 
-                    if obj.coin_type_maybe().unwrap() != gas_coint_type {
+                    if obj.coin_type_maybe().unwrap() != gas_coin_type {
                         return Err(ExecutionError::invariant_violation(
                             "Invariant violation: gas coins with different types!"
                         ));
