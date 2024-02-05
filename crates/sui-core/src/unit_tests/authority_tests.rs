@@ -508,9 +508,9 @@ async fn test_dev_inspect_unowned_object() {
 #[tokio::test]
 async fn test_dev_inspect_dynamic_field() {
     let (test_object1_bytes, test_object2_bytes) = {
-        let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
+        let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_object_id = ObjectID::random();
-        let (_validator, _fullnode, _object_basics) =
+        let (validator, fullnode, object_basics) =
             init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)])
                 .await;
         macro_rules! mk_obj {
