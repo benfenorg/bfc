@@ -11,6 +11,7 @@ module polynet::wrapper_v1 {
     use sui::object::UID;
     use sui::transfer;
     use sui::transfer::transfer;
+    use sui::tx_context;
     use sui::tx_context::TxContext;
 
     use polynet::lock_proxy;
@@ -32,17 +33,22 @@ module polynet::wrapper_v1 {
     }
 
     // for admin
-    public entry fun init_wrapper(admin: address , ctx: &mut TxContext) {
-        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+    public entry fun init_wrapper( ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
 
         transfer(WrapperStore{
             id: object::new(ctx),
             fee_collector: utils::get_bridge_address(),
-        }, admin);
+        }, sender);
     }
 
-    public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, admin: address, new_fee_collector: address) {
-        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+    public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, new_fee_collector: address, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
         //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         wrapperstore.fee_collector = new_fee_collector;
     }
