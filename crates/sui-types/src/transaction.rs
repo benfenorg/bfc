@@ -39,7 +39,7 @@ use std::collections::HashMap;
 use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
-use tracing::trace;
+use tracing::{error, trace};
 use crate::gas::GasCostSummary;
 
 // TODO: The following constants appear to be very large.
@@ -895,7 +895,11 @@ impl TransactionKind {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },SharedInputObject::SUI_SYSTEM_OBJ];
+                },SharedInputObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: false,
+                }];
                 Either::Right(Either::Right(objs.into_iter()))
             }
             _ => Either::Right(Either::Right(vec![].into_iter())),
@@ -1060,6 +1064,21 @@ pub enum TransactionExpiration {
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub enum TransactionData {
     V1(TransactionDataV1),
+}
+
+impl TransactionData {
+    pub fn is_change_bfc_round_tx(&self) -> bool {
+        match self {
+            Self::V1(txn_data) => {
+                match txn_data.kind {
+                    TransactionKind::ChangeBfcRound(_) => true,
+                    _ => {
+                        false
+                    },
+                }
+            }
+        }
+    }
 }
 
 impl VersionedProtocolMessage for TransactionData {
