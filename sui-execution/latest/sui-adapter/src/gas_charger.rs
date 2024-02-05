@@ -131,14 +131,12 @@ pub mod checked {
                 return;
             }
 
-            error!("gas coins is {:?}",self.gas_coins());
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
                 .iter()
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
-                    error!("obj is {:?} ,with id {:?}",obj,obj.id());
 
                     let Data::Move(move_obj) = &obj.data else {
                     return Err(ExecutionError::invariant_violation(
