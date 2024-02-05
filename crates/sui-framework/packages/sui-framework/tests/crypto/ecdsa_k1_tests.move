@@ -38,11 +38,15 @@ module sui::ecdsa_k1_tests {
         let uncompressed = ecdsa_k1::decompress_pubkey(&pubkey);
 
         // Take the last 64 bytes of the uncompressed pubkey.
+        let uncompressed_64 = vector::empty<u8>();
         let i = 1;
         while (i < 65) {
-            assert!( &(*vector::borrow(&pubkey_bytes, i - 1)) == vector::borrow(&uncompressed, i), 0);
+            let value = vector::borrow(&uncompressed, i);
+            vector::push_back(&mut uncompressed_64, *value);
             i = i + 1;
         };
+
+        assert!(uncompressed_64 == pubkey_bytes, 0);
     }
 
 
