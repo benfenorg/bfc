@@ -4,7 +4,7 @@ module polynet::utils {
     //use sui::from_bcs;
     //use sui::any;
     use std::string::{String, Self};
-    use polynet::acl::add;
+    //use polynet::acl::add;
     use sui::bcs;
     use sui::table::{Table, Self};
     //use std::type_name;

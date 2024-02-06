@@ -235,7 +235,9 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(ccManager:&mut CrossChainManager, license_id: vector<u8>, access_level: u8, ctx: &mut TxContext)  {
+    public entry fun setBlackList(ccManager:&mut CrossChainManager,
+                                  license_id: vector<u8>,
+                                  access_level: u8, ctx: &mut TxContext)  {
 
         // sender address
         let sender = tx_context::sender(ctx);
@@ -414,8 +416,8 @@ module polynet::cross_chain_manager {
         assert!(!paused(ccManager), EPAUSED);
 
         // check license
-        let msg_sender = getLicenseId(license);
-        assert!(!isBlackListedFrom(ccManager, msg_sender), EBLACKLISTED_FROM);
+        let license_id = getLicenseId(license);
+        assert!(!isBlackListedFrom(ccManager, license_id), EBLACKLISTED_FROM);
 
         // pack args
         let tx_hash_index = getEthTxHashIndex(ccManager);
@@ -428,7 +430,7 @@ module polynet::cross_chain_manager {
 
         let raw_param = zero_copy_sink::write_var_bytes(&param_tx_hash);
         vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(&cross_chain_id));
-        vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(&msg_sender));
+        vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(&license_id));
         vector::append(&mut raw_param, zero_copy_sink::write_u64(toChainId));
         vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(toContract));
         vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(method));
@@ -443,7 +445,7 @@ module polynet::cross_chain_manager {
             CrossChainEvent{
                 sender: sender,
                 tx_id: param_tx_hash,
-                proxy_or_asset_contract: msg_sender,
+                proxy_or_asset_contract: license_id,
                 to_chain_id: toChainId,
                 to_contract: *toContract,
                 raw_data: raw_param,
@@ -551,8 +553,8 @@ module polynet::cross_chain_manager {
         assert!(to_chain_id == getPolyId(ccManager), ENOT_TARGET_CHAIN);
 
         // check verifier
-        let msg_sender = getLicenseId(license);
-        assert!(msg_sender == to_contract, EVERIFIER_NOT_RECEIVER);
+        let license_id = getLicenseId(license);
+        assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 
         // check black list
         assert!(!isBlackListedTo(ccManager, to_contract), EBLACKLISTED_TO);

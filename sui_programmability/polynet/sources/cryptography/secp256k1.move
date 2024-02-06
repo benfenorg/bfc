@@ -58,6 +58,10 @@ module polynet::secp256k1 {
         recovery_id: u8,
         signature: &ECDSASignature,
     ): Option<ECDSARawPublicKey> {
+
+        //not used
+        let _ = recovery_id;
+
         //hash : 1 for sha256, 0 for keccak256
         let pubkey = ecdsa_k1::secp256k1_ecrecover(& signature.bytes, &message, 1);
             //ecdsa_recover_internal(message, recovery_id, signature.bytes);
@@ -82,8 +86,8 @@ module polynet::secp256k1 {
     // Native functions
     //
 
-    /// Returns `(public_key, true)` if `signature` verifies on `message` under the recovered `public_key`
-    /// and returns `([], false)` otherwise.
+    // Returns `(public_key, true)` if `signature` verifies on `message` under the recovered `public_key`
+    // and returns `([], false)` otherwise.
     // native fun ecdsa_recover_internal(
     //     message: vector<u8>,
     //     recovery_id: u8,

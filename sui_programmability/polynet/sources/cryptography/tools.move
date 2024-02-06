@@ -4,7 +4,6 @@ module polynet::tools {
     use polynet::wrapper_v1;
 
     use std::vector;
-    use sui::tx_context;
     use polynet::lock_proxy::LockProxyManager;
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::tx_context::TxContext;
@@ -14,14 +13,14 @@ module polynet::tools {
                                      lpManager:&mut LockProxyManager,
                                      ctx: &mut TxContext) {
         // sender address
-        let sender = tx_context::sender(ctx);
-        init_mainnet_ccm(sender, ctx);
+        //let sender = tx_context::sender(ctx);
+        init_mainnet_ccm(ctx);
         wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
-    public entry fun init_mainnet_ccm(account: address, ctx: &mut TxContext) {
+    public entry fun init_mainnet_ccm(ctx: &mut TxContext) {
         let polyId: u64 = 41;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
@@ -36,7 +35,7 @@ module polynet::tools {
                                                  lpManager:&mut LockProxyManager,
                                                  ctx: &mut TxContext) {
         // sender address
-        let sender = tx_context::sender(ctx);
+       // let sender = tx_context::sender(ctx);
         //todo , add admin check..
         let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", ctx);
         lock_proxy::receiveLicense(lpManager,license);
@@ -47,14 +46,14 @@ module polynet::tools {
                                      lpManager:&mut LockProxyManager,
                                      ctx: &mut TxContext) {
         // sender address
-        let sender = tx_context::sender(ctx);
-        init_testnet_ccm(sender, ctx);
+        //let sender = tx_context::sender(ctx);
+        init_testnet_ccm(ctx);
         wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
-    public entry fun init_testnet_ccm(account: address, ctx: &mut TxContext) {
+    public entry fun init_testnet_ccm(ctx: &mut TxContext) {
         let polyId: u64 = 998;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();

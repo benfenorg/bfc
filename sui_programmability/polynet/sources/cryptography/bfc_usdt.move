@@ -52,7 +52,7 @@ module polynet::bfc_usdt {
 
 
 
-    fun only_admin(account: address) {
-        assert!(lock_proxy::is_admin(account), ENOT_BRIDGE_ADMIN);
-    }
+    // fun only_admin(account: address) {
+    //     assert!(lock_proxy::is_admin(account), ENOT_BRIDGE_ADMIN);
+    // }
 }
