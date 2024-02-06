@@ -18,15 +18,16 @@ module polynet::bridge_coin {
     struct BFC_USDT has drop {}
     struct BFC_USDC has drop {}
 
-    public entry fun initialize(
-        admin: address,
-        decimals: u8,
-        ctx: &mut TxContext,
-    ) {
-        only_admin(admin);
+    const DECIMALS: u8 = 8;
 
-        build_usdt(decimals, admin, ctx);
-        build_usdc(decimals, admin, ctx);
+
+    fun init(ctx: &mut TxContext) {
+        //
+        let admin = tx_context::sender(ctx);
+        //only_admin(admin);
+
+        build_usdt(DECIMALS, admin, ctx);
+        build_usdc(DECIMALS, admin, ctx);
 
 
 

@@ -45,8 +45,10 @@ module polynet::tools {
     // testnet
     public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
-                                     account: address, ctx: &mut TxContext) {
-        init_testnet_ccm(account, ctx);
+                                     ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        init_testnet_ccm(sender, ctx);
         wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
