@@ -26,8 +26,8 @@ module polynet::bridge_coin {
         let admin = tx_context::sender(ctx);
         //only_admin(admin);
 
-        build_usdt(DECIMALS, admin, ctx);
-        build_usdc(DECIMALS, admin, ctx);
+        //build_usdt(DECIMALS, admin, ctx);
+        //build_usdc(DECIMALS, admin, ctx);
 
 
 

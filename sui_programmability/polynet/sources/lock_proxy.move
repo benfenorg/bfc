@@ -1,5 +1,6 @@
 #[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
+    use std::ascii;
     use std::ascii::as_bytes;
     use std::vector;
     use std::option::{Self, Option};
@@ -7,6 +8,7 @@ module polynet::lock_proxy {
     use sui::math;
     use sui::table::{Table, Self};
     use std::type_name::{Self, TypeName};
+    use sui::address;
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
@@ -355,7 +357,9 @@ module polynet::lock_proxy {
         let this_module_name = type_name::get_module(&this_type);
 
         //todo
-        //assert!(license_account == this_account && license_module_name == this_module_name, EINVALID_LICENSE_INFO);
+        let license_module_name_string = ascii::string(license_module_name);
+        let license_account_string = address::to_ascii_string(license_account);
+        assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
         option::fill(&mut lpManager.license_store.license, license);
     }
 

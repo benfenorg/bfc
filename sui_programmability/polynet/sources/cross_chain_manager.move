@@ -180,13 +180,13 @@ module polynet::cross_chain_manager {
 
     // cross chain license
     struct License has store, copy, drop {
-
         account: address,
         module_name: vector<u8>
     }
 
     public fun issueLicense(ccManager:&mut CrossChainManager,
-                            module_name: vector<u8>, ctx: &mut TxContext ): License {
+                            module_name: vector<u8>,
+                            ctx: &mut TxContext ): License {
 
         // sender address
         let sender = tx_context::sender(ctx);
