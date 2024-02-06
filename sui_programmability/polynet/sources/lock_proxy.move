@@ -299,7 +299,7 @@ module polynet::lock_proxy {
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
     public  fun initTreasury<CoinType>(admin:address, ctx: &mut TxContext): Treasury<CoinType> {
 
-        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+        //assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
         //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
 
 
