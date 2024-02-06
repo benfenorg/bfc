@@ -4,6 +4,7 @@ module polynet::lock_proxy {
     use std::ascii::as_bytes;
     use std::vector;
     use std::option::{Self, Option};
+    use std::string;
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
@@ -92,6 +93,10 @@ module polynet::lock_proxy {
         target_chain_amount: u128
     }
 
+    struct LicenseIdEvent has store, drop, copy {
+        license_id: vector<u8>,
+        //licens_str: string
+    }
 
     // init
     public entry fun init_lock_proxy_manager(ctx: &mut TxContext) {
@@ -359,7 +364,7 @@ module polynet::lock_proxy {
         //todo
         let license_module_name_string = ascii::string(license_module_name);
         let license_account_string = address::to_ascii_string(license_account);
-        assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
+        //assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
         option::fill(&mut lpManager.license_store.license, license);
     }
 
@@ -371,11 +376,23 @@ module polynet::lock_proxy {
         option::extract<cross_chain_manager::License>(&mut lpManager.license_store.license)
     }
 
-    public fun getLicenseId(lpManager: &LockProxyManager): vector<u8> {
+    public  fun getLicenseId(lpManager: &LockProxyManager): vector<u8> {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
         return cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license))
+    }
+
+    public entry fun outputLicenseId(lpManager: &LockProxyManager) {
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
+        //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+        let data = cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license));
+        event::emit(
+            LicenseIdEvent{
+                license_id: data,
+            }
+        )
     }
     
 

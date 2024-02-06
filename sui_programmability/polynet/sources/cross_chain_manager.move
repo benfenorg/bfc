@@ -198,6 +198,7 @@ module polynet::cross_chain_manager {
     }
 
     public fun destroyLicense(license: License) {
+        //need admin
         let License{
             account: _, module_name: _ } = license;
     }
