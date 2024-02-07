@@ -289,6 +289,13 @@ pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_p
     ((cost as u128 * 1000000000u128 * (100 + base_point) as u128) / (rate * 100u64) as u128) as u64
 }
 
+pub fn calculate_stable_net_used_with_base_point(summary :GasCostSummary) -> i64 {
+    let computation_cost = calculate_bfc_to_stable_cost_with_base_point(summary.computation_cost, summary.rate, summary.base_point);
+    let storage_cost = calculate_bfc_to_stable_cost_with_base_point(summary.storage_cost, summary.rate, summary.base_point);
+    let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(summary.storage_rebate, summary.rate, summary.base_point);
+    (computation_cost + storage_cost) as i64 - (storage_rebate as i64)
+}
+
 pub fn calculate_stable_to_bfc_cost_with_base_point(stable_cost: u64, rate: u64, base_point: u64) -> u64 {
     stable_cost * (rate * 100u64) / (1000000000u128 * (100 + base_point) as u128) as u64
 }

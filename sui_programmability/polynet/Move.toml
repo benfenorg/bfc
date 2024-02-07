@@ -7,6 +7,5 @@ Sui = { local = "../../crates/sui-framework/packages/sui-framework" }
 
 [addresses]
 polynet = "0x0"
-poly = "0x4a98355a0d56b8be0b8c95c85c522cff292916a716907e36a874b31c73b32eb3"
-poly_bridge = "0x4a98355a0d56b8be0b8c95c85c522cff292916a716907e36a874b31c73b32eb3"
+#poly_bridge = "0x4a98355a0d56b8be0b8c95c85c522cff292916a716907e36a874b31c73b32eb3"
 

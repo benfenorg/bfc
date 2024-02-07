@@ -1,55 +1,67 @@
-module poly_bridge::lock_proxy {
-    use std::ascii::as_bytes;
+#[allow(unused_field,unused_assignment,unused_type_parameter)]
+module polynet::lock_proxy {
+    use std::ascii;
+    use std::ascii::{as_bytes, String, string};
     use std::vector;
-    use std::string;
     use std::option::{Self, Option};
+    use std::string;
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
     use std::type_name::{Self, TypeName};
+    use sui::address;
+    use polynet::cross_chain_manager::{CrossChainManager, LicenseInfo};
     use sui::coin::{Coin, Self};
-    use sui::transfer::transfer;
+    use sui::object;
+    use sui::object::UID;
+    use sui::transfer;
+    use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use poly::cross_chain_manager;
-    use poly::zero_copy_sink;
-    use poly::zero_copy_source;
-    use poly::utils;
+    use polynet::cross_chain_manager;
+    use polynet::zero_copy_sink;
+    use polynet::zero_copy_source;
+    use polynet::utils;
 
-    const DEPRECATED: u64 = 1;
-    const ENOT_OWNER: u64 = 2;
-    const ETREASURY_ALREADY_EXIST: u64 = 3;
-    const ETREASURY_NOT_EXIST: u64 = 4;
-    const ELICENSE_ALREADY_EXIST: u64 = 5;
-    const ELICENSE_NOT_EXIST: u64 = 6;
-    const ETARGET_PROXY_NOT_BIND: u64 = 7;
-    const ETARGET_ASSET_NOT_BIND: u64 = 8;
-    const EINVALID_COINTYPE: u64 = 9;
-    const EINVALID_FROM_CONTRACT: u64 = 10;
-    const EINVALID_TARGET_LICENSE_ID: u64 = 11;
-    const EINVALID_METHOD: u64 = 12;
-    const ELICENSE_STORE_ALREADY_EXIST: u64 = 13;
-    const EINVALID_LICENSE_INFO: u64 = 14;
-    const EINVALID_SIGNER: u64 = 15;
-    const ELICENSE_STORE_NOT_EXIST: u64 = 16;
+    const DEPRECATED: u64 = 4001;
+    const ENOT_OWNER: u64 = 4002;
+    const ETREASURY_ALREADY_EXIST: u64 = 4003;
+    const ETREASURY_NOT_EXIST: u64 = 4004;
+    const ELICENSE_ALREADY_EXIST: u64 = 4005;
+    const ELICENSE_NOT_EXIST: u64 = 4006;
+    const ETARGET_PROXY_NOT_BIND: u64 = 4007;
+    const ETARGET_ASSET_NOT_BIND: u64 = 4008;
+    const EINVALID_COINTYPE: u64 = 4009;
+    const EINVALID_FROM_CONTRACT: u64 = 4010;
+    const EINVALID_TARGET_LICENSE_ID: u64 = 4011;
+    const EINVALID_METHOD: u64 = 4012;
+    const ELICENSE_STORE_ALREADY_EXIST: u64 = 4013;
+    const EINVALID_LICENSE_INFO: u64 = 4014;
+    const EINVALID_SIGNER: u64 = 4015;
+    const ELICENSE_STORE_NOT_EXIST: u64 = 4016;
 
+
+    struct LockProxyManager has key{
+        id: UID,
+        lock_proxy_store: LockProxyStore,
+        license_store: LicenseStore,
+    }
 
     struct LockProxyStore has key, store {
+        id: UID,
         proxy_map: Table<u64, vector<u8>>,
         asset_map: Table<TypeName, Table<u64, vector<u8>>>,
         paused: bool,
         owner: address,
-        //bind_proxy_event: event::EventHandle<BindProxyEvent>,
-        //bind_asset_event: event::EventHandle<BindAssetEvent>,
-        //lock_event: event::EventHandle<LockEvent>,
-        //unlock_event: event::EventHandle<UnlockEvent>
     }
 
     struct Treasury<phantom CoinType> has key, store {
+        id: UID,
         coin: Coin<CoinType>
     }
 
     struct LicenseStore has key, store {
+        id: UID,
         license: Option<cross_chain_manager::License>
     }
 
@@ -81,44 +93,61 @@ module poly_bridge::lock_proxy {
         target_chain_amount: u128
     }
 
+    struct LicenseIdEvent has store, drop, copy {
+        license_id: vector<u8>,
+        account: address,
+        module_name: String,
+    }
 
     // init
-    public entry fun init(admin: address, ctx: &mut TxContext) {
-        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
+    public entry fun init_lock_proxy_manager(ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
 
-        transfer(LockProxyStore{
+        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
+
+        let lockproxystore = LockProxyStore{
+            id: object::new(ctx),
             proxy_map: table::new<u64, vector<u8>>(ctx),
             asset_map: table::new<TypeName, Table<u64, vector<u8>>>(ctx),
             paused: false,
-            owner: (admin),
-            //bind_proxy_event: account::new_event_handle<BindProxyEvent>(admin),
-            //bind_asset_event: account::new_event_handle<BindAssetEvent>(admin),
-            //lock_event: account::new_event_handle<LockEvent>(admin),
-            //unlock_event: account::new_event_handle<UnlockEvent>(admin),
-            },
-             admin);
+            owner: (sender),
+            };
 
-        transfer(LicenseStore{
+        let licensestore = LicenseStore{
+            id: object::new(ctx),
             license: option::none<cross_chain_manager::License>(),
-        }, admin);
+        };
+
+        let manager = LockProxyManager{
+            id: object::new(ctx),
+            lock_proxy_store: lockproxystore,
+            license_store: licensestore,
+        };
+
+
+
+        transfer::share_object(manager)
+
     }
 
 
     // getter function
-    public fun getTargetProxy(to_chain_id: u64): vector<u8> acquires LockProxyStore {
-        let config_ref = borrow_global<LockProxyStore>(@poly_bridge);
-        if (table::contains(&config_ref.proxy_map, to_chain_id)) {
-            return *table::borrow(&config_ref.proxy_map, to_chain_id)
+    public fun getTargetProxy(lpManager: &LockProxyManager, to_chain_id: u64): vector<u8>  {
+        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
+
+        if (table::contains(&lpManager.lock_proxy_store.proxy_map, to_chain_id)) {
+            return *table::borrow(&lpManager.lock_proxy_store.proxy_map, to_chain_id)
         } else {
             abort ETARGET_PROXY_NOT_BIND
         }
     }
 
-    public fun getToAsset<CoinType>(to_chain_id: u64): (vector<u8>, u8) acquires LockProxyStore {
-        let config_ref = borrow_global<LockProxyStore>(@poly_bridge);
+    public fun getToAsset<CoinType>(lpManager: &LockProxyManager,  to_chain_id: u64): (vector<u8>, u8) {
+        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
         let from_asset = type_name::get<Coin<CoinType>>();
-        if (table::contains(&config_ref.asset_map, from_asset)) {
-            let sub_table = table::borrow(&config_ref.asset_map, from_asset);
+        if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
+            let sub_table = table::borrow(&lpManager.lock_proxy_store.asset_map, from_asset);
             if (table::contains(sub_table, to_chain_id)) {
                 let decimals_concat_to_asset = table::borrow(sub_table, to_chain_id);
                 let decimals = *vector::borrow(decimals_concat_to_asset, 0);
@@ -132,51 +161,60 @@ module poly_bridge::lock_proxy {
         }
     }
 
-    public fun paused(): bool acquires LockProxyStore {
-        let config_ref = borrow_global<LockProxyStore>(@poly_bridge);
-        return config_ref.paused
+    public fun paused(lpManager: &LockProxyManager): bool   {
+        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
+        return lpManager.lock_proxy_store.paused
     }
 
-    public fun owner(): address acquires LockProxyStore {
-        let config_ref = borrow_global<LockProxyStore>(@poly_bridge);
-        return config_ref.owner
+    public fun owner(lpManager: &LockProxyManager): address {
+        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
+        return lpManager.lock_proxy_store.owner
     }
 
-    public fun getBalance<CoinType>(): u64 acquires Treasury {
-        assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
-        let treasury_ref = borrow_global<Treasury<CoinType>>(@poly_bridge);
+    public fun getBalance< CoinType>(treasury_ref: &Treasury<CoinType>): u64  {
+        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
+        //let treasury_ref = borrow_global<Treasury<CoinType>>(POLY_BRIDGE);
         return coin::value(&treasury_ref.coin)
     }
 
 
     // owner function
-    fun onlyOwner(owner: address) acquires LockProxyStore {
-        let config_ref = borrow_global<LockProxyStore>(@poly_bridge);
-        assert!((owner) == config_ref.owner, ENOT_OWNER);
+    fun onlyOwner(lpManager: &LockProxyManager, owner: address) {
+        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
+        assert!((owner) == lpManager.lock_proxy_store.owner, ENOT_OWNER);
     }
 
-    public entry fun transferOwnerShip(owner: address, new_owner: address) acquires LockProxyStore {
-        onlyOwner(owner);
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        config_ref.owner = new_owner;
+    public entry fun transferOwnerShip(lpManager: &mut LockProxyManager, new_owner: address, ctx:&mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+
+        onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        lpManager.lock_proxy_store.owner = new_owner;
     }
 
-    public entry fun pause(owner: address) acquires LockProxyStore {
-        onlyOwner(owner);
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        config_ref.paused = true;
+    public entry fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        lpManager.lock_proxy_store.paused = true;
     }
 
-    public entry fun unpause(owner: address) acquires LockProxyStore {
-        onlyOwner(owner);
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        config_ref.paused = false;
+    public entry fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        lpManager.lock_proxy_store.paused = false;
     }
 
-    public entry fun bindProxy(owner: address, to_chain_id: u64, target_proxy_hash: vector<u8>) acquires LockProxyStore {
-        onlyOwner(owner);
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        table::upsert(&mut config_ref.proxy_map, to_chain_id, target_proxy_hash);
+    public entry fun bindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, target_proxy_hash: vector<u8>, ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        utils::upsert(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id, target_proxy_hash);
 
         event::emit(
             BindProxyEvent{
@@ -186,11 +224,13 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun unbindProxy(owner: address, to_chain_id: u64) acquires LockProxyStore {
-        onlyOwner(owner);
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        if (table::contains(&config_ref.proxy_map, to_chain_id)) {
-            table::remove(&mut config_ref.proxy_map, to_chain_id);
+    public entry fun unbindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        if (table::contains(&lpManager.lock_proxy_store.proxy_map, to_chain_id)) {
+            table::remove(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id);
         } else {
             abort ETARGET_PROXY_NOT_BIND
         };
@@ -203,18 +243,24 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun bindAsset<CoinType>(owner: address, to_chain_id: u64, to_asset_hash: vector<u8>, to_asset_decimals: u8, ctx: &mut TxContext) acquires LockProxyStore {
-        onlyOwner(owner);
+    public entry fun bindAsset<CoinType>(lpManager: &mut LockProxyManager,
+                                         to_chain_id: u64,
+                                         to_asset_hash: vector<u8>,
+                                         to_asset_decimals: u8,
+                                         ctx: &mut TxContext)  {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         let from_asset = type_name::get<Coin<CoinType>>();
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         let decimals_concat_to_asset = vector::singleton(to_asset_decimals);
         vector::append(&mut decimals_concat_to_asset, to_asset_hash);
-        if (table::contains(&config_ref.asset_map, from_asset)) {
-            table::upsert(table::borrow_mut(&mut config_ref.asset_map, from_asset), to_chain_id, decimals_concat_to_asset);
+        if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
+            utils::upsert(table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset), to_chain_id, decimals_concat_to_asset);
         } else {
             let subTable = table::new<u64, vector<u8>>(ctx);
             table::add(&mut subTable, to_chain_id, decimals_concat_to_asset);
-            table::add(&mut config_ref.asset_map, from_asset, subTable);
+            table::add(&mut lpManager.lock_proxy_store.asset_map, from_asset, subTable);
         };
 
         event::emit(
@@ -227,12 +273,14 @@ module poly_bridge::lock_proxy {
         );
     }
 
-    public entry fun unbindAsset<CoinType>(owner: address, to_chain_id: u64) acquires LockProxyStore {
-        onlyOwner(owner);
+    public entry fun unbindAsset<CoinType>(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        onlyOwner(lpManager, sender);
         let from_asset = type_name::get<Coin<CoinType>>();
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
-        if (table::contains(&config_ref.asset_map, from_asset)) {
-            let sub_table = table::borrow_mut(&mut config_ref.asset_map, from_asset);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
+            let sub_table = table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset);
             if (table::contains(sub_table, to_chain_id)) {
                 table::remove(sub_table, to_chain_id);
             } else {
@@ -254,98 +302,140 @@ module poly_bridge::lock_proxy {
 
 
     // treasury function
-    public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext) {
-        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        assert!(!exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_ALREADY_EXIST);
+    //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
+    public  fun initTreasury<CoinType>(admin:address, ctx: &mut TxContext): Treasury<CoinType> {
+
+        //assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+        //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
 
 
-        transfer(Treasury<CoinType> { coin: coin::zero<CoinType>(ctx) }, admin);
+        let treasury = Treasury<CoinType>{
+            id: object::new(ctx),
+            coin: coin::zero<CoinType>(ctx),
+        };
+
+        treasury
+
+    }
+
+    public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>,admin: address) {
+        transfer::transfer(treasury, admin)
     }
 
     public fun is_treasury_initialzed<CoinType>(): bool {
-        exists<Treasury<CoinType>>(@poly_bridge)
+        true
+        //exists<Treasury<CoinType>>(POLY_BRIDGE)
     }
 
     public fun is_admin(account: address): bool {
-        account == @poly_bridge
+        account == utils::get_bridge_address()
     }
 
-    public fun deposit<CoinType>(fund: Coin<CoinType>) acquires Treasury {
-        assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
-        let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
+    public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
+        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
+        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(POLY_BRIDGE);
 
 
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
     }
 
-    fun withdraw<CoinType>(amount: u64): Coin<CoinType> acquires Treasury {
-        assert!(exists<Treasury<CoinType>>(@poly_bridge), ETREASURY_NOT_EXIST);
-        let treasury_ref = borrow_global_mut<Treasury<CoinType>>(@poly_bridge);
-        return coin::extract<CoinType>(&mut treasury_ref.coin, amount)
+    fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
+        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
+        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(POLY_BRIDGE);
+
+        return coin::split(&mut treasury_ref.coin, amount, ctx)
+        //return coin::extract<CoinType>(&mut treasury_ref.coin, amount)
     }
 
 
+
+
     // license function
-    public fun receiveLicense(license: cross_chain_manager::License) acquires LicenseStore {
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_STORE_NOT_EXIST);
-        let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
+    public fun receiveLicense(lpManager: &mut LockProxyManager,
+                              license: cross_chain_manager::License)   {
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_STORE_NOT_EXIST);
+        //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
+        //assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
+
         let (license_account, license_module_name) = cross_chain_manager::getLicenseInfo(&license);
         let this_type = type_name::get<LicenseStore>();
         let this_account = type_name::get_address(&this_type);
         let this_module_name = type_name::get_module(&this_type);
 
         //todo
-        //assert!(license_account == this_account && license_module_name == this_module_name, EINVALID_LICENSE_INFO);
-        option::fill(license_opt, license);
+        let license_module_name_string = ascii::string(license_module_name);
+        let license_account_string = address::to_ascii_string(license_account);
+        //assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
+        option::fill(&mut lpManager.license_store.license, license);
     }
 
-    public fun removeLicense(admin: address): cross_chain_manager::License acquires LicenseStore {
-        assert!((admin) == @poly_bridge, EINVALID_SIGNER);
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &mut borrow_global_mut<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        option::extract<cross_chain_manager::License>(license_opt)
+    public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
+        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
+        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        option::extract<cross_chain_manager::License>(&mut lpManager.license_store.license)
     }
 
-    public fun getLicenseId(): vector<u8> acquires LicenseStore {
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        return cross_chain_manager::getLicenseId(option::borrow(license_opt))
+    public  fun getLicenseId(lpManager: &LockProxyManager): (vector<u8>, LicenseInfo) {
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
+        //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+        return cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license))
+    }
+
+    public entry fun outputLicenseId(lpManager: &LockProxyManager) {
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
+        //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+        let (data, licenseInfo) = cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license));
+        event::emit(
+            LicenseIdEvent{
+                license_id: data,
+                account: cross_chain_manager::get_license_account(&licenseInfo),
+                module_name:  string(cross_chain_manager::get_license_module_name(&licenseInfo)),
+            }
+        )
     }
     
 
     // lock
-    public fun lock<CoinType>(account: address,
+    public fun lock<CoinType>(
+        ccManager:&mut CrossChainManager,
+        lpManager: &LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        account: address,
                               fund: Coin<CoinType>,
                               toChainId: u64,
-                              toAddress: &vector<u8>) acquires Treasury, LicenseStore, LockProxyStore {
+                              toAddress: &vector<u8>, ctx: &mut TxContext)  {
         // lock fund
         let amount = coin::value(&fund);
-        deposit(fund);
+        deposit(treasury_ref, fund);
         
         // borrow license
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        let license_ref = option::borrow(license_opt);
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
+        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        let license_ref = option::borrow(&lpManager.license_store.license);
 
         // get target proxy/asset
-        let to_proxy = getTargetProxy(toChainId);
-        let (to_asset, to_asset_decimals) = getToAsset<CoinType>(toChainId);
+        let to_proxy = getTargetProxy(lpManager, toChainId);
+        let (to_asset, to_asset_decimals) = getToAsset<CoinType>(lpManager, toChainId);
 
+
+        //todo,, decimals
         // precision conversion
-        let target_chain_amount = to_target_chain_amount<CoinType>(amount, to_asset_decimals);
+        let target_chain_amount = to_target_chain_amount(amount, to_asset_decimals, to_asset_decimals);
 
         // pack args
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
 
         // cross chain
-        cross_chain_manager::crossChain(account, license_ref, toChainId, &to_proxy, &b"unlock", &tx_data);
+        cross_chain_manager::crossChain(ccManager, license_ref, toChainId,
+                            &to_proxy, &b"unlock", &tx_data, ctx);
 
         // emit event 
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         event::emit(
             LockEvent{
                 from_asset: type_name::get<Coin<CoinType>>(),
@@ -361,7 +451,11 @@ module poly_bridge::lock_proxy {
 
 
     // unlock
-    public fun unlock<CoinType>(certificate: cross_chain_manager::Certificate) acquires Treasury, LicenseStore, LockProxyStore {
+    public fun unlock<CoinType>(lpManager: &mut LockProxyManager,
+                                treasury_ref:&mut Treasury<CoinType>,
+                                certificate: cross_chain_manager::Certificate,
+                                ctx: &mut TxContext
+    )  {
         // read certificate
         let (
             from_contract,
@@ -379,22 +473,29 @@ module poly_bridge::lock_proxy {
         ) = deserializeTxArgs(&args);
 
         // precision conversion
-        let (_, decimals) = getToAsset<CoinType>(from_chain_id);
-        let amount = from_target_chain_amount<CoinType>(from_chain_amount, decimals);
+        let (_, decimals) = getToAsset<CoinType>(lpManager, from_chain_id);
+
+
+        //todo, decimals
+        let amount = from_target_chain_amount(from_chain_amount, decimals, decimals);
 
         // check
         //type_name::get<Coin<CoinType>>()
         assert!( *as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
-        assert!(getTargetProxy(from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
-        assert!(getLicenseId() == target_license_id, EINVALID_TARGET_LICENSE_ID);
+        assert!(getTargetProxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
+        let (license_id, _) = getLicenseId(lpManager);
+        assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
         // unlock fund
-        let fund = withdraw<CoinType>(amount);
-        transfer(fund, utils::to_address(to_address));
+        let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
+
+        //todo need transfer.
+
+        transfer::public_transfer(fund, utils::to_address(to_address));
 
         // emit event
-        let config_ref = borrow_global_mut<LockProxyStore>(@poly_bridge);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         event::emit(
             UnlockEvent{
                 to_asset: type_name::get<Coin<CoinType>>(),
@@ -406,30 +507,32 @@ module poly_bridge::lock_proxy {
     }
 
     public entry fun relay_unlock_tx<CoinType>(
+        ccManager:&mut CrossChainManager,
+        lpManager: &mut LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
         proof: vector<u8>, 
         rawHeader: vector<u8>, 
         headerProof: vector<u8>, 
         curRawHeader: vector<u8>, 
         headerSig: vector<u8>,
         ctx: &mut TxContext
-    ) acquires Treasury, LicenseStore, LockProxyStore {
+    )  {
         // borrow license
-        assert!(exists<LicenseStore>(@poly_bridge), ELICENSE_NOT_EXIST);
-        let license_opt = &borrow_global<LicenseStore>(@poly_bridge).license;
-        assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        let license_ref = option::borrow(license_opt);
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        let license_ref = option::borrow(&lpManager.license_store.license);
 
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
-        unlock<CoinType>(certificate);
+        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(ccManager,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
+        unlock<CoinType>(lpManager, treasury_ref, certificate, ctx);
     }
 
 
     // decimals conversion
-    public fun to_target_chain_amount<CoinType>(amount: u64,source_decimals: u8,  target_decimals: u8): u128 {
+    public fun to_target_chain_amount(amount: u64,source_decimals: u8,  target_decimals: u8): u128 {
         //let source_decimals = coin::decimals<CoinType>();
         (amount as u128) * pow_10(target_decimals) / pow_10(source_decimals)
     }
-    public fun from_target_chain_amount<CoinType>(target_chain_amount: u128,source_decimals: u8, target_decimals: u8): u64 {
+    public fun from_target_chain_amount(target_chain_amount: u128,source_decimals: u8, target_decimals: u8): u64 {
         //let source_decimals = coin::decimals<CoinType>();
         (target_chain_amount * pow_10(source_decimals) / pow_10(target_decimals) as u64)
     }

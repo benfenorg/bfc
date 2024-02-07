@@ -8,7 +8,7 @@ pub use checked::*;
 pub mod checked {
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus,calculate_bfc_to_stable_cost_with_base_point};
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
     use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
@@ -19,7 +19,7 @@ pub mod checked {
         object::Data,
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
-    use tracing::{trace};
+    use tracing::{error, trace};
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
@@ -130,18 +130,27 @@ pub mod checked {
             if gas_coin_count == 1 {
                 return;
             }
+            let gas_coin_obj = temporary_store.objects().get(&gas_coin_id).unwrap();
+            let gas_coin_type = gas_coin_obj.coin_type_maybe().unwrap();
+
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
                 .iter()
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
+
+                    if obj.coin_type_maybe().unwrap() != gas_coin_type {
+                        return Err(ExecutionError::invariant_violation(
+                            "Invariant violation: gas coins with different types!"
+                        ));
+                    }
                     let Data::Move(move_obj) = &obj.data else {
                     return Err(ExecutionError::invariant_violation(
                         "Provided non-gas coin object as input for gas!"
                     ));
                 };
-                    if !move_obj.type_().is_gas_coin() {
+                    if !move_obj.type_().is_gas_coin() && !move_obj.type_().is_stable_gas_coin(){
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
@@ -280,6 +289,9 @@ pub mod checked {
                 }
 
                 let mut cost_summary = self.gas_status.summary();
+                cost_summary.rate = 1;
+                cost_summary.base_point = 0;
+
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
@@ -289,16 +301,8 @@ pub mod checked {
                     let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
                     cost_summary.rate = rate;
                     cost_summary.base_point = base_point;
-                    let stable_gas_used= calculate_bfc_to_stable_cost_with_base_point(gas_used.abs() as u64 ,rate, base_point);
-                    if gas_used > 0 {
-                        deduct_gas(&mut gas_object, stable_gas_used as i64);
-                    }else {
-                        if stable_gas_used <= i64::MAX as u64 {
-                            deduct_gas(&mut gas_object, -(stable_gas_used as i64));
-                        }else {
-                            panic!("stable_gas_used: {}, gas_used: {:?}", stable_gas_used, gas_used);
-                        }
-                    }
+                    let stable_gas_used= calculate_stable_net_used_with_base_point(cost_summary.clone());
+                    deduct_gas(&mut gas_object, stable_gas_used);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }

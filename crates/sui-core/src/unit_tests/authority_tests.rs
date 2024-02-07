@@ -4124,7 +4124,7 @@ pub async fn init_state_with_ids_and_objects_basics<
     publish_object_basics(state).await
 }
 
-async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
+pub(crate) async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
     use sui_move_build::BuildConfig;
 
     // add object_basics package object to genesis, since lots of test use it

@@ -15,12 +15,12 @@ use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_json_rpc_types::{Checkpoint, CheckpointId, CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
@@ -487,6 +487,22 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
         .await?
         .data;
     Ok(objects)
+}
+
+async fn get_checkpoint(http_client: &HttpClient,id: CheckpointId) -> Result<Checkpoint,Error> {
+    let check_point = http_client
+        .get_checkpoint(
+            id)
+        .await?;
+    Ok(check_point)
+}
+
+async fn get_checkpoints(http_client: &HttpClient,descending_order: bool) -> Result<CheckpointPage,Error> {
+    let check_point_page = http_client
+        .get_checkpoints(
+            Option::None,Option::None,descending_order)
+        .await?;
+    Ok(check_point_page)
 }
 
 #[sim_test]
@@ -2566,14 +2582,66 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
 
-    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string()).await?;
-    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string()).await?;
-    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
 
     Ok(())
 }
 
-async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64, token_name : String) -> Result<(), Error> {
+#[sim_test]
+async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::busd::BUSD".to_string()).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
+
+    Ok(())
+}
+
+async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64, token_name : String,multi_gas:bool,another_token_name : String) -> Result<(), Error> {
     swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, address, SuiTypeTag::new(token_name.clone())).await?;
 
     let _ = sleep(Duration::from_secs(2)).await;
@@ -2584,29 +2652,62 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
     let busd_response = busd_response_vec.get(0).unwrap();
 
     let busd_data = busd_response.data.as_ref().unwrap();
-    let busd_balance_before = get_busd_balance(busd_data);
+    let mut busd_balance_before = get_busd_balance(busd_data);
 
     let receiver_address = test_cluster.get_address_1();
-    let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
+
+    let mut tx;
+    if !multi_gas {
+        tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
                                                     Some(receiver_address),
                                                     Some(amount), address, busd_data.object_ref()).await;
+    }else {
+        let mut gas_coins = vec![busd_data.object_ref()];
 
-    let _response = test_cluster
-        .execute_transaction(tx.clone())
-        .await
-        .effects
-        .unwrap();
+        swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, address, SuiTypeTag::new(another_token_name.clone())).await?;
 
-    let _ = sleep(Duration::from_secs(2)).await;
+        let _ = sleep(Duration::from_secs(2)).await;
 
-    let gas_object_info = http_client.get_object(busd_data.object_id, Some(SuiObjectDataOptions::new().
-        with_owner().with_type().with_display().with_content())).await?;
+        let busd_response_vec = do_get_owned_objects_with_filter(format!("0x2::coin::Coin<{}>",another_token_name.as_str()).as_str(), http_client, address).await?;
 
-    let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
+        assert!(busd_response_vec.len() >= 1);
+        let busd_response = busd_response_vec.get(0).unwrap();
 
-    let _ = sleep(Duration::from_secs(2)).await;
+        let busd_data = busd_response.data.as_ref().unwrap();
+        busd_balance_before += get_busd_balance(busd_data);
+        gas_coins.push(busd_data.object_ref());
+        tx = make_transfer_sui_transaction_with_gas_coins(&test_cluster.wallet,
+                                                    Some(receiver_address),
+                                                    Some(amount), address, gas_coins).await;
+    };
 
-    assert!(busd_balance_after < busd_balance_before);
+    if !multi_gas && token_name == another_token_name{
+        let _response = test_cluster
+            .execute_transaction(tx.clone())
+            .await
+            .effects
+            .unwrap();
+
+        let check_point_page = get_checkpoints(http_client,true).await?;
+        assert!(check_point_page.data.len()>0);
+        let _ = sleep(Duration::from_secs(2)).await;
+
+        let gas_object_info = http_client.get_object(busd_data.object_id, Some(SuiObjectDataOptions::new().
+            with_owner().with_type().with_display().with_content())).await?;
+
+        let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
+
+        let _ = sleep(Duration::from_secs(2)).await;
+
+        assert!(busd_balance_after < busd_balance_before);
+
+    } else {
+        let _response = test_cluster
+            .execute_transaction_return_raw_effects(tx.clone())
+            .await;
+        assert_eq!(_response.is_ok(),false);
+    }
+
     Ok(())
 }
 
@@ -2764,7 +2865,7 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
 async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
+        .with_epoch_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;

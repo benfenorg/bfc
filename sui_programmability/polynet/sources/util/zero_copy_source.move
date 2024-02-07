@@ -1,6 +1,6 @@
-module poly::zero_copy_source {
+module polynet::zero_copy_source {
     use std::vector;
-    use poly::utils as putil;
+    use polynet::utils as putil;
 
     public fun next_bool(bs: &vector<u8>, offset: u64): (bool, u64) {
         let res = *vector::borrow<u8>(bs, offset);
