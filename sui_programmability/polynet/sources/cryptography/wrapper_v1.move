@@ -1,10 +1,9 @@
 module polynet::wrapper_v1 {
     use sui::bfc::BFC;
     use sui::event;
-    //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
     use polynet::utils;
-    use polynet::lock_proxy::{Treasury, LockProxyManager, is_admin};
+    use polynet::lock_proxy::{Treasury, LockProxyManager};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;

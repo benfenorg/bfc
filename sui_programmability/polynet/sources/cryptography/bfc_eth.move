@@ -37,7 +37,7 @@ module polynet::bfc_eth {
 
         let initial_lock = coin::mint<T>(&mut cap, HUGE_U64, ctx);
         //lock_proxy::initTreasury<BFC_USDT>(admin, ctx);
-        let treasury = lock_proxy::initTreasury<T>(admin, ctx);
+        let treasury = lock_proxy::initTreasury<T>(ctx);
 
 
         lock_proxy::deposit<T>(&mut treasury, initial_lock);

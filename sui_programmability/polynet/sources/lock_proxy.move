@@ -4,7 +4,6 @@ module polynet::lock_proxy {
     use std::ascii::{as_bytes, String, string};
     use std::vector;
     use std::option::{Self, Option};
-    use std::string;
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
@@ -303,7 +302,7 @@ module polynet::lock_proxy {
 
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
-    public  fun initTreasury<CoinType>(admin:address, ctx: &mut TxContext): Treasury<CoinType> {
+    public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
 
         //assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
         //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
