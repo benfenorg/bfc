@@ -67,7 +67,6 @@ module polynet::cross_chain_manager {
         fromChainTxExist: Table<u64, Table<vector<u8>, bool>>,
     }
 
-
     // initialize
     public entry fun init_crosschain_manager(
                                              keepers: vector<vector<u8>>,
@@ -203,10 +202,14 @@ module polynet::cross_chain_manager {
             account: _, module_name: _ } = license;
     }
 
-    public fun getLicenseId(license: &License): vector<u8> {
+    public fun getLicenseId(license: &License): (vector<u8>, LicenseInfo) {
         let res = zero_copy_sink::write_var_bytes(&bcs::to_bytes(&license.account));
         vector::append(&mut res, zero_copy_sink::write_var_bytes(&license.module_name));
-        return res
+        let licenseInfo = LicenseInfo{
+            account: license.account,
+            module_name: license.module_name,
+        };
+        return (res, licenseInfo)
     }
 
     public fun getLicenseInfo(license: &License): (address, vector<u8>) {
@@ -248,8 +251,6 @@ module polynet::cross_chain_manager {
         let v_ref = utils::borrow_mut_with_default(&mut ccManager.acl_store.license_black_list, license_id, access_level);
         *v_ref = access_level;
     }
- 
-
 
     struct InitBookKeeperEvent has store, drop, copy {
         height: u64,
@@ -417,7 +418,7 @@ module polynet::cross_chain_manager {
         assert!(!paused(ccManager), EPAUSED);
 
         // check license
-        let license_id = getLicenseId(license);
+        let (license_id, _) = getLicenseId(license);
         assert!(!isBlackListedFrom(ccManager, license_id), EBLACKLISTED_FROM);
 
         // pack args
@@ -454,7 +455,18 @@ module polynet::cross_chain_manager {
         );
     }
 
+    struct LicenseInfo has store, drop, copy {
+        account: address,
+        module_name: vector<u8>,
+    }
 
+    public fun get_license_account(license: &LicenseInfo) :address{
+        return license.account
+    }
+    public fun get_license_module_name(license: &LicenseInfo) :vector<u8>{
+        return license.module_name
+    }
+    
     // certificate
     struct Certificate has drop {
         from_contract: vector<u8>,
@@ -554,7 +566,7 @@ module polynet::cross_chain_manager {
         assert!(to_chain_id == getPolyId(ccManager), ENOT_TARGET_CHAIN);
 
         // check verifier
-        let license_id = getLicenseId(license);
+        let (license_id, _) = getLicenseId(license);
         assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 
         // check black list

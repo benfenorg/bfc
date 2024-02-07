@@ -1,7 +1,7 @@
 #[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
     use std::ascii;
-    use std::ascii::as_bytes;
+    use std::ascii::{as_bytes, String, string};
     use std::vector;
     use std::option::{Self, Option};
     use std::string;
@@ -10,7 +10,7 @@ module polynet::lock_proxy {
     use sui::table::{Table, Self};
     use std::type_name::{Self, TypeName};
     use sui::address;
-    use polynet::cross_chain_manager::{CrossChainManager};
+    use polynet::cross_chain_manager::{CrossChainManager, LicenseInfo};
     use sui::coin::{Coin, Self};
     use sui::object;
     use sui::object::UID;
@@ -95,7 +95,8 @@ module polynet::lock_proxy {
 
     struct LicenseIdEvent has store, drop, copy {
         license_id: vector<u8>,
-        //licens_str: string
+        account: address,
+        module_name: String,
     }
 
     // init
@@ -376,7 +377,7 @@ module polynet::lock_proxy {
         option::extract<cross_chain_manager::License>(&mut lpManager.license_store.license)
     }
 
-    public  fun getLicenseId(lpManager: &LockProxyManager): vector<u8> {
+    public  fun getLicenseId(lpManager: &LockProxyManager): (vector<u8>, LicenseInfo) {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
@@ -387,10 +388,12 @@ module polynet::lock_proxy {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        let data = cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license));
+        let (data, licenseInfo) = cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license));
         event::emit(
             LicenseIdEvent{
                 license_id: data,
+                account: cross_chain_manager::get_license_account(&licenseInfo),
+                module_name:  string(cross_chain_manager::get_license_module_name(&licenseInfo)),
             }
         )
     }
@@ -480,7 +483,8 @@ module polynet::lock_proxy {
         //type_name::get<Coin<CoinType>>()
         assert!( *as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
         assert!(getTargetProxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
-        assert!(getLicenseId(lpManager) == target_license_id, EINVALID_TARGET_LICENSE_ID);
+        let (license_id, _) = getLicenseId(lpManager);
+        assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
         // unlock fund
