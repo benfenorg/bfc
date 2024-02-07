@@ -8,7 +8,6 @@ module polynet::acl {
     const ENOT_CONTAIN: u64 = 4001;
 
 
-    //todo: implement ACL access control list
     struct Access_control_list has store, drop, copy {
         list: vector<address>
     }

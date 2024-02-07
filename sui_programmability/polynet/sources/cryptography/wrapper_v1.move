@@ -4,7 +4,7 @@ module polynet::wrapper_v1 {
     //use sui::type_info::{TypeInfo, Self};
     use std::type_name::{Self, TypeName};
     use polynet::utils;
-    use polynet::lock_proxy::{Treasury, LockProxyManager};
+    use polynet::lock_proxy::{Treasury, LockProxyManager, is_admin};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
@@ -16,8 +16,11 @@ module polynet::wrapper_v1 {
 
     use polynet::lock_proxy;
 
-    const DEPRECATED: u64 = 1;
-    const EINVALID_SIGNER: u64 = 2;
+    const DEPRECATED: u64 = 4001;
+    const EINVALID_ADMIN: u64 = 4015;
+
+
+
     struct WrapperStore has key, store{
         id: UID,
         fee_collector: address,
@@ -34,22 +37,23 @@ module polynet::wrapper_v1 {
 
     // for admin
     public entry fun init_wrapper( ctx: &mut TxContext) {
+
         // sender address
         let sender = tx_context::sender(ctx);
-        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
         transfer(WrapperStore{
             id: object::new(ctx),
-            fee_collector: utils::get_bridge_address(),
+            fee_collector: sender,
         }, sender);
     }
 
     public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, new_fee_collector: address, ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
-        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
-        //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
+
         wrapperstore.fee_collector = new_fee_collector;
     }
 
@@ -130,7 +134,5 @@ module polynet::wrapper_v1 {
         );
     }
 
-    // public entry fun register_coin<CoinType>(account: address) {
-    //     //coin::register<CoinType>(account);
-    // }
+
 }

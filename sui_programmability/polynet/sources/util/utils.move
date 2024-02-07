@@ -17,6 +17,16 @@ module polynet::utils {
     const EINVALID_FROM_BYTES_TO_U128: u64 = 4005;
     const POLY_BRIDGE: address = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
 
+
+    const ADMINS: vector<address> =vector[@0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+                                            @0xc3f0bfdf21d95a247e306df123dde0dad1057f188bdc490737f2616f4062804b,
+                                            ];
+
+    public fun is_admin(a: address): bool {
+        let result = vector::contains(&ADMINS, &a);
+        return result
+    }
+
     public fun slice<Element: copy>(v: &vector<Element>, offset: u64, length: u64): vector<Element> {
         let res = vector::empty<Element>();
         while ( length > 0 ) {

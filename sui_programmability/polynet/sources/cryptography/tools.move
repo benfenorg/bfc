@@ -4,16 +4,24 @@ module polynet::tools {
     use polynet::wrapper_v1;
 
     use std::vector;
+    use polynet::utils;
+    use sui::tx_context;
     use polynet::lock_proxy::LockProxyManager;
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::tx_context::TxContext;
+
+
+    const EINVALID_ADMIN: u64 = 4015;
 
     // mainnet
     public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
                                      ctx: &mut TxContext) {
         // sender address
-        //let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+
+
         init_mainnet_ccm(ctx);
         wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
@@ -21,6 +29,10 @@ module polynet::tools {
     }
 
     public entry fun init_mainnet_ccm(ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+
         let polyId: u64 = 41;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
@@ -35,8 +47,9 @@ module polynet::tools {
                                                  lpManager:&mut LockProxyManager,
                                                  ctx: &mut TxContext) {
         // sender address
-       // let sender = tx_context::sender(ctx);
-        //todo , add admin check..
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+
         let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", ctx);
         lock_proxy::receiveLicense(lpManager,license);
     }
@@ -45,8 +58,11 @@ module polynet::tools {
     public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
                                      ctx: &mut TxContext) {
+
         // sender address
-        //let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+
         init_testnet_ccm(ctx);
         wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
@@ -54,6 +70,11 @@ module polynet::tools {
     }
 
     public entry fun init_testnet_ccm(ctx: &mut TxContext) {
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+
+
         let polyId: u64 = 998;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
