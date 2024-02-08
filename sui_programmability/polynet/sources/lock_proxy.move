@@ -365,6 +365,7 @@ module polynet::lock_proxy {
         let license_module_name_string = ascii::string(license_module_name);
         let license_account_string = address::to_ascii_string(license_account);
         //assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
+        assert!(license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
         option::fill(&mut lpManager.license_store.license, license);
     }
 
