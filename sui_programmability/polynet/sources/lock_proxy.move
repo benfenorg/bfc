@@ -103,7 +103,7 @@ module polynet::lock_proxy {
         // sender address
         let sender = tx_context::sender(ctx);
 
-        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_SIGNER);
 
         let lockproxystore = LockProxyStore{
             id: object::new(ctx),
@@ -327,7 +327,7 @@ module polynet::lock_proxy {
     }
 
     public fun is_admin(account: address): bool {
-        account == utils::get_bridge_address()
+        utils::is_admin(account)
     }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
@@ -370,7 +370,7 @@ module polynet::lock_proxy {
     }
 
     public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
-        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+        assert!(utils::is_admin(admin), EINVALID_SIGNER);
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);

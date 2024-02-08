@@ -77,7 +77,7 @@ module polynet::cross_chain_manager {
         // sender address
         let sender = tx_context::sender(ctx);
 
-        assert!((sender) == utils::get_poly_address(), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_SIGNER);
 
         // init access control lists
         let acls = table::new<u64, Access_control_list>(ctx);
