@@ -328,7 +328,27 @@ module sui_system::validator {
         staking_pool::activate_staking_pool(&mut self.staking_pool, activation_epoch);
     }
 
-    public(friend) fun activate_stable<STABLE>(self: &mut Validator, activation_epoch: u64) {
+    public(friend) fun activate_stable(self: &mut Validator, activation_epoch: u64) {
+        activate_stable_<BUSD>(self, activation_epoch);
+        activate_stable_<BARS>(self, activation_epoch);
+        activate_stable_<BAUD>(self, activation_epoch);
+        activate_stable_<BBRL>(self, activation_epoch);
+        activate_stable_<BCAD>(self, activation_epoch);
+        activate_stable_<BEUR>(self, activation_epoch);
+        activate_stable_<BGBP>(self, activation_epoch);
+        activate_stable_<BIDR>(self, activation_epoch);
+        activate_stable_<BINR>(self, activation_epoch);
+        activate_stable_<BKRW>(self, activation_epoch);
+        activate_stable_<BMXN>(self, activation_epoch);
+        activate_stable_<BRUB>(self, activation_epoch);
+        activate_stable_<BSAR>(self, activation_epoch);
+        activate_stable_<BTRY>(self, activation_epoch);
+        activate_stable_<BZAR>(self, activation_epoch);
+        activate_stable_<BJPY>(self, activation_epoch);
+        activate_stable_<MGG>(self, activation_epoch);
+    }
+
+    fun activate_stable_<STABLE>(self: &mut Validator, activation_epoch: u64) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         stable_pool::activate_stable_pool(pool, activation_epoch);
@@ -1261,23 +1281,7 @@ module sui_system::validator {
 
         if (is_active_at_genesis) {
             activate(&mut validator, 0);
-            activate_stable<BUSD>(&mut validator, 0);
-            activate_stable<BARS>(&mut validator, 0);
-            activate_stable<BAUD>(&mut validator, 0);
-            activate_stable<BBRL>(&mut validator, 0);
-            activate_stable<BCAD>(&mut validator, 0);
-            activate_stable<BEUR>(&mut validator, 0);
-            activate_stable<BGBP>(&mut validator, 0);
-            activate_stable<BIDR>(&mut validator, 0);
-            activate_stable<BINR>(&mut validator, 0);
-            activate_stable<BJPY>(&mut validator, 0);
-            activate_stable<BKRW>(&mut validator, 0);
-            activate_stable<BMXN>(&mut validator, 0);
-            activate_stable<BRUB>(&mut validator, 0);
-            activate_stable<BSAR>(&mut validator, 0);
-            activate_stable<BTRY>(&mut validator, 0);
-            activate_stable<BZAR>(&mut validator, 0);
-            activate_stable<MGG>(&mut validator, 0);
+            activate_stable(&mut validator, 0);
         };
 
         validator
