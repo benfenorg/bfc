@@ -1,7 +1,9 @@
 #[test_only]
+#[allow(unused_use)]
 module polynet::cross_chain_manager_test {
 
     use std::vector;
+    use polynet::cross_chain_manager::{setPolyId, CrossChainManager, getPolyId};
     use sui::test_scenario;
     use polynet::cross_chain_manager;
     use polynet::utils;
@@ -28,6 +30,28 @@ module polynet::cross_chain_manager_test {
             let ctx = test_scenario::ctx(&mut scenario_val);
             cross_chain_manager::init_crosschain_manager(keepers, startHeight, polyId, ctx);
         };
+
+        let new_polyId: u64 = 42;
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            setPolyId(&mut manager, new_polyId, ctx);
+
+            test_scenario::return_shared(manager);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            //let ctx = test_scenario::ctx(&mut scenario_val);
+            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let result = getPolyId(&mut manager);
+            assert!(result == new_polyId, 4002);
+
+            test_scenario::return_shared(manager);
+        };
+
+
 
         test_scenario::end(scenario_val);
     }

@@ -81,14 +81,17 @@ module polynet::cross_chain_manager {
 
         // init access control lists
         let acls = table::new<u64, Access_control_list>(ctx);
+
         let admin_acl = acl::empty();
         let pause_acl = acl::empty();
         let ca_acl = acl::empty();
         let keeper_acl = acl::empty();
+
         acl::add(&mut admin_acl, utils::get_default_admin_address());
         acl::add(&mut pause_acl, utils::get_default_admin_address());
         acl::add(&mut ca_acl, utils::get_default_admin_address());
         acl::add(&mut keeper_acl, utils::get_default_admin_address());
+
         table::add(&mut acls, ADMIN_ROLE, admin_acl);
         table::add(&mut acls, PAUSE_ROLE, pause_acl);
         table::add(&mut acls, CA_ROLE, ca_acl);
