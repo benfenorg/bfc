@@ -1,5 +1,6 @@
 module polynet::bfc_usdc {
     use std::option;
+    use polynet::utils;
     //use std::string::{String};
 
     use sui::coin;
@@ -9,7 +10,10 @@ module polynet::bfc_usdc {
 
     use polynet::lock_proxy;
 
-    const ENOT_BRIDGE_ADMIN: u64 = 4001;
+
+    // Errors
+    const EINVALID_ADMIN: u64 = 4001;
+
 
     const HUGE_U64: u64 = 10000000000000000000;
 
@@ -24,6 +28,8 @@ module polynet::bfc_usdc {
     }
 
     public fun build_usdc<T:drop>(witness: T, decimals: u8, admin: address, ctx: &mut TxContext){
+        assert!(utils::is_admin(admin), EINVALID_ADMIN);
+
         let (cap, metadata) = coin::create_currency(
             witness,
             decimals,
