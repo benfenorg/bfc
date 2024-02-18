@@ -92,11 +92,11 @@ module polynet::wrapper_v1 {
         ctx: &mut TxContext
     )  {
 
-        //todo: add check?
+        //any user can lock bfc assets and transfer to evm
 
-        //let fund = coin::withdraw<CoinType>(account, amount);
-        //let fee = coin::withdraw<BFC>(account, fee_amount);
-        lock_and_pay_fee_with_fund<CoinType>(ccManager, lpManager,treasury_ref,wrapperstore, account, fund, fee, toChainId, &toAddress,ctx);
+        lock_and_pay_fee_with_fund<CoinType>(ccManager,
+            lpManager,treasury_ref,wrapperstore,
+            account, fund, fee, toChainId, &toAddress,ctx);
     }
 
     public fun lock_and_pay_fee_with_fund<CoinType>(
