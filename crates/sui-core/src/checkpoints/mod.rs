@@ -968,7 +968,7 @@ impl CheckpointBuilder {
             let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary_map)=
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
-            if  first_checkpoint_of_epoch{
+            if  last_checkpoint_of_epoch{
                 error!("first_checkpoint_of_epoch: {:?}, {}", last_checkpoint, sequence_number);
                 self.augment_bfc_round(sequence_number,
                                                   &mut effects,
@@ -1195,8 +1195,8 @@ async fn augment_bfc_round(
             .state
             .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
             .await?;
-        error!("bfc round effects is : {:?}",effects);
-        checkpoint_effects.push(effects);
+    error!("obc round effects hash is {:?},effects hash is {:?}",effects.transaction_digest(),effects.digest());
+    checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(())
     }
@@ -1221,6 +1221,7 @@ async fn augment_bfc_round(
                 epoch_start_timestamp_ms,
             )
             .await?;
+        error!("txn effects is {:?},hash is {:?},effects digest is {:?}",effects,effects.transaction_digest(),effects.digest());
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(system_state)
