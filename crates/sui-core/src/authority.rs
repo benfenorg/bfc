@@ -1170,9 +1170,9 @@ impl AuthorityState {
         )
         .await?;
 
-        if certificate.transaction_data().is_change_epoch_tx() {
-            error!("certificate is {:?},input objs is {:?},depts is {:?}",certificate,input_objects.clone().into_objects(),input_objects.clone().transaction_dependencies());
-        }
+        // if certificate.transaction_data().is_change_epoch_tx() {
+        //     error!("certificate is {:?},input objs is {:?},depts is {:?}",certificate,input_objects.clone().into_objects(),input_objects.clone().transaction_dependencies());
+        // }
         let owned_object_refs = input_objects.filter_owned_objects();
         self.check_owned_locks(&owned_object_refs).await?;
         let tx_digest = *certificate.digest();
@@ -4055,8 +4055,8 @@ impl AuthorityState {
 
         let tx_digest = executable_tx.digest();
 
-        info!("round txn digest is {:?}",tx_digest);
-        let _tx_lock = epoch_store.acquire_tx_lock(tx_digest).await;
+        // info!("round txn digest is {:?}",tx_digest);
+        let _tx_lock = epoch_store.acquire_tx_guard(&executable_tx).await?;
 
         if self
             .database
@@ -4082,8 +4082,19 @@ impl AuthorityState {
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
-        self.commit_certificate(store.clone(), &executable_tx, &effects, epoch_store)
+
+        self.commit_cert_and_notify(
+            &executable_tx,
+            store.clone(),
+            &effects,
+            _tx_lock,
+            execution_guard,
+            epoch_store,
+        )
             .await?;
+
+        // self.commit_certificate(store.clone(), &executable_tx, &effects, epoch_store)
+        //     .await?;
 
         // We must write tx and effects to the state sync tables so that state sync is able to
         // deliver to the transaction to CheckpointExecutor after it is included in a certified
@@ -4094,6 +4105,20 @@ impl AuthorityState {
         //     .map_err(|err| {
         //         let err: anyhow::Error = err.into();
         //         err
+        //     })?;
+        // self.database
+        //     .update_state(
+        //         store.clone(),
+        //         &tx.clone().into_unsigned(),
+        //         &effects,
+        //         epoch_store.epoch(),
+        //     )
+        //     .await
+        //     .tap_ok(|_| {
+        //         debug!(
+        //             effects_digest = ?effects.digest(),
+        //             "commit_certificate finished"
+        //         );
         //     })?;
 
         info!(

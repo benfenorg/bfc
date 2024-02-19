@@ -1221,7 +1221,7 @@ async fn augment_bfc_round(
                 epoch_start_timestamp_ms,
             )
             .await?;
-        error!("txn effects is {:?},hash is {:?},effects digest is {:?}",effects,effects.transaction_digest(),effects.digest());
+        //error!("txn effects is {:?},hash is {:?},effects digest is {:?}",effects,effects.transaction_digest(),effects.digest());
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(system_state)
