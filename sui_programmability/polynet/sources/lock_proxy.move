@@ -208,7 +208,10 @@ module polynet::lock_proxy {
         lpManager.lock_proxy_store.paused = false;
     }
 
-    public entry fun bindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, target_proxy_hash: vector<u8>, ctx: &mut TxContext)  {
+    public entry fun bindProxy(lpManager: &mut LockProxyManager,
+                               to_chain_id: u64,
+                               target_proxy_hash: vector<u8>,
+                               ctx: &mut TxContext)  {
         // sender address
         let sender = tx_context::sender(ctx);
         onlyOwner(lpManager, sender);
