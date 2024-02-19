@@ -3,7 +3,7 @@
 module polynet::cross_chain_manager_test {
 
     use std::vector;
-    use polynet::cross_chain_manager::{setPolyId, CrossChainManager, getPolyId};
+    use polynet::cross_chain_manager::{setPolyId, CrossChainManager, getPolyId, grantRole, revokeRole, setBlackList};
     use sui::test_scenario;
     use polynet::cross_chain_manager;
     use polynet::utils;
@@ -51,7 +51,37 @@ module polynet::cross_chain_manager_test {
             test_scenario::return_shared(manager);
         };
 
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            let new_role_address = @0x01;
+            grantRole(&mut manager, 1, new_role_address, ctx);
 
+            test_scenario::return_shared(manager);
+        };
+
+
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            let new_role_address = @0x01;
+            revokeRole(&mut manager, 1, new_role_address, ctx);
+
+            test_scenario::return_shared(manager);
+        };
+
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            setBlackList(&mut manager, x"01", 1, ctx);
+
+            test_scenario::return_shared(manager);
+        };
 
         test_scenario::end(scenario_val);
     }
