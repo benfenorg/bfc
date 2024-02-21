@@ -1088,10 +1088,10 @@ impl CheckpointBuilder {
         for (k,v) in current {
             if result.contains_key(&k) {
                 let p = result.get_mut(&k).unwrap();
-                p.computation_cost + v.computation_cost;
-                p.storage_cost + v.storage_cost;
-                p.storage_rebate + v.storage_rebate;
-                p.non_refundable_storage_fee + v.non_refundable_storage_fee;
+                p.computation_cost = p.computation_cost + v.computation_cost;
+                p.storage_cost = p.storage_cost + v.storage_cost;
+                p.storage_rebate = p.storage_rebate + v.storage_rebate;
+                p.non_refundable_storage_fee = p.non_refundable_storage_fee + v.non_refundable_storage_fee;
             }else {
                 result.insert(k.clone(),v.clone());
             }
@@ -1167,7 +1167,7 @@ impl CheckpointBuilder {
         (bfc_gas_cost_summary,stable_gas_cost_summary_map)
     }
 
-
+    #[allow(unused)]
 async fn augment_bfc_round(
         &self,
         checkpoint: CheckpointSequenceNumber,

@@ -19,7 +19,7 @@ pub mod checked {
         object::Data,
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
-    use tracing::{error, trace};
+    use tracing::{trace};
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.

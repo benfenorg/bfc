@@ -15,7 +15,7 @@ use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::{Checkpoint, CheckpointId, CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
@@ -487,14 +487,6 @@ async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpCl
         .await?
         .data;
     Ok(objects)
-}
-
-async fn get_checkpoint(http_client: &HttpClient,id: CheckpointId) -> Result<Checkpoint,Error> {
-    let check_point = http_client
-        .get_checkpoint(
-            id)
-        .await?;
-    Ok(check_point)
 }
 
 async fn get_checkpoints(http_client: &HttpClient,descending_order: bool) -> Result<CheckpointPage,Error> {
@@ -2656,7 +2648,7 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
 
     let receiver_address = test_cluster.get_address_1();
 
-    let mut tx;
+    let tx;
     if !multi_gas {
         tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
                                                     Some(receiver_address),

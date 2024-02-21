@@ -36,11 +36,10 @@ struct FullName<'a> {
     last: &'a str,
 }
 #[test]
-fn test_format_error_UnknownFormatInContainer()-> Result<(), Error>{
+fn test_format_error_unknown_format_in_container() -> Result<(), Error>{
     let mut tracer = Tracer::new(TracerConfig::default());
     let mut samples = Samples::new();
     tracer.trace_value(&mut samples, &FullName { first: "", middle: None, last: "" })?;
-    //tracer.registry().clone().unwrap();
     assert_eq!(tracer.registry().unwrap_err(), Error::UnknownFormatInContainer("FullName".to_string()));
     Ok(())
 }

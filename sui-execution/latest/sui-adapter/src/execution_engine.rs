@@ -771,13 +771,13 @@ mod checked {
     }
 
     fn bfc_round(
-        change_round: ChangeBfcRound,
-        temporary_store: &mut TemporaryStore<'_>,
-        tx_ctx: &mut TxContext,
-        move_vm: &Arc<MoveVM>,
-        gas_charger: &mut GasCharger,
-        protocol_config: &ProtocolConfig,
-        metrics: Arc<LimitsMetrics>,
+        _change_round: ChangeBfcRound,
+        _temporary_store: &mut TemporaryStore<'_>,
+        _tx_ctx: &mut TxContext,
+        _move_vm: &Arc<MoveVM>,
+        _gas_charger: &mut GasCharger,
+        _protocol_config: &ProtocolConfig,
+        _metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
         // let _ = BfcRoundParams {
         //     round_id:change_round.bfc_round

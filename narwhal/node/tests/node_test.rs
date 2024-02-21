@@ -11,7 +11,7 @@ use narwhal_node::worker_node::WorkerNodes;
 use network::client::NetworkClient;
 use prometheus::Registry;
 use std::num::NonZeroUsize;
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::sync::Arc;
 use std::time::Duration;
 use storage::NodeStorage;
@@ -199,18 +199,17 @@ async fn read_from_store() {
     let subscriber = fmt::Subscriber::new();
     tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber");
 
-    //let path = PathBuf::from(r"/data/11");
     let current_dir = env::current_dir().expect("Failed to get current directory");
     tracing::info!("the current dir is {}", current_dir.display());
     let path = Path::new("tests/data/11");
     let path2 = current_dir.join(path);
-    let nodeStore =  NodeStorage::reopen(path2, None);
+    let node_store =  NodeStorage::reopen(path2, None);
 
     //nodeStore.
-    let last = nodeStore.consensus_store.get_latest_sub_dag_index();
-    tracing::info!("the last proposed batch index is {}", last);
+    let last = node_store.consensus_store.get_latest_sub_dag_index();
+    info!("the last proposed batch index is {}", last);
 
-    let summary = nodeStore
+    let summary = node_store
         .batch_store.table_summary();
     tracing::info!("the summary is {},", summary.unwrap().num_keys);
 

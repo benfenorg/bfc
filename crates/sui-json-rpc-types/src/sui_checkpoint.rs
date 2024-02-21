@@ -7,7 +7,7 @@ use fastcrypto::encoding::Base64;
 use move_core_types::language_storage::TypeTag;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_with::{serde_as,Map};
+use serde_with::{serde_as};
 use sui_types::base_types::TransactionDigest;
 use sui_types::committee::EpochId;
 use sui_types::crypto::AggregateAuthoritySignature;
@@ -91,8 +91,8 @@ impl
             sequence_number,
             network_total_transactions,
             previous_digest,
-            epoch_rolling_bfc_gas_cost_summary: epoch_rolling_bfc_gas_cost_summary,
-            epoch_rolling_stable_gas_cost_summary_map: epoch_rolling_stable_gas_cost_summary_map,
+            epoch_rolling_bfc_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map,
             timestamp_ms,
             end_of_epoch_data,
             ..
