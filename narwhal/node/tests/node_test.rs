@@ -19,6 +19,8 @@ use test_utils::{latest_protocol_version, temp_dir, CommitteeFixture};
 use tokio::sync::mpsc::channel;
 use tokio::time::sleep;
 use tracing::log::info;
+use tracing_subscriber::fmt; // 如果要输出到控制台，还需要导入这个模块
+
 use worker::TrivialTransactionValidator;
 
 #[tokio::test]
@@ -189,23 +191,30 @@ async fn primary_node_restart() {
 }
 
 
-#[ignore]
+
 #[tokio::test]
 async fn read_from_store() {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
+    // 初始化日志记录器
+    let subscriber = fmt::Subscriber::new();
+    tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber");
+
     //let path = PathBuf::from(r"/data/11");
     let current_dir = env::current_dir().expect("Failed to get current directory");
-    info!("the current dir is {}", current_dir.display());
+    tracing::info!("the current dir is {}", current_dir.display());
     let path = Path::new("tests/data/11");
     let path2 = current_dir.join(path);
     let nodeStore =  NodeStorage::reopen(path2, None);
 
     //nodeStore.
     let last = nodeStore.consensus_store.get_latest_sub_dag_index();
-    info!("the last proposed batch index is {}", last);
+    tracing::info!("the last proposed batch index is {}", last);
 
     let summary = nodeStore
         .batch_store.table_summary();
-    info!("the summary is {},", summary.unwrap().num_keys);
+    tracing::info!("the summary is {},", summary.unwrap().num_keys);
+
+
+
 
 }
