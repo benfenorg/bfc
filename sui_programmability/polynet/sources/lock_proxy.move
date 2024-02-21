@@ -4,7 +4,6 @@ module polynet::lock_proxy {
     use std::ascii::{as_bytes, String, string};
     use std::vector;
     use std::option::{Self, Option};
-    use std::string;
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
@@ -104,7 +103,7 @@ module polynet::lock_proxy {
         // sender address
         let sender = tx_context::sender(ctx);
 
-        assert!((sender) == utils::get_bridge_address(), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_SIGNER);
 
         let lockproxystore = LockProxyStore{
             id: object::new(ctx),
@@ -209,7 +208,10 @@ module polynet::lock_proxy {
         lpManager.lock_proxy_store.paused = false;
     }
 
-    public entry fun bindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, target_proxy_hash: vector<u8>, ctx: &mut TxContext)  {
+    public entry fun bindProxy(lpManager: &mut LockProxyManager,
+                               to_chain_id: u64,
+                               target_proxy_hash: vector<u8>,
+                               ctx: &mut TxContext)  {
         // sender address
         let sender = tx_context::sender(ctx);
         onlyOwner(lpManager, sender);
@@ -303,7 +305,7 @@ module polynet::lock_proxy {
 
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
-    public  fun initTreasury<CoinType>(admin:address, ctx: &mut TxContext): Treasury<CoinType> {
+    public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
 
         //assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
         //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
@@ -328,7 +330,7 @@ module polynet::lock_proxy {
     }
 
     public fun is_admin(account: address): bool {
-        account == utils::get_bridge_address()
+        utils::is_admin(account)
     }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
@@ -366,11 +368,12 @@ module polynet::lock_proxy {
         let license_module_name_string = ascii::string(license_module_name);
         let license_account_string = address::to_ascii_string(license_account);
         //assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
+        assert!(license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
         option::fill(&mut lpManager.license_store.license, license);
     }
 
     public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
-        assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
+        assert!(utils::is_admin(admin), EINVALID_SIGNER);
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);

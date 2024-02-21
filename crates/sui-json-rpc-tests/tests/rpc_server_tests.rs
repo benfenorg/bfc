@@ -1237,7 +1237,7 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
     let p = result as Proposal;
 
 
-    assert!( p.proposal.pid >= 0);
+    assert!( p.proposal.pid > 0);
 
     Ok(())
 }

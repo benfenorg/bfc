@@ -144,7 +144,7 @@ mod checked {
             match error.kind() {
                 K::InvariantViolation | K::VMInvariantViolation => {
                     #[skip_checked_arithmetic]
-                    tracing::error!(
+                    error!(
                         kind = ?error.kind(),
                         tx_digest = ?transaction_digest,
                         "INVARIANT VIOLATION! Source: {:?}",
@@ -800,18 +800,18 @@ mod checked {
         #[cfg(msim)]
         let _result = maybe_modify_result(result, change_round.bfc_round);
 
-        // if result.is_err() {
-        //     tracing::error!(
-        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-        //     result.as_ref().err(),
-        //     temporary_store.objects(),
-        // );
+        if result.is_err() {
+            tracing::error!(
+            "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
+            result.as_ref().err(),
+            temporary_store.objects(),
+        );
         //     temporary_store.drop_writes();
         //     // Must reset the storage rebate since we are re-executing.
         //     gas_charger.reset_storage_cost_and_rebate();
         //
         //     temporary_store.advance_bfc_round_mode(protocol_config);
-        // }
+        }
         Ok(())
     }
 

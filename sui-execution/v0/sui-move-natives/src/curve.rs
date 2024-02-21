@@ -7,7 +7,7 @@ use move_vm_types::{
 use std::collections::VecDeque;
 use move_core_types::gas_algebra::InternalGas;
 use smallvec::smallvec;
-
+#[allow(unused)]
 const MATH_E: f64 = 2.718f64;
 const Q64: u128 = 18446744073709551616;
 

@@ -16,6 +16,7 @@
 -  [Function `deactivate_stable`](#0x3_validator_deactivate_stable)
 -  [Function `activate`](#0x3_validator_activate)
 -  [Function `activate_stable`](#0x3_validator_activate_stable)
+-  [Function `activate_stable_`](#0x3_validator_activate_stable_)
 -  [Function `adjust_stake_and_gas_price`](#0x3_validator_adjust_stake_and_gas_price)
 -  [Function `request_add_stake`](#0x3_validator_request_add_stake)
 -  [Function `get_stable_pool_mut`](#0x3_validator_get_stable_pool_mut)
@@ -937,7 +938,7 @@ Deactivate this validator's staking pool
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate_stable">activate_stable</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, activation_epoch: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate_stable">activate_stable</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, activation_epoch: u64)
 </code></pre>
 
 
@@ -946,7 +947,47 @@ Deactivate this validator's staking pool
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate_stable">activate_stable</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, activation_epoch: u64) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_activate_stable">activate_stable</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, activation_epoch: u64) {
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BUSD&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BARS&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BAUD&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BBRL&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BCAD&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BEUR&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BGBP&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BIDR&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BINR&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BKRW&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BMXN&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BRUB&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BSAR&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BTRY&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BZAR&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;BJPY&gt;(self, activation_epoch);
+    <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;MGG&gt;(self, activation_epoch);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_activate_stable_"></a>
+
+## Function `activate_stable_`
+
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, activation_epoch: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_activate_stable_">activate_stable_</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, activation_epoch: u64) {
     <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
     <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, pool_key);
     <a href="stable_pool.md#0x3_stable_pool_activate_stable_pool">stable_pool::activate_stable_pool</a>(pool, activation_epoch);

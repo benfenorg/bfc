@@ -39,7 +39,7 @@ use std::collections::HashMap;
 use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
-use tracing::{error, trace};
+use tracing::trace;
 use crate::gas::GasCostSummary;
 
 // TODO: The following constants appear to be very large.

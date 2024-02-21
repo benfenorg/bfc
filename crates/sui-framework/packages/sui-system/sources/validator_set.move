@@ -1030,6 +1030,7 @@ module sui_system::validator_set {
         while (!table_vec::is_empty(&self.pending_active_validators)) {
             let validator = table_vec::pop_back(&mut self.pending_active_validators);
             validator::activate(&mut validator, new_epoch);
+            validator::activate_stable(&mut validator, new_epoch);
             event::emit(
                 ValidatorJoinEvent {
                     epoch: new_epoch,

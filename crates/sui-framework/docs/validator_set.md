@@ -2453,6 +2453,7 @@ Process the pending new validators. They are activated and inserted into <code>v
     <b>while</b> (!<a href="../../../.././build/Sui/docs/table_vec.md#0x2_table_vec_is_empty">table_vec::is_empty</a>(&self.pending_active_validators)) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="../../../.././build/Sui/docs/table_vec.md#0x2_table_vec_pop_back">table_vec::pop_back</a>(&<b>mut</b> self.pending_active_validators);
         <a href="validator.md#0x3_validator_activate">validator::activate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+        <a href="validator.md#0x3_validator_activate_stable">validator::activate_stable</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
         <a href="../../../.././build/BfcSystem/docs/event.md#0x2_event_emit">event::emit</a>(
             <a href="validator_set.md#0x3_validator_set_ValidatorJoinEvent">ValidatorJoinEvent</a> {
                 epoch: new_epoch,

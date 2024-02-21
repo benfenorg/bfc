@@ -1,21 +1,33 @@
 module polynet::utils {
-    //use std::ascii::try_string;
     use std::vector;
-    //use sui::from_bcs;
-    //use sui::any;
     use std::string::{String, Self};
-    //use polynet::acl::add;
     use sui::bcs;
     use sui::table::{Table, Self};
-    //use std::type_name;
-    // use std::option;
 
     const EUNSUPPORT_GENERIC_TYPE: u64 = 4001;
     const EINVALID_FROM_BYTES_TO_BOOL: u64 = 4002;
     const EINVALID_FROM_BYTES_TO_U8: u64 = 4003;
     const EINVALID_FROM_BYTES_TO_U64: u64 = 4004;
     const EINVALID_FROM_BYTES_TO_U128: u64 = 4005;
-    const POLY_BRIDGE: address = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+
+    const ADMINS: vector<address> =vector[@0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+                                          @0xc3f0bfdf21d95a247e306df123dde0dad1057f188bdc490737f2616f4062804b,
+                                          @0xfc171f86c07b0311a347d7e71b261c684848becbececec78802f1bf8a599f729,
+        @0xfd8669e7e9ecb8d9b893dc6b0ad6727aa28c80dd1c5a34809d20910c5ffa7525,
+    ];
+
+    public fun is_admin(a: address): bool {
+        let result = vector::contains(&ADMINS, &a);
+        return result
+    }
+
+
+
+    public fun get_default_admin_address(): address {
+        return *vector::borrow(&ADMINS, 0)
+    }
+
+
 
     public fun slice<Element: copy>(v: &vector<Element>, offset: u64, length: u64): vector<Element> {
         let res = vector::empty<Element>();
@@ -27,15 +39,6 @@ module polynet::utils {
         };
         return res
     }
-
-    public fun get_bridge_address() :address{
-        return POLY_BRIDGE
-    }
-
-    public fun get_poly_address(): address {
-        return POLY_BRIDGE
-    }
-
     public fun to_bool(v: vector<u8>): bool {
         let data = bcs::new(v);
         return bcs::peel_bool(&mut data)
