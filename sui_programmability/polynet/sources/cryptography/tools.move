@@ -4,6 +4,7 @@ module polynet::tools {
     use polynet::wrapper_v1;
 
     use std::vector;
+    use sui::clock::Clock;
     use polynet::utils;
     use sui::tx_context;
     use polynet::lock_proxy::LockProxyManager;
@@ -16,6 +17,7 @@ module polynet::tools {
     // mainnet
     public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
+                                    clock:&Clock,
                                      ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);
@@ -23,7 +25,7 @@ module polynet::tools {
 
 
         init_mainnet_ccm(ctx);
-        wrapper_v1::init_wrapper(ctx);
+        wrapper_v1::init_wrapper(clock, ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
@@ -57,6 +59,7 @@ module polynet::tools {
     // testnet
     public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
+                                     clock: &Clock,
                                      ctx: &mut TxContext) {
 
         // sender address
@@ -64,7 +67,7 @@ module polynet::tools {
         assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
         init_testnet_ccm(ctx);
-        wrapper_v1::init_wrapper(ctx);
+        wrapper_v1::init_wrapper(clock, ctx);
         lock_proxy::init_lock_proxy_manager(ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }

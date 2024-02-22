@@ -1,7 +1,10 @@
+#[allow(unused_function)]
 module polynet::wrapper_v1 {
     use sui::bfc::BFC;
     use sui::event;
     use std::type_name::{Self, TypeName};
+    use sui::clock;
+    use sui::clock::Clock;
     use polynet::utils;
     use polynet::lock_proxy::{Treasury, LockProxyManager};
     use polynet::cross_chain_manager::{CrossChainManager};
@@ -12,6 +15,8 @@ module polynet::wrapper_v1 {
     use sui::transfer::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
+    use sui::vec_map;
+    use sui::vec_map::VecMap;
 
     use polynet::lock_proxy;
 
@@ -20,9 +25,52 @@ module polynet::wrapper_v1 {
 
 
 
+    const DECIMALS: u8 = 8;
+    const MAX_AMOUNT: u64 = 100*0000*100000000; //1 million.
+
+    const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
+
+
     struct WrapperStore has key, store{
         id: UID,
         fee_collector: address,
+        amountManager: AmountLimitManager,
+    }
+
+    struct AmountLimitManager has key, store{
+        id: UID,
+        time: u64,
+        amount_record: VecMap<vector<u8>, u64>,
+    }
+
+    fun checkAmountResult(user_amount: u64, amountManager:&mut AmountLimitManager,  key:&vector<u8>, clock:&Clock):bool{
+        let current_time = clock::timestamp_ms(clock);
+        if(current_time-amountManager.time > ONE_DAY){
+            amountManager.time = current_time;
+            resetAmount(amountManager);
+        };
+        let amount = vec_map::get_mut(&mut amountManager.amount_record, key);
+        if(user_amount > *amount){
+            return false
+        }else{
+            *amount = *amount - user_amount;
+        };
+
+
+        return true
+    }
+    fun resetAmount(amountManager:&mut AmountLimitManager){
+        let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
+        *usdt = MAX_AMOUNT;
+
+        let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDC");
+        *usdc = MAX_AMOUNT;
+
+        let btc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_BTC");
+        *btc = MAX_AMOUNT;
+
+        let eth = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_ETH");
+        *eth = MAX_AMOUNT;
     }
 
     struct LockWithFeeEvent has store, drop, copy{
@@ -35,15 +83,30 @@ module polynet::wrapper_v1 {
     }
 
     // for admin
-    public entry fun init_wrapper( ctx: &mut TxContext) {
+    public entry fun init_wrapper(    clock: &Clock, ctx: &mut TxContext,) {
 
         // sender address
         let sender = tx_context::sender(ctx);
         assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
+        let start_time = clock::timestamp_ms(clock);
+        let amount_manager = AmountLimitManager{
+            id: object::new(ctx),
+            time: start_time,
+            amount_record: vec_map::empty()
+        };
+
+        vec_map::insert(&mut amount_manager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
+        vec_map::insert(&mut amount_manager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
+        vec_map::insert(&mut amount_manager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
+        vec_map::insert(&mut amount_manager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+
+
+
         transfer(WrapperStore{
             id: object::new(ctx),
             fee_collector: sender,
+            amountManager: amount_manager,
         }, sender);
     }
 
@@ -113,6 +176,8 @@ module polynet::wrapper_v1 {
     )  {
         let amount = coin::value(&fund);
         let fee_amount = coin::value(&fee);
+
+
 
         //coin::deposit<BFC>(feeCollector(), fee);
 
