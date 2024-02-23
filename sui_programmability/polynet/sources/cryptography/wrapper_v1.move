@@ -73,6 +73,10 @@ module polynet::wrapper_v1 {
         *eth = MAX_AMOUNT;
     }
 
+    entry fun resetAmountByAdmin(){
+
+    }
+
     struct LockWithFeeEvent has store, drop, copy{
         from_asset: TypeName,
         from_address: address,
