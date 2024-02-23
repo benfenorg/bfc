@@ -3,6 +3,7 @@ module polynet::wrapper_v1_test {
     use std::debug::print;
     use std::vector;
     use sui::bfc::BFC;
+    use sui::clock;
     use sui::coin;
     use polynet::bfc_eth::{new_for_test, BFC_ETH};
     use polynet::cross_chain_manager::CrossChainManager;
@@ -76,10 +77,12 @@ module polynet::wrapper_v1_test {
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
             init_mainnet_ccm(ctx);
-            init_lock_proxy_manager(ctx);
+
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
             init_wrapper(ctx);
             new_for_test(ctx, owner);
-
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -116,7 +119,9 @@ module polynet::wrapper_v1_test {
             let fee =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
 
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_as_mainnet(&mut manager, &mut lock_proxy, ctx);
+
+            let clock = clock::create_for_testing(ctx);
+            init_as_mainnet(&mut manager, &mut lock_proxy, &clock, ctx);
 
 
             let toAddress = x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899";
@@ -125,6 +130,7 @@ module polynet::wrapper_v1_test {
             test_scenario::return_shared(lock_proxy);
             test_scenario::return_to_sender(&mut scenario_val, wrapper_store);
             test_scenario::return_to_sender(&mut scenario_val, treasury);
+            clock::destroy_for_testing(clock);
         };
         test_scenario::end(scenario_val);
     }

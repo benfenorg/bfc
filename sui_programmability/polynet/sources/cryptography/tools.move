@@ -25,8 +25,8 @@ module polynet::tools {
 
 
         init_mainnet_ccm(ctx);
-        wrapper_v1::init_wrapper(clock, ctx);
-        lock_proxy::init_lock_proxy_manager(ctx);
+        wrapper_v1::init_wrapper(ctx);
+        lock_proxy::init_lock_proxy_manager(clock, ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
@@ -67,8 +67,8 @@ module polynet::tools {
         assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
         init_testnet_ccm(ctx);
-        wrapper_v1::init_wrapper(clock, ctx);
-        lock_proxy::init_lock_proxy_manager(ctx);
+        wrapper_v1::init_wrapper(ctx);
+        lock_proxy::init_lock_proxy_manager(clock, ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 

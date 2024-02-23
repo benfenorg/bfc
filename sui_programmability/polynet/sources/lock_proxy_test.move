@@ -3,6 +3,7 @@
 #[allow(unused_use)]
 module polynet::lock_proxy_test {
 
+    use sui::clock;
     use polynet::bfc_usdc::BFC_USDC;
     use sui::test_scenario;
     use polynet::utils;
@@ -20,7 +21,9 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -64,7 +67,6 @@ module polynet::lock_proxy_test {
         };
 
 
-
         test_scenario::end(scenario_val);
 
     }
@@ -78,7 +80,9 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
         test_scenario::next_tx(&mut scenario_val, owner);
         {
@@ -114,7 +118,9 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
         test_scenario::next_tx(&mut scenario_val, owner);
         {
