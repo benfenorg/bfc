@@ -3,12 +3,13 @@
 #[allow(unused_use)]
 module polynet::lock_proxy_test {
 
+    use std::ascii::string;
     use sui::clock;
     use polynet::bfc_usdc::BFC_USDC;
     use sui::test_scenario;
     use polynet::utils;
     use polynet::lock_proxy::{init_lock_proxy_manager, paused, LockProxyManager, unpause, pause, transferOwnerShip,
-        bindProxy, unbindProxy, bindAsset, unbindAsset
+        bindProxy, unbindProxy, bindAsset, unbindAsset, convert_to_short_key
     };
 
     #[test]
@@ -108,6 +109,20 @@ module polynet::lock_proxy_test {
         test_scenario::end(scenario_val);
     }
 
+    #[test]
+    fun test_convert_to_short_key(){
+        let input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_eth::BFC_ETH>");
+        assert!(convert_to_short_key(&input) == b"BFC_ETH", 1);
+
+        input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_usdt::BFC_USDT>");
+        assert!(convert_to_short_key(&input) == b"BFC_USDT", 1);
+
+        input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_usdc::BFC_USDC>");
+        assert!(convert_to_short_key(&input) == b"BFC_USDC", 1);
+
+        input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_usdc::BFC_BTC>");
+        assert!(convert_to_short_key(&input) == b"BFC_BTC", 1);
+    }
 
     #[test]
     fun test_asset(){

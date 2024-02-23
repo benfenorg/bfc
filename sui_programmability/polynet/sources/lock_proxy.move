@@ -2,9 +2,11 @@
 module polynet::lock_proxy {
     use std::ascii;
     use std::ascii::{as_bytes, string, String};
+    use std::debug::print;
     use std::vector;
     use std::option::{Self, Option};
     use std::string;
+    use std::string::length;
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
@@ -473,18 +475,6 @@ module polynet::lock_proxy {
         );
     }
 
-    public fun convert_to_short_key(name: &String) :vector<u8> {
-       if (string::index_of(&string::from_ascii(*name), &string::utf8(b"BFC_ETH")) > 0) {
-            return b"BFC_ETH"
-       } else if (string::index_of(&string::from_ascii(*name), &string::utf8(b"BFC_USDT")) > 0) {
-           return b"BFC_USDT"
-       } else if (string::index_of(&string::from_ascii(*name), &string::utf8(b"BFC_USDC")) > 0) {
-           return b"BFC_USDC"
-       } else {
-           return b"BFC_BTC"
-       }
-    }
-
     // unlock
     public fun unlock<CoinType>(lpManager: &mut LockProxyManager,
                                 treasury_ref:&mut Treasury<CoinType>,
@@ -640,5 +630,19 @@ module polynet::lock_proxy {
         (to_address, offset) = zero_copy_source::next_var_bytes(raw_data, offset);
         (_, amount, _) = zero_copy_source::next_u256(raw_data, offset);
         return (to_asset, to_address, amount)
+    }
+
+    public fun convert_to_short_key(name: &String) :vector<u8> {
+        let ascii_name = &string::from_ascii(*name);
+
+        if (string::index_of(ascii_name, &string::utf8(b"BFC_ETH")) != length(ascii_name)) {
+            return b"BFC_ETH"
+        } else if (string::index_of(ascii_name, &string::utf8(b"BFC_USDT")) != length(ascii_name)) {
+            return b"BFC_USDT"
+        } else if (string::index_of(ascii_name, &string::utf8(b"BFC_USDC")) != length(ascii_name)) {
+            return b"BFC_USDC"
+        } else {
+            return b"BFC_BTC"
+        }
     }
 }
