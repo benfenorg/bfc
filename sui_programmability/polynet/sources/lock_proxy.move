@@ -45,7 +45,7 @@ module polynet::lock_proxy {
     const ELICENSE_STORE_NOT_EXIST: u64 = 4016;
 
     const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4017;
-    const MAX_AMOUNT: u64 = 100*0000*100000000; //1 million.
+    const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
 
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
@@ -552,7 +552,7 @@ module polynet::lock_proxy {
 
     fun checkAmountResult(user_amount: u64, amountManager:&mut AmountLimitManager,  key:&vector<u8>, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
-        if(current_time-amountManager.time > ONE_DAY){
+        if(current_time - amountManager.time > ONE_DAY){
             amountManager.time = current_time;
             resetAmount(amountManager);
         };
@@ -580,8 +580,9 @@ module polynet::lock_proxy {
         *eth = MAX_AMOUNT;
     }
 
-    entry fun resetAmountByAdmin(){
-
+    entry fun resetAmountByAdmin(admin : address, amountManager : &mut AmountLimitManager){
+        assert!(utils::is_admin(admin), EINVALID_SIGNER);
+        resetAmount(amountManager);
     }
 
     public entry fun relay_unlock_tx<CoinType>(
