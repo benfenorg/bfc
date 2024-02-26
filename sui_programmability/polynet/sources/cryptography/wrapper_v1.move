@@ -11,7 +11,6 @@ module polynet::wrapper_v1 {
     use sui::object;
     use sui::object::UID;
     use sui::transfer;
-    use sui::transfer::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
 

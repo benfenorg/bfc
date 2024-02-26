@@ -9,7 +9,7 @@ module polynet::lock_proxy_test {
     use sui::test_scenario;
     use polynet::utils;
     use polynet::lock_proxy::{init_lock_proxy_manager, paused, LockProxyManager, unpause, pause, transferOwnerShip,
-        bindProxy, unbindProxy, bindAsset, unbindAsset, convert_to_short_key
+        bindProxy, unbindProxy, bindAsset, unbindAsset, convert_to_short_key, checkAmountResult
     };
 
     #[test]
@@ -71,6 +71,40 @@ module polynet::lock_proxy_test {
         test_scenario::end(scenario_val);
 
     }
+
+    #[test]
+    fun test_check_amount_result() {
+        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        assert!(utils::is_admin(owner), 4001);
+
+        let scenario_val = test_scenario::begin(owner);
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let manager = test_scenario::take_shared<LockProxyManager>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            let clock = clock::create_for_testing(ctx);
+
+
+            let result = checkAmountResult(10000000000000, &mut manager, &b"BFC_USDT", &clock);
+            assert!(result, 4018);
+
+            let result = checkAmountResult(100000000000000, &mut manager, &b"BFC_USDT", &clock);
+            assert!(result == false, 4018);
+
+            test_scenario::return_shared(manager);
+            clock::destroy_for_testing(clock);
+        };
+        test_scenario::end(scenario_val);
+    }
+
 
     #[test]
     fun test_bind_proxy() {

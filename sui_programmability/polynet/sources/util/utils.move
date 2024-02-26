@@ -2,7 +2,6 @@ module polynet::utils {
     use std::vector;
     use std::string::{String, Self};
     use sui::bcs;
-    use sui::coin::value;
     use sui::table::{Table, Self};
 
     const EUNSUPPORT_GENERIC_TYPE: u64 = 4001;

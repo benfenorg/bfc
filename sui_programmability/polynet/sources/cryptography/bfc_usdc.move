@@ -49,7 +49,7 @@ module polynet::bfc_usdc {
 
         lock_proxy::deposit<T>(&mut treasury, initial_lock);
 
-        lock_proxy::lock_proxy_transfer(treasury, admin);
+        lock_proxy::lock_proxy_transfer(treasury);
         transfer::public_transfer(cap, tx_context::sender(ctx));
 
     }
