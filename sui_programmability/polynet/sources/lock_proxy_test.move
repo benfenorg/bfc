@@ -93,10 +93,10 @@ module polynet::lock_proxy_test {
             let clock = clock::create_for_testing(ctx);
 
 
-            let result = checkAmountResult(10000000000000, &mut manager, &b"BFC_USDT", &clock);
+            let result = checkAmountResult(10000000000000, &mut manager, &b"BFC_USDT", false, &clock);
             assert!(result, 4018);
 
-            let result = checkAmountResult(100000000000000, &mut manager, &b"BFC_USDT", &clock);
+            let result = checkAmountResult(100000000000000, &mut manager, &b"BFC_USDT", false, &clock);
             assert!(result == false, 4018);
 
             test_scenario::return_shared(manager);
