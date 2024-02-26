@@ -48,6 +48,9 @@ module polynet::lock_proxy {
     const ELICENSE_STORE_NOT_EXIST: u64 = 4017;
 
     const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4018;
+
+
+
     const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
 
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
@@ -582,6 +585,8 @@ module polynet::lock_proxy {
         clock:&Clock,
         ctx: &mut TxContext
     )  {
+
+
         // borrow license
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);

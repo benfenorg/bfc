@@ -5,7 +5,7 @@ module polynet::wrapper_v1 {
     use std::type_name::{Self, TypeName};
     use sui::clock::Clock;
     use polynet::utils;
-    use polynet::lock_proxy::{Treasury, LockProxyManager};
+    use polynet::lock_proxy::{Treasury, LockProxyManager, paused};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
@@ -19,6 +19,7 @@ module polynet::wrapper_v1 {
 
     const DEPRECATED: u64 = 4001;
     const EINVALID_ADMIN: u64 = 4015;
+    const EINVALID_SYSTEM_IS_PAUSED: u64 = 4019;
 
 
 
@@ -83,6 +84,10 @@ module polynet::wrapper_v1 {
         clock: &Clock,
         ctx: &mut TxContext
     ) {
+        //check system pause
+        let pause_flag = paused(lpManager);
+        assert!(!pause_flag, EINVALID_SYSTEM_IS_PAUSED);
+
         lock_proxy::relay_unlock_tx<CoinType>(
             ccManager, lpManager,treasury_ref,
             proof, rawHeader, headerProof, curRawHeader, headerSig, clock, ctx);
@@ -101,6 +106,10 @@ module polynet::wrapper_v1 {
         toAddress: vector<u8>,
         ctx: &mut TxContext
     )  {
+
+        //check system pause
+        let pause_flag = paused(lpManager);
+        assert!(!pause_flag, EINVALID_SYSTEM_IS_PAUSED);
 
         //any user can lock bfc assets and transfer to evm
 
