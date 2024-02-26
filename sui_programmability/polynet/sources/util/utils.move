@@ -2,6 +2,7 @@ module polynet::utils {
     use std::vector;
     use std::string::{String, Self};
     use sui::bcs;
+    use sui::coin::value;
     use sui::table::{Table, Self};
 
     const EUNSUPPORT_GENERIC_TYPE: u64 = 4001;
@@ -16,12 +17,17 @@ module polynet::utils {
         @0xfd8669e7e9ecb8d9b893dc6b0ad6727aa28c80dd1c5a34809d20910c5ffa7525,
     ];
 
+
     public fun is_admin(a: address): bool {
         let result = vector::contains(&ADMINS, &a);
         return result
     }
+    const ASSETS_ADMIN:vector<address> = vector[@0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,];
 
-
+    public fun is_assets_admin(a: address): bool {
+        let result = vector::contains(&ASSETS_ADMIN, &a);
+        return result
+    }
 
     public fun get_default_admin_address(): address {
         return *vector::borrow(&ADMINS, 0)

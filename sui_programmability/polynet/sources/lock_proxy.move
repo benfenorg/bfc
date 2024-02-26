@@ -43,10 +43,11 @@ module polynet::lock_proxy {
     const EINVALID_METHOD: u64 = 4012;
     const ELICENSE_STORE_ALREADY_EXIST: u64 = 4013;
     const EINVALID_LICENSE_INFO: u64 = 4014;
-    const EINVALID_SIGNER: u64 = 4015;
-    const ELICENSE_STORE_NOT_EXIST: u64 = 4016;
+    const EINVALID_ADMIN_SIGNER: u64 = 4015;
+    const EINVALID_ASSETS_ADMIN_SIGNER: u64 = 4016;
+    const ELICENSE_STORE_NOT_EXIST: u64 = 4017;
 
-    const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4017;
+    const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4018;
     const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
 
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
@@ -116,7 +117,7 @@ module polynet::lock_proxy {
         // sender address
         let sender = tx_context::sender(ctx);
 
-        assert!(utils::is_admin(sender), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         let lockproxystore = LockProxyStore{
             id: object::new(ctx),
@@ -330,9 +331,6 @@ module polynet::lock_proxy {
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
     public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
 
-        //assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
-        //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
-
 
         let treasury = Treasury<CoinType>{
             id: object::new(ctx),
@@ -362,9 +360,9 @@ module polynet::lock_proxy {
 
     //todo. need more strick root right checking. admin has too many accounts.
     fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
-        // sender address
+        // sender address: only assets admin can withdraw
         let sender = tx_context::sender(ctx);
-        assert!(utils::is_admin(sender), EINVALID_SIGNER);
+        assert!(utils::is_assets_admin(sender), EINVALID_ASSETS_ADMIN_SIGNER);
 
         return coin::split(&mut treasury_ref.coin, amount, ctx)
     }
@@ -393,7 +391,7 @@ module polynet::lock_proxy {
     }
 
     public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
-        assert!(utils::is_admin(admin), EINVALID_SIGNER);
+        assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
@@ -568,7 +566,7 @@ module polynet::lock_proxy {
     }
 
     entry fun resetAmountByAdmin(admin : address, amountManager : &mut AmountLimitManager){
-        assert!(utils::is_admin(admin), EINVALID_SIGNER);
+        assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
         resetAmount(amountManager);
     }
 
