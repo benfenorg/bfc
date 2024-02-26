@@ -847,7 +847,7 @@ pub async fn genesis_private(
         validator_private.push(tmp);
     }
     //todo, we can chang this validator_info to the info we generate from genesis_ceremony committee
-    let mut network_config = if validator_private.len() > 0 {
+    let mut network_config = if !validator_private.is_empty() {
 
         info!("build network_config with validators.....**************");
         builder

@@ -1120,7 +1120,7 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
                                version,
                                digest,
                            }) => {
-            write!(writer, "SuiCallArg Object: {} ", objects_id_to_bfc_address(object_id.clone()))?;
+            write!(writer, "SuiCallArg Object: {} ", objects_id_to_bfc_address(object_id))?;
             write!(writer, "version: {:?} ", version)?;
             write!(writer, "digest: {:?} ", digest)?;
         }
@@ -1129,7 +1129,7 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
                                initial_shared_version,
                                mutable,
                            }) => {
-            write!(writer, "SuiCallArg Object: {} ", objects_id_to_bfc_address(object_id.clone()))?;
+            write!(writer, "SuiCallArg Object: {} ", objects_id_to_bfc_address(object_id))?;
             write!(writer, "initial_shared_version: {:?} ", initial_shared_version)?;
             write!(writer, "mutable: {:?} ", mutable)?;
         }
@@ -1140,14 +1140,14 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
             match value_type {
                 Some(TypeTag::Address) => {
                     //todo,
-                    if json_value.as_str() != None {
+                    if json_value.as_str().is_some() {
                         //
                         // write!(writer, "value: {:?} ", json_value)?;
                         let address = json_value.as_str().unwrap();
                         if address.starts_with("bfc") || address.starts_with("BFC"){
                             write!(writer, "value: {} ", address)?;
                         }else{
-                            let sui_address = SuiAddress::from_str(&json_value.as_str().unwrap()).unwrap();
+                            let sui_address = SuiAddress::from_str(json_value.as_str().unwrap()).unwrap();
                             let bfc_address = sui_address_to_bfc_address(sui_address);
                             write!(writer, "value: {} ", bfc_address)?;
                         }

@@ -62,6 +62,7 @@ impl TryFrom<&[u8]> for BfcAddress {
 pub mod bfc_address_util {
     //use std::collections::hash_map::DefaultHasher;
     use sha2::{Digest, Sha256};
+    use tracing::warn;
     use crate::base_types::{ObjectID, SuiAddress};
 
     pub fn sha256_string(input: &str) -> String {
@@ -72,7 +73,7 @@ pub mod bfc_address_util {
     }
 
     pub fn convert_to_evm_address(ob_address: String) -> String {
-        if ob_address.len() == 0 {
+        if ob_address.is_empty() {
             return String::from("");
         }
 
@@ -83,7 +84,7 @@ pub mod bfc_address_util {
 
         //not a valid address
         if address.len() <= 2 {
-            println!("warning: invalid address: {}", ob_address);
+            warn!("warning: invalid address: {}", ob_address);
             return String::from("");
         }
 
@@ -95,7 +96,7 @@ pub mod bfc_address_util {
         return if verify_code == check_sum {
             address
         } else {
-            println!("verify_code: {}, check_sum: {}", verify_code, check_sum);
+            warn!("verify_code: {}, check_sum: {}", verify_code, check_sum);
             String::from("")
         };
 
@@ -112,7 +113,7 @@ pub mod bfc_address_util {
         address.push_str(&evm_address[2..]);
         address.push_str(check_sum);
 
-        return address;
+        address
     }
 
     pub fn objects_id_to_bfc_address(object_id: ObjectID) ->String{

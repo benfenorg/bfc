@@ -166,7 +166,7 @@ impl BFCSystemState {
 }
 impl BfcSystemStateTrait for BfcSystemStateInnerV1 {
     fn round(&self) -> u64{
-        return 0;
+        0
     }
 
     fn bfc_round_safe_mode(&mut self){

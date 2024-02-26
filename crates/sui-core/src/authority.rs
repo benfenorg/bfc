@@ -3913,15 +3913,13 @@ impl AuthorityState {
 
         if cfg!(feature="bfc_skip_dao_update")  {
             info!("===========msim test skip ========");
+        } else if  proposal_result == false{
+            info!("=========skip system package update, proposal fail=======",);
+            next_epoch_system_packages.clear();
+            next_epoch_protocol_version = epoch_store.protocol_version();
         } else {
-            if proposal_result == false {
-                info!("=========skip system package update, proposal fail=======",);
-                next_epoch_system_packages.clear();
-                next_epoch_protocol_version = epoch_store.protocol_version();
-            } else{
-                info!("======= system package update, proposal success=======");
-            };
-        }
+            info!("======= system package update, proposal success=======");
+        };
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version

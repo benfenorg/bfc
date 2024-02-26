@@ -94,7 +94,7 @@ impl TransactionBuilder {
                     return Ok(obj.object_ref());
                 }
             }
-            Err(anyhow!("Cannot find gas coin for signer address [{}] with amount sufficient for the required gas amount [{budget}].", sui_address_to_bfc_address(signer.clone())))
+            Err(anyhow!("Cannot find gas coin for signer address [{}] with amount sufficient for the required gas amount [{budget}].", sui_address_to_bfc_address(signer)))
         }
     }
 

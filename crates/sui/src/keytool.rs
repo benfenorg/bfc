@@ -891,7 +891,7 @@ impl Display for CommandOutput {
                     .to_string();
 
                 let mut builder = Builder::default();
-                let bfc_address = sui_address_to_bfc_address(data.sui_address.clone());
+                let bfc_address = sui_address_to_bfc_address(data.sui_address);
                 builder
                     .set_header([
                         "suiSignature",

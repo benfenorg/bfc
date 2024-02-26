@@ -118,5 +118,5 @@ fn is_bfc_coin(tt: &TypeTag) -> bool {
             && st.module == BFC_MODULE_NAME.into()
             && st.name == BFC_STRUCT_NAME.into();
     }
-    return false;
+    false
 }

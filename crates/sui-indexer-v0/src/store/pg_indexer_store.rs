@@ -1418,7 +1418,7 @@ impl PgIndexerStore {
                 votes.push(v);
             }
         }
-        if votes.len() > 0 {
+        if !votes.is_empty() {
             transactional_blocking!(&self.blocking_cp, |conn| {
                 diesel::insert_into(dao_votes::table)
                     .values(&votes)

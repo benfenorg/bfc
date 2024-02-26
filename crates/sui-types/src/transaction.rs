@@ -1659,7 +1659,7 @@ impl TransactionDataAPI for TransactionDataV1 {
         Ok(inputs)
     }
     fn kind_input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
-        Ok(self.kind.input_objects()?)
+        self.kind.input_objects()
     }
 
     fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
