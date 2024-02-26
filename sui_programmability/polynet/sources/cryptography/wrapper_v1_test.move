@@ -12,7 +12,6 @@ module polynet::wrapper_v1_test {
     use polynet::wrapper_v1::{init_wrapper, feeCollector, WrapperStore, setFeeCollector, lock_and_pay_fee_with_fund};
     use polynet::utils;
     use sui::test_scenario;
-    use sui::test_scenario::return_to_sender;
 
     #[test]
     fun test_wrapper_init(){

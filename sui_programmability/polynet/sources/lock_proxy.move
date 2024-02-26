@@ -344,7 +344,7 @@ module polynet::lock_proxy {
 
     }
 
-    public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>,admin: address) {
+    public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>) {
         transfer::share_object(treasury)
     }
 
@@ -503,7 +503,6 @@ module polynet::lock_proxy {
         //todo, decimals
         let amount = from_target_chain_amount(from_chain_amount, decimals, decimals);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
-        assert!(checkAmountResult(amount,&mut lpManager.amountManager, &short_name, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         //todo, decimals
         //type_name::get<Coin<CoinType>>()
 
@@ -514,6 +513,7 @@ module polynet::lock_proxy {
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
+        assert!(checkAmountResult(amount,lpManager, &short_name, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
         //todo need transfer.
@@ -538,13 +538,14 @@ module polynet::lock_proxy {
         amount_record: VecMap<vector<u8>, u64>,
     }
 
-    fun checkAmountResult(user_amount: u64, amountManager:&mut AmountLimitManager,  key:&vector<u8>, clock:&Clock):bool{
+    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, clock:&Clock):bool{
+
         let current_time = clock::timestamp_ms(clock);
-        if(current_time - amountManager.time > ONE_DAY){
-            amountManager.time = current_time;
-            resetAmount(amountManager);
+        if(current_time -  lockProxyManager.amountManager.time > ONE_DAY){
+            lockProxyManager.amountManager.time = current_time;
+            resetAmount(&mut lockProxyManager.amountManager);
         };
-        let amount = vec_map::get_mut(&mut amountManager.amount_record, key);
+        let amount = vec_map::get_mut(&mut lockProxyManager.amountManager.amount_record, key);
         if(user_amount > *amount){
             return false
         }else{
