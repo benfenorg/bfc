@@ -454,7 +454,7 @@ module polynet::lock_proxy {
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
         assert!(checkAmountResult(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
-
+        
         let license_ref = option::borrow(&lpManager.license_store.license);
 
         // get target proxy/asset
@@ -554,10 +554,10 @@ module polynet::lock_proxy {
         amount_record: VecMap<vector<u8>, u64>,
     }
 
-    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
+    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, is_lock_direction: bool, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
         let amountLimit : &mut AmountLimitManager;
-        if (flag == true) {
+        if (is_lock_direction == true) {
             amountLimit = &mut lockProxyManager.amountLockManager;
         } else {
             amountLimit = &mut lockProxyManager.amountUnlockManager;
