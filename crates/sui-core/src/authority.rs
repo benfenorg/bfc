@@ -4043,7 +4043,7 @@ impl AuthorityState {
         let epoch = epoch_store.epoch();
 
         let tx = VerifiedTransaction::new_change_bfc_round(
-            epoch,
+            checkpoint,
         );
 
         let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
@@ -4063,9 +4063,9 @@ impl AuthorityState {
             .is_tx_already_executed(tx_digest)
             .expect("read cannot fail")
         {
-            warn!("change epoch tx has already been executed via state sync");
+            warn!("bfc round has already been executed via state sync： {:?}", tx_digest);
             return Err(anyhow::anyhow!(
-                "change epoch tx has already been executed via state sync"
+                "bfc round tx has already been executed via state sync"
             ));
         }
 
