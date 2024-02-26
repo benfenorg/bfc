@@ -112,7 +112,7 @@ module polynet::wrapper_v1_test {
             let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
             let lock_proxy = test_scenario::take_shared<LockProxyManager>(&mut scenario_val);
             let wrapper_store = test_scenario::take_shared<WrapperStore>(&mut scenario_val );
-            let treasury =  test_scenario::take_from_sender<Treasury<BFC_ETH>>(&mut scenario_val );
+            let treasury =  test_scenario::take_shared<Treasury<BFC_ETH>>(&mut scenario_val );
            // let fund  = test_scenario::take_from_sender<Coin<BFC_BTC>>(&mut scenario_val );
             print(&treasury);
             let coin =  coin::mint_for_testing<BFC_ETH>(10000000000, test_scenario::ctx(&mut scenario_val));
@@ -129,7 +129,7 @@ module polynet::wrapper_v1_test {
             test_scenario::return_shared(manager);
             test_scenario::return_shared(lock_proxy);
             test_scenario::return_shared(wrapper_store);
-            test_scenario::return_to_sender(&mut scenario_val, treasury);
+            test_scenario::return_shared( treasury);
             clock::destroy_for_testing(clock);
         };
         test_scenario::end(scenario_val);

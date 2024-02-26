@@ -344,7 +344,7 @@ module polynet::lock_proxy {
     }
 
     public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>,admin: address) {
-        transfer::transfer(treasury, admin)
+        transfer::share_object(treasury)
     }
 
     public fun is_treasury_initialzed<CoinType>(): bool {
@@ -357,19 +357,16 @@ module polynet::lock_proxy {
     }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
-        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
-        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(POLY_BRIDGE);
-
-
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
     }
 
+    //todo. need more strick root right checking. admin has too many accounts.
     fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
-        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
-        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(POLY_BRIDGE);
+        // sender address
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_admin(sender), EINVALID_SIGNER);
 
         return coin::split(&mut treasury_ref.coin, amount, ctx)
-        //return coin::extract<CoinType>(&mut treasury_ref.coin, amount)
     }
 
 
