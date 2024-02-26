@@ -86,6 +86,7 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `active_validator_addresses`](#0x3_sui_system_active_validator_addresses)
 -  [Function `advance_epoch`](#0x3_sui_system_advance_epoch)
 -  [Function `get_stable_rate_from_bfc`](#0x3_sui_system_get_stable_rate_from_bfc)
+-  [Function `bfc_round`](#0x3_sui_system_bfc_round)
 -  [Function `load_system_state`](#0x3_sui_system_load_system_state)
 -  [Function `load_system_state_mut`](#0x3_sui_system_load_system_state_mut)
 -  [Function `load_inner_maybe_upgrade`](#0x3_sui_system_load_inner_maybe_upgrade)
@@ -1607,6 +1608,35 @@ Getter returning addresses of the currently active validators.
 
 <pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID) : VecMap&lt;<a href="_String">ascii::String</a>, u64&gt; {
    <a href="../../../.././build/BfcSystem/docs/bfc_system.md#0xc8_bfc_system_get_exchange_rate">bfc_system::get_exchange_rate</a>(id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_bfc_round"></a>
+
+## Function `bfc_round`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_bfc_round">bfc_round</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, timestamp_ms: u64, round: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_bfc_round">bfc_round</a>(
+    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
+    timestamp_ms: u64,
+    round: u64,
+    ctx: &<b>mut</b> TxContext)
+{
+    <a href="../../../.././build/BfcSystem/docs/bfc_system.md#0xc8_bfc_system_round">bfc_system::round</a>(&<b>mut</b> self.bfc_system_id, timestamp_ms, round, ctx)
 }
 </code></pre>
 

@@ -678,8 +678,8 @@ mod checked {
         info!("Call arguments to bfc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.to_owned(),
             BFC_ROUND_FUNCTION_NAME.to_owned(),
             vec![],
             arguments,

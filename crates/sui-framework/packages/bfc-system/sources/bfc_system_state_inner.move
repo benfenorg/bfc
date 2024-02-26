@@ -367,7 +367,7 @@ module bfc_system::bfc_system_state_inner {
 
     public(friend) fun rebalance(
         self: &mut BfcSystemStateInner,
-        clock: &Clock,
+        timestamp_ms: u64,
         ctx: &mut TxContext,
     ) {
         let amount = treasury::next_epoch_bfc_required(&self.treasury);
@@ -380,7 +380,7 @@ module bfc_system::bfc_system_state_inner {
             };
         };
         let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
-        treasury::rebalance(&mut self.treasury, pool_balance, clock, ctx);
+        treasury::rebalance(&mut self.treasury, pool_balance, timestamp_ms, ctx);
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 

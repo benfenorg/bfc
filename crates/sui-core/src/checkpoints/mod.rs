@@ -1209,8 +1209,8 @@ async fn augment_bfc_round(
             .state
             .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
             .await?;
-    error!("obc round effects hash is {:?},effects hash is {:?}",effects.transaction_digest(),effects.digest());
-    checkpoint_effects.push(effects);
+        error!("bfc round effects is : {:?} {:?}",effects.digest(), effects);
+        checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(())
     }

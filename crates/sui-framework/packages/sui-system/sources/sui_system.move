@@ -668,8 +668,18 @@ module sui_system::sui_system {
         storage_rebate
     }
 
+    #[allow(unused_function)]
     fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
        bfc_system::get_exchange_rate(id)
+    }
+
+    public fun bfc_round(
+        self: &mut SuiSystemState,
+        timestamp_ms: u64,
+        round: u64,
+        ctx: &mut TxContext)
+    {
+        bfc_system::round(&mut self.bfc_system_id, timestamp_ms, round, ctx)
     }
 
     fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {

@@ -11,6 +11,7 @@
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_unstake_manager_key)
 -  [Function `create`](#0xc8_bfc_system_create)
 -  [Function `change_round`](#0xc8_bfc_system_change_round)
+-  [Function `round`](#0xc8_bfc_system_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
 -  [Function `inner_stablecoin_to_bfc`](#0xc8_bfc_system_inner_stablecoin_to_bfc)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_request_gas_balance)
@@ -294,13 +295,47 @@
 
 </details>
 
+<a name="0xc8_bfc_system_round"></a>
+
+## Function `round`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_round">round</a>(id: &<b>mut</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a>, timestamp_ms: u64, round: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_round">round</a>(
+    id: &<b>mut</b> UID,
+    timestamp_ms: u64,
+    round: u64,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
+    // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, timestamp_ms, ctx);
+
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(inner_state, timestamp_ms);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_bfc_round"></a>
 
 ## Function `bfc_round`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, round: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, timestamp_ms: u64, round: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -311,16 +346,16 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
+    timestamp_ms: u64,
     round: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
     // X-<a href="treasury.md#0xc8_treasury">treasury</a> rebalance
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, timestamp_ms, ctx);
 
-    <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>));
+    <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper, timestamp_ms);
 }
 </code></pre>
 
@@ -350,7 +385,7 @@
     _ctx: &<b>mut</b> TxContext,
 ): Balance&lt;BFC&gt;
 {
-    /// wouldn't <b>return</b> remain <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>&lt;StableCoinType&gt; <b>to</b> system
+    // wouldn't <b>return</b> remain <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>&lt;StableCoinType&gt; <b>to</b> system
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(_self);
     <b>let</b> bfc_balance = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>(inner_state, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(_balance, _ctx), expect,_ctx);
     bfc_balance
@@ -395,7 +430,7 @@
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_update_round">update_round</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_update_round">update_round</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, timestamp_ms: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -406,10 +441,10 @@
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_update_round">update_round</a>(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-	<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
+    timestamp_ms: u64,
     ctx: &<b>mut</b> TxContext,
 ){
-    <a href="bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(wrapper,  <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>,200, ctx);
+    <a href="bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(wrapper, timestamp_ms, 200, ctx);
 }
 </code></pre>
 

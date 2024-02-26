@@ -869,15 +869,8 @@ impl TransactionKind {
     pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
-                let objs = vec![SharedInputObject{
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },SharedInputObject::SUI_SYSTEM_OBJ,SharedInputObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                }];
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,];
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
@@ -891,16 +884,9 @@ impl TransactionKind {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
             Self::ChangeBfcRound(_) => {
-                let objs = vec![SharedInputObject{
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },SharedInputObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: false,
-                }];
-                Either::Right(Either::Right(objs.into_iter()))
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,];
+                Either::Left(Either::Left(objs.into_iter()))
             }
             _ => Either::Right(Either::Right(vec![].into_iter())),
         }
@@ -928,10 +914,6 @@ impl TransactionKind {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
                 }]
             }
             Self::Genesis(_) => {
@@ -946,16 +928,12 @@ impl TransactionKind {
             }
             Self::ChangeBfcRound(_)=>{
                 vec![InputObjectKind::SharedMoveObject {
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }

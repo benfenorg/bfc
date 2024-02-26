@@ -125,18 +125,33 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
     }
 
+    public fun round(
+        id: &mut UID,
+        timestamp_ms: u64,
+        round: u64,
+        ctx: &mut TxContext
+    ) {
+        let inner_state = load_bfc_system_state_mut(id);
+        bfc_system_state_inner::update_round(inner_state, round);
+        // X-treasury rebalance
+        bfc_system_state_inner::rebalance(inner_state, timestamp_ms, ctx);
+
+        bfc_system_state_inner::judge_proposal_state(inner_state, timestamp_ms);
+    }
+
+
     public fun bfc_round(
         wrapper: &mut BfcSystemState,
-        clock: &Clock,
+        timestamp_ms: u64,
         round: u64,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
         // X-treasury rebalance
-        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        bfc_system_state_inner::rebalance(inner_state, timestamp_ms, ctx);
 
-        judge_proposal_state(wrapper, clock::timestamp_ms(clock));
+        judge_proposal_state(wrapper, timestamp_ms);
     }
 
     public fun inner_stablecoin_to_bfc<StableCoinType>(
@@ -146,7 +161,7 @@ module bfc_system::bfc_system {
         _ctx: &mut TxContext,
     ): Balance<BFC>
     {
-        /// wouldn't return remain balance<StableCoinType> to system
+        // wouldn't return remain balance<StableCoinType> to system
         let inner_state = load_system_state_mut(_self);
         let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), expect,_ctx);
         bfc_balance
@@ -163,10 +178,10 @@ module bfc_system::bfc_system {
     //todo close
     public entry fun update_round(
         wrapper: &mut BfcSystemState,
-	clock: &Clock, 
+        timestamp_ms: u64,
         ctx: &mut TxContext,
     ){
-        bfc_round(wrapper,  clock,200, ctx);
+        bfc_round(wrapper, timestamp_ms, 200, ctx);
     }
 
     fun load_system_state(

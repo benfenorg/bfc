@@ -35,7 +35,7 @@ mod checked {
     use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-    use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
+    use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME, TIMESTAMP_FUNCTION_NAME};
     use sui_types::committee::EpochId;
     use sui_types::effects::TransactionEffects;
     use sui_types::error::{ExecutionError, ExecutionErrorKind};
@@ -672,12 +672,21 @@ mod checked {
 
     pub fn construct_bfc_round_pt(round_id: u64) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
-
-        let mut arguments = vec![];
-
+        // let clock = builder.input(CallArg::CLOCK_IMM).unwrap();
+        // let timestamp = builder.programmable_move_call(
+        //     SUI_FRAMEWORK_PACKAGE_ID,
+        //     CLOCK_MODULE_NAME.to_owned(),
+        //     TIMESTAMP_FUNCTION_NAME.to_owned(),
+        //     vec![],
+        //     vec![clock],
+        // );
+        let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
+        let sui_system = builder.input(CallArg::SUI_SYSTEM_MUT).unwrap();
+        let mut arguments = vec![sui_system];
         let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::CLOCK_IMM,
+            // CallArg::SUI_SYSTEM_MUT,
+            // timestamp.into(),
+            CallArg::Pure(bcs::to_bytes(&timestamp).unwrap()),
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
         ] .into_iter()
             .map(|a| builder.input(a))
@@ -688,8 +697,8 @@ mod checked {
         info!("Call arguments to bfc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.to_owned(),
             BFC_ROUND_FUNCTION_NAME.to_owned(),
             vec![],
             arguments,
