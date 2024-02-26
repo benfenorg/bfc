@@ -40,7 +40,7 @@ use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
 use tracing::trace;
-use crate::gas::GasCostSummary;
+use crate::gas::GasCostSummaryAdjusted;
 
 // TODO: The following constants appear to be very large.
 // We should revisit them.
@@ -156,7 +156,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummary)>,
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
@@ -2029,7 +2029,7 @@ impl VerifiedTransaction {
         bfc_computation_charge: u64,
         bfc_storage_rebate: u64,
         bfc_non_refundable_storage_fee: u64,
-        stable_gas_summary_map:HashMap<TypeTag,GasCostSummary>,
+        stable_gas_summary_map:HashMap<TypeTag,GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {

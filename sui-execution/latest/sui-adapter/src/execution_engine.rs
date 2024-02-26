@@ -709,7 +709,7 @@ mod checked {
             let charge_arg = builder
                 .input(CallArg::Pure(
                     bcs::to_bytes(&(calculate_bfc_to_stable_cost_with_base_point(
-                        calculate_reward_rate(gas_cost_summary.computation_cost, reward_rate) + gas_cost_summary.storage_cost,rate, gas_cost_summary.base_point))).unwrap(),
+                        calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost,rate, gas_cost_summary.gas_by_bfc.base_point))).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -724,7 +724,7 @@ mod checked {
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.computation_cost, reward_rate) + gas_cost_summary.storage_cost)).unwrap(),
+                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -828,10 +828,10 @@ mod checked {
         let mut computation_charge =0u64;
 
         for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
-            storage_rebate += gas_cost_summary.storage_rebate;
-            non_refundable_storage_fee += gas_cost_summary.non_refundable_storage_fee;
-            computation_charge += gas_cost_summary.computation_cost-calculate_reward_rate(gas_cost_summary.computation_cost, reward_rate);
-            storage_charge += gas_cost_summary.storage_cost;
+            storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
+            non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
+            computation_charge += gas_cost_summary.gas_by_bfc.computation_cost-calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+            storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
         }
 
         let params = ChangeObcRoundParams {

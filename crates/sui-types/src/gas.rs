@@ -149,6 +149,14 @@ pub mod checked {
         pub non_refundable_storage_fee: u64,
     }
 
+    #[serde_as]
+    #[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
+    #[serde(rename_all = "camelCase")]
+    pub struct GasCostSummaryAdjusted{
+        pub gas_by_bfc:GasCostSummary,
+        pub gas_by_stable: GasCostSummary,
+    }
+
     impl GasCostSummary {
         pub fn new(
             computation_cost: u64,
