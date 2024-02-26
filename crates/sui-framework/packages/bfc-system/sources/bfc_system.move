@@ -120,9 +120,9 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
-    public entry fun change_round( wrapper: &mut BfcSystemState, round: u64) {
+    public entry fun change_round( wrapper: &mut BfcSystemState, round: u64,ctx: &mut TxContext) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round(inner_state, round);
+        bfc_system_state_inner::update_round(inner_state, round,round,ctx);
     }
 
     public fun round(
@@ -132,13 +132,8 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext
     ) {
         let inner_state = load_bfc_system_state_mut(id);
-        bfc_system_state_inner::update_round(inner_state, round);
-        // X-treasury rebalance
-        bfc_system_state_inner::rebalance(inner_state, timestamp_ms, ctx);
-
-        bfc_system_state_inner::judge_proposal_state(inner_state, timestamp_ms);
+        bfc_system_state_inner::update_round(inner_state, round,timestamp_ms,ctx);
     }
-
 
     public fun bfc_round(
         wrapper: &mut BfcSystemState,
@@ -147,7 +142,7 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round(inner_state, round);
+        bfc_system_state_inner::update_round(inner_state, round,timestamp_ms,ctx);
         // X-treasury rebalance
         bfc_system_state_inner::rebalance(inner_state, timestamp_ms, ctx);
 

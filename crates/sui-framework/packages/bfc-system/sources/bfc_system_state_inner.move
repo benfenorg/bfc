@@ -156,8 +156,17 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun update_round(
         inner: &mut BfcSystemStateInner,
         round: u64,
+        timestamp_ms: u64,
+        ctx: &mut TxContext,
     ) {
+        if (round - inner.round < 10000) {
+            return;
+        };
         inner.round = round;
+        rebalance(inner, timestamp_ms, ctx);
+
+        judge_proposal_state(inner, timestamp_ms);
+
     }
 
     ///Request withdraw stable coin.

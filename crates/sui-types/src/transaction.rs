@@ -874,11 +874,17 @@ impl TransactionKind {
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
-                Either::Left(Either::Right(iter::once(SharedInputObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                })))
+                // Either::Left(Either::Right(iter::once(SharedInputObject {
+                //     id: SUI_CLOCK_OBJECT_ID,
+                //     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                //     mutable: true,
+                // })))
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,SharedInputObject {
+                id: SUI_CLOCK_OBJECT_ID,
+                initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                mutable: true}];
+                Either::Left(Either::Right(objs.into_iter()))
             }
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
@@ -923,6 +929,14 @@ impl TransactionKind {
                 vec![InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }

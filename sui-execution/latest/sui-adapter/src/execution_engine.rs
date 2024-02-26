@@ -1020,6 +1020,30 @@ mod checked {
                 res.is_ok(),
                 "Unable to generate consensus_commit_prologue transaction!"
             );
+
+            let sui_system = builder.input(CallArg::SUI_SYSTEM_MUT).unwrap();
+            let mut arguments = vec![sui_system];
+            let args = vec![
+                // CallArg::SUI_SYSTEM_MUT,
+                // timestamp.into(),
+                CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
+            ] .into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
+
+            arguments.append(&mut args.unwrap());
+
+            info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
+
+            builder.programmable_move_call(
+                SUI_SYSTEM_PACKAGE_ID,
+                SUI_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(
