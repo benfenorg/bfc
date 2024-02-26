@@ -50,10 +50,10 @@ module polynet::wrapper_v1 {
         let sender = tx_context::sender(ctx);
         assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
-        transfer(WrapperStore{
+        transfer::share_object(WrapperStore{
             id: object::new(ctx),
             fee_collector: sender,
-        }, sender);
+        });
     }
 
     public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, new_fee_collector: address, ctx: &mut TxContext) {
