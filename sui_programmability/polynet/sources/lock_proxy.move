@@ -554,10 +554,10 @@ module polynet::lock_proxy {
         amount_record: VecMap<vector<u8>, u64>,
     }
 
-    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, is_lock_direction: bool, clock:&Clock):bool{
+    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
         let amountLimit : &mut AmountLimitManager;
-        if (is_lock_direction == true) {
+        if (flag == true) {
             amountLimit = &mut lockProxyManager.amountLockManager;
         } else {
             amountLimit = &mut lockProxyManager.amountUnlockManager;
