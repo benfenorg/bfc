@@ -72,6 +72,11 @@ module polynet::tools {
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
+
+    public entry fun add_test(){
+
+    }
+
     public entry fun init_testnet_ccm(ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);
