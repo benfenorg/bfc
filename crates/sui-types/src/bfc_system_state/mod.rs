@@ -131,7 +131,8 @@ pub trait BfcSystemStateTrait {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct BfcSystemStateInnerV1 {
-    pub round: u64,
+    pub round_timestamp_ms: u64,
+    pub round_duration_ms: u64,
     pub stable_base_points: u64,
     pub reward_rate: u64,
     pub exchange_pool: ExchangePoolV1,

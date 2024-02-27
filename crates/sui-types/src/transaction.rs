@@ -33,7 +33,6 @@ use std::fmt::{Debug, Display, Formatter};
 use std::{
     collections::{BTreeMap, BTreeSet, HashSet},
     hash::Hash,
-    iter,
 };
 use std::collections::HashMap;
 use strum::IntoStaticStr;

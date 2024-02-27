@@ -673,15 +673,6 @@ module sui_system::sui_system {
        bfc_system::get_exchange_rate(id)
     }
 
-    public fun bfc_round(
-        self: &mut SuiSystemState,
-        timestamp_ms: u64,
-        round: u64,
-        ctx: &mut TxContext)
-    {
-        bfc_system::round(&mut self.bfc_system_id, timestamp_ms, round, ctx)
-    }
-
     fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {
         load_inner_maybe_upgrade(self)
     }

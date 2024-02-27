@@ -7,7 +7,6 @@ module bfc_system::bfc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
-    use sui::clock::{Self};
 
     use sui::bfc::BFC;
     use sui::object::UID;
@@ -120,33 +119,18 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
-    public entry fun change_round( wrapper: &mut BfcSystemState, round: u64,ctx: &mut TxContext) {
+    public entry fun change_round( wrapper: &mut BfcSystemState, round_timestamp_ms: u64, ctx: &mut TxContext) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round(inner_state, round,round,ctx);
-    }
-
-    public fun round(
-        id: &mut UID,
-        timestamp_ms: u64,
-        round: u64,
-        ctx: &mut TxContext
-    ) {
-        let inner_state = load_bfc_system_state_mut(id);
-        bfc_system_state_inner::update_round(inner_state, round,timestamp_ms,ctx);
+        bfc_system_state_inner::update_round_duration(inner_state, round_timestamp_ms, ctx);
     }
 
     public fun bfc_round(
         wrapper: &mut BfcSystemState,
-        timestamp_ms: u64,
-        round: u64,
+        round_timestamp_ms: u64,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round(inner_state, round,timestamp_ms,ctx);
-        // X-treasury rebalance
-        bfc_system_state_inner::rebalance(inner_state, timestamp_ms, ctx);
-
-        judge_proposal_state(wrapper, timestamp_ms);
+        bfc_system_state_inner::update_round_duration(inner_state, round_timestamp_ms, ctx);
     }
 
     public fun inner_stablecoin_to_bfc<StableCoinType>(
@@ -168,15 +152,6 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ): Balance<BFC> {
         bfc_system_state_inner::request_gas_balance(load_system_state_mut(wrapper), amount, ctx)
-    }
-
-    //todo close
-    public entry fun update_round(
-        wrapper: &mut BfcSystemState,
-        timestamp_ms: u64,
-        ctx: &mut TxContext,
-    ){
-        bfc_round(wrapper, timestamp_ms, 200, ctx);
     }
 
     fun load_system_state(

@@ -35,7 +35,7 @@ mod checked {
     use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-    use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME, TIMESTAMP_FUNCTION_NAME};
+    use sui_types::clock::{CLOCK_MODULE_NAME, CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME};
     use sui_types::committee::EpochId;
     use sui_types::effects::TransactionEffects;
     use sui_types::error::{ExecutionError, ExecutionErrorKind};
@@ -809,18 +809,18 @@ mod checked {
         #[cfg(msim)]
         let _result = maybe_modify_result(result, change_round.bfc_round);
 
-        if result.is_err() {
-            tracing::error!(
-            "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-            result.as_ref().err(),
-            temporary_store.objects(),
-        );
+        // if result.is_err() {
+        //     tracing::error!(
+        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
+        //     result.as_ref().err(),
+        //     temporary_store.objects(),
+        // );
         //     temporary_store.drop_writes();
         //     // Must reset the storage rebate since we are re-executing.
         //     gas_charger.reset_storage_cost_and_rebate();
         //
         //     temporary_store.advance_bfc_round_mode(protocol_config);
-        }
+        // }
         Ok(())
     }
 
@@ -1021,12 +1021,9 @@ mod checked {
                 "Unable to generate consensus_commit_prologue transaction!"
             );
 
-            let sui_system = builder.input(CallArg::SUI_SYSTEM_MUT).unwrap();
-            let mut arguments = vec![sui_system];
+            let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+            let mut arguments = vec![bfc_system];
             let args = vec![
-                // CallArg::SUI_SYSTEM_MUT,
-                // timestamp.into(),
-                CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
                 CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
             ] .into_iter()
                 .map(|a| builder.input(a))
@@ -1037,8 +1034,8 @@ mod checked {
             info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
 
             builder.programmable_move_call(
-                SUI_SYSTEM_PACKAGE_ID,
-                SUI_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
                 BFC_ROUND_FUNCTION_NAME.to_owned(),
                 vec![],
                 arguments,

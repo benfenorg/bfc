@@ -344,7 +344,7 @@ async fn test_change_bfc_round() {
             let state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert_eq!(state.inner_state().round, 0);
+            assert_eq!(state.inner_state().round_timestamp_ms, 0);
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
@@ -361,7 +361,7 @@ async fn test_change_bfc_round() {
             let _state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert!(_state.inner_state().round>=1);
+            assert!(_state.inner_state().round_timestamp_ms >= 1);
         });
 
 }
