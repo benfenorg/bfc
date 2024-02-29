@@ -34,7 +34,7 @@ use sui_types::crypto::{AuthoritySignInfo, AuthorityStrongQuorumSignInfo};
 use sui_types::digests::{CheckpointContentsDigest, CheckpointDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted};
+use sui_types::gas::{calculate_bfc_to_stable_cost_with_base_point, GasCostSummary, GasCostSummaryAdjusted};
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::SignedCheckpointSummary;
 use sui_types::messages_checkpoint::{
@@ -1153,6 +1153,12 @@ impl CheckpointBuilder {
                     gas_cost_summary.gas_by_bfc.computation_cost += effect.gas_cost_summary().computation_cost;
                     gas_cost_summary.gas_by_bfc.storage_rebate += effect.gas_cost_summary().storage_rebate;
                     gas_cost_summary.gas_by_bfc.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+
+                    gas_cost_summary.gas_by_stable.storage_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_cost,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+                    gas_cost_summary.gas_by_stable.computation_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().computation_cost,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+                    gas_cost_summary.gas_by_stable.storage_rebate += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_rebate,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+                    gas_cost_summary.gas_by_stable.non_refundable_storage_fee += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().non_refundable_storage_fee,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+
                 } else {
                     let mut gas_cost_summary = GasCostSummary {
                         base_point:effect.gas_cost_summary().base_point,
@@ -1162,14 +1168,28 @@ impl CheckpointBuilder {
                         storage_rebate: 0,
                         non_refundable_storage_fee: 0,
                     };
+                    let mut stable_gas_cost_summary = GasCostSummary {
+                        base_point:effect.gas_cost_summary().base_point,
+                        rate: effect.gas_cost_summary().rate,
+                        storage_cost: 0,
+                        computation_cost: 0,
+                        storage_rebate: 0,
+                        non_refundable_storage_fee: 0,
+                    };
+
                     gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
                     gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
                     gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
                     gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
 
+                    stable_gas_cost_summary.storage_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_cost,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+                    stable_gas_cost_summary.computation_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().computation_cost,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+                    stable_gas_cost_summary.storage_rebate += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_rebate,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+                    stable_gas_cost_summary.non_refundable_storage_fee += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().non_refundable_storage_fee,effect.gas_cost_summary().rate,effect.gas_cost_summary().base_point);
+
                     let gas_cost_summary_adjusted = GasCostSummaryAdjusted {
                         gas_by_bfc: gas_cost_summary.clone(),
-                        gas_by_stable: gas_cost_summary.clone(),
+                        gas_by_stable: stable_gas_cost_summary.clone(),
                     };
                     stable_gas_cost_summary_map.insert(type_tag.clone(),gas_cost_summary_adjusted);
                 }
