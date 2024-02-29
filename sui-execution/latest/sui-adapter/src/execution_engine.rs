@@ -708,8 +708,8 @@ mod checked {
 
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_bfc_to_stable_cost_with_base_point(
-                        calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost,rate, gas_cost_summary.gas_by_bfc.base_point))).unwrap(),
+                    bcs::to_bytes(&(
+                        calculate_reward_rate(gas_cost_summary.gas_by_stable.computation_cost, reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -747,7 +747,7 @@ mod checked {
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
+                bcs::to_bytes(&(storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, 100u64-reward_rate))).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
