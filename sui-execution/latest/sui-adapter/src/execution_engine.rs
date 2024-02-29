@@ -15,7 +15,7 @@ mod checked {
     };
     use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
-    use sui_types::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_reward_rate};
+    use sui_types::gas::calculate_reward_rate;
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
@@ -673,7 +673,6 @@ mod checked {
     pub fn construct_bfc_round_pt(
         round_id: u64,
         param: ChangeObcRoundParams,
-        rate_map: &HashMap<String,u64>,
         reward_rate: u64,
         storage_rebate: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
@@ -703,8 +702,6 @@ mod checked {
 
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
-            let key = type_tag.to_canonical_string();
-            let rate =*rate_map.get(&key).unwrap_or(&1u64);
 
             let charge_arg = builder
                 .input(CallArg::Pure(
@@ -821,7 +818,7 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
         let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
-        let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
+        let _rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge=0u64;
@@ -839,7 +836,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, rate_hash_map, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
