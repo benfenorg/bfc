@@ -91,7 +91,7 @@ module polynet::cross_chain_utils {
         let index: u64 = 0;
         while (index < sigCount) {
             sig = secp256k1::ecdsa_signature_from_bytes(putil::slice<u8>(sigList, index*POLYCHAIN_SIGNATURE_LEN, APTOS_SIGNATURE_LEN));
-            recovery_id = *vector::borrow<u8>(sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
+            recovery_id = 0;  //*vector::borrow<u8>(sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
             let signer_opt = secp256k1::ecdsa_recover(headerHash, recovery_id, &sig);
             if (option::is_none(&signer_opt)) {
                 return false
@@ -120,29 +120,30 @@ module polynet::cross_chain_utils {
         while (index < sigCount) {
             let sigByte = putil::slice<u8>(&sigList, index*POLYCHAIN_SIGNATURE_LEN, APTOS_SIGNATURE_LEN);
             sig = secp256k1::ecdsa_signature_from_bytes(sigByte);
-            recovery_id = *vector::borrow<u8>(&sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
+            recovery_id =  0; //*vector::borrow<u8>(&sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
 
             event::emit(
                 VerifySigEvent{
-                    length: vector::length(&sigByte),
+                    length: sigCount,
                     headHash: headerHash,
                     sig: sigByte,
                     sigList: sigList,
+
                 }
             );
 
-            // let signer_opt = secp256k1::ecdsa_recover(headerHash, recovery_id, &sig);
-            // if (option::is_none(&signer_opt)) {
-            //         abort EINVALID_POSITION
-            // };
-            // let the_signer = secp256k1::ecdsa_raw_public_key_to_bytes(&option::extract(&mut signer_opt));
-            // vector::push_back<vector<u8>>(&mut signers, the_signer);
+            let signer_opt = secp256k1::ecdsa_recover(headerHash, recovery_id, &sig);
+            if (option::is_none(&signer_opt)) {
+                    abort EINVALID_POSITION
+            };
+            let the_signer = secp256k1::ecdsa_raw_public_key_to_bytes(&option::extract(&mut signer_opt));
+            vector::push_back<vector<u8>>(&mut signers, the_signer);
             index = index + 1;
         };
         let result = containMAddresses(&keepers, &signers, threshold);
-        // if (!result) {
-        //     abort EINVALID_POSITION
-        // }
+        if (!result) {
+            abort EINVALID_POSITION
+        }
     }
 
 
