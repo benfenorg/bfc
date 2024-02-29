@@ -604,7 +604,6 @@ pub struct BfcSystemParameters {
     /// re-balance time interval in seconds
     pub time_interval: u32,
     pub treasury_parameters: VecMap<String, TreasuryParameters>,
-
 }
 
 /// Initial set of parameters for a chain.

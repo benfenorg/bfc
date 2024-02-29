@@ -47,6 +47,7 @@
 -  [Function `deposit_to_treasury`](#0xc8_bfc_system_deposit_to_treasury)
 -  [Function `deposit_to_treasury_inner`](#0xc8_bfc_system_deposit_to_treasury_inner)
 -  [Function `deposit_to_treasury_pool`](#0xc8_bfc_system_deposit_to_treasury_pool)
+-  [Function `deposit_to_treasury_pool_no_entry`](#0xc8_bfc_system_deposit_to_treasury_pool_no_entry)
 -  [Function `set_voting_delay`](#0xc8_bfc_system_set_voting_delay)
 -  [Function `cast_vote`](#0xc8_bfc_system_cast_vote)
 -  [Function `change_vote`](#0xc8_bfc_system_change_vote)
@@ -1274,7 +1275,7 @@ X treasury  swap stablecoin to bfc
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1283,8 +1284,34 @@ X treasury  swap stablecoin to bfc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>: Coin&lt;BFC&gt;) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>: Coin&lt;BFC&gt;, ctx: &<b>mut</b> TxContext) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury_pool">bfc_system_state_inner::deposit_to_treasury_pool</a>(inner_state, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_deposit_to_treasury_pool_no_entry"></a>
+
+## Function `deposit_to_treasury_pool_no_entry`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool_no_entry">deposit_to_treasury_pool_no_entry</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, bfc_balance: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>  <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool_no_entry">deposit_to_treasury_pool_no_entry</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, bfc_balance: Balance&lt;BFC&gt;, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
+    <b>let</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>= <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(bfc_balance, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury_pool">bfc_system_state_inner::deposit_to_treasury_pool</a>(inner_state, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>)
 }
 </code></pre>

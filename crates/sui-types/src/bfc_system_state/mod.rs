@@ -32,7 +32,7 @@ pub const STABLE_COIN_TO_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_stable
 
 pub const RESET_STABLE_SWAP_MAP_FUNCTION_NAME: &IdentStr = ident_str!("reset_stable_swap_map");
 
-pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_inner");
+pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_pool_no_entry");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Treasury {

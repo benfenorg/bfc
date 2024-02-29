@@ -796,7 +796,7 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
         let bfc_round_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+        let _result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
             move_vm,
@@ -807,7 +807,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let _result = maybe_modify_result(result, change_round.bfc_round);
+        let _result = maybe_modify_result(_result, change_round.bfc_round);
 
         // if result.is_err() {
         //     tracing::error!(
