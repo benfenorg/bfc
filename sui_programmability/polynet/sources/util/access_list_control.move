@@ -1,6 +1,7 @@
 module polynet::acl {
     use polynet::acl;
     use std::vector;
+    use sui::address;
 
     /// The ACL already contains the address.
     const ECONTAIN: u64 = 4000;
@@ -22,6 +23,7 @@ module polynet::acl {
         vector::contains(&acl.list, &addr)
     }
     public fun add(acl: &mut Access_control_list, addr: address){
+
         assert!(!vector::contains(&mut acl.list, &addr), (ECONTAIN));
         vector::push_back(&mut acl.list, addr);
     }
@@ -30,4 +32,5 @@ module polynet::acl {
         assert!(found, (ENOT_CONTAIN));
         vector::remove(&mut acl.list, index);
     }
+
 }

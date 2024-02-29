@@ -75,6 +75,7 @@ module polynet::lock_proxy_test {
     #[test]
     fun test_check_amount_result() {
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+
         assert!(utils::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);

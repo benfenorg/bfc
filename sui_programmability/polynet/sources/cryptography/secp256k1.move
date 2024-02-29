@@ -13,7 +13,7 @@ module polynet::secp256k1 {
     //const COMPRESSED_PUBLIC_KEY_SIZE: u64 = 33;
 
     /// The size of a secp256k1-based ECDSA signature, in bytes.
-    const SIGNATURE_NUM_BYTES: u64 = 64;
+    const SIGNATURE_NUM_BYTES: u64 = 65;
 
     /// A 64-byte ECDSA public key.
     struct ECDSARawPublicKey has copy, drop, store {

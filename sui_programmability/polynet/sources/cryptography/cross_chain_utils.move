@@ -3,12 +3,13 @@ module polynet::cross_chain_utils {
     use std::hash;
     use std::vector;
     use std::option;
+    use sui::event;
     use polynet::secp256k1;
     use polynet::utils as putil;
 
     const MERKLE_PROOF_NODE_LEN: u64 = 33;
     const POLYCHAIN_SIGNATURE_LEN: u64 = 65;
-    const APTOS_SIGNATURE_LEN: u64 = 64;
+    const APTOS_SIGNATURE_LEN: u64 = 65;
 
     const EINVALID_POSITION: u64 = 4001;
     const EROOT_NOT_MATCH: u64 = 4002;
@@ -81,7 +82,7 @@ module polynet::cross_chain_utils {
         return hash::sha2_256(data)
     }
 
-    public fun verifySig(rawHeader: &vector<u8>, sigList: &vector<u8>, keepers: &vector<vector<u8>>, threshold: u64): bool  {
+    public  fun verifySig(rawHeader: &vector<u8>, sigList: &vector<u8>, keepers: &vector<vector<u8>>, threshold: u64): bool  {
         let headerHash = getHeaderHash(rawHeader);
         let sigCount = vector::length<u8>(sigList)/POLYCHAIN_SIGNATURE_LEN;
         let signers = vector::empty<vector<u8>>();
@@ -101,6 +102,49 @@ module polynet::cross_chain_utils {
         };
         return containMAddresses(keepers, &signers, threshold)
     }
+
+
+    struct VerifySigEvent has store, drop, copy {
+        length: u64,
+        headHash: vector<u8>,
+        sig: vector<u8>,
+        sigList: vector<u8>,
+    }
+    public entry  fun verifySigTest(rawHeader: vector<u8>, sigList: vector<u8>, keepers: vector<vector<u8>>, threshold: u64)  {
+        let headerHash = getHeaderHash(&rawHeader);
+        let sigCount = vector::length<u8>(&sigList)/POLYCHAIN_SIGNATURE_LEN;
+        let signers = vector::empty<vector<u8>>();
+        let recovery_id: u8;
+        let sig: secp256k1::ECDSASignature;
+        let index: u64 = 0;
+        while (index < sigCount) {
+            let sigByte = putil::slice<u8>(&sigList, index*POLYCHAIN_SIGNATURE_LEN, APTOS_SIGNATURE_LEN);
+            sig = secp256k1::ecdsa_signature_from_bytes(sigByte);
+            recovery_id = *vector::borrow<u8>(&sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
+
+            event::emit(
+                VerifySigEvent{
+                    length: vector::length(&sigByte),
+                    headHash: headerHash,
+                    sig: sigByte,
+                    sigList: sigList,
+                }
+            );
+
+            // let signer_opt = secp256k1::ecdsa_recover(headerHash, recovery_id, &sig);
+            // if (option::is_none(&signer_opt)) {
+            //         abort EINVALID_POSITION
+            // };
+            // let the_signer = secp256k1::ecdsa_raw_public_key_to_bytes(&option::extract(&mut signer_opt));
+            // vector::push_back<vector<u8>>(&mut signers, the_signer);
+            index = index + 1;
+        };
+        let result = containMAddresses(&keepers, &signers, threshold);
+        // if (!result) {
+        //     abort EINVALID_POSITION
+        // }
+    }
+
 
     fun containMAddresses(keepers: &vector<vector<u8>>, signers: &vector<vector<u8>>, threshold: u64): bool {
         let keepers_copy = *keepers;
