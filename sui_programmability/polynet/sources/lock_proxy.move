@@ -22,11 +22,12 @@ module polynet::lock_proxy {
     use sui::tx_context::TxContext;
     use sui::vec_map;
     use sui::vec_map::VecMap;
-
     use polynet::cross_chain_manager;
     use polynet::zero_copy_sink;
     use polynet::zero_copy_source;
     use polynet::utils;
+
+    friend polynet::cross_chain_manager;
 
     const DEPRECATED: u64 = 4001;
     const ENOT_OWNER: u64 = 4002;
@@ -115,29 +116,29 @@ module polynet::lock_proxy {
         module_name: String,
     }
 
-    // init
-    public entry fun init_lock_proxy_manager(clock: &Clock, ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
+    public(friend) fun new_lock_proxy_manager(_ctx: &mut TxContext ) {
+
+        let sender = tx_context::sender(_ctx);
 
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         let lockproxystore = LockProxyStore{
-            id: object::new(ctx),
-            proxy_map: table::new<u64, vector<u8>>(ctx),
-            asset_map: table::new<TypeName, Table<u64, vector<u8>>>(ctx),
+            id: object::new(_ctx),
+            proxy_map: table::new<u64, vector<u8>>(_ctx),
+            asset_map: table::new<TypeName, Table<u64, vector<u8>>>(_ctx),
             paused: false,
             owner: (sender),
             };
 
         let licensestore = LicenseStore{
-            id: object::new(ctx),
+            id: object::new(_ctx),
             license: option::none<cross_chain_manager::License>(),
         };
 
-        let start_time = clock::timestamp_ms(clock);
+        //very big time to void starting
+        let start_time = 1809285669000;
         let amountLockManager = AmountLimitManager{
-            id: object::new(ctx),
+            id: object::new(_ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
@@ -147,7 +148,7 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let amountUnlockManager = AmountLimitManager{
-            id: object::new(ctx),
+            id: object::new(_ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
@@ -157,7 +158,7 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let manager = LockProxyManager{
-            id: object::new(ctx),
+            id: object::new(_ctx),
             lock_proxy_store: lockproxystore,
             license_store: licensestore,
             amountLockManager: amountLockManager,
@@ -165,6 +166,25 @@ module polynet::lock_proxy {
         };
 
         transfer::share_object(manager)
+        
+
+    }
+
+    //TODO: upgrade
+    // init
+    public entry fun update_lock_proxy_manager_start_time(
+        _lock_proxy_manager: &mut LockProxyManager,
+        _clock: &Clock, 
+        _ctx: &mut TxContext
+    ) {
+        // sender address
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+
+        let start_time = clock::timestamp_ms(_clock);
+        _lock_proxy_manager.amountLockManager.time = start_time;
+        _lock_proxy_manager.amountUnlockManager.time = start_time;
+
     }
 
 
@@ -340,6 +360,7 @@ module polynet::lock_proxy {
     }
 
 
+    //TODO: check if can upgrade
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
     public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {

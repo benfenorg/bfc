@@ -13,8 +13,9 @@ module polynet::wrapper_v1 {
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
-
     use polynet::lock_proxy;
+
+    friend polynet::cross_chain_manager;
 
     const DEPRECATED: u64 = 4001;
     const EINVALID_ADMIN: u64 = 4015;
@@ -43,18 +44,29 @@ module polynet::wrapper_v1 {
         fee_amount: u64
     }
 
-    // for admin
-    public entry fun init_wrapper(    ctx: &mut TxContext,) {
-
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+    public(friend) fun new_wrapper(_ctx: &mut TxContext ) {
 
         transfer::share_object(WrapperStore{
-            id: object::new(ctx),
-            fee_collector: sender,
+            id: object::new(_ctx),
+            fee_collector:tx_context::sender(_ctx)
         });
+        
+
     }
+
+    // //TODO: upgrade
+    // // for admin
+    // public entry fun init_wrapper(    ctx: &mut TxContext,) {
+
+    //     // sender address
+    //     let sender = tx_context::sender(ctx);
+    //     assert!(utils::is_admin(sender), EINVALID_ADMIN);
+
+    //     transfer::share_object(WrapperStore{
+    //         id: object::new(ctx),
+    //         fee_collector: sender,
+    //     });
+    // }
 
     public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, new_fee_collector: address, ctx: &mut TxContext) {
         // sender address

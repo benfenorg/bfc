@@ -16,6 +16,8 @@ module polynet::cross_chain_manager {
     use polynet::acl;
     use polynet::zero_copy_sink;
     use polynet::cross_chain_utils;
+    use polynet::wrapper_v1;
+    use polynet::lock_proxy;
 
     const VERSION: u64 = 1;
     const ADMIN_ROLE: u64 = 1;
@@ -120,7 +122,8 @@ module polynet::cross_chain_manager {
         };
         transfer::share_object(manager);
 
-
+        wrapper_v1::new_wrapper(_ctx);
+        lock_proxy::new_lock_proxy_manager(_ctx);
 
         event::emit(
             InitBookKeeperEvent{
