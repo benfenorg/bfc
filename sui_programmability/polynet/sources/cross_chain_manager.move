@@ -17,7 +17,7 @@ module polynet::cross_chain_manager {
     use polynet::zero_copy_sink;
     use polynet::cross_chain_utils;
 
-
+    const VERSION: u64 = 1;
     const ADMIN_ROLE: u64 = 1;
     const PAUSE_ROLE: u64 = 2;
     const CA_ROLE: u64 = 3;
@@ -39,6 +39,8 @@ module polynet::cross_chain_manager {
     const EBLACKLISTED_FROM: u64 = 4013;
     const EBLACKLISTED_TO: u64 = 4014;
     const EVERIFIER_NOT_RECEIVER: u64 = 4015;
+    const ERR_VERSION_CHECK: u64 = 4016; 
+
 
 
     struct CrossChainManager has key, store{
@@ -65,22 +67,18 @@ module polynet::cross_chain_manager {
         curEpochStartHeight: u64,
         ethToPolyTxHashMap: Table<u128, vector<u8>>,
         fromChainTxExist: Table<u64, Table<vector<u8>, bool>>,
+        version: u64
     }
 
-    // initialize
-    public entry fun init_crosschain_manager(
-                                             keepers: vector<vector<u8>>,
-                                             startHeight: u64,
-                                             polyId: u64,
-                                             ctx: &mut TxContext)  {
+  
+     // initialize
+   fun init(_ctx: &mut TxContext)  {
 
         // sender address
-        let sender = tx_context::sender(ctx);
-
-        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+        let sender = tx_context::sender(_ctx);
 
         // init access control lists
-        let acls = table::new<u64, Access_control_list>(ctx);
+        let acls = table::new<u64, Access_control_list>(_ctx);
 
         let admin_acl = acl::empty();
         let pause_acl = acl::empty();
@@ -98,47 +96,113 @@ module polynet::cross_chain_manager {
         table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
 
         let acl_store = ACLStore{
-            id: object::new(ctx),
+            id: object::new(_ctx),
             role_acls: acls,
-            license_black_list: table::new<vector<u8>, u8>(ctx)
+            license_black_list: table::new<vector<u8>, u8>(_ctx)
         };
 
         // init global config
         let config = CrossChainGlobalConfig{
-            id: object::new(ctx),
-            polyId: polyId,
+            id: object::new(_ctx),
+            polyId: 0,
             paused: false,
             ethToPolyTxHashIndex: 0,
-            curBookKeepers: keepers,
-            curEpochStartHeight: startHeight,
-            ethToPolyTxHashMap: table::new<u128, vector<u8>>(ctx),
-            fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>(ctx)
+            curBookKeepers: vector::empty<vector<u8>>(),
+            curEpochStartHeight: 0,
+            ethToPolyTxHashMap: table::new<u128, vector<u8>>(_ctx),
+            fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>(_ctx),
+            version: VERSION
         };
-
-        //transfer(config, account);
-
-
         let manager = CrossChainManager{
-            id: object::new(ctx),
+            id: object::new(_ctx),
             acl_store: acl_store,
             config: config
         };
         transfer::share_object(manager);
 
+
+
         event::emit(
             InitBookKeeperEvent{
-                height: startHeight,
-                keepers: keepers,
+                height: 0,
+                sender,
+                keepers: vector::empty<vector<u8>>(),
+            },
+        );
+    }
+
+    // update crosschain_config
+    public entry fun update_crosschain_config(
+        _manager: &mut CrossChainManager,
+        _keepers: vector<vector<u8>>,
+        _startHeight: u64,
+        _polyId: u64,
+        _ctx: &mut TxContext
+    )  {
+
+        update_config(
+            &mut _manager.config,
+            _keepers,
+            _startHeight,
+            _polyId,
+            _ctx
+        );
+       
+        event::emit(
+            UpdateBookKeeperEvent{
+                height: _startHeight,
+                sender: tx_context::sender(_ctx),
+                keepers: _keepers
             },
         );
     }
 
 
 
+    // update crosschain_manager
+    public entry fun migrate(  
+        _manager: &mut CrossChainManager,
+        _keepers: vector<vector<u8>>,
+        _startHeight: u64,
+        _polyId: u64,
+        _ctx: &mut TxContext
+    )  {
 
+        assert!(_manager.config.version < VERSION,ERR_VERSION_CHECK);
+        _manager.config.version = VERSION;
 
+       update_config(
+            &mut _manager.config,
+            _keepers,
+            _startHeight,
+            _polyId,
+            _ctx
+        );
+        event::emit(
+            MigrateBookKeeperEvent{
+                height: _startHeight,
+                sender: tx_context::sender(_ctx),
+                keepers: _keepers
+            },
+        );
+    }
 
+    fun update_config(
+        _global: &mut CrossChainGlobalConfig,
+        _keepers: vector<vector<u8>>,
+        _startHeight: u64,
+        _polyId: u64,
+        _ctx: &mut TxContext
+    ) {
+         // sender address
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
+        _global.polyId = _polyId;
+        _startHeight = _startHeight;
+        _global.curBookKeepers = _keepers;
+
+    }
 
     public fun hasRole(ccManager:&mut CrossChainManager, role: u64, account: address): bool  {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
@@ -257,8 +321,22 @@ module polynet::cross_chain_manager {
 
     struct InitBookKeeperEvent has store, drop, copy {
         height: u64,
+        sender: address,
         keepers: vector<vector<u8>>
     }
+
+    struct UpdateBookKeeperEvent has store, drop, copy {
+        height: u64,
+        sender: address,
+        keepers: vector<vector<u8>>
+    }
+
+    struct MigrateBookKeeperEvent has store, drop, copy {
+        height: u64,
+        sender: address,
+        keepers: vector<vector<u8>>
+    }
+
 
     struct ChangeBookKeeperEvent has store, drop, copy {
         height: u64,
