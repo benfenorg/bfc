@@ -92,6 +92,13 @@ module polynet::wrapper_v1 {
             proof, rawHeader, headerProof, curRawHeader, headerSig, clock, ctx);
     }
 
+
+    public entry fun relay_bfc_test(
+        ccManager:&mut CrossChainManager,
+        ctx: &mut TxContext
+    ) {
+
+    }
     // for user
     public entry fun lock_and_pay_fee<CoinType>(
         ccManager:&mut CrossChainManager,

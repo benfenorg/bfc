@@ -15,7 +15,7 @@ module polynet::tools {
     const EINVALID_ADMIN: u64 = 4015;
 
     // mainnet
-    public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
+    public  fun init_as_mainnet(ccManager: &mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
                                     clock:&Clock,
                                      ctx: &mut TxContext) {
@@ -57,7 +57,7 @@ module polynet::tools {
     }
 
     // testnet
-    public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
+    public  fun init_as_testnet(ccManager:&mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
                                      clock: &Clock,
                                      ctx: &mut TxContext) {

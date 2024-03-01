@@ -13,6 +13,7 @@ module polynet::cross_chain_utils {
 
     const EINVALID_POSITION: u64 = 4001;
     const EROOT_NOT_MATCH: u64 = 4002;
+    const ENOT_ENOUGH_SIG: u64 = 4003;
 
     struct Header has copy, drop {
         version: u64,
@@ -94,7 +95,7 @@ module polynet::cross_chain_utils {
             recovery_id = 0;  //*vector::borrow<u8>(sigList, index*POLYCHAIN_SIGNATURE_LEN + APTOS_SIGNATURE_LEN);
             let signer_opt = secp256k1::ecdsa_recover(headerHash, recovery_id, &sig);
             if (option::is_none(&signer_opt)) {
-                return false
+                continue
             };
             let the_signer = secp256k1::ecdsa_raw_public_key_to_bytes(&option::extract(&mut signer_opt));
             vector::push_back<vector<u8>>(&mut signers, the_signer);
@@ -142,7 +143,7 @@ module polynet::cross_chain_utils {
         };
         let result = containMAddresses(&keepers, &signers, threshold);
         if (!result) {
-            abort EINVALID_POSITION
+            abort ENOT_ENOUGH_SIG;
         }
     }
 

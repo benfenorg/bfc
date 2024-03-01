@@ -5,4 +5,4 @@ goerli再poly测试网的chainId是502
 
 1. change the move.toml published address to last upgrade address
 2. find the upgrade capability. 
-bfc client upgrade  --gas-budget 100000000 --upgrade-capability 0xd07989282c23f0c2f450def986a11cb8412455143064f48a595bf434c53465fa
+bfc client upgrade  --gas-budget 100000000 --upgrade-capability BFC765b525d9fb1b92d710972afbdae2ec0ddbaba2aeb0617fdd9220888a139db426080
