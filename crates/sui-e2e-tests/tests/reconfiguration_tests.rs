@@ -2301,7 +2301,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .state()
         .get_bfc_system_state_object_for_testing().unwrap();
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
-    assert_eq!(treasury.bfc_balance, Balance::new(102433173437554373));
+    assert_eq!(treasury.bfc_balance, Balance::new(102433173437554378));
     Ok(())
 }
 
@@ -2327,9 +2327,9 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&coin.object_id.to_string())?,
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
-        SuiJsonValue::new(json!("100000000000"))?,
+        SuiJsonValue::new(json!("1000000000000"))?,
         SuiJsonValue::new(json!("0"))?,
-        SuiJsonValue::new(json!("9999999999999"))?,
+        SuiJsonValue::new(json!("999999999999"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -2433,14 +2433,14 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
 async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 100;
+    let amount  = 1_000_000_000u64 * 10;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2768,7 +2768,7 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&(100000_u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&(1_000_000_000_u64)).unwrap()),
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
@@ -2779,7 +2779,7 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
         }))],
     };
     let r = dev_inspect_call(&test_cluster, pt.clone()).await;
-    assert_eq!(r.amount_out, 99999);
+    assert_eq!(r.amount_out, 100_000_022);
     Ok(())
 }
 
@@ -2961,7 +2961,7 @@ async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> 
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&(100000_u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&(1_000_000_000_u64)).unwrap()),
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
@@ -2972,7 +2972,8 @@ async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> 
         }))],
     };
     let r = dev_inspect_call(&test_cluster, pt.clone()).await;
-    assert_eq!(r.amount_out, 99999);
+    // 1bfc = 0.1busd
+    assert_eq!(r.amount_out, 9_999_997_779);
     Ok(())
 }
 
@@ -3018,7 +3019,7 @@ async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> 
         }))],
     };
     let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
-    assert_eq!(r, 999999999);
+    assert_eq!(r, 100_000_022);
     Ok(())
 }
 
@@ -3043,7 +3044,7 @@ async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::
         }))],
     };
     let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
-    assert_eq!(r, 999999999);
+    assert_eq!(r, 9999997779);
     Ok(())
 }
 
