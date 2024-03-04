@@ -37,6 +37,7 @@ module polynet::controller {
             _polyId,
             _ctx
         );
+        config::migrate(_global,_ctx);
        
         events::migrate_book_keeper_event(
                     _startHeight,
@@ -47,8 +48,8 @@ module polynet::controller {
     }
 
 
-    public entry fun setFeeCollector(
-        _global:&mut CrossChainGlobalConfig, 
+    public entry fun update_fee_collector(
+        _global: &mut CrossChainGlobalConfig, 
         _new_fee_collector: address, 
         _ctx: &mut TxContext
     ) {
@@ -64,7 +65,34 @@ module polynet::controller {
         ); 
     }
 
+     // update crosschain_config
+    public entry fun update_crosschain_config(
+        _global: &mut CrossChainGlobalConfig,
+        _keepers: vector<vector<u8>>,
+        _startHeight: u64,
+        _polyId: u64,
+        _ctx: &mut TxContext
+    )  {
 
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+        config::check_version(_global);
+
+        config::update_config(
+            _global,
+            _keepers,
+            _startHeight,
+            _polyId,
+            _ctx
+        );
+       
+        event::update_book_keeper_event(
+                _startHeight,
+                _keepers,
+                _polyId,
+                sender
+            );
+    }
 
    fun relay_unlock_tx_internal<CoinType>(
         ccManager:&mut CrossChainManager,
@@ -78,7 +106,6 @@ module polynet::controller {
         clock:&Clock,
         ctx: &mut TxContext
     )  {
-
 
         // borrow license
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
@@ -104,8 +131,7 @@ module polynet::controller {
         //check system pause
         let lpManager = config::borrow_mut_lp_manager(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
-        let pause_flag = paused(lpManager);
-        assert!(!pause_flag, EINVALID_SYSTEM_IS_PAUSED);
+        lock_proxy::check_paused(lpManager);
         config::check_version(_global);
 
         relay_unlock_tx_internal<CoinType>(
@@ -139,8 +165,8 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         let wrapperStore = config::borrow_mut_wrapper_store(_global);
-        let pause_flag = paused(lpManager);
-        assert!(!pause_flag, EINVALID_SYSTEM_IS_PAUSED);
+        lock_proxy::check_paused(lpManager);
+        config::check_version(_global);
 
         //any user can lock bfc assets and transfer to evm
 
@@ -174,9 +200,6 @@ module polynet::controller {
     )  {
         let amount = coin::value(&fund);
         let fee_amount = coin::value(&fee);
-
-
-
         //coin::deposit<BFC>(feeCollector(), fee);
 
         let feeCollector = feeCollector(wrapperstore);
@@ -185,13 +208,144 @@ module polynet::controller {
         lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,clock, ctx);
         //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         events::lock_with_fee_event(
-                         type_name::get<Coin<CoinType>>(),
-                         account,
-                         toChainId,
-                         *toAddress,
-                         amount,
-                         fee_amount,
-                        );
+                    type_name::get<Coin<CoinType>>(),
+                    account,
+                    toChainId,
+                    *toAddress,
+                    amount,
+                    fee_amount,
+                );
+    }
+
+    public entry fun update_lock_proxy_manager_start_time(
+        _global:&mut CrossChainGlobalConfig,
+        _clock: &Clock, 
+        _ctx: &mut TxContext
+    ) {
+        // sender address
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+        config::check_version(_global);
+
+        let lpManager = config::borrow_mut_lp_manager(_global);
+
+        lock_proxy::update_lock_proxy_manager_start_time(
+            lpManager,
+            _clock,
+            _ctx
+        );
+    }
+
+    public entry fun transfer_lp_manager_ownerShip(
+        _global: &mut CrossChainGlobalConfig, 
+        _new_owner: address, 
+        _ctx:&mut TxContext
+    ) {
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+
+        lock_proxy::onlyOwner(lpManager, sender);
+        lock_proxy::transferOwnerShip(lpManager,_new_owner,_ctx);
+    }
+
+    public entry fun pause_lp_manager(_global: &mut CrossChainGlobalConfig,  _ctx: &mut TxContext) {
+
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        lock_proxy::pause(lpManager,_ctx);
+    }
+
+    public entry fun unpause_lp_manager(_global: &mut CrossChainGlobalConfig, _ctx: &mut TxContext) {
+
+        config::check_version(_global);
+        // sender address
+        let sender = tx_context::sender(ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::onlyOwner(lpManager, sender);
+        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+        lock_proxy::unpause(lpManager,_ctx);
+    }
+
+    public entry fun bind_proxy(
+        _global: &mut CrossChainGlobalConfig,
+        _to_chain_id: u64,
+        _target_proxy_hash: vector<u8>,
+        _ctx: &mut TxContext
+    )  {
+        // sender address
+        config::check_version(_global);
+        let sender = tx_context::sender(ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::check_paused(lpManager);
+        lock_proxy::onlyOwner(lpManager, sender);
+        
+        lock_proxy::bind_proxy(
+            lpManager,
+            _to_chain_id,
+            _target_proxy_hash,
+            _ctx
+        );
+    }
+
+    public entry fun unbind_proxy(
+        _global: &mut CrossChainGlobalConfig, 
+        _to_chain_id: u64, 
+        _ctx: &mut TxContext
+    ) {
+
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::onlyOwner(lpManager, sender);
+        lock_proxy::check_paused(lpManager);
+        lock_proxy::unbind_proxy(
+            lpManager,
+            _to_chain_id,
+            _ctx
+        )
+    }
+
+    public entry fun bind_asset<CoinType>(
+        _global: &mut CrossChainGlobalConfig, 
+        _to_chain_id: u64,
+        _to_asset_hash: vector<u8>,
+        _to_asset_decimals: u8,
+        _ctx: &mut TxContext
+    )  {
+
+        config::check_version(_global);
+        let sender = tx_context::sender(ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::onlyOwner(lpManager, sender);
+        lock_proxy::check_paused(lpManager);
+        lock_proxy::bind_asset<CoinType>(
+            lpManager,
+            _to_chain_id,
+            _to_asset_hash,
+            _to_asset_decimals,
+            _ctx
+        );
+    }
+
+    public entry fun unbind_asset<CoinType>(
+        _global: &mut CrossChainGlobalConfig, 
+        _to_chain_id: u64, 
+        _ctx: &mut TxContext
+    ) {
+        config::check_version(_global);
+        let sender = tx_context::sender(ctx);
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::check_paused(lpManager);
+        lock_proxy::onlyOwner(lpManager, sender);
+        lock_proxy::unbind_asset<CoinType>(
+            lpManager,
+            _to_chain_id,
+            _ctx
+        );
     }
 
 

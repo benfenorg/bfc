@@ -50,6 +50,7 @@ module polynet::lock_proxy {
     const ELICENSE_STORE_NOT_EXIST: u64 = 4017;
 
     const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4018;
+    const ERR_CHECK_LP_MANAGER_PAUSED: u64 = 4019;
 
 
 
@@ -170,21 +171,15 @@ module polynet::lock_proxy {
         manager
     }
 
-    //TODO: upgrade
-    // init
-    public entry fun update_lock_proxy_manager_start_time(
+    // update start_time after init
+    public(friend) fun update_lock_proxy_manager_start_time(
         _lock_proxy_manager: &mut LockProxyManager,
         _clock: &Clock, 
         _ctx: &mut TxContext
     ) {
-        // sender address
-        let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
-
         let start_time = clock::timestamp_ms(_clock);
         _lock_proxy_manager.amountLockManager.time = start_time;
         _lock_proxy_manager.amountUnlockManager.time = start_time;
-
     }
 
 
@@ -235,43 +230,43 @@ module polynet::lock_proxy {
 
 
     // owner function
-    fun onlyOwner(lpManager: &LockProxyManager, owner: address) {
+    public(friend) fun onlyOwner(lpManager: &LockProxyManager, owner: address) {
         //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
         assert!((owner) == lpManager.lock_proxy_store.owner, ENOT_OWNER);
     }
 
-    public entry fun transferOwnerShip(lpManager: &mut LockProxyManager, new_owner: address, ctx:&mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-
-        onlyOwner(lpManager, sender);
+    public(friend) fun transferOwnerShip(
+        lpManager: &mut LockProxyManager, 
+        new_owner: address, 
+        ctx:&mut TxContext
+    ) {
+      
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.owner = new_owner;
     }
 
-    public entry fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        onlyOwner(lpManager, sender);
+    public(friend) fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
+       assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = true;
     }
 
-    public entry fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        onlyOwner(lpManager, sender);
+    public(friend) fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
+        assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = false;
     }
 
-    public entry fun bindProxy(lpManager: &mut LockProxyManager,
-                               to_chain_id: u64,
-                               target_proxy_hash: vector<u8>,
-                               ctx: &mut TxContext)  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        onlyOwner(lpManager, sender);
+    public(friend) fun check_paused(lpManager: &LockProxyManager) {
+         assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+    }
+
+    public(friend) fun bind_proxy(
+        lpManager: &mut LockProxyManager,
+        to_chain_id: u64,
+        target_proxy_hash: vector<u8>,
+        ctx: &mut TxContext
+    )  {
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         utils::upsert(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id, target_proxy_hash);
 
@@ -283,10 +278,8 @@ module polynet::lock_proxy {
         );
     }
 
-    public entry fun unbindProxy(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        onlyOwner(lpManager, sender);
+    public(friend) fun unbind_proxy(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
+     
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         if (table::contains(&lpManager.lock_proxy_store.proxy_map, to_chain_id)) {
             table::remove(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id);
@@ -302,14 +295,14 @@ module polynet::lock_proxy {
         );
     }
 
-    public entry fun bindAsset<CoinType>(lpManager: &mut LockProxyManager,
-                                         to_chain_id: u64,
-                                         to_asset_hash: vector<u8>,
-                                         to_asset_decimals: u8,
-                                         ctx: &mut TxContext)  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        onlyOwner(lpManager, sender);
+    public(friend) fun bind_asset<CoinType>(
+        lpManager: &mut LockProxyManager,
+        to_chain_id: u64,
+        to_asset_hash: vector<u8>,
+        to_asset_decimals: u8,
+        ctx: &mut TxContext
+    )  {
+      
         let from_asset = type_name::get<Coin<CoinType>>();
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         let decimals_concat_to_asset = vector::singleton(to_asset_decimals);
@@ -332,10 +325,12 @@ module polynet::lock_proxy {
         );
     }
 
-    public entry fun unbindAsset<CoinType>(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        onlyOwner(lpManager, sender);
+    public(friend) fun unbind_asset<CoinType>(
+        lpManager: &mut LockProxyManager, 
+        to_chain_id: u64, 
+        ctx: &mut TxContext
+    ) {
+     
         let from_asset = type_name::get<Coin<CoinType>>();
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {

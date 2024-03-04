@@ -80,7 +80,7 @@ module polynet::config {
     ) {
        
         _global.polyId = _polyId;
-        _startHeight = _startHeight;
+        _global.startHeight = _startHeight;
         _global.curBookKeepers = _keepers;
 
     }

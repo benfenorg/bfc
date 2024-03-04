@@ -27,6 +27,13 @@ module polynet::events {
         keepers: vector<vector<u8>>
     }
 
+    struct UpdateBookKeeperEvent has store, drop, copy {
+        height: u64,
+        sender: address,
+        poly_id: u64,
+        keepers: vector<vector<u8>>
+    }
+
 
     public(friend) fun lock_with_fee_event(
         _from_asset: TypeName,
@@ -75,6 +82,24 @@ module polynet::events {
             },
         );
     }
+
+    public(friend) fun update_book_keeper_event(
+        _keepers: vector<vector<u8>>,
+        _startHeight: u64,
+        _polyId: u64,
+        _sender: address
+    ) {
+
+          event::emit(
+            UpdateBookKeeperEvent{
+                height: _startHeight,
+                sender: _sender,
+                poly_id:_polyId,
+                keepers: _keepers
+            },
+        );
+    }
+
 
 
 
