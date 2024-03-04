@@ -11,7 +11,6 @@ module bfc_system::bfc_system {
     use sui::bfc::BFC;
     use sui::object::UID;
     use sui::transfer;
-    use sui::tx_context;
     use sui::tx_context::TxContext;
     use sui::vec_map::VecMap;
 
@@ -175,53 +174,6 @@ module bfc_system::bfc_system {
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
         bfc_system_state_inner::get_rate_map(inner)
-    }
-
-
-    /// Request exchange stable coin to bfc.
-    public entry fun request_exchange_stable(
-        self: &mut BfcSystemState,
-        stable: Coin<BUSD>,
-        ctx: &mut TxContext,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        let balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance<BUSD>(
-            inner_state,
-            stable,
-            0,
-            ctx);
-        transfer::public_transfer(coin::from_balance(balance, ctx), tx_context::sender(ctx));
-    }
-
-    /// Request withdraw stable coin.
-    public entry fun request_withdraw_stable(
-        self: &mut BfcSystemState,
-        ctx: &mut TxContext,
-    ) {
-        let stables = request_withdraw_stable_no_entry(self);
-        transfer::public_transfer(coin::from_balance(stables, ctx), tx_context::sender(ctx));
-    }
-
-    fun request_withdraw_stable_no_entry(
-        self: &mut BfcSystemState,
-    ): Balance<BUSD> {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::request_withdraw_stable(inner_state)
-    }
-
-    /// Init exchange pool by add bfc coin.
-    public entry fun init_exchange_pool(
-        self: &mut BfcSystemState,
-        coin: Coin<BFC>,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        bfc_system_state_inner::init_exchange_pool(inner_state, coin)
-    }
-    public entry fun get_bfc_amount(
-    self: &BfcSystemState): u64
-    {
-        let inner_state = load_system_state(self);
-        bfc_system_state_inner::get_bfc_amount(inner_state)
     }
 
     public entry fun destroy_terminated_proposal(

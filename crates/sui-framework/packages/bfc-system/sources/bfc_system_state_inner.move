@@ -29,8 +29,6 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::exchange_inner;
-    use bfc_system::exchange_inner::ExchangePool;
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
@@ -58,8 +56,6 @@ module bfc_system::bfc_system_state_inner {
         round_duration_ms: u64,
         stable_base_points: u64,
         reward_rate: u64,
-        /// Exchange gas coin pool
-        exchange_pool: ExchangePool<BUSD>,
         dao: Dao,
         treasury: Treasury,
         treasury_pool: TreasuryPool,
@@ -107,7 +103,6 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
 
-        let exchange_pool = exchange_inner::new_exchange_pool<BUSD>(ctx, 0);
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
         let (t, remain_balance, rate_map) = create_treasury(
             bfc_balance,
@@ -137,7 +132,6 @@ module bfc_system::bfc_system_state_inner {
             round_duration_ms: parameters.round_duration_ms,
             stable_base_points: DEFAULT_STABLE_BASE_POINTS,
             reward_rate: DEFAULT_REWARD_RATE,
-            exchange_pool,
             dao,
             treasury: t,
             treasury_pool: tp,
@@ -166,27 +160,6 @@ module bfc_system::bfc_system_state_inner {
             rebalance(inner, round_timestamp_ms, ctx);
             judge_proposal_state(inner, round_timestamp_ms);
         };
-    }
-
-    ///Request withdraw stable coin.
-    public(friend) fun request_withdraw_stable(
-        inner: &mut BfcSystemStateInner,
-    ): Balance<BUSD> {
-        exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool)
-    }
-
-    /// Init exchange pool by add bfc coin.
-    public(friend) fun init_exchange_pool(
-        self: &mut BfcSystemStateInner,
-        coin: Coin<BFC>,
-    ) {
-        exchange_inner::add_bfc_to_pool(&mut self.exchange_pool, coin)
-    }
-
-    public(friend) fun get_bfc_amount(
-        self: &BfcSystemStateInner,
-    ): u64 {
-        exchange_inner::get_bfc_amount(&self.exchange_pool)
     }
 
     fun init_vault_with_positions<StableCoinType>(

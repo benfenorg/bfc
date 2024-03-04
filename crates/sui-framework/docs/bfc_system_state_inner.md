@@ -13,9 +13,6 @@
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_state_inner_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_state_inner_unstake_manager_key)
 -  [Function `update_round_duration`](#0xc8_bfc_system_state_inner_update_round_duration)
--  [Function `request_withdraw_stable`](#0xc8_bfc_system_state_inner_request_withdraw_stable)
--  [Function `init_exchange_pool`](#0xc8_bfc_system_state_inner_init_exchange_pool)
--  [Function `get_bfc_amount`](#0xc8_bfc_system_state_inner_get_bfc_amount)
 -  [Function `init_vault_with_positions`](#0xc8_bfc_system_state_inner_init_vault_with_positions)
 -  [Function `create_treasury`](#0xc8_bfc_system_state_inner_create_treasury)
 -  [Function `get_rate_map`](#0xc8_bfc_system_state_inner_get_rate_map)
@@ -81,7 +78,6 @@
 <b>use</b> <a href="btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
-<b>use</b> <a href="exchange_inner.md#0xc8_exchange_inner">0xc8::exchange_inner</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
 <b>use</b> <a href="treasury_pool.md#0xc8_treasury_pool">0xc8::treasury_pool</a>;
@@ -130,12 +126,6 @@
 </dt>
 <dd>
 
-</dd>
-<dt>
-<code>exchange_pool: <a href="exchange_inner.md#0xc8_exchange_inner_ExchangePool">exchange_inner::ExchangePool</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;</code>
-</dt>
-<dd>
- Exchange gas coin pool
 </dd>
 <dt>
 <code>dao: <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a></code>
@@ -367,7 +357,6 @@ Default stable base points
     ctx: &<b>mut</b> TxContext,
 ): <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
 
-    <b>let</b> exchange_pool = <a href="exchange_inner.md#0xc8_exchange_inner_new_exchange_pool">exchange_inner::new_exchange_pool</a>&lt;BUSD&gt;(ctx, 0);
     <b>let</b> dao = <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">bfc_dao::create_dao</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
     <b>let</b> (t, remain_balance, rate_map) = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(
         bfc_balance,
@@ -397,7 +386,6 @@ Default stable base points
         round_duration_ms: parameters.round_duration_ms,
         stable_base_points: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_STABLE_BASE_POINTS">DEFAULT_STABLE_BASE_POINTS</a>,
         reward_rate: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_REWARD_RATE">DEFAULT_REWARD_RATE</a>,
-        exchange_pool,
         dao,
         <a href="treasury.md#0xc8_treasury">treasury</a>: t,
         <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>: tp,
@@ -486,87 +474,6 @@ Default stable base points
         <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">rebalance</a>(inner, round_timestamp_ms, ctx);
         <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(inner, round_timestamp_ms);
     };
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_request_withdraw_stable"></a>
-
-## Function `request_withdraw_stable`
-
-Request withdraw stable coin.
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_withdraw_stable">request_withdraw_stable</a>(inner: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_withdraw_stable">request_withdraw_stable</a>(
-    inner: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
-): Balance&lt;BUSD&gt; {
-    <a href="exchange_inner.md#0xc8_exchange_inner_request_withdraw_all_stable">exchange_inner::request_withdraw_all_stable</a>(&<b>mut</b> inner.exchange_pool)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_init_exchange_pool"></a>
-
-## Function `init_exchange_pool`
-
-Init exchange pool by add bfc coin.
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_exchange_pool">init_exchange_pool</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_exchange_pool">init_exchange_pool</a>(
-    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
-    <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
-) {
-    <a href="exchange_inner.md#0xc8_exchange_inner_add_bfc_to_pool">exchange_inner::add_bfc_to_pool</a>(&<b>mut</b> self.exchange_pool, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin">coin</a>)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_get_bfc_amount"></a>
-
-## Function `get_bfc_amount`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_amount">get_bfc_amount</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_amount">get_bfc_amount</a>(
-    self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
-): u64 {
-    <a href="exchange_inner.md#0xc8_exchange_inner_get_bfc_amount">exchange_inner::get_bfc_amount</a>(&self.exchange_pool)
 }
 </code></pre>
 
