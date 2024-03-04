@@ -689,8 +689,8 @@ impl GenesisCeremonyParameters {
     }
 
     fn default_initial_stake_subsidy_distribution_amount() -> u64 {
-        // 10000 Sui
-        10000 * sui_types::gas_coin::MIST_PER_SUI
+        // 50_000_000 BFC
+        50_000_000 * sui_types::gas_coin::MIST_PER_SUI
     }
 
     fn default_stake_subsidy_period_length() -> u64 {
