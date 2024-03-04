@@ -1060,7 +1060,7 @@ fn test_change_epoch_transaction() {
     //0x05, 0x06, 0xc0[201]
     assert_eq!(
         objects_length,
-        3
+        2
     );
 }
 
@@ -1072,7 +1072,7 @@ fn test_consensus_commit_prologue_transaction() {
     assert_eq!(
         tx.shared_input_objects().next().unwrap(),
         SharedInputObject {
-            id: SUI_CLOCK_OBJECT_ID,
+            id: SUI_SYSTEM_STATE_OBJECT_ID,
             initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
             mutable: true,
         },
@@ -1085,7 +1085,7 @@ fn test_consensus_commit_prologue_transaction() {
             .input_objects()
             .unwrap()
             .len(),
-        1
+        3
     );
 }
 
