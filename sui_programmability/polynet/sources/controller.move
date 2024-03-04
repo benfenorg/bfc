@@ -8,6 +8,7 @@ module polynet::controller {
     use sui::coin::{Coin, Self};
     use sui::bfc::BFC;
     use polynet::events;
+    use polynet::utils;
     use polynet::config::{CrossChainGlobalConfig, Self};
     use polynet::wrapper_v1::{init_wrapper, feeCollector, WrapperStore};
     use polynet::cross_chain_manager::{CrossChainManager, Self};
@@ -17,6 +18,9 @@ module polynet::controller {
     const EINVALID_SYSTEM_IS_PAUSED: u64 = 5000;
     const ELICENSE_NOT_EXIST: u64 = 5001;
     const ERR_VERSION_CHECK: u64 = 5002; 
+    const ERR_PAUSE_ROLE: u64 = 5003;
+    const EINVALID_ADMIN_SIGNER: u64 = 5004;
+    const ENOT_CHANGE_KEEPER_ROLE: u64 = 5005;
 
      // update crosschain_manager
     public entry fun migrate(  
@@ -63,6 +67,45 @@ module polynet::controller {
             _new_fee_collector,
             _ctx
         ); 
+    }
+
+      // change book keeper
+    public entry fun change_Book_keeper(
+        _global: &mut CrossChainGlobalConfig, 
+        _keepers: vector<vector<u8>>, 
+        _startHeight: u64, 
+        _ctx: &mut TxContext
+    )  {
+
+        config::check_version(_global);
+        // sender address
+        let sender = tx_context::sender(_ctx);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+
+        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
+        cross_chain_manager::change_book_keeper(
+            ccManager,
+            _keepers,
+            _startHeight,
+            _ctx
+        );
+    }
+
+    public entry fun set_poly_id(
+        _global: &mut CrossChainGlobalConfig, 
+        _polyId: u64, 
+        _ctx: &mut TxContext
+    )  {
+        config::check_version(_global);
+        // sender address
+        let sender = tx_context::sender(_ctx);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
+        cross_chain_manager::set_poly_id(
+            ccManager,
+            _polyId,
+            _ctx
+        );
     }
 
      // update crosschain_config
@@ -112,8 +155,23 @@ module polynet::controller {
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(&lpManager.license_store.license);
 
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(ccManager,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
-        lock_proxy::unlock<CoinType>(lpManager, treasury_ref, certificate, clock, ctx);
+        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
+            ccManager,
+            license_ref, 
+            &proof, 
+            &rawHeader, 
+            &headerProof, 
+            &curRawHeader, 
+            &headerSig, 
+            ctx
+        );
+        lock_proxy::unlock<CoinType>(
+            lpManager, 
+            treasury_ref,
+             certificate, 
+             clock, 
+             ctx
+        );
     }
 
 
@@ -132,6 +190,7 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         lock_proxy::check_paused(lpManager);
+        config::check_pause(_global);
         config::check_version(_global);
 
         relay_unlock_tx_internal<CoinType>(
@@ -165,6 +224,7 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         let wrapperStore = config::borrow_mut_wrapper_store(_global);
+        config::check_pause(_global);
         lock_proxy::check_paused(lpManager);
         config::check_version(_global);
 
@@ -354,6 +414,82 @@ module polynet::controller {
         lock_proxy::output_license_id(lpManager);
        
     }
+
+    public entry fun grant_role(
+        _global: &mut CrossChainGlobalConfig,  
+        _role: u64, 
+        _account: address, 
+        _ctx: &mut TxContext
+    )  {
+        config::check_version(_global);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+
+        cross_chain_manager::grant_role(
+                                ccManager,
+                                _role,
+                                _account,
+                                _ctx
+                              );
+    }
+
+    public entry fun revoke_role(
+        _global: &mut CrossChainGlobalConfig,  
+        _role: u64, 
+        _account: address, 
+        _ctx: &mut TxContext
+     )  {
+        config::check_version(_global);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+
+        cross_chain_manager::revoke_role(
+                                ccManager,
+                                _role,
+                                _account,
+                                _ctx
+                              );
+
+    }
+
+    public entry fun setBlackList(
+        _global: &mut CrossChainGlobalConfig,  
+        _license_id: vector<u8>,
+        _access_level: u8, 
+        _ctx: &mut TxContext
+    )  {
+
+        config::check_version(_global);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+
+        cross_chain_manager::set_blackList(
+                            ccManager,
+                            _license_id,
+                            _access_level
+                            _ctx
+                            );
+    }
+
+     public entry fun pause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+
+        config::check_version(_global);
+         et ccManager = config::borrow_mut_crosschain_manager(_global);
+        let sender = tx_context::sender(_ctx);
+        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::PAUSE_ROLE, sender), ERR_PAUSE_ROLE);
+
+        config::pause(_global,_ctx);
+    }
+
+    public entry fun unpause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+
+        config::check_version(_global);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+        let sender = tx_context::sender(_ctx);
+        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::PAUSE_ROLE, sender), ERR_PAUSE_ROLE);
+
+        config::unpause(_global,_ctx);
+    }
+
+
+
 
 
 

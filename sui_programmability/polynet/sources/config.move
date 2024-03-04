@@ -12,6 +12,7 @@ module polynet::config {
     friend polynet::controller;
 
     const VERSION: u64 = 1;
+    const ERR_CHECK_CONFIG_PAUSED: u64 = 5000;
 
     struct CrossChainGlobalConfig has key,store{
         id: UID,
@@ -108,6 +109,32 @@ module polynet::config {
 
      public(friend) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): LockProxyManager {
         _global.lockProxyManager
+    }
+
+
+       // pause/unpause
+   fun paused(_global: &CrossChainGlobalConfig): bool  {
+        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
+       _global.paused
+    }
+
+    public(friend) fun check_pause(_global:&CrossChainGlobalConfig){
+
+        assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
+      
+    }
+
+
+    public(friend) fun pause(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+
+        assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
+        ccManager.config.paused = true;
+    }
+
+    public(friend) fun unpause(_global:&mut CrossChainGlobalConfig, c_ctxx: &mut TxContext)  {
+
+        assert!(paused(_global),ERR_CHECK_CONFIG_PAUSED);
+        ccManager.config.paused = false;
     }
 
 
