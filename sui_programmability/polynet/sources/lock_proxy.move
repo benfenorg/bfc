@@ -28,6 +28,8 @@ module polynet::lock_proxy {
     use polynet::utils;
 
     friend polynet::cross_chain_manager;
+    friend polynet::controller ;
+
 
     const DEPRECATED: u64 = 4001;
     const ENOT_OWNER: u64 = 4002;
@@ -116,7 +118,7 @@ module polynet::lock_proxy {
         module_name: String,
     }
 
-    public(friend) fun new_lock_proxy_manager(_ctx: &mut TxContext ) {
+    public(friend) fun new(_ctx: &mut TxContext): LockProxyManager {
 
         let sender = tx_context::sender(_ctx);
 
@@ -165,9 +167,7 @@ module polynet::lock_proxy {
             amountUnlockManager: amountUnlockManager,
         };
 
-        transfer::share_object(manager)
-        
-
+        manager
     }
 
     //TODO: upgrade
@@ -511,7 +511,7 @@ module polynet::lock_proxy {
     }
 
     // unlock
-    public fun unlock<CoinType>(lpManager: &mut LockProxyManager,
+    public(friend) fun unlock<CoinType>(lpManager: &mut LockProxyManager,
                                 treasury_ref:&mut Treasury<CoinType>,
                                 certificate: cross_chain_manager::Certificate,
                                 clock:&Clock,
@@ -616,29 +616,7 @@ module polynet::lock_proxy {
         resetAmount(amountManager);
     }
 
-    public entry fun relay_unlock_tx<CoinType>(
-        ccManager:&mut CrossChainManager,
-        lpManager: &mut LockProxyManager,
-        treasury_ref:&mut Treasury<CoinType>,
-        proof: vector<u8>, 
-        rawHeader: vector<u8>, 
-        headerProof: vector<u8>, 
-        curRawHeader: vector<u8>, 
-        headerSig: vector<u8>,
-        clock:&Clock,
-        ctx: &mut TxContext
-    )  {
-
-
-        // borrow license
-        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
-        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
-        let license_ref = option::borrow(&lpManager.license_store.license);
-
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(ccManager,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
-        unlock<CoinType>(lpManager, treasury_ref, certificate, clock, ctx);
-    }
-
+   
 
     // decimals conversion
     public fun to_target_chain_amount(amount: u64,source_decimals: u8,  target_decimals: u8): u128 {
