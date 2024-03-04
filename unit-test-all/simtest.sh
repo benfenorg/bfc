@@ -14,3 +14,4 @@ cargo simtest sim_test_busd_staking
 cargo simtest sim_test_multiple_stable_staking
 cargo simtest sim_test_passive_reconfig
 cargo simtest sim_test_reconfig_with_committee_change_stress
+cargo simtest test_onsite_reconfig_observer_basic
