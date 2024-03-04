@@ -795,14 +795,14 @@ mod checked {
         _protocol_config: &ProtocolConfig,
         _metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
-        let bfc_round_pt = construct_bfc_round_pt(change_round.bfc_round)?;
+        let bfc_round_pt = construct_bfc_round_pt(_change_round.bfc_round)?;
         let _result = programmable_transactions::execution::execute::<execution_mode::System>(
-            protocol_config,
-            metrics.clone(),
-            move_vm,
-            temporary_store,
-            tx_ctx,
-            gas_charger,
+            _protocol_config,
+            _metrics.clone(),
+            _move_vm,
+            _temporary_store,
+            _tx_ctx,
+            _gas_charger,
             bfc_round_pt,
         );
 
