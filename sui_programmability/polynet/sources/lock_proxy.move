@@ -1,14 +1,18 @@
 #[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
     use std::ascii;
-    use std::ascii::{as_bytes, String, string};
+    use std::ascii::{as_bytes, string, String};
     use std::vector;
     use std::option::{Self, Option};
+    use std::string;
+    use std::string::length;
     use sui::event;
     use sui::math;
     use sui::table::{Table, Self};
     use std::type_name::{Self, TypeName};
     use sui::address;
+    use sui::clock;
+    use sui::clock::Clock;
     use polynet::cross_chain_manager::{CrossChainManager, LicenseInfo};
     use sui::coin::{Coin, Self};
     use sui::object;
@@ -16,6 +20,8 @@ module polynet::lock_proxy {
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
+    use sui::vec_map;
+    use sui::vec_map::VecMap;
 
     use polynet::cross_chain_manager;
     use polynet::zero_copy_sink;
@@ -36,14 +42,25 @@ module polynet::lock_proxy {
     const EINVALID_METHOD: u64 = 4012;
     const ELICENSE_STORE_ALREADY_EXIST: u64 = 4013;
     const EINVALID_LICENSE_INFO: u64 = 4014;
-    const EINVALID_SIGNER: u64 = 4015;
-    const ELICENSE_STORE_NOT_EXIST: u64 = 4016;
+    const EINVALID_ADMIN_SIGNER: u64 = 4015;
+    const EINVALID_ASSETS_ADMIN_SIGNER: u64 = 4016;
+    const ELICENSE_STORE_NOT_EXIST: u64 = 4017;
+
+    const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4018;
+
+
+
+    const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
+
+    const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
     struct LockProxyManager has key{
         id: UID,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
+        amountLockManager: AmountLimitManager,
+        amountUnlockManager: AmountLimitManager,
     }
 
     struct LockProxyStore has key, store {
@@ -99,11 +116,11 @@ module polynet::lock_proxy {
     }
 
     // init
-    public entry fun init_lock_proxy_manager(ctx: &mut TxContext) {
+    public entry fun init_lock_proxy_manager(clock: &Clock, ctx: &mut TxContext) {
         // sender address
         let sender = tx_context::sender(ctx);
 
-        assert!(utils::is_admin(sender), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         let lockproxystore = LockProxyStore{
             id: object::new(ctx),
@@ -118,16 +135,36 @@ module polynet::lock_proxy {
             license: option::none<cross_chain_manager::License>(),
         };
 
+        let start_time = clock::timestamp_ms(clock);
+        let amountLockManager = AmountLimitManager{
+            id: object::new(ctx),
+            time: start_time,
+            amount_record: vec_map::empty()
+        };
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+
+        let amountUnlockManager = AmountLimitManager{
+            id: object::new(ctx),
+            time: start_time,
+            amount_record: vec_map::empty()
+        };
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+
         let manager = LockProxyManager{
             id: object::new(ctx),
             lock_proxy_store: lockproxystore,
             license_store: licensestore,
+            amountLockManager: amountLockManager,
+            amountUnlockManager: amountUnlockManager,
         };
 
-
-
         transfer::share_object(manager)
-
     }
 
 
@@ -307,9 +344,6 @@ module polynet::lock_proxy {
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
     public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
 
-        //assert!((admin) == utils::get_bridge_address(), EINVALID_SIGNER);
-        //assert!(!exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_ALREADY_EXIST);
-
 
         let treasury = Treasury<CoinType>{
             id: object::new(ctx),
@@ -320,8 +354,8 @@ module polynet::lock_proxy {
 
     }
 
-    public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>,admin: address) {
-        transfer::transfer(treasury, admin)
+    public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>) {
+        transfer::share_object(treasury)
     }
 
     public fun is_treasury_initialzed<CoinType>(): bool {
@@ -334,19 +368,16 @@ module polynet::lock_proxy {
     }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
-        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
-        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(POLY_BRIDGE);
-
-
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
     }
 
+    //todo. need more strick root right checking. admin has too many accounts.
     fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
-        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
-        //let treasury_ref = borrow_global_mut<Treasury<CoinType>>(POLY_BRIDGE);
+        // sender address: only assets admin can withdraw
+        let sender = tx_context::sender(ctx);
+        assert!(utils::is_assets_admin(sender), EINVALID_ASSETS_ADMIN_SIGNER);
 
         return coin::split(&mut treasury_ref.coin, amount, ctx)
-        //return coin::extract<CoinType>(&mut treasury_ref.coin, amount)
     }
 
 
@@ -373,7 +404,7 @@ module polynet::lock_proxy {
     }
 
     public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
-        assert!(utils::is_admin(admin), EINVALID_SIGNER);
+        assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
@@ -405,12 +436,14 @@ module polynet::lock_proxy {
     // lock
     public fun lock<CoinType>(
         ccManager:&mut CrossChainManager,
-        lpManager: &LockProxyManager,
+        lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         account: address,
-                              fund: Coin<CoinType>,
-                              toChainId: u64,
-                              toAddress: &vector<u8>, ctx: &mut TxContext)  {
+        fund: Coin<CoinType>,
+        toChainId: u64,
+        toAddress: &vector<u8>,
+        clock:&Clock,
+        ctx: &mut TxContext)  {
         // lock fund
         let amount = coin::value(&fund);
         deposit(treasury_ref, fund);
@@ -419,11 +452,15 @@ module polynet::lock_proxy {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
+        assert!(checkAmountResult(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        
         let license_ref = option::borrow(&lpManager.license_store.license);
 
         // get target proxy/asset
         let to_proxy = getTargetProxy(lpManager, toChainId);
         let (to_asset, to_asset_decimals) = getToAsset<CoinType>(lpManager, toChainId);
+
 
 
         //todo,, decimals
@@ -452,11 +489,11 @@ module polynet::lock_proxy {
         );
     }
 
-
     // unlock
     public fun unlock<CoinType>(lpManager: &mut LockProxyManager,
                                 treasury_ref:&mut Treasury<CoinType>,
                                 certificate: cross_chain_manager::Certificate,
+                                clock:&Clock,
                                 ctx: &mut TxContext
     )  {
         // read certificate
@@ -481,18 +518,20 @@ module polynet::lock_proxy {
 
         //todo, decimals
         let amount = from_target_chain_amount(from_chain_amount, decimals, decimals);
-
-        // check
+        let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
+        //todo, decimals
         //type_name::get<Coin<CoinType>>()
-        assert!( *as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
+
+        assert!(*as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
+
         assert!(getTargetProxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
         let (license_id, _) = getLicenseId(lpManager);
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
+        assert!(checkAmountResult(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
-
         //todo need transfer.
 
         transfer::public_transfer(fund, utils::to_address(to_address));
@@ -509,6 +548,53 @@ module polynet::lock_proxy {
         );
     }
 
+    struct AmountLimitManager has key, store{
+        id: UID,
+        time: u64,
+        amount_record: VecMap<vector<u8>, u64>,
+    }
+
+    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
+        let current_time = clock::timestamp_ms(clock);
+        let amountLimit : &mut AmountLimitManager;
+        if (flag == true) {
+            amountLimit = &mut lockProxyManager.amountLockManager;
+        } else {
+            amountLimit = &mut lockProxyManager.amountUnlockManager;
+        };
+
+        if(current_time -  amountLimit.time > ONE_DAY){
+            amountLimit.time = current_time;
+            resetAmount(amountLimit);
+        };
+        let amount = vec_map::get_mut(&mut amountLimit.amount_record, key);
+        if(user_amount > *amount){
+            return false
+        }else{
+            *amount = *amount - user_amount;
+        };
+        return true
+    }
+
+    fun resetAmount(amountManager:&mut AmountLimitManager){
+        let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
+        *usdt = MAX_AMOUNT;
+
+        let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDC");
+        *usdc = MAX_AMOUNT;
+
+        let btc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_BTC");
+        *btc = MAX_AMOUNT;
+
+        let eth = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_ETH");
+        *eth = MAX_AMOUNT;
+    }
+
+    entry fun resetAmountByAdmin(admin : address, amountManager : &mut AmountLimitManager){
+        assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
+        resetAmount(amountManager);
+    }
+
     public entry fun relay_unlock_tx<CoinType>(
         ccManager:&mut CrossChainManager,
         lpManager: &mut LockProxyManager,
@@ -518,15 +604,18 @@ module polynet::lock_proxy {
         headerProof: vector<u8>, 
         curRawHeader: vector<u8>, 
         headerSig: vector<u8>,
+        clock:&Clock,
         ctx: &mut TxContext
     )  {
+
+
         // borrow license
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let license_ref = option::borrow(&lpManager.license_store.license);
 
         let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(ccManager,license_ref, &proof, &rawHeader, &headerProof, &curRawHeader, &headerSig, ctx);
-        unlock<CoinType>(lpManager, treasury_ref, certificate, ctx);
+        unlock<CoinType>(lpManager, treasury_ref, certificate, clock, ctx);
     }
 
 
@@ -563,5 +652,19 @@ module polynet::lock_proxy {
         (to_address, offset) = zero_copy_source::next_var_bytes(raw_data, offset);
         (_, amount, _) = zero_copy_source::next_u256(raw_data, offset);
         return (to_asset, to_address, amount)
+    }
+
+    public fun convert_to_short_key(name: &String) :vector<u8> {
+        let ascii_name = &string::from_ascii(*name);
+
+        if (string::index_of(ascii_name, &string::utf8(b"BFC_ETH")) != length(ascii_name)) {
+            return b"BFC_ETH"
+        } else if (string::index_of(ascii_name, &string::utf8(b"BFC_USDT")) != length(ascii_name)) {
+            return b"BFC_USDT"
+        } else if (string::index_of(ascii_name, &string::utf8(b"BFC_USDC")) != length(ascii_name)) {
+            return b"BFC_USDC"
+        } else {
+            return b"BFC_BTC"
+        }
     }
 }

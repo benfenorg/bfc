@@ -2,6 +2,7 @@
 module polynet::tools_test {
     use std::debug::print;
     use std::vector;
+    use sui::clock;
     use polynet::lock_proxy::{init_lock_proxy_manager, LockProxyManager, getLicenseId};
     use polynet::cross_chain_manager;
     use polynet::tools::{init_testnet_ccm, init_mainnet_ccm, issue_license_to_lock_proxy, init_as_testnet,
@@ -77,8 +78,9 @@ module polynet::tools_test {
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
             cross_chain_manager::init_crosschain_manager(keepers, startHeight, polyId, ctx);
-            init_lock_proxy_manager(ctx);
-
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
 
         let new_polyId: u64 = 42;
@@ -119,7 +121,9 @@ module polynet::tools_test {
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
             init_testnet_ccm(ctx);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -128,8 +132,8 @@ module polynet::tools_test {
             let lock_proxy = test_scenario::take_shared<LockProxyManager>(&mut scenario_val);
 
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-            init_as_testnet(&mut manager, &mut lock_proxy, ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_as_testnet(&mut manager, &mut lock_proxy, &clock, ctx);
 
             let (licenseInfoBytes, licenseInfo) = getLicenseId(&mut lock_proxy);
             print(&licenseInfo);
@@ -141,6 +145,7 @@ module polynet::tools_test {
 
             test_scenario::return_shared(manager);
             test_scenario::return_shared(lock_proxy);
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::end(scenario_val);
@@ -163,7 +168,9 @@ module polynet::tools_test {
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
             init_mainnet_ccm(ctx);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -173,7 +180,8 @@ module polynet::tools_test {
 
             let ctx = test_scenario::ctx(&mut scenario_val);
 
-            init_as_mainnet(&mut manager, &mut lock_proxy, ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_as_mainnet(&mut manager, &mut lock_proxy, &clock, ctx);
 
             let (licenseInfoBytes, licenseInfo) = getLicenseId(&mut lock_proxy);
             print(&licenseInfo);
@@ -185,6 +193,7 @@ module polynet::tools_test {
 
             test_scenario::return_shared(manager);
             test_scenario::return_shared(lock_proxy);
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::end(scenario_val);

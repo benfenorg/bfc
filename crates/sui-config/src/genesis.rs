@@ -9,18 +9,13 @@ use fastcrypto::hash::HashFunction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tracing::trace;
 
-use sui_types::{
-    committee::{Committee, EpochId, ProtocolVersion},
-    error::SuiResult,
-    object::Object,
-};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::clock::Clock;
+use sui_types::collection_types::{Entry, VecMap};
 use sui_types::committee::CommitteeWithNetworkMetadata;
 use sui_types::crypto::DefaultHash;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
-use sui_types::collection_types::{VecMap, Entry};
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointSummary, VerifiedCheckpoint,
 };
@@ -29,6 +24,11 @@ use sui_types::sui_system_state::{
     SuiSystemStateWrapper, SuiValidatorGenesis,
 };
 use sui_types::transaction::Transaction;
+use sui_types::{
+    committee::{Committee, EpochId, ProtocolVersion},
+    error::SuiResult,
+    object::Object,
+};
 
 pub const TOTAL_SUPPLY_WITH_ALLOCATION_MIST: u64 = TOTAL_SUPPLY_MIST / 2;
 #[derive(Clone, Debug)]
@@ -74,7 +74,6 @@ pub struct TreasuryParameters {
 
     /// Initialize Price
     pub initialize_price: u128,
-
 }
 
 impl TreasuryParameters {
@@ -89,8 +88,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 18446744073709551616,
-            }
+                initialize_price: 58333726687135162368,
+            },
         });
 
         // mg-gold
@@ -102,8 +101,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 4739054358918237184,
-            }
+                initialize_price: 14986205729530720256,
+            },
         });
 
         // jpy
@@ -115,8 +114,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 1554350283925300736,
-            }
+                initialize_price: 4915287178933356544,
+            },
         });
 
         // krw
@@ -128,8 +127,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 511876374263476416,
-            }
+                initialize_price: 1618695223101379840,
+            },
         });
 
         parameters.push(Entry {
@@ -140,8 +139,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 15211574852928219136,
-            }
+                initialize_price: 48103223333394006016,
+            },
         });
 
         parameters.push(Entry {
@@ -152,8 +151,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 639013959397700608,
-            }
+                initialize_price: 2020739568339092224,
+            },
         });
 
         parameters.push(Entry {
@@ -164,8 +163,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 8453360104325207040,
-            }
+                initialize_price: 26731871811266244608,
+            },
         });
 
         parameters.push(Entry {
@@ -176,8 +175,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 16081498650931548160,
-            }
+                initialize_price: 50854163925868765184,
+            },
         });
 
         parameters.push(Entry {
@@ -188,8 +187,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 19347108404436885504,
-            }
+                initialize_price: 61180928696206655488,
+            },
         });
 
         parameters.push(Entry {
@@ -200,8 +199,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 20788424807800897536,
-            }
+                initialize_price: 65738771359798919168,
+            },
         });
 
         parameters.push(Entry {
@@ -212,8 +211,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 10000_000_000_000,
-                initialize_price: 148722405339145184,
-            }
+                initialize_price: 470301539970485312,
+            },
         });
 
         parameters.push(Entry {
@@ -224,8 +223,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 2020739568339092480,
-            }
+                initialize_price: 6390139593977006080,
+            },
         });
 
         parameters.push(Entry {
@@ -236,8 +235,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 1934710840443688448,
-            }
+                initialize_price: 6118092869620665344,
+            },
         });
 
         parameters.push(Entry {
@@ -248,8 +247,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 9585209390965510144,
-            }
+                initialize_price: 30311093525086388224,
+            },
         });
 
         parameters.push(Entry {
@@ -260,8 +259,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 3401411541597386240,
-            }
+                initialize_price: 10756207731032303616,
+            },
         });
 
         parameters.push(Entry {
@@ -272,8 +271,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 4286635955353647104,
-            }
+                initialize_price: 13555533118889377792,
+            },
         });
 
         parameters.push(Entry {
@@ -284,8 +283,8 @@ impl TreasuryParameters {
                 spacing_times: 2,
                 max_counter_times: 5,
                 base_point: 50000_000_000_000,
-                initialize_price: 4480698567002177536,
-            }
+                initialize_price: 14169212980379457536,
+            },
         });
 
         VecMap {
@@ -299,13 +298,13 @@ impl PartialEq for Genesis {
     fn eq(&self, other: &Self) -> bool {
         self.checkpoint.data() == other.checkpoint.data()
             && {
-            let this = self.checkpoint.auth_sig();
-            let other = other.checkpoint.auth_sig();
+                let this = self.checkpoint.auth_sig();
+                let other = other.checkpoint.auth_sig();
 
-            this.epoch == other.epoch
-                && this.signature.as_ref() == other.signature.as_ref()
-                && this.signers_map == other.signers_map
-        }
+                this.epoch == other.epoch
+                    && this.signature.as_ref() == other.signature.as_ref()
+                    && this.signers_map == other.signers_map
+            }
             && self.checkpoint_contents == other.checkpoint_contents
             && self.transaction == other.transaction
             && self.effects == other.effects
@@ -453,8 +452,8 @@ impl Genesis {
 
 impl Serialize for Genesis {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         use serde::ser::Error;
 
@@ -490,8 +489,8 @@ impl Serialize for Genesis {
 
 impl<'de> Deserialize<'de> for Genesis {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
 
@@ -634,7 +633,7 @@ pub struct GenesisCeremonyParameters {
     /// The amount of stake subsidy to be drawn down per distribution.
     /// This amount decays and decreases over time.
     #[serde(
-    default = "GenesisCeremonyParameters::default_initial_stake_subsidy_distribution_amount"
+        default = "GenesisCeremonyParameters::default_initial_stake_subsidy_distribution_amount"
     )]
     pub stake_subsidy_initial_distribution_amount: u64,
 
@@ -659,7 +658,7 @@ impl GenesisCeremonyParameters {
             epoch_duration_ms: Self::default_epoch_duration_ms(),
             round_duration_ms: Self::default_round_duration_ms(),
             stake_subsidy_initial_distribution_amount:
-            Self::default_initial_stake_subsidy_distribution_amount(),
+                Self::default_initial_stake_subsidy_distribution_amount(),
             stake_subsidy_period_length: Self::default_stake_subsidy_period_length(),
             stake_subsidy_decrease_rate: Self::default_stake_subsidy_decrease_rate(),
         }
@@ -681,7 +680,7 @@ impl GenesisCeremonyParameters {
         //24 * 60 * 60 * 1000
 
         //10 mins
-        1000*60*5
+        1000 * 60 * 5
     }
 
     fn default_round_duration_ms() -> u64 {
@@ -717,11 +716,11 @@ impl GenesisCeremonyParameters {
             max_validator_count: sui_types::governance::MAX_VALIDATOR_COUNT,
             min_validator_joining_stake: sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST,
             validator_low_stake_threshold:
-            sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
+                sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
             validator_very_low_stake_threshold:
-            sui_types::governance::VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST,
+                sui_types::governance::VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST,
             validator_low_stake_grace_period:
-            sui_types::governance::VALIDATOR_LOW_STAKE_GRACE_PERIOD,
+                sui_types::governance::VALIDATOR_LOW_STAKE_GRACE_PERIOD,
         }
     }
 
@@ -763,7 +762,7 @@ impl TokenDistributionSchedule {
     }
 
     pub fn check_all_stake_operations_are_for_valid_validators<
-        I: IntoIterator<Item=SuiAddress>,
+        I: IntoIterator<Item = SuiAddress>,
     >(
         &self,
         validators: I,
@@ -794,7 +793,7 @@ impl TokenDistributionSchedule {
         }
     }
 
-    pub fn new_for_validators_with_default_allocation<I: IntoIterator<Item=SuiAddress>>(
+    pub fn new_for_validators_with_default_allocation<I: IntoIterator<Item = SuiAddress>>(
         validators: I,
     ) -> Self {
         let mut supply = TOTAL_SUPPLY_WITH_ALLOCATION_MIST;
@@ -821,14 +820,16 @@ impl TokenDistributionSchedule {
         schedule
     }
 
-    pub fn new_for_validators_with_default_allocation_and_bfc_allocation <I: IntoIterator<Item=SuiAddress>>(
+    pub fn new_for_validators_with_default_allocation_and_bfc_allocation<
+        I: IntoIterator<Item = SuiAddress>,
+    >(
         validators: I,
-        bfc_user_allocation: &Vec<TokenAllocation>
+        bfc_user_allocation: &Vec<TokenAllocation>,
     ) -> Self {
         let mut supply = TOTAL_SUPPLY_WITH_ALLOCATION_MIST;
         let default_allocation = sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST;
 
-        let mut allocations:Vec<_> = validators
+        let mut allocations: Vec<_> = validators
             .into_iter()
             .map(|a| {
                 supply -= default_allocation;
@@ -942,7 +943,7 @@ impl TokenDistributionScheduleBuilder {
         }
     }
 
-    pub fn default_allocation_for_validators<I: IntoIterator<Item=SuiAddress>>(
+    pub fn default_allocation_for_validators<I: IntoIterator<Item = SuiAddress>>(
         &mut self,
         validators: I,
     ) {

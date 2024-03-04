@@ -24,7 +24,7 @@ module polynet::cross_chain_manager {
     const CHANGE_KEEPER_ROLE: u64 = 4;
 
     // Errors
-    const EINVALID_SIGNER: u64 = 4001;
+    const EINVALID_ADMIN_SIGNER: u64 = 4001;
     const EPAUSED: u64 = 4002;
     const EVERIFY_HEADER_FAILED: u64 = 4003;
     const EVERIFY_HEADER_PROOF_FAILED: u64 = 4004;
@@ -77,7 +77,7 @@ module polynet::cross_chain_manager {
         // sender address
         let sender = tx_context::sender(ctx);
 
-        assert!(utils::is_admin(sender), EINVALID_SIGNER);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         // init access control lists
         let acls = table::new<u64, Access_control_list>(ctx);

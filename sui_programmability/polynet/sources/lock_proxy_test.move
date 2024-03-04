@@ -3,11 +3,13 @@
 #[allow(unused_use)]
 module polynet::lock_proxy_test {
 
+    use std::ascii::string;
+    use sui::clock;
     use polynet::bfc_usdc::BFC_USDC;
     use sui::test_scenario;
     use polynet::utils;
     use polynet::lock_proxy::{init_lock_proxy_manager, paused, LockProxyManager, unpause, pause, transferOwnerShip,
-        bindProxy, unbindProxy, bindAsset, unbindAsset
+        bindProxy, unbindProxy, bindAsset, unbindAsset, convert_to_short_key, checkAmountResult
     };
 
     #[test]
@@ -20,7 +22,9 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -64,10 +68,44 @@ module polynet::lock_proxy_test {
         };
 
 
-
         test_scenario::end(scenario_val);
 
     }
+
+    #[test]
+    fun test_check_amount_result() {
+        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+
+        assert!(utils::is_admin(owner), 4001);
+
+        let scenario_val = test_scenario::begin(owner);
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let manager = test_scenario::take_shared<LockProxyManager>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            let clock = clock::create_for_testing(ctx);
+
+
+            let result = checkAmountResult(10000000000000, &mut manager, &b"BFC_USDT", false, &clock);
+            assert!(result, 4018);
+
+            let result = checkAmountResult(100000000000000, &mut manager, &b"BFC_USDT", false, &clock);
+            assert!(result == false, 4018);
+
+            test_scenario::return_shared(manager);
+            clock::destroy_for_testing(clock);
+        };
+        test_scenario::end(scenario_val);
+    }
+
 
     #[test]
     fun test_bind_proxy() {
@@ -78,7 +116,9 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
         test_scenario::next_tx(&mut scenario_val, owner);
         {
@@ -104,6 +144,20 @@ module polynet::lock_proxy_test {
         test_scenario::end(scenario_val);
     }
 
+    #[test]
+    fun test_convert_to_short_key(){
+        let input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_eth::BFC_ETH>");
+        assert!(convert_to_short_key(&input) == b"BFC_ETH", 1);
+
+        input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_usdt::BFC_USDT>");
+        assert!(convert_to_short_key(&input) == b"BFC_USDT", 1);
+
+        input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_usdc::BFC_USDC>");
+        assert!(convert_to_short_key(&input) == b"BFC_USDC", 1);
+
+        input = string(b"0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0000000000000000000000000000000000000000000000000000000000000000::bfc_usdc::BFC_BTC>");
+        assert!(convert_to_short_key(&input) == b"BFC_BTC", 1);
+    }
 
     #[test]
     fun test_asset(){
@@ -114,7 +168,9 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_lock_proxy_manager(ctx);
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
+            clock::destroy_for_testing(clock);
         };
         test_scenario::next_tx(&mut scenario_val, owner);
         {

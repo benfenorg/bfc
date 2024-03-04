@@ -3,6 +3,7 @@ module polynet::wrapper_v1_test {
     use std::debug::print;
     use std::vector;
     use sui::bfc::BFC;
+    use sui::clock;
     use sui::coin;
     use polynet::bfc_eth::{new_for_test, BFC_ETH};
     use polynet::cross_chain_manager::CrossChainManager;
@@ -11,7 +12,6 @@ module polynet::wrapper_v1_test {
     use polynet::wrapper_v1::{init_wrapper, feeCollector, WrapperStore, setFeeCollector, lock_and_pay_fee_with_fund};
     use polynet::utils;
     use sui::test_scenario;
-    use sui::test_scenario::return_to_sender;
 
     #[test]
     fun test_wrapper_init(){
@@ -27,33 +27,33 @@ module polynet::wrapper_v1_test {
         };
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let wrapper_store = test_scenario::take_from_sender<WrapperStore>(&mut scenario_val );
+            let wrapper_store = test_scenario::take_shared<WrapperStore>(&mut scenario_val );
 
             let fee_collector =  feeCollector(&mut wrapper_store);
             assert!(fee_collector==owner, 4002);
 
-            return_to_sender(&mut scenario_val, wrapper_store);
+            test_scenario::return_shared( wrapper_store);
         };
 
         let new_fee_collecotr = @0x01;
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let wrapper_store = test_scenario::take_from_sender<WrapperStore>(&mut scenario_val );
+            let wrapper_store = test_scenario::take_shared<WrapperStore>(&mut scenario_val );
 
 
             let ctx = test_scenario::ctx(&mut scenario_val);
             setFeeCollector(&mut wrapper_store, new_fee_collecotr,ctx);
-            return_to_sender(&mut scenario_val, wrapper_store);
+            test_scenario::return_shared( wrapper_store);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let wrapper_store = test_scenario::take_from_sender<WrapperStore>(&mut scenario_val );
+            let wrapper_store = test_scenario::take_shared<WrapperStore>(&mut scenario_val );
 
             let fee_collector =  feeCollector(&mut wrapper_store);
             assert!(fee_collector==new_fee_collecotr, 4002);
 
-            return_to_sender(&mut scenario_val, wrapper_store);
+            test_scenario::return_shared( wrapper_store);
         };
 
         test_scenario::end(scenario_val);
@@ -76,10 +76,12 @@ module polynet::wrapper_v1_test {
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
             init_mainnet_ccm(ctx);
-            init_lock_proxy_manager(ctx);
+
+            let clock = clock::create_for_testing(ctx);
+            init_lock_proxy_manager(&clock, ctx);
             init_wrapper(ctx);
             new_for_test(ctx, owner);
-
+            clock::destroy_for_testing(clock);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -108,23 +110,26 @@ module polynet::wrapper_v1_test {
 
             let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
             let lock_proxy = test_scenario::take_shared<LockProxyManager>(&mut scenario_val);
-            let wrapper_store = test_scenario::take_from_sender<WrapperStore>(&mut scenario_val );
-            let treasury =  test_scenario::take_from_sender<Treasury<BFC_ETH>>(&mut scenario_val );
+            let wrapper_store = test_scenario::take_shared<WrapperStore>(&mut scenario_val );
+            let treasury =  test_scenario::take_shared<Treasury<BFC_ETH>>(&mut scenario_val );
            // let fund  = test_scenario::take_from_sender<Coin<BFC_BTC>>(&mut scenario_val );
             print(&treasury);
             let coin =  coin::mint_for_testing<BFC_ETH>(10000000000, test_scenario::ctx(&mut scenario_val));
             let fee =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
 
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_as_mainnet(&mut manager, &mut lock_proxy, ctx);
+
+            let clock = clock::create_for_testing(ctx);
+            init_as_mainnet(&mut manager, &mut lock_proxy, &clock, ctx);
 
 
             let toAddress = x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899";
-            lock_and_pay_fee_with_fund<BFC_ETH>(&mut manager, &mut lock_proxy, &mut treasury, &mut wrapper_store, @0x2, coin, fee, 10, &toAddress, ctx);
+            lock_and_pay_fee_with_fund<BFC_ETH>(&mut manager, &mut lock_proxy, &mut treasury, &mut wrapper_store, @0x2, coin, fee, 10, &toAddress, &clock, ctx);
             test_scenario::return_shared(manager);
             test_scenario::return_shared(lock_proxy);
-            test_scenario::return_to_sender(&mut scenario_val, wrapper_store);
-            test_scenario::return_to_sender(&mut scenario_val, treasury);
+            test_scenario::return_shared(wrapper_store);
+            test_scenario::return_shared( treasury);
+            clock::destroy_for_testing(clock);
         };
         test_scenario::end(scenario_val);
     }

@@ -47,7 +47,7 @@ module polynet::bfc_eth {
 
         lock_proxy::deposit<T>(&mut treasury, initial_lock);
 
-        lock_proxy::lock_proxy_transfer(treasury, admin);
+        lock_proxy::lock_proxy_transfer(treasury);
         transfer::public_transfer(cap, tx_context::sender(ctx));
 
     }
@@ -72,7 +72,7 @@ module polynet::bfc_eth {
         let treasury = lock_proxy::initTreasury<BFC_ETH>(ctx);
 
         lock_proxy::deposit<BFC_ETH>(&mut treasury, initial_lock);
-        lock_proxy::lock_proxy_transfer(treasury, owner);
+        lock_proxy::lock_proxy_transfer(treasury);
 
         transfer::public_transfer(cap, tx_context::sender(ctx));
         transfer::public_transfer(remain, owner);
