@@ -807,7 +807,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let _result = maybe_modify_result(_result, change_round.bfc_round);
+        let _result = maybe_modify_result(_result, _change_round.bfc_round);
 
         // if result.is_err() {
         //     tracing::error!(
