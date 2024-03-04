@@ -12,7 +12,7 @@
       "name": "Apache-2.0",
       "url": "https://www.benfen.org/"
     },
-    "version": "1.1.2"
+    "version": "1.1.4"
   },
   "methods": [
     {
@@ -578,7 +578,7 @@
                 "storageRebate": "0",
                 "nonRefundableStorageFee": "0"
               },
-              "epochRollingStableGasCostSummaryMap": {},
+              "epochRollingStableGasCostSummaryMap": [],
               "timestampMs": "1676911928",
               "transactions": [
                 "mN8YNBgVR3wB7vfXmjVgDRF4oqxVRRjzmJ6U4mzbq77"
@@ -666,7 +666,7 @@
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
-                  "epochRollingStableGasCostSummaryMap": {},
+                  "epochRollingStableGasCostSummaryMap": [],
                   "timestampMs": "1676911928",
                   "transactions": [
                     "7RudGLkQDBNJyqrptkrNU66Zd3pvq8MHVAHYz9WpBm59"
@@ -688,7 +688,7 @@
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
-                  "epochRollingStableGasCostSummaryMap": {},
+                  "epochRollingStableGasCostSummaryMap": [],
                   "timestampMs": "1676911928",
                   "transactions": [
                     "7r7tmP5hzgrusiN6cucFwfTveqDb7K75tMJ7oNCyoDmy"
@@ -710,7 +710,7 @@
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
-                  "epochRollingStableGasCostSummaryMap": {},
+                  "epochRollingStableGasCostSummaryMap": [],
                   "timestampMs": "1676911928",
                   "transactions": [
                     "Gb1UDqhmKMzMJ5FL37kBqCcuy4TtBL2ay3qec8tEUBLj"
@@ -732,7 +732,7 @@
                     "storageRebate": "0",
                     "nonRefundableStorageFee": "0"
                   },
-                  "epochRollingStableGasCostSummaryMap": {},
+                  "epochRollingStableGasCostSummaryMap": [],
                   "timestampMs": "1676911928",
                   "transactions": [
                     "GWTS9QR7mjNz9fBWGkk4JZU3mrzMXrmj74uS59Cd5und"
