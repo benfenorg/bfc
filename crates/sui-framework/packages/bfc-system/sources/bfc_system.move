@@ -7,7 +7,6 @@ module bfc_system::bfc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
-    use sui::clock::{Self};
 
     use sui::bfc::BFC;
     use sui::object::UID;
@@ -120,23 +119,18 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
-    public entry fun change_round( wrapper: &mut BfcSystemState, round: u64) {
+    public entry fun change_round( wrapper: &mut BfcSystemState, round_timestamp_ms: u64, ctx: &mut TxContext) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round(inner_state, round);
+        bfc_system_state_inner::update_round_duration(inner_state, round_timestamp_ms, ctx);
     }
 
     public fun bfc_round(
         wrapper: &mut BfcSystemState,
-        clock: &Clock,
-        round: u64,
+        round_timestamp_ms: u64,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round(inner_state, round);
-        // X-treasury rebalance
-        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
-
-        judge_proposal_state(wrapper, clock::timestamp_ms(clock));
+        bfc_system_state_inner::update_round_duration(inner_state, round_timestamp_ms, ctx);
     }
 
     public fun inner_stablecoin_to_bfc<StableCoinType>(
@@ -146,7 +140,7 @@ module bfc_system::bfc_system {
         _ctx: &mut TxContext,
     ): Balance<BFC>
     {
-        /// wouldn't return remain balance<StableCoinType> to system
+        // wouldn't return remain balance<StableCoinType> to system
         let inner_state = load_system_state_mut(_self);
         let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, _ctx), expect,_ctx);
         bfc_balance
@@ -158,15 +152,6 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ): Balance<BFC> {
         bfc_system_state_inner::request_gas_balance(load_system_state_mut(wrapper), amount, ctx)
-    }
-
-    //todo close
-    public entry fun update_round(
-        wrapper: &mut BfcSystemState,
-	clock: &Clock, 
-        ctx: &mut TxContext,
-    ){
-        bfc_round(wrapper,  clock,200, ctx);
     }
 
     fun load_system_state(
@@ -416,6 +401,13 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(self);
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
+
+    public  fun deposit_to_treasury_pool_no_entry(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, ctx: &mut TxContext) {
+        let inner_state = load_system_state_mut(self);
+        let bfc= coin::from_balance(bfc_balance, ctx);
+        bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
+    }
+
 
     public entry fun set_voting_delay(
         self: &mut BfcSystemState,

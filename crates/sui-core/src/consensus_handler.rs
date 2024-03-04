@@ -180,6 +180,15 @@ impl<T: ParentSync + Send + Sync> ExecutionState for ConsensusHandler<T> {
             Arc::new(consensus_output.sub_dag.leader.clone()),
         ));
 
+        // if round % 20 == 0 {
+        //     let bfc_round_transaction = self.bfc_round_transaction(round);
+        //     transactions.push((
+        //         vec![],
+        //         SequencedConsensusTransactionKind::System(bfc_round_transaction),
+        //         Arc::new(consensus_output.sub_dag.leader.clone()),
+        //     ));
+        // }
+
         // TODO: spawn a separate task for this as an optimization
         update_low_scoring_authorities(
             self.low_scoring_authorities.clone(),
@@ -453,6 +462,17 @@ impl<T> ConsensusHandler<T> {
         );
         VerifiedExecutableTransaction::new_system(transaction, self.epoch())
     }
+    #[allow(dead_code)]
+    fn bfc_round_transaction(
+        &self,
+        round: u64,
+    ) -> VerifiedExecutableTransaction {
+        let transaction = VerifiedTransaction::new_change_bfc_round(
+            round,
+        );
+        VerifiedExecutableTransaction::new_system(transaction, self.epoch())
+    }
+
 
     fn epoch(&self) -> EpochId {
         self.epoch_store.epoch()

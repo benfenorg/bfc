@@ -331,7 +331,7 @@ async fn test_change_bfc_round() {
     let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
         .ok()
         .map(|v| v.parse().unwrap())
-        .unwrap_or(1);
+        .unwrap_or(2);
 
     test_cluster
         .swarm
@@ -344,10 +344,11 @@ async fn test_change_bfc_round() {
             let state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert_eq!(state.inner_state().round, 0);
+            assert_eq!(state.inner_state().round_timestamp_ms, 0);
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
+    let _ = sleep(Duration::from_secs(5)).await;
 
     test_cluster
         .swarm
@@ -360,7 +361,7 @@ async fn test_change_bfc_round() {
             let _state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            //assert_eq!(state.inner_state().round, 1);
+            assert!(_state.inner_state().round_timestamp_ms >= 1);
         });
 
 }

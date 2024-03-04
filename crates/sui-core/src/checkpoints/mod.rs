@@ -541,6 +541,22 @@ impl CheckpointStore {
         Ok(checkpoint)
     }
 
+    pub fn get_epoch_first_checkpoint(
+        &self,
+        epoch_id: EpochId,
+    ) -> SuiResult<Option<VerifiedCheckpoint>> {
+        let first_checkpoint_seq:u64 = if epoch_id == 0 || epoch_id == 1 {
+            return Ok(None);
+        }else if let Ok(Some(checkpoint)) = self.get_epoch_last_checkpoint(epoch_id - 1) {
+            checkpoint.sequence_number + 1
+        }else {
+            return Ok(None);
+        };
+        info!("first_checkpoint_seq: {}, epoch: {}", first_checkpoint_seq, epoch_id);
+        let checkpoint = self.get_checkpoint_by_sequence_number(first_checkpoint_seq)?;
+        Ok(checkpoint)
+    }
+
     /// Given the epoch ID, and the last checkpoint of the epoch, derive a few statistics of the epoch.
     pub fn get_epoch_stats(
         &self,
@@ -952,7 +968,22 @@ impl CheckpointBuilder {
             let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary_map)=
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
-            // if  first_checkpoint_of_epoch{
+            // info!(
+            //     checkpoint_seq = sequence_number,
+            //     "11111Creating checkpoint with {} transactions",
+            //     effects.len()
+            // );
+            // let round_bfc = sequence_number == 9;
+            // if  round_bfc {
+            //     error!("first_checkpoint_of_epoch: {:?}, {}", last_checkpoint, sequence_number);
+            //     self.augment_bfc_round(sequence_number,
+            //                            &mut effects,
+            //                            &mut signatures,
+            //     ).await?;
+            // }
+
+            // if  last_checkpoint_of_epoch{
+            //     error!("last_checkpoint_of_epoch: {:?}, {}", last_checkpoint, sequence_number);
             //     self.augment_bfc_round(sequence_number,
             //                                       &mut effects,
             //                                       &mut signatures,
@@ -1178,7 +1209,7 @@ async fn augment_bfc_round(
             .state
             .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
             .await?;
-        error!("bfc round effects is {:?}",effects);
+        error!("bfc round effects is : {:?} {:?}",effects.digest(), effects);
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(())
@@ -1204,6 +1235,7 @@ async fn augment_bfc_round(
                 epoch_start_timestamp_ms,
             )
             .await?;
+        //error!("txn effects is {:?},hash is {:?},effects digest is {:?}",effects,effects.transaction_digest(),effects.digest());
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(system_state)

@@ -1164,12 +1164,6 @@ pub fn generate_genesis_system_object(
         ProtocolVersion::new(genesis_chain_parameters.protocol_version),
         sui_protocol_config::Chain::Unknown,
     );
-    // let mut temporary_store = TemporaryStore::new(
-    //     store.clone(),
-    //     InputObjects::new(vec![]),
-    //     genesis_digest,
-    //     &protocol_config,
-    // );
     let pt = {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create the SuiSystemState UID

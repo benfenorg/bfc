@@ -1446,50 +1446,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bfc-genesis-reader"
-version = "1.1.4"
-dependencies = [
- "anemo",
- "anemo-tower",
- "anyhow",
- "arc-swap",
- "axum",
- "clap",
- "const-str",
- "fastcrypto",
- "futures",
- "git-version",
- "mysten-common",
- "mysten-metrics",
- "mysten-network",
- "narwhal-network",
- "narwhal-types",
- "prometheus",
- "reqwest",
- "serde",
- "snap",
- "sui-archival",
- "sui-config",
- "sui-core",
- "sui-json-rpc",
- "sui-macros",
- "sui-network",
- "sui-protocol-config",
- "sui-simulator",
- "sui-storage",
- "sui-telemetry",
- "sui-tls",
- "sui-types",
- "tap",
- "telemetry-subscribers",
- "tokio",
- "tower",
- "tracing",
- "typed-store",
- "workspace-hack",
-]
-
-[[package]]
 name = "bimap"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
