@@ -434,7 +434,7 @@ module polynet::lock_proxy {
         return cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license))
     }
 
-    public entry fun outputLicenseId(lpManager: &LockProxyManager) {
+    public(friend) fun output_license_id(lpManager: &LockProxyManager) {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
@@ -506,11 +506,12 @@ module polynet::lock_proxy {
     }
 
     // unlock
-    public(friend) fun unlock<CoinType>(lpManager: &mut LockProxyManager,
-                                treasury_ref:&mut Treasury<CoinType>,
-                                certificate: cross_chain_manager::Certificate,
-                                clock:&Clock,
-                                ctx: &mut TxContext
+    public(friend) fun unlock<CoinType>(
+        lpManager: &mut LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        certificate: cross_chain_manager::Certificate,
+        clock:&Clock,
+        ctx: &mut TxContext
     )  {
         // read certificate
         let (

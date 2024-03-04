@@ -348,6 +348,13 @@ module polynet::controller {
         );
     }
 
+    public entry fun output_license_id( _global: &mut CrossChainGlobalConfig) {
+      
+        let lpManager = config::borrow_lp_manager(_global);
+        lock_proxy::output_license_id(lpManager);
+       
+    }
+
 
 
 
