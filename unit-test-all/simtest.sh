@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#cargo simtest --profile ci  --retries 1
 cargo simtest sim_test_full_node_bootstrap_from_snapshot
 cargo simtest sim_test_upgraded_multisig_feature_deny
 cargo simtest sim_advance_epoch_tx_test
@@ -14,4 +14,4 @@ cargo simtest sim_test_busd_staking
 cargo simtest sim_test_multiple_stable_staking
 cargo simtest sim_test_passive_reconfig
 cargo simtest sim_test_reconfig_with_committee_change_stress
-cargo simtest test_onsite_reconfig_observer_basic
+cargo simtest sim_test_onsite_reconfig_observer_basic
