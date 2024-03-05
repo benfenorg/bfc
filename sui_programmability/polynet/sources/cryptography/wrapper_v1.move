@@ -6,7 +6,7 @@ module polynet::wrapper_v1 {
     use sui::clock::Clock;
     use polynet::utils;
     use polynet::events;
-    // use polynet::lock_proxy::{Treasury, LockProxyManager, paused};
+    use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
@@ -32,15 +32,15 @@ module polynet::wrapper_v1 {
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
-    struct WrapperStore has key, store, copy{
-        id: UID,
+    struct WrapperStore has store{
+        // id: UID,
         fee_collector: address,
     }
 
     public(friend) fun new(_ctx: &mut TxContext): WrapperStore {
 
         WrapperStore{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             fee_collector:tx_context::sender(_ctx) //maybe should set at config file
         }
     }
@@ -52,12 +52,12 @@ module polynet::wrapper_v1 {
         _ctx: &mut TxContext
     ) {
       
-        wrapperstore.fee_collector = new_fee_collector;
+        _wrapperstore.fee_collector = _new_fee_collector;
     }
 
-    public fun feeCollector(wrapperstore:&WrapperStore): address {
+    public fun feeCollector(_wrapperstore: &WrapperStore): address {
         //let config_ref = borrow_global<WrapperStore>(POLY_BRIDGE);
-        return wrapperstore.fee_collector
+        return _wrapperstore.fee_collector
     }
     
 

@@ -27,7 +27,7 @@ module polynet::tools {
         init_mainnet_ccm(ctx);
         // wrapper_v1::init_wrapper(ctx);
         // lock_proxy::init_lock_proxy_manager(clock, ctx);
-        issue_license_to_lock_proxy(ccManager,lpManager, ctx);
+        // issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
     public entry fun init_mainnet_ccm(ctx: &mut TxContext) {
@@ -45,16 +45,16 @@ module polynet::tools {
     //     cross_chain_manager::init_crosschain_manager( keepers, startHeight, polyId, ctx);
     }
 
-    public entry fun issue_license_to_lock_proxy(ccManager:&mut CrossChainManager,
-                                                 lpManager:&mut LockProxyManager,
-                                                 ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+    // public entry fun issue_license_to_lock_proxy(ccManager:&mut CrossChainManager,
+    //                                              lpManager:&mut LockProxyManager,
+    //                                              ctx: &mut TxContext) {
+    //     // sender address
+    //     let sender = tx_context::sender(ctx);
+    //     assert!(utils::is_admin(sender), EINVALID_ADMIN);
 
-        let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", ctx);
-        lock_proxy::receiveLicense(lpManager,license);
-    }
+    //     let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", ctx);
+    //     lock_proxy::receiveLicense(lpManager,license);
+    // }
 
     // testnet
     public  fun init_as_testnet(ccManager:&mut CrossChainManager,
@@ -69,7 +69,7 @@ module polynet::tools {
         init_testnet_ccm(ctx);
         // wrapper_v1::init_wrapper(ctx);
         // lock_proxy::init_lock_proxy_manager(clock, ctx);
-        issue_license_to_lock_proxy(ccManager,lpManager, ctx);
+        // issue_license_to_lock_proxy(ccManager,lpManager, ctx);
     }
 
 

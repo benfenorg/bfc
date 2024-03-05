@@ -27,7 +27,7 @@ module polynet::lock_proxy {
     use polynet::zero_copy_source;
     use polynet::utils;
 
-    // friend polynet::cross_chain_manager;
+    friend polynet::wrapper_v1;
     friend polynet::controller;
     friend polynet::config;
 
@@ -59,17 +59,23 @@ module polynet::lock_proxy {
 
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
+    struct AmountLimitManager has  store {
+        // id: UID,
+        time: u64,
+        amount_record: VecMap<vector<u8>, u64>,
+    }
 
-    struct LockProxyManager has key, store, copy{
-        id: UID,
+
+    struct LockProxyManager has store{
+        // id: UID,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
         amountLockManager: AmountLimitManager,
         amountUnlockManager: AmountLimitManager,
     }
 
-    struct LockProxyStore has key, store {
-        id: UID,
+    struct LockProxyStore has store{
+        // id: UID,
         proxy_map: Table<u64, vector<u8>>,
         asset_map: Table<TypeName, Table<u64, vector<u8>>>,
         paused: bool,
@@ -81,8 +87,8 @@ module polynet::lock_proxy {
         coin: Coin<CoinType>
     }
 
-    struct LicenseStore has key, store {
-        id: UID,
+    struct LicenseStore has store {
+        // id: UID,
         license: Option<cross_chain_manager::License>
     }
 
@@ -127,7 +133,7 @@ module polynet::lock_proxy {
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         let lockproxystore = LockProxyStore{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             proxy_map: table::new<u64, vector<u8>>(_ctx),
             asset_map: table::new<TypeName, Table<u64, vector<u8>>>(_ctx),
             paused: false,
@@ -135,14 +141,14 @@ module polynet::lock_proxy {
             };
 
         let licensestore = LicenseStore{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             license: option::none<cross_chain_manager::License>(),
         };
 
         //very big time to void starting
         let start_time = 1809285669000;
         let amountLockManager = AmountLimitManager{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
@@ -152,7 +158,7 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let amountUnlockManager = AmountLimitManager{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
@@ -162,7 +168,7 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let manager = LockProxyManager{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             lock_proxy_store: lockproxystore,
             license_store: licensestore,
             amountLockManager: amountLockManager,
@@ -401,8 +407,10 @@ module polynet::lock_proxy {
 
 
     // license function
-    public fun receiveLicense(lpManager: &mut LockProxyManager,
-                              license: cross_chain_manager::License)   {
+    public fun receiveLicense(
+        lpManager: &mut LockProxyManager,
+        license: cross_chain_manager::License
+    )   {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_STORE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
@@ -471,10 +479,14 @@ module polynet::lock_proxy {
             ctx
         );
     }
+
+    public(friend) fun get_license_ref(_lp_manager: &LockProxyManager): &cross_chain_manager::License {
+        option::borrow(&_lp_manager.license_store.license)
+    }
     
 
     // lock
-    public fun lock<CoinType>(
+    public(friend) fun lock<CoinType>(
         ccManager:&mut CrossChainManager,
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
@@ -533,7 +545,7 @@ module polynet::lock_proxy {
     public(friend) fun unlock<CoinType>(
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
-        certificate: cross_chain_manager::Certificate,
+        certificate: &cross_chain_manager::Certificate,
         clock:&Clock,
         ctx: &mut TxContext
     )  {
@@ -544,7 +556,7 @@ module polynet::lock_proxy {
             target_license_id,
             method,
             args
-        ) = cross_chain_manager::read_certificate(&certificate);
+        ) = cross_chain_manager::read_certificate(certificate);
 
         // unpac args
         let (
@@ -589,11 +601,7 @@ module polynet::lock_proxy {
         );
     }
 
-    struct AmountLimitManager has key, store{
-        id: UID,
-        time: u64,
-        amount_record: VecMap<vector<u8>, u64>,
-    }
+   
 
     public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
@@ -606,7 +614,7 @@ module polynet::lock_proxy {
 
         if(current_time -  amountLimit.time > ONE_DAY){
             amountLimit.time = current_time;
-            resetAmount(amountLimit);
+            reset_amount(amountLimit);
         };
         let amount = vec_map::get_mut(&mut amountLimit.amount_record, key);
         if(user_amount > *amount){
@@ -617,7 +625,14 @@ module polynet::lock_proxy {
         return true
     }
 
-    fun resetAmount(amountManager:&mut AmountLimitManager){
+    public(friend) fun borrow_lock_amount_limit_manager(_lockProxyManager: &mut LockProxyManager): &mut AmountLimitManager {
+        &mut _lockProxyManager.amountLockManager
+    }
+    public(friend) fun borrow_unlock_amount_limit_manager(_lockProxyManager: &mut LockProxyManager): &mut AmountLimitManager {
+        &mut _lockProxyManager.amountUnlockManager
+    }
+
+    public(friend) fun reset_amount(amountManager:&mut AmountLimitManager){
         let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
         *usdt = MAX_AMOUNT;
 
@@ -631,10 +646,12 @@ module polynet::lock_proxy {
         *eth = MAX_AMOUNT;
     }
 
-    entry fun resetAmountByAdmin(admin : address, amountManager : &mut AmountLimitManager){
-        assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
-        resetAmount(amountManager);
-    }
+  
+
+    // entry fun resetAmountByAdmin(admin : address, amountManager : &mut AmountLimitManager){
+    //     assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
+    //     resetAmount(amountManager);
+    // }
 
    
 

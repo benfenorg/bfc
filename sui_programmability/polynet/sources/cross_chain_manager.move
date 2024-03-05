@@ -44,9 +44,11 @@ module polynet::cross_chain_manager {
     const EBLACKLISTED_FROM: u64 = 4013;
     const EBLACKLISTED_TO: u64 = 4014;
     const EVERIFIER_NOT_RECEIVER: u64 = 4015;
+
+
    
-    struct CrossChainManager has key, store, copy{
-        id: UID,
+    struct CrossChainManager has store {
+        // id: UID,
         paused: bool,
         acl_store: ACLStore,
         poly_id: u64,
@@ -62,8 +64,8 @@ module polynet::cross_chain_manager {
     }
 
     // access control
-    struct ACLStore has key, store {
-        id: UID,
+    struct ACLStore has store {
+        // id: UID,
         role_acls: Table<u64, Access_control_list>,
         license_black_list: Table<vector<u8>, u8>
     }
@@ -93,13 +95,13 @@ module polynet::cross_chain_manager {
         table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
 
         let acl_store = ACLStore{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             role_acls: acls,
             license_black_list: table::new<vector<u8>, u8>(_ctx)
         };
 
         let manager = CrossChainManager{
-            id: object::new(_ctx),
+            // id: object::new(_ctx),
             paused: false,
             acl_store: acl_store,
             poly_id: 0,
@@ -163,11 +165,18 @@ module polynet::cross_chain_manager {
     }
 
     public(friend) fun check_keeper_role(
-         ccManager:&mut CrossChainManager,
-         sender: address
+         _ccManager:&mut CrossChainManager,
+         _sender: address
     ) {
-        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
+        assert!(hasRole(_ccManager, CHANGE_KEEPER_ROLE, (_sender)), ENOT_CHANGE_KEEPER_ROLE);
 
+    }
+
+    public(friend) fun check_pause_role(
+         _ccManager:&mut CrossChainManager,
+         _sender: address
+    ) {
+        assert!(hasRole(_ccManager, PAUSE_ROLE, (_sender)), ENOT_PAUSE_ROLE);
     }
 
 
@@ -177,9 +186,11 @@ module polynet::cross_chain_manager {
         module_name: vector<u8>
     }
 
-    public fun issueLicense(ccManager:&mut CrossChainManager,
-                            module_name: vector<u8>,
-                            ctx: &mut TxContext ): License {
+    public(friend) fun issueLicense(
+        ccManager:&mut CrossChainManager,
+        module_name: vector<u8>,
+        ctx: &mut TxContext 
+    ): License {
 
         // sender address
         let sender = tx_context::sender(ctx);
@@ -421,7 +432,7 @@ module polynet::cross_chain_manager {
         ) = cross_chain_utils::deserializeHeader(rawHeader);
         let keepers = get_cur_book_keeper(ccManager);
         let poly_id = get_poly_id(ccManager);
-        let cur_epoch_start_height = config::get_cur_epoch_start_height(ccManager);
+        let cur_epoch_start_height = get_cur_epoch_start_height(ccManager);
         let n = vector::length(&keepers);
         let threshold = n - ( n - 1) / 3;
 
@@ -466,7 +477,7 @@ module polynet::cross_chain_manager {
         mark_from_Chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash, ctx);
 
         // check to chain id
-        assert!(to_chain_id == polyId, ENOT_TARGET_CHAIN);
+        assert!(to_chain_id == poly_id, ENOT_TARGET_CHAIN);
 
         // check verifier
         let (license_id, _) = getLicenseId(license);
@@ -532,7 +543,7 @@ module polynet::cross_chain_manager {
          _cross_chain_manager.poly_id
     }
 
-    public(friend) fun get_cur_epoch_start_height(_cross_chain_manager: &CrossChainManager): u64 {
+    fun get_cur_epoch_start_height(_cross_chain_manager: &CrossChainManager): u64 {
         _cross_chain_manager.epoch_start_height
     }
 
@@ -575,4 +586,6 @@ module polynet::cross_chain_manager {
         _cross_chain_manager.poly_id = _poly_id;
 
     }
+
+    
 }

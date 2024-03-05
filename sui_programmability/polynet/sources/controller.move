@@ -157,16 +157,19 @@ module polynet::controller {
         _ctx: &mut TxContext
     ) {
         //check system pause
-
-        // let poly_id = config::get_poly_id(_global);
-        // let cur_epoch_start_height = config::get_cur_epoch_start_height(_global);
-        let lpManager = config::borrow_mut_lp_manager(_global);
-        let ccManager = config::borrow_mut_crosschain_manager(_global);
-        lock_proxy::check_paused(lpManager);
         config::check_pause(_global);
         config::check_version(_global);
 
-        let license_ref = option::borrow(&lpManager.license_store.license);
+        // let ccManager = config::borrow_mut_crosschain_manager(_global);
+
+        // let poly_id = config::get_poly_id(_global);
+        // let cur_epoch_start_height = config::get_cur_epoch_start_height(_global);
+        let (lpManager,ccManager) = config::borrow_mut_lp_and_cc_managers(_global);
+        
+        lock_proxy::check_paused(lpManager);
+        let license_ref = lock_proxy::get_license_ref(lpManager);
+
+      
 
         let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
             // poly_id,
@@ -180,8 +183,9 @@ module polynet::controller {
             &_headerSig, 
             _ctx
         );
+        // let mut_lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::relay_unlock_tx<CoinType>(
-            certificate,
+            &certificate,
             lpManager,
             _treasury_ref,
             _clock, 
@@ -202,20 +206,21 @@ module polynet::controller {
     )  {
 
         //check system pause
-        let lpManager = config::borrow_mut_lp_manager(_global);
-        let ccManager = config::borrow_mut_crosschain_manager(_global);
-        let wrapperStore = config::borrow_mut_wrapper_store(_global);
         config::check_pause(_global);
-        lock_proxy::check_paused(lpManager);
         config::check_version(_global);
-
+        let (lp_manager,wrapper_store,cc_manager) = config::borrow_mut_all(_global);
+        lock_proxy::check_paused(lp_manager);
+        // let wrapper_store = config::borrow_mut_wrapper_store(_global);
+       
         //any user can lock bfc assets and transfer to evm
+        // let ccManager = config::borrow_mut_crosschain_manager(_global);
+
 
         wrapper_v1::lock_and_pay_fee_with_fund<CoinType>(
-                        ccManager,
-                        lpManager,
+                        cc_manager,
+                        lp_manager,
                         _treasury_ref,
-                        wrapperstore,
+                        wrapper_store,
                         _account, 
                         _fund, 
                         _fee, 
@@ -449,13 +454,28 @@ module polynet::controller {
                             );
     }
 
-     public entry fun pause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+     public entry fun issue_license_to_lock_proxy(
+        _global: &mut CrossChainGlobalConfig, 
+        _ctx: &mut TxContext
+    ) {
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+        
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+        let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", _ctx);
+
+        let lpManager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::receiveLicense(lpManager,license);
+    }
+
+
+    public entry fun pause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
 
         config::check_version(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         let sender = tx_context::sender(_ctx);
-        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::PAUSE_ROLE, sender), ERR_PAUSE_ROLE);
-
+        cross_chain_manager::check_pause_role(ccManager,sender);
         config::pause(_global,_ctx);
     }
 
@@ -464,9 +484,28 @@ module polynet::controller {
         config::check_version(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         let sender = tx_context::sender(_ctx);
-        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::PAUSE_ROLE, sender), ERR_PAUSE_ROLE);
-
+        cross_chain_manager::check_pause_role(ccManager,sender);
         config::unpause(_global,_ctx);
+    }
+
+    public entry fun reset_lock_amount(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+        
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+        let lp_manager = config::borrow_mut_lp_manager(_global);
+        let amount_manager = lock_proxy::borrow_lock_amount_limit_manager(lp_manager);
+        lock_proxy::reset_amount(amount_manager);
+    }
+
+    public entry fun reset_unlock_amount(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+        
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
+        let lp_manager = config::borrow_mut_lp_manager(_global);
+        let amount_manager = lock_proxy::borrow_unlock_amount_limit_manager(lp_manager);
+        lock_proxy::reset_amount(amount_manager);
     }
 
 

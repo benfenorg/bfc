@@ -20,7 +20,7 @@ module polynet::config {
     const EALREADY_EXECUTED: u64 = 6002;
 
 
-    struct CrossChainGlobalConfig has key,store{
+    struct CrossChainGlobalConfig has key {
         id: UID,
         // polyId: u64,
         paused: bool,
@@ -77,8 +77,8 @@ module polynet::config {
 
     }
 
-    public(friend) fun borrow_wrapper_store(_global: &CrossChainGlobalConfig): WrapperStore {
-        _global.wrapperStore
+    public(friend) fun borrow_wrapper_store(_global: &CrossChainGlobalConfig): &WrapperStore {
+        &_global.wrapperStore
     }
 
     public(friend) fun borrow_mut_wrapper_store(_global: &mut CrossChainGlobalConfig): &mut WrapperStore {
@@ -89,8 +89,8 @@ module polynet::config {
         &mut _global.crossChainManager
     }
 
-    public(friend) fun borrow_crosschain_manager(_global: &mut CrossChainGlobalConfig): CrossChainManager {
-        _global.crossChainManager
+    public(friend) fun borrow_crosschain_manager(_global: &mut CrossChainGlobalConfig): &CrossChainManager {
+        &_global.crossChainManager
     }
 
 
@@ -98,10 +98,28 @@ module polynet::config {
         &mut _global.lockProxyManager
     }
 
-     public(friend) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): LockProxyManager {
-        _global.lockProxyManager
+     public(friend) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): &LockProxyManager {
+        &_global.lockProxyManager
     }
 
+    public(friend) fun borrow_mut_all(
+        _global: &mut CrossChainGlobalConfig
+    ): (
+        &mut LockProxyManager,
+        &mut WrapperStore,
+        &mut CrossChainManager
+        ) {
+        (&mut _global.lockProxyManager, &mut _global.wrapperStore,&mut _global.crossChainManager )
+    }
+
+    public(friend) fun borrow_mut_lp_and_cc_managers(
+        _global: &mut CrossChainGlobalConfig
+    ): (
+        &mut LockProxyManager,
+        &mut CrossChainManager
+        ) {
+        (&mut _global.lockProxyManager, &mut _global.crossChainManager )
+    }
 
        // pause/unpause
    fun paused(_global: &CrossChainGlobalConfig): bool  {
