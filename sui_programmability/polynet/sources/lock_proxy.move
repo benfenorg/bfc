@@ -2,7 +2,6 @@
 module polynet::lock_proxy {
     use std::ascii;
     use std::ascii::{as_bytes, string, String};
-    use std::debug::print;
     use std::vector;
     use std::option::{Self, Option};
     use std::string;
@@ -60,7 +59,8 @@ module polynet::lock_proxy {
         id: UID,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
-        amountManager: AmountLimitManager,
+        amountLockManager: AmountLimitManager,
+        amountUnlockManager: AmountLimitManager,
     }
 
     struct LockProxyStore has key, store {
@@ -136,22 +136,32 @@ module polynet::lock_proxy {
         };
 
         let start_time = clock::timestamp_ms(clock);
-        let amount_manager = AmountLimitManager{
+        let amountLockManager = AmountLimitManager{
             id: object::new(ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
-        vec_map::insert(&mut amount_manager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
-        vec_map::insert(&mut amount_manager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
-        vec_map::insert(&mut amount_manager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
-        vec_map::insert(&mut amount_manager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+        let amountUnlockManager = AmountLimitManager{
+            id: object::new(ctx),
+            time: start_time,
+            amount_record: vec_map::empty()
+        };
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let manager = LockProxyManager{
             id: object::new(ctx),
             lock_proxy_store: lockproxystore,
             license_store: licensestore,
-            amountManager: amount_manager,
+            amountLockManager: amountLockManager,
+            amountUnlockManager: amountUnlockManager,
         };
 
         transfer::share_object(manager)
@@ -426,12 +436,14 @@ module polynet::lock_proxy {
     // lock
     public fun lock<CoinType>(
         ccManager:&mut CrossChainManager,
-        lpManager: &LockProxyManager,
+        lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         account: address,
-                              fund: Coin<CoinType>,
-                              toChainId: u64,
-                              toAddress: &vector<u8>, ctx: &mut TxContext)  {
+        fund: Coin<CoinType>,
+        toChainId: u64,
+        toAddress: &vector<u8>,
+        clock:&Clock,
+        ctx: &mut TxContext)  {
         // lock fund
         let amount = coin::value(&fund);
         deposit(treasury_ref, fund);
@@ -440,11 +452,15 @@ module polynet::lock_proxy {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
+        assert!(checkAmountResult(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        
         let license_ref = option::borrow(&lpManager.license_store.license);
 
         // get target proxy/asset
         let to_proxy = getTargetProxy(lpManager, toChainId);
         let (to_asset, to_asset_decimals) = getToAsset<CoinType>(lpManager, toChainId);
+
 
 
         //todo,, decimals
@@ -513,7 +529,7 @@ module polynet::lock_proxy {
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
-        assert!(checkAmountResult(amount,lpManager, &short_name, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(checkAmountResult(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
         //todo need transfer.
@@ -538,23 +554,28 @@ module polynet::lock_proxy {
         amount_record: VecMap<vector<u8>, u64>,
     }
 
-    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, clock:&Clock):bool{
-
+    public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
-        if(current_time -  lockProxyManager.amountManager.time > ONE_DAY){
-            lockProxyManager.amountManager.time = current_time;
-            resetAmount(&mut lockProxyManager.amountManager);
+        let amountLimit : &mut AmountLimitManager;
+        if (flag == true) {
+            amountLimit = &mut lockProxyManager.amountLockManager;
+        } else {
+            amountLimit = &mut lockProxyManager.amountUnlockManager;
         };
-        let amount = vec_map::get_mut(&mut lockProxyManager.amountManager.amount_record, key);
+
+        if(current_time -  amountLimit.time > ONE_DAY){
+            amountLimit.time = current_time;
+            resetAmount(amountLimit);
+        };
+        let amount = vec_map::get_mut(&mut amountLimit.amount_record, key);
         if(user_amount > *amount){
             return false
         }else{
             *amount = *amount - user_amount;
         };
-
-
         return true
     }
+
     fun resetAmount(amountManager:&mut AmountLimitManager){
         let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
         *usdt = MAX_AMOUNT;

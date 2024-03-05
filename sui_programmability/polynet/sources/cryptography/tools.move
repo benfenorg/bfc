@@ -15,7 +15,7 @@ module polynet::tools {
     const EINVALID_ADMIN: u64 = 4015;
 
     // mainnet
-    public entry fun init_as_mainnet(ccManager: &mut CrossChainManager,
+    public  fun init_as_mainnet(ccManager: &mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
                                     clock:&Clock,
                                      ctx: &mut TxContext) {
@@ -57,7 +57,7 @@ module polynet::tools {
     }
 
     // testnet
-    public entry fun init_as_testnet(ccManager:&mut CrossChainManager,
+    public  fun init_as_testnet(ccManager:&mut CrossChainManager,
                                      lpManager:&mut LockProxyManager,
                                      clock: &Clock,
                                      ctx: &mut TxContext) {
@@ -70,6 +70,11 @@ module polynet::tools {
         wrapper_v1::init_wrapper(ctx);
         lock_proxy::init_lock_proxy_manager(clock, ctx);
         issue_license_to_lock_proxy(ccManager,lpManager, ctx);
+    }
+
+
+    public entry fun add_test(){
+
     }
 
     public entry fun init_testnet_ccm(ctx: &mut TxContext) {

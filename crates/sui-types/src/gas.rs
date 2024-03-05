@@ -282,7 +282,7 @@ pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
 
 pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
     if rate == 0 || rate == 1 {
-        warn!("rate is default value, cost: {}, rate: {}", cost, rate);
+        // warn!("rate is default value, cost: {}, rate: {}", cost, rate);
         return cost;
     }
     //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round

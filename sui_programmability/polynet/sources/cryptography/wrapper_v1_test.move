@@ -124,7 +124,7 @@ module polynet::wrapper_v1_test {
 
 
             let toAddress = x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899";
-            lock_and_pay_fee_with_fund<BFC_ETH>(&mut manager, &mut lock_proxy, &mut treasury, &mut wrapper_store, @0x2, coin, fee, 10, &toAddress, ctx);
+            lock_and_pay_fee_with_fund<BFC_ETH>(&mut manager, &mut lock_proxy, &mut treasury, &mut wrapper_store, @0x2, coin, fee, 10, &toAddress, &clock, ctx);
             test_scenario::return_shared(manager);
             test_scenario::return_shared(lock_proxy);
             test_scenario::return_shared(wrapper_store);

@@ -28,7 +28,7 @@ mod checked {
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{info, instrument, trace, warn};
+    use tracing::{error, info, instrument, trace, warn};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -144,7 +144,7 @@ mod checked {
             match error.kind() {
                 K::InvariantViolation | K::VMInvariantViolation => {
                     #[skip_checked_arithmetic]
-                    tracing::error!(
+                    error!(
                         kind = ?error.kind(),
                         tx_digest = ?transaction_digest,
                         "INVARIANT VIOLATION! Source: {:?}",
@@ -670,36 +670,50 @@ mod checked {
         Ok(builder.finish())
     }
 
-    pub fn construct_bfc_round_pt(
-        round_id: u64,
-        param: ChangeObcRoundParams,
-        rate_map: &HashMap<String,u64>,
-        reward_rate: u64,
-        storage_rebate: u64
-    ) -> Result<ProgrammableTransaction, ExecutionError> {
+    pub fn construct_bfc_round_pt(round_id: u64) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
-
-        let mut arguments = vec![];
-
+        // let clock = builder.input(CallArg::CLOCK_IMM).unwrap();
+        // let timestamp = builder.programmable_move_call(
+        //     SUI_FRAMEWORK_PACKAGE_ID,
+        //     CLOCK_MODULE_NAME.to_owned(),
+        //     TIMESTAMP_FUNCTION_NAME.to_owned(),
+        //     vec![],
+        //     vec![clock],
+        // );
+        let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
+        let sui_system = builder.input(CallArg::SUI_SYSTEM_MUT).unwrap();
+        let mut arguments = vec![sui_system];
         let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::CLOCK_IMM,
+            // CallArg::SUI_SYSTEM_MUT,
+            // timestamp.into(),
+            CallArg::Pure(bcs::to_bytes(&timestamp).unwrap()),
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
         ] .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<Result<_, _>>();
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
 
         arguments.append(&mut args.unwrap());
 
         info!("Call arguments to bfc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.to_owned(),
             BFC_ROUND_FUNCTION_NAME.to_owned(),
             vec![],
             arguments,
         );
+        Ok(builder.finish())
+    }
+
+    pub fn construct_stable_reward_pt(
+        _round_id: u64,
+        param: ChangeObcRoundParams,
+        rate_map: &HashMap<String,u64>,
+        reward_rate: u64,
+        storage_rebate: u64
+    ) -> Result<ProgrammableTransaction, ExecutionError> {
+        let mut builder = ProgrammableTransactionBuilder::new();
 
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
@@ -745,28 +759,30 @@ mod checked {
             );
 
         }
-        let storage_rebate_arg = builder
-            .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
-            ))
-            .unwrap();
-        let storage_rebate = builder.programmable_move_call(
-            SUI_FRAMEWORK_PACKAGE_ID,
-            BALANCE_MODULE_NAME.to_owned(),
-            BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
-            vec![GAS::type_tag()],
-            vec![storage_rebate_arg],
-        );
+        let storage_rebate_value = storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, reward_rate);
+        if storage_rebate_value > 0 {
+            let storage_rebate_arg = builder
+                .input(CallArg::Pure(
+                    bcs::to_bytes(&(storage_rebate_value)).unwrap(),
+                ))
+                .unwrap();
+            let storage_rebate = builder.programmable_move_call(
+                SUI_FRAMEWORK_PACKAGE_ID,
+                BALANCE_MODULE_NAME.to_owned(),
+                BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                vec![GAS::type_tag()],
+                vec![storage_rebate_arg],
+            );
 
-        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
-            vec![],
-            vec![system_obj,storage_rebate],
-        );
-
+            let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
+                vec![],
+                vec![system_obj,storage_rebate],
+            );
+        }
         Ok(builder.finish())
     }
 
@@ -779,22 +795,19 @@ mod checked {
         _protocol_config: &ProtocolConfig,
         _metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError>{
-        // let _ = BfcRoundParams {
-        //     round_id:change_round.bfc_round
-        // };
-        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
-        //     protocol_config,
-        //     metrics.clone(),
-        //     move_vm,
-        //     temporary_store,
-        //     tx_ctx,
-        //     gas_charger,
-        //     advance_epoch_pt,
-        // );
+        let bfc_round_pt = construct_bfc_round_pt(_change_round.bfc_round)?;
+        let _result = programmable_transactions::execution::execute::<execution_mode::System>(
+            _protocol_config,
+            _metrics.clone(),
+            _move_vm,
+            _temporary_store,
+            _tx_ctx,
+            _gas_charger,
+            bfc_round_pt,
+        );
 
-        // #[cfg(msim)]
-        // let _result = maybe_modify_result(result, change_round.bfc_round);
+        #[cfg(msim)]
+        let _result = maybe_modify_result(_result, _change_round.bfc_round);
 
         // if result.is_err() {
         //     tracing::error!(
@@ -839,7 +852,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, rate_hash_map, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_stable_reward_pt(change_epoch.epoch, params, rate_hash_map, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1007,6 +1020,27 @@ mod checked {
                 res.is_ok(),
                 "Unable to generate consensus_commit_prologue transaction!"
             );
+
+            let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+            let mut arguments = vec![bfc_system];
+            let args = vec![
+                CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
+            ] .into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
+
+            arguments.append(&mut args.unwrap());
+
+            info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
+
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(

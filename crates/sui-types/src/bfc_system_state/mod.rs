@@ -15,7 +15,6 @@ use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructT
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use crate::balance::Balance;
-use crate::base_types::ObjectID;
 use crate::collection_types::{VecMap, Bag};
 use crate::dao::Dao;
 use crate::proposal::ProposalStatus;
@@ -30,9 +29,7 @@ pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas
 
 pub const STABLE_COIN_TO_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_stablecoin_to_bfc");
 
-pub const RESET_STABLE_SWAP_MAP_FUNCTION_NAME: &IdentStr = ident_str!("reset_stable_swap_map");
-
-pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_inner");
+pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_pool_no_entry");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Treasury {
@@ -131,26 +128,16 @@ pub trait BfcSystemStateTrait {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct BfcSystemStateInnerV1 {
-    pub round: u64,
+    pub round_timestamp_ms: u64,
+    pub round_duration_ms: u64,
     pub stable_base_points: u64,
     pub reward_rate: u64,
-    pub exchange_pool: ExchangePoolV1,
     pub dao: Dao,
     pub treasury: Treasury,
     pub treasury_pool: TreasuryPool,
     pub rate_map: VecMap<String, u64>,
 }
 
-// Rust version of the Move bfc_system::bfc_system_state_inner::ExchangePool type
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct ExchangePoolV1 {
-    pub id: ObjectID,
-    pub activation_epoch: Option<u64>,
-    pub bfc_balance: u64,
-    pub bfc_pool: Balance,
-    pub stable_token_balance: u64,
-    pub stable_pool: Balance,
-}
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[enum_dispatch(BfcSystemStateTrait)]
 pub enum BFCSystemState {

@@ -92,6 +92,13 @@ module polynet::wrapper_v1 {
             proof, rawHeader, headerProof, curRawHeader, headerSig, clock, ctx);
     }
 
+
+    public entry fun relay_bfc_test(
+        ccManager:&mut CrossChainManager,
+        ctx: &mut TxContext
+    ) {
+
+    }
     // for user
     public entry fun lock_and_pay_fee<CoinType>(
         ccManager:&mut CrossChainManager,
@@ -103,6 +110,7 @@ module polynet::wrapper_v1 {
         fee: Coin<BFC>,
         toChainId: u64, 
         toAddress: vector<u8>,
+        clock:&Clock,
         ctx: &mut TxContext
     )  {
 
@@ -114,12 +122,12 @@ module polynet::wrapper_v1 {
 
         lock_and_pay_fee_with_fund<CoinType>(ccManager,
             lpManager,treasury_ref,wrapperstore,
-            account, fund, fee, toChainId, &toAddress,ctx);
+            account, fund, fee, toChainId, &toAddress,clock, ctx);
     }
 
     public fun lock_and_pay_fee_with_fund<CoinType>(
         ccManager:&mut CrossChainManager,
-        lpManager: &LockProxyManager,
+        lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         wrapperstore:&mut WrapperStore,
         account: address,
@@ -127,6 +135,7 @@ module polynet::wrapper_v1 {
         fee: Coin<BFC>,
         toChainId: u64, 
         toAddress: &vector<u8>,
+        clock:&Clock,
         ctx: &mut TxContext
     )  {
         let amount = coin::value(&fund);
@@ -139,7 +148,7 @@ module polynet::wrapper_v1 {
         let feeCollector = feeCollector(wrapperstore);
         transfer::public_transfer(fee, feeCollector);
 
-        lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,ctx);
+        lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,clock, ctx);
         //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         event::emit(
             LockWithFeeEvent{
