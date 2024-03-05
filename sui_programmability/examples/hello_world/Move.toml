@@ -10,4 +10,3 @@ Sui = { local = "../../../crates/sui-framework/packages/sui-framework" }
 [addresses]
 hello_world = "0x0"
 Chess = "0x0"
-StarcoinFramework = "0x0"

@@ -3,7 +3,7 @@ name = "SuiExtraAddStructAbility"
 version = "0.0.1"
 
 [dependencies]
-SuiSystem = { local = "../../../../sui-framework/packages/sui-system" }
+#SuiSystem = { local = "../../../../sui-framework/packages/sui-system" }
 Sui = { local = "../../../../sui-framework/packages/sui-framework" }
 MoveStdlib = { local = "../../../../sui-framework/packages/move-stdlib" }
 
