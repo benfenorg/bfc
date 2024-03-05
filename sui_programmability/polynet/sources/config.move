@@ -10,7 +10,7 @@ module polynet::config {
     use polynet::acl::{Access_control_list, Self};
     use polynet::wrapper_v1::{WrapperStore, Self};
     use polynet::cross_chain_manager::{CrossChainManager, Self,ACLStore};
-    use polynet::lock_proxy::{Treasury, paused, LockProxyManager, Self};
+    use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
 
     friend polynet::controller;
 
@@ -55,11 +55,11 @@ module polynet::config {
        
         transfer::share_object(config);
 
-        events::init_book_keeper_event(
-                    vector::empty<vector<u8>>(),
-                    0,
-                    sender 
-                );
+        // events::init_book_keeper_event(
+        //             vector::empty<vector<u8>>(),
+        //             0,
+        //             sender 
+        //         );
     }
 
     public(friend) fun migrate(
@@ -70,21 +70,6 @@ module polynet::config {
         _global.version = VERSION;
       
         events::migrate(tx_context::sender(_ctx));
-    }
-
-
-    public(friend) fun update_config(
-        _global: &mut CrossChainGlobalConfig,
-        _keepers: vector<vector<u8>>,
-        _startHeight: u64,
-        _polyId: u64,
-        _ctx: &mut TxContext
-    ) {
-       
-        _global.polyId = _polyId;
-        _global.curEpochStartHeight = _startHeight;
-        _global.curBookKeepers = _keepers;
-
     }
 
     public(friend) fun check_version(_global: &CrossChainGlobalConfig) {
@@ -134,13 +119,13 @@ module polynet::config {
     public(friend) fun pause(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
 
         assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
-        ccManager.config.paused = true;
+        _global.paused = true;
     }
 
     public(friend) fun unpause(_global:&mut CrossChainGlobalConfig, c_ctxx: &mut TxContext)  {
 
         assert!(paused(_global),ERR_CHECK_CONFIG_PAUSED);
-        ccManager.config.paused = false;
+        _global.paused = false;
     }
 
 

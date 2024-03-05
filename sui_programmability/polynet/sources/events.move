@@ -3,8 +3,10 @@ module polynet::events {
     use sui::event::{emit, Self};
     use std::type_name::{Self, TypeName};
 
+    friend polynet::config;
     friend polynet::controller;
     friend polynet::wrapper_v1;
+    friend polynet::cross_chain_manager;
 
     struct InitBookKeeperEvent has store, drop, copy {
         height: u64,

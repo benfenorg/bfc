@@ -32,7 +32,7 @@ module polynet::wrapper_v1 {
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
-    struct WrapperStore has key, store{
+    struct WrapperStore has key, store, copy{
         id: UID,
         fee_collector: address,
     }

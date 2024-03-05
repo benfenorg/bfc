@@ -17,6 +17,7 @@ module polynet::cross_chain_manager {
     use polynet::zero_copy_sink;
     use polynet::cross_chain_utils;
     use polynet::wrapper_v1;
+    use polynet::events;
 
     friend polynet::lock_proxy;
     friend polynet::controller;
@@ -44,7 +45,7 @@ module polynet::cross_chain_manager {
     const EBLACKLISTED_TO: u64 = 4014;
     const EVERIFIER_NOT_RECEIVER: u64 = 4015;
    
-    struct CrossChainManager has key, store{
+    struct CrossChainManager has key, store, copy{
         id: UID,
         paused: bool,
         acl_store: ACLStore,
@@ -394,8 +395,8 @@ module polynet::cross_chain_manager {
 
     // verify header and execute tx
     public fun verifyHeaderAndExecuteTx(
-        polyId: u64,
-        cur_epoch_start_height: u64,
+        // polyId: u64,
+        // cur_epoch_start_height: u64,
         ccManager:&mut CrossChainManager,
         license: &License,
         proof: &vector<u8>,
@@ -419,6 +420,8 @@ module polynet::cross_chain_manager {
             _
         ) = cross_chain_utils::deserializeHeader(rawHeader);
         let keepers = get_cur_book_keeper(ccManager);
+        let poly_id = get_poly_id(ccManager);
+        let cur_epoch_start_height = config::get_cur_epoch_start_height(ccManager);
         let n = vector::length(&keepers);
         let threshold = n - ( n - 1) / 3;
 
@@ -496,8 +499,8 @@ module polynet::cross_chain_manager {
         _ctx: &mut TxContext
     ) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        if (table::contains(_ccManager.from_chain_tx_exist, _fromChainId)) {
-            utils::upsert(table::borrow_mut(&mut _global.from_chain_tx_exist, _fromChainId), *_fromChainTx, true);
+        if (table::contains(&_ccManager.from_chain_tx_exist, _fromChainId)) {
+            utils::upsert(table::borrow_mut(&mut _ccManager.from_chain_tx_exist, _fromChainId), *_fromChainTx, true);
             return
         } else {
             let subTable = table::new<vector<u8>, bool>(_ctx);
@@ -535,6 +538,41 @@ module polynet::cross_chain_manager {
 
     public(friend) fun get_cur_book_keeper(_cross_chain_manager: &CrossChainManager): vector<vector<u8>> {
         _cross_chain_manager.book_keepers
+
+    }
+
+    public(friend) fun update_cross_chain_config(
+        _cross_chain_manager: &mut CrossChainManager,
+        _keepers: vector<vector<u8>>,
+        _start_height: u64,
+        _poly_id: u64,
+        _ctx: &mut TxContext
+    ) {
+       
+        _cross_chain_manager.poly_id = _poly_id;
+        _cross_chain_manager.epoch_start_height = _start_height;
+        _cross_chain_manager.book_keepers = _keepers;
+
+    }
+
+    public(friend) fun change_book_keeper(
+        _cross_chain_manager: &mut CrossChainManager,
+        _keepers: vector<vector<u8>>,
+        _start_height: u64,
+        _ctx: &mut TxContext
+
+    ) {
+        _cross_chain_manager.epoch_start_height = _start_height;
+        _cross_chain_manager.book_keepers = _keepers;
+
+    }
+
+    public(friend) fun set_poly_id(
+        _cross_chain_manager: &mut CrossChainManager,
+        _poly_id: u64,
+        _ctx: &mut TxContext
+    ) {
+        _cross_chain_manager.poly_id = _poly_id;
 
     }
 }

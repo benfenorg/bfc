@@ -1,7 +1,6 @@
 module polynet::controller {
-    use sui::event;
     use std::option;
-    use std::type_name::{Self, TypeName};
+    use std::type_name::{Self};
     use sui::transfer;
     use sui::tx_context::{TxContext, Self};
     use sui::clock::Clock;
@@ -9,11 +8,10 @@ module polynet::controller {
     use sui::bfc::BFC;
     use polynet::events;
     use polynet::utils;
-    use polynet::cross_chain_utils;
     use polynet::config::{CrossChainGlobalConfig, Self};
     use polynet::wrapper_v1::{feeCollector, WrapperStore, Self};
-    use polynet::cross_chain_manager::{CrossChainManager, Certificate, Self};
-    use polynet::lock_proxy::{Treasury, paused, LockProxyManager, Self};
+    use polynet::cross_chain_manager::{CrossChainManager, Self};
+    use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
 
 
     const EINVALID_SYSTEM_IS_PAUSED: u64 = 5000;
@@ -31,27 +29,28 @@ module polynet::controller {
     public entry fun migrate(  
         _global: &mut CrossChainGlobalConfig,
         _keepers: vector<vector<u8>>,
-        _startHeight: u64,
-        _polyId: u64,
+        _start_height: u64,
+        _poly_id: u64,
         _ctx: &mut TxContext
     )  {
 
         let sender = tx_context::sender(_ctx);
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
-        config::update_config(
-            _global,
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
+        cross_chain_manager::update_cross_chain_config(
+            ccManager,
             _keepers,
-            _startHeight,
-            _polyId,
+            _start_height,
+            _poly_id,
             _ctx
         );
         config::migrate(_global,_ctx);
        
         events::migrate_book_keeper_event(
                     _keepers,
-                    _startHeight,
-                    _polyId,
+                    _start_height,
+                    _poly_id,
                     sender
                     );
     }
@@ -78,7 +77,7 @@ module polynet::controller {
     public entry fun change_Book_keeper(
         _global: &mut CrossChainGlobalConfig, 
         _keepers: vector<vector<u8>>, 
-        _startHeight: u64, 
+        _start_height: u64, 
         _ctx: &mut TxContext
     )  {
 
@@ -91,14 +90,14 @@ module polynet::controller {
         cross_chain_manager::change_book_keeper(
             ccManager,
             _keepers,
-            _startHeight,
+            _start_height,
             _ctx
         );
     }
 
     public entry fun set_poly_id(
         _global: &mut CrossChainGlobalConfig, 
-        _polyId: u64, 
+        _poly_id: u64, 
         _ctx: &mut TxContext
     )  {
         config::check_version(_global);
@@ -108,7 +107,7 @@ module polynet::controller {
         cross_chain_manager::check_keeper_role(ccManager, sender);
         cross_chain_manager::set_poly_id(
             ccManager,
-            _polyId,
+            _poly_id,
             _ctx
         );
     }
@@ -117,27 +116,28 @@ module polynet::controller {
     public entry fun update_crosschain_config(
         _global: &mut CrossChainGlobalConfig,
         _keepers: vector<vector<u8>>,
-        _startHeight: u64,
-        _polyId: u64,
+        _start_height: u64,
+        _poly_d: u64,
         _ctx: &mut TxContext
     )  {
 
         let sender = tx_context::sender(_ctx);
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
         config::check_version(_global);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
 
-        config::update_config(
-            _global,
-            _keepers,
-            _startHeight,
-            _polyId,
-            _ctx
-        );
-       
+        cross_chain_manager::update_cross_chain_config(
+                                ccManager,
+                                _keepers,
+                                _start_height,
+                                _poly_d,
+                                _ctx
+                            );
+        
         events::update_book_keeper_event(
-                _startHeight,
                 _keepers,
-                _polyId,
+                _start_height,
+                _poly_d,
                 sender
             );
     }
@@ -158,8 +158,8 @@ module polynet::controller {
     ) {
         //check system pause
 
-        let poly_id = config::get_poly_id(_global);
-        let cur_epoch_start_height = config::get_cur_epoch_start_height(_global);
+        // let poly_id = config::get_poly_id(_global);
+        // let cur_epoch_start_height = config::get_cur_epoch_start_height(_global);
         let lpManager = config::borrow_mut_lp_manager(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         lock_proxy::check_paused(lpManager);
@@ -169,8 +169,8 @@ module polynet::controller {
         let license_ref = option::borrow(&lpManager.license_store.license);
 
         let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
-            poly_id,
-            cur_epoch_start_height,
+            // poly_id,
+            // cur_epoch_start_height,
             ccManager,
             license_ref, 
             &_proof, 

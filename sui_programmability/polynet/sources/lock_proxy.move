@@ -60,7 +60,7 @@ module polynet::lock_proxy {
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
-    struct LockProxyManager has key, store{
+    struct LockProxyManager has key, store, copy{
         id: UID,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
@@ -450,7 +450,7 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun relay_unlock_tx<CoinType>(
-        certificate: &Certificate,
+        certificate: &cross_chain_manager::Certificate,
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         clock:&Clock,
