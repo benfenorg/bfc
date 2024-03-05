@@ -1255,7 +1255,14 @@ async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
-    let cluster = TestClusterBuilder::new().build().await;
+    let start_version = 23u64;
+
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
@@ -1291,9 +1298,25 @@ async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-    create_active_proposal(http_client, gas, address, &cluster).await?;
-    //create votingBfc
-    // now do the call
+    let objects1 = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas1 = objects1.first().unwrap().object().unwrap();
+    create_active_proposal(http_client, gas1, address, &cluster).await?;
+    // //create votingBfc
+    // // now do the call
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
@@ -1315,7 +1338,7 @@ async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
 
-    Ok(())
+     Ok(())
 }
 
 #[sim_test]
