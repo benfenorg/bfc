@@ -1,11 +1,16 @@
 module polynet::events {
     use std::vector;
-    use sui::event::emit;
+    use sui::event::{emit, Self};
     use std::type_name::{Self, TypeName};
 
     friend polynet::controller;
     friend polynet::wrapper_v1;
 
+    struct InitBookKeeperEvent has store, drop, copy {
+        height: u64,
+        sender: address,
+        keepers: vector<vector<u8>>
+    }
 
     struct LockWithFeeEvent has store, drop, copy{
         from_asset: TypeName,
@@ -32,6 +37,13 @@ module polynet::events {
         sender: address,
         poly_id: u64,
         keepers: vector<vector<u8>>
+    }
+
+    struct VerifyHeaderAndExecuteTxEvent has store, drop, copy {
+        from_chain_id: u64,
+        to_contract: vector<u8>,
+        cross_chain_tx_hash: vector<u8>,
+        from_chain_tx_hash: vector<u8>,
     }
 
 
@@ -96,6 +108,38 @@ module polynet::events {
                 sender: _sender,
                 poly_id:_polyId,
                 keepers: _keepers
+            },
+        );
+    }
+
+    public(friend) fun init_book_keeper_event(
+        _keepers: vector<vector<u8>>,
+        _startHeight: u64,
+        _sender: address
+    ) {
+
+          event::emit(
+            InitBookKeeperEvent{
+                height: _startHeight,
+                sender: _sender,
+                keepers: _keepers
+            },
+        );
+    }
+
+    public(friend) fun verify_header_and_execute_tx_event(
+        _from_chain_id: u64,
+        _to_contract: vector<u8>,
+        _cross_chain_tx_hash: vector<u8>,
+        _from_chain_tx_hash: vector<u8>
+    ) {
+
+          event::emit(
+            VerifyHeaderAndExecuteTxEvent{
+                from_chain_id: _from_chain_id,
+                to_contract: _to_contract,
+                cross_chain_tx_hash: _cross_chain_tx_hash,
+                from_chain_tx_hash: _from_chain_tx_hash,
             },
         );
     }

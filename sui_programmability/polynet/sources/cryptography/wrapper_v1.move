@@ -7,7 +7,7 @@ module polynet::wrapper_v1 {
     use polynet::utils;
     use polynet::events;
     // use polynet::lock_proxy::{Treasury, LockProxyManager, paused};
-    // use polynet::cross_chain_manager::{CrossChainManager};
+    use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
     use sui::object;
     use sui::object::UID;
@@ -15,7 +15,7 @@ module polynet::wrapper_v1 {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    friend polynet::cross_chain_manager;
+    // friend polynet::cross_chain_manager;
     friend polynet::controller ;
     friend polynet::config;
 
@@ -42,7 +42,7 @@ module polynet::wrapper_v1 {
         WrapperStore{
             id: object::new(_ctx),
             fee_collector:tx_context::sender(_ctx) //maybe should set at config file
-        })
+        }
     }
 
 

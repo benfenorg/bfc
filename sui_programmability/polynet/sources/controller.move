@@ -9,9 +9,10 @@ module polynet::controller {
     use sui::bfc::BFC;
     use polynet::events;
     use polynet::utils;
+    use polynet::cross_chain_utils;
     use polynet::config::{CrossChainGlobalConfig, Self};
-    use polynet::wrapper_v1::{init_wrapper, feeCollector, WrapperStore};
-    use polynet::cross_chain_manager::{CrossChainManager, Self};
+    use polynet::wrapper_v1::{feeCollector, WrapperStore, Self};
+    use polynet::cross_chain_manager::{CrossChainManager, Certificate, Self};
     use polynet::lock_proxy::{Treasury, paused, LockProxyManager, Self};
 
 
@@ -21,6 +22,10 @@ module polynet::controller {
     const ERR_PAUSE_ROLE: u64 = 5003;
     const EINVALID_ADMIN_SIGNER: u64 = 5004;
     const ENOT_CHANGE_KEEPER_ROLE: u64 = 5005;
+    const EVERIFY_HEADER_FAILED: u64 = 5006;
+    const EVERIFY_HEADER_PROOF_FAILED: u64 = 5007;
+    const EVERIFIER_NOT_RECEIVER: u64 = 5008;
+    const EBLACKLISTED_TO: u64 = 5009;
 
      // update crosschain_manager
     public entry fun migrate(  
@@ -35,7 +40,7 @@ module polynet::controller {
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         config::update_config(
-            &mut _manager.config,
+            _global,
             _keepers,
             _startHeight,
             _polyId,
@@ -44,8 +49,8 @@ module polynet::controller {
         config::migrate(_global,_ctx);
        
         events::migrate_book_keeper_event(
-                    _startHeight,
                     _keepers,
+                    _startHeight,
                     _polyId,
                     sender
                     );
@@ -59,7 +64,7 @@ module polynet::controller {
     ) {
         // sender address
         let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
         config::check_version(_global);
 
         wrapper_v1::setFeeCollector(
@@ -82,7 +87,7 @@ module polynet::controller {
         let sender = tx_context::sender(_ctx);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
-        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
+        cross_chain_manager::check_keeper_role(ccManager, sender);
         cross_chain_manager::change_book_keeper(
             ccManager,
             _keepers,
@@ -100,7 +105,7 @@ module polynet::controller {
         // sender address
         let sender = tx_context::sender(_ctx);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
-        assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
+        cross_chain_manager::check_keeper_role(ccManager, sender);
         cross_chain_manager::set_poly_id(
             ccManager,
             _polyId,
@@ -129,7 +134,7 @@ module polynet::controller {
             _ctx
         );
        
-        event::update_book_keeper_event(
+        events::update_book_keeper_event(
                 _startHeight,
                 _keepers,
                 _polyId,
@@ -137,42 +142,7 @@ module polynet::controller {
             );
     }
 
-   fun relay_unlock_tx_internal<CoinType>(
-        ccManager:&mut CrossChainManager,
-        lpManager: &mut LockProxyManager,
-        treasury_ref:&mut Treasury<CoinType>,
-        proof: vector<u8>, 
-        rawHeader: vector<u8>, 
-        headerProof: vector<u8>, 
-        curRawHeader: vector<u8>, 
-        headerSig: vector<u8>,
-        clock:&Clock,
-        ctx: &mut TxContext
-    )  {
-
-        // borrow license
-        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
-        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
-        let license_ref = option::borrow(&lpManager.license_store.license);
-
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
-            ccManager,
-            license_ref, 
-            &proof, 
-            &rawHeader, 
-            &headerProof, 
-            &curRawHeader, 
-            &headerSig, 
-            ctx
-        );
-        lock_proxy::unlock<CoinType>(
-            lpManager, 
-            treasury_ref,
-             certificate, 
-             clock, 
-             ctx
-        );
-    }
+  
 
 
     public entry fun relay_unlock_tx<CoinType>(
@@ -187,26 +157,37 @@ module polynet::controller {
         _ctx: &mut TxContext
     ) {
         //check system pause
+
+        let poly_id = config::get_poly_id(_global);
+        let cur_epoch_start_height = config::get_cur_epoch_start_height(_global);
         let lpManager = config::borrow_mut_lp_manager(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         lock_proxy::check_paused(lpManager);
         config::check_pause(_global);
         config::check_version(_global);
 
-        relay_unlock_tx_internal<CoinType>(
-            ccManager, 
+        let license_ref = option::borrow(&lpManager.license_store.license);
+
+        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
+            poly_id,
+            cur_epoch_start_height,
+            ccManager,
+            license_ref, 
+            &_proof, 
+            &_rawHeader, 
+            &_headerProof, 
+            &_curRawHeader, 
+            &_headerSig, 
+            _ctx
+        );
+        lock_proxy::relay_unlock_tx<CoinType>(
+            certificate,
             lpManager,
             _treasury_ref,
-            _proof, 
-            _rawHeader, 
-            _headerProof, 
-            _curRawHeader, 
-            _headerSig, 
             _clock, 
             _ctx
         );
     }
-
 
     public entry fun lock_and_pay_fee<CoinType>(
         _global:&mut CrossChainGlobalConfig,
@@ -323,7 +304,7 @@ module polynet::controller {
 
         config::check_version(_global);
         // sender address
-        let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(_ctx);
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
@@ -338,7 +319,7 @@ module polynet::controller {
     )  {
         // sender address
         config::check_version(_global);
-        let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(_ctx);
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::check_paused(lpManager);
         lock_proxy::onlyOwner(lpManager, sender);
@@ -378,7 +359,7 @@ module polynet::controller {
     )  {
 
         config::check_version(_global);
-        let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(_ctx);
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::onlyOwner(lpManager, sender);
         lock_proxy::check_paused(lpManager);
@@ -397,7 +378,7 @@ module polynet::controller {
         _ctx: &mut TxContext
     ) {
         config::check_version(_global);
-        let sender = tx_context::sender(ctx);
+        let sender = tx_context::sender(_ctx);
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::check_paused(lpManager);
         lock_proxy::onlyOwner(lpManager, sender);
@@ -450,7 +431,7 @@ module polynet::controller {
 
     }
 
-    public entry fun setBlackList(
+    public entry fun set_blacklist(
         _global: &mut CrossChainGlobalConfig,  
         _license_id: vector<u8>,
         _access_level: u8, 
@@ -460,10 +441,10 @@ module polynet::controller {
         config::check_version(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
-        cross_chain_manager::set_blackList(
+        cross_chain_manager::set_blacklist(
                             ccManager,
                             _license_id,
-                            _access_level
+                            _access_level,
                             _ctx
                             );
     }
@@ -471,7 +452,7 @@ module polynet::controller {
      public entry fun pause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
 
         config::check_version(_global);
-         et ccManager = config::borrow_mut_crosschain_manager(_global);
+        let ccManager = config::borrow_mut_crosschain_manager(_global);
         let sender = tx_context::sender(_ctx);
         assert!(cross_chain_manager::hasRole(ccManager, cross_chain_manager::PAUSE_ROLE, sender), ERR_PAUSE_ROLE);
 

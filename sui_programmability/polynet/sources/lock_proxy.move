@@ -27,8 +27,9 @@ module polynet::lock_proxy {
     use polynet::zero_copy_source;
     use polynet::utils;
 
-    friend polynet::cross_chain_manager;
-    friend polynet::controller ;
+    // friend polynet::cross_chain_manager;
+    friend polynet::controller;
+    friend polynet::config;
 
 
     const DEPRECATED: u64 = 4001;
@@ -59,7 +60,7 @@ module polynet::lock_proxy {
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
-    struct LockProxyManager has key{
+    struct LockProxyManager has key, store{
         id: UID,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
@@ -446,6 +447,29 @@ module polynet::lock_proxy {
                 module_name:  string(cross_chain_manager::get_license_module_name(&licenseInfo)),
             }
         )
+    }
+
+    public(friend) fun relay_unlock_tx<CoinType>(
+        certificate: &Certificate,
+        lpManager: &mut LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        clock:&Clock,
+        ctx: &mut TxContext
+    )  {
+
+        // borrow license
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        // let license_ref = option::borrow(&lpManager.license_store.license);
+
+       
+        unlock<CoinType>(
+            lpManager, 
+            treasury_ref,
+            certificate, 
+            clock, 
+            ctx
+        );
     }
     
 
