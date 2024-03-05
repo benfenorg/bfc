@@ -554,4 +554,14 @@ module bfc_system::bfc_system_state_inner {
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
+
+    #[test_only]
+    public(friend) fun update_round_duration_only(
+        inner: &mut BfcSystemStateInner,
+        round_timestamp_ms: u64,
+    ) {
+        if (round_timestamp_ms - inner.round_timestamp_ms >= inner.round_duration_ms) {
+            inner.round_timestamp_ms = round_timestamp_ms;
+        };
+    }
 }

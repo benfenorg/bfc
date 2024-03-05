@@ -447,4 +447,13 @@ module bfc_system::bfc_system {
     ) {
         bfc_dao::add_admin(new_admin, ctx);
     }
+
+    #[test_only]
+    public fun bfc_round_for_testing(
+        wrapper: &mut BfcSystemState,
+        round_timestamp_ms: u64,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::update_round_duration_only(inner_state, round_timestamp_ms);
+    }
 }

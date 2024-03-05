@@ -49,7 +49,7 @@ use sui_types::sui_system_state::SuiSystemStateTrait;
 use sui_types::transaction::{Transaction, TransactionData};
 use tokio::time::{timeout, Instant};
 use tokio::{task::JoinHandle, time::sleep};
-use tracing::info;
+use tracing::{error, info};
 const NUM_VALIDATOR: usize = 4;
 
 pub struct FullNodeHandle {
@@ -655,6 +655,20 @@ impl TestClusterBuilder {
         self.get_or_init_genesis_config()
             .parameters
             .epoch_duration_ms = epoch_duration_ms;
+        self
+    }
+    pub fn with_round_duration_ms(mut self, round_duration_ms: u64) -> Self {
+        self.get_or_init_genesis_config()
+            .parameters
+            .round_duration_ms = round_duration_ms;
+        self
+    }
+
+    pub fn with_stake_subsidy_initial_distribution_amount(mut self, stake_subsidy_initial_distribution_amount: u64) -> Self {
+        self.get_or_init_genesis_config()
+            .parameters
+            .stake_subsidy_initial_distribution_amount =
+    stake_subsidy_initial_distribution_amount;
         self
     }
 
