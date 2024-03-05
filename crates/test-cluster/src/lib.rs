@@ -49,7 +49,7 @@ use sui_types::sui_system_state::SuiSystemStateTrait;
 use sui_types::transaction::{Transaction, TransactionData};
 use tokio::time::{timeout, Instant};
 use tokio::{task::JoinHandle, time::sleep};
-use tracing::{error, info};
+use tracing::info;
 const NUM_VALIDATOR: usize = 4;
 
 pub struct FullNodeHandle {

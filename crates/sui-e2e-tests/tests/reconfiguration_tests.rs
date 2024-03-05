@@ -2314,6 +2314,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .with_num_validators(5)
         .build()
         .await;
+
     let bfc_system_state = test_cluster
         .swarm
         .validator_nodes()
@@ -2324,6 +2325,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .inner()
         .state()
         .get_bfc_system_state_object_for_testing().unwrap();
+
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
     assert_eq!(treasury.bfc_balance, Balance::new(102433173437554378));
     Ok(())
