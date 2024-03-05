@@ -1,6 +1,7 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use std::debug;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::bfc::BFC;
@@ -289,7 +290,7 @@ module bfc_system::bfc_system_state_inner {
         }
         else if (balance::value(&result_balance) > expected_amount) {
             let result = balance::split(&mut result_balance, expected_amount);
-            treasury::deposit(&mut self.treasury, coin::from_balance(result_balance, ctx));
+            treasury_pool::deposit_to_treasury_pool(&mut self.treasury_pool, coin::from_balance(result_balance, ctx));
             result
         } else {
             let amount = expected_amount - balance::value(&result_balance) ;

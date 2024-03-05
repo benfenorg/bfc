@@ -2,6 +2,7 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
+    use std::debug;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
@@ -50,119 +51,119 @@ module bfc_system::bfc_system_tests {
             &mut treasury_parameters,
             ascii::string(b"BUSD"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 18446744073709551616, 50000_000_000_000, 4
+                9, 1, 2, 58333726687135162368, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"MGG"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 184467440737095516160, 50000_000_000_000, 4
+                9, 1, 2, 14986205729530720256, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BJPY"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 1532301645158183424, 50000_000_000_000, 4
+                9, 1, 2, 4915287178933356544, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BKRW"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 508541639258687680, 50000_000_000_000, 4
+                9, 1, 2, 1618695223101379840, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BAUD"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 14986205729530720256, 50000_000_000_000, 4
+                9, 1, 2, 48103223333394006016, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BARS"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 958520939096550912, 50000_000_000_000, 4
+                9, 1, 2, 2020739568339092224, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BBRL"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 8249634742471189504, 50000_000_000_000, 4
+                9, 1, 2, 26731871811266244608, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BCAD"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 15868489263994050560, 50000_000_000_000, 4
+                9, 1, 2, 50854163925868765184, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BEUR"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 19170418781931020288, 50000_000_000_000, 4
+                9, 1, 2, 61180928696206655488, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BGBP"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 20624086856177975296, 50000_000_000_000, 4
+                9, 1, 2, 65738771359798919168, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BIDR"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 147573952589676416, 10000_000_000_000, 4
+                9, 1, 2, 470301539970485312, 10000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BINR"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 2020739568339092480, 50000_000_000_000, 4
+                9, 1, 2, 6390139593977006080, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BRUB"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 1934710840443688448, 50000_000_000_000, 4
+                9, 1, 2, 6118092869620665344, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BSAR"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 9585209390965510144, 50000_000_000_000, 4
+                9, 1, 2, 30311093525086388224, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BTRY"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 3401411541597386240, 50000_000_000_000, 4
+                9, 1, 2, 10756207731032303616, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BZAR"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 4206504853187358208, 50000_000_000_000, 4
+                9, 1, 2, 13555533118889377792, 50000_000_000_000, 4
             )
         );
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BMXN"),
             bfc_system_state_inner::bfc_system_treasury_parameters(
-                9, 1, 2, 4442564268686996992, 50000_000_000_000, 4
+                9, 1, 2, 14169212980379457536, 50000_000_000_000, 4
             )
         );
 
@@ -267,6 +268,7 @@ module bfc_system::bfc_system_tests {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
+        debug::print(&amount);
         let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);
