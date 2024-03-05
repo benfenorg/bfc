@@ -1,16 +1,13 @@
 #[allow(unused_function)]
 module polynet::wrapper_v1 {
     use sui::bfc::BFC;
-    use sui::event;
-    use std::type_name::{Self, TypeName};
+    use std::type_name::{Self};
     use sui::clock::Clock;
-    use polynet::utils;
     use polynet::events;
     use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
-    use sui::object;
-    use sui::object::UID;
+    // use sui::object::{UID, Self};
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;

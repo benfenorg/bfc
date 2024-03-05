@@ -143,7 +143,7 @@ module polynet::cross_chain_utils {
         };
         let result = containMAddresses(&keepers, &signers, threshold);
         if (!result) {
-            abort ENOT_ENOUGH_SIG;
+            abort ENOT_ENOUGH_SIG
         }
     }
 

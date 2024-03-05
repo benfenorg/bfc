@@ -1,7 +1,7 @@
 module polynet::events {
     use std::vector;
     use sui::event::{emit, Self};
-    use std::type_name::{Self, TypeName};
+    use std::type_name::{TypeName};
 
     friend polynet::config;
     friend polynet::controller;

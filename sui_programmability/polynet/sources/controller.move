@@ -1,5 +1,4 @@
 module polynet::controller {
-    use std::option;
     use std::type_name::{Self};
     use sui::transfer;
     use sui::tx_context::{TxContext, Self};

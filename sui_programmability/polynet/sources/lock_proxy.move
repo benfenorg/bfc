@@ -285,7 +285,11 @@ module polynet::lock_proxy {
         );
     }
 
-    public(friend) fun unbind_proxy(lpManager: &mut LockProxyManager, to_chain_id: u64, ctx: &mut TxContext) {
+    public(friend) fun unbind_proxy(
+        lpManager: &mut LockProxyManager, 
+        to_chain_id: u64,
+        ctx: &mut TxContext
+    ) {
      
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         if (table::contains(&lpManager.lock_proxy_store.proxy_map, to_chain_id)) {
