@@ -74,8 +74,8 @@ module bfc_system::bfc_system_state_inner {
 
     struct BfcSystemParameters has drop, copy {
         chain_start_timestamp_ms: u64,
-        time_interval: u32,
         round_duration_ms: u64,
+        time_interval: u32,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
     }
 

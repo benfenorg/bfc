@@ -349,7 +349,7 @@ async fn test_change_bfc_round() {
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
-    let _ = sleep(Duration::from_secs(20)).await;
+    //let _ = sleep(Duration::from_secs(20)).await;
 
     test_cluster
         .swarm
