@@ -1127,9 +1127,9 @@ X-vault
     treasury_parameters: VecMap&lt;<a href="_String">ascii::String</a>, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_TreasuryParameters">TreasuryParameters</a>&gt;,
 ): <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">BfcSystemParameters</a> {
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">BfcSystemParameters</a> {
-        time_interval,
-        round_duration_ms,
         chain_start_timestamp_ms,
+        round_duration_ms,
+        time_interval,
         treasury_parameters,
     }
 }
