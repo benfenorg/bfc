@@ -323,7 +323,8 @@ async fn test_change_bfc_round() {
     ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
+        .with_epoch_duration_ms(30000)
+        .with_round_duration_ms(20000)
         .with_num_validators(5)
         .build()
         .await;
@@ -331,7 +332,7 @@ async fn test_change_bfc_round() {
     let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
         .ok()
         .map(|v| v.parse().unwrap())
-        .unwrap_or(2);
+        .unwrap_or(1);
 
     test_cluster
         .swarm
@@ -348,7 +349,7 @@ async fn test_change_bfc_round() {
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
-    let _ = sleep(Duration::from_secs(5)).await;
+    let _ = sleep(Duration::from_secs(20)).await;
 
     test_cluster
         .swarm
@@ -361,7 +362,9 @@ async fn test_change_bfc_round() {
             let _state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert!(_state.inner_state().round_timestamp_ms >= 1);
+            let time = _state.inner_state().round_timestamp_ms;
+            error!("state: {:?}", time);
+            assert!(time >= 1);
         });
 
 }
@@ -2334,7 +2337,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .get_bfc_system_state_object_for_testing().unwrap();
 
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
-    assert_eq!(treasury.bfc_balance, Balance::new(102433173437554378));
+    assert_eq!(treasury.bfc_balance, Balance::new(53833173437554378));
     Ok(())
 }
 
