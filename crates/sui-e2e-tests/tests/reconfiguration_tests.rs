@@ -1174,7 +1174,14 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
 
 #[sim_test]
 async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
-    let cluster = TestClusterBuilder::new().build().await;
+    let start_version = 23u64;
+
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+    
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
