@@ -28,7 +28,7 @@ mod checked {
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{error, info, instrument, trace, warn};
+    use tracing::{info, instrument, trace, warn};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -744,7 +744,7 @@ mod checked {
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, 100u64-reward_rate))).unwrap(),
+                bcs::to_bytes(&(storage_rebate+ param.bfc_computation_charge -calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
