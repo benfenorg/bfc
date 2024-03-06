@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use move_core_types::language_storage::TypeTag;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
-use crate::gas::GasCostSummary;
+use crate::gas::GasCostSummaryAdjusted;
 
 use self::sui_system_state_inner_v1::{SuiSystemStateInnerV1, ValidatorV1};
 use self::sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary};
@@ -439,7 +439,7 @@ pub struct AdvanceEpochParams {
 #[derive(Debug)]
 pub struct ChangeObcRoundParams {
     pub epoch: u64,
-    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummary)>,
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
     pub bfc_computation_charge: u64
 }
 
