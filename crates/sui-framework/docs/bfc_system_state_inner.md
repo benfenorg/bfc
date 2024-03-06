@@ -236,13 +236,13 @@
 
 </dd>
 <dt>
-<code>time_interval: u32</code>
+<code>round_duration_ms: u64</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>round_duration_ms: u64</code>
+<code>time_interval: u32</code>
 </dt>
 <dd>
 

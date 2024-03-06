@@ -8,7 +8,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::vec_set'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/bls12381.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/bls12381.move:1:13
   │
 1 │ module 0x2::bls12381 {
   │             ^^^^^^^^ Duplicate definition for module '0x2::bls12381'
@@ -19,7 +19,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             -------- Module previously defined here, with '(sui=0x2)::bls12381'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/kiosk_extension.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/kiosk_extension.move:1:13
    │
  1 │ module 0x2::kiosk_extension {
    │             ^^^^^^^^^^^^^^^ Duplicate definition for module '0x2::kiosk_extension'
@@ -46,17 +46,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │             │
   │             Duplicate definition for module '(std=0x1)::hash'
   │             Module previously defined here, with '(std=0x1)::hash'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/borrow.move:1:13
-  │
-1 │ module 0x2::borrow {
-  │             ^^^^^^ Duplicate definition for module '0x2::borrow'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/sources/borrow.move:9:13
-  │
-9 │ module sui::borrow {
-  │             ------ Module previously defined here, with '(sui=0x2)::borrow'
 
 warning[Lint W03001]: sub-optimal 'sui::coin::Coin' field type
    ┌─ tests/linter/coin_field.move:10:12
@@ -113,7 +102,7 @@ warning[W09009]: unused struct field
    = This warning can be suppressed with '#[allow(unused_field)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/bag.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/bag.move:1:13
    │
  1 │ module 0x2::bag {
    │             ^^^ Duplicate definition for module '0x2::bag'
@@ -124,7 +113,7 @@ error[E02001]: duplicate declaration, item, or annotation
    │             --- Module previously defined here, with '(sui=0x2)::bag'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/hmac.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/hmac.move:1:13
   │
 1 │ module 0x2::hmac {
   │             ^^^^ Duplicate definition for module '0x2::hmac'
@@ -135,7 +124,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ---- Module previously defined here, with '(sui=0x2)::hmac'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/object.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/object.move:1:13
   │
 1 │ module 0x2::object {
   │             ^^^^^^ Duplicate definition for module '0x2::object'
@@ -155,7 +144,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::transfer'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/prover.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/prover.move:1:13
   │
 1 │ module 0x2::prover {
   │             ^^^^^^ Duplicate definition for module '0x2::prover'
@@ -166,7 +155,16 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ------ Module previously defined here, with '(sui=0x2)::prover'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/vec_map.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/bit_vector_tests.move:1:13
+  │
+1 │ module 0x1::bit_vector_tests {
+  │             ^^^^^^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::bit_vector_tests'
+  │             Module previously defined here, with '0x1::bit_vector_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/vec_map.move:1:13
   │
 1 │ module 0x2::vec_map {
   │             ^^^^^^^ Duplicate definition for module '0x2::vec_map'
@@ -204,7 +202,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(std=0x1)::address'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/bfc.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/bfc.move:1:13
   │
 1 │ module 0x2::bfc {
   │             ^^^ Duplicate definition for module '0x2::bfc'
@@ -222,6 +220,24 @@ error[E02001]: duplicate declaration, item, or annotation
   │             │
   │             Duplicate definition for module '(sui=0x2)::curve'
   │             Module previously defined here, with '(sui=0x2)::curve'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/hash_tests.move:1:13
+  │
+1 │ module 0x1::hash_tests {
+  │             ^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::hash_tests'
+  │             Module previously defined here, with '0x1::hash_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/string_tests.move:1:13
+  │
+1 │ module 0x1::string_tests {
+  │             ^^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::string_tests'
+  │             Module previously defined here, with '0x1::string_tests'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/vec_map.move:4:13
@@ -251,7 +267,16 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::object'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/vector.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/unit_test.move:1:13
+  │
+1 │ module 0x1::unit_test {
+  │             ^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::unit_test'
+  │             Module previously defined here, with '0x1::unit_test'
+
+error[E02001]: duplicate declaration, item, or annotation
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/vector.move:1:13
    │
  1 │ module 0x1::vector {
    │             ^^^^^^ Duplicate definition for module '0x1::vector'
@@ -260,17 +285,6 @@ error[E02001]: duplicate declaration, item, or annotation
    │
 14 │ module std::vector {
    │             ------ Module previously defined here, with '(std=0x1)::vector'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/package.move:1:13
-  │
-1 │ module 0x2::package {
-  │             ^^^^^^^ Duplicate definition for module '0x2::package'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/sources/package.move:7:13
-  │
-7 │ module sui::package {
-  │             ------- Module previously defined here, with '(sui=0x2)::package'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/debug.move:5:13
@@ -291,7 +305,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::clock'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/ascii.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/ascii.move:1:13
   │
 1 │ module 0x1::ascii {
   │             ^^^^^ Duplicate definition for module '0x1::ascii'
@@ -311,7 +325,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::groth16'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/ecvrf.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/ecvrf.move:1:13
   │
 1 │ module 0x2::ecvrf {
   │             ^^^^^ Duplicate definition for module '0x2::ecvrf'
@@ -349,7 +363,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::ecvrf'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/kiosk.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/kiosk.move:1:13
    │
  1 │ module 0x2::kiosk {
    │             ^^^^^ Duplicate definition for module '0x2::kiosk'
@@ -387,7 +401,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::bls12381'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/transfer_policy.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/transfer_policy.move:1:13
    │
  1 │ module 0x2::transfer_policy {
    │             ^^^^^^^^^^^^^^^ Duplicate definition for module '0x2::transfer_policy'
@@ -407,7 +421,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(std=0x1)::option'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/dynamic_field.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/dynamic_field.move:1:13
    │
  1 │ module 0x2::dynamic_field {
    │             ^^^^^^^^^^^^^ Duplicate definition for module '0x2::dynamic_field'
@@ -418,7 +432,7 @@ error[E02001]: duplicate declaration, item, or annotation
    │             ------------- Module previously defined here, with '(sui=0x2)::dynamic_field'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/object_bag.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/object_bag.move:1:13
   │
 1 │ module 0x2::object_bag {
   │             ^^^^^^^^^^ Duplicate definition for module '0x2::object_bag'
@@ -456,7 +470,16 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::ecdsa_k1'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/math.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/ascii_tests.move:1:13
+  │
+1 │ module 0x1::ascii_tests {
+  │             ^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::ascii_tests'
+  │             Module previously defined here, with '0x1::ascii_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/math.move:1:13
   │
 1 │ module 0x2::math {
   │             ^^^^ Duplicate definition for module '0x2::math'
@@ -476,7 +499,7 @@ error[E02001]: duplicate declaration, item, or annotation
    │             Module previously defined here, with '(sui=0x2)::display'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/url.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/url.move:1:13
   │
 1 │ module 0x2::url {
   │             ^^^ Duplicate definition for module '0x2::url'
@@ -487,26 +510,15 @@ error[E02001]: duplicate declaration, item, or annotation
   │             --- Module previously defined here, with '(sui=0x2)::url'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/bcs.move:1:13
-   │
- 1 │ module 0x2::bcs {
-   │             ^^^ Duplicate definition for module '0x2::bcs'
-   │
-   ┌─ ../sui-framework/packages/sui-framework/sources/bcs.move:35:13
-   │
-35 │ module sui::bcs {
-   │             --- Module previously defined here, with '(sui=0x2)::bcs'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/tx_context.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/bit_vector.move:1:13
   │
-1 │ module 0x2::tx_context {
-  │             ^^^^^^^^^^ Duplicate definition for module '0x2::tx_context'
+1 │ module 0x1::bit_vector {
+  │             ^^^^^^^^^^ Duplicate definition for module '0x1::bit_vector'
   │
-  ┌─ ../sui-framework/packages/sui-framework/sources/tx_context.move:4:13
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/bit_vector.move:4:13
   │
-4 │ module sui::tx_context {
-  │             ---------- Module previously defined here, with '(sui=0x2)::tx_context'
+4 │ module std::bit_vector {
+  │             ---------- Module previously defined here, with '(std=0x1)::bit_vector'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/table_vec.move:5:13
@@ -518,7 +530,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::table_vec'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/ecdsa_r1.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/ecdsa_r1.move:1:13
   │
 1 │ module 0x2::ecdsa_r1 {
   │             ^^^^^^^^ Duplicate definition for module '0x2::ecdsa_r1'
@@ -556,17 +568,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::ecdsa_r1'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/clock.move:1:13
-  │
-1 │ module 0x2::clock {
-  │             ^^^^^ Duplicate definition for module '0x2::clock'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/sources/clock.move:6:13
-  │
-6 │ module sui::clock {
-  │             ----- Module previously defined here, with '(sui=0x2)::clock'
-
-error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/borrow.move:9:13
   │
 9 │ module sui::borrow {
@@ -585,7 +586,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::linked_table'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/linked_table.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/linked_table.move:1:13
   │
 1 │ module 0x2::linked_table {
   │             ^^^^^^^^^^^^ Duplicate definition for module '0x2::linked_table'
@@ -596,7 +597,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ------------ Module previously defined here, with '(sui=0x2)::linked_table'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/hash.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/hash.move:1:13
   │
 1 │ module 0x1::hash {
   │             ^^^^ Duplicate definition for module '0x1::hash'
@@ -616,7 +617,7 @@ error[E02001]: duplicate declaration, item, or annotation
    │             Module previously defined here, with '(sui=0x2)::kiosk'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/address.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/address.move:1:13
   │
 1 │ module 0x2::address {
   │             ^^^^^^^ Duplicate definition for module '0x2::address'
@@ -625,6 +626,15 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 4 │ module sui::address {
   │             ------- Module previously defined here, with '(sui=0x2)::address'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/fixed_point32_tests.move:1:13
+  │
+1 │ module 0x1::fixed_point32_tests {
+  │             ^^^^^^^^^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::fixed_point32_tests'
+  │             Module previously defined here, with '0x1::fixed_point32_tests'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/crypto/hash.move:6:13
@@ -636,7 +646,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::hash'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/address.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/address.move:1:13
   │
 1 │ module 0x1::address {
   │             ^^^^^^^ Duplicate definition for module '0x1::address'
@@ -645,17 +655,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 6 │ module std::address {
   │             ------- Module previously defined here, with '(std=0x1)::address'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/coin.move:1:13
-  │
-1 │ module 0x2::coin {
-  │             ^^^^ Duplicate definition for module '0x2::coin'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/sources/coin.move:7:13
-  │
-7 │ module sui::coin {
-  │             ---- Module previously defined here, with '(sui=0x2)::coin'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/pay.move:5:13
@@ -667,7 +666,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::pay'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/curve.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/curve.move:1:13
   │
 1 │ module 0x2::curve {
   │             ^^^^^ Duplicate definition for module '0x2::curve'
@@ -687,13 +686,26 @@ error[E02001]: duplicate declaration, item, or annotation
    │             Module previously defined here, with '(sui=0x2)::bcs'
 
 error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/000000000000000000000000000000000000000000000000000000000000000a/type_name_tests.move:1:13
+  │
+1 │ module 0xA::type_name_tests {
+  │             ^^^^^^^^^^^^^^^ Duplicate definition for module '0xA::type_name_tests'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/type_name_tests.move:7:13
+  │
+7 │ module 0xA::type_name_tests {
+  │             --------------- Module previously defined here, with '0xA::type_name_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ ../sui-framework/packages/move-stdlib/sources/string.move:5:13
+  │
+5 │ module std::string {
+  │             ^^^^^^ Duplicate definition for module '(std=0x1)::string'
+  │
   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/string.move:5:13
   │
 5 │ module std::string {
-  │             ^^^^^^
-  │             │
-  │             Duplicate definition for module '(std=0x1)::string'
-  │             Module previously defined here, with '(std=0x1)::string'
+  │             ------ Module previously defined here, with '(std=0x1)::string'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/coin.move:7:13
@@ -705,7 +717,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::coin'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/ed25519.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/ed25519.move:1:13
   │
 1 │ module 0x2::ed25519 {
   │             ^^^^^^^ Duplicate definition for module '0x2::ed25519'
@@ -725,7 +737,7 @@ error[E02001]: duplicate declaration, item, or annotation
    │             Module previously defined here, with '(sui=0x2)::dynamic_field'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/table.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/table.move:1:13
    │
  1 │ module 0x2::table {
    │             ^^^^^ Duplicate definition for module '0x2::table'
@@ -736,7 +748,16 @@ error[E02001]: duplicate declaration, item, or annotation
    │             ----- Module previously defined here, with '(sui=0x2)::table'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/groth16.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/option_tests.move:1:13
+  │
+1 │ module 0x1::option_tests {
+  │             ^^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::option_tests'
+  │             Module previously defined here, with '0x1::option_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/groth16.move:1:13
   │
 1 │ module 0x2::groth16 {
   │             ^^^^^^^ Duplicate definition for module '0x2::groth16'
@@ -747,7 +768,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ------- Module previously defined here, with '(sui=0x2)::groth16'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/bcs.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/bcs.move:1:13
   │
 1 │ module 0x1::bcs {
   │             ^^^ Duplicate definition for module '0x1::bcs'
@@ -756,17 +777,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 8 │ module std::bcs {
   │             --- Module previously defined here, with '(std=0x1)::bcs'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/transfer.move:1:13
-  │
-1 │ module 0x2::transfer {
-  │             ^^^^^^^^ Duplicate definition for module '0x2::transfer'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/sources/transfer.move:4:13
-  │
-4 │ module sui::transfer {
-  │             -------- Module previously defined here, with '(sui=0x2)::transfer'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/object_bag.move:8:13
@@ -778,7 +788,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::object_bag'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/hash.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/hash.move:1:13
   │
 1 │ module 0x2::hash {
   │             ^^^^ Duplicate definition for module '0x2::hash'
@@ -792,10 +802,12 @@ error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/package.move:7:13
   │
 7 │ module sui::package {
-  │             ^^^^^^^
-  │             │
-  │             Duplicate definition for module '(sui=0x2)::package'
-  │             Module previously defined here, with '(sui=0x2)::package'
+  │             ^^^^^^^ Duplicate definition for module '(sui=0x2)::package'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/package.move:7:13
+  │
+7 │ module sui::package {
+  │             ------- Module previously defined here, with '(sui=0x2)::package'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/bcs.move:8:13
@@ -807,7 +819,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(std=0x1)::bcs'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/fixed_point32.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/fixed_point32.move:1:13
   │
 1 │ module 0x1::fixed_point32 {
   │             ^^^^^^^^^^^^^ Duplicate definition for module '0x1::fixed_point32'
@@ -836,6 +848,15 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::tx_context'
 
 error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/bcs_tests.move:1:13
+  │
+1 │ module 0x1::bcs_tests {
+  │             ^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::bcs_tests'
+  │             Module previously defined here, with '0x1::bcs_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
    ┌─ ../sui-framework/packages/sui-framework/sources/table.move:19:13
    │
 19 │ module sui::table {
@@ -845,7 +866,18 @@ error[E02001]: duplicate declaration, item, or annotation
    │             Module previously defined here, with '(sui=0x2)::table'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/versioned.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/coin.move:1:13
+  │
+1 │ module 0x2::coin {
+  │             ^^^^ Duplicate definition for module '0x2::coin'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/sources/coin.move:7:13
+  │
+7 │ module sui::coin {
+  │             ---- Module previously defined here, with '(sui=0x2)::coin'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/versioned.move:1:13
   │
 1 │ module 0x2::versioned {
   │             ^^^^^^^^^ Duplicate definition for module '0x2::versioned'
@@ -865,7 +897,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::versioned'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/object_table.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/object_table.move:1:13
   │
 1 │ module 0x2::object_table {
   │             ^^^^^^^^^^^^ Duplicate definition for module '0x2::object_table'
@@ -876,7 +908,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ------------ Module previously defined here, with '(sui=0x2)::object_table'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/hex.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/hex.move:1:13
   │
 1 │ module 0x2::hex {
   │             ^^^ Duplicate definition for module '0x2::hex'
@@ -905,18 +937,27 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(std=0x1)::fixed_point32'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/balance.move:1:13
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/type_name_tests.move:7:13
   │
-1 │ module 0x2::balance {
-  │             ^^^^^^^ Duplicate definition for module '0x2::balance'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/sources/balance.move:7:13
-  │
-7 │ module sui::balance {
-  │             ------- Module previously defined here, with '(sui=0x2)::balance'
+7 │ module 0xA::type_name_tests {
+  │             ^^^^^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0xA::type_name_tests'
+  │             Module previously defined here, with '0xA::type_name_tests'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/priority_queue.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/transfer.move:1:13
+  │
+1 │ module 0x2::transfer {
+  │             ^^^^^^^^ Duplicate definition for module '0x2::transfer'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/sources/transfer.move:4:13
+  │
+4 │ module sui::transfer {
+  │             -------- Module previously defined here, with '(sui=0x2)::transfer'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/priority_queue.move:1:13
   │
 1 │ module 0x2::priority_queue {
   │             ^^^^^^^^^^^^^^ Duplicate definition for module '0x2::priority_queue'
@@ -927,7 +968,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             -------------- Module previously defined here, with '(sui=0x2)::priority_queue'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/display.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/display.move:1:13
    │
  1 │ module 0x2::display {
    │             ^^^^^^^ Duplicate definition for module '0x2::display'
@@ -947,7 +988,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::hex'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/types.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/types.move:1:13
   │
 1 │ module 0x2::types {
   │             ^^^^^ Duplicate definition for module '0x2::types'
@@ -958,7 +999,16 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ----- Module previously defined here, with '(sui=0x2)::types'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/debug.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/vector_tests.move:1:13
+  │
+1 │ module 0x1::vector_tests {
+  │             ^^^^^^^^^^^^
+  │             │
+  │             Duplicate definition for module '0x1::vector_tests'
+  │             Module previously defined here, with '0x1::vector_tests'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/debug.move:1:13
   │
 1 │ module 0x1::debug {
   │             ^^^^^ Duplicate definition for module '0x1::debug'
@@ -969,7 +1019,29 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ----- Module previously defined here, with '(std=0x1)::debug'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/table_vec.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/borrow.move:1:13
+  │
+1 │ module 0x2::borrow {
+  │             ^^^^^^ Duplicate definition for module '0x2::borrow'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/sources/borrow.move:9:13
+  │
+9 │ module sui::borrow {
+  │             ------ Module previously defined here, with '(sui=0x2)::borrow'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/balance.move:1:13
+  │
+1 │ module 0x2::balance {
+  │             ^^^^^^^ Duplicate definition for module '0x2::balance'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/sources/balance.move:7:13
+  │
+7 │ module sui::balance {
+  │             ------- Module previously defined here, with '(sui=0x2)::balance'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/table_vec.move:1:13
   │
 1 │ module 0x2::table_vec {
   │             ^^^^^^^^^ Duplicate definition for module '0x2::table_vec'
@@ -980,7 +1052,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             --------- Module previously defined here, with '(sui=0x2)::table_vec'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/option.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/option.move:1:13
   │
 1 │ module 0x1::option {
   │             ^^^^^^ Duplicate definition for module '0x1::option'
@@ -989,6 +1061,17 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 5 │ module std::option {
   │             ------ Module previously defined here, with '(std=0x1)::option'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/tx_context.move:1:13
+  │
+1 │ module 0x2::tx_context {
+  │             ^^^^^^^^^^ Duplicate definition for module '0x2::tx_context'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/sources/tx_context.move:4:13
+  │
+4 │ module sui::tx_context {
+  │             ---------- Module previously defined here, with '(sui=0x2)::tx_context'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/sources/object_table.move:8:13
@@ -1000,7 +1083,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::object_table'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/dynamic_object_field.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/dynamic_object_field.move:1:13
   │
 1 │ module 0x2::dynamic_object_field {
   │             ^^^^^^^^^^^^^^^^^^^^ Duplicate definition for module '0x2::dynamic_object_field'
@@ -1020,7 +1103,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::hmac'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/string.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/string.move:1:13
   │
 1 │ module 0x1::string {
   │             ^^^^^^ Duplicate definition for module '0x1::string'
@@ -1031,7 +1114,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             ------ Module previously defined here, with '(std=0x1)::string'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/ecdsa_k1.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/ecdsa_k1.move:1:13
   │
 1 │ module 0x2::ecdsa_k1 {
   │             ^^^^^^^^ Duplicate definition for module '0x2::ecdsa_k1'
@@ -1051,7 +1134,18 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(std=0x1)::type_name'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/type_name.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/clock.move:1:13
+  │
+1 │ module 0x2::clock {
+  │             ^^^^^ Duplicate definition for module '0x2::clock'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/sources/clock.move:6:13
+  │
+6 │ module sui::clock {
+  │             ----- Module previously defined here, with '(sui=0x2)::clock'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000001/type_name.move:1:13
   │
 1 │ module 0x1::type_name {
   │             ^^^^^^^^^ Duplicate definition for module '0x1::type_name'
@@ -1062,7 +1156,18 @@ error[E02001]: duplicate declaration, item, or annotation
   │             --------- Module previously defined here, with '(std=0x1)::type_name'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/pay.move:1:13
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/bcs.move:1:13
+   │
+ 1 │ module 0x2::bcs {
+   │             ^^^ Duplicate definition for module '0x2::bcs'
+   │
+   ┌─ ../sui-framework/packages/sui-framework/sources/bcs.move:35:13
+   │
+35 │ module sui::bcs {
+   │             --- Module previously defined here, with '(sui=0x2)::bcs'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/pay.move:1:13
   │
 1 │ module 0x2::pay {
   │             ^^^ Duplicate definition for module '0x2::pay'
@@ -1071,17 +1176,6 @@ error[E02001]: duplicate declaration, item, or annotation
   │
 5 │ module sui::pay {
   │             --- Module previously defined here, with '(sui=0x2)::pay'
-
-error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000001/bit_vector.move:1:13
-  │
-1 │ module 0x1::bit_vector {
-  │             ^^^^^^^^^^ Duplicate definition for module '0x1::bit_vector'
-  │
-  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/bit_vector.move:4:13
-  │
-4 │ module std::bit_vector {
-  │             ---------- Module previously defined here, with '(std=0x1)::bit_vector'
 
 error[E02001]: duplicate declaration, item, or annotation
   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/bit_vector.move:4:13
@@ -1093,7 +1187,7 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(std=0x1)::bit_vector'
 
 error[E02001]: duplicate declaration, item, or annotation
-  ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/vec_set.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/vec_set.move:1:13
   │
 1 │ module 0x2::vec_set {
   │             ^^^^^^^ Duplicate definition for module '0x2::vec_set'
@@ -1113,7 +1207,27 @@ error[E02001]: duplicate declaration, item, or annotation
   │             Module previously defined here, with '(sui=0x2)::dynamic_object_field'
 
 error[E02001]: duplicate declaration, item, or annotation
-   ┌─ build/mv_interfaces/17309681445962022939/0000000000000000000000000000000000000000000000000000000000000002/event.move:1:13
+  ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/package.move:1:13
+  │
+1 │ module 0x2::package {
+  │             ^^^^^^^ Duplicate definition for module '0x2::package'
+  │
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/package.move:7:13
+  │
+7 │ module sui::package {
+  │             ------- Module previously defined here, with '(sui=0x2)::package'
+
+error[E02001]: duplicate declaration, item, or annotation
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/string.move:5:13
+  │
+5 │ module std::string {
+  │             ^^^^^^
+  │             │
+  │             Duplicate definition for module '(std=0x1)::string'
+  │             Module previously defined here, with '(std=0x1)::string'
+
+error[E02001]: duplicate declaration, item, or annotation
+   ┌─ build/mv_interfaces/02236175963034204367/0000000000000000000000000000000000000000000000000000000000000002/event.move:1:13
    │
  1 │ module 0x2::event {
    │             ^^^^^ Duplicate definition for module '0x2::event'
