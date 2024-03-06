@@ -2593,7 +2593,8 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(6000)
+        .with_round_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2609,6 +2610,7 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
         .await
         .effects
         .unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
@@ -2621,7 +2623,8 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(6000)
+        .with_round_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2647,7 +2650,8 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(6000)
+        .with_round_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2664,6 +2668,7 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
 
+    test_cluster.wait_for_epoch(Some(2)).await;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
 
     Ok(())
@@ -2733,7 +2738,7 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
         let _response = test_cluster
             .execute_transaction_return_raw_effects(tx.clone())
             .await;
-        assert_eq!(_response.is_ok(),false);
+        assert!(_response.is_err());
     }
 
     Ok(())

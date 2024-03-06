@@ -190,7 +190,7 @@ module bfc_system::bfc_system_tests {
             bfc_system_state_inner::bfc_system_parameters(
                 3600 * 4,
                 2000,
-                10000,
+                20000,
                 treasury_parameters,
             ),
             ctx,

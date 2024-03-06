@@ -1,7 +1,6 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
-    use std::debug;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::bfc::BFC;
@@ -394,9 +393,9 @@ module bfc_system::bfc_system_state_inner {
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
     ): BfcSystemParameters {
         BfcSystemParameters {
-            time_interval,
-            round_duration_ms,
             chain_start_timestamp_ms,
+            round_duration_ms,
+            time_interval,
             treasury_parameters,
         }
     }
