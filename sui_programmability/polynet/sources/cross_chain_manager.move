@@ -57,10 +57,6 @@ module polynet::cross_chain_manager {
         tx_hash_index: u128,
         tx_hash_map: Table<u128, vector<u8>>,
         from_chain_tx_exist: Table<u64, Table<vector<u8>, bool>>
-        
-        
-
-       
     }
 
     // access control

@@ -365,8 +365,6 @@ module polynet::lock_proxy {
         );
     }
 
-
-    //TODO: check if can upgrade
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
     public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {

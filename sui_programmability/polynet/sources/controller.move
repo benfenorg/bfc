@@ -51,7 +51,7 @@ module polynet::controller {
                     _start_height,
                     _poly_id,
                     sender
-                    );
+                   );
     }
 
 
@@ -66,10 +66,10 @@ module polynet::controller {
         config::check_version(_global);
 
         wrapper_v1::setFeeCollector(
-            config::borrow_mut_wrapper_store(_global),
-            _new_fee_collector,
-            _ctx
-        ); 
+                        config::borrow_mut_wrapper_store(_global),
+                        _new_fee_collector,
+                        _ctx
+                    ); 
     }
 
       // change book keeper
@@ -87,11 +87,11 @@ module polynet::controller {
 
         cross_chain_manager::check_keeper_role(ccManager, sender);
         cross_chain_manager::change_book_keeper(
-            ccManager,
-            _keepers,
-            _start_height,
-            _ctx
-        );
+                                ccManager,
+                                _keepers,
+                                _start_height,
+                                _ctx
+                            );
     }
 
     public entry fun set_poly_id(
@@ -105,10 +105,10 @@ module polynet::controller {
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         cross_chain_manager::check_keeper_role(ccManager, sender);
         cross_chain_manager::set_poly_id(
-            ccManager,
-            _poly_id,
-            _ctx
-        );
+                                ccManager,
+                                _poly_id,
+                                _ctx
+                            );
     }
 
      // update crosschain_config
@@ -131,14 +131,14 @@ module polynet::controller {
                                 _start_height,
                                 _poly_d,
                                 _ctx
-                            );
+                             );
         
         events::update_book_keeper_event(
-                _keepers,
-                _start_height,
-                _poly_d,
-                sender
-            );
+                    _keepers,
+                    _start_height,
+                    _poly_d,
+                    sender
+                );
     }
 
   
@@ -171,25 +171,23 @@ module polynet::controller {
       
 
         let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
-            // poly_id,
-            // cur_epoch_start_height,
-            ccManager,
-            license_ref, 
-            &_proof, 
-            &_rawHeader, 
-            &_headerProof, 
-            &_curRawHeader, 
-            &_headerSig, 
-            _ctx
-        );
+                                                    ccManager,
+                                                    license_ref, 
+                                                    &_proof, 
+                                                    &_rawHeader, 
+                                                    &_headerProof, 
+                                                    &_curRawHeader, 
+                                                    &_headerSig, 
+                                                    _ctx
+                                                );
         // let mut_lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::relay_unlock_tx<CoinType>(
-            &certificate,
-            lpManager,
-            _treasury_ref,
-            _clock, 
-            _ctx
-        );
+                        &certificate,
+                        lpManager,
+                        _treasury_ref,
+                        _clock, 
+                        _ctx
+                    );
     }
 
     public entry fun lock_and_pay_fee<CoinType>(
@@ -275,10 +273,10 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
 
         lock_proxy::update_lock_proxy_manager_start_time(
-            lpManager,
-            _clock,
-            _ctx
-        );
+                        lpManager,
+                        _clock,
+                        _ctx
+                    );
     }
 
     public entry fun transfer_lp_manager_ownerShip(
@@ -329,11 +327,11 @@ module polynet::controller {
         lock_proxy::onlyOwner(lpManager, sender);
         
         lock_proxy::bind_proxy(
-            lpManager,
-            _to_chain_id,
-            _target_proxy_hash,
-            _ctx
-        );
+                        lpManager,
+                        _to_chain_id,
+                        _target_proxy_hash,
+                        _ctx
+                    );
     }
 
     public entry fun unbind_proxy(
@@ -348,10 +346,10 @@ module polynet::controller {
         lock_proxy::onlyOwner(lpManager, sender);
         lock_proxy::check_paused(lpManager);
         lock_proxy::unbind_proxy(
-            lpManager,
-            _to_chain_id,
-            _ctx
-        )
+                        lpManager,
+                        _to_chain_id,
+                        _ctx
+                    );
     }
 
     public entry fun bind_asset<CoinType>(
@@ -368,12 +366,12 @@ module polynet::controller {
         lock_proxy::onlyOwner(lpManager, sender);
         lock_proxy::check_paused(lpManager);
         lock_proxy::bind_asset<CoinType>(
-            lpManager,
-            _to_chain_id,
-            _to_asset_hash,
-            _to_asset_decimals,
-            _ctx
-        );
+                        lpManager,
+                        _to_chain_id,
+                        _to_asset_hash,
+                        _to_asset_decimals,
+                        _ctx
+                    );
     }
 
     public entry fun unbind_asset<CoinType>(
@@ -387,10 +385,10 @@ module polynet::controller {
         lock_proxy::check_paused(lpManager);
         lock_proxy::onlyOwner(lpManager, sender);
         lock_proxy::unbind_asset<CoinType>(
-            lpManager,
-            _to_chain_id,
-            _ctx
-        );
+                        lpManager,
+                        _to_chain_id,
+                        _ctx
+                    );
     }
 
     public entry fun output_license_id( _global: &mut CrossChainGlobalConfig) {
@@ -446,10 +444,10 @@ module polynet::controller {
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
         cross_chain_manager::set_blacklist(
-                            ccManager,
-                            _license_id,
-                            _access_level,
-                            _ctx
+                                ccManager,
+                                _license_id,
+                                _access_level,
+                                _ctx
                             );
     }
 
@@ -506,11 +504,4 @@ module polynet::controller {
         let amount_manager = lock_proxy::borrow_unlock_amount_limit_manager(lp_manager);
         lock_proxy::reset_amount(amount_manager);
     }
-
-
-
-
-
-
-
 }
