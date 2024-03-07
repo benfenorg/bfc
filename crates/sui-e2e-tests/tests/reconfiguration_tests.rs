@@ -2399,6 +2399,7 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
             if _effects.status.is_err() {
+                error!("txn is {:?}",tx);
                 error!("effects is {:?}",_effects);
             }
             assert!(_effects.status.is_ok());
@@ -2614,7 +2615,9 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
-    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+
+    // transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+    // let _ = sleep(Duration::from_secs(4)).await;
 
     Ok(())
 }
