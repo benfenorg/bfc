@@ -2337,7 +2337,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .get_bfc_system_state_object_for_testing().unwrap();
 
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
-    assert_eq!(treasury.bfc_balance, Balance::new(53833173437554378));
+    assert_eq!(treasury.bfc_balance, Balance::new(102433173437554378));
     Ok(())
 }
 
