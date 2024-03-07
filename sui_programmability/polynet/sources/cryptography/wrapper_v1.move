@@ -7,7 +7,6 @@ module polynet::wrapper_v1 {
     use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
-    // use sui::object::{UID, Self};
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
@@ -15,8 +14,11 @@ module polynet::wrapper_v1 {
     // friend polynet::cross_chain_manager;
     friend polynet::controller ;
     friend polynet::config;
+    #[test_only]
     friend polynet::wrapper_v1_test;
+    #[test_only]
     friend polynet::tools_test;
+    #[test_only]
     friend polynet::lock_proxy_test;
 
 
@@ -33,14 +35,12 @@ module polynet::wrapper_v1 {
 
 
     struct WrapperStore has store{
-        // id: UID,
         fee_collector: address,
     }
 
     public(friend) fun new(_ctx: &mut TxContext): WrapperStore {
 
         WrapperStore{
-            // id: object::new(_ctx),
             fee_collector:tx_context::sender(_ctx) //maybe should set at config file
         }
     }
