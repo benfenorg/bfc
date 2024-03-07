@@ -3,7 +3,9 @@
 module polynet::cross_chain_manager_test {
 
     use std::vector;
-    use polynet::cross_chain_manager::{setPolyId, CrossChainManager, getPolyId, grantRole, revokeRole, setBlackList};
+    use polynet::controller::{set_poly_id, grant_role, revoke_role, set_blacklist};
+    use polynet::config::{init_cc_config, CrossChainGlobalConfig, borrow_mut_crosschain_manager};
+    use polynet::cross_chain_manager::{CrossChainManager,update_cross_chain_config, get_poly_id};
     use sui::test_scenario;
     use polynet::cross_chain_manager;
     use polynet::utils;
@@ -25,62 +27,102 @@ module polynet::cross_chain_manager_test {
         vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
 
 
+        //init cc config
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            cross_chain_manager::init_crosschain_manager(keepers, startHeight, polyId, ctx);
+            init_cc_config(ctx);
         };
 
+        //update cross chain config
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let manager = borrow_mut_crosschain_manager(&mut ccConfig);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+
+
+            update_cross_chain_config( manager, keepers, startHeight, polyId,  ctx);
+
+            test_scenario::return_shared(ccConfig);
+
+        };
+
+
+        //set poly id
         let new_polyId: u64 = 42;
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-            setPolyId(&mut manager, new_polyId, ctx);
 
-            test_scenario::return_shared(manager);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+
+
+            set_poly_id(&mut  ccConfig,  polyId,  ctx);
+
+            test_scenario::return_shared(ccConfig);
         };
 
+        //get poly id
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            //let ctx = test_scenario::ctx(&mut scenario_val);
-            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
-            let result = getPolyId(&mut manager);
+
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let manager = borrow_mut_crosschain_manager(&mut ccConfig);
+
+            let result = get_poly_id(manager);
+
             assert!(result == new_polyId, 4002);
+            test_scenario::return_shared(ccConfig);
 
-            test_scenario::return_shared(manager);
         };
 
+        //grant role
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
+
+            //let manager = borrow_mut_crosschain_manager(&mut ccConfig);
+
             let new_role_address = @0x01;
-            grantRole(&mut manager, 1, new_role_address, ctx);
+            grant_role(&mut  ccConfig, 1, new_role_address, ctx);
 
-            test_scenario::return_shared(manager);
+
+            test_scenario::return_shared(ccConfig);
         };
 
 
-
+        //revoke role
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
+
+            //let manager = borrow_mut_crosschain_manager(&mut ccConfig);
+
             let new_role_address = @0x01;
-            revokeRole(&mut manager, 1, new_role_address, ctx);
+            revoke_role(&mut  ccConfig, 1, new_role_address, ctx);
 
-            test_scenario::return_shared(manager);
+
+            test_scenario::return_shared(ccConfig);
         };
 
 
+
+        //set black list
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let manager = test_scenario::take_shared<CrossChainManager>(&mut scenario_val);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-            setBlackList(&mut manager, x"01", 1, ctx);
 
-            test_scenario::return_shared(manager);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+
+            //let manager = borrow_mut_crosschain_manager(&mut ccConfig);
+
+            let new_role_address = @0x01;
+            set_blacklist(&mut  ccConfig, x"01", 1, ctx);
+
+            test_scenario::return_shared(ccConfig);
         };
 
         test_scenario::end(scenario_val);

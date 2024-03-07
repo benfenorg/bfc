@@ -31,6 +31,9 @@ module polynet::lock_proxy {
     friend polynet::controller;
     friend polynet::config;
 
+    #[test_only]
+    friend polynet::lock_proxy_test;
+
 
     const DEPRECATED: u64 = 4001;
     const ENOT_OWNER: u64 = 4002;

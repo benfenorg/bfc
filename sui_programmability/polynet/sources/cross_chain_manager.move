@@ -4,24 +4,22 @@ module polynet::cross_chain_manager {
     use std::bcs;
     use polynet::utils;
     use sui::event;
-    use sui::object;
-    use sui::object::UID;
     use sui::table::{Table, Self};
-    use sui::transfer;
     use sui::tx_context;
-    //use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
     use polynet::acl::Access_control_list;
     use polynet::acl;
     use polynet::zero_copy_sink;
     use polynet::cross_chain_utils;
-    use polynet::wrapper_v1;
     use polynet::events;
 
     friend polynet::lock_proxy;
     friend polynet::controller;
     friend polynet::config;
+    #[test_only]
+    friend polynet::cross_chain_manager_test;
+    friend polynet::tools;
 
     const ADMIN_ROLE: u64 = 1;
     const PAUSE_ROLE: u64 = 2;

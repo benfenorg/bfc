@@ -13,6 +13,13 @@ module polynet::config {
     use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
 
     friend polynet::controller;
+    #[test_only]
+    friend polynet::cross_chain_manager_test;
+    #[test_only]
+    friend polynet::lock_proxy_test;
+    #[test_only]
+    friend polynet::wrapper_v1_test;
+    friend polynet::tools;
 
     const VERSION: u64 = 2;
     const ERR_CHECK_CONFIG_PAUSED: u64 = 6000;
@@ -22,12 +29,7 @@ module polynet::config {
 
     struct CrossChainGlobalConfig has key {
         id: UID,
-        // polyId: u64,
         paused: bool,
-        // curBookKeepers: vector<vector<u8>>,
-        // curEpochStartHeight: u64,
-        // ethToPolyTxHashMap: Table<u128, vector<u8>>,
-        // fromChainTxExist: Table<u64, Table<vector<u8>, bool>>,
         crossChainManager: CrossChainManager,
         lockProxyManager: LockProxyManager,
         wrapperStore: WrapperStore,
@@ -41,12 +43,7 @@ module polynet::config {
         // init global config
         let config = CrossChainGlobalConfig{
             id: object::new(_ctx),
-            // polyId: 0,
             paused: false,
-            // curBookKeepers: vector::empty<vector<u8>>(),
-            // curEpochStartHeight: 0,
-            // ethToPolyTxHashMap: table::new<u128, vector<u8>>(_ctx),
-            // fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>(_ctx),
             crossChainManager: cross_chain_manager::new(_ctx),
             lockProxyManager: lock_proxy::new(_ctx),
             wrapperStore: wrapper_v1::new(_ctx),
@@ -55,12 +52,23 @@ module polynet::config {
        
         transfer::share_object(config);
 
-        // events::init_book_keeper_event(
-        //             vector::empty<vector<u8>>(),
-        //             0,
-        //             sender 
-        //         );
     }
+
+    public(friend) fun init_cc_config(_ctx: &mut TxContext){
+        // init global config
+        let config = CrossChainGlobalConfig{
+            id: object::new(_ctx),
+            paused: false,
+            crossChainManager: cross_chain_manager::new(_ctx),
+            lockProxyManager: lock_proxy::new(_ctx),
+            wrapperStore: wrapper_v1::new(_ctx),
+            version: VERSION
+        };
+
+        transfer::share_object(config);
+
+    }
+
 
     public(friend) fun migrate(
         _global: &mut CrossChainGlobalConfig,
@@ -145,32 +153,6 @@ module polynet::config {
         assert!(paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = false;
     }
-
-
-
-   
-
-
-    // public(friend) fun check_from_chain_tx_exist(
-    //     _global: &CrossChainGlobalConfig, 
-    //     _from_chain_id: u64, 
-    //     _from_chain_tx: &vector<u8>
-    // ) {
-    //     //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-    //     let exist = false;
-    //     if (table::contains(&_global.fromChainTxExist, _from_chain_id)) {
-    //         if (table::contains(table::borrow(&_global.fromChainTxExist, _from_chain_id), *_from_chain_tx)) {
-    //             exist = true;
-    //         };
-    //     };
-    //     assert!(!exist, EALREADY_EXECUTED);
-
-    // }
-
-   
-
-     
-        // markFromChainTxExist(global, from_chain_id, &poly_tx_hash, ctx);
 
 
 
