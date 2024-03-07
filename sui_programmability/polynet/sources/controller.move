@@ -141,9 +141,6 @@ module polynet::controller {
                 );
     }
 
-  
-
-
     public entry fun relay_unlock_tx<CoinType>(
         _global:&mut CrossChainGlobalConfig,
         _treasury_ref:&mut Treasury<CoinType>,

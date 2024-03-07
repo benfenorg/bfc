@@ -200,7 +200,7 @@ module polynet::lock_proxy {
             abort ETARGET_PROXY_NOT_BIND
         }
     }
-
+    //TODO: logic is not easy to understand
     public fun getToAsset<CoinType>(lpManager: &LockProxyManager,  to_chain_id: u64): (vector<u8>, u8) {
         //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
         let from_asset = type_name::get<Coin<CoinType>>();
@@ -604,7 +604,8 @@ module polynet::lock_proxy {
     }
 
    
-
+    //reset max amount per day of lock_proxy_manager
+    //check user input amount if bigger than max amount
     public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
         let amountLimit : &mut AmountLimitManager;
