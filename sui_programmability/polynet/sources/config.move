@@ -22,12 +22,7 @@ module polynet::config {
 
     struct CrossChainGlobalConfig has key {
         id: UID,
-        // polyId: u64,
         paused: bool,
-        // curBookKeepers: vector<vector<u8>>,
-        // curEpochStartHeight: u64,
-        // ethToPolyTxHashMap: Table<u128, vector<u8>>,
-        // fromChainTxExist: Table<u64, Table<vector<u8>, bool>>,
         crossChainManager: CrossChainManager,
         lockProxyManager: LockProxyManager,
         wrapperStore: WrapperStore,
@@ -41,12 +36,7 @@ module polynet::config {
         // init global config
         let config = CrossChainGlobalConfig{
             id: object::new(_ctx),
-            // polyId: 0,
             paused: false,
-            // curBookKeepers: vector::empty<vector<u8>>(),
-            // curEpochStartHeight: 0,
-            // ethToPolyTxHashMap: table::new<u128, vector<u8>>(_ctx),
-            // fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>(_ctx),
             crossChainManager: cross_chain_manager::new(_ctx),
             lockProxyManager: lock_proxy::new(_ctx),
             wrapperStore: wrapper_v1::new(_ctx),
@@ -55,11 +45,6 @@ module polynet::config {
        
         transfer::share_object(config);
 
-        // events::init_book_keeper_event(
-        //             vector::empty<vector<u8>>(),
-        //             0,
-        //             sender 
-        //         );
     }
 
     public(friend) fun migrate(

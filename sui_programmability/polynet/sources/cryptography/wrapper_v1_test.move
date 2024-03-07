@@ -2,6 +2,7 @@
 module polynet::wrapper_v1_test {
     use std::debug::print;
     use std::vector;
+    use polynet::wrapper_v1;
     use sui::bfc::BFC;
     use sui::clock;
     use sui::coin;
@@ -22,7 +23,7 @@ module polynet::wrapper_v1_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_wrapper(ctx);
+            wrapper_v1::new(ctx);
 
         };
         test_scenario::next_tx(&mut scenario_val, owner);

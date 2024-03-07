@@ -15,6 +15,9 @@ module polynet::wrapper_v1 {
     // friend polynet::cross_chain_manager;
     friend polynet::controller ;
     friend polynet::config;
+    friend polynet::wrapper_v1_test;
+    friend polynet::tools_test;
+    friend polynet::lock_proxy_test;
 
 
     const DEPRECATED: u64 = 4001;

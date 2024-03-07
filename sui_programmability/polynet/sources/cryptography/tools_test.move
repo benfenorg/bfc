@@ -3,12 +3,12 @@ module polynet::tools_test {
     use std::debug::print;
     use std::vector;
     use sui::clock;
-    use polynet::lock_proxy::{init_lock_proxy_manager, LockProxyManager, getLicenseId};
+    use polynet::lock_proxy::{LockProxyManager, getLicenseId};
     use polynet::cross_chain_manager;
     use polynet::tools::{init_testnet_ccm, init_mainnet_ccm, issue_license_to_lock_proxy, init_as_testnet,
         init_as_mainnet
     };
-    use polynet::cross_chain_manager::{CrossChainManager, getPolyId, setPolyId};
+    use polynet::cross_chain_manager::{CrossChainManager,setPolyId, getPolyId};
     use polynet::utils;
     use sui::test_scenario;
 
