@@ -67,8 +67,6 @@ module polynet::cross_chain_manager {
    
     public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
 
-          // sender address
-        let sender = tx_context::sender(_ctx);
 
         // init access control lists
         let acls = table::new<u64, Access_control_list>(_ctx);
@@ -253,21 +251,6 @@ module polynet::cross_chain_manager {
         *v_ref = access_level;
     }
 
-  
-    struct UpdateBookKeeperEvent has store, drop, copy {
-        height: u64,
-        sender: address,
-        keepers: vector<vector<u8>>
-    }
-
-   
-
-
-    struct ChangeBookKeeperEvent has store, drop, copy {
-        height: u64,
-        keepers: vector<vector<u8>>
-    }
-
     struct CrossChainEvent has store, drop, copy {
         sender: address,
         tx_id: vector<u8>,
@@ -276,8 +259,6 @@ module polynet::cross_chain_manager {
         to_contract: vector<u8>,
         raw_data: vector<u8>,
     }
-
-   
 
    
 
@@ -552,10 +533,18 @@ module polynet::cross_chain_manager {
         _poly_id: u64,
         _ctx: &mut TxContext
     ) {
-       
+        let sender = tx_context::sender(_ctx);
+
         _cross_chain_manager.poly_id = _poly_id;
         _cross_chain_manager.epoch_start_height = _start_height;
         _cross_chain_manager.book_keepers = _keepers;
+
+        events::update_book_keeper_event(
+            _start_height,
+            sender,
+            _keepers,
+            _poly_id
+        );
 
     }
 
@@ -565,7 +554,12 @@ module polynet::cross_chain_manager {
         _ctx: &mut TxContext
 
     ) {
+        let sender = tx_context::sender(_ctx);
         _cross_chain_manager.epoch_start_height = _start_height;
+        events::update_start_height_event(
+            _start_height,
+            sender
+        );
     }
 
     public(friend) fun change_book_keeper(
@@ -585,7 +579,12 @@ module polynet::cross_chain_manager {
         _poly_id: u64,
         _ctx: &mut TxContext
     ) {
+        let sender = tx_context::sender(_ctx);
         _cross_chain_manager.poly_id = _poly_id;
+        events::update_poly_id_event(
+            _poly_id,
+            sender
+        );
 
     }
 

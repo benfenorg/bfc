@@ -1,16 +1,11 @@
 module polynet::config {
-    use sui::event;
-    use std::vector;
     use sui::transfer;
     use polynet::events;
     use sui::object::{UID, Self};
-    use sui::table::{Table, Self};
     use sui::tx_context::{TxContext, Self};
-    use polynet::utils;
-    use polynet::acl::{Access_control_list, Self};
     use polynet::wrapper_v1::{WrapperStore, Self};
-    use polynet::cross_chain_manager::{CrossChainManager, Self,ACLStore};
-    use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
+    use polynet::cross_chain_manager::{CrossChainManager, Self};
+    use polynet::lock_proxy::{LockProxyManager, Self};
 
     friend polynet::controller;
     #[test_only]
@@ -142,13 +137,13 @@ module polynet::config {
     }
 
 
-    public(friend) fun pause(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
+    public(friend) fun pause(_global:&mut CrossChainGlobalConfig){
 
         assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = true;
     }
 
-    public(friend) fun unpause(_global:&mut CrossChainGlobalConfig, c_ctxx: &mut TxContext)  {
+    public(friend) fun unpause(_global:&mut CrossChainGlobalConfig)  {
 
         assert!(paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = false;

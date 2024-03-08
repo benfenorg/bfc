@@ -152,13 +152,6 @@ module polynet::controller {
                                 _poly_d,
                                 _ctx
                              );
-        
-        events::update_book_keeper_event(
-                    _keepers,
-                    _start_height,
-                    _poly_d,
-                    sender
-                );
     }
 
     public entry fun relay_unlock_tx<CoinType>(
@@ -294,7 +287,7 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
 
         lock_proxy::onlyOwner(lpManager, sender);
-        lock_proxy::transferOwnerShip(lpManager,_new_owner,_ctx);
+        lock_proxy::transferOwnerShip(lpManager,_new_owner);
     }
 
     public entry fun pause_lp_manager(_global: &mut CrossChainGlobalConfig,  _ctx: &mut TxContext) {
@@ -304,7 +297,7 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
-        lock_proxy::pause(lpManager,_ctx);
+        lock_proxy::pause(lpManager);
     }
 
     public entry fun unpause_lp_manager(_global: &mut CrossChainGlobalConfig, _ctx: &mut TxContext) {
@@ -315,7 +308,7 @@ module polynet::controller {
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::onlyOwner(lpManager, sender);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
-        lock_proxy::unpause(lpManager,_ctx);
+        lock_proxy::unpause(lpManager);
     }
 
     public entry fun bind_proxy(
@@ -334,8 +327,7 @@ module polynet::controller {
         lock_proxy::bind_proxy(
                         lpManager,
                         _to_chain_id,
-                        _target_proxy_hash,
-                        _ctx
+                        _target_proxy_hash
                     );
     }
 
@@ -352,8 +344,7 @@ module polynet::controller {
         lock_proxy::check_paused(lpManager);
         lock_proxy::unbind_proxy(
                         lpManager,
-                        _to_chain_id,
-                        _ctx
+                        _to_chain_id
                     );
     }
 
@@ -391,8 +382,7 @@ module polynet::controller {
         lock_proxy::onlyOwner(lpManager, sender);
         lock_proxy::unbind_asset<CoinType>(
                         lpManager,
-                        _to_chain_id,
-                        _ctx
+                        _to_chain_id
                     );
     }
 
@@ -478,7 +468,7 @@ module polynet::controller {
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         let sender = tx_context::sender(_ctx);
         cross_chain_manager::check_pause_role(ccManager,sender);
-        config::pause(_global,_ctx);
+        config::pause(_global);
     }
 
     public entry fun unpause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
@@ -487,7 +477,7 @@ module polynet::controller {
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         let sender = tx_context::sender(_ctx);
         cross_chain_manager::check_pause_role(ccManager,sender);
-        config::unpause(_global,_ctx);
+        config::unpause(_global);
     }
 
     public entry fun reset_lock_amount(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){

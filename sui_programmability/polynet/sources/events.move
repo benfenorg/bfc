@@ -1,5 +1,5 @@
 module polynet::events {
-    use std::vector;
+    // use std::vector;
     use sui::event::{emit, Self};
     use std::type_name::{TypeName};
 
@@ -49,7 +49,7 @@ module polynet::events {
         from_chain_tx_hash: vector<u8>,
     }
 
-      struct LockEvent has store, drop, copy {
+    struct LockEvent has store, drop, copy {
         from_asset: TypeName,
         from_address: address,
         to_chain_id: u64,
@@ -58,6 +58,61 @@ module polynet::events {
         amount: u64,
         target_chain_amount: u128
     }
+
+    struct UpdatePolyIdEvent has store, drop, copy {
+        poly_id: u64,
+        sender: address
+    }
+
+    struct UpdateStartHeightEvent has store, drop, copy {
+        height: u64,
+        sender: address
+    }
+
+    // struct UpdateBookKeeperEvent has store, drop, copy {
+    //     height: u64,
+    //     sender: address,
+    //     keepers: vector<vector<u8>>,
+    //     poly_id: u64
+    // }
+
+    public(friend) fun update_poly_id_event(
+        _poly_id: u64,
+        _sender: address
+    ) {
+        emit (
+            UpdatePolyIdEvent{
+                poly_id: _poly_id,
+                sender: _sender
+            })
+    }
+
+    public(friend) fun update_start_height_event(
+        _height: u64,
+        _sender: address
+    ) {
+        emit (
+            UpdateStartHeightEvent{
+                height: _height,
+                sender: _sender
+            })
+    }
+
+     public(friend) fun update_book_keeper_event(
+        _height: u64,
+        _sender: address,
+        _keepers: vector<vector<u8>>,
+        _poly_id: u64
+    ) {
+        emit (
+            UpdateBookKeeperEvent{
+                height: _height,
+                sender: _sender,
+                keepers: _keepers,
+                poly_id: _poly_id
+            })
+    }
+
 
      public(friend) fun lock_event(
         _from_asset: TypeName,
@@ -122,23 +177,6 @@ module polynet::events {
 
           event::emit(
             MigrateBookKeeperEvent{
-                height: _startHeight,
-                sender: _sender,
-                poly_id:_polyId,
-                keepers: _keepers
-            },
-        );
-    }
-
-    public(friend) fun update_book_keeper_event(
-        _keepers: vector<vector<u8>>,
-        _startHeight: u64,
-        _polyId: u64,
-        _sender: address
-    ) {
-
-          event::emit(
-            UpdateBookKeeperEvent{
                 height: _startHeight,
                 sender: _sender,
                 poly_id:_polyId,

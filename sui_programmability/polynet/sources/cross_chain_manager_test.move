@@ -48,9 +48,6 @@ module polynet::cross_chain_manager_test {
 
         };
 
-
-        //set poly id
-        let new_polyId: u64 = 42;
         test_scenario::next_tx(&mut scenario_val, owner);
         {
 
@@ -119,7 +116,7 @@ module polynet::cross_chain_manager_test {
 
             //let manager = borrow_mut_crosschain_manager(&mut ccConfig);
 
-            let new_role_address = @0x01;
+            // let new_role_address = @0x01;
             set_blacklist(&mut  ccConfig, x"01", 1, ctx);
 
             test_scenario::return_shared(ccConfig);

@@ -4,13 +4,11 @@ module polynet::tools {
     //use polynet::wrapper_v1;
 
     use std::vector;
-    use polynet::config::{CrossChainGlobalConfig, borrow_mut_lp_manager, borrow_mut_crosschain_manager, borrow_mut_all};
+    use polynet::config::{CrossChainGlobalConfig, borrow_mut_all};
     use sui::clock::Clock;
     use polynet::utils;
     use polynet::config;
     use sui::tx_context;
-    use polynet::lock_proxy::LockProxyManager;
-    use polynet::cross_chain_manager::{CrossChainManager};
     use sui::tx_context::TxContext;
 
 

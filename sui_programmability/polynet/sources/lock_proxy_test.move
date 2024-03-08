@@ -40,8 +40,7 @@ module polynet::lock_proxy_test {
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-            pause(lpmanager, ctx);
+            pause(lpmanager);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -49,8 +48,7 @@ module polynet::lock_proxy_test {
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-            unpause(lpmanager, ctx);
+            unpause(lpmanager);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -59,8 +57,7 @@ module polynet::lock_proxy_test {
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-            transferOwnerShip(lpmanager, new_owner,ctx);
+            transferOwnerShip(lpmanager, new_owner);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -70,8 +67,7 @@ module polynet::lock_proxy_test {
 
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-            transferOwnerShip(lpmanager, owner,ctx);
+            transferOwnerShip(lpmanager, owner);
             test_scenario::return_shared(ccConfig);
         };
         test_scenario::end(scenario_val);
@@ -221,9 +217,7 @@ module polynet::lock_proxy_test {
 
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-
-            unbind_asset<BFC_USDC>(&mut ccConfig, 10,  ctx);
+            unbind_asset<BFC_USDC>(&mut ccConfig, 10, ctx);
 
             test_scenario::return_shared(ccConfig);
         };

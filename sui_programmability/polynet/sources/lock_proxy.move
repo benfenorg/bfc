@@ -240,23 +240,19 @@ module polynet::lock_proxy {
 
     public(friend) fun transferOwnerShip(
         lpManager: &mut LockProxyManager, 
-        new_owner: address, 
-        ctx:&mut TxContext
+        new_owner: address
     ) {
       
-        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.owner = new_owner;
     }
 
-    public(friend) fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
-    //    assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
-        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
+    public(friend) fun pause(lpManager: &mut LockProxyManager) {
+
         lpManager.lock_proxy_store.paused = true;
     }
 
-    public(friend) fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
+    public(friend) fun unpause(lpManager: &mut LockProxyManager) {
         // assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
-        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = false;
     }
 
@@ -267,8 +263,8 @@ module polynet::lock_proxy {
     public(friend) fun bind_proxy(
         lpManager: &mut LockProxyManager,
         to_chain_id: u64,
-        target_proxy_hash: vector<u8>,
-        ctx: &mut TxContext
+        target_proxy_hash: vector<u8>
+      
     )  {
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         utils::upsert(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id, target_proxy_hash);
@@ -283,8 +279,7 @@ module polynet::lock_proxy {
 
     public(friend) fun unbind_proxy(
         lpManager: &mut LockProxyManager, 
-        to_chain_id: u64,
-        ctx: &mut TxContext
+        to_chain_id: u64
     ) {
      
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
@@ -334,8 +329,7 @@ module polynet::lock_proxy {
 
     public(friend) fun unbind_asset<CoinType>(
         lpManager: &mut LockProxyManager, 
-        to_chain_id: u64, 
-        ctx: &mut TxContext
+        to_chain_id: u64
     ) {
      
         let from_asset = type_name::get<Coin<CoinType>>();
