@@ -249,19 +249,19 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
-       assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+    //    assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = true;
     }
 
     public(friend) fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
-        assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+        // assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = false;
     }
 
     public(friend) fun check_paused(lpManager: &LockProxyManager) {
-         assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+         assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
     }
 
     public(friend) fun bind_proxy(
