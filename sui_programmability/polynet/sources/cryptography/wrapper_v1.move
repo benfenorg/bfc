@@ -1,20 +1,26 @@
 #[allow(unused_function)]
 module polynet::wrapper_v1 {
     use sui::bfc::BFC;
-    use sui::event;
-    use std::type_name::{Self, TypeName};
+    use std::type_name::{Self};
     use sui::clock::Clock;
-    use polynet::utils;
-    use polynet::lock_proxy::{Treasury, LockProxyManager, paused};
+    use polynet::events;
+    use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
-    use sui::object;
-    use sui::object::UID;
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    use polynet::lock_proxy;
+    // friend polynet::cross_chain_manager;
+    friend polynet::controller ;
+    friend polynet::config;
+    #[test_only]
+    friend polynet::wrapper_v1_test;
+    #[test_only]
+    friend polynet::tools_test;
+    #[test_only]
+    friend polynet::lock_proxy_test;
+
 
     const DEPRECATED: u64 = 4001;
     const EINVALID_ADMIN: u64 = 4015;
@@ -28,104 +34,34 @@ module polynet::wrapper_v1 {
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
-    struct WrapperStore has key, store{
-        id: UID,
+    struct WrapperStore has store{
         fee_collector: address,
     }
 
+    public(friend) fun new(_ctx: &mut TxContext): WrapperStore {
 
-    struct LockWithFeeEvent has store, drop, copy{
-        from_asset: TypeName,
-        from_address: address,
-        to_chain_id: u64,
-        to_address: vector<u8>,
-        amount: u64,
-        fee_amount: u64
+        WrapperStore{
+            fee_collector:tx_context::sender(_ctx) //maybe should set at config file
+        }
     }
 
-    // for admin
-    public entry fun init_wrapper(    ctx: &mut TxContext,) {
 
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
-
-        transfer::share_object(WrapperStore{
-            id: object::new(ctx),
-            fee_collector: sender,
-        });
+    public(friend) fun setFeeCollector(
+        _wrapperstore:&mut WrapperStore, 
+        _new_fee_collector: address, 
+        _ctx: &mut TxContext
+    ) {
+      
+        _wrapperstore.fee_collector = _new_fee_collector;
     }
 
-    public entry fun setFeeCollector(wrapperstore:&mut WrapperStore, new_fee_collector: address, ctx: &mut TxContext) {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
-
-
-        wrapperstore.fee_collector = new_fee_collector;
-    }
-
-    public fun feeCollector(wrapperstore:&mut WrapperStore): address {
+    public fun feeCollector(_wrapperstore: &WrapperStore): address {
         //let config_ref = borrow_global<WrapperStore>(POLY_BRIDGE);
-        return wrapperstore.fee_collector
+        return _wrapperstore.fee_collector
     }
     
-    // for relayer 
-    public entry fun relay_unlock_tx<CoinType>(
-        ccManager:&mut CrossChainManager,
-        lpManager: &mut LockProxyManager,
-        treasury_ref:&mut Treasury<CoinType>,
-        proof: vector<u8>, 
-        rawHeader: vector<u8>, 
-        headerProof: vector<u8>, 
-        curRawHeader: vector<u8>, 
-        headerSig: vector<u8>,
-        clock: &Clock,
-        ctx: &mut TxContext
-    ) {
-        //check system pause
-        let pause_flag = paused(lpManager);
-        assert!(!pause_flag, EINVALID_SYSTEM_IS_PAUSED);
 
-        lock_proxy::relay_unlock_tx<CoinType>(
-            ccManager, lpManager,treasury_ref,
-            proof, rawHeader, headerProof, curRawHeader, headerSig, clock, ctx);
-    }
-
-
-    public entry fun relay_bfc_test(
-        ccManager:&mut CrossChainManager,
-        ctx: &mut TxContext
-    ) {
-
-    }
-    // for user
-    public entry fun lock_and_pay_fee<CoinType>(
-        ccManager:&mut CrossChainManager,
-        lpManager: &mut LockProxyManager,
-        treasury_ref:&mut Treasury<CoinType>,
-        wrapperstore:&mut WrapperStore,
-        account: address,
-        fund: Coin<CoinType>,
-        fee: Coin<BFC>,
-        toChainId: u64, 
-        toAddress: vector<u8>,
-        clock:&Clock,
-        ctx: &mut TxContext
-    )  {
-
-        //check system pause
-        let pause_flag = paused(lpManager);
-        assert!(!pause_flag, EINVALID_SYSTEM_IS_PAUSED);
-
-        //any user can lock bfc assets and transfer to evm
-
-        lock_and_pay_fee_with_fund<CoinType>(ccManager,
-            lpManager,treasury_ref,wrapperstore,
-            account, fund, fee, toChainId, &toAddress,clock, ctx);
-    }
-
-    public fun lock_and_pay_fee_with_fund<CoinType>(
+    public(friend) fun lock_and_pay_fee_with_fund<CoinType>(
         ccManager:&mut CrossChainManager,
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
@@ -141,8 +77,6 @@ module polynet::wrapper_v1 {
         let amount = coin::value(&fund);
         let fee_amount = coin::value(&fee);
 
-
-
         //coin::deposit<BFC>(feeCollector(), fee);
 
         let feeCollector = feeCollector(wrapperstore);
@@ -150,16 +84,14 @@ module polynet::wrapper_v1 {
 
         lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,clock, ctx);
         //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
-        event::emit(
-            LockWithFeeEvent{
-                from_asset: type_name::get<Coin<CoinType>>(),
-                from_address: (account),
-                to_chain_id: toChainId,
-                to_address: *toAddress,
-                amount: amount,
-                fee_amount: fee_amount,
-            },
-        );
+        events::lock_with_fee_event(
+                         type_name::get<Coin<CoinType>>(),
+                         account,
+                         toChainId,
+                         *toAddress,
+                         amount,
+                         fee_amount,
+                        );
     }
 
 

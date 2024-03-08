@@ -1,7 +1,6 @@
 module polynet::acl {
     use polynet::acl;
     use std::vector;
-    use sui::address;
 
     /// The ACL already contains the address.
     const ECONTAIN: u64 = 4000;

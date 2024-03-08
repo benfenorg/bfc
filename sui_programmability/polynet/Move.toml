@@ -2,7 +2,8 @@
 name = "polynet"
 version = "0.0.1"
 #BFCa4ed616b1afa78c46152650329335f12a564c4e607a0e31262b6657ef7de25d0502c
-published-at = "BFCb327d395f4bf7ebd8eb0599d086ae013d12bb42f1abfcaf072d12fd6f5eb9ed2dcaf"
+published-at = "0xca837a64d69e1b4ccf40f5bc45c35c974d56b82c42896ff405778568cc98d697"
+
 
 [dependencies]
 Sui = { local = "../../crates/sui-framework/packages/sui-framework" }

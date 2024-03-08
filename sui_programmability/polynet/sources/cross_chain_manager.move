@@ -4,19 +4,22 @@ module polynet::cross_chain_manager {
     use std::bcs;
     use polynet::utils;
     use sui::event;
-    use sui::object;
-    use sui::object::UID;
     use sui::table::{Table, Self};
-    use sui::transfer;
     use sui::tx_context;
-    //use sui::transfer::transfer;
     use sui::tx_context::TxContext;
 
     use polynet::acl::Access_control_list;
     use polynet::acl;
     use polynet::zero_copy_sink;
     use polynet::cross_chain_utils;
+    use polynet::events;
 
+    friend polynet::lock_proxy;
+    friend polynet::controller;
+    friend polynet::config;
+    #[test_only]
+    friend polynet::cross_chain_manager_test;
+    friend polynet::tools;
 
     const ADMIN_ROLE: u64 = 1;
     const PAUSE_ROLE: u64 = 2;
@@ -41,46 +44,32 @@ module polynet::cross_chain_manager {
     const EVERIFIER_NOT_RECEIVER: u64 = 4015;
 
 
-    struct CrossChainManager has key, store{
-        id: UID,
+   
+    struct CrossChainManager has store {
+        // id: UID,
+        paused: bool,
         acl_store: ACLStore,
-        config: CrossChainGlobalConfig
+        poly_id: u64,
+        book_keepers: vector<vector<u8>>, //special decode pointer
+        epoch_start_height: u64,
+        tx_hash_index: u128,
+        tx_hash_map: Table<u128, vector<u8>>,
+        from_chain_tx_exist: Table<u64, Table<vector<u8>, bool>>
     }
 
-
     // access control
-    struct ACLStore has key, store {
-        id: UID,
+    struct ACLStore has store {
+        // id: UID,
         role_acls: Table<u64, Access_control_list>,
         license_black_list: Table<vector<u8>, u8>
     }
 
-    // data store
-    struct CrossChainGlobalConfig has key,store{
-        id: UID,
-        polyId: u64,
-        paused: bool,
-        ethToPolyTxHashIndex: u128,
-        curBookKeepers: vector<vector<u8>>,
-        curEpochStartHeight: u64,
-        ethToPolyTxHashMap: Table<u128, vector<u8>>,
-        fromChainTxExist: Table<u64, Table<vector<u8>, bool>>,
-    }
+   
+    public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
 
-    // initialize
-    public entry fun init_crosschain_manager(
-                                             keepers: vector<vector<u8>>,
-                                             startHeight: u64,
-                                             polyId: u64,
-                                             ctx: &mut TxContext)  {
-
-        // sender address
-        let sender = tx_context::sender(ctx);
-
-        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         // init access control lists
-        let acls = table::new<u64, Access_control_list>(ctx);
+        let acls = table::new<u64, Access_control_list>(_ctx);
 
         let admin_acl = acl::empty();
         let pause_acl = acl::empty();
@@ -98,49 +87,26 @@ module polynet::cross_chain_manager {
         table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
 
         let acl_store = ACLStore{
-            id: object::new(ctx),
+            // id: object::new(_ctx),
             role_acls: acls,
-            license_black_list: table::new<vector<u8>, u8>(ctx)
+            license_black_list: table::new<vector<u8>, u8>(_ctx)
         };
-
-        // init global config
-        let config = CrossChainGlobalConfig{
-            id: object::new(ctx),
-            polyId: polyId,
-            paused: false,
-            ethToPolyTxHashIndex: 0,
-            curBookKeepers: keepers,
-            curEpochStartHeight: startHeight,
-            ethToPolyTxHashMap: table::new<u128, vector<u8>>(ctx),
-            fromChainTxExist: table::new<u64, Table<vector<u8>, bool>>(ctx)
-        };
-
-        //transfer(config, account);
-
-
         let manager = CrossChainManager{
-            id: object::new(ctx),
+            // id: object::new(_ctx),
+            paused: false,
             acl_store: acl_store,
-            config: config
+            poly_id: 998,
+            book_keepers: vector::empty<vector<u8>>(),
+            epoch_start_height: 0,
+            tx_hash_index: 0,
+            tx_hash_map: table::new<u128, vector<u8>>(_ctx),
+            from_chain_tx_exist: table::new<u64, Table<vector<u8>, bool>>(_ctx)
+           
         };
-        transfer::share_object(manager);
-
-        event::emit(
-            InitBookKeeperEvent{
-                height: startHeight,
-                keepers: keepers,
-            },
-        );
+        manager
     }
 
-
-
-
-
-
-
-
-    public fun hasRole(ccManager:&mut CrossChainManager, role: u64, account: address): bool  {
+    public(friend) fun hasRole(ccManager:&mut CrossChainManager, role: u64, account: address): bool  {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
 
         if (table::contains(&ccManager.acl_store.role_acls, role)) {
@@ -151,7 +117,12 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun grantRole(ccManager:&mut CrossChainManager, role: u64, account: address, ctx: &mut TxContext)  {
+    public(friend) fun grant_role(
+        ccManager:&mut CrossChainManager, 
+        role: u64, 
+        account: address, 
+        ctx: &mut TxContext
+    )  {
         // sender address
         let sender = tx_context::sender(ctx);
 
@@ -168,7 +139,12 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun revokeRole(ccManager:&mut CrossChainManager, role: u64, account: address, ctx: &mut TxContext)  {
+    public(friend) fun revoke_role(
+        ccManager:&mut CrossChainManager, 
+        role: u64, 
+        account: address, 
+        ctx: &mut TxContext
+    )  {
         // sender address
         let sender = tx_context::sender(ctx);
 
@@ -179,6 +155,21 @@ module polynet::cross_chain_manager {
         acl::remove(role_acl, account);
     }
 
+    public(friend) fun check_keeper_role(
+         _ccManager:&mut CrossChainManager,
+         _sender: address
+    ) {
+        assert!(hasRole(_ccManager, CHANGE_KEEPER_ROLE, (_sender)), ENOT_CHANGE_KEEPER_ROLE);
+
+    }
+
+    public(friend) fun check_pause_role(
+         _ccManager:&mut CrossChainManager,
+         _sender: address
+    ) {
+        assert!(hasRole(_ccManager, PAUSE_ROLE, (_sender)), ENOT_PAUSE_ROLE);
+    }
+
 
     // cross chain license
     struct License has store, copy, drop {
@@ -186,9 +177,11 @@ module polynet::cross_chain_manager {
         module_name: vector<u8>
     }
 
-    public fun issueLicense(ccManager:&mut CrossChainManager,
-                            module_name: vector<u8>,
-                            ctx: &mut TxContext ): License {
+    public(friend) fun issueLicense(
+        ccManager:&mut CrossChainManager,
+        module_name: vector<u8>,
+        ctx: &mut TxContext 
+    ): License {
 
         // sender address
         let sender = tx_context::sender(ctx);
@@ -242,9 +235,12 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public entry fun setBlackList(ccManager:&mut CrossChainManager,
-                                  license_id: vector<u8>,
-                                  access_level: u8, ctx: &mut TxContext)  {
+    public(friend) fun set_blacklist(
+        ccManager:&mut CrossChainManager,
+        license_id: vector<u8>,
+        access_level: u8, 
+        ctx: &mut TxContext
+    )  {
 
         // sender address
         let sender = tx_context::sender(ctx);
@@ -253,16 +249,6 @@ module polynet::cross_chain_manager {
         //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
         let v_ref = utils::borrow_mut_with_default(&mut ccManager.acl_store.license_black_list, license_id, access_level);
         *v_ref = access_level;
-    }
-
-    struct InitBookKeeperEvent has store, drop, copy {
-        height: u64,
-        keepers: vector<vector<u8>>
-    }
-
-    struct ChangeBookKeeperEvent has store, drop, copy {
-        height: u64,
-        keepers: vector<vector<u8>>
     }
 
     struct CrossChainEvent has store, drop, copy {
@@ -274,64 +260,13 @@ module polynet::cross_chain_manager {
         raw_data: vector<u8>,
     }
 
-    struct VerifyHeaderAndExecuteTxEvent has store, drop, copy {
-        from_chain_id: u64,
-        to_contract: vector<u8>,
-        cross_chain_tx_hash: vector<u8>,
-        from_chain_tx_hash: vector<u8>,
-    }
+   
 
-    
-
-
-    fun putPolyId(ccManager:&mut CrossChainManager, polyId: u64) {
-        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        ccManager.config.polyId = polyId;
-    }
-
-    public fun getPolyId(ccManager:&CrossChainManager): u64 {
+    public fun check_from_chain_tx_exist(ccManager:&CrossChainManager, fromChainId: u64, fromChainTx: &vector<u8>): bool {
         //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        return ccManager.config.polyId
-    }
-
-    fun putCurEpochStartHeight(ccManager:&mut CrossChainManager,height: u64)  {
-        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        ccManager.config.curEpochStartHeight = height;
-    }
-
-    public fun getCurEpochStartHeight(ccManager:&CrossChainManager): u64  {
-        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        return ccManager.config.curEpochStartHeight
-    }
-
-    fun putCurBookKeepers(ccManager:&mut CrossChainManager,keepers: &vector<vector<u8>>){
-        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        ccManager.config.curBookKeepers = *keepers;
-    }
-
-    public fun getCurBookKeepers(ccManager:&CrossChainManager): vector<vector<u8>> {
-        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        return ccManager.config.curBookKeepers
-    }
-
-    fun  markFromChainTxExist(ccManager:&mut CrossChainManager, fromChainId: u64, fromChainTx: &vector<u8>, ctx: &mut TxContext) {
-        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        if (table::contains(&ccManager.config.fromChainTxExist, fromChainId)) {
-            utils::upsert(table::borrow_mut(&mut ccManager.config.fromChainTxExist, fromChainId), *fromChainTx, true);
-            return
-        } else {
-            let subTable = table::new<vector<u8>, bool>(ctx);
-            table::add(&mut subTable, *fromChainTx, true);
-            table::add(&mut ccManager.config.fromChainTxExist, fromChainId, subTable);
-            return
-        }
-    }
-
-    public fun checkIfFromChainTxExist(ccManager:&CrossChainManager, fromChainId: u64, fromChainTx: &vector<u8>): bool {
-        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        if (table::contains(&ccManager.config.fromChainTxExist, fromChainId)) {
-            if (table::contains(table::borrow(&ccManager.config.fromChainTxExist, fromChainId), *fromChainTx)) {
-                return *table::borrow(table::borrow(&ccManager.config.fromChainTxExist, fromChainId), *fromChainTx)
+        if (table::contains(&ccManager.from_chain_tx_exist, fromChainId)) {
+            if (table::contains(table::borrow(&ccManager.from_chain_tx_exist, fromChainId), *fromChainTx)) {
+                return *table::borrow(table::borrow(&ccManager.from_chain_tx_exist, fromChainId), *fromChainTx)
             };
         };
         return false
@@ -339,86 +274,33 @@ module polynet::cross_chain_manager {
 
     public fun getEthTxHashIndex(ccManager:&CrossChainManager): u128 {
         //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        return ccManager.config.ethToPolyTxHashIndex
+       ccManager.tx_hash_index
     }
 
     fun putEthTxHash(ccManager:&mut CrossChainManager, hash: &vector<u8>) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        let index = ccManager.config.ethToPolyTxHashIndex;
-        utils::upsert(&mut ccManager.config.ethToPolyTxHashMap, index, *hash);
-        ccManager.config.ethToPolyTxHashIndex = index + 1;
+        let index = ccManager.tx_hash_index;
+        utils::upsert(&mut ccManager.tx_hash_map, index, *hash);
+        ccManager.tx_hash_index = index + 1;
     }
 
     public fun getEthTxHash(ccManager:&CrossChainManager, ethHashIndex: u128): vector<u8>  {
         //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        return *table::borrow(&ccManager.config.ethToPolyTxHashMap, ethHashIndex)
+        return *table::borrow(&ccManager.tx_hash_map, ethHashIndex)
     }
 
-
-    // pause/unpause
-    public fun paused(ccManager:&CrossChainManager): bool  {
-        //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
-        return ccManager.config.paused
-    }
-
-    public fun pause(ccManager:&mut CrossChainManager, ctx: &mut TxContext){
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(hasRole(ccManager, PAUSE_ROLE, sender), ENOT_PAUSE_ROLE);
-        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        ccManager.config.paused = true;
-    }
-
-    public fun unpause(ccManager:&mut CrossChainManager, ctx: &mut TxContext)  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(hasRole(ccManager, PAUSE_ROLE, (sender)), ENOT_PAUSE_ROLE);
-        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
-        ccManager.config.paused = false;
-    }
-
-
-
-    
-    // set poly id
-    public entry fun setPolyId(ccManager:&mut CrossChainManager, polyId: u64, ctx: &mut TxContext)  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
-        putPolyId(ccManager, polyId);
-    }
-
-
-    // change book keeper
-    public entry fun changeBookKeeper(ccManager:&mut CrossChainManager, keepers: vector<vector<u8>>, startHeight: u64, ctx: &mut TxContext)  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(hasRole(ccManager, CHANGE_KEEPER_ROLE, (sender)), ENOT_CHANGE_KEEPER_ROLE);
-        putCurBookKeepers(ccManager, &keepers);
-        putCurEpochStartHeight(ccManager, startHeight);
-
-        //let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit(
-            ChangeBookKeeperEvent{
-                height: startHeight,
-                keepers: keepers,
-            },
-        );
-    }
-
-    
     // cross chain
-    public fun crossChain(ccManager:&mut CrossChainManager,
-                          license: &License,
-                          toChainId: u64,
-                          toContract: &vector<u8>,
-                          method: &vector<u8>,
-                          txData: &vector<u8>,
-                          ctx: &mut TxContext)  {
+    public fun crossChain(
+        ccManager:&mut CrossChainManager,
+        license: &License,
+        toChainId: u64,
+        toContract: &vector<u8>,
+        method: &vector<u8>,
+        txData: &vector<u8>,
+        ctx: &mut TxContext
+    )  {
         // sender address
         let sender = tx_context::sender(ctx);
-
-        assert!(!paused(ccManager), EPAUSED);
 
         // check license
         let (license_id, _) = getLicenseId(license);
@@ -429,7 +311,7 @@ module polynet::cross_chain_manager {
         let param_tx_hash = bcs::to_bytes(&tx_hash_index);
         vector::reverse(&mut param_tx_hash);
 
-        let cross_chain_id = b"AptosCrossChainManager";
+        let cross_chain_id = b"AptosCrossChainManager"; //TODO: maybe need to change
         vector::append(&mut cross_chain_id, copy param_tx_hash);
         cross_chain_id = hash::sha2_256(cross_chain_id);
 
@@ -497,16 +379,18 @@ module polynet::cross_chain_manager {
 
 
     // verify header and execute tx
-    public fun verifyHeaderAndExecuteTx(ccManager:&mut CrossChainManager,
-                                        license: &License,
-                                        proof: &vector<u8>,
-                                        rawHeader: &vector<u8>,
-                                        headerProof: &vector<u8>,
-                                        curRawHeader: &vector<u8>,
-                                        headerSig: &vector<u8>,
-                                        ctx: &mut TxContext): Certificate  {
-        assert!(!paused(ccManager), EPAUSED);
-
+    public fun verifyHeaderAndExecuteTx(
+        // polyId: u64,
+        // cur_epoch_start_height: u64,
+        ccManager:&mut CrossChainManager,
+        license: &License,
+        proof: &vector<u8>,
+        rawHeader: &vector<u8>,
+        headerProof: &vector<u8>,
+        curRawHeader: &vector<u8>,
+        headerSig: &vector<u8>,
+        ctx: &mut TxContext
+    ): Certificate  {
         let (
             _,
             _,
@@ -520,8 +404,9 @@ module polynet::cross_chain_manager {
             _,
             _
         ) = cross_chain_utils::deserializeHeader(rawHeader);
-        let keepers = getCurBookKeepers(ccManager);
-        let cur_epoch_start_height = getCurEpochStartHeight(ccManager);
+        let keepers = get_cur_book_keeper(ccManager);
+        let poly_id = get_poly_id(ccManager);
+        let cur_epoch_start_height = get_cur_epoch_start_height(ccManager);
         let n = vector::length(&keepers);
         let threshold = n - ( n - 1) / 3;
 
@@ -562,11 +447,11 @@ module polynet::cross_chain_manager {
         ) = cross_chain_utils::deserializeMerkleValue(&to_merkle_value_bytes);
 
         // double-spending check/mark
-        assert!(!checkIfFromChainTxExist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
-        markFromChainTxExist(ccManager, from_chain_id, &poly_tx_hash, ctx);
+        assert!(!check_from_chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
+        mark_from_Chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash, ctx);
 
         // check to chain id
-        assert!(to_chain_id == getPolyId(ccManager), ENOT_TARGET_CHAIN);
+        assert!(to_chain_id == poly_id, ENOT_TARGET_CHAIN);
 
         // check verifier
         let (license_id, _) = getLicenseId(license);
@@ -575,15 +460,11 @@ module polynet::cross_chain_manager {
         // check black list
         assert!(!isBlackListedTo(ccManager, to_contract), EBLACKLISTED_TO);
 
-        // emit event
-        //let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit(
-            VerifyHeaderAndExecuteTxEvent{
-                from_chain_id: from_chain_id,
-                to_contract: to_contract,
-                cross_chain_tx_hash: poly_tx_hash,
-                from_chain_tx_hash: source_tx_hash,
-            },
+        events::verify_header_and_execute_tx_event(
+            from_chain_id,
+            to_contract,
+            poly_tx_hash,
+            source_tx_hash
         );
 
         // return a certificate to prove the execution is certified
@@ -595,4 +476,117 @@ module polynet::cross_chain_manager {
             args: args
         }
     }
+
+     fun  mark_from_Chain_tx_exist(
+        _ccManager: &mut CrossChainManager,
+        _fromChainId: u64, 
+        _fromChainTx: &vector<u8>, 
+        _ctx: &mut TxContext
+    ) {
+        //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
+        if (table::contains(&_ccManager.from_chain_tx_exist, _fromChainId)) {
+            utils::upsert(table::borrow_mut(&mut _ccManager.from_chain_tx_exist, _fromChainId), *_fromChainTx, true);
+            return
+        } else {
+            let subTable = table::new<vector<u8>, bool>(_ctx);
+            table::add(&mut subTable, *_fromChainTx, true);
+            table::add(&mut _ccManager.from_chain_tx_exist, _fromChainId, subTable);
+            return
+        }
+    }
+
+    public(friend) fun new_certificate(
+        _from_contract: vector<u8>,
+        _from_chain_id: u64,
+        _target_license_id: vector<u8>,
+        _method: vector<u8>,
+        _args: vector<u8>
+    ): Certificate {
+          return Certificate{
+            from_contract: _from_contract,
+            from_chain_id: _from_chain_id,
+            target_license_id: _target_license_id,
+            method: _method,
+            args: _args
+        }
+
+    }
+
+
+    public(friend) fun get_poly_id(_cross_chain_manager: &CrossChainManager): u64 {
+         _cross_chain_manager.poly_id
+    }
+
+    fun get_cur_epoch_start_height(_cross_chain_manager: &CrossChainManager): u64 {
+        _cross_chain_manager.epoch_start_height
+    }
+
+    public(friend) fun get_cur_book_keeper(_cross_chain_manager: &CrossChainManager): vector<vector<u8>> {
+        _cross_chain_manager.book_keepers
+
+    }
+
+    public(friend) fun update_cross_chain_config(
+        _cross_chain_manager: &mut CrossChainManager,
+        _keepers: vector<vector<u8>>,
+        _start_height: u64,
+        _poly_id: u64,
+        _ctx: &mut TxContext
+    ) {
+        let sender = tx_context::sender(_ctx);
+
+        _cross_chain_manager.poly_id = _poly_id;
+        _cross_chain_manager.epoch_start_height = _start_height;
+        _cross_chain_manager.book_keepers = _keepers;
+
+        events::update_book_keeper_event(
+            _start_height,
+            sender,
+            _keepers,
+            _poly_id
+        );
+
+    }
+
+    public(friend) fun change_start_height(
+        _cross_chain_manager: &mut CrossChainManager,
+        _start_height: u64,
+        _ctx: &mut TxContext
+
+    ) {
+        let sender = tx_context::sender(_ctx);
+        _cross_chain_manager.epoch_start_height = _start_height;
+        events::update_start_height_event(
+            _start_height,
+            sender
+        );
+    }
+
+    public(friend) fun change_book_keeper(
+        _cross_chain_manager: &mut CrossChainManager,
+        _keepers: vector<vector<u8>>,
+        _start_height: u64,
+        _ctx: &mut TxContext
+
+    ) {
+        _cross_chain_manager.epoch_start_height = _start_height;
+        _cross_chain_manager.book_keepers = _keepers;
+
+    }
+
+    public(friend) fun set_poly_id(
+        _cross_chain_manager: &mut CrossChainManager,
+        _poly_id: u64,
+        _ctx: &mut TxContext
+    ) {
+        let sender = tx_context::sender(_ctx);
+        _cross_chain_manager.poly_id = _poly_id;
+        events::update_poly_id_event(
+            _poly_id,
+            sender
+        );
+
+    }
+
+    
 }
