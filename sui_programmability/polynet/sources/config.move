@@ -21,7 +21,7 @@ module polynet::config {
     friend polynet::wrapper_v1_test;
     friend polynet::tools;
 
-    const VERSION: u64 = 1;
+    const VERSION: u64 = 2;
     const ERR_CHECK_CONFIG_PAUSED: u64 = 6000;
     const ERR_VERSION_CHECK: u64 = 6001;
     const EALREADY_EXECUTED: u64 = 6002;

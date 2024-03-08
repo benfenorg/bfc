@@ -55,7 +55,6 @@ module polynet::cross_chain_manager {
         tx_hash_index: u128,
         tx_hash_map: Table<u128, vector<u8>>,
         from_chain_tx_exist: Table<u64, Table<vector<u8>, bool>>
-       
     }
 
     // access control
@@ -332,7 +331,7 @@ module polynet::cross_chain_manager {
         let param_tx_hash = bcs::to_bytes(&tx_hash_index);
         vector::reverse(&mut param_tx_hash);
 
-        let cross_chain_id = b"AptosCrossChainManager";
+        let cross_chain_id = b"AptosCrossChainManager"; //TODO: maybe need to change
         vector::append(&mut cross_chain_id, copy param_tx_hash);
         cross_chain_id = hash::sha2_256(cross_chain_id);
 

@@ -26,6 +26,8 @@ module polynet::lock_proxy {
     use polynet::zero_copy_sink;
     use polynet::zero_copy_source;
     use polynet::utils;
+    use polynet::events;
+
 
     friend polynet::wrapper_v1;
     friend polynet::controller;
@@ -113,15 +115,6 @@ module polynet::lock_proxy {
         amount: u64,
         from_chain_amount: u128,
     }
-    struct LockEvent has store, drop, copy {
-        from_asset: TypeName,
-        from_address: address,
-        to_chain_id: u64,
-        to_asset_hash: vector<u8>,
-        to_address: vector<u8>,
-        amount: u64,
-        target_chain_amount: u128
-    }
 
     struct LicenseIdEvent has store, drop, copy {
         license_id: vector<u8>,
@@ -203,7 +196,7 @@ module polynet::lock_proxy {
             abort ETARGET_PROXY_NOT_BIND
         }
     }
-
+    //TODO: logic is not easy to understand
     public fun getToAsset<CoinType>(lpManager: &LockProxyManager,  to_chain_id: u64): (vector<u8>, u8) {
         //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
         let from_asset = type_name::get<Coin<CoinType>>();
@@ -256,19 +249,19 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun pause(lpManager: &mut LockProxyManager,  ctx: &mut TxContext) {
-       assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+    //    assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = true;
     }
 
     public(friend) fun unpause(lpManager: &mut LockProxyManager, ctx: &mut TxContext) {
-        assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+        // assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         lpManager.lock_proxy_store.paused = false;
     }
 
     public(friend) fun check_paused(lpManager: &LockProxyManager) {
-         assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
+         assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
     }
 
     public(friend) fun bind_proxy(
@@ -368,8 +361,6 @@ module polynet::lock_proxy {
         );
     }
 
-
-    //TODO: check if can upgrade
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
     public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
@@ -502,7 +493,8 @@ module polynet::lock_proxy {
         toChainId: u64,
         toAddress: &vector<u8>,
         clock:&Clock,
-        ctx: &mut TxContext)  {
+        ctx: &mut TxContext
+    )  {
         // lock fund
         let amount = coin::value(&fund);
         deposit(treasury_ref, fund);
@@ -520,8 +512,6 @@ module polynet::lock_proxy {
         let to_proxy = getTargetProxy(lpManager, toChainId);
         let (to_asset, to_asset_decimals) = getToAsset<CoinType>(lpManager, toChainId);
 
-
-
         //todo,, decimals
         // precision conversion
         let target_chain_amount = to_target_chain_amount(amount, to_asset_decimals, to_asset_decimals);
@@ -530,22 +520,27 @@ module polynet::lock_proxy {
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
 
         // cross chain
-        cross_chain_manager::crossChain(ccManager, license_ref, toChainId,
-                            &to_proxy, &b"unlock", &tx_data, ctx);
+        cross_chain_manager::crossChain(
+                                ccManager, 
+                                license_ref, 
+                                toChainId,
+                                &to_proxy, 
+                                &b"unlock",   //TODO: its not easy to understand
+                                &tx_data, 
+                                ctx
+                            );
 
         // emit event 
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
-        event::emit(
-            LockEvent{
-                from_asset: type_name::get<Coin<CoinType>>(),
-                from_address: (account),
-                to_chain_id: toChainId,
-                to_asset_hash: to_asset,
-                to_address: *toAddress,
-                amount,
-                target_chain_amount,
-            },
-        );
+        events::lock_event(
+                    type_name::get<Coin<CoinType>>(),
+                    account,
+                    toChainId,
+                    to_asset,
+                    *toAddress,
+                    amount,
+                    target_chain_amount,
+                 );
     }
 
     // unlock
@@ -609,7 +604,8 @@ module polynet::lock_proxy {
     }
 
    
-
+    //reset max amount per day of lock_proxy_manager
+    //check user input amount if bigger than max amount
     public fun checkAmountResult(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
         let current_time = clock::timestamp_ms(clock);
         let amountLimit : &mut AmountLimitManager;

@@ -10,10 +10,10 @@ coverage:
 	bfc move coverage summary
 
 publish:
-	bfc client publish --gas-budget 2000000000 --skip-fetch-latest-git-deps | tee publish.log
+	bfc client publish --gas-budget 2000000000  | tee publish.log
 
 #note: should replace real upgrade_cap_id
 
 upgrade:
-	bfc client upgrade --gas-budget 2000000000 --upgrade-capability 0x759993eae43c864d198b82f893209a224b527069af954e57d94c1e25f3902479
+	bfc client upgrade --gas-budget 2000000000 --upgrade-capability 0x6f7fa31f7d9f5fb81d6365d6c2908288f5c77ca630a9f63933cfb17eaee76d36
 
