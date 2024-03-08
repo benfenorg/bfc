@@ -71,16 +71,19 @@ module polynet::wrapper_v1_test {
         vector::push_back(&mut keepers, x"e68a6e54bdfa0af47bd18465f4352f5151dc729c61a7399909f1cd1c6d816c0241800e782bb05f6f803b9f958930ebcee0b67d3af27845b4fbfa09e926cf17ae");
         vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
 
-
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_mainnet_ccm(ctx);
-
-            let clock = clock::create_for_testing(ctx);
             init_cc_config(ctx);
             new_for_test(ctx, owner);
-            clock::destroy_for_testing(clock);
+        };
+
+         test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            init_mainnet_ccm(&mut ccConfig,ctx);
+            test_scenario::return_shared(ccConfig);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);

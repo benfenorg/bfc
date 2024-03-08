@@ -93,20 +93,12 @@ module polynet::cross_chain_manager {
             role_acls: acls,
             license_black_list: table::new<vector<u8>, u8>(_ctx)
         };
-
-      
-        let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
-        vector::push_back(&mut keepers, x"26f22a620ab00e3c5832a12d6e91406bc67ea7b1e9582e800abd921c371074daa6dae5ba6aa9737460758fd17a590e79097ef519421894c7492ffded22983684");
-        vector::push_back(&mut keepers, x"b73a7c698594c7e1e1e57746bedc99693130e801500996af39a62ea929d0797dda10be75ede8791bc97e311c26a7028d035c0fd55e61fe8a13836ef892861159");
-        vector::push_back(&mut keepers, x"e3b9e57f97515aa8818b071637f5b42c8c24f864cb6826297f4e0ad78bbf1802fc18054796af0e2395ac41f36f43514fdca42c22b6e4cc1d1b22b07d0beceb44");
-        vector::push_back(&mut keepers, x"4e552e00b6a7457d6b79298b449922de987561fe02d420398c862f1447e9231f39346373619d6dbdb830a00e0e0d35e0116c74129d0dfa5d8184c2eb5a6dcfbe");
-
         let manager = CrossChainManager{
             // id: object::new(_ctx),
             paused: false,
             acl_store: acl_store,
             poly_id: 998,
-            book_keepers: keepers,
+            book_keepers: vector::empty<vector<u8>>(),
             epoch_start_height: 0,
             tx_hash_index: 0,
             tx_hash_map: table::new<u128, vector<u8>>(_ctx),
@@ -565,6 +557,15 @@ module polynet::cross_chain_manager {
         _cross_chain_manager.epoch_start_height = _start_height;
         _cross_chain_manager.book_keepers = _keepers;
 
+    }
+
+    public(friend) fun change_start_height(
+        _cross_chain_manager: &mut CrossChainManager,
+        _start_height: u64,
+        _ctx: &mut TxContext
+
+    ) {
+        _cross_chain_manager.epoch_start_height = _start_height;
     }
 
     public(friend) fun change_book_keeper(

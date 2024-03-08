@@ -93,7 +93,28 @@ module polynet::controller {
                             );
     }
 
-    public entry fun set_poly_id(
+       // change book keeper
+    public entry fun change_start_height(
+        _global: &mut CrossChainGlobalConfig, 
+        _start_height: u64, 
+        _ctx: &mut TxContext
+    )  {
+
+        config::check_version(_global);
+        // sender address
+        let sender = tx_context::sender(_ctx);
+        let cc_manager = config::borrow_mut_crosschain_manager(_global);
+
+        cross_chain_manager::check_keeper_role(cc_manager, sender);
+        cross_chain_manager::change_start_height(
+                                cc_manager,
+                                _start_height,
+                                _ctx
+                            );
+    }
+
+
+    public entry fun change_poly_id(
         _global: &mut CrossChainGlobalConfig, 
         _poly_id: u64, 
         _ctx: &mut TxContext
