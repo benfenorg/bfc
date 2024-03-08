@@ -33,7 +33,6 @@ use sui_types::{
     transaction::{Argument, CallArg, Command, ProgrammableTransaction, TransactionKind},
     Identifier, TypeTag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID,
 };
-use tracing::info;
 
 use crate::errors::IndexerError;
 use crate::IndexerConfig;
@@ -70,14 +69,13 @@ pub async fn get_bfc_price_in_usd(http_client: HttpClient) -> Result<f64, Indexe
     Ok(price)
 }
 
-#[allow(dead_code)]
-pub async fn get_bfc_value_in_stable_coin(
+pub async fn get_bfc_value_of_stable_coin(
     coin: TypeTag,
     amount: u64,
     http_client: HttpClient,
 ) -> Result<u64, IndexerError> {
     let price = get_bfc_price_in_stable_coin(coin, http_client).await?;
-    Ok((amount as f64 * price) as u64)
+    Ok((amount as f64 / price) as u64)
 }
 
 // https://github.com/hellokittyboy-code/obc/blob/1d3e3f066b59c4dd5a7395adf728a4878b8dc48a/apps/explorer/src/hooks/useTokenPrice.ts#L30-L68
@@ -353,7 +351,7 @@ async fn get_global_nft_config(
     Ok(config)
 }
 
-async fn get_dynamic_field_object<'a, N>(
+pub async fn get_dynamic_field_object<'a, N>(
     http_client: HttpClient,
     owner: ObjectID,
     field_type: TypeTag,
@@ -397,14 +395,10 @@ where
             ))
         })?;
     let object: Object = response.object()?.to_owned().try_into()?;
-    info!(
-        "Got dynamic fields object {:?} from its owner {:?}",
-        object_id, owner
-    );
     Ok(object)
 }
 
-fn dynamic_field_from_object<'a, N, V>(object: &'a Object) -> Result<V, IndexerError>
+pub fn dynamic_field_from_object<'a, N, V>(object: &'a Object) -> Result<V, IndexerError>
 where
     N: Deserialize<'a>,
     V: Deserialize<'a>,
@@ -542,8 +536,8 @@ mod test_benfen {
 
     use crate::{
         benfen::{
-            get_global_nft_config, get_global_nft_staking, get_nft_display,
-            get_nft_staking_overview,
+            get_bfc_price_in_stable_coin, get_global_nft_config, get_global_nft_staking,
+            get_nft_display, get_nft_staking_overview,
         },
         IndexerConfig,
     };

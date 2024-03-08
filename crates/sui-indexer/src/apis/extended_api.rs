@@ -11,12 +11,13 @@ use sui_json_rpc::api::{
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
-    MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage,
-    SuiDaoProposal, SuiMiningNFT, SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery,
-    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
+    IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiObjectDataFilter,
+    SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
+    SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
-use sui_types::base_types::SuiAddress;
+use sui_types::base_types::{SequenceNumber, SuiAddress};
 use sui_types::sui_serde::BigInt;
 
 use crate::errors::IndexerError;
@@ -166,6 +167,14 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         &self,
         _filter: Option<DaoProposalFilter>,
     ) -> RpcResult<Vec<SuiDaoProposal>> {
+        todo!()
+    }
+
+    async fn get_stake_metrics(&self, _epoch: Option<SequenceNumber>) -> RpcResult<StakeMetrics> {
+        todo!()
+    }
+
+    async fn get_indexed_stakes(&self, _owner: SuiAddress) -> RpcResult<Vec<IndexedStake>> {
         todo!()
     }
 

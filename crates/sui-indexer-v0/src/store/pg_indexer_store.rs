@@ -21,6 +21,7 @@ use itertools::Itertools;
 use move_bytecode_utils::module_cache::SyncModuleCache;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
+use move_core_types::parser::parse_type_tag;
 use prometheus::{Histogram, IntCounter};
 use sui_json_rpc::{ObjectProvider, ObjectProviderCache};
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
@@ -29,10 +30,10 @@ use sui_types::storage::DeleteKind;
 use tracing::info;
 
 use sui_json_rpc_types::{
-    CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo, EventFilter, EventPage,
-    MoveCallMetrics, MoveFunctionName, NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiEvent,
-    SuiMiningNFT, SuiObjectDataFilter, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
-    SuiOwnedMiningNFTProfit,
+    CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo, EventFilter, EventPage, IndexedStake,
+    MoveCallMetrics, MoveFunctionName, NetworkMetrics, NetworkOverview, StakeMetrics,
+    SuiDaoProposal, SuiEvent, SuiMiningNFT, SuiObjectDataFilter, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_json_rpc_types::{
     SuiTransactionBlock, SuiTransactionBlockEffects, SuiTransactionBlockEvents,
@@ -50,21 +51,26 @@ use sui_types::messages_checkpoint::{
 use sui_types::object::ObjectRead;
 use sui_types::transaction::SenderSignedData;
 
+use super::MiningNFTOperation;
 use crate::errors::{Context, IndexerError};
 use crate::metrics::IndexerMetrics;
+use crate::models::address_stake::{
+    filter_staked_object, native_coin, AddressStake, ExtractedAddressStake,
+};
 use crate::models::addresses::{ActiveAddress, Address, AddressStats, DBAddressStats};
 use crate::models::checkpoint_metrics::{CheckpointMetrics, Tps};
 use crate::models::checkpoints::Checkpoint;
 use crate::models::dao_proposals::Proposal;
 use crate::models::dao_votes::Vote;
 use crate::models::epoch::DBEpochInfo;
+use crate::models::epoch_stake;
 use crate::models::events::Event;
 use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTStaking};
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
 use crate::models::network_segment_metrics::NetworkSegmentMetrics;
 use crate::models::objects::{
-    compose_object_bulk_insert_update_query, group_and_sort_objects, Object,
+    compose_object_bulk_insert_update_query, group_and_sort_objects, DeletedObject, Object,
 };
 use crate::models::packages::Package;
 use crate::models::prices::{self, PriceHistory};
@@ -72,20 +78,20 @@ use crate::models::system_state::DBValidatorSummary;
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
 use crate::schema::{
-    active_addresses, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints,
-    dao_proposals, dao_votes, epochs, events, input_objects, mining_nft_history_profits,
-    mining_nft_staking, mining_nfts, move_calls, network_segment_metrics, objects, objects_history,
-    packages, price_history, recipients, system_states, transactions, validators,
+    active_addresses, address_stakes, address_stats, addresses, changed_objects,
+    checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes,
+    epochs, events, input_objects, mining_nft_history_profits, mining_nft_staking, mining_nfts,
+    move_calls, network_segment_metrics, objects, objects_history, packages, price_history,
+    recipients, system_states, transactions, validators,
 };
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
 use crate::store::query::DBFilter;
 use crate::store::TransactionObjectChanges;
 use crate::store::{IndexerStore, TemporaryEpochStore};
+use crate::utils::validator_stake::get_avg_exchange_rate;
 use crate::utils::{get_balance_changes_from_effect, get_object_changes};
 use crate::{benfen, PgConnectionPool};
-
-use super::MiningNFTOperation;
 
 const MAX_EVENT_PAGE_SIZE: usize = 1000;
 const PG_COMMIT_CHUNK_SIZE: usize = 1000;
@@ -2049,6 +2055,104 @@ impl PgIndexerStore {
         Ok(())
     }
 
+    fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError> {
+        let epoch = &data.new_epoch;
+        let mut stake_coins: Vec<_> = data
+            .stable_pools
+            .iter()
+            .map(|x| epoch_stake::EpochStakeCoin {
+                epoch: epoch.epoch,
+                coin_type: x.coin_type.to_string(),
+                coin_balance: x.balance as i64,
+                bfc_value: x.bfc_value as i64,
+            })
+            .collect();
+        stake_coins.push(epoch_stake::EpochStakeCoin {
+            epoch: epoch.epoch,
+            coin_type: native_coin().to_string(),
+            coin_balance: data.system_state.total_stake,
+            bfc_value: data.system_state.total_stake,
+        });
+        let last_epoch_stake = self.get_last_epoch_stake()?.unwrap_or_default();
+        let total_stake = stake_coins.iter().map(|x| x.bfc_value).sum();
+        let total_reward = data.system_state.stake_subsidy_current_epoch_amount;
+
+        let avg_exchange_rate =
+            (get_avg_exchange_rate(&data.validator_stakes) * epoch_stake::RATE_MUL) as i64;
+
+        let mut epoch_stake = epoch_stake::EpochStake {
+            epoch: epoch.epoch,
+            total_stake,
+            total_reward,
+            accumulated_reward: last_epoch_stake.accumulated_reward + total_reward,
+            avg_exchange_rate,
+            apy: 0,
+        };
+
+        let mut recents = self.get_recent_epoch_stakes()?;
+        recents.insert(0, epoch_stake.clone());
+        epoch_stake.apy =
+            (epoch_stake::get_apy_from_recents(&recents) * epoch_stake::RATE_MUL) as i64;
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::insert_into(epoch_stakes::table)
+                .values(epoch_stake)
+                .on_conflict_do_nothing()
+                .execute(conn)?;
+            diesel::insert_into(epoch_stake_coins::table)
+                .values(stake_coins)
+                .on_conflict_do_nothing()
+                .execute(conn)?;
+            Ok::<(), IndexerError>(())
+        })
+    }
+
+    fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| epoch_stakes::dsl::epoch_stakes
+            .order_by(epoch_stakes::epoch.desc())
+            .first::<epoch_stake::EpochStake>(conn)
+            .optional())
+    }
+
+    fn get_recent_epoch_stakes(&self) -> Result<Vec<epoch_stake::EpochStake>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| epoch_stakes::dsl::epoch_stakes
+            .order(epoch_stakes::epoch.desc())
+            .limit(100)
+            .load::<epoch_stake::EpochStake>(conn))
+    }
+
+    fn get_stake_metrics(
+        &self,
+        epoch: Option<SequenceNumber>,
+    ) -> Result<StakeMetrics, IndexerError> {
+        let stake = read_only_blocking!(&self.blocking_cp, |conn| {
+            match epoch {
+                Some(v) => epoch_stakes::dsl::epoch_stakes
+                    .filter(epoch_stakes::dsl::epoch.eq(v.value() as i64))
+                    .first::<epoch_stake::EpochStake>(conn)
+                    .optional(),
+                None => epoch_stakes::dsl::epoch_stakes
+                    .order_by(epoch_stakes::epoch.desc())
+                    .first::<epoch_stake::EpochStake>(conn)
+                    .optional(),
+            }
+        })?;
+        if stake.is_none() {
+            return Ok(StakeMetrics::default());
+        }
+        let stake = stake.unwrap();
+        let stake_coins = read_only_blocking!(&self.blocking_cp, |conn| {
+            epoch_stake_coins::dsl::epoch_stake_coins
+                .filter(epoch_stake_coins::dsl::epoch.eq(stake.epoch))
+                .load::<epoch_stake::EpochStakeCoin>(conn)
+        })?;
+        Ok(StakeMetrics {
+            apy: (stake.apy as f64) / epoch_stake::RATE_MUL,
+            total_stake: stake.total_stake as u64,
+            accumulated_reward: stake.accumulated_reward as u64,
+            staking_coins: stake_coins.into_iter().map(|x| x.into()).collect(),
+        })
+    }
+
     fn persist_proposals(&self, proposals: Vec<Proposal>) -> Result<(), IndexerError> {
         transactional_blocking!(&self.blocking_cp, |conn| {
             for p in proposals {
@@ -2065,6 +2169,119 @@ impl PgIndexerStore {
             Ok::<(), IndexerError>(())
         })?;
         Ok(())
+    }
+
+    fn persist_address_stake(
+        &self,
+        checkpoint: Checkpoint,
+        stake: ExtractedAddressStake,
+        deleted_objects: Vec<DeletedObject>,
+    ) -> Result<(), IndexerError> {
+        match stake {
+            ExtractedAddressStake::Staking(v) => {
+                let stake: AddressStake = (checkpoint, v).try_into()?;
+                transactional_blocking!(&self.blocking_cp, |conn| {
+                    diesel::insert_into(address_stakes::table)
+                        .values(stake)
+                        .on_conflict_do_nothing()
+                        .execute(conn)?;
+                    Ok::<(), IndexerError>(())
+                })?;
+            }
+            ExtractedAddressStake::Unstaking(v) => {
+                // No type in the DeletedObject, so we fetch them from the database.
+                let deleted_ids: Vec<String> =
+                    deleted_objects.into_iter().map(|x| x.object_id).collect();
+                let objects = read_only_blocking!(&self.blocking_cp, |conn| {
+                    objects::dsl::objects
+                        .filter(objects::dsl::object_id.eq_any(deleted_ids))
+                        .load::<Object>(conn)
+                })?;
+                let object = filter_staked_object(&objects).ok_or_else(|| {
+                    IndexerError::UncategorizedError(anyhow!(
+                        "No staked object found when handle address stake"
+                    ))
+                })?;
+                let stake: AddressStake = (checkpoint, object.clone(), v).try_into()?;
+                transactional_blocking!(&self.blocking_cp, |conn| {
+                    diesel::insert_into(address_stakes::table)
+                        .values(stake)
+                        .on_conflict(address_stakes::staked_object_id)
+                        .do_update()
+                        .set((
+                            address_stakes::stake_activation_epoch
+                                .eq(excluded(address_stakes::stake_activation_epoch)),
+                            address_stakes::unstaking_epoch
+                                .eq(excluded(address_stakes::unstaking_epoch)),
+                            address_stakes::unstaking_amount
+                                .eq(excluded(address_stakes::unstaking_amount)),
+                            address_stakes::unstaking_timestamp_ms
+                                .eq(excluded(address_stakes::unstaking_timestamp_ms)),
+                            address_stakes::unstaking_reward_amount
+                                .eq(excluded(address_stakes::unstaking_reward_amount)),
+                            address_stakes::timestamp_ms.eq(excluded(address_stakes::timestamp_ms)),
+                        ))
+                        .execute(conn)?;
+                    Ok::<(), IndexerError>(())
+                })?;
+            }
+        }
+        Ok(())
+    }
+
+    fn get_ongoing_address_stakes(&self) -> Result<Vec<AddressStake>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            address_stakes::dsl::address_stakes
+                .filter(address_stakes::dsl::unstaking_epoch.is_null())
+                .load::<AddressStake>(conn)
+        })
+    }
+
+    fn get_address_stakes(&self, owner: SuiAddress) -> Result<Vec<IndexedStake>, IndexerError> {
+        let owner = AccountAddress::new(owner.to_inner()).to_hex_literal();
+        let stakes: Vec<AddressStake> = read_only_blocking!(&self.blocking_cp, |conn| {
+            address_stakes::dsl::address_stakes
+                .filter(address_stakes::dsl::staker_address.eq(owner))
+                .order_by(address_stakes::principal_timestamp_ms.desc())
+                .load::<AddressStake>(conn)
+        })?;
+        Ok(stakes
+            .iter()
+            .map(|x| IndexedStake {
+                staked_object_id: ObjectID::from_address(
+                    AccountAddress::from_hex_literal(&x.staked_object_id)
+                        .unwrap_or(AccountAddress::ZERO),
+                ),
+                pool_id: ObjectID::from_address(
+                    AccountAddress::from_hex_literal(&x.pool_id).unwrap_or(AccountAddress::ZERO),
+                ),
+                validator: AccountAddress::from_hex_literal(&x.validator_address)
+                    .unwrap_or(AccountAddress::ZERO)
+                    .into(),
+                coin_type: parse_type_tag(&x.stake_coin).unwrap_or(sui_types::TypeTag::Bool),
+                stake_activation_epoch: x.stake_activation_epoch as u64,
+                principal_amount: x.principal_amount as u64,
+                principal_bfc_value: 0,
+                staked_at_timestamp_ms: x.principal_timestamp_ms as u64,
+                estimated_reward: x.estimated_reward as u64,
+                unstaking_epoch: x.unstaking_epoch.map(|x| x as u64),
+                unstaking_amount: x.unstaking_amount.map(|x| x as u64),
+                reward_amount: x.unstaking_reward_amount.map(|x| x as u64),
+            })
+            .collect())
+    }
+
+    fn update_address_stake_reward(&self, stake: &AddressStake) -> Result<(), IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::update(address_stakes::dsl::address_stakes)
+                .filter(address_stakes::dsl::staked_object_id.eq(&stake.staked_object_id))
+                .set((
+                    address_stakes::dsl::estimated_reward.eq(stake.estimated_reward),
+                    address_stakes::dsl::estimated_at_epoch.eq(stake.estimated_at_epoch),
+                ))
+                .execute(conn)?;
+            Ok::<(), IndexerError>(())
+        })
     }
 
     fn get_dao_proposals(
@@ -3004,6 +3221,23 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn get_ongoing_address_stakes(&self) -> Result<Vec<AddressStake>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_ongoing_address_stakes())
+            .await
+    }
+    async fn get_address_stakes(
+        &self,
+        owner: SuiAddress,
+    ) -> Result<Vec<IndexedStake>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_address_stakes(owner))
+            .await
+    }
+    async fn update_address_stake_reward(&self, stake: &AddressStake) -> Result<(), IndexerError> {
+        let stake = stake.clone();
+        self.spawn_blocking(move |this| this.update_address_stake_reward(&stake))
+            .await
+    }
+
     async fn persist_packages(&self, packages: &[Package]) -> Result<(), IndexerError> {
         let packages = packages.to_owned();
         self.spawn_blocking(move |this| this.persist_packages(&packages))
@@ -3044,11 +3278,31 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn persist_address_stake(
+        &self,
+        checkpoint: Checkpoint,
+        stake: ExtractedAddressStake,
+        deleted_objects: Vec<DeletedObject>,
+    ) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.persist_address_stake(checkpoint, stake, deleted_objects)
+        })
+        .await
+    }
+
     async fn get_dao_proposals(
         &self,
         filter: Option<DaoProposalFilter>,
     ) -> Result<Vec<SuiDaoProposal>, IndexerError> {
         self.spawn_blocking(move |this| this.get_dao_proposals(filter))
+            .await
+    }
+
+    async fn get_stake_metrics(
+        &self,
+        epoch: Option<SequenceNumber>,
+    ) -> Result<StakeMetrics, IndexerError> {
+        self.spawn_blocking(move |this| this.get_stake_metrics(epoch))
             .await
     }
 
@@ -3191,6 +3445,17 @@ impl IndexerStore for PgIndexerStore {
         profits: Vec<MiningNFTHistoryProfit>,
     ) -> Result<usize, IndexerError> {
         self.spawn_blocking(move |this| this.persist_mining_nft_profits(profits))
+            .await
+    }
+
+    async fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_last_epoch_stake())
+            .await
+    }
+
+    async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError> {
+        let data = data.clone();
+        self.spawn_blocking(move |this| this.persist_epoch_stake(&data))
             .await
     }
 }

@@ -392,6 +392,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    epoch_stake_coins(epoch, coin_type) {
+        epoch -> Int8,
+        coin_type -> Varchar,
+        coin_balance -> Int8,
+        bfc_value -> Int8,
+    }
+}
+
+diesel::table! {
     mining_nfts (id) {
         id -> Int8,
         owner -> Varchar,
@@ -410,6 +419,17 @@ diesel::table! {
         yesterday_dt_ms -> Int8,
         miner_redeem -> Bool,
         transfered_at -> Int8,
+    }
+}
+
+diesel::table! {
+    epoch_stakes(epoch) {
+        epoch -> Int8,
+        total_stake -> Int8,
+        total_reward -> Int8,
+        accumulated_reward -> Int8,
+        avg_exchange_rate -> Int8,
+        apy -> Int8,
     }
 }
 
@@ -436,6 +456,33 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    address_stakes(staked_object_id) {
+        staked_object_id -> Varchar,
+        staker_address -> Text,
+        pool_id -> Text,
+        validator_address -> Text,
+        stake_coin -> Varchar,
+
+        principal_epoch -> Int8,
+        principal_amount -> Int8,
+        principal_timestamp_ms -> Int8,
+
+        estimated_reward -> Int8,
+        estimated_at_epoch -> Int8,
+
+        stake_activation_epoch -> Int8,
+
+        unstaking_epoch -> Nullable<Int8>,
+        unstaking_amount -> Nullable<Int8>,
+        unstaking_timestamp_ms -> Nullable<Int8>,
+
+        unstaking_reward_amount -> Nullable<Int8>,
+
+        timestamp_ms -> Int8,
+    }
+}
+
 diesel::allow_tables_to_appear_in_same_query!(
     active_addresses,
     address_stats,
@@ -458,6 +505,4 @@ diesel::allow_tables_to_appear_in_same_query!(
     transactions,
     validators,
     network_segment_metrics,
-    price_history,
-    mining_nfts,
 );

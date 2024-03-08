@@ -6,12 +6,15 @@ use jsonrpsee::proc_macros::rpc;
 
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
-    MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, QueryObjectsPage,
-    SuiDaoProposal, SuiMiningNFT, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
-    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
+    IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiObjectResponseQuery,
+    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc_macros::open_rpc;
-use sui_types::{base_types::SuiAddress, sui_serde::BigInt};
+use sui_types::{
+    base_types::{SequenceNumber, SuiAddress},
+    sui_serde::BigInt,
+};
 
 #[open_rpc(namespace = "bfcx", tag = "Extended API")]
 #[rpc(server, client, namespace = "bfcx")]
@@ -58,6 +61,14 @@ pub trait ExtendedApi {
         &self,
         filter: Option<DaoProposalFilter>,
     ) -> RpcResult<Vec<SuiDaoProposal>>;
+
+    /// Return the stake metrics.
+    #[method(name = "getStakeMetrics")]
+    async fn get_stake_metrics(&self, epoch: Option<SequenceNumber>) -> RpcResult<StakeMetrics>;
+
+    /// Return all [IndexedStake].
+    #[method(name = "getIndexedStakes")]
+    async fn get_indexed_stakes(&self, owner: SuiAddress) -> RpcResult<Vec<IndexedStake>>;
 
     /// Return Network metrics
     #[method(name = "getMoveCallMetrics")]

@@ -11,8 +11,9 @@ use serde_with::DisplayFromStr;
 use sui_types::base_types::SuiAddress;
 use sui_types::base_types::{EpochId, ObjectID};
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
-use sui_types::sui_serde::BigInt;
+use sui_types::sui_serde::{BigInt, SuiTypeTag};
 use sui_types::sui_system_state::sui_system_state_summary::SuiValidatorSummary;
+use sui_types::TypeTag;
 
 use crate::Page;
 
@@ -137,6 +138,88 @@ pub struct NetworkOverview {
     #[schemars(with = "String")]
     #[serde_as(as = "BigInt<u64>")]
     pub current_gas: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StakeMetrics {
+    pub apy: f64,
+
+    /// Total staked BFC in last epoch.
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_stake: u64,
+
+    /// Accumulated rewarded BFC since the network started.
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub accumulated_reward: u64,
+
+    /// Staking coins in the last epoch.
+    pub staking_coins: Vec<StakeCoin>,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct StakeCoin {
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub coin_type: TypeTag,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub balance: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub bfc_value: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct IndexedStake {
+    pub staked_object_id: ObjectID,
+    pub validator: SuiAddress,
+    pub pool_id: ObjectID,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub coin_type: TypeTag,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub stake_activation_epoch: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub principal_amount: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub principal_bfc_value: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub staked_at_timestamp_ms: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub estimated_reward: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "Option<BigInt<u64>>")]
+    pub unstaking_epoch: Option<u64>,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "Option<BigInt<u64>>")]
+    pub unstaking_amount: Option<u64>,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "Option<BigInt<u64>>")]
+    pub reward_amount: Option<u64>,
 }
 
 #[serde_as]

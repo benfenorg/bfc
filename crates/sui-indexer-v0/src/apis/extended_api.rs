@@ -13,16 +13,18 @@ use sui_json_rpc::api::{
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
-    MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage,
-    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTProfitRate, SuiObjectDataFilter, SuiObjectResponse,
-    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
-    SuiOwnedMiningNFTProfit,
+    IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTProfitRate,
+    SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
-use sui_types::base_types::SuiAddress;
+use sui_types::base_types::{SequenceNumber, SuiAddress};
+
 use sui_types::sui_serde::BigInt;
 
 use crate::errors::IndexerError;
+use crate::models::address_stake::native_coin;
 use crate::store::IndexerStore;
 use crate::{benfen, IndexerConfig};
 
@@ -148,6 +150,27 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
 
     async fn get_network_overview(&self) -> RpcResult<NetworkOverview> {
         Ok(self.state.get_network_overview().await?)
+    }
+
+    async fn get_stake_metrics(&self, epoch: Option<SequenceNumber>) -> RpcResult<StakeMetrics> {
+        Ok(self.state.get_stake_metrics(epoch).await?)
+    }
+
+    async fn get_indexed_stakes(&self, owner: SuiAddress) -> RpcResult<Vec<IndexedStake>> {
+        let mut results = self.state.get_address_stakes(owner).await?;
+        for item in results.iter_mut() {
+            item.principal_bfc_value = if item.coin_type == native_coin().into() {
+                item.principal_amount
+            } else {
+                benfen::get_bfc_value_of_stable_coin(
+                    item.coin_type.clone(),
+                    item.principal_amount,
+                    self.fullnode.clone(),
+                )
+                .await?
+            };
+        }
+        Ok(results)
     }
 
     async fn get_move_call_metrics(&self) -> RpcResult<MoveCallMetrics> {

@@ -10159,6 +10159,7 @@ dependencies = [
  "sui-open-rpc",
  "sui-sdk",
  "sui-test-transaction-builder",
+ "sui-transaction-builder",
  "sui-types",
  "telemetry-subscribers",
  "test-cluster",

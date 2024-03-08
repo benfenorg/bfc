@@ -33,6 +33,8 @@ pub mod coin;
 pub mod collection_types;
 pub mod committee;
 pub mod crypto;
+pub mod dao;
+pub mod dao_manager;
 pub mod digests;
 pub mod display;
 pub mod dynamic_field;
@@ -46,9 +48,6 @@ pub mod gas;
 pub mod gas_coin;
 pub mod gas_model;
 pub mod governance;
-pub mod proposal;
-pub mod dao;
-pub mod dao_manager;
 pub mod id;
 pub mod in_memory_storage;
 pub mod inner_temporary_store;
@@ -63,6 +62,7 @@ pub mod multisig;
 pub mod multisig_legacy;
 pub mod object;
 pub mod programmable_transaction_builder;
+pub mod proposal;
 pub mod quorum_driver_types;
 pub mod signature;
 pub mod storage;
@@ -75,13 +75,14 @@ pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
 pub mod base_types_bfc;
-pub mod epoch_data;
-pub mod bfc_system_state;
 mod bfc_base_types;
+pub mod bfc_system_state;
+pub mod epoch_data;
+pub mod stable_coin;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
-pub mod stable_coin;
+pub mod vault;
 
 /// 0x1-- account address where Move stdlib modules are stored
 /// Same as the ObjectID
@@ -113,7 +114,6 @@ pub const SUI_CLOCK_ADDRESS: AccountAddress = address_from_single_byte(6);
 pub const SUI_CLOCK_OBJECT_ID: ObjectID = ObjectID::from_address(SUI_CLOCK_ADDRESS);
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
-
 /// 0x7: hardcoded object ID for the bfc system.
 pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
 pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_ADDRESS);
@@ -121,7 +121,6 @@ pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_AD
 pub const BFC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
 pub const BFC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_STATE_ADDRESS);
 pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
-
 
 /// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries
 /// All new system package ID's must be added here
@@ -132,7 +131,7 @@ pub fn is_system_package(id: ObjectID) -> bool {
             | SUI_FRAMEWORK_PACKAGE_ID
             | SUI_SYSTEM_PACKAGE_ID
             | DEEPBOOK_PACKAGE_ID
-        |BFC_SYSTEM_PACKAGE_ID
+            | BFC_SYSTEM_PACKAGE_ID
     )
 }
 
