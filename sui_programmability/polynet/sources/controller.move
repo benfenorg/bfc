@@ -281,7 +281,7 @@ module polynet::controller {
         );
     }
 
-    public entry fun transfer_lp_manager_ownerShip(
+    public entry fun transfer_lp_manager_ownership(
         _global: &mut CrossChainGlobalConfig, 
         _new_owner: address, 
         _ctx:&mut TxContext
