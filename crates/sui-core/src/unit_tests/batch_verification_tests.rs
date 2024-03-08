@@ -12,7 +12,7 @@ use move_core_types::language_storage::TypeTag;
 use sui_macros::sim_test;
 use sui_types::committee::Committee;
 use sui_types::crypto::{get_key_pair, AccountKeyPair, AuthorityKeyPair};
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted};
 use sui_types::messages_checkpoint::{
     CheckpointContents, CheckpointSummary, SignedCheckpointSummary,
 };
@@ -50,7 +50,7 @@ fn gen_ckpts(
         .map(|i| {
             let k = &key_pairs[i % key_pairs.len()];
             let name = k.public().into();
-            let stable_gas_map:HashMap<TypeTag,GasCostSummary> = HashMap::new();
+            let stable_gas_map:HashMap<TypeTag,GasCostSummaryAdjusted> = HashMap::new();
             SignedCheckpointSummary::new(
                 committee.epoch,
                 CheckpointSummary::new(

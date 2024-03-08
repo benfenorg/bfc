@@ -1494,7 +1494,7 @@ impl Display for SuiClientCommandResult {
             // Do not use writer for new address output, which may get sent to logs.
             #[allow(clippy::print_in_format_impl)]
             SuiClientCommandResult::NewAddress((address, recovery_phrase, scheme)) => {
-                let bfc_address =  sui_address_to_bfc_address(address.clone());
+                let bfc_address =  sui_address_to_bfc_address(*address);
                 println!(
                     "Created new keypair for address with scheme {:?}: [{bfc_address}]",
                     scheme
@@ -1510,7 +1510,7 @@ impl Display for SuiClientCommandResult {
                 )?;
                 for gas in gases {
                     writeln!(writer, " {0: ^66} | {1: ^11}",
-                             objects_id_to_bfc_address(gas.id().clone()), gas.value())?;
+                             objects_id_to_bfc_address(*gas.id()), gas.value())?;
                 }
             }
             SuiClientCommandResult::ChainIdentifier(ci) => {
@@ -1527,7 +1527,7 @@ impl Display for SuiClientCommandResult {
             }
             SuiClientCommandResult::ActiveAddress(response) => {
                 match response {
-                    Some(r) => write!(writer, "{}", sui_address_to_bfc_address(r.clone()))?,
+                    Some(r) => write!(writer, "{}", sui_address_to_bfc_address(*r))?,
                     None => write!(writer, "None")?,
                 };
             }
@@ -1793,7 +1793,7 @@ impl Display for SwitchResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut writer = String::new();
         if let Some(addr) = self.address {
-            let bfc_address = sui_address_to_bfc_address(addr.clone());
+            let bfc_address = sui_address_to_bfc_address(addr);
             writeln!(writer, "Active address switched to {}", bfc_address)?;
         }
         if let Some(env) = &self.env {

@@ -15,7 +15,7 @@ mod checked {
     };
     use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
-    use sui_types::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_reward_rate};
+    use sui_types::gas::calculate_reward_rate;
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
@@ -671,45 +671,19 @@ mod checked {
     }
 
     pub fn construct_bfc_round_pt(
-        round_id: u64,
         param: ChangeObcRoundParams,
-        rate_map: &HashMap<String,u64>,
         reward_rate: u64,
         storage_rebate: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
 
-        let mut arguments = vec![];
-
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::CLOCK_IMM,
-            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
-        ] .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<Result<_, _>>();
-
-        arguments.append(&mut args.unwrap());
-
-        info!("Call arguments to bfc round transaction: {:?}",round_id);
-
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_ROUND_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
-
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
-            let key = type_tag.to_canonical_string();
-            let rate =*rate_map.get(&key).unwrap_or(&1u64);
 
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_bfc_to_stable_cost_with_base_point(
-                        calculate_reward_rate(gas_cost_summary.computation_cost, reward_rate) + gas_cost_summary.storage_cost,rate, gas_cost_summary.base_point))).unwrap(),
+                    bcs::to_bytes(&(
+                        calculate_reward_rate(gas_cost_summary.gas_by_stable.computation_cost, reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -724,7 +698,7 @@ mod checked {
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.computation_cost, reward_rate) + gas_cost_summary.storage_cost)).unwrap(),
+                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -747,7 +721,7 @@ mod checked {
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
+                bcs::to_bytes(&(storage_rebate+ param.bfc_computation_charge -calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -821,17 +795,17 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
         let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
-        let rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
+        let _rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
 
         for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
-            storage_rebate += gas_cost_summary.storage_rebate;
-            non_refundable_storage_fee += gas_cost_summary.non_refundable_storage_fee;
-            computation_charge += gas_cost_summary.computation_cost-calculate_reward_rate(gas_cost_summary.computation_cost, reward_rate);
-            storage_charge += gas_cost_summary.storage_cost;
+            storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
+            non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
+            computation_charge += gas_cost_summary.gas_by_bfc.computation_cost-calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+            storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
         }
 
         let params = ChangeObcRoundParams {
@@ -839,7 +813,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, rate_hash_map, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_bfc_round_pt( params, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1007,6 +981,27 @@ mod checked {
                 res.is_ok(),
                 "Unable to generate consensus_commit_prologue transaction!"
             );
+
+            let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+            let mut arguments = vec![bfc_system];
+            let args = vec![
+                CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
+            ] .into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
+
+            arguments.append(&mut args.unwrap());
+
+            info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
+
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(

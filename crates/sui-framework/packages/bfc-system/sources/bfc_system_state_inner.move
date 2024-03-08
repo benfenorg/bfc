@@ -29,8 +29,6 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::exchange_inner;
-    use bfc_system::exchange_inner::ExchangePool;
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
@@ -48,17 +46,16 @@ module bfc_system::bfc_system_state_inner {
     ///Default reward rate 50% ,base point is 100
     const DEFAULT_REWARD_RATE: u64 = 50;
     const DEFAULT_STABLE_RATE: u64 = 1_000_000_000;
-    const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
+    const BFC_SYSTEM_STATE_START_ROUND_TIMESTAMP: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
 
     spec module { pragma verify = false; }
 
     struct BfcSystemStateInner has store {
-        round: u64,
+        round_timestamp_ms: u64,
+        round_duration_ms: u64,
         stable_base_points: u64,
         reward_rate: u64,
-        /// Exchange gas coin pool
-        exchange_pool: ExchangePool<BUSD>,
         dao: Dao,
         treasury: Treasury,
         treasury_pool: TreasuryPool,
@@ -76,6 +73,7 @@ module bfc_system::bfc_system_state_inner {
 
     struct BfcSystemParameters has drop, copy {
         chain_start_timestamp_ms: u64,
+        round_duration_ms: u64,
         time_interval: u32,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
     }
@@ -105,7 +103,6 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
 
-        let exchange_pool = exchange_inner::new_exchange_pool<BUSD>(ctx, 0);
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
         let (t, remain_balance, rate_map) = create_treasury(
             bfc_balance,
@@ -131,10 +128,10 @@ module bfc_system::bfc_system_state_inner {
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
 
         BfcSystemStateInner {
-            round: BFC_SYSTEM_STATE_START_ROUND,
+            round_timestamp_ms: BFC_SYSTEM_STATE_START_ROUND_TIMESTAMP,
+            round_duration_ms: parameters.round_duration_ms,
             stable_base_points: DEFAULT_STABLE_BASE_POINTS,
             reward_rate: DEFAULT_REWARD_RATE,
-            exchange_pool,
             dao,
             treasury: t,
             treasury_pool: tp,
@@ -153,32 +150,16 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::unstake_manager_key(key, token, ctx);
     }
 
-    public(friend) fun update_round(
+    public(friend) fun update_round_duration(
         inner: &mut BfcSystemStateInner,
-        round: u64,
+        round_timestamp_ms: u64,
+        ctx: &mut TxContext,
     ) {
-        inner.round = round;
-    }
-
-    ///Request withdraw stable coin.
-    public(friend) fun request_withdraw_stable(
-        inner: &mut BfcSystemStateInner,
-    ): Balance<BUSD> {
-        exchange_inner::request_withdraw_all_stable(&mut inner.exchange_pool)
-    }
-
-    /// Init exchange pool by add bfc coin.
-    public(friend) fun init_exchange_pool(
-        self: &mut BfcSystemStateInner,
-        coin: Coin<BFC>,
-    ) {
-        exchange_inner::add_bfc_to_pool(&mut self.exchange_pool, coin)
-    }
-
-    public(friend) fun get_bfc_amount(
-        self: &BfcSystemStateInner,
-    ): u64 {
-        exchange_inner::get_bfc_amount(&self.exchange_pool)
+        if (round_timestamp_ms - inner.round_timestamp_ms >= inner.round_duration_ms) {
+            inner.round_timestamp_ms = round_timestamp_ms;
+            rebalance(inner, round_timestamp_ms, ctx);
+            judge_proposal_state(inner, round_timestamp_ms);
+        };
     }
 
     fun init_vault_with_positions<StableCoinType>(
@@ -304,11 +285,11 @@ module bfc_system::bfc_system_state_inner {
         let amount = coin::value(&coin_sc);
         let result_balance= treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
         if (expected_amount == 0||balance::value(&result_balance) == expected_amount) {
-            return result_balance;
-        };
-        if (balance::value(&result_balance) > expected_amount) {
+            result_balance
+        }
+        else if (balance::value(&result_balance) > expected_amount) {
             let result = balance::split(&mut result_balance, expected_amount);
-            treasury::deposit(&mut self.treasury, coin::from_balance(result_balance, ctx));
+            treasury_pool::deposit_to_treasury_pool(&mut self.treasury_pool, coin::from_balance(result_balance, ctx));
             result
         } else {
             let amount = expected_amount - balance::value(&result_balance) ;
@@ -367,7 +348,7 @@ module bfc_system::bfc_system_state_inner {
 
     public(friend) fun rebalance(
         self: &mut BfcSystemStateInner,
-        clock: &Clock,
+        timestamp_ms: u64,
         ctx: &mut TxContext,
     ) {
         let amount = treasury::next_epoch_bfc_required(&self.treasury);
@@ -380,7 +361,7 @@ module bfc_system::bfc_system_state_inner {
             };
         };
         let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
-        treasury::rebalance(&mut self.treasury, pool_balance, clock, ctx);
+        treasury::rebalance(&mut self.treasury, pool_balance, timestamp_ms, ctx);
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
@@ -408,11 +389,13 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun bfc_system_parameters(
         time_interval: u32,
         chain_start_timestamp_ms: u64,
+        round_duration_ms: u64,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
     ): BfcSystemParameters {
         BfcSystemParameters {
-            time_interval,
             chain_start_timestamp_ms,
+            round_duration_ms,
+            time_interval,
             treasury_parameters,
         }
     }
@@ -570,5 +553,15 @@ module bfc_system::bfc_system_state_inner {
                                          clock: & Clock,
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
+    }
+
+    #[test_only]
+    public(friend) fun update_round_duration_only(
+        inner: &mut BfcSystemStateInner,
+        round_timestamp_ms: u64,
+    ) {
+        if (round_timestamp_ms - inner.round_timestamp_ms >= inner.round_duration_ms) {
+            inner.round_timestamp_ms = round_timestamp_ms;
+        };
     }
 }

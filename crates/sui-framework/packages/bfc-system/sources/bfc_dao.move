@@ -84,11 +84,11 @@ module bfc_system::bfc_dao {
     const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
     const ERR_ACTION_NAME_TOO_LONG: u64 = 1416;
     const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
-    //
+    #[allow(unused_field)]
     struct DaoEvent has copy, drop, store {
         name: string::String,
     }
-    //
+    #[allow(unused_field)]
     struct DaoManagerEvent has copy, drop, store{
         msg: string::String,
         key: address,

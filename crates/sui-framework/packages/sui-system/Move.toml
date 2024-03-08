@@ -4,8 +4,8 @@ version = "0.0.1"
 published-at = "0x3"
 
 [dependencies]
-MoveStdlib = { local = "../move-stdlib" }
-Sui = { local = "../sui-framework" }
+#MoveStdlib = { local = "../move-stdlib" }
+#Sui = { local = "../sui-framework" }
 BfcSystem = { local = "../bfc-system" }
 
 [addresses]

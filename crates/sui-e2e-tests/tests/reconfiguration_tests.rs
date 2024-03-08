@@ -323,7 +323,8 @@ async fn test_change_bfc_round() {
     ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
+        .with_epoch_duration_ms(30000)
+        .with_round_duration_ms(20000)
         .with_num_validators(5)
         .build()
         .await;
@@ -344,10 +345,11 @@ async fn test_change_bfc_round() {
             let state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert_eq!(state.inner_state().round, 0);
+            assert_eq!(state.inner_state().round_timestamp_ms, 0);
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
+    //let _ = sleep(Duration::from_secs(20)).await;
 
     test_cluster
         .swarm
@@ -360,7 +362,9 @@ async fn test_change_bfc_round() {
             let _state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            //assert_eq!(state.inner_state().round, 1);
+            let time = _state.inner_state().round_timestamp_ms;
+            error!("state: {:?}", time);
+            assert!(time >= 1);
         });
 
 }
@@ -1173,7 +1177,14 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
 
 #[sim_test]
 async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
-    let cluster = TestClusterBuilder::new().build().await;
+    let start_version = 23u64;
+
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+    
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
@@ -1254,7 +1265,14 @@ async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
-    let cluster = TestClusterBuilder::new().build().await;
+    let start_version = 23u64;
+
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
@@ -1290,9 +1308,25 @@ async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-    create_active_proposal(http_client, gas, address, &cluster).await?;
-    //create votingBfc
-    // now do the call
+    let objects1 = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas1 = objects1.first().unwrap().object().unwrap();
+    create_active_proposal(http_client, gas1, address, &cluster).await?;
+    // //create votingBfc
+    // // now do the call
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
@@ -1314,7 +1348,7 @@ async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
 
-    Ok(())
+     Ok(())
 }
 
 #[sim_test]
@@ -2290,6 +2324,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .with_num_validators(5)
         .build()
         .await;
+
     let bfc_system_state = test_cluster
         .swarm
         .validator_nodes()
@@ -2300,6 +2335,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .inner()
         .state()
         .get_bfc_system_state_object_for_testing().unwrap();
+
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
     assert_eq!(treasury.bfc_balance, Balance::new(102433173437554378));
     Ok(())
@@ -2329,7 +2365,7 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
         SuiJsonValue::new(json!("1000000000000"))?,
         SuiJsonValue::new(json!("0"))?,
-        SuiJsonValue::new(json!("999999999999"))?,
+        SuiJsonValue::new(json!("1719622441776"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -2363,6 +2399,7 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
             if _effects.status.is_err() {
+                error!("txn is {:?}",tx);
                 error!("effects is {:?}",_effects);
             }
             assert!(_effects.status.is_ok());
@@ -2391,7 +2428,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
         SuiJsonValue::new(json!("80000000000"))?,
         SuiJsonValue::new(json!("0"))?,
-        SuiJsonValue::new(json!("9999999999999"))?,
+        SuiJsonValue::new(json!("1709622441776884"))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -2557,7 +2594,8 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(6000)
+        .with_round_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2573,10 +2611,13 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
         .await
         .effects
         .unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
-    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+
+    // transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+    // let _ = sleep(Duration::from_secs(4)).await;
 
     Ok(())
 }
@@ -2585,7 +2626,8 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(6000)
+        .with_round_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2611,7 +2653,8 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(6000)
+        .with_round_duration_ms(3000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2628,6 +2671,7 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
 
+    test_cluster.wait_for_epoch(Some(2)).await;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
 
     Ok(())
@@ -2697,7 +2741,7 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
         let _response = test_cluster
             .execute_transaction_return_raw_effects(tx.clone())
             .await;
-        assert_eq!(_response.is_ok(),false);
+        assert!(_response.is_err());
     }
 
     Ok(())

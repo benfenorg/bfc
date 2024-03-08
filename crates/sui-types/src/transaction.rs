@@ -33,14 +33,13 @@ use std::fmt::{Debug, Display, Formatter};
 use std::{
     collections::{BTreeMap, BTreeSet, HashSet},
     hash::Hash,
-    iter,
 };
 use std::collections::HashMap;
 use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
 use tracing::trace;
-use crate::gas::GasCostSummary;
+use crate::gas::GasCostSummaryAdjusted;
 
 // TODO: The following constants appear to be very large.
 // We should revisit them.
@@ -156,7 +155,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummary)>,
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
@@ -869,34 +868,30 @@ impl TransactionKind {
     pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
-                let objs = vec![SharedInputObject{
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },SharedInputObject::SUI_SYSTEM_OBJ,SharedInputObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                }];
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,];
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
-                Either::Left(Either::Right(iter::once(SharedInputObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                })))
+                // Either::Left(Either::Right(iter::once(SharedInputObject {
+                //     id: SUI_CLOCK_OBJECT_ID,
+                //     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                //     mutable: true,
+                // })))
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,SharedInputObject {
+                id: SUI_CLOCK_OBJECT_ID,
+                initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                mutable: true}];
+                Either::Left(Either::Right(objs.into_iter()))
             }
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
             Self::ChangeBfcRound(_) => {
-                let objs = vec![SharedInputObject{
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },SharedInputObject::SUI_SYSTEM_OBJ];
-                Either::Right(Either::Right(objs.into_iter()))
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,];
+                Either::Left(Either::Left(objs.into_iter()))
             }
             _ => Either::Right(Either::Right(vec![].into_iter())),
         }
@@ -924,10 +919,6 @@ impl TransactionKind {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
                 }]
             }
             Self::Genesis(_) => {
@@ -938,20 +929,24 @@ impl TransactionKind {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
-                }]
-            }
-            Self::ChangeBfcRound(_)=>{
-                vec![InputObjectKind::SharedMoveObject {
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
                 },InputObjectKind::SharedMoveObject {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 },InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                }]
+            }
+            Self::ChangeBfcRound(_)=>{
+                vec![InputObjectKind::SharedMoveObject {
+                    id: SUI_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }
@@ -1060,6 +1055,21 @@ pub enum TransactionExpiration {
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub enum TransactionData {
     V1(TransactionDataV1),
+}
+
+impl TransactionData {
+    pub fn is_change_bfc_round_tx(&self) -> bool {
+        match self {
+            Self::V1(txn_data) => {
+                match txn_data.kind {
+                    TransactionKind::ChangeBfcRound(_) => true,
+                    _ => {
+                        false
+                    },
+                }
+            }
+        }
+    }
 }
 
 impl VersionedProtocolMessage for TransactionData {
@@ -1659,7 +1669,7 @@ impl TransactionDataAPI for TransactionDataV1 {
         Ok(inputs)
     }
     fn kind_input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
-        Ok(self.kind.input_objects()?)
+        self.kind.input_objects()
     }
 
     fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
@@ -2029,7 +2039,7 @@ impl VerifiedTransaction {
         bfc_computation_charge: u64,
         bfc_storage_rebate: u64,
         bfc_non_refundable_storage_fee: u64,
-        stable_gas_summary_map:HashMap<TypeTag,GasCostSummary>,
+        stable_gas_summary_map:HashMap<TypeTag,GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {

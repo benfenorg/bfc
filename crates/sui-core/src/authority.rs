@@ -88,7 +88,7 @@ use sui_types::effects::{
 use sui_types::error::{ExecutionError, UserInputError};
 use sui_types::event::{Event, EventID};
 use sui_types::executable_transaction::VerifiedExecutableTransaction;
-use sui_types::gas::{GasCostSummary, SuiGasStatus};
+use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted, SuiGasStatus};
 use sui_types::inner_temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
 };
@@ -1170,6 +1170,9 @@ impl AuthorityState {
         )
         .await?;
 
+        // if certificate.transaction_data().is_change_epoch_tx() {
+        //     error!("certificate is {:?},input objs is {:?},depts is {:?}",certificate,input_objects.clone().into_objects(),input_objects.clone().transaction_dependencies());
+        // }
         let owned_object_refs = input_objects.filter_owned_objects();
         self.check_owned_locks(&owned_object_refs).await?;
         let tx_digest = *certificate.digest();
@@ -3882,7 +3885,7 @@ impl AuthorityState {
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
         bfc_gas_cost_summary: &GasCostSummary,
-        stable_gas_cost_summarys: &HashMap<TypeTag,GasCostSummary>,
+        stable_gas_cost_summarys: &HashMap<TypeTag,GasCostSummaryAdjusted>,
         checkpoint: CheckpointSequenceNumber,
         epoch_start_timestamp_ms: CheckpointTimestamp,
     ) -> anyhow::Result<(SuiSystemState, TransactionEffects)> {
@@ -3913,15 +3916,13 @@ impl AuthorityState {
 
         if cfg!(feature="bfc_skip_dao_update")  {
             info!("===========msim test skip ========");
+        } else if  proposal_result == false{
+            info!("=========skip system package update, proposal fail=======",);
+            next_epoch_system_packages.clear();
+            next_epoch_protocol_version = epoch_store.protocol_version();
         } else {
-            if proposal_result == false {
-                info!("=========skip system package update, proposal fail=======",);
-                next_epoch_system_packages.clear();
-                next_epoch_protocol_version = epoch_store.protocol_version();
-            } else{
-                info!("======= system package update, proposal success=======");
-            };
-        }
+            info!("======= system package update, proposal success=======");
+        };
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version
@@ -4040,7 +4041,7 @@ impl AuthorityState {
         let epoch = epoch_store.epoch();
 
         let tx = VerifiedTransaction::new_change_bfc_round(
-            epoch,
+            checkpoint,
         );
 
         let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
@@ -4052,17 +4053,17 @@ impl AuthorityState {
 
         let tx_digest = executable_tx.digest();
 
-        info!("round txn digest is {:?}",tx_digest);
-        let _tx_lock = epoch_store.acquire_tx_lock(tx_digest).await;
+        // info!("round txn digest is {:?}",tx_digest);
+        let _tx_lock = epoch_store.acquire_tx_guard(&executable_tx).await?;
 
         if self
             .database
             .is_tx_already_executed(tx_digest)
             .expect("read cannot fail")
         {
-            warn!("change epoch tx has already been executed via state sync");
+            warn!("bfc round has already been executed via state sync： {:?}", tx_digest);
             return Err(anyhow::anyhow!(
-                "change epoch tx has already been executed via state sync"
+                "bfc round tx has already been executed via state sync"
             ));
         }
 
@@ -4079,16 +4080,44 @@ impl AuthorityState {
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 
+
+        self.commit_cert_and_notify(
+            &executable_tx,
+            store.clone(),
+            &effects,
+            _tx_lock,
+            execution_guard,
+            epoch_store,
+        )
+            .await?;
+
+        // self.commit_certificate(store.clone(), &executable_tx, &effects, epoch_store)
+        //     .await?;
+
         // We must write tx and effects to the state sync tables so that state sync is able to
         // deliver to the transaction to CheckpointExecutor after it is included in a certified
         // checkpoint.
 
-        self.database
-            .insert_transaction_and_effects(&tx, &effects)
-            .map_err(|err| {
-                let err: anyhow::Error = err.into();
-                err
-            })?;
+        // self.database
+        //     .insert_transaction_and_effects(&tx, &effects)
+        //     .map_err(|err| {
+        //         let err: anyhow::Error = err.into();
+        //         err
+        //     })?;
+        // self.database
+        //     .update_state(
+        //         store.clone(),
+        //         &tx.clone().into_unsigned(),
+        //         &effects,
+        //         epoch_store.epoch(),
+        //     )
+        //     .await
+        //     .tap_ok(|_| {
+        //         debug!(
+        //             effects_digest = ?effects.digest(),
+        //             "commit_certificate finished"
+        //         );
+        //     })?;
 
         info!(
             "Effects summary of the change bfc round transaction: {:?}",

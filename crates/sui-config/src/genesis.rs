@@ -599,6 +599,7 @@ pub struct GenesisChainParameters {
 #[serde(rename_all = "kebab-case")]
 pub struct BfcSystemParameters {
     pub chain_start_timestamp_ms: u64,
+    pub round_duration_ms: u64,
     /// re-balance time interval in seconds
     pub time_interval: u32,
     pub treasury_parameters: VecMap<String, TreasuryParameters>,
@@ -620,6 +621,10 @@ pub struct GenesisCeremonyParameters {
     /// The duration of an epoch, in milliseconds.
     #[serde(default = "GenesisCeremonyParameters::default_epoch_duration_ms")]
     pub epoch_duration_ms: u64,
+
+    /// The duration of bfc round, in milliseconds.
+    #[serde(default = "GenesisCeremonyParameters::default_round_duration_ms")]
+    pub round_duration_ms: u64,
 
     /// The starting epoch in which stake subsidies start being paid out.
     #[serde(default)]
@@ -651,6 +656,7 @@ impl GenesisCeremonyParameters {
             allow_insertion_of_extra_objects: true,
             stake_subsidy_start_epoch: 0,
             epoch_duration_ms: Self::default_epoch_duration_ms(),
+            round_duration_ms: Self::default_round_duration_ms(),
             stake_subsidy_initial_distribution_amount:
                 Self::default_initial_stake_subsidy_distribution_amount(),
             stake_subsidy_period_length: Self::default_stake_subsidy_period_length(),
@@ -677,9 +683,14 @@ impl GenesisCeremonyParameters {
         1000 * 60 * 5
     }
 
+    fn default_round_duration_ms() -> u64 {
+        // 20s
+        1000*20
+    }
+
     fn default_initial_stake_subsidy_distribution_amount() -> u64 {
-        // 10000 Sui
-        10000 * sui_types::gas_coin::MIST_PER_SUI
+        // 50_000_000 BFC
+        50_000_000 * sui_types::gas_coin::MIST_PER_SUI
     }
 
     fn default_stake_subsidy_period_length() -> u64 {
@@ -716,6 +727,7 @@ impl GenesisCeremonyParameters {
     pub fn to_bfc_system_parameters(&self) -> BfcSystemParameters {
         BfcSystemParameters {
             chain_start_timestamp_ms: self.chain_start_timestamp_ms,
+            round_duration_ms: self.round_duration_ms,
             // re-balance time interval, default 4h
             time_interval: 14400,
             treasury_parameters: TreasuryParameters::to_genesis_treasury_parameters(),

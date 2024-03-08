@@ -53,8 +53,8 @@ module bfc_system::test_utils {
     {
         setup_with_parameters(
             3600 * 4,
-            1 << 64,
-            1000_000000000,
+            58333726687135162368,
+            50000_000_000_000,
             9,
             60,
             10,
@@ -120,7 +120,7 @@ module bfc_system::test_utils {
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
 
         let t = test_scenario::take_shared<Treasury>(scenario_val);
-        treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(scenario_val));
+        treasury::rebalance(&mut t, 0, clock::timestamp_ms(&c), test_scenario::ctx(scenario_val));
 
         clock::destroy_for_testing(c);
         test_scenario::return_shared(t);

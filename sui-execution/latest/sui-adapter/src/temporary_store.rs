@@ -793,9 +793,8 @@ impl<'backing> TemporaryStore<'backing> {
         self.write_object(new_object, WriteKind::Mutate);
     }
     pub fn get_bfc_system_proposal_stauts_map(& self) -> VecMap<u64, ProposalStatus> {
-        let wrapper = get_bfc_system_proposal_state_map(self.store.as_object_store())
-            .expect("System state wrapper object must exist");
-        return wrapper;
+        get_bfc_system_proposal_state_map(self.store.as_object_store())
+            .expect("System state wrapper object must exist")
     }
 
     pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {
@@ -835,8 +834,7 @@ impl<'backing> TemporaryStore<'backing> {
     }
 
     pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {
-        let bfc_system_state_wrapper= get_bfc_system_state_wrapper(self.store.as_object_store()).expect("System state wrapper object must exist");
-        return bfc_system_state_wrapper;
+        get_bfc_system_state_wrapper(self.store.as_object_store()).expect("System state wrapper object must exist")
     }
 
 }

@@ -84,7 +84,7 @@ mod sim_only_tests {
         base_types::SequenceNumber, digests::TransactionDigest, object::Object,
         programmable_transaction_builder::ProgrammableTransactionBuilder, storage::ObjectStore,
         transaction::TransactionKind, MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
-        SUI_SYSTEM_PACKAGE_ID,
+        SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID,
     };
     use test_cluster::TestCluster;
     use tokio::time::{sleep, Duration};
@@ -926,6 +926,7 @@ mod sim_only_tests {
             u64::MAX,
             &[
                 BuiltInFramework::get_package_by_id(&MOVE_STDLIB_PACKAGE_ID).genesis_move_package(),
+                BuiltInFramework::get_package_by_id(&BFC_SYSTEM_PACKAGE_ID).genesis_move_package(),
                 BuiltInFramework::get_package_by_id(&SUI_FRAMEWORK_PACKAGE_ID)
                     .genesis_move_package(),
             ],

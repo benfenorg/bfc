@@ -12,7 +12,7 @@ use sui_types::base_types::TransactionDigest;
 use sui_types::committee::EpochId;
 use sui_types::crypto::AggregateAuthoritySignature;
 use sui_types::digests::CheckpointDigest;
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted};
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::{
     CheckpointCommitment, CheckpointContents, CheckpointSequenceNumber, CheckpointSummary,
@@ -49,7 +49,7 @@ pub struct Checkpoint {
     pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
     #[schemars(with = "schemars::Map<TypeTag, GasCostSummary>")]
     #[serde_as(as = "Vec<(Readable<SuiTypeTag,_>,_)>")]
-    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummary>,
+    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummaryAdjusted>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent

@@ -116,8 +116,8 @@ impl SerializeAs<[u8; 32]> for HexBFCAddress {
     {
         if serializer.is_human_readable() {
             let mut s = String::new();
-            for i in 0..value.len() {
-                write!(s, "{:02x}", value[i]).unwrap();
+            for i in value.iter()  {
+                write!(s, "{:02x}", i).unwrap();
             }
             let result = sha256_string(&s.clone());
             let check_sum = result.get(0..4).unwrap();
@@ -139,8 +139,8 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
         let mut s = String::deserialize(deserializer)?;
         if s.starts_with("bfc") || s.starts_with("BFC") {
             let sui = convert_to_evm_address(s.clone());
-            if sui.len() > 0 {
-                s = String::from(sui);
+            if !sui.is_empty() {
+                s = sui;
             } else {
                 info!(
                     "HexBFCAddress deserializing error bfc address from hex: {}",
@@ -195,8 +195,8 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
         //bfcAddress convert to suiAddress format...
         if s.starts_with("bfc") || s.starts_with("BFC") {
             let sui = convert_to_evm_address(s.clone());
-            if sui.len() > 0 {
-                s = String::from(sui);
+            if !sui.is_empty() {
+                s = sui;
             } else {
                 //todo..
                 info!("deserializing error bfc address from hex: {}", s);
