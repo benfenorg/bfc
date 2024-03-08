@@ -6,6 +6,7 @@ module polynet::events {
     friend polynet::config;
     friend polynet::controller;
     friend polynet::wrapper_v1;
+    friend polynet::lock_proxy;
     friend polynet::cross_chain_manager;
 
     struct InitBookKeeperEvent has store, drop, copy {
@@ -46,6 +47,38 @@ module polynet::events {
         to_contract: vector<u8>,
         cross_chain_tx_hash: vector<u8>,
         from_chain_tx_hash: vector<u8>,
+    }
+
+      struct LockEvent has store, drop, copy {
+        from_asset: TypeName,
+        from_address: address,
+        to_chain_id: u64,
+        to_asset_hash: vector<u8>,
+        to_address: vector<u8>,
+        amount: u64,
+        target_chain_amount: u128
+    }
+
+     public(friend) fun lock_event(
+        _from_asset: TypeName,
+        _from_address: address,
+        _to_chain_id: u64,
+        _to_asset_hash: vector<u8>,
+        _to_address: vector<u8>,
+        _amount: u64,
+        _target_chain_amount: u128
+    ) {
+        emit (
+            LockEvent{
+                from_asset: _from_asset,
+                from_address: _from_address,
+                to_chain_id: _to_chain_id,
+                to_asset_hash: _to_asset_hash,
+                to_address: _to_address,
+                amount: _amount,
+                target_chain_amount: _target_chain_amount
+
+            })
     }
 
 

@@ -32,7 +32,6 @@ module polynet::controller {
         _poly_id: u64,
         _ctx: &mut TxContext
     )  {
-
         let sender = tx_context::sender(_ctx);
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
@@ -145,42 +144,35 @@ module polynet::controller {
         _global:&mut CrossChainGlobalConfig,
         _treasury_ref:&mut Treasury<CoinType>,
         _proof: vector<u8>, 
-        _rawHeader: vector<u8>, 
-        _headerProof: vector<u8>, 
-        _curRawHeader: vector<u8>, 
-        _headerSig: vector<u8>,
+        _raw_header: vector<u8>, 
+        _header_proof: vector<u8>, 
+        _cur_raw_header: vector<u8>, 
+        _header_sig: vector<u8>,
         _clock: &Clock,
         _ctx: &mut TxContext
     ) {
         //check system pause
         config::check_pause(_global);
         config::check_version(_global);
-
-        // let ccManager = config::borrow_mut_crosschain_manager(_global);
-
-        // let poly_id = config::get_poly_id(_global);
-        // let cur_epoch_start_height = config::get_cur_epoch_start_height(_global);
-        let (lpManager,ccManager) = config::borrow_mut_lp_and_cc_managers(_global);
-        
-        lock_proxy::check_paused(lpManager);
-        let license_ref = lock_proxy::get_license_ref(lpManager);
+        let (lp_manager,cc_manager) = config::borrow_mut_lp_and_cc_managers(_global);
+        lock_proxy::check_paused(lp_manager);
+        let license_ref = lock_proxy::get_license_ref(lp_manager);
 
       
 
         let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
-                                                    ccManager,
+                                                    cc_manager,
                                                     license_ref, 
                                                     &_proof, 
-                                                    &_rawHeader, 
-                                                    &_headerProof, 
-                                                    &_curRawHeader, 
-                                                    &_headerSig, 
+                                                    &_raw_header, 
+                                                    &_header_proof, 
+                                                    &_cur_raw_header, 
+                                                    &_header_sig, 
                                                     _ctx
                                                 );
-        // let mut_lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::relay_unlock_tx<CoinType>(
                         &certificate,
-                        lpManager,
+                        lp_manager,
                         _treasury_ref,
                         _clock, 
                         _ctx
@@ -193,8 +185,8 @@ module polynet::controller {
         _account: address,
         _fund: Coin<CoinType>,
         _fee: Coin<BFC>,
-        _toChainId: u64, 
-        _toAddress: vector<u8>,
+        _to_chain_id: u64, 
+        _to_address: vector<u8>,
         _clock:&Clock,
         _ctx: &mut TxContext
     )  {
@@ -204,12 +196,7 @@ module polynet::controller {
         config::check_version(_global);
         let (lp_manager,wrapper_store,cc_manager) = config::borrow_mut_all(_global);
         lock_proxy::check_paused(lp_manager);
-        // let wrapper_store = config::borrow_mut_wrapper_store(_global);
-       
-        //any user can lock bfc assets and transfer to evm
-        // let ccManager = config::borrow_mut_crosschain_manager(_global);
-
-
+     
         wrapper_v1::lock_and_pay_fee_with_fund<CoinType>(
                         cc_manager,
                         lp_manager,
@@ -218,8 +205,8 @@ module polynet::controller {
                         _account, 
                         _fund, 
                         _fee, 
-                        _toChainId, 
-                        &_toAddress,
+                        _to_chain_id, 
+                        &_to_address,
                         _clock, 
                         _ctx
                     );
