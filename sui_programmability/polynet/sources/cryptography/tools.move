@@ -16,9 +16,11 @@ module polynet::tools {
     const EINVALID_ADMIN: u64 = 4015;
 
     // mainnet
-    public  fun init_as_mainnet(ccConfig: &mut CrossChainGlobalConfig,
-                                      clock:&Clock,
-                                     ctx: &mut TxContext) {
+    public  fun init_as_mainnet(
+        ccConfig: &mut CrossChainGlobalConfig,
+        // clock:&Clock,
+        ctx: &mut TxContext
+    ) {
         // sender address
         let sender = tx_context::sender(ctx);
         assert!(utils::is_admin(sender), EINVALID_ADMIN);

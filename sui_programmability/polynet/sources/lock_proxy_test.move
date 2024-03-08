@@ -28,56 +28,39 @@ module polynet::lock_proxy_test {
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-
             let clock = clock::create_for_testing(ctx);
             update_lock_proxy_manager_start_time(&mut ccConfig,&clock, ctx);
             clock::destroy_for_testing(clock);
-        };
-
-        test_scenario::next_tx(&mut scenario_val, owner);
-        {
-
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
-            let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            let ctx = test_scenario::ctx(&mut scenario_val);
-
-
-
-            pause(lpmanager, ctx);
-
             test_scenario::return_shared(ccConfig);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-
             let ctx = test_scenario::ctx(&mut scenario_val);
+            pause(lpmanager, ctx);
+            test_scenario::return_shared(ccConfig);
+        };
 
-
-
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
+            let ctx = test_scenario::ctx(&mut scenario_val);
             unpause(lpmanager, ctx);
-
             test_scenario::return_shared(ccConfig);
         };
 
         let new_owner = @0xfd8669e7e9ecb8d9b893dc6b0ad6727aa28c80dd1c5a34809d20910c5ffa7525;
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-
             transferOwnerShip(lpmanager, new_owner,ctx);
-
             test_scenario::return_shared(ccConfig);
         };
 
@@ -85,19 +68,13 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, new_owner);
         {
 
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-
             transferOwnerShip(lpmanager, owner,ctx);
-
             test_scenario::return_shared(ccConfig);
         };
-
-
         test_scenario::end(scenario_val);
-
     }
 
     #[test]
@@ -115,34 +92,25 @@ module polynet::lock_proxy_test {
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
 
             let clock = clock::create_for_testing(ctx);
             update_lock_proxy_manager_start_time(&mut ccConfig,&clock, ctx);
             clock::destroy_for_testing(clock);
+            test_scenario::return_shared(ccConfig);
         };
-
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
-
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-
             let clock = clock::create_for_testing(ctx);
-
-
             let result = checkAmountResult(10000000000000, lpmanager, &b"BFC_USDT", false, &clock);
             assert!(result, 4018);
-
             let result = checkAmountResult(100000000000000, lpmanager, &b"BFC_USDT", false, &clock);
             assert!(result == false, 4018);
-
             test_scenario::return_shared(ccConfig);
             clock::destroy_for_testing(clock);
         };
@@ -164,43 +132,32 @@ module polynet::lock_proxy_test {
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
 
             let clock = clock::create_for_testing(ctx);
             update_lock_proxy_manager_start_time(&mut ccConfig,&clock, ctx);
             clock::destroy_for_testing(clock);
+            test_scenario::return_shared(ccConfig);
         };
-
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
-
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             //let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
             let hash = x"0123";
             bind_proxy(&mut ccConfig, 10, hash, ctx);
-
             test_scenario::return_shared(ccConfig);
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
-
-
             unbind_proxy(&mut ccConfig, 10,  ctx);
-
             test_scenario::return_shared(ccConfig);
         };
-
-
         test_scenario::end(scenario_val);
     }
 
@@ -235,21 +192,21 @@ module polynet::lock_proxy_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
 
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
 
 
             let clock = clock::create_for_testing(ctx);
             update_lock_proxy_manager_start_time(&mut ccConfig,&clock, ctx);
             clock::destroy_for_testing(clock);
+            test_scenario::return_shared(ccConfig);
         };
-
 
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
 
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
 
             let hash = x"0123";
@@ -261,7 +218,8 @@ module polynet::lock_proxy_test {
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
 
 
@@ -269,8 +227,6 @@ module polynet::lock_proxy_test {
 
             test_scenario::return_shared(ccConfig);
         };
-
-
         test_scenario::end(scenario_val);
     }
 

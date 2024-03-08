@@ -50,7 +50,7 @@ module polynet::cross_chain_manager {
         paused: bool,
         acl_store: ACLStore,
         poly_id: u64,
-        book_keepers: vector<vector<u8>>,
+        book_keepers: vector<vector<u8>>, //special decode pointer
         epoch_start_height: u64,
         tx_hash_index: u128,
         tx_hash_map: Table<u128, vector<u8>>,
