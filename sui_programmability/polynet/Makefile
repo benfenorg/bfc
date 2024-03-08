@@ -15,5 +15,5 @@ publish:
 #note: should replace real upgrade_cap_id
 
 upgrade:
-	bfc client upgrade --gas-budget 2000000000 --upgrade-capability 0x6f7fa31f7d9f5fb81d6365d6c2908288f5c77ca630a9f63933cfb17eaee76d36
+	bfc client upgrade --gas-budget 2000000000 --upgrade-capability 2e34b695b8b1313dd2a4421080240ebbfd1d21dfb60dc57cf10b027db23778d8
 

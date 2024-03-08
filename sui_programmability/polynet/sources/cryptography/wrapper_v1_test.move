@@ -112,36 +112,35 @@ module polynet::wrapper_v1_test {
             let hash = x"0123";
             let decimal = 6;
             bind_asset<BFC_ETH>(&mut ccConfig, 10,hash, decimal, ctx);
-
             test_scenario::return_shared(ccConfig);
         };
 
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+                // let ccConfig1 = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            init_as_mainnet(&mut ccConfig, ctx);
+            test_scenario::return_shared(ccConfig);
+            // clock::destroy_for_testing(clock);
+
+        };
 
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
-
             let (lock_proxy, wrapper_store,manager) = borrow_mut_all(&mut ccConfig);
-
-
             let treasury =  test_scenario::take_shared<Treasury<BFC_ETH>>(&mut scenario_val );
            // let fund  = test_scenario::take_from_sender<Coin<BFC_BTC>>(&mut scenario_val );
             print(&treasury);
             let coin =  coin::mint_for_testing<BFC_ETH>(10000000000, test_scenario::ctx(&mut scenario_val));
             let fee =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
-
-            let ccConfig1 = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            
             let ctx = test_scenario::ctx(&mut scenario_val);
-
             let clock = clock::create_for_testing(ctx);
-            init_as_mainnet(&mut ccConfig1, ctx);
-
-
             let toAddress = x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899";
             lock_and_pay_fee_with_fund<BFC_ETH>(manager, lock_proxy, &mut treasury, wrapper_store, @0x2, coin, fee, 10, &toAddress, &clock, ctx);
             test_scenario::return_shared(ccConfig);
-            test_scenario::return_shared(ccConfig1);
             test_scenario::return_shared( treasury);
             clock::destroy_for_testing(clock);
         };
