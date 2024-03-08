@@ -72,7 +72,7 @@ module polynet::cross_chain_manager_test {
 
             let result = get_poly_id(manager);
 
-            assert!(result == new_polyId, 4002);
+            assert!(result == polyId, 4002);
             test_scenario::return_shared(ccConfig);
 
         };
