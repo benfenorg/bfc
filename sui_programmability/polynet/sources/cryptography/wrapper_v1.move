@@ -57,7 +57,6 @@ module polynet::wrapper_v1 {
     }
 
     public fun feeCollector(_wrapperstore: &WrapperStore): address {
-        //let config_ref = borrow_global<WrapperStore>(POLY_BRIDGE);
         return _wrapperstore.fee_collector
     }
     
@@ -84,7 +83,6 @@ module polynet::wrapper_v1 {
         transfer::public_transfer(fee, feeCollector);
 
         lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,clock, ctx);
-        //let config_ref = borrow_global_mut<WrapperStore>(POLY_BRIDGE);
         events::lock_with_fee_event(
                          type_name::get<Coin<CoinType>>(),
                          account,

@@ -124,7 +124,6 @@ module polynet::wrapper_v1_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
-                // let ccConfig1 = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
 
@@ -132,7 +131,6 @@ module polynet::wrapper_v1_test {
             test_scenario::return_shared(ccConfig);
             clock::destroy_for_testing(clock);
 
-            // clock::destroy_for_testing(clock);
 
         };
 
@@ -141,7 +139,7 @@ module polynet::wrapper_v1_test {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let (lock_proxy, wrapper_store,manager) = borrow_mut_all(&mut ccConfig);
             let treasury =  test_scenario::take_shared<Treasury<BFC_ETH>>(&mut scenario_val );
-           // let fund  = test_scenario::take_from_sender<Coin<BFC_BTC>>(&mut scenario_val );
+
             print(&treasury);
             let coin =  coin::mint_for_testing<BFC_ETH>(10000000000, test_scenario::ctx(&mut scenario_val));
             let fee =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));

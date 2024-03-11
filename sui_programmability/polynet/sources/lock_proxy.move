@@ -387,6 +387,7 @@ module polynet::lock_proxy {
     }
 
     //todo. need more strick root right checking. admin has too many accounts.
+    //here we limit the withdraw using the assets list, the relayer address should be add to release token
     fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
         // sender address: only assets admin can withdraw
         let sender = tx_context::sender(ctx);
@@ -586,7 +587,6 @@ module polynet::lock_proxy {
         transfer::public_transfer(fund, utils::to_address(to_address));
 
         // emit event
-        //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         event::emit(
             UnlockEvent{
                 to_asset: type_name::get<Coin<CoinType>>(),

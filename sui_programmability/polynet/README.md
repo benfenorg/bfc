@@ -1,5 +1,16 @@
 # aptos-contracts
 
+
+
+
+todo list:
+1. event 整理不完全，需要都丢到events里面？
+2. pause的整理， 保留一个全局的pause， 其他的pause都去掉
+3. bfc_usdt的逻辑整理， 把大部分的token转入到ob企业钱包托管， 保留少部分token用于合约运行，冷热钱包概念和逻辑
+4. 管理权限的清理， 
+5. amount limit manager的限额对不同的币种不同， 现在是统一的一个值
+
+===============================
 bfc链再poly测试网注册的chainId是1200
 goerli再poly测试网的chainId是502
 

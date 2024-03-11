@@ -10,6 +10,8 @@ module polynet::utils {
     const EINVALID_FROM_BYTES_TO_U64: u64 = 4004;
     const EINVALID_FROM_BYTES_TO_U128: u64 = 4005;
 
+
+    //operation admin, some of the operation need to be signed by admin
     const ADMINS: vector<address> =vector[@0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
                                           @0xc3f0bfdf21d95a247e306df123dde0dad1057f188bdc490737f2616f4062804b,
                                           @0xfc171f86c07b0311a347d7e71b261c684848becbececec78802f1bf8a599f729,
@@ -22,6 +24,9 @@ module polynet::utils {
         let result = vector::contains(&ADMINS, &a);
         return result
     }
+
+
+    //todo : add relayer's address to assets admin, only assets admin can unlock token..!!!!
     const ASSETS_ADMIN:vector<address> = vector[@0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,];
 
     public fun is_assets_admin(a: address): bool {
