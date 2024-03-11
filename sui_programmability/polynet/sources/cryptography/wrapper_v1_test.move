@@ -82,7 +82,10 @@ module polynet::wrapper_v1_test {
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_mainnet_ccm(&mut ccConfig,ctx);
+            let clock = clock::create_for_testing(ctx);
+
+            init_mainnet_ccm(&mut ccConfig,owner,  &clock, ctx);
+            clock::destroy_for_testing(clock);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -123,8 +126,12 @@ module polynet::wrapper_v1_test {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
                 // let ccConfig1 = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
-            init_as_mainnet(&mut ccConfig, ctx);
+            let clock = clock::create_for_testing(ctx);
+
+            init_as_mainnet(&mut ccConfig, &clock, ctx);
             test_scenario::return_shared(ccConfig);
+            clock::destroy_for_testing(clock);
+
             // clock::destroy_for_testing(clock);
 
         };
