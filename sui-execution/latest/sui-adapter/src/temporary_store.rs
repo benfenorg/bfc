@@ -28,7 +28,7 @@ use sui_types::{base_types::{
 }, transaction::InputObjects};
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
+use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -831,6 +831,12 @@ impl<'backing> TemporaryStore<'backing> {
             .map(|e| e.value)
             .unwrap_or_default();
         (rate, base_point)
+    }
+
+    pub fn get_bfc_state(&self) -> BFCSystemState {
+        let wrapper = get_bfc_system_state(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        wrapper
     }
 
     pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {

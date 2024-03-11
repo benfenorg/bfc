@@ -982,26 +982,28 @@ mod checked {
                 "Unable to generate consensus_commit_prologue transaction!"
             );
 
-            let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-            let mut arguments = vec![bfc_system];
-            let args = vec![
-                CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
-            ] .into_iter()
-                .map(|a| builder.input(a))
-                .collect::<Result<_, _>>();
+            let bfc_state = temporary_store.get_bfc_state().inner_state();
+            if prologue.commit_timestamp_ms - bfc_state.round_timestamp_ms > bfc_state.round_duration_ms {
+                let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+                let mut arguments = vec![bfc_system];
+                let args = vec![
+                    CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
+                ].into_iter()
+                    .map(|a| builder.input(a))
+                    .collect::<Result<_, _>>();
 
-            arguments.append(&mut args.unwrap());
+                arguments.append(&mut args.unwrap());
 
-            info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
+                info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
 
-            builder.programmable_move_call(
-                BFC_SYSTEM_PACKAGE_ID,
-                BFC_SYSTEM_MODULE_NAME.to_owned(),
-                BFC_ROUND_FUNCTION_NAME.to_owned(),
-                vec![],
-                arguments,
-            );
-
+                builder.programmable_move_call(
+                    BFC_SYSTEM_PACKAGE_ID,
+                    BFC_SYSTEM_MODULE_NAME.to_owned(),
+                    BFC_ROUND_FUNCTION_NAME.to_owned(),
+                    vec![],
+                    arguments,
+                );
+            }
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(

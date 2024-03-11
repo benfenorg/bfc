@@ -171,6 +171,15 @@ pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Stri
     }
 }
 
+pub fn get_round_duration_ms(object_store: &dyn ObjectStore) -> Result<u64, SuiError> {
+    match get_bfc_system_state(object_store) {
+        Ok(BFCSystemState::V1(bfc_system_state)) => {
+            Ok(bfc_system_state.round_duration_ms)
+        },
+        Err(e) => Err(e),
+    }
+}
+
 pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result<(VecMap<String, u64>, u64), SuiError> {
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
