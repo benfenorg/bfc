@@ -526,7 +526,7 @@ module polynet::cross_chain_manager {
 
     }
 
-    public(friend) fun update_cross_chain_config(
+    public(friend) fun update_cross_chain_manager_config(
         _cross_chain_manager: &mut CrossChainManager,
         _keepers: vector<vector<u8>>,
         _start_height: u64,

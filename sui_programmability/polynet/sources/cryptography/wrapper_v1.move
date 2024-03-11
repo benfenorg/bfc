@@ -14,6 +14,7 @@ module polynet::wrapper_v1 {
     // friend polynet::cross_chain_manager;
     friend polynet::controller ;
     friend polynet::config;
+    friend polynet::tools;
     #[test_only]
     friend polynet::wrapper_v1_test;
     #[test_only]

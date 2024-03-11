@@ -5,7 +5,9 @@ module polynet::cross_chain_manager_test {
     use std::vector;
     use polynet::controller::{change_poly_id, grant_role, revoke_role, set_blacklist};
     use polynet::config::{init_cc_config, CrossChainGlobalConfig, borrow_mut_crosschain_manager};
-    use polynet::cross_chain_manager::{CrossChainManager,update_cross_chain_config, get_poly_id};
+    use polynet::cross_chain_manager::{CrossChainManager, get_poly_id,
+        update_cross_chain_manager_config
+    };
     use sui::test_scenario;
     use polynet::cross_chain_manager;
     use polynet::utils;
@@ -42,7 +44,7 @@ module polynet::cross_chain_manager_test {
             let ctx = test_scenario::ctx(&mut scenario_val);
 
 
-            update_cross_chain_config( manager, keepers, startHeight, polyId,  ctx);
+            update_cross_chain_manager_config( manager, keepers, startHeight, polyId,  ctx);
 
             test_scenario::return_shared(ccConfig);
 

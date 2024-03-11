@@ -36,7 +36,7 @@ module polynet::controller {
         assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
 
         let ccManager = config::borrow_mut_crosschain_manager(_global);
-        cross_chain_manager::update_cross_chain_config(
+        cross_chain_manager::update_cross_chain_manager_config(
             ccManager,
             _keepers,
             _start_height,
@@ -145,7 +145,7 @@ module polynet::controller {
         config::check_version(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
-        cross_chain_manager::update_cross_chain_config(
+        cross_chain_manager::update_cross_chain_manager_config(
                                 ccManager,
                                 _keepers,
                                 _start_height,

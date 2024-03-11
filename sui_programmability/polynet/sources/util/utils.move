@@ -1,3 +1,4 @@
+#[allow(unused_const)]
 module polynet::utils {
     use std::vector;
     use std::string::{String, Self};

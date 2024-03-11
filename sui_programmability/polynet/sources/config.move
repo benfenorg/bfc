@@ -1,3 +1,4 @@
+#[allow(unused_const)]
 module polynet::config {
     use sui::transfer;
     use polynet::events;
