@@ -128,8 +128,7 @@ pub trait BfcSystemStateTrait {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct BfcSystemStateInnerV1 {
-    pub round_timestamp_ms: u64,
-    pub round_duration_ms: u64,
+    pub round: u64,
     pub stable_base_points: u64,
     pub reward_rate: u64,
     pub dao: Dao,
@@ -166,15 +165,6 @@ pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Stri
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok(bfc_system_state.rate_map)
-        },
-        Err(e) => Err(e),
-    }
-}
-
-pub fn get_round_duration_ms(object_store: &dyn ObjectStore) -> Result<u64, SuiError> {
-    match get_bfc_system_state(object_store) {
-        Ok(BFCSystemState::V1(bfc_system_state)) => {
-            Ok(bfc_system_state.round_duration_ms)
         },
         Err(e) => Err(e),
     }

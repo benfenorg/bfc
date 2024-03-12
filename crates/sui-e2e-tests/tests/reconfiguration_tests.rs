@@ -323,8 +323,7 @@ async fn test_change_bfc_round() {
     ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(30000)
-        .with_round_duration_ms(20000)
+        .with_epoch_duration_ms(1000)
         .with_num_validators(5)
         .build()
         .await;
@@ -349,7 +348,6 @@ async fn test_change_bfc_round() {
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
-    //let _ = sleep(Duration::from_secs(20)).await;
 
     test_cluster
         .swarm
@@ -2399,7 +2397,6 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
             if _effects.status.is_err() {
-                error!("txn is {:?}",tx);
                 error!("effects is {:?}",_effects);
             }
             assert!(_effects.status.is_ok());
@@ -2594,8 +2591,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(6000)
-        .with_round_duration_ms(3000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2626,8 +2622,7 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(6000)
-        .with_round_duration_ms(3000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2653,8 +2648,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(6000)
-        .with_round_duration_ms(3000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2671,7 +2665,6 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
 
-    test_cluster.wait_for_epoch(Some(2)).await;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
 
     Ok(())

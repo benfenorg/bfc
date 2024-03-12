@@ -26,9 +26,6 @@ pub struct ClusterTestOpt {
     pub fullnode_address: Option<String>,
     #[clap(long)]
     pub epoch_duration_ms: Option<u64>,
-    #[clap(long)]
-    pub round_duration_ms: Option<u64>,
-
     /// URL for the indexer RPC server
     #[clap(long)]
     pub indexer_address: Option<String>,
@@ -49,7 +46,6 @@ impl ClusterTestOpt {
             faucet_address: None,
             fullnode_address: None,
             epoch_duration_ms: None,
-            round_duration_ms: None,
             indexer_address: None,
             pg_address: None,
             use_indexer_experimental_methods: false,

@@ -67,7 +67,6 @@ async fn test_genesis() -> Result<(), anyhow::Error> {
         force: false,
         from_config: None,
         epoch_duration_ms: None,
-        round_duration_ms: None,
         benchmark_ips: None,
         with_faucet: false,
     }
@@ -107,7 +106,6 @@ async fn test_genesis() -> Result<(), anyhow::Error> {
         force: false,
         from_config: None,
         epoch_duration_ms: None,
-        round_duration_ms: None,
         benchmark_ips: None,
         with_faucet: false,
     }

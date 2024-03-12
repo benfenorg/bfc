@@ -28,7 +28,7 @@ mod checked {
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{error, info, instrument, trace, warn};
+    use tracing::{info, instrument, trace, warn};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -670,24 +670,25 @@ mod checked {
     }
 
     pub fn construct_bfc_round_pt(
+        round_id: u64,
         param: ChangeObcRoundParams,
         reward_rate: u64,
         storage_rebate: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
-        let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
         let mut arguments = vec![];
 
         let args = vec![
             CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&timestamp).unwrap()),
+            CallArg::CLOCK_IMM,
+            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
         ] .into_iter()
             .map(|a| builder.input(a))
             .collect::<Result<_, _>>();
 
         arguments.append(&mut args.unwrap());
 
-        info!("Call arguments to bfc round transaction: {:?}", timestamp);
+        info!("Call arguments to bfc round transaction: {:?}",round_id);
 
         builder.programmable_move_call(
             BFC_SYSTEM_PACKAGE_ID,
@@ -832,7 +833,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(params, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -843,9 +844,8 @@ mod checked {
             advance_epoch_pt,
         );
 
-        error!("bfc round result: {:?}", result);
         if result.is_err() {
-            error!(
+            tracing::error!(
             "Failed to execute change round transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}. Tx data: {:?}",
             result.as_ref().err(),
             temporary_store.objects(),
@@ -876,7 +876,6 @@ mod checked {
             advance_epoch_pt,
         );
 
-        error!("advance_epoch result: {:?}", result);
         #[cfg(msim)]
         let result = maybe_modify_result(result, change_epoch.epoch);
 
@@ -1002,7 +1001,6 @@ mod checked {
                 res.is_ok(),
                 "Unable to generate consensus_commit_prologue transaction!"
             );
-
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(

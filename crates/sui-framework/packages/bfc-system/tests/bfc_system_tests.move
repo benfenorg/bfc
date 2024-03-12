@@ -2,7 +2,6 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
-    use std::debug;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
@@ -29,7 +28,7 @@ module bfc_system::bfc_system_tests {
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario_val);
-        treasury::rebalance(&mut t, 0,  clock::timestamp_ms(&clock), test_scenario::ctx(&mut scenario_val));
+        treasury::rebalance(&mut t, 0, &clock, test_scenario::ctx(&mut scenario_val));
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
@@ -37,7 +36,7 @@ module bfc_system::bfc_system_tests {
         test_scenario::next_tx(scenario, bfc_addr);
         let system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
-        bfc_system::bfc_round(&mut system_state, clock::timestamp_ms(&clock),test_scenario::ctx(scenario));
+        bfc_system::bfc_round(&mut system_state, &clock, 0,test_scenario::ctx(scenario));
 
         test_scenario::return_shared(system_state);
         test_scenario::return_shared(t);
@@ -190,7 +189,6 @@ module bfc_system::bfc_system_tests {
             bfc_system_state_inner::bfc_system_parameters(
                 3600 * 4,
                 2000,
-                20000,
                 treasury_parameters,
             ),
             ctx,
@@ -268,7 +266,6 @@ module bfc_system::bfc_system_tests {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
-        debug::print(&amount);
         let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);

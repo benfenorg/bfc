@@ -968,28 +968,6 @@ impl CheckpointBuilder {
             let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary_map)=
                 self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
 
-            // info!(
-            //     checkpoint_seq = sequence_number,
-            //     "11111Creating checkpoint with {} transactions",
-            //     effects.len()
-            // );
-            // let round_bfc = sequence_number == 9;
-            // if  round_bfc {
-            //     error!("first_checkpoint_of_epoch: {:?}, {}", last_checkpoint, sequence_number);
-            //     self.augment_bfc_round(sequence_number,
-            //                            &mut effects,
-            //                            &mut signatures,
-            //     ).await?;
-            // }
-
-            // if  last_checkpoint_of_epoch{
-            //     error!("last_checkpoint_of_epoch: {:?}, {}", last_checkpoint, sequence_number);
-            //     self.augment_bfc_round(sequence_number,
-            //                                       &mut effects,
-            //                                       &mut signatures,
-            //     ).await?;
-            // }
-
             let end_of_epoch_data = if last_checkpoint_of_epoch {
                 let system_state_obj = self
                     .augment_epoch_last_checkpoint(
@@ -1240,7 +1218,6 @@ async fn augment_bfc_round(
             .state
             .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
             .await?;
-        error!("bfc round effects is : {:?} {:?}",effects.digest(), effects);
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(())
@@ -1266,7 +1243,6 @@ async fn augment_bfc_round(
                 epoch_start_timestamp_ms,
             )
             .await?;
-        //error!("txn effects is {:?},hash is {:?},effects digest is {:?}",effects,effects.transaction_digest(),effects.digest());
         checkpoint_effects.push(effects);
         signatures.push(vec![]);
         Ok(system_state)

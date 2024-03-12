@@ -870,7 +870,12 @@ impl TransactionKind {
         match &self {
             Self::ChangeEpoch(_) => {
                 let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
-                                SharedInputObject::BFC_SYSTEM_OBJ,];
+                                SharedInputObject::BFC_SYSTEM_OBJ,
+                                SharedInputObject {
+                        id: SUI_CLOCK_OBJECT_ID,
+                        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                        mutable: true,
+                    }];
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
@@ -914,6 +919,10 @@ impl TransactionKind {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
                 }]
             }
             Self::Genesis(_) => {
@@ -934,6 +943,10 @@ impl TransactionKind {
                 },InputObjectKind::SharedMoveObject {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }

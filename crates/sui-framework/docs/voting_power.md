@@ -21,8 +21,8 @@
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
 <b>use</b> <a href="">0x1::vector</a>;
-<b>use</b> <a href="">0x2::math</a>;
-<b>use</b> <a href="">0x2::vec_map</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="validator.md#0x3_validator">0x3::validator</a>;
 </code></pre>
 
@@ -185,7 +185,7 @@ Each validator's voting power is initialized using their stake. We then attempt 
 at <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a></code>. If <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a></code> is not a feasible cap, we pick the lowest possible cap.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="voting_power.md#0x3_voting_power_set_voting_power">set_voting_power</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_rate: <a href="_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="voting_power.md#0x3_voting_power_set_voting_power">set_voting_power</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;)
 </code></pre>
 
 
@@ -199,9 +199,9 @@ at <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_
     stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;) {
     // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
     // have 100%. So we bound the threshold_pct <b>to</b> be always enough <b>to</b> find a solution.
-    <b>let</b> threshold = <a href="_min">math::min</a>(
+    <b>let</b> threshold = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(
         <a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a>,
-        <a href="_max">math::max</a>(<a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a>, divide_and_round_up(<a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a>, <a href="_length">vector::length</a>(validators))),
+        <a href="../../../.././build/Sui/docs/math.md#0x2_math_max">math::max</a>(<a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_POWER</a>, divide_and_round_up(<a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a>, <a href="_length">vector::length</a>(validators))),
     );
     <b>let</b> (info_list, remaining_power) =
         <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators, threshold, stable_rate);
@@ -225,7 +225,7 @@ descending order using voting power.
 Anything beyond the threshold is added to the remaining_power, which is also returned.
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, threshold: u64, stable_rate: <a href="_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): (<a href="">vector</a>&lt;<a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">voting_power::VotingPowerInfoV2</a>&gt;, u64)
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, threshold: u64, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): (<a href="">vector</a>&lt;<a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">voting_power::VotingPowerInfoV2</a>&gt;, u64)
 </code></pre>
 
 
@@ -248,7 +248,7 @@ Anything beyond the threshold is added to the remaining_power, which is also ret
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow">vector::borrow</a>(validators, i);
         <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(<a href="validator.md#0x3_validator">validator</a>, stable_rate);
         <b>let</b> adjusted_stake = (stake <b>as</b> u128) * (<a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a> <b>as</b> u128) / (total_stake <b>as</b> u128);
-        <b>let</b> <a href="voting_power.md#0x3_voting_power">voting_power</a> = <a href="_min">math::min</a>((adjusted_stake <b>as</b> u64), threshold);
+        <b>let</b> <a href="voting_power.md#0x3_voting_power">voting_power</a> = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>((adjusted_stake <b>as</b> u64), threshold);
         <b>let</b> info = <a href="voting_power.md#0x3_voting_power_VotingPowerInfoV2">VotingPowerInfoV2</a> {
             validator_index: i,
             <a href="voting_power.md#0x3_voting_power">voting_power</a>,
@@ -273,7 +273,7 @@ Anything beyond the threshold is added to the remaining_power, which is also ret
 Sum up the total stake of all validators.
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_rate: <a href="_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_total_stake">total_stake</a>(validators: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
 </code></pre>
 
 
@@ -354,9 +354,9 @@ Distribute remaining_power to validators that are not capped at threshold.
         // planned is the amount of extra power we want <b>to</b> distribute <b>to</b> this <a href="validator.md#0x3_validator">validator</a>.
         <b>let</b> planned = divide_and_round_up(remaining_power, len - i);
         // target is the targeting power this <a href="validator.md#0x3_validator">validator</a> will reach, capped by threshold.
-        <b>let</b> target = <a href="_min">math::min</a>(threshold, v.<a href="voting_power.md#0x3_voting_power">voting_power</a> + planned);
+        <b>let</b> target = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(threshold, v.<a href="voting_power.md#0x3_voting_power">voting_power</a> + planned);
         // actual is the actual amount of power we will be distributing <b>to</b> this <a href="validator.md#0x3_validator">validator</a>.
-        <b>let</b> actual = <a href="_min">math::min</a>(remaining_power, target - v.<a href="voting_power.md#0x3_voting_power">voting_power</a>);
+        <b>let</b> actual = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(remaining_power, target - v.<a href="voting_power.md#0x3_voting_power">voting_power</a>);
         v.<a href="voting_power.md#0x3_voting_power">voting_power</a> = v.<a href="voting_power.md#0x3_voting_power">voting_power</a> + actual;
         <b>assert</b>!(v.<a href="voting_power.md#0x3_voting_power">voting_power</a> &lt;= threshold, <a href="voting_power.md#0x3_voting_power_EVotingPowerOverThreshold">EVotingPowerOverThreshold</a>);
         remaining_power = remaining_power - actual;
