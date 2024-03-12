@@ -3,7 +3,6 @@ module polynet::controller {
     use sui::clock::Clock;
     use sui::coin::{TreasuryCap, Coin, Self};
     use sui::bfc::BFC;
-    use polynet::events;
     use polynet::bfc_usdc;
     use polynet::config::{CrossChainGlobalConfig, Self};
     use polynet::wrapper_v1::{Self};
