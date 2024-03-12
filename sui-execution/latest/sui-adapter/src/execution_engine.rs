@@ -28,7 +28,7 @@ mod checked {
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
     use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-    use tracing::{info, instrument, trace, warn};
+    use tracing::{error, info, instrument, trace, warn};
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
@@ -200,7 +200,6 @@ mod checked {
                 .unwrap()
         } // else, in dev inspect mode and anything goes--don't check
 
-        //let (inner, effects) = temporary_store.to_effects(
         let (inner, effects) = temporary_store.into_effects(
             shared_object_refs,
             &transaction_digest,
@@ -676,7 +675,27 @@ mod checked {
         storage_rebate: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
+        let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
+        let mut arguments = vec![];
 
+        let args = vec![
+            CallArg::BFC_SYSTEM_MUT,
+            CallArg::Pure(bcs::to_bytes(&timestamp).unwrap()),
+        ] .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
+
+        arguments.append(&mut args.unwrap());
+
+        info!("Call arguments to bfc round transaction: {:?}", timestamp);
+
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            BFC_ROUND_FUNCTION_NAME.to_owned(),
+            vec![],
+            arguments,
+        );
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
 
@@ -786,7 +805,7 @@ mod checked {
     }
 
     fn advance_epoch(
-            change_epoch: ChangeEpoch,
+        change_epoch: ChangeEpoch,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
         move_vm: &Arc<MoveVM>,
@@ -813,7 +832,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt( params, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_bfc_round_pt(params, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -824,8 +843,9 @@ mod checked {
             advance_epoch_pt,
         );
 
+        error!("bfc round result: {:?}", result);
         if result.is_err() {
-            tracing::error!(
+            error!(
             "Failed to execute change round transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}. Tx data: {:?}",
             result.as_ref().err(),
             temporary_store.objects(),
@@ -856,6 +876,7 @@ mod checked {
             advance_epoch_pt,
         );
 
+        error!("advance_epoch result: {:?}", result);
         #[cfg(msim)]
         let result = maybe_modify_result(result, change_epoch.epoch);
 
@@ -982,28 +1003,6 @@ mod checked {
                 "Unable to generate consensus_commit_prologue transaction!"
             );
 
-            let bfc_state = temporary_store.get_bfc_state().inner_state();
-            if prologue.commit_timestamp_ms - bfc_state.round_timestamp_ms > bfc_state.round_duration_ms {
-                let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-                let mut arguments = vec![bfc_system];
-                let args = vec![
-                    CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
-                ].into_iter()
-                    .map(|a| builder.input(a))
-                    .collect::<Result<_, _>>();
-
-                arguments.append(&mut args.unwrap());
-
-                info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
-
-                builder.programmable_move_call(
-                    BFC_SYSTEM_PACKAGE_ID,
-                    BFC_SYSTEM_MODULE_NAME.to_owned(),
-                    BFC_ROUND_FUNCTION_NAME.to_owned(),
-                    vec![],
-                    arguments,
-                );
-            }
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(

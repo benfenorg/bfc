@@ -20,6 +20,7 @@ use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
 use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 
+use std::iter;
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
 use itertools::{Either, Itertools};
@@ -873,17 +874,11 @@ impl TransactionKind {
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
-                // Either::Left(Either::Right(iter::once(SharedInputObject {
-                //     id: SUI_CLOCK_OBJECT_ID,
-                //     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                //     mutable: true,
-                // })))
-                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
-                                SharedInputObject::BFC_SYSTEM_OBJ,SharedInputObject {
-                id: SUI_CLOCK_OBJECT_ID,
-                initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                mutable: true}];
-                Either::Left(Either::Right(objs.into_iter()))
+                Either::Left(Either::Right(iter::once(SharedInputObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                })))
             }
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
@@ -928,14 +923,6 @@ impl TransactionKind {
                 vec![InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
-                    id: SUI_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
                 }]
             }

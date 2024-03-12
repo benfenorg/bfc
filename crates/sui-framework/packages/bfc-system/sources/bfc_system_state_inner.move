@@ -155,11 +155,9 @@ module bfc_system::bfc_system_state_inner {
         round_timestamp_ms: u64,
         ctx: &mut TxContext,
     ) {
-        if (round_timestamp_ms - inner.round_timestamp_ms >= inner.round_duration_ms) {
-            inner.round_timestamp_ms = round_timestamp_ms;
-            rebalance(inner, round_timestamp_ms, ctx);
-            judge_proposal_state(inner, round_timestamp_ms);
-        };
+        inner.round_timestamp_ms = round_timestamp_ms;
+        rebalance(inner, round_timestamp_ms, ctx);
+        judge_proposal_state(inner, round_timestamp_ms);
     }
 
     fun init_vault_with_positions<StableCoinType>(

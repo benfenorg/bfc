@@ -469,11 +469,9 @@ Default stable base points
     round_timestamp_ms: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>if</b> (round_timestamp_ms - inner.round_timestamp_ms &gt;= inner.round_duration_ms) {
-        inner.round_timestamp_ms = round_timestamp_ms;
-        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">rebalance</a>(inner, round_timestamp_ms, ctx);
-        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(inner, round_timestamp_ms);
-    };
+    inner.round_timestamp_ms = round_timestamp_ms;
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">rebalance</a>(inner, round_timestamp_ms, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">judge_proposal_state</a>(inner, round_timestamp_ms);
 }
 </code></pre>
 
