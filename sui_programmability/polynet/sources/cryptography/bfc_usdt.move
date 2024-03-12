@@ -1,8 +1,6 @@
 module polynet::bfc_usdt {
     use std::option;
-    use polynet::utils;
-    //use std::string::{String};
-
+    use polynet::acl::{ Self};
     use sui::coin;
     use sui::transfer;
     use sui::tx_context;
@@ -28,7 +26,7 @@ module polynet::bfc_usdt {
     }
 
     public fun build_usdt<T:drop>(witness: T, decimals: u8, admin: address, ctx: &mut TxContext){
-        assert!(utils::is_admin(admin), EINVALID_ADMIN);
+        assert!(acl::is_admin(admin), EINVALID_ADMIN);
 
         let (cap, metadata) = coin::create_currency(
             witness,

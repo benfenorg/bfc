@@ -1,14 +1,11 @@
 module polynet::tools {
     use polynet::cross_chain_manager;
     use polynet::lock_proxy;
-    //use polynet::wrapper_v1;
-
     use std::vector;
     use polynet::controller::{update_lock_proxy_manager_start_time};
     use polynet::wrapper_v1::setFeeCollector;
     use polynet::config::{CrossChainGlobalConfig, borrow_mut_all};
     use sui::clock::Clock;
-    use polynet::utils;
     use polynet::config;
     use sui::tx_context;
     use sui::tx_context::TxContext;
@@ -24,21 +21,22 @@ module polynet::tools {
     ) {
         // sender address
         let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
-
+        config::check_admin_role(_config, sender);
 
         init_mainnet_ccm(_config,sender,_clock, _ctx);
         issue_license_to_lock_proxy(_config, _ctx);
     }
 
-    public entry fun init_mainnet_ccm(_global: &mut CrossChainGlobalConfig,
-                                      feeAddress: address,
-                                      _clock: &Clock,
-                                      _ctx: &mut TxContext) {
+    public entry fun init_mainnet_ccm(
+        _global: &mut CrossChainGlobalConfig,
+        _feeAddress: address,
+        _clock: &Clock,
+        _ctx: &mut TxContext
+    ) {
         // sender address
         let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
-        let (_lock_proxy, wrapper, cc_manager) = config::borrow_mut_all(_global);
+        config::check_admin_role(_global, sender);
+        let (_, wrapper, cc_manager) = config::borrow_mut_all(_global);
 
         let polyId: u64 = 41;
         let startHeight: u64 = 0;
@@ -49,22 +47,18 @@ module polynet::tools {
         vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
         cross_chain_manager::update_cross_chain_manager_config(cc_manager, keepers, startHeight, polyId, _ctx);
 
-        setFeeCollector(wrapper, feeAddress, _ctx);
-
+        setFeeCollector(wrapper, _feeAddress, _ctx);
+        // issue_license_to_lock_proxy(_global, _ctx);
         update_lock_proxy_manager_start_time(_global, _clock, _ctx);
 
     }
 
-    public entry fun issue_license_to_lock_proxy(
+    fun issue_license_to_lock_proxy(
         _config: &mut CrossChainGlobalConfig,
         _ctx: &mut TxContext
     ) {
-        // sender address
-        let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
-
-        let (lpManager,_, ccManager) = borrow_mut_all(_config);
-        let license = cross_chain_manager::issueLicense(ccManager, b"lock_proxy", _ctx);
+        let (lpManager,_, _) = borrow_mut_all(_config);
+        let license = cross_chain_manager::issue_license(b"lock_proxy", _ctx);
         lock_proxy::receiveLicense(lpManager,license);
     }
 
@@ -74,27 +68,25 @@ module polynet::tools {
         _clock: &Clock,
         _ctx: &mut TxContext
     ) {
-
         // sender address
         let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+        config::check_admin_role(_config, sender);
 
         init_testnet_ccm(_config,sender,_clock, _ctx);
         issue_license_to_lock_proxy(_config, _ctx);
     }
 
-
-
-    public entry fun init_testnet_ccm(_global: &mut CrossChainGlobalConfig,
-                                      feeAddress: address,
-                                        _clock: &Clock,
-                                      _ctx: &mut TxContext) {
+    public entry fun init_testnet_ccm(
+        _global: &mut CrossChainGlobalConfig,
+        _fee_address: address,
+        _clock: &Clock,
+        _ctx: &mut TxContext
+    ) {
         // sender address
         let sender = tx_context::sender(_ctx);
-        assert!(utils::is_admin(sender), EINVALID_ADMIN);
+        config::check_admin_role(_global, sender);
 
-        let (_lock_proxy, wrapper, cc_manager) = config::borrow_mut_all(_global);
-
+        let (_, wrapper, cc_manager) = config::borrow_mut_all(_global);
         let polyId: u64 = 998;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
@@ -104,10 +96,8 @@ module polynet::tools {
         vector::push_back(&mut keepers, x"4e552e00b6a7457d6b79298b449922de987561fe02d420398c862f1447e9231f39346373619d6dbdb830a00e0e0d35e0116c74129d0dfa5d8184c2eb5a6dcfbe");
         cross_chain_manager::update_cross_chain_manager_config(cc_manager,keepers, startHeight, polyId, _ctx);
 
-
-        setFeeCollector(wrapper, feeAddress, _ctx);
-
+        setFeeCollector(wrapper, _fee_address, _ctx);
         update_lock_proxy_manager_start_time(_global, _clock, _ctx);
-
+        // issue_license_to_lock_proxy(_global, _ctx);
     }
 }

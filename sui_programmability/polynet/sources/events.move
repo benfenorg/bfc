@@ -69,6 +69,26 @@ module polynet::events {
         sender: address
     }
 
+    struct BlacklistEvent has store, drop, copy {
+        license_id: vector<u8>,
+        access_level: u8, 
+        sender: address
+    }
+
+    public(friend) fun set_blacklist_event(
+        _license_id: vector<u8>,
+        _access_level: u8, 
+        _sender: address
+    ) {
+        emit (
+            BlacklistEvent{
+                license_id: _license_id,
+                access_level: _access_level,
+                sender: _sender
+            }
+        )
+    }
+
     // struct UpdateBookKeeperEvent has store, drop, copy {
     //     height: u64,
     //     sender: address,

@@ -27,6 +27,8 @@ module polynet::lock_proxy {
     use polynet::zero_copy_source;
     use polynet::utils;
     use polynet::events;
+    use polynet::acl::{ Self};
+
 
 
     friend polynet::wrapper_v1;
@@ -37,26 +39,21 @@ module polynet::lock_proxy {
     friend polynet::lock_proxy_test;
 
 
-    const DEPRECATED: u64 = 4001;
-    const ENOT_OWNER: u64 = 4002;
-    const ETREASURY_ALREADY_EXIST: u64 = 4003;
-    const ETREASURY_NOT_EXIST: u64 = 4004;
-    const ELICENSE_ALREADY_EXIST: u64 = 4005;
-    const ELICENSE_NOT_EXIST: u64 = 4006;
-    const ETARGET_PROXY_NOT_BIND: u64 = 4007;
-    const ETARGET_ASSET_NOT_BIND: u64 = 4008;
-    const EINVALID_COINTYPE: u64 = 4009;
-    const EINVALID_FROM_CONTRACT: u64 = 4010;
-    const EINVALID_TARGET_LICENSE_ID: u64 = 4011;
-    const EINVALID_METHOD: u64 = 4012;
-    const ELICENSE_STORE_ALREADY_EXIST: u64 = 4013;
-    const EINVALID_LICENSE_INFO: u64 = 4014;
-    const EINVALID_ADMIN_SIGNER: u64 = 4015;
-    const EINVALID_ASSETS_ADMIN_SIGNER: u64 = 4016;
-    const ELICENSE_STORE_NOT_EXIST: u64 = 4017;
-
-    const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 4018;
-    const ERR_CHECK_LP_MANAGER_PAUSED: u64 = 4019;
+    const ENOT_OWNER: u64 = 3001;
+    const ETREASURY_NOT_EXIST: u64 = 3002;
+    const ELICENSE_ALREADY_EXIST: u64 = 3003;
+    const ELICENSE_NOT_EXIST: u64 = 3004;
+    const ETARGET_PROXY_NOT_BIND: u64 = 3005;
+    const ETARGET_ASSET_NOT_BIND: u64 = 3006;
+    const EINVALID_COINTYPE: u64 = 3007;
+    const EINVALID_FROM_CONTRACT: u64 = 3008;
+    const EINVALID_TARGET_LICENSE_ID: u64 = 3009;
+    const EINVALID_METHOD: u64 = 3010;
+    const EINVALID_LICENSE_INFO: u64 = 3011;
+    const EINVALID_ASSETS_ADMIN_SIGNER: u64 = 3012;
+    const ELICENSE_STORE_NOT_EXIST: u64 = 3013;
+    const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 3014;
+    const ERR_CHECK_LP_MANAGER_PAUSED: u64 = 3015;
 
 
 
@@ -65,14 +62,12 @@ module polynet::lock_proxy {
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
     struct AmountLimitManager has  store {
-        // id: UID,
         time: u64,
         amount_record: VecMap<vector<u8>, u64>,
     }
 
 
     struct LockProxyManager has store{
-        // id: UID,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
         amountLockManager: AmountLimitManager,
@@ -80,11 +75,9 @@ module polynet::lock_proxy {
     }
 
     struct LockProxyStore has store{
-        // id: UID,
         proxy_map: Table<u64, vector<u8>>,
-        asset_map: Table<TypeName, Table<u64, vector<u8>>>,
-        paused: bool,
-        owner: address,
+        asset_map: Table<TypeName, Table<u64, vector<u8>>>
+      
     }
 
     struct Treasury<phantom CoinType> has key, store {
@@ -93,7 +86,6 @@ module polynet::lock_proxy {
     }
 
     struct LicenseStore has store {
-        // id: UID,
         license: Option<cross_chain_manager::License>
     }
 
@@ -124,27 +116,19 @@ module polynet::lock_proxy {
 
     public(friend) fun new(_ctx: &mut TxContext): LockProxyManager {
 
-        let sender = tx_context::sender(_ctx);
-
-        assert!(utils::is_admin(sender), EINVALID_ADMIN_SIGNER);
-
+        // let sender = tx_context::sender(_ctx);
         let lockproxystore = LockProxyStore{
-            // id: object::new(_ctx),
             proxy_map: table::new<u64, vector<u8>>(_ctx),
-            asset_map: table::new<TypeName, Table<u64, vector<u8>>>(_ctx),
-            paused: false,
-            owner: (sender),
+            asset_map: table::new<TypeName, Table<u64, vector<u8>>>(_ctx)
             };
 
         let licensestore = LicenseStore{
-            // id: object::new(_ctx),
             license: option::none<cross_chain_manager::License>(),
         };
 
         //very big time to void starting
         let start_time = 1809285669000;
         let amountLockManager = AmountLimitManager{
-            // id: object::new(_ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
@@ -154,7 +138,6 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let amountUnlockManager = AmountLimitManager{
-            // id: object::new(_ctx),
             time: start_time,
             amount_record: vec_map::empty()
         };
@@ -164,7 +147,6 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
         let manager = LockProxyManager{
-            // id: object::new(_ctx),
             lock_proxy_store: lockproxystore,
             license_store: licensestore,
             amountLockManager: amountLockManager,
@@ -215,49 +197,10 @@ module polynet::lock_proxy {
         }
     }
 
-    public fun paused(lpManager: &LockProxyManager): bool   {
-        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
-        return lpManager.lock_proxy_store.paused
-    }
-
-    public fun owner(lpManager: &LockProxyManager): address {
-        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
-        return lpManager.lock_proxy_store.owner
-    }
-
     public fun getBalance< CoinType>(treasury_ref: &Treasury<CoinType>): u64  {
         //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
         //let treasury_ref = borrow_global<Treasury<CoinType>>(POLY_BRIDGE);
         return coin::value(&treasury_ref.coin)
-    }
-
-
-    // owner function
-    public(friend) fun onlyOwner(lpManager: &LockProxyManager, owner: address) {
-        //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
-        assert!((owner) == lpManager.lock_proxy_store.owner, ENOT_OWNER);
-    }
-
-    public(friend) fun transferOwnerShip(
-        lpManager: &mut LockProxyManager, 
-        new_owner: address
-    ) {
-      
-        lpManager.lock_proxy_store.owner = new_owner;
-    }
-
-    public(friend) fun pause(lpManager: &mut LockProxyManager) {
-
-        lpManager.lock_proxy_store.paused = true;
-    }
-
-    public(friend) fun unpause(lpManager: &mut LockProxyManager) {
-        // assert!(paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
-        lpManager.lock_proxy_store.paused = false;
-    }
-
-    public(friend) fun check_paused(lpManager: &LockProxyManager) {
-         assert!(!paused(lpManager),ERR_CHECK_LP_MANAGER_PAUSED);
     }
 
     public(friend) fun bind_proxy(
@@ -378,20 +321,16 @@ module polynet::lock_proxy {
         //exists<Treasury<CoinType>>(POLY_BRIDGE)
     }
 
-    public fun is_admin(account: address): bool {
-        utils::is_admin(account)
-    }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
     }
 
-    //todo. need more strick root right checking. admin has too many accounts.
     //here we limit the withdraw using the assets list, the relayer address should be add to release token
     fun withdraw<CoinType>(treasury_ref:&mut Treasury<CoinType>, amount: u64 , ctx: &mut TxContext): Coin<CoinType> {
         // sender address: only assets admin can withdraw
         let sender = tx_context::sender(ctx);
-        assert!(utils::is_assets_admin(sender), EINVALID_ASSETS_ADMIN_SIGNER);
+        assert!(acl::is_assets_admin(sender), EINVALID_ASSETS_ADMIN_SIGNER);
 
         return coin::split(&mut treasury_ref.coin, amount, ctx)
     }
@@ -421,26 +360,26 @@ module polynet::lock_proxy {
         option::fill(&mut lpManager.license_store.license, license);
     }
 
-    public fun removeLicense(lpManager: &mut LockProxyManager, admin: address): cross_chain_manager::License {
-        assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
+    public fun removeLicense(_lp_manager: &mut LockProxyManager, _admin: address): cross_chain_manager::License {
+        // assert!(acl::is_admin(admin), EINVALID_ADMIN_SIGNER);
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
-        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
-        option::extract<cross_chain_manager::License>(&mut lpManager.license_store.license)
+        assert!(option::is_some<cross_chain_manager::License>(&_lp_manager.license_store.license), ELICENSE_NOT_EXIST);
+        option::extract<cross_chain_manager::License>(&mut _lp_manager.license_store.license)
     }
 
-    public  fun getLicenseId(lpManager: &LockProxyManager): (vector<u8>, LicenseInfo) {
+    public  fun get_license_id(lpManager: &LockProxyManager): (vector<u8>, LicenseInfo) {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        return cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license))
+        return cross_chain_manager::get_license_id(option::borrow(&lpManager.license_store.license))
     }
 
     public(friend) fun output_license_id(lpManager: &LockProxyManager) {
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
-        let (data, licenseInfo) = cross_chain_manager::getLicenseId(option::borrow(&lpManager.license_store.license));
+        let (data, licenseInfo) = cross_chain_manager::get_license_id(option::borrow(&lpManager.license_store.license));
         event::emit(
             LicenseIdEvent{
                 license_id: data,
@@ -575,7 +514,7 @@ module polynet::lock_proxy {
         assert!(*as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
 
         assert!(getTargetProxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
-        let (license_id, _) = getLicenseId(lpManager);
+        let (license_id, _) = get_license_id(lpManager);
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 

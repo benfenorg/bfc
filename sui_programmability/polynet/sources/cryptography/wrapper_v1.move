@@ -11,23 +11,13 @@ module polynet::wrapper_v1 {
     use sui::tx_context;
     use sui::tx_context::TxContext;
 
-    // friend polynet::cross_chain_manager;
     friend polynet::controller ;
     friend polynet::config;
     friend polynet::tools;
+
     #[test_only]
     friend polynet::wrapper_v1_test;
-    #[test_only]
-    friend polynet::tools_test;
-    #[test_only]
-    friend polynet::lock_proxy_test;
-
-
-    const DEPRECATED: u64 = 4001;
-    const EINVALID_ADMIN: u64 = 4015;
-    const EINVALID_SYSTEM_IS_PAUSED: u64 = 4019;
-
-
+   
 
     const DECIMALS: u8 = 8;
     const MAX_AMOUNT: u64 = 100*0000*100000000; //1 million.

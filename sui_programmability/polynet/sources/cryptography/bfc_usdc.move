@@ -1,19 +1,17 @@
 module polynet::bfc_usdc {
     use std::option;
-    use polynet::utils;
-    //use std::string::{String};
-
-    use sui::coin;
+    use polynet::acl::{ Self};
+    use sui::coin::{TreasuryCap, Self, Coin};
     use sui::transfer;
     use sui::tx_context;
     use sui::tx_context::TxContext;
-
     use polynet::lock_proxy;
+
+    friend polynet::controller ;
 
 
     // Errors
     const EINVALID_ADMIN: u64 = 4001;
-
 
     const HUGE_U64: u64 = 10000000000000000000;
 
@@ -28,7 +26,7 @@ module polynet::bfc_usdc {
     }
 
     public fun build_usdc<T:drop>(witness: T, decimals: u8, admin: address, ctx: &mut TxContext){
-        assert!(utils::is_admin(admin), EINVALID_ADMIN);
+        assert!(acl::is_admin(admin), EINVALID_ADMIN);
 
         let (cap, metadata) = coin::create_currency(
             witness,
@@ -54,6 +52,12 @@ module polynet::bfc_usdc {
 
     }
 
-
+    public(friend) fun mint_treasury<T>(
+       _cap: &mut TreasuryCap<T>,
+       _amount: u64,
+       _ctx: &mut TxContext
+    ):  Coin<T>{
+      coin::mint<T>(_cap, _amount, _ctx)
+    }
 
 }
