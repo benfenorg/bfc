@@ -52,7 +52,7 @@ module polynet::utils {
     }
 
     public fun upsert<K: copy + drop + store, V:  drop + store>(tb: &mut Table<K, V>, k: K, v: V) {
-        if (table::contains(tb, k)) {  //TODO: if return true maybe somewhere go wrong need to deal with
+        if (table::contains(tb, k)) {  //if return true just update
             table::remove(tb, k);
         };
         table::add(tb, k, v);

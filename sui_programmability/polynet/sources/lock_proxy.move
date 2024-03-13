@@ -8,7 +8,8 @@ module polynet::lock_proxy {
     use std::string::length;
     use sui::event;
     use sui::math;
-    use sui::table::{Table, Self};
+    use sui::table::{Self, Table};
+    use polynet::linked_table::{Self, LinkedTable};
     use std::type_name::{Self, TypeName};
     use sui::address;
     use sui::clock;
@@ -76,7 +77,7 @@ module polynet::lock_proxy {
 
     struct LockProxyStore has store{
         proxy_map: Table<u64, vector<u8>>,
-        asset_map: Table<TypeName, Table<u64, vector<u8>>>
+        asset_map: LinkedTable<TypeName, LinkedTable<u64, vector<u8>>>
       
     }
 
@@ -119,7 +120,7 @@ module polynet::lock_proxy {
         // let sender = tx_context::sender(_ctx);
         let lockproxystore = LockProxyStore{
             proxy_map: table::new<u64, vector<u8>>(_ctx),
-            asset_map: table::new<TypeName, Table<u64, vector<u8>>>(_ctx)
+            asset_map: linked_table::new<TypeName, LinkedTable<u64, vector<u8>>>(_ctx)
             };
 
         let licensestore = LicenseStore{
@@ -182,10 +183,10 @@ module polynet::lock_proxy {
     public fun getToAsset<CoinType>(lpManager: &LockProxyManager,  to_chain_id: u64): (vector<u8>, u8) {
         //let config_ref = borrow_global<LockProxyStore>(POLY_BRIDGE);
         let from_asset = type_name::get<Coin<CoinType>>();
-        if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
-            let sub_table = table::borrow(&lpManager.lock_proxy_store.asset_map, from_asset);
-            if (table::contains(sub_table, to_chain_id)) {
-                let decimals_concat_to_asset = table::borrow(sub_table, to_chain_id);
+        if (linked_table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
+            let sub_table = linked_table::borrow(&lpManager.lock_proxy_store.asset_map, from_asset);
+            if (linked_table::contains(sub_table, to_chain_id)) {
+                let decimals_concat_to_asset = linked_table::borrow(sub_table, to_chain_id);
                 let decimals = *vector::borrow(decimals_concat_to_asset, 0);
                 let to_asset = utils::slice(decimals_concat_to_asset, 1, vector::length(decimals_concat_to_asset) - 1);
                 return (to_asset, decimals)
@@ -252,12 +253,21 @@ module polynet::lock_proxy {
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         let decimals_concat_to_asset = vector::singleton(to_asset_decimals);
         vector::append(&mut decimals_concat_to_asset, to_asset_hash);
-        if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
-            utils::upsert(table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset), to_chain_id, decimals_concat_to_asset);
+        if (linked_table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
+            let subTable = linked_table::new<u64, vector<u8>>(ctx);
+            linked_table::push_back(&mut subTable, to_chain_id, decimals_concat_to_asset);
+            // table::add(&mut lpManager.lock_proxy_store.asset_map, from_asset, subTable);
+            // utils::upsert(table::borrow_mut(table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset), to_chain_id), decimals_concat_to_asset);
+            // let outer = table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset);
+            // let inter = table::borrow_mut(outer, to_chain_id);
+            // utils::upsert(&mut inter, to_chain_id, &mut subTable);
+            let old = linked_table::remove(&mut lpManager.lock_proxy_store.asset_map, from_asset);
+            linked_table::drop(old);
+            linked_table::push_back(&mut lpManager.lock_proxy_store.asset_map, from_asset, subTable);
         } else {
-            let subTable = table::new<u64, vector<u8>>(ctx);
-            table::add(&mut subTable, to_chain_id, decimals_concat_to_asset);
-            table::add(&mut lpManager.lock_proxy_store.asset_map, from_asset, subTable);
+            let subTable = linked_table::new<u64, vector<u8>>(ctx);
+            linked_table::push_back(&mut subTable, to_chain_id, decimals_concat_to_asset);
+            linked_table::push_back(&mut lpManager.lock_proxy_store.asset_map, from_asset, subTable);
         };
 
         event::emit(
@@ -277,10 +287,11 @@ module polynet::lock_proxy {
      
         let from_asset = type_name::get<Coin<CoinType>>();
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
-        if (table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
-            let sub_table = table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset);
-            if (table::contains(sub_table, to_chain_id)) {
-                table::remove(sub_table, to_chain_id);
+        if (linked_table::contains(&lpManager.lock_proxy_store.asset_map, from_asset)) {
+            let sub_table = linked_table::borrow_mut(&mut lpManager.lock_proxy_store.asset_map, from_asset);
+            if (linked_table::contains(sub_table, to_chain_id)) {
+                linked_table::remove(sub_table, to_chain_id);
+                // linked_table::drop(old);
             } else {
                 abort ETARGET_ASSET_NOT_BIND
             };
