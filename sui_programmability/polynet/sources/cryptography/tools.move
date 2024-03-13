@@ -17,6 +17,7 @@ module polynet::tools {
     public  fun init_as_mainnet(
         _config: &mut CrossChainGlobalConfig,
         _clock: &Clock,
+        _contract: address,
         _ctx: &mut TxContext
     ) {
         // sender address
@@ -24,7 +25,7 @@ module polynet::tools {
         config::check_admin_role(_config, sender);
 
         init_mainnet_ccm(_config,sender,_clock, _ctx);
-        issue_license_to_lock_proxy(_config, _ctx);
+        issue_license_to_lock_proxy(_config, _contract);
     }
 
     public entry fun init_mainnet_ccm(
@@ -55,10 +56,10 @@ module polynet::tools {
 
     fun issue_license_to_lock_proxy(
         _config: &mut CrossChainGlobalConfig,
-        _ctx: &mut TxContext
+        _contract: address
     ) {
         let (lpManager,_, _) = borrow_mut_all(_config);
-        let license = cross_chain_manager::issue_license(b"lock_proxy", _ctx);
+        let license = cross_chain_manager::issue_license(b"lock_proxy", _contract);
         lock_proxy::receiveLicense(lpManager,license);
     }
 
@@ -66,6 +67,7 @@ module polynet::tools {
     public  fun init_as_testnet(
         _config: &mut CrossChainGlobalConfig,
         _clock: &Clock,
+        _contract: address,
         _ctx: &mut TxContext
     ) {
         // sender address
@@ -73,7 +75,7 @@ module polynet::tools {
         config::check_admin_role(_config, sender);
 
         init_testnet_ccm(_config,sender,_clock, _ctx);
-        issue_license_to_lock_proxy(_config, _ctx);
+        issue_license_to_lock_proxy(_config, _contract);
     }
 
     public entry fun init_testnet_ccm(

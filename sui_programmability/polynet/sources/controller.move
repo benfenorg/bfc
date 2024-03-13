@@ -362,13 +362,14 @@ module polynet::controller {
 
      public entry fun issue_license_to_lock_proxy(
         _global: &mut CrossChainGlobalConfig, 
+        _contract: address,
         _ctx: &mut TxContext
     ) {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
         config::check_ca_role(_global,sender);
-        let license = cross_chain_manager::issue_license( b"lock_proxy", _ctx);
+        let license = cross_chain_manager::issue_license( b"lock_proxy", _contract);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::receiveLicense(lp_manager,license);
     }

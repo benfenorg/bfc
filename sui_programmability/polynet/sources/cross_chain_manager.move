@@ -65,12 +65,12 @@ module polynet::cross_chain_manager {
     //TODO: make sure account is token contract address 
     public(friend) fun issue_license(
         _module_name: vector<u8>,
-        _ctx: &mut TxContext 
+        _contract: address 
     ): License {
 
-        let sender = tx_context::sender(_ctx);
+        // let sender = tx_context::sender(_ctx);
         License{
-            account: sender,
+            account: _contract,
             module_name: _module_name,
         }
     }
@@ -299,8 +299,8 @@ module polynet::cross_chain_manager {
         assert!(to_chain_id == poly_id, ENOT_TARGET_CHAIN);
 
         // check verifier
-        // let (license_id, _) = get_license_id(license);
-        // assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
+        let (license_id, _) = get_license_id(license);
+        assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 
         // check black list
         assert!(!isBlackListedTo(ccManager, to_contract), EBLACKLISTED_TO);
