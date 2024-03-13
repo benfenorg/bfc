@@ -10,7 +10,6 @@ use futures::future::join_all;
 use futures::FutureExt;
 use itertools::Itertools;
 use jsonrpsee::http_client::HttpClient;
-use move_core_types::parser::parse_struct_tag;
 use move_core_types::{account_address::AccountAddress, ident_str};
 use tokio::sync::{
     mpsc::{self, Receiver, Sender},
@@ -1258,9 +1257,8 @@ where
             &self.config.mining_nft_event_package,
             &events,
         )?;
-        // Some operations like listing on marketplace will also change the miner object.
         // So we should avoid to extract transfer nfts if there're operations in the txn.
-        if operations.len() == 0 {
+        if operations.len() == 0 && extracted_nfts.len() == 0 {
             let transfered_nfts = object_changes
                 .iter()
                 .flat_map(|x| x.changed_objects.iter())
@@ -1276,12 +1274,6 @@ where
             let display = benfen::get_nft_display(self.http_client.clone(), object_id).await?;
             mining_nft.miner_name = display.name.clone();
             mining_nft.miner_url = display.image_url.clone();
-            let coin = if let Some(market_order_coin) = &mining_nft.market_order_coin {
-                Some(parse_struct_tag(&format!("0x{}", market_order_coin))?.to_string())
-            } else {
-                None
-            };
-            mining_nft.market_order_coin = coin;
             self.state
                 .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft))
                 .await?;

@@ -1,8 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::str::FromStr;
-
 use async_trait::async_trait;
 use chrono::Utc;
 use jsonrpsee::core::RpcResult;
@@ -16,12 +14,12 @@ use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
     MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage,
-    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter,
-    SuiMiningNFTProfitRate, SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery,
-    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
+    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTProfitRate, SuiObjectDataFilter, SuiObjectResponse,
+    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
+    SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
-use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_types::base_types::SuiAddress;
 use sui_types::sui_serde::BigInt;
 
 use crate::errors::IndexerError;
@@ -229,13 +227,6 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
                 })
                 .collect();
         }
-        let event_package = ObjectID::from_address(
-            SuiAddress::from_str(&self.config.mining_nft_event_package)?.into(),
-        );
-        staking.recent_prices = self
-            .state
-            .get_mining_nft_recent_prices(event_package, 7)
-            .await?;
         Ok(staking)
     }
 
@@ -259,9 +250,18 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         &self,
         address: SuiAddress,
     ) -> RpcResult<SuiOwnedMiningNFTOverview> {
-        let mut r = self.state.get_mining_nft_overview(address).await?;
+        let (mut r, ticket_ids) = self.state.get_mining_nft_overview(address).await?;
         let bfc_now_price = benfen::get_bfc_price_in_usd(self.fullnode.clone()).await?;
         r.bfc_usd_price = bfc_now_price;
+        for ticket_id in ticket_ids.iter() {
+            r.total_reward += benfen::get_mining_nft_pending_reward(
+                self.fullnode.clone(),
+                &self.config.mining_nft_contract,
+                &self.config.mining_nft_global,
+                &ticket_id,
+            )
+            .await?;
+        }
 
         Ok(r)
     }
@@ -276,22 +276,6 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
             .get_owned_mining_nft_profits(address, limit)
             .await?;
         Ok(r)
-    }
-
-    async fn get_mining_nft_marketplace_orders(
-        &self,
-        page: Option<usize>,
-        limit: Option<usize>,
-        filter: Option<SuiMiningNFTOrderFilter>,
-    ) -> RpcResult<ClassicPage<SuiMiningNFTMarketplaceOrder>> {
-        let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
-        let page = page.map(|x| if x <= 0 { 1 } else { x }).unwrap_or(1);
-
-        let marketplace_orders = self
-            .state
-            .get_mining_nft_marketplace_orders(page, limit, filter)
-            .await?;
-        Ok(marketplace_orders)
     }
 }
 

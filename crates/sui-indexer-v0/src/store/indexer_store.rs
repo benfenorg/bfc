@@ -8,9 +8,9 @@ use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
     Checkpoint as RpcCheckpoint, CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo,
     EventFilter, EventPage, MoveCallMetrics, NetworkMetrics, NetworkOverview, SuiDaoProposal,
-    SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter, SuiMiningNFTPrice,
-    SuiObjectData, SuiObjectDataFilter, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
-    SuiOwnedMiningNFTProfit, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
+    SuiMiningNFT, SuiObjectData, SuiObjectDataFilter, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiTransactionBlockResponse,
+    SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::CheckpointDigest;
@@ -334,17 +334,10 @@ pub trait IndexerStore {
         filter: Option<SuiOwnedMiningNFTFilter>,
     ) -> Result<ClassicPage<SuiMiningNFT>, IndexerError>;
 
-    async fn get_mining_nft_marketplace_orders(
-        &self,
-        page: usize,
-        limit: usize,
-        filter: Option<SuiMiningNFTOrderFilter>,
-    ) -> Result<ClassicPage<SuiMiningNFTMarketplaceOrder>, IndexerError>;
-
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<SuiOwnedMiningNFTOverview, IndexerError>;
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError>;
 
     async fn get_unsettle_mining_nfts(
         &self,
@@ -367,12 +360,6 @@ pub trait IndexerStore {
         address: SuiAddress,
         limit: usize,
     ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError>;
-
-    async fn get_mining_nft_recent_prices(
-        &self,
-        event_package: ObjectID,
-        limit: usize,
-    ) -> Result<Vec<SuiMiningNFTPrice>, IndexerError>;
 }
 
 #[derive(Clone, Debug)]

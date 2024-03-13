@@ -408,11 +408,8 @@ diesel::table! {
         total_mint_bfc -> Int8,
         yesterday_mint_bfc -> Int8,
         yesterday_dt_ms -> Int8,
-        market_order_id -> Nullable<Varchar>,
-        market_order_price -> Nullable<Int8>,
-        market_order_coin -> Nullable<Varchar>,
-        market_order_dealed -> Bool,
-        market_order_updated_at -> Int8,
+        miner_redeem -> Bool,
+        transfered_at -> Int8,
     }
 }
 

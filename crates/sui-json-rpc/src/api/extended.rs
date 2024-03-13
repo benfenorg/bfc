@@ -7,9 +7,8 @@ use jsonrpsee::proc_macros::rpc;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
     MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, QueryObjectsPage,
-    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter,
-    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
-    SuiOwnedMiningNFTProfit,
+    SuiDaoProposal, SuiMiningNFT, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc_macros::open_rpc;
 use sui_types::{base_types::SuiAddress, sui_serde::BigInt};
@@ -104,14 +103,4 @@ pub trait ExtendedApi {
         address: SuiAddress,
         limit: usize,
     ) -> RpcResult<Vec<SuiOwnedMiningNFTProfit>>;
-
-    #[method(name = "getMiningNFTMarketplaceOrders")]
-    async fn get_mining_nft_marketplace_orders(
-        &self,
-        /// optional current page
-        page: Option<usize>,
-        /// maximum number of items per page
-        limit: Option<usize>,
-        filter: Option<SuiMiningNFTOrderFilter>,
-    ) -> RpcResult<ClassicPage<SuiMiningNFTMarketplaceOrder>>;
 }

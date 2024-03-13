@@ -27,17 +27,12 @@ CREATE TABLE mining_nfts
   total_mint_bfc            BIGINT        NOT NULL,
   yesterday_mint_bfc        BIGINT        NOT NULL,
   yesterday_dt_ms           BIGINT        NOT NULL,
-  market_order_id           address       NULL,
-  market_order_price        BIGINT        NULL,
-  market_order_coin         VARCHAR       NULL,
-  market_order_dealed       BOOLEAN       NOT NULL,
-  market_order_updated_at   BIGINT        NOT NULL
+  miner_redeem              BOOLEAN       NOT NULL,
+  transfered_at             BIGINT        NOT NULL
 );
 CREATE UNIQUE INDEX mining_nfts_owner_miner_id_uniq ON mining_nfts (owner, miner_id);
-CREATE INDEX mining_nfts_market_order_id_index ON mining_nfts (market_order_id);
 CREATE INDEX mining_nfts_yesterday_dt_ms ON mining_nfts (yesterday_dt_ms);
-CREATE INDEX mining_nfts_market_order_updated_at ON mining_nfts (market_order_updated_at);
-CREATE INDEX mining_nfts_market_order_price ON mining_nfts (market_order_price);
+CREATE INDEX mining_nfts_transfered_at ON mining_nfts (transfered_at);
 
 
 CREATE TABLE mining_nft_staking

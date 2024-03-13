@@ -8,7 +8,6 @@ use std::sync::Arc;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use cached::proc_macro::once;
-use chrono::Utc;
 use diesel::dsl::{count, max};
 use diesel::pg::PgConnection;
 use diesel::sql_types::{BigInt, VarChar};
@@ -22,15 +21,13 @@ use itertools::Itertools;
 use move_bytecode_utils::module_cache::SyncModuleCache;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
-use move_core_types::parser::parse_struct_tag;
 use prometheus::{Histogram, IntCounter};
 use tracing::info;
 
 use sui_json_rpc_types::{
     CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo, EventFilter, EventPage,
     MoveCallMetrics, MoveFunctionName, NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiEvent,
-    SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter, SuiMiningNFTPrice,
-    SuiObjectDataFilter, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
+    SuiMiningNFT, SuiObjectDataFilter, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
     SuiOwnedMiningNFTProfit,
 };
 use sui_json_rpc_types::{
@@ -58,9 +55,7 @@ use crate::models::dao_proposals::Proposal;
 use crate::models::dao_votes::Vote;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::events::Event;
-use crate::models::mining_nft::{
-    MiningNFT, MiningNFTHistoryProfit, MiningNFTStaking, SetPriceEvent,
-};
+use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTStaking};
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
 use crate::models::network_segment_metrics::NetworkSegmentMetrics;
@@ -129,39 +124,21 @@ macro_rules! mining_nfts_query {
                     }
                     sui_json_rpc_types::SuiMiningNFTStatus::Idle => query
                         .filter(crate::schema::mining_nfts::mining_started_at.eq(0))
-                        .filter(crate::schema::mining_nfts::market_order_id.is_null())
-                        .filter(crate::schema::mining_nfts::market_order_dealed.eq(false)),
-                    sui_json_rpc_types::SuiMiningNFTStatus::Selling => query
-                        .filter(crate::schema::mining_nfts::market_order_id.is_not_null())
-                        .filter(crate::schema::mining_nfts::market_order_dealed.eq(false)),
-                    sui_json_rpc_types::SuiMiningNFTStatus::Sold => query
-                        .filter(crate::schema::mining_nfts::market_order_id.is_not_null())
-                        .filter(crate::schema::mining_nfts::market_order_dealed.eq(true)),
+                        .filter(crate::schema::mining_nfts::miner_redeem.eq(false)),
+                    sui_json_rpc_types::SuiMiningNFTStatus::Redeem => {
+                        query.filter(crate::schema::mining_nfts::miner_redeem.eq(true))
+                    }
                 },
             };
         }
-        query.filter(
-            crate::schema::mining_nfts::owner.eq(
-                move_core_types::account_address::AccountAddress::new($address.to_inner())
-                    .to_hex_literal(),
-            ),
-        )
-    }};
-}
-
-macro_rules! mining_nft_market_orders_query {
-    ($filter: ident) => {{
-        let mut query = mining_nfts::dsl::mining_nfts.into_boxed();
-        if let Some(filter) = &$filter {
-            query = match filter {
-                SuiMiningNFTOrderFilter::Coin(s) => {
-                    query.filter(mining_nfts::market_order_coin.eq(s.to_string()))
-                }
-            };
-        }
         query
-            .filter(mining_nfts::market_order_id.is_not_null())
-            .filter(mining_nfts::market_order_dealed.eq(false))
+            .filter(
+                crate::schema::mining_nfts::owner.eq(
+                    move_core_types::account_address::AccountAddress::new($address.to_inner())
+                        .to_hex_literal(),
+                ),
+            )
+            .filter(crate::schema::mining_nfts::transfered_at.eq(0))
     }};
 }
 
@@ -1348,38 +1325,17 @@ impl PgIndexerStore {
         match operation {
             MiningNFTOperation::Creation(mining_nft) => {
                 transactional_blocking!(&self.blocking_cp, |conn| {
-                    if let Some(order_id) = &mining_nft.market_order_id {
-                        diesel::update(mining_nfts::table)
-                            .filter(mining_nfts::dsl::market_order_id.eq(order_id))
-                            .set((
-                                mining_nfts::dsl::market_order_dealed.eq(true),
-                                mining_nfts::dsl::market_order_updated_at
-                                    .eq(Utc::now().timestamp_millis()),
-                            ))
-                            .execute(conn)?;
-                    }
-
                     // Update the Idle mining NFT to Sold as it may transfered to this wallet.
                     if mining_nft.power == 0 {
                         diesel::update(mining_nfts::table)
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
                             .filter(crate::schema::mining_nfts::mining_started_at.eq(0))
-                            .filter(crate::schema::mining_nfts::market_order_id.is_null())
-                            .filter(crate::schema::mining_nfts::market_order_dealed.eq(false))
-                            .set((
-                                mining_nfts::dsl::market_order_id
-                                    .eq(AccountAddress::ZERO.to_hex_literal()),
-                                mining_nfts::dsl::market_order_dealed.eq(true),
-                                mining_nfts::dsl::market_order_updated_at
-                                    .eq(Utc::now().timestamp_millis()),
-                            ))
+                            .set((mining_nfts::dsl::transfered_at.eq(mining_nft.earliest_held_at),))
                             .execute(conn)?;
                     }
 
-                    // Empty the market order from the new mining NFT.
                     let mut mining_nft = mining_nft.clone();
-                    mining_nft.market_order_id = None;
-                    mining_nft.market_order_dealed = false;
+                    // Copy power and token_id
                     if mining_nft.power == 0 {
                         let prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
@@ -1391,71 +1347,12 @@ impl PgIndexerStore {
                         .values(vec![mining_nft.clone()])
                         .on_conflict((mining_nfts::dsl::owner, mining_nfts::dsl::miner_id))
                         .do_update()
-                        .set((
-                            mining_nfts::dsl::market_order_dealed
-                                .eq(mining_nft.market_order_dealed),
-                            mining_nfts::dsl::market_order_id.eq(mining_nft.market_order_id),
-                        ))
+                        .set((mining_nfts::dsl::miner_redeem.eq(mining_nft.miner_redeem),))
                         .execute(conn)
                 })
                 .context("Failed to write mining NFTs to PostgresDB")?;
             }
             MiningNFTOperation::Operation(op) => match op {
-                crate::models::mining_nft::MiningNFTOperation::MarketListed(l) => {
-                    let market_order_coin = parse_struct_tag(&format!("0x{}", &l.coin_name))?;
-                    transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
-                            .filter(mining_nfts::dsl::miner_id.eq(l.nft.id.bytes.to_hex_literal()))
-                            .filter(mining_nfts::dsl::owner.eq(l.user.to_hex_literal()))
-                            .set((
-                                mining_nfts::dsl::market_order_id
-                                    .eq(l.order_id.bytes.to_hex_literal()),
-                                mining_nfts::dsl::market_order_updated_at
-                                    .eq(Utc::now().timestamp_millis()),
-                                mining_nfts::dsl::market_order_coin
-                                    .eq(market_order_coin.to_string()),
-                                mining_nfts::dsl::market_order_price.eq(l.price as i64),
-                            ))
-                            .execute(conn)
-                    })
-                    .context("Failed to update mining NFTs by listing on marketplace")?;
-                }
-                crate::models::mining_nft::MiningNFTOperation::MarketEdited(v) => {
-                    let market_order_coin = parse_struct_tag(&format!("0x{}", &v.new_coin_name))?;
-                    transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
-                            .filter(
-                                mining_nfts::dsl::market_order_id
-                                    .eq(v.order_id.bytes.to_hex_literal()),
-                            )
-                            .set((
-                                mining_nfts::dsl::market_order_price.eq(v.new_price as i64),
-                                mining_nfts::dsl::market_order_coin
-                                    .eq(market_order_coin.to_string()),
-                                mining_nfts::dsl::market_order_updated_at
-                                    .eq(Utc::now().timestamp_millis()),
-                            ))
-                            .execute(conn)
-                    })
-                    .context("Failed to deal peer order by dealing on marketplace.")?;
-                }
-                crate::models::mining_nft::MiningNFTOperation::MarketCancled(c) => {
-                    let null: Option<String> = None;
-                    transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
-                            .filter(
-                                mining_nfts::dsl::market_order_id
-                                    .eq(c.order_id.bytes.to_hex_literal()),
-                            )
-                            .set((
-                                mining_nfts::dsl::market_order_id.eq(null),
-                                mining_nfts::dsl::market_order_updated_at
-                                    .eq(Utc::now().timestamp_millis()),
-                            ))
-                            .execute(conn)
-                    })
-                    .context("Failed to cancel mining NFTs by cancelling on marketplace.")?;
-                }
                 crate::models::mining_nft::MiningNFTOperation::StakingStake(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
                         diesel::update(mining_nfts::table)
@@ -1577,6 +1474,16 @@ impl PgIndexerStore {
                     })
                     .context("Failed to handle unstaking event.")?;
                 }
+                crate::models::mining_nft::MiningNFTOperation::BurnNFT(v) => {
+                    transactional_blocking!(&self.blocking_cp, |conn| {
+                        diesel::update(mining_nfts::table)
+                            .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
+                            .filter(mining_nfts::dsl::transfered_at.eq(0))
+                            .set(mining_nfts::dsl::miner_redeem.eq(true))
+                            .execute(conn)
+                    })
+                    .context("Failed to handle burn NFT event.")?;
+                }
             },
         };
         Ok(())
@@ -1618,7 +1525,7 @@ impl PgIndexerStore {
     fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<SuiOwnedMiningNFTOverview, IndexerError> {
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError> {
         let mining_nfts: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
             mining_nfts::dsl::mining_nfts
                 .filter(
@@ -1637,14 +1544,21 @@ impl PgIndexerStore {
                 }
             })
             .collect();
-        Ok(SuiOwnedMiningNFTOverview {
-            total_power: stakings.iter().map(|x| x.power as u64).sum(),
-            num_of_staking_nfts: stakings.len(),
-            total_nfts: mining_nfts.len(),
-            total_reward: mining_nfts.iter().map(|x| x.total_mint_bfc as u64).sum(),
-            bfc_usd_price: 0f64,
-            yesterady_reward: stakings.iter().map(|x| x.yesterday_mint_bfc as u64).sum(),
-        })
+        let ticket_ids: Vec<String> = stakings
+            .iter()
+            .map(|x| x.mining_ticket_id.clone().unwrap_or_default())
+            .collect();
+        Ok((
+            SuiOwnedMiningNFTOverview {
+                total_power: stakings.iter().map(|x| x.power as u64).sum(),
+                num_of_staking_nfts: stakings.len(),
+                total_nfts: mining_nfts.iter().filter(|x| !x.miner_redeem).count(),
+                total_reward: mining_nfts.iter().map(|x| x.total_mint_bfc as u64).sum(),
+                bfc_usd_price: 0f64,
+                yesterady_reward: stakings.iter().map(|x| x.yesterday_mint_bfc as u64).sum(),
+            },
+            ticket_ids,
+        ))
     }
 
     fn get_unsettle_mining_nfts(
@@ -1690,8 +1604,6 @@ impl PgIndexerStore {
                     .set((
                         mining_nfts::dsl::yesterday_dt_ms.eq(profit.dt_timestamp_ms),
                         mining_nfts::dsl::yesterday_mint_bfc.eq(profit.mint_bfc),
-                        mining_nfts::dsl::total_mint_bfc
-                            .eq(mining_nfts::dsl::total_mint_bfc + profit.mint_bfc),
                     ))
                     .execute(conn)?;
             }
@@ -1759,34 +1671,6 @@ impl PgIndexerStore {
             .collect())
     }
 
-    fn get_mining_nft_recent_prices(
-        &self,
-        event_package: ObjectID,
-        limit: usize,
-    ) -> Result<Vec<SuiMiningNFTPrice>, IndexerError> {
-        let event_type = format!("{}::event::SetPriceEvent", event_package.to_hex_literal());
-        let events: Vec<Event> = read_only_blocking!(&self.blocking_cp, |conn| {
-            events::table
-                .filter(events::dsl::event_type.eq(event_type))
-                .order_by(events::dsl::id.desc())
-                .limit(limit as i64)
-                .load(conn)
-        })
-        .context("Failed to load SetPriceEvent from PostgresDB")?;
-        let mut results = vec![];
-        for raw in events.iter() {
-            let ev = bcs::from_bytes::<SetPriceEvent>(&raw.event_bcs)?;
-            results.push(SuiMiningNFTPrice {
-                price: ev.new_price,
-                timestamp_ms: ev.timestamp * 1_000,
-            });
-        }
-        Ok(results
-            .into_iter()
-            .sorted_by(|a, b| a.timestamp_ms.cmp(&b.timestamp_ms))
-            .collect())
-    }
-
     fn persist_fast_path(
         &self,
         tx: Transaction,
@@ -1814,42 +1698,6 @@ impl PgIndexerStore {
                 None,
                 None,
             )
-        })
-    }
-
-    fn get_mining_nft_marketplace_orders(
-        &self,
-        page: usize,
-        limit: usize,
-        filter: Option<SuiMiningNFTOrderFilter>,
-    ) -> Result<ClassicPage<SuiMiningNFTMarketplaceOrder>, IndexerError> {
-        let (count, records) = read_only_blocking!(&self.blocking_cp, |conn| {
-            let query = mining_nft_market_orders_query!(filter);
-            let count: i64 = query.count().get_result(conn)?;
-            let count = count as usize;
-
-            let mut query = mining_nft_market_orders_query!(filter);
-            if page > 1 {
-                query = query.offset(((page - 1) * limit) as i64);
-            }
-
-            query = query
-                .order_by(mining_nfts::market_order_price.asc())
-                .limit(limit as i64);
-            let records: Vec<MiningNFT> = query.load(conn)?;
-            Ok::<(usize, Vec<MiningNFT>), IndexerError>((count, records))
-        })
-        .context("Failed to query NFT marketplace orders.")?;
-        let total_page = count / limit + if count % limit == 0 { 0 } else { 1 };
-        Ok(ClassicPage {
-            data: records.into_iter().map(|x| x.into()).collect(),
-            next_page: if page < total_page {
-                Some(page + 1)
-            } else {
-                None
-            },
-            prev_page: if page > 1 { Some(page - 1) } else { None },
-            total: count,
         })
     }
 
@@ -3062,20 +2910,10 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
-    async fn get_mining_nft_marketplace_orders(
-        &self,
-        page: usize,
-        limit: usize,
-        filter: Option<SuiMiningNFTOrderFilter>,
-    ) -> Result<ClassicPage<SuiMiningNFTMarketplaceOrder>, IndexerError> {
-        self.spawn_blocking(move |this| this.get_mining_nft_marketplace_orders(page, limit, filter))
-            .await
-    }
-
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<SuiOwnedMiningNFTOverview, IndexerError> {
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError> {
         self.spawn_blocking(move |this| this.get_mining_nft_overview(address))
             .await
     }
@@ -3086,15 +2924,6 @@ impl IndexerStore for PgIndexerStore {
         limit: usize,
     ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError> {
         self.spawn_blocking(move |this| this.get_owned_mining_nft_profits(address.into(), limit))
-            .await
-    }
-
-    async fn get_mining_nft_recent_prices(
-        &self,
-        event_package: ObjectID,
-        limit: usize,
-    ) -> Result<Vec<SuiMiningNFTPrice>, IndexerError> {
-        self.spawn_blocking(move |this| this.get_mining_nft_recent_prices(event_package, limit))
             .await
     }
 

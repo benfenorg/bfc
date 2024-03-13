@@ -245,11 +245,12 @@ pub async fn get_nft_staking_overview(
     let mut initial_rewarded: u64 = 0;
     let mut nft_future_profit_rates = vec![];
     let mut rewarded: u64 = 0;
+    let max_count_per_day: u64 = 20;
     for d in 0..180 {
         let dp = timestamp + d * 86_400;
         let p: u64 = (dp - nft_staking.begin_at) / di + 1;
         let crps = current_period_rps(rps, p);
-        let current_supply = nft_config.total_supply + d * nft_config.max_count + 1;
+        let current_supply = nft_config.total_supply + d * max_count_per_day + 1;
         rewarded += (crps * 86_400f64 / current_supply as f64) as u64;
         nft_future_rewards.push(SuiMiningNFTFutureReward {
             reward: rewarded,
@@ -273,7 +274,6 @@ pub async fn get_nft_staking_overview(
         nft_future_rewards,
         nft_future_profit_rates,
         btc_past_profit_rates: vec![],
-        recent_prices: vec![],
     })
 }
 
@@ -281,14 +281,11 @@ fn current_period_rps(rps: u64, p: u64) -> f64 {
     rps as f64 / (2f64.powi(p as i32 - 1) as f64)
 }
 
-const NFT_SHARED_GLOBAL_STAKING_FIELD: &'static str = "2";
-const NFT_SHARED_GLOBAL_NFT_FIELD: &'static str = "3";
+const NFT_SHARED_GLOBAL_STAKING_FIELD: &'static str = "4";
+const NFT_SHARED_GLOBAL_NFT_FIELD: &'static str = "2";
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct NFTConfig {
-    pub max_count: u64,
-    pub start_time: u64,
-    pub count: u64,
     pub token_id: u64,
     pub total_supply: u64,
 }
@@ -341,7 +338,7 @@ pub async fn get_global_nft_staking(
     Ok(config)
 }
 
-pub async fn get_global_nft_config(
+async fn get_global_nft_config(
     http_client: HttpClient,
     config: IndexerConfig,
 ) -> Result<NFTConfig, IndexerError> {

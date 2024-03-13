@@ -12,9 +12,7 @@ use sui_types::base_types::SuiAddress;
 use sui_types::base_types::{EpochId, ObjectID};
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::sui_serde::BigInt;
-use sui_types::sui_serde::SuiTypeTag;
 use sui_types::sui_system_state::sui_system_state_summary::SuiValidatorSummary;
-use sui_types::TypeTag;
 
 use crate::Page;
 
@@ -265,7 +263,6 @@ pub struct NFTStakingOverview {
     pub nft_future_rewards: Vec<SuiMiningNFTFutureReward>,
     pub nft_future_profit_rates: Vec<SuiMiningNFTProfitRate>,
     pub btc_past_profit_rates: Vec<SuiMiningNFTProfitRate>,
-    pub recent_prices: Vec<SuiMiningNFTPrice>,
 }
 
 #[serde_as]
@@ -279,19 +276,6 @@ pub struct SuiMiningNFTFutureReward {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub dt_timestamp_ms: u64,
-}
-
-#[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct SuiMiningNFTPrice {
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub price: u64,
-
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub timestamp_ms: u64,
 }
 
 #[serde_as]
@@ -328,7 +312,7 @@ pub struct SuiMiningNFT {
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
-    pub earliest_held_at: u64,
+    pub mining_started_at: u64,
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
@@ -343,7 +327,6 @@ pub struct SuiMiningNFT {
     pub total_mined_bfc: u64,
 
     pub ticket_id: Option<ObjectID>,
-    pub market_order_id: Option<ObjectID>,
 
     pub status: SuiMiningNFTStatus,
 }
@@ -352,8 +335,7 @@ pub struct SuiMiningNFT {
 pub enum SuiMiningNFTStatus {
     Mining,
     Idle,
-    Selling,
-    Sold,
+    Redeem,
 }
 
 #[serde_as]
@@ -392,43 +374,4 @@ pub struct SuiOwnedMiningNFTProfit {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub dt_timestamp_ms: u64,
-}
-
-#[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct SuiMiningNFTMarketplaceOrder {
-    pub order_id: ObjectID,
-
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub price: u64,
-
-    #[schemars(with = "String")]
-    #[serde_as(as = "SuiTypeTag")]
-    pub coin_type: TypeTag,
-
-    pub owner: SuiAddress,
-    pub miner_id: ObjectID,
-    pub miner_url: String,
-    pub miner_name: String,
-
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub timestamp_ms: u64,
-
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub power: u64,
-}
-
-#[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
-#[serde(rename_all = "camelCase")]
-pub enum SuiMiningNFTOrderFilter {
-    Coin(
-        #[schemars(with = "String")]
-        #[serde_as(as = "SuiTypeTag")]
-        TypeTag,
-    ),
 }

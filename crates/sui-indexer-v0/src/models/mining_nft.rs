@@ -10,8 +10,8 @@ use move_core_types::{
     parser::parse_struct_tag,
 };
 use serde::{Deserialize, Serialize};
-use sui_json_rpc_types::{SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTStatus};
-use sui_types::{base_types::ObjectID, id::ID, parse_sui_type_tag};
+use sui_json_rpc_types::{SuiMiningNFT, SuiMiningNFTStatus};
+use sui_types::{base_types::ObjectID, id::ID};
 
 use super::{checkpoints::Checkpoint, events::Event, objects::Object};
 
@@ -34,11 +34,8 @@ pub struct MiningNFT {
     pub total_mint_bfc: i64,
     pub yesterday_mint_bfc: i64,
     pub yesterday_dt_ms: i64,
-    pub market_order_id: Option<String>,
-    pub market_order_price: Option<i64>,
-    pub market_order_coin: Option<String>,
-    pub market_order_dealed: bool,
-    pub market_order_updated_at: i64,
+    pub miner_redeem: bool,
+    pub transfered_at: i64,
 }
 
 #[derive(Queryable, Insertable, Clone, Debug)]
@@ -67,21 +64,16 @@ pub struct MiningNFTHistoryProfit {
 #[derive(Debug, Clone)]
 pub enum ExtractedMiningNFT {
     Minted(MintNFTEvent),
-    MarketBought(MarketBuyEvent),
     Transfer(Object),
 }
 
 #[derive(Debug, Clone)]
 pub enum MiningNFTOperation {
-    MarketListed(MarketListEvent),
-    MarketEdited(MarketEditEvent),
-    MarketCancled(MarketCancelEvent),
-    // Update sold peer.
-    // MarketBought(MarketBuyEvent),
     StakingStake(StakeEvent),
     StakingUnstake(UnstakeEvent),
     StakingEmergencyUnstake(EmergencyUnstakeEvent),
     StakingTransferReward(TransferRewardEvent),
+    BurnNFT(BurnNFTEvent),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,37 +83,8 @@ pub struct MintNFTEvent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MarketListEvent {
-    pub order_id: ID,         // 订单 id
-    pub nft: NFTInfo,         // nft id
-    pub user: AccountAddress, // 用户地址
-    pub coin_name: String,    // 支持的币种
-    pub price: u64,           // 币种对应价格
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MarketEditEvent {
-    pub order_id: ID,          // 订单id
-    pub old_coin_name: String, // 旧币种
-    pub old_price: u64,        // 旧价格
-    pub new_coin_name: String, // 修改后的币种
-    pub new_price: u64,        // 修改后的价格
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MarketCancelEvent {
-    pub order_id: ID,         // 订单 id
-    pub nft: NFTInfo,         // nft id
-    pub user: AccountAddress, // 用户地址
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MarketBuyEvent {
-    pub order_id: ID,         // 订单 id
-    pub nft: NFTInfo,         // nft id
-    pub user: AccountAddress, // 用户地址
-    pub coin_name: String,    // 支付的 币种
-    pub price: u64,           // 支付的价格
+pub struct BurnNFTEvent {
+    pub nft: NFTInfo,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,14 +128,6 @@ pub struct NFTInfo {
     pub power: u64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SetPriceEvent {
-    pub key: String,
-    pub old_price: u64,
-    pub new_price: u64,
-    pub timestamp: u64,
-}
-
 pub fn extract_from_events(
     contract: &str,
     events: &[Event],
@@ -191,12 +146,6 @@ pub fn extract_from_events(
             if type_.name == ident_str!("MintNFTEvent").into() {
                 results.push(ExtractedMiningNFT::Minted(bcs::from_bytes::<MintNFTEvent>(
                     &x.event_bcs,
-                )?))
-            } else if type_.name == ident_str!("MarketBuyEvent").into() {
-                results.push(ExtractedMiningNFT::MarketBought(bcs::from_bytes::<
-                    MarketBuyEvent,
-                >(
-                    &x.event_bcs
                 )?))
             }
         }
@@ -258,24 +207,10 @@ pub fn extract_operations_from_events(
                 results.push(MiningNFTOperation::StakingTransferReward(
                     bcs::from_bytes::<TransferRewardEvent>(&x.event_bcs)?,
                 ));
-            } else if type_.name == ident_str!("MarketListEvent").into() {
-                results.push(MiningNFTOperation::MarketListed(bcs::from_bytes::<
-                    MarketListEvent,
-                >(
-                    &x.event_bcs
-                )?))
-            } else if type_.name == ident_str!("MarketEditEvent").into() {
-                results.push(MiningNFTOperation::MarketEdited(bcs::from_bytes::<
-                    MarketEditEvent,
-                >(
-                    &x.event_bcs
-                )?))
-            } else if type_.name == ident_str!("MarketCancelEvent").into() {
-                results.push(MiningNFTOperation::MarketCancled(bcs::from_bytes::<
-                    MarketCancelEvent,
-                >(
-                    &x.event_bcs
-                )?))
+            } else if type_.name == ident_str!("BurnNFTEvent").into() {
+                results.push(MiningNFTOperation::BurnNFT(
+                    bcs::from_bytes::<BurnNFTEvent>(&x.event_bcs)?,
+                ))
             }
         }
     }
@@ -299,36 +234,11 @@ impl From<(Checkpoint, ExtractedMiningNFT)> for MiningNFT {
                 total_mint_bfc: 0,
                 yesterday_mint_bfc: 0,
                 yesterday_dt_ms: benfen::get_yesterday_started_at(),
-                market_order_id: None,
-                market_order_dealed: false,
-                market_order_updated_at: 0,
                 token_id: v.nft.token_id,
-                market_order_price: None,
-                market_order_coin: None,
                 miner_url: String::new(),
                 miner_name: String::new(),
-            },
-            ExtractedMiningNFT::MarketBought(b) => Self {
-                id: None,
-                owner: b.user.to_hex_literal(),
-                miner_id: b.nft.id.bytes.to_hex_literal(),
-                power: b.nft.power as i64,
-                mint_at: b.nft.created_at as i64,
-                earliest_held_at: cp.timestamp_ms,
-                mint_duration: 0,
-                yesterday_mint_bfc: 0,
-                yesterday_dt_ms: benfen::get_yesterday_started_at(),
-                mining_ticket_id: None,
-                mining_started_at: 0,
-                total_mint_bfc: 0,
-                market_order_id: Some(b.order_id.bytes.to_hex_literal()),
-                market_order_dealed: false,
-                token_id: b.nft.token_id,
-                market_order_price: Some(b.price as i64),
-                market_order_coin: Some(b.coin_name),
-                market_order_updated_at: 0,
-                miner_url: String::new(),
-                miner_name: String::new(),
+                miner_redeem: false,
+                transfered_at: 0,
             },
             ExtractedMiningNFT::Transfer(object) => Self {
                 id: None,
@@ -348,11 +258,8 @@ impl From<(Checkpoint, ExtractedMiningNFT)> for MiningNFT {
                 total_mint_bfc: 0,
                 yesterday_mint_bfc: 0,
                 yesterday_dt_ms: benfen::get_yesterday_started_at(),
-                market_order_id: None,
-                market_order_price: None,
-                market_order_coin: None,
-                market_order_dealed: false,
-                market_order_updated_at: 0,
+                miner_redeem: false,
+                transfered_at: 0,
             },
         }
     }
@@ -371,53 +278,23 @@ impl Into<SuiMiningNFT> for MiningNFT {
             miner_id: ObjectID::from_hex_literal(&self.miner_id).unwrap_or(ObjectID::ZERO),
             token_id: self.token_id,
             power: self.power as u64,
-            earliest_held_at: self.earliest_held_at as u64,
+            mining_started_at: self.mining_started_at as u64,
             mint_at: self.mint_at as u64 * 1_000,
             mint_duration: mint_duration * 1_000,
             total_mined_bfc: self.total_mint_bfc as u64,
-            status: if self.market_order_id.is_some() {
-                if self.market_order_dealed {
-                    SuiMiningNFTStatus::Sold
-                } else {
-                    SuiMiningNFTStatus::Selling
-                }
+            status: if self.miner_redeem {
+                // TODO(wanghui): change field
+                SuiMiningNFTStatus::Redeem
             } else if self.mining_started_at > 0 {
                 SuiMiningNFTStatus::Mining
             } else {
                 SuiMiningNFTStatus::Idle
             },
-            market_order_id: self
-                .market_order_id
-                .map(|x| ObjectID::from_hex_literal(&x).unwrap_or(ObjectID::ZERO)),
             ticket_id: self
                 .mining_ticket_id
                 .map(|x| ObjectID::from_hex_literal(&x).unwrap_or(ObjectID::ZERO)),
             miner_url: self.miner_url,
             miner_name: self.miner_name,
-        }
-    }
-}
-
-impl Into<SuiMiningNFTMarketplaceOrder> for MiningNFT {
-    fn into(self) -> SuiMiningNFTMarketplaceOrder {
-        SuiMiningNFTMarketplaceOrder {
-            order_id: self
-                .market_order_id
-                .map(|x| ObjectID::from_hex_literal(&x).unwrap_or(ObjectID::ZERO))
-                .unwrap_or(ObjectID::ZERO),
-            price: self.market_order_price.unwrap_or_default() as u64,
-            coin_type: self
-                .market_order_coin
-                .map(|x| parse_sui_type_tag(&x).unwrap_or(sui_types::TypeTag::Bool))
-                .unwrap_or(sui_types::TypeTag::Bool),
-            owner: AccountAddress::from_hex_literal(&self.owner)
-                .unwrap_or(AccountAddress::ZERO)
-                .into(),
-            miner_id: ObjectID::from_hex_literal(&self.miner_id).unwrap_or(ObjectID::ZERO),
-            miner_url: self.miner_url,
-            miner_name: self.miner_name,
-            timestamp_ms: self.market_order_updated_at as u64,
-            power: self.power as u64,
         }
     }
 }

@@ -12,9 +12,8 @@ use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
     MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage,
-    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTMarketplaceOrder, SuiMiningNFTOrderFilter,
-    SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
-    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
+    SuiDaoProposal, SuiMiningNFT, SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery,
+    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
 use sui_types::base_types::SuiAddress;
@@ -135,15 +134,6 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
     }
 
     async fn get_nft_staking_overview(&self) -> RpcResult<NFTStakingOverview> {
-        todo!()
-    }
-
-    async fn get_mining_nft_marketplace_orders(
-        &self,
-        _page: Option<usize>,
-        _limit: Option<usize>,
-        _filter: Option<SuiMiningNFTOrderFilter>,
-    ) -> RpcResult<ClassicPage<SuiMiningNFTMarketplaceOrder>> {
         todo!()
     }
 
