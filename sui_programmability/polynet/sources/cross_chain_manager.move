@@ -58,14 +58,14 @@ module polynet::cross_chain_manager {
 
     // cross chain license
     struct License has store, copy, drop {
-        account: address,
+        account: vector<u8>,
         module_name: vector<u8>
     }
 
     //TODO: make sure account is token contract address 
     public(friend) fun issue_license(
         _module_name: vector<u8>,
-        _contract: address 
+        _contract: vector<u8> 
     ): License {
 
         // let sender = tx_context::sender(_ctx);
@@ -91,7 +91,7 @@ module polynet::cross_chain_manager {
         return (res, licenseInfo)
     }
 
-    public fun getLicenseInfo(license: &License): (address, vector<u8>) {
+    public fun getLicenseInfo(license: &License): (vector<u8>, vector<u8>) {
         (license.account, license.module_name)
     }
 
@@ -186,11 +186,11 @@ module polynet::cross_chain_manager {
     }
 
     struct LicenseInfo has store, drop, copy {
-        account: address,
+        account: vector<u8>,
         module_name: vector<u8>,
     }
 
-    public fun get_license_account(license: &LicenseInfo) :address{
+    public fun get_license_account(license: &LicenseInfo) :vector<u8>{
         return license.account
     }
     public fun get_license_module_name(license: &LicenseInfo) :vector<u8>{
@@ -292,13 +292,13 @@ module polynet::cross_chain_manager {
         ) = cross_chain_utils::deserializeMerkleValue(&to_merkle_value_bytes);
 
         // double-spending check/mark
-        assert!(!check_from_chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
+        // assert!(!check_from_chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
         mark_from_Chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash, ctx);
 
         // check to chain id
         assert!(to_chain_id == poly_id, ENOT_TARGET_CHAIN);
 
-        // check verifier
+        // todo: check verifier polynet set global_config 0x address
         let (license_id, _) = get_license_id(license);
         assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 
@@ -310,6 +310,14 @@ module polynet::cross_chain_manager {
             to_contract,
             poly_tx_hash,
             source_tx_hash
+        );
+       
+        events::read_certificate(
+            from_contract,
+            from_chain_id,
+            to_contract,
+            method,
+            args
         );
 
         // return a certificate to prove the execution is certified

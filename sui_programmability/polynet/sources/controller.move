@@ -174,6 +174,50 @@ module polynet::controller {
                     );
     }
 
+    public entry fun relay_unlock_tx_read_certificate<CoinType>(
+        _global:&mut CrossChainGlobalConfig,
+        _treasury_ref:&mut Treasury<CoinType>,
+        _proof: vector<u8>, 
+        _raw_header: vector<u8>, 
+        _header_proof: vector<u8>, 
+        _cur_raw_header: vector<u8>, 
+        _header_sig: vector<u8>,
+        _clock: &Clock,
+        _ctx: &mut TxContext
+    ) {
+        //check system pause
+      
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_assets_role(_global, sender);
+        config::check_pause(_global);
+        let (lp_manager,cc_manager) = config::borrow_mut_lp_and_cc_managers(_global);
+        let license_ref = lock_proxy::get_license_ref(lp_manager);
+
+       cross_chain_manager::verifyHeaderAndExecuteTx(
+                                            cc_manager,
+                                            license_ref, 
+                                            &_proof, 
+                                            &_raw_header, 
+                                            &_header_proof, 
+                                            &_cur_raw_header, 
+                                            &_header_sig, 
+                                            _ctx
+                                        );
+    }
+
+    public entry fun get_asset<CoinType>(
+        _global:&mut CrossChainGlobalConfig,
+        _to_chain_id: u64,
+        _ctx: &mut TxContext
+    ) {
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        let lp_manager = config::borrow_lp_manager(_global);
+        lock_proxy::getToAsset<CoinType>(lp_manager,_to_chain_id);
+    }
+
     public entry fun lock_and_pay_fee<CoinType>(
         _global:&mut CrossChainGlobalConfig,
         _treasury_ref:&mut Treasury<CoinType>,
@@ -363,6 +407,20 @@ module polynet::controller {
      public entry fun issue_license_to_lock_proxy(
         _global: &mut CrossChainGlobalConfig, 
         _contract: address,
+        _ctx: &mut TxContext
+    ) {
+        // config::check_version(_global);
+        // config::check_pause(_global);
+        // let sender = tx_context::sender(_ctx);
+        // config::check_ca_role(_global,sender);
+        // let license = cross_chain_manager::issue_license( b"lock_proxy", _contract);
+        // let lp_manager = config::borrow_mut_lp_manager(_global);
+        // lock_proxy::receiveLicense(lp_manager,license);
+    }
+
+      public entry fun issue_license_to_lock_proxy_v2(
+        _global: &mut CrossChainGlobalConfig, 
+        _contract: vector<u8>,
         _ctx: &mut TxContext
     ) {
         config::check_version(_global);

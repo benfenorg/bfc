@@ -17,7 +17,7 @@ module polynet::tools {
     public  fun init_as_mainnet(
         _config: &mut CrossChainGlobalConfig,
         _clock: &Clock,
-        _contract: address,
+        _contract: vector<u8>,
         _ctx: &mut TxContext
     ) {
         // sender address
@@ -56,7 +56,7 @@ module polynet::tools {
 
     fun issue_license_to_lock_proxy(
         _config: &mut CrossChainGlobalConfig,
-        _contract: address
+        _contract: vector<u8>
     ) {
         let (lpManager,_, _) = borrow_mut_all(_config);
         let license = cross_chain_manager::issue_license(b"lock_proxy", _contract);
@@ -67,7 +67,7 @@ module polynet::tools {
     public  fun init_as_testnet(
         _config: &mut CrossChainGlobalConfig,
         _clock: &Clock,
-        _contract: address,
+        _contract: vector<u8>,
         _ctx: &mut TxContext
     ) {
         // sender address
@@ -89,7 +89,7 @@ module polynet::tools {
         config::check_admin_role(_global, sender);
 
         let (_, wrapper, cc_manager) = config::borrow_mut_all(_global);
-        let polyId: u64 = 998;
+        let polyId: u64 = 1200;
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
         vector::push_back(&mut keepers, x"26f22a620ab00e3c5832a12d6e91406bc67ea7b1e9582e800abd921c371074daa6dae5ba6aa9737460758fd17a590e79097ef519421894c7492ffded22983684");
