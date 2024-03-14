@@ -62,7 +62,7 @@ module polynet::wrapper_v1_test {
     #[test]
     fun test_lock_and_pay_fee(){
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        let contract = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let contract = x"493910aa26841f924f191e578b285a00f98aa227";
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);

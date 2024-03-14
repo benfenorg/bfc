@@ -44,7 +44,7 @@ module polynet::cross_chain_manager {
      
         let manager = CrossChainManager{
             paused: false,
-            poly_id: 998,
+            poly_id: 1200,
             book_keepers: vector::empty<vector<u8>>(),
             epoch_start_height: 0,
             tx_hash_index: 0,
