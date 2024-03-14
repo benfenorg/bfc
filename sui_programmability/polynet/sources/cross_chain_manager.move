@@ -301,7 +301,7 @@ module polynet::cross_chain_manager {
         ) = cross_chain_utils::deserializeMerkleValue(&to_merkle_value_bytes);
 
         // double-spending check/mark
-        // assert!(!check_from_chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
+        assert!(!check_from_chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
         mark_from_Chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash, ctx);
 
         // check to chain id

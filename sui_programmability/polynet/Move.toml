@@ -2,7 +2,7 @@
 name = "polynet"
 version = "0.0.1"
 #BFCa4ed616b1afa78c46152650329335f12a564c4e607a0e31262b6657ef7de25d0502c
-published-at = "a78b2c84f94ac7b5aca12c922ccc729d165a211948c7054bc6d8baa446db971c"
+published-at = "c894726ad71e1c2aaccb3035180b884f2216d6101526b3e27958ebf7727b23a4"
 
 
 [dependencies]
