@@ -17,7 +17,7 @@ module polynet::tools {
     public  fun init_as_mainnet(
         _config: &mut CrossChainGlobalConfig,
         _clock: &Clock,
-        _contract: vector<u8>,
+        _contract: address,
         _ctx: &mut TxContext
     ) {
         // sender address
@@ -56,7 +56,7 @@ module polynet::tools {
 
     fun issue_license_to_lock_proxy(
         _config: &mut CrossChainGlobalConfig,
-        _contract: vector<u8>
+        _contract: address
     ) {
         let (lpManager,_, _) = borrow_mut_all(_config);
         let license = cross_chain_manager::issue_license(b"lock_proxy", _contract);
@@ -67,7 +67,7 @@ module polynet::tools {
     public  fun init_as_testnet(
         _config: &mut CrossChainGlobalConfig,
         _clock: &Clock,
-        _contract: vector<u8>,
+        _contract: address,
         _ctx: &mut TxContext
     ) {
         // sender address

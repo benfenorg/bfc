@@ -111,7 +111,7 @@ module polynet::lock_proxy {
 
     struct LicenseIdEvent has store, drop, copy {
         license_id: vector<u8>,
-        account: vector<u8>,
+        account: address,
         module_name: String,
     }
 

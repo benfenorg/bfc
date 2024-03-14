@@ -58,21 +58,30 @@ module polynet::cross_chain_manager {
 
     // cross chain license
     struct License has store, copy, drop {
-        account: vector<u8>,
+        account: address,
         module_name: vector<u8>
     }
 
     //TODO: make sure account is token contract address 
     public(friend) fun issue_license(
         _module_name: vector<u8>,
-        _contract: vector<u8> 
+        _contract: address 
     ): License {
 
         // let sender = tx_context::sender(_ctx);
-        License{
-            account: _contract,
-            module_name: _module_name,
-        }
+        let license = License{
+                    account: _contract,
+                    module_name: _module_name,
+                };
+
+        let (res,_) = get_license_id(&license);
+        events::issue_license(
+            _module_name,
+            _contract,
+            res
+        );
+
+        license
     }
 
     public fun destroyLicense(license: License) {
@@ -91,7 +100,7 @@ module polynet::cross_chain_manager {
         return (res, licenseInfo)
     }
 
-    public fun getLicenseInfo(license: &License): (vector<u8>, vector<u8>) {
+    public fun getLicenseInfo(license: &License): (address, vector<u8>) {
         (license.account, license.module_name)
     }
 
@@ -186,11 +195,11 @@ module polynet::cross_chain_manager {
     }
 
     struct LicenseInfo has store, drop, copy {
-        account: vector<u8>,
+        account: address,
         module_name: vector<u8>,
     }
 
-    public fun get_license_account(license: &LicenseInfo) :vector<u8>{
+    public fun get_license_account(license: &LicenseInfo) :address{
         return license.account
     }
     public fun get_license_module_name(license: &LicenseInfo) :vector<u8>{
@@ -298,7 +307,7 @@ module polynet::cross_chain_manager {
         // check to chain id
         assert!(to_chain_id == poly_id, ENOT_TARGET_CHAIN);
 
-        // todo: check verifier polynet set global_config 0x address
+        //check verifier polynet set global_config 0x address
         let (license_id, _) = get_license_id(license);
         assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 

@@ -404,23 +404,9 @@ module polynet::controller {
                             );
     }
 
-     public entry fun issue_license_to_lock_proxy(
+    public entry fun issue_license_to_lock_proxy(
         _global: &mut CrossChainGlobalConfig, 
-        _contract: address,
-        _ctx: &mut TxContext
-    ) {
-        // config::check_version(_global);
-        // config::check_pause(_global);
-        // let sender = tx_context::sender(_ctx);
-        // config::check_ca_role(_global,sender);
-        // let license = cross_chain_manager::issue_license( b"lock_proxy", _contract);
-        // let lp_manager = config::borrow_mut_lp_manager(_global);
-        // lock_proxy::receiveLicense(lp_manager,license);
-    }
-
-      public entry fun issue_license_to_lock_proxy_v2(
-        _global: &mut CrossChainGlobalConfig, 
-        _contract: vector<u8>,
+        _contract: address,//global_config 
         _ctx: &mut TxContext
     ) {
         config::check_version(_global);
@@ -431,7 +417,6 @@ module polynet::controller {
         let lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::receiveLicense(lp_manager,license);
     }
-
 
     public entry fun pause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
 

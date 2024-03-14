@@ -90,6 +90,26 @@ module polynet::events {
 
     }
 
+     struct IssueLicenseEvent has store, drop, copy {
+        module_name: vector<u8>,
+        contract: address,
+        license_id: vector<u8>
+    }
+
+    public(friend) fun issue_license(
+        _module_name: vector<u8>,
+        _contract: address,
+        _license_id: vector<u8>
+    ) {
+        emit(
+            IssueLicenseEvent{
+                    module_name: _module_name,
+                    contract: _contract,
+                    license_id: _license_id
+                }
+        );
+    }
+
     public(friend) fun read_certificate(
         _from_contract: vector<u8>,
         _from_chain_id: u64,
