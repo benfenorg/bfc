@@ -6,8 +6,9 @@ module polynet::bfc_usdc {
     use sui::tx_context;
     use sui::tx_context::TxContext;
     use polynet::lock_proxy;
+    use polynet::consts;
 
-    friend polynet::controller ;
+    friend polynet::controller;
 
 
     // Errors
@@ -17,12 +18,12 @@ module polynet::bfc_usdc {
 
     struct BFC_USDC has drop {}
 
-    const DECIMALS: u8 = 8;
+    // const DECIMALS: u8 = 8;
 
 
     fun init(witness: BFC_USDC, ctx: &mut TxContext){
 
-        build_usdc(witness, DECIMALS, tx_context::sender(ctx), ctx);
+        build_usdc(witness, consts::get_decimal(), tx_context::sender(ctx), ctx);
     }
 
     public fun build_usdc<T:drop>(witness: T, decimals: u8, admin: address, ctx: &mut TxContext){
@@ -59,5 +60,6 @@ module polynet::bfc_usdc {
     ):  Coin<T>{
       coin::mint<T>(_cap, _amount, _ctx)
     }
+
 
 }

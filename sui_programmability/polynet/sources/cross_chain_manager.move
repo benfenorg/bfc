@@ -491,6 +491,5 @@ module polynet::cross_chain_manager {
             sender
         );
     }
-
     
 }

@@ -27,6 +27,7 @@ module polynet::lock_proxy {
     use polynet::zero_copy_source;
     use polynet::utils;
     use polynet::events;
+    use polynet::consts;
     use polynet::acl::{ Self};
 
 
@@ -457,7 +458,7 @@ module polynet::lock_proxy {
 
         //todo,, decimals
         // precision conversion
-        let target_chain_amount = to_target_chain_amount(amount, to_asset_decimals, to_asset_decimals);
+        let target_chain_amount = to_target_chain_amount(amount, consts::get_decimal(), to_asset_decimals);
 
         // pack args
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
@@ -510,12 +511,12 @@ module polynet::lock_proxy {
             from_chain_amount
         ) = deserializeTxArgs(&args);
 
-        // precision conversion
-        let (_, decimals) = getToAsset<CoinType>(lpManager, from_chain_id);
+        // from asset decimal precision conversion
+        let (_, from_asset_decimals) = getToAsset<CoinType>(lpManager, from_chain_id);
 
 
-        //todo, decimals
-        let amount = from_target_chain_amount(from_chain_amount, decimals, decimals);
+        //todo, deal with hardcode local_decimals
+        let amount = from_target_chain_amount(from_chain_amount, consts::get_decimal(),from_asset_decimals);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
         //todo, decimals
         //type_name::get<Coin<CoinType>>()
@@ -592,24 +593,15 @@ module polynet::lock_proxy {
         let eth = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_ETH");
         *eth = MAX_AMOUNT;
     }
-
-  
-
-    // entry fun resetAmountByAdmin(admin : address, amountManager : &mut AmountLimitManager){
-    //     assert!(utils::is_admin(admin), EINVALID_ADMIN_SIGNER);
-    //     resetAmount(amountManager);
-    // }
-
    
 
-    // decimals conversion
-    public fun to_target_chain_amount(amount: u64,source_decimals: u8,  target_decimals: u8): u128 {
+    public fun to_target_chain_amount(amount: u64,local_decimals: u8,  target_decimals: u8): u128 {
         //let source_decimals = coin::decimals<CoinType>();
-        (amount as u128) * pow_10(target_decimals) / pow_10(source_decimals)
+        (amount as u128) * pow_10(target_decimals) / pow_10(local_decimals)
     }
-    public fun from_target_chain_amount(target_chain_amount: u128,source_decimals: u8, target_decimals: u8): u64 {
+    public fun from_target_chain_amount(from_chain_amount: u128,local_decimals: u8, from_decimals: u8): u64 {
         //let source_decimals = coin::decimals<CoinType>();
-        (target_chain_amount * pow_10(source_decimals) / pow_10(target_decimals) as u64)
+        (from_chain_amount * pow_10(local_decimals) / pow_10(from_decimals) as u64)
     }
     fun pow_10(decimals: u8): u128 {
         //math128::pow(10, (decimals as u128))
