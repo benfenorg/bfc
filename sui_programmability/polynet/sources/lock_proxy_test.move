@@ -10,14 +10,14 @@ module polynet::lock_proxy_test {
     use polynet::bfc_usdc::BFC_USDC;
     use sui::test_scenario;
     use polynet::utils;
-    use polynet::lock_proxy::{ paused, LockProxyManager, unpause, pause, transferOwnerShip, convert_to_short_key, checkAmountResult
-    };
+    use polynet::acl::{ Self};
+    use polynet::lock_proxy::{ LockProxyManager, convert_to_short_key, checkAmountResult};
 
     #[test]
     fun test_init_lock_manager(){
 
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        assert!(utils::is_admin(owner), 4001);
+        assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -36,40 +36,6 @@ module polynet::lock_proxy_test {
             test_scenario::return_shared(ccConfig);
         };
 
-        test_scenario::next_tx(&mut scenario_val, owner);
-        {
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
-            let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            pause(lpmanager);
-            test_scenario::return_shared(ccConfig);
-        };
-
-        test_scenario::next_tx(&mut scenario_val, owner);
-        {
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
-            let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            unpause(lpmanager);
-            test_scenario::return_shared(ccConfig);
-        };
-
-        let new_owner = @0xfd8669e7e9ecb8d9b893dc6b0ad6727aa28c80dd1c5a34809d20910c5ffa7525;
-        test_scenario::next_tx(&mut scenario_val, owner);
-        {
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&mut scenario_val);
-            let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            transferOwnerShip(lpmanager, new_owner);
-            test_scenario::return_shared(ccConfig);
-        };
-
-        //change back to the original owner
-        test_scenario::next_tx(&mut scenario_val, new_owner);
-        {
-
-            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
-            let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
-            transferOwnerShip(lpmanager, owner);
-            test_scenario::return_shared(ccConfig);
-        };
         test_scenario::end(scenario_val);
     }
 
@@ -77,7 +43,7 @@ module polynet::lock_proxy_test {
     fun test_check_amount_result() {
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
 
-        assert!(utils::is_admin(owner), 4001);
+        assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -117,7 +83,7 @@ module polynet::lock_proxy_test {
     #[test]
     fun test_bind_proxy() {
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        assert!(utils::is_admin(owner), 4001);
+        assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -175,7 +141,7 @@ module polynet::lock_proxy_test {
     #[test]
     fun test_asset(){
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        assert!(utils::is_admin(owner), 4001);
+        assert!(acl::is_admin(owner), 4001);
 
 
         let scenario_val = test_scenario::begin(owner);

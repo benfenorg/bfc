@@ -1,16 +1,12 @@
+#[test_only]
 module polynet::utils_test {
 
     #[test_only]
     use std::debug::print;
-    #[test_only]
-    use polynet::utils;
-    #[test_only]
-    use polynet::utils::{is_admin, get_default_admin_address, to_address};
-    #[test_only]
+    use polynet::utils::{Self, to_address};
     use sui::address::to_bytes;
-    #[test_only]
     use sui::table;
-    #[test_only]
+    use polynet::acl::{is_admin, default_admin_address};
     use sui::test_scenario as ts;
 
 
@@ -20,7 +16,7 @@ module polynet::utils_test {
         let result =  is_admin(add);
         assert!(result == false, 1);
 
-        let default_admin = get_default_admin_address();
+        let default_admin = default_admin_address();
         let result = is_admin(default_admin);
         assert!(result == true, 2);
 

@@ -2,7 +2,9 @@
 module polynet::config {
     use sui::transfer;
     use polynet::events;
+    use sui::table::{Table, Self};
     use sui::object::{UID, Self};
+    use polynet::acl::{AccessControlManager, Self};
     use sui::tx_context::{TxContext, Self};
     use polynet::wrapper_v1::{WrapperStore, Self};
     use polynet::cross_chain_manager::{CrossChainManager, Self};
@@ -17,15 +19,38 @@ module polynet::config {
     friend polynet::wrapper_v1_test;
     friend polynet::tools;
 
-    const VERSION: u64 = 2;
+    const VERSION: u64 = 1;
     const ERR_CHECK_CONFIG_PAUSED: u64 = 6000;
     const ERR_VERSION_CHECK: u64 = 6001;
     const EALREADY_EXECUTED: u64 = 6002;
+    const ENOT_CHANGE_KEEPER_ROLE: u64 = 6003;
+    const EALREADY_HAS_ROLE: u64 = 6004;
+    const ENOT_PAUSE_ROLE: u64 = 6005;
+    const ENOT_HAS_ROLE: u64 = 6006;
+    const ENOT_CA_ROLE: u64 = 6007;
+    const ENOT_ADMIN: u64 = 6008;
+    const ENOT_ASSETS_ROLE: u64 = 6009;
+    const ENOT_TREASURY_ROLE: u64 = 6010;
+
+
+     //basic roles 
+    const ADMIN_ROLE: u64 = 1;
+    const PAUSE_ROLE: u64 = 2;
+    const CA_ROLE: u64 = 3;
+    const CHANGE_KEEPER_ROLE: u64 = 4;
+    const ASSETS_ROLE: u64 = 5;
+    const TREASURY_ROLE: u64 = 6;
+
+     // access control
+    struct ACLStore has store {
+        role_acls: Table<u64, AccessControlManager>
+    }
 
 
     struct CrossChainGlobalConfig has key {
         id: UID,
         paused: bool,
+        acl_store: ACLStore,
         crossChainManager: CrossChainManager,
         lockProxyManager: LockProxyManager,
         wrapperStore: WrapperStore,
@@ -33,13 +58,46 @@ module polynet::config {
     }
 
   
-     // initialize
+     //init package and initialize crossChainManager/ lockProxyManager/ wrapperStore/ 
    fun init(_ctx: &mut TxContext)  {
+
+        let sender = tx_context::sender(_ctx);
+
+        assert!(acl::is_admin(sender), ENOT_ADMIN);
+       // init access control lists
+        let acls = table::new<u64, AccessControlManager>(_ctx);
+
+        let admin_acl = acl::empty();
+        let pause_acl = acl::empty();
+        let ca_acl = acl::empty();
+        let keeper_acl = acl::empty();
+        let assets_acl = acl::empty();
+        let treasury_acl = acl::empty();
+
+        acl::add_all(&mut admin_acl, acl::get_default_admin_address());
+        acl::add_all(&mut pause_acl, acl::get_default_admin_address());
+        acl::add_all(&mut ca_acl, acl::get_default_admin_address());
+        acl::add_all(&mut keeper_acl, acl::get_default_admin_address());
+        acl::add_all(&mut assets_acl, acl::get_default_assets_admin_address());
+        acl::add_all(&mut treasury_acl, acl::get_default_treasury_admin_address());
+
+
+        table::add(&mut acls, ADMIN_ROLE, admin_acl);
+        table::add(&mut acls, PAUSE_ROLE, pause_acl);
+        table::add(&mut acls, CA_ROLE, ca_acl);
+        table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
+        table::add(&mut acls, ASSETS_ROLE, assets_acl);
+        table::add(&mut acls, TREASURY_ROLE, treasury_acl);
+
+        let acl_store = ACLStore{
+            role_acls: acls
+        };
 
         // init global config
         let config = CrossChainGlobalConfig{
             id: object::new(_ctx),
             paused: false,
+            acl_store: acl_store,
             crossChainManager: cross_chain_manager::new(_ctx),
             lockProxyManager: lock_proxy::new(_ctx),
             wrapperStore: wrapper_v1::new(_ctx),
@@ -51,18 +109,47 @@ module polynet::config {
     }
 
     public(friend) fun init_cc_config(_ctx: &mut TxContext){
+
+        let sender = tx_context::sender(_ctx);
+
+        assert!(acl::is_admin(sender), ENOT_ADMIN);
+       // init access control lists
+        let acls = table::new<u64, AccessControlManager>(_ctx);
+
+        let admin_acl = acl::empty();
+        let pause_acl = acl::empty();
+        let ca_acl = acl::empty();
+        let keeper_acl = acl::empty();
+        let assets_acl = acl::empty();
+
+        acl::add_all(&mut admin_acl, acl::get_default_admin_address());
+        acl::add_all(&mut pause_acl, acl::get_default_admin_address());
+        acl::add_all(&mut ca_acl, acl::get_default_admin_address());
+        acl::add_all(&mut keeper_acl, acl::get_default_admin_address());
+        acl::add_all(&mut assets_acl, acl::get_default_assets_admin_address());
+
+        table::add(&mut acls, ADMIN_ROLE, admin_acl);
+        table::add(&mut acls, PAUSE_ROLE, pause_acl);
+        table::add(&mut acls, CA_ROLE, ca_acl);
+        table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
+        table::add(&mut acls, ASSETS_ROLE, assets_acl);
+
+        let acl_store = ACLStore{
+            role_acls: acls
+        };
+
         // init global config
         let config = CrossChainGlobalConfig{
             id: object::new(_ctx),
             paused: false,
+            acl_store: acl_store,
             crossChainManager: cross_chain_manager::new(_ctx),
             lockProxyManager: lock_proxy::new(_ctx),
             wrapperStore: wrapper_v1::new(_ctx),
             version: VERSION
         };
-
+       
         transfer::share_object(config);
-
     }
 
 
@@ -150,7 +237,96 @@ module polynet::config {
         _global.paused = false;
     }
 
+    public(friend) fun has_role(_config: &CrossChainGlobalConfig, _role: u64, _account: address): bool  {
+        //let acl_store_ref = borrow_global<ACLStore>(@poly);
 
+        if (table::contains(&_config.acl_store.role_acls, _role)) {
+            let role_acl = table::borrow(&_config.acl_store.role_acls, _role);
+            return acl::contains(role_acl, _account)
+        } else {
+            return false
+        }
+    }
+
+    public(friend) fun grant_role(
+        _config:&mut CrossChainGlobalConfig, 
+        _role: u64, 
+        _account: address, 
+        _ctx: &mut TxContext
+    )  {
+        // sender address
+        let sender = tx_context::sender(_ctx);
+
+        assert!(has_role(_config, ADMIN_ROLE, sender), ENOT_ADMIN);
+        assert!(!has_role(_config, _role, _account), EALREADY_HAS_ROLE);
+
+        if (table::contains(&_config.acl_store.role_acls, _role)) {
+            let role_acl = table::borrow_mut(&mut _config.acl_store.role_acls, _role);
+            acl::add(role_acl, _account);
+        } else {
+            let role_acl = acl::empty();
+            acl::add(&mut role_acl, _account);
+            table::add(&mut _config.acl_store.role_acls, _role, role_acl);
+        }
+    }
+
+    public(friend) fun revoke_role(
+        _config: &mut CrossChainGlobalConfig, 
+        _role: u64, 
+        _account: address, 
+        _ctx: &mut TxContext
+    )  {
+        // sender address
+        let sender = tx_context::sender(_ctx);
+
+        assert!(has_role(_config, ADMIN_ROLE, sender), ENOT_ADMIN);
+        assert!(has_role(_config, _role, _account), ENOT_HAS_ROLE);
+        let role_acl = table::borrow_mut(&mut _config.acl_store.role_acls, _role);
+        acl::remove(role_acl, _account);
+    }
+
+    public(friend) fun check_keeper_role(
+         _config: &CrossChainGlobalConfig,
+         _sender: address
+    ) {
+        assert!(has_role(_config, CHANGE_KEEPER_ROLE, (_sender)), ENOT_CHANGE_KEEPER_ROLE);
+    }
+
+    public(friend) fun check_pause_role(
+         _config: &CrossChainGlobalConfig,
+         _sender: address
+    ) {
+        assert!(has_role(_config, PAUSE_ROLE, (_sender)), ENOT_PAUSE_ROLE);
+    }
+
+    public(friend) fun check_ca_role (
+         _config: &CrossChainGlobalConfig,
+         _sender: address
+    ) {
+          assert!(has_role(_config, CA_ROLE, _sender), ENOT_CA_ROLE);
+    }
+    public(friend) fun check_admin_role (
+         _config: &CrossChainGlobalConfig,
+         _sender: address
+    ) {
+          assert!(has_role(_config, ADMIN_ROLE, _sender), ENOT_ADMIN);
+    }
+
+    public(friend) fun check_assets_role (
+         _config: &CrossChainGlobalConfig,
+         _sender: address
+
+    ) {
+          assert!(has_role(_config, ASSETS_ROLE, _sender), ENOT_ASSETS_ROLE);
+    }
+
+    public(friend) fun check_treasury_role (
+         _config: &CrossChainGlobalConfig,
+         _sender: address
+
+    ) {
+          assert!(has_role(_config, TREASURY_ROLE, _sender), ENOT_TREASURY_ROLE);
+    }
 
 
 }
