@@ -11,12 +11,13 @@ module polynet::cross_chain_manager_test {
     use sui::test_scenario;
     use polynet::cross_chain_manager;
     use polynet::utils;
+    use polynet::acl::{ Self};
 
     #[test]
     fun test_cross_chain_manager() {
         // sender address
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        assert!(utils::is_admin(owner), 4001);
+        assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
 

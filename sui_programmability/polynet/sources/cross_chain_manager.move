@@ -7,9 +7,6 @@ module polynet::cross_chain_manager {
     use sui::table::{Table, Self};
     use sui::tx_context;
     use sui::tx_context::TxContext;
-
-    use polynet::acl::Access_control_list;
-    use polynet::acl;
     use polynet::zero_copy_sink;
     use polynet::cross_chain_utils;
     use polynet::events;
@@ -17,159 +14,47 @@ module polynet::cross_chain_manager {
     friend polynet::lock_proxy;
     friend polynet::controller;
     friend polynet::config;
+    friend polynet::tools;
     #[test_only]
     friend polynet::cross_chain_manager_test;
-    friend polynet::tools;
-
-    const ADMIN_ROLE: u64 = 1;
-    const PAUSE_ROLE: u64 = 2;
-    const CA_ROLE: u64 = 3;
-    const CHANGE_KEEPER_ROLE: u64 = 4;
+   
 
     // Errors
-    const EINVALID_ADMIN_SIGNER: u64 = 4001;
-    const EPAUSED: u64 = 4002;
-    const EVERIFY_HEADER_FAILED: u64 = 4003;
-    const EVERIFY_HEADER_PROOF_FAILED: u64 = 4004;
-    const EALREADY_EXECUTED: u64 = 4005;
-    const ENOT_TARGET_CHAIN: u64 = 4006;
-    const EALREADY_HAS_ROLE: u64 = 4007;
-    const ENOT_HAS_ROLE: u64 = 4008;
-    const ENOT_ADMIN: u64 = 4009;
-    const ENOT_PAUSE_ROLE: u64 = 4010;
-    const ENOT_CA_ROLE: u64 = 4011;
-    const ENOT_CHANGE_KEEPER_ROLE: u64 = 4012;
-    const EBLACKLISTED_FROM: u64 = 4013;
-    const EBLACKLISTED_TO: u64 = 4014;
-    const EVERIFIER_NOT_RECEIVER: u64 = 4015;
+    const EVERIFY_HEADER_FAILED: u64 = 4001;
+    const EVERIFY_HEADER_PROOF_FAILED: u64 = 4002;
+    const EALREADY_EXECUTED: u64 = 4003;
+    const ENOT_TARGET_CHAIN: u64 = 4004;
+    const EBLACKLISTED_FROM: u64 = 4005;
+    const EBLACKLISTED_TO: u64 = 4006;
+    const EVERIFIER_NOT_RECEIVER: u64 = 4007;
 
 
-   
     struct CrossChainManager has store {
-        // id: UID,
         paused: bool,
-        acl_store: ACLStore,
         poly_id: u64,
         book_keepers: vector<vector<u8>>, //special decode pointer
         epoch_start_height: u64,
         tx_hash_index: u128,
         tx_hash_map: Table<u128, vector<u8>>,
-        from_chain_tx_exist: Table<u64, Table<vector<u8>, bool>>
+        from_chain_tx_exist: Table<u64, Table<vector<u8>, bool>>,
+        license_black_list: Table<vector<u8>, u8> //cross chain manager control the black_list
     }
 
-    // access control
-    struct ACLStore has store {
-        // id: UID,
-        role_acls: Table<u64, Access_control_list>,
-        license_black_list: Table<vector<u8>, u8>
-    }
-
-   
     public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
-
-
-        // init access control lists
-        let acls = table::new<u64, Access_control_list>(_ctx);
-
-        let admin_acl = acl::empty();
-        let pause_acl = acl::empty();
-        let ca_acl = acl::empty();
-        let keeper_acl = acl::empty();
-
-        acl::add(&mut admin_acl, utils::get_default_admin_address());
-        acl::add(&mut pause_acl, utils::get_default_admin_address());
-        acl::add(&mut ca_acl, utils::get_default_admin_address());
-        acl::add(&mut keeper_acl, utils::get_default_admin_address());
-
-        table::add(&mut acls, ADMIN_ROLE, admin_acl);
-        table::add(&mut acls, PAUSE_ROLE, pause_acl);
-        table::add(&mut acls, CA_ROLE, ca_acl);
-        table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
-
-        let acl_store = ACLStore{
-            // id: object::new(_ctx),
-            role_acls: acls,
-            license_black_list: table::new<vector<u8>, u8>(_ctx)
-        };
+     
         let manager = CrossChainManager{
-            // id: object::new(_ctx),
             paused: false,
-            acl_store: acl_store,
-            poly_id: 998,
+            poly_id: 1200,
             book_keepers: vector::empty<vector<u8>>(),
             epoch_start_height: 0,
             tx_hash_index: 0,
             tx_hash_map: table::new<u128, vector<u8>>(_ctx),
-            from_chain_tx_exist: table::new<u64, Table<vector<u8>, bool>>(_ctx)
+            from_chain_tx_exist: table::new<u64, Table<vector<u8>, bool>>(_ctx),
+            license_black_list: table::new<vector<u8>, u8>(_ctx)
            
         };
         manager
     }
-
-    public(friend) fun hasRole(ccManager:&mut CrossChainManager, role: u64, account: address): bool  {
-        //let acl_store_ref = borrow_global<ACLStore>(@poly);
-
-        if (table::contains(&ccManager.acl_store.role_acls, role)) {
-            let role_acl = table::borrow_mut(&mut ccManager.acl_store.role_acls, role);
-            return acl::contains(role_acl, account)
-        } else {
-            return false
-        }
-    }
-
-    public(friend) fun grant_role(
-        ccManager:&mut CrossChainManager, 
-        role: u64, 
-        account: address, 
-        ctx: &mut TxContext
-    )  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-
-        assert!(hasRole(ccManager, ADMIN_ROLE, sender), ENOT_ADMIN);
-        assert!(!hasRole(ccManager, role, account), EALREADY_HAS_ROLE);
-
-        if (table::contains(&ccManager.acl_store.role_acls, role)) {
-            let role_acl = table::borrow_mut(&mut ccManager.acl_store.role_acls, role);
-            acl::add(role_acl, account);
-        } else {
-            let role_acl = acl::empty();
-            acl::add(&mut role_acl, account);
-            table::add(&mut ccManager.acl_store.role_acls, role, role_acl);
-        }
-    }
-
-    public(friend) fun revoke_role(
-        ccManager:&mut CrossChainManager, 
-        role: u64, 
-        account: address, 
-        ctx: &mut TxContext
-    )  {
-        // sender address
-        let sender = tx_context::sender(ctx);
-
-        assert!(hasRole(ccManager, ADMIN_ROLE, sender), ENOT_ADMIN);
-        assert!(hasRole(ccManager, role, account), ENOT_HAS_ROLE);
-        //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
-        let role_acl = table::borrow_mut(&mut ccManager.acl_store.role_acls, role);
-        acl::remove(role_acl, account);
-    }
-
-    public(friend) fun check_keeper_role(
-         _ccManager:&mut CrossChainManager,
-         _sender: address
-    ) {
-        assert!(hasRole(_ccManager, CHANGE_KEEPER_ROLE, (_sender)), ENOT_CHANGE_KEEPER_ROLE);
-
-    }
-
-    public(friend) fun check_pause_role(
-         _ccManager:&mut CrossChainManager,
-         _sender: address
-    ) {
-        assert!(hasRole(_ccManager, PAUSE_ROLE, (_sender)), ENOT_PAUSE_ROLE);
-    }
-
 
     // cross chain license
     struct License has store, copy, drop {
@@ -177,19 +62,26 @@ module polynet::cross_chain_manager {
         module_name: vector<u8>
     }
 
-    public(friend) fun issueLicense(
-        ccManager:&mut CrossChainManager,
-        module_name: vector<u8>,
-        ctx: &mut TxContext 
+    //TODO: make sure account is token contract address 
+    public(friend) fun issue_license(
+        _module_name: vector<u8>,
+        _contract: address 
     ): License {
 
-        // sender address
-        let sender = tx_context::sender(ctx);
-        assert!(hasRole(ccManager, CA_ROLE, sender), ENOT_CA_ROLE);
-        License{
-            account: sender,
-            module_name: module_name,
-        }
+        // let sender = tx_context::sender(_ctx);
+        let license = License{
+                    account: _contract,
+                    module_name: _module_name,
+                };
+
+        let (res,_) = get_license_id(&license);
+        events::issue_license(
+            _module_name,
+            _contract,
+            res
+        );
+
+        license
     }
 
     public fun destroyLicense(license: License) {
@@ -198,7 +90,7 @@ module polynet::cross_chain_manager {
             account: _, module_name: _ } = license;
     }
 
-    public fun getLicenseId(license: &License): (vector<u8>, LicenseInfo) {
+    public fun get_license_id(license: &License): (vector<u8>, LicenseInfo) {
         let res = zero_copy_sink::write_var_bytes(&bcs::to_bytes(&license.account));
         vector::append(&mut res, zero_copy_sink::write_var_bytes(&license.module_name));
         let licenseInfo = LicenseInfo{
@@ -212,44 +104,6 @@ module polynet::cross_chain_manager {
         (license.account, license.module_name)
     }
 
-
-    // black list
-    // access level: 0b000000xy , x means blackListed as fromContract , y means blackListed as toContract
-    public fun isBlackListedFrom(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
-        //let acl_store_ref = borrow_global<ACLStore>(@poly);
-        if (table::contains(&ccManager.acl_store.license_black_list, license_id)) {
-            let access_level = *table::borrow(&ccManager.acl_store.license_black_list, license_id);
-            return (access_level & 0x02) != 0
-        } else {
-            return false
-        }
-    }
-
-    public fun isBlackListedTo(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
-        //let acl_store_ref = borrow_global<ACLStore>(@poly);
-        if (table::contains(&ccManager.acl_store.license_black_list, license_id)) {
-            let access_level = *table::borrow(&ccManager.acl_store.license_black_list, license_id);
-            return (access_level & 0x01) != 0
-        } else {
-            return false
-        }
-    }
-
-    public(friend) fun set_blacklist(
-        ccManager:&mut CrossChainManager,
-        license_id: vector<u8>,
-        access_level: u8, 
-        ctx: &mut TxContext
-    )  {
-
-        // sender address
-        let sender = tx_context::sender(ctx);
-
-        assert!(hasRole(ccManager, CA_ROLE, sender), ENOT_CA_ROLE);
-        //let acl_store_ref = borrow_global_mut<ACLStore>(@poly);
-        let v_ref = utils::borrow_mut_with_default(&mut ccManager.acl_store.license_black_list, license_id, access_level);
-        *v_ref = access_level;
-    }
 
     struct CrossChainEvent has store, drop, copy {
         sender: address,
@@ -303,7 +157,7 @@ module polynet::cross_chain_manager {
         let sender = tx_context::sender(ctx);
 
         // check license
-        let (license_id, _) = getLicenseId(license);
+        let (license_id, _) = get_license_id(license);
         assert!(!isBlackListedFrom(ccManager, license_id), EBLACKLISTED_FROM);
 
         // pack args
@@ -453,8 +307,8 @@ module polynet::cross_chain_manager {
         // check to chain id
         assert!(to_chain_id == poly_id, ENOT_TARGET_CHAIN);
 
-        // check verifier
-        let (license_id, _) = getLicenseId(license);
+        //check verifier polynet set global_config 0x address
+        let (license_id, _) = get_license_id(license);
         assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 
         // check black list
@@ -465,6 +319,14 @@ module polynet::cross_chain_manager {
             to_contract,
             poly_tx_hash,
             source_tx_hash
+        );
+       
+        events::read_certificate(
+            from_contract,
+            from_chain_id,
+            to_contract,
+            method,
+            args
         );
 
         // return a certificate to prove the execution is certified
@@ -588,5 +450,46 @@ module polynet::cross_chain_manager {
 
     }
 
+       // black list
+    // access level: 0b000000xy , x means blackListed as fromContract , y means blackListed as toContract
+    public fun isBlackListedFrom(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
+        //let acl_store_ref = borrow_global<ACLStore>(@poly);
+        if (table::contains(&ccManager.license_black_list, license_id)) {
+            let access_level = *table::borrow(&ccManager.license_black_list, license_id);
+            return (access_level & 0x02) != 0
+        } else {
+            return false
+        }
+    }
+
+    public fun isBlackListedTo(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
+        //let acl_store_ref = borrow_global<ACLStore>(@poly);
+        if (table::contains(&ccManager.license_black_list, license_id)) {
+            let access_level = *table::borrow(&ccManager.license_black_list, license_id);
+            return (access_level & 0x01) != 0
+        } else {
+            return false
+        }
+    }
+
+    public(friend) fun set_blacklist(
+        _cc_manager:&mut CrossChainManager,
+        _license_id: vector<u8>,
+        _access_level: u8, 
+        _ctx: &mut TxContext
+    )  {
+
+        // sender address
+        let sender = tx_context::sender(_ctx);
+
+        let v_ref = utils::borrow_mut_with_default(&mut _cc_manager.license_black_list, _license_id, _access_level);
+        *v_ref = _access_level;
+
+        events::set_blacklist_event(
+            _license_id,
+            _access_level,
+            sender
+        );
+    }
     
 }

@@ -69,6 +69,94 @@ module polynet::events {
         sender: address
     }
 
+    struct BlacklistEvent has store, drop, copy {
+        license_id: vector<u8>,
+        access_level: u8, 
+        sender: address
+    }
+
+    struct ReadAssetEvent has store, drop, copy {
+        to_asset: vector<u8>,
+        from_chain_id: u64,
+        decimals: u8
+    }
+
+    struct CertificateEvent has store, drop, copy {
+        from_asset: vector<u8>,
+        to_chain_id: u64,
+        target_license_id: vector<u8>,
+        method: vector<u8>,
+        args: vector<u8>
+
+    }
+
+     struct IssueLicenseEvent has store, drop, copy {
+        module_name: vector<u8>,
+        contract: address,
+        license_id: vector<u8>
+    }
+
+    public(friend) fun issue_license(
+        _module_name: vector<u8>,
+        _contract: address,
+        _license_id: vector<u8>
+    ) {
+        emit(
+            IssueLicenseEvent{
+                    module_name: _module_name,
+                    contract: _contract,
+                    license_id: _license_id
+                }
+        );
+    }
+
+    public(friend) fun read_certificate(
+        _from_contract: vector<u8>,
+        _from_chain_id: u64,
+        _target_license_id: vector<u8>,
+        _method: vector<u8>,
+        _args: vector<u8>
+    ) {
+        emit(
+            CertificateEvent{
+                    from_asset: _from_contract,
+                    to_chain_id: _from_chain_id,
+                    target_license_id: _target_license_id,
+                    method: _method,
+                    args: _args
+            }
+        );
+    }
+
+     public(friend) fun read_asset(
+        _to_asset: vector<u8>,
+        _from_chain_id: u64,
+        _decimals: u8
+    ) {
+        emit(
+            ReadAssetEvent{
+                    to_asset: _to_asset,
+                    from_chain_id: _from_chain_id,
+                    decimals: _decimals
+            }
+         );
+
+    }
+
+    public(friend) fun set_blacklist_event(
+        _license_id: vector<u8>,
+        _access_level: u8, 
+        _sender: address
+    ) {
+        emit (
+            BlacklistEvent{
+                license_id: _license_id,
+                access_level: _access_level,
+                sender: _sender
+            }
+        )
+    }
+
     // struct UpdateBookKeeperEvent has store, drop, copy {
     //     height: u64,
     //     sender: address,

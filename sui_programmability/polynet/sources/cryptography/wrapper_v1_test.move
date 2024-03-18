@@ -9,15 +9,15 @@ module polynet::wrapper_v1_test {
     use sui::coin;
     use polynet::bfc_eth::{new_for_test, BFC_ETH};
     use polynet::lock_proxy::{Treasury};
-    use polynet::tools::{init_mainnet_ccm, init_as_mainnet};
+    use polynet::tools::{init_mainnet_ccm, init_as_testnet};
     use polynet::wrapper_v1::{feeCollector, setFeeCollector, lock_and_pay_fee_with_fund};
-    use polynet::utils;
+    use polynet::acl::{ Self};
     use sui::test_scenario;
 
     #[test]
     fun test_wrapper_init(){
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        assert!(utils::is_admin(owner), 4001);
+        assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -62,7 +62,8 @@ module polynet::wrapper_v1_test {
     #[test]
     fun test_lock_and_pay_fee(){
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
-        assert!(utils::is_admin(owner), 4001);
+        let contract = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
@@ -84,7 +85,7 @@ module polynet::wrapper_v1_test {
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
 
-            init_mainnet_ccm(&mut ccConfig,owner,  &clock, ctx);
+            init_mainnet_ccm(&mut ccConfig,owner,&clock, ctx);
             clock::destroy_for_testing(clock);
             test_scenario::return_shared(ccConfig);
         };
@@ -127,11 +128,9 @@ module polynet::wrapper_v1_test {
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
 
-            init_as_mainnet(&mut ccConfig, &clock, ctx);
+            init_as_testnet(&mut ccConfig, &clock, contract, ctx);
             test_scenario::return_shared(ccConfig);
             clock::destroy_for_testing(clock);
-
-
         };
 
         test_scenario::next_tx(&mut scenario_val, owner);

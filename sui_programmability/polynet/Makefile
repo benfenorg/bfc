@@ -1,7 +1,7 @@
 all: compile publish compile publish test
 
 compile:
-	bfc move build --skip-fetch-latest-git-deps
+	bfc move build 
 
 test:
 	bfc move test --skip-fetch-latest-git-deps -s --coverage
@@ -15,5 +15,5 @@ publish:
 #note: should replace real upgrade_cap_id
 
 upgrade:
-	bfc client upgrade --gas-budget 2000000000 --upgrade-capability 2e34b695b8b1313dd2a4421080240ebbfd1d21dfb60dc57cf10b027db23778d8
+	bfc client upgrade --gas-budget 2000000000 --upgrade-capability 183963f59606d3b8fc8182d8f2da80255b267efd9715275f19eaa9e9014f5d8d
 
