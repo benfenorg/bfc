@@ -16,7 +16,7 @@ pub const RESOLVED_SUI_CLOCK: (&AccountAddress, &IdentStr, &IdentStr) =
     (&SUI_FRAMEWORK_ADDRESS, CLOCK_MODULE_NAME, CLOCK_STRUCT_NAME);
 pub const CONSENSUS_COMMIT_PROLOGUE_FUNCTION_NAME: &IdentStr =
     ident_str!("consensus_commit_prologue");
-pub const TIMESTAMP_FUNCTION_NAME: &IdentStr = ident_str!("timestamp_ms");
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Clock {
     pub id: UID,

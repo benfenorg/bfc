@@ -657,20 +657,6 @@ impl TestClusterBuilder {
             .epoch_duration_ms = epoch_duration_ms;
         self
     }
-    pub fn with_round_duration_ms(mut self, round_duration_ms: u64) -> Self {
-        self.get_or_init_genesis_config()
-            .parameters
-            .round_duration_ms = round_duration_ms;
-        self
-    }
-
-    pub fn with_stake_subsidy_initial_distribution_amount(mut self, stake_subsidy_initial_distribution_amount: u64) -> Self {
-        self.get_or_init_genesis_config()
-            .parameters
-            .stake_subsidy_initial_distribution_amount =
-    stake_subsidy_initial_distribution_amount;
-        self
-    }
 
     pub fn with_stake_subsidy_start_epoch(mut self, stake_subsidy_start_epoch: u64) -> Self {
         self.get_or_init_genesis_config()

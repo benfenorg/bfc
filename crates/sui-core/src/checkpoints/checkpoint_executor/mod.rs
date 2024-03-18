@@ -339,8 +339,6 @@ impl CheckpointExecutor {
             checkpoint_epoch,
             epoch_store.epoch(),
         );
-        //todo check is here ok?
-        //self.check_epoch_first_checkpoint(epoch_store.clone(), &checkpoint).await;
 
         let epoch_store = epoch_store.clone();
         // NOTE: We can't re-enqueue out of order. Therefore we cannot allow

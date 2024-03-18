@@ -200,7 +200,6 @@ mod checked {
                 .unwrap()
         } // else, in dev inspect mode and anything goes--don't check
 
-        //let (inner, effects) = temporary_store.to_effects(
         let (inner, effects) = temporary_store.into_effects(
             shared_object_refs,
             &transaction_digest,
@@ -671,12 +670,33 @@ mod checked {
     }
 
     pub fn construct_bfc_round_pt(
+        round_id: u64,
         param: ChangeObcRoundParams,
         reward_rate: u64,
         storage_rebate: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
+        let mut arguments = vec![];
 
+        let args = vec![
+            CallArg::BFC_SYSTEM_MUT,
+            CallArg::CLOCK_IMM,
+            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
+        ] .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
+
+        arguments.append(&mut args.unwrap());
+
+        info!("Call arguments to bfc round transaction: {:?}",round_id);
+
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            BFC_ROUND_FUNCTION_NAME.to_owned(),
+            vec![],
+            arguments,
+        );
         for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
 
@@ -786,7 +806,7 @@ mod checked {
     }
 
     fn advance_epoch(
-            change_epoch: ChangeEpoch,
+        change_epoch: ChangeEpoch,
         temporary_store: &mut TemporaryStore<'_>,
         tx_ctx: &mut TxContext,
         move_vm: &Arc<MoveVM>,
@@ -813,7 +833,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt( params, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -981,29 +1001,6 @@ mod checked {
                 res.is_ok(),
                 "Unable to generate consensus_commit_prologue transaction!"
             );
-
-            let bfc_state = temporary_store.get_bfc_state().inner_state();
-            if prologue.commit_timestamp_ms - bfc_state.round_timestamp_ms > bfc_state.round_duration_ms {
-                let bfc_system = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-                let mut arguments = vec![bfc_system];
-                let args = vec![
-                    CallArg::Pure(bcs::to_bytes(&prologue.commit_timestamp_ms).unwrap()),
-                ].into_iter()
-                    .map(|a| builder.input(a))
-                    .collect::<Result<_, _>>();
-
-                arguments.append(&mut args.unwrap());
-
-                info!("Call arguments to bfc round transaction: {:?}",prologue.commit_timestamp_ms);
-
-                builder.programmable_move_call(
-                    BFC_SYSTEM_PACKAGE_ID,
-                    BFC_SYSTEM_MODULE_NAME.to_owned(),
-                    BFC_ROUND_FUNCTION_NAME.to_owned(),
-                    vec![],
-                    arguments,
-                );
-            }
             builder.finish()
         };
         programmable_transactions::execution::execute::<execution_mode::System>(

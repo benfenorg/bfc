@@ -54,10 +54,6 @@ struct Args {
     #[clap(long, default_value = "60000")]
     epoch_duration_ms: u64,
 
-    #[clap(long, default_value = "30000")]
-    round_duration_ms: u64,
-
-
     /// if we should run indexer
     #[clap(long)]
     pub with_indexer: bool,
@@ -81,7 +77,6 @@ async fn main() -> Result<()> {
         pg_port,
         pg_host,
         epoch_duration_ms,
-        round_duration_ms,
         faucet_port,
         with_indexer,
         use_indexer_experimental_methods,
@@ -93,11 +88,6 @@ async fn main() -> Result<()> {
     } else {
         Some(epoch_duration_ms)
     };
-    let round_duration_ms = if config_dir.is_some() {
-        None
-    } else {
-        Some(round_duration_ms)
-    };
 
     let cluster = LocalNewCluster::start(&ClusterTestOpt {
         env: Env::NewLocal,
@@ -108,7 +98,6 @@ async fn main() -> Result<()> {
         )),
         faucet_address: None,
         epoch_duration_ms,
-        round_duration_ms,
         use_indexer_experimental_methods,
         config_dir,
     })

@@ -7,6 +7,7 @@ module bfc_system::bfc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
+    use sui::clock::{Self};
 
     use sui::bfc::BFC;
     use sui::object::UID;
@@ -118,18 +119,22 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
-    public entry fun change_round( wrapper: &mut BfcSystemState, round_timestamp_ms: u64, ctx: &mut TxContext) {
+    public entry fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round_duration(inner_state, round_timestamp_ms, ctx);
+        bfc_system_state_inner::update_round(inner_state, round);
     }
 
     public fun bfc_round(
         wrapper: &mut BfcSystemState,
-        round_timestamp_ms: u64,
+        clock: &Clock,
+        round: u64,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round_duration(inner_state, round_timestamp_ms, ctx);
+        bfc_system_state_inner::update_round(inner_state, round);
+        // X-treasury rebalance
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        judge_proposal_state(wrapper, clock::timestamp_ms(clock));
     }
 
     public fun inner_stablecoin_to_bfc<StableCoinType>(
@@ -446,14 +451,5 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         bfc_dao::add_admin(new_admin, ctx);
-    }
-
-    #[test_only]
-    public fun bfc_round_for_testing(
-        wrapper: &mut BfcSystemState,
-        round_timestamp_ms: u64,
-    ) {
-        let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::update_round_duration_only(inner_state, round_timestamp_ms);
     }
 }

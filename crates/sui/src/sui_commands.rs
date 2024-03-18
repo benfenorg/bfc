@@ -79,8 +79,6 @@ pub enum SuiCommand {
         force: bool,
         #[clap(long = "epoch-duration-ms")]
         epoch_duration_ms: Option<u64>,
-        #[clap(long = "round-duration-ms")]
-        round_duration_ms: Option<u64>,
         #[clap(
         long,
         value_name = "ADDR",
@@ -121,8 +119,6 @@ pub enum SuiCommand {
         force: bool,
         #[clap(long = "epoch-duration-ms")]
         epoch_duration_ms: Option<u64>,
-        #[clap(long = "round-duration-ms")]
-        round_duration_ms: Option<u64>,
         #[clap(
         long,
         value_name = "ADDR",
@@ -228,7 +224,7 @@ impl SuiCommand {
             } => {
                 // Auto genesis if path is none and bfc directory doesn't exists.
                 if config.is_none() && !sui_config_dir()?.join(SUI_NETWORK_CONFIG).exists() {
-                    genesis(None, None, None, false, None, None,None, false).await?;
+                    genesis(None, None, None, false, None, None, false).await?;
                 }
 
                 // Load the config of the Bfc authority.
@@ -305,7 +301,6 @@ impl SuiCommand {
                 from_config,
                 write_config,
                 epoch_duration_ms,
-                round_duration_ms,
                 benchmark_ips,
                 with_faucet,
             } => {
@@ -315,7 +310,6 @@ impl SuiCommand {
                     working_dir,
                     force,
                     epoch_duration_ms,
-                    round_duration_ms,
                     benchmark_ips,
                     with_faucet,
                 )
@@ -328,7 +322,6 @@ impl SuiCommand {
                 from_config,
                 write_config,
                 epoch_duration_ms,
-                round_duration_ms,
                 benchmark_ips,
                 with_faucet,
                 private_validator_names,
@@ -340,7 +333,6 @@ impl SuiCommand {
                     working_dir,
                     force,
                     epoch_duration_ms,
-                    round_duration_ms,
                     benchmark_ips,
                     with_faucet,
                     with_genesis,
@@ -425,7 +417,6 @@ pub async fn genesis(
     working_dir: Option<PathBuf>,
     force: bool,
     epoch_duration_ms: Option<u64>,
-    round_duration_ms: Option<u64>,
     benchmark_ips: Option<Vec<String>>,
     with_faucet: bool,
 ) -> Result<(), anyhow::Error> {
@@ -535,9 +526,6 @@ pub async fn genesis(
     let builder = ConfigBuilder::new(sui_config_dir);
     if let Some(epoch_duration_ms) = epoch_duration_ms {
         genesis_conf.parameters.epoch_duration_ms = epoch_duration_ms;
-    }
-    if let Some(round_duration_ms) = round_duration_ms {
-        genesis_conf.parameters.round_duration_ms = round_duration_ms;
     }
 
     //todo, we can chang this validator_info to the info we generate from genesis_ceremony committee
@@ -677,7 +665,6 @@ pub async fn genesis_private(
     working_dir: Option<PathBuf>,
     force: bool,
     epoch_duration_ms: Option<u64>,
-    round_duration_ms: Option<u64>,
     benchmark_ips: Option<Vec<String>>,
     with_faucet: bool,
     with_genesis: bool,
@@ -790,9 +777,6 @@ pub async fn genesis_private(
     let builder = ConfigBuilder::new(sui_config_dir);
     if let Some(epoch_duration_ms) = epoch_duration_ms {
         genesis_conf.parameters.epoch_duration_ms = epoch_duration_ms;
-    }
-    if let Some(round_duration_ms) = round_duration_ms {
-        genesis_conf.parameters.round_duration_ms = round_duration_ms;
     }
 
     let dir = std::env::current_dir()?;

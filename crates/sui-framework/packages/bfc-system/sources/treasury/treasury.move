@@ -401,7 +401,7 @@ module bfc_system::treasury {
     public(friend) fun rebalance(
         _treasury: &mut Treasury,
         _pool_balance: u64,
-        timestamp_ms: u64,
+        clock: &Clock,
         _ctx: &mut TxContext,
     ) {
         // check init
@@ -410,7 +410,7 @@ module bfc_system::treasury {
         };
 
         // check time_interval
-        let current_ts = timestamp_ms / 1000;
+        let current_ts = clock::timestamp_ms(clock) / 1000;
         if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
             return
         };
