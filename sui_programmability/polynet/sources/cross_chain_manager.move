@@ -16,6 +16,8 @@ module polynet::cross_chain_manager {
     friend polynet::tools;
     #[test_only]
     friend polynet::cross_chain_manager_test;
+    #[test_only]
+    friend polynet::tools_test;
    
 
     // Errors

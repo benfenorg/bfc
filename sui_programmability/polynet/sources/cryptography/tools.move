@@ -54,7 +54,7 @@ module polynet::tools {
 
     }
 
-    fun issue_license_to_lock_proxy(
+    public fun issue_license_to_lock_proxy(
         _config: &mut CrossChainGlobalConfig,
         _contract: address
     ) {

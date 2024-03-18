@@ -8,7 +8,6 @@ module polynet::bfc_usdt {
     use sui::tx_context::TxContext;
     use polynet::lock_proxy;
 
-
     // Errors
     const EINVALID_ADMIN: u64 = 2002;
 
@@ -47,6 +46,5 @@ module polynet::bfc_usdt {
         transfer::public_transfer(cap, tx_context::sender(ctx));
 
     }
-
 
 }

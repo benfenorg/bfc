@@ -17,7 +17,10 @@ module polynet::config {
     friend polynet::lock_proxy_test;
     #[test_only]
     friend polynet::wrapper_v1_test;
+    #[test_only]
+    friend polynet::tools_test;
     friend polynet::tools;
+
 
     const VERSION: u64 = 1;
     const ERR_CHECK_CONFIG_PAUSED: u64 = 6000;
