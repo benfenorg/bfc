@@ -10,7 +10,7 @@ module polynet::wrapper_v1_test {
     use polynet::bfc_eth::{new_for_test, BFC_ETH};
     use polynet::lock_proxy::{Treasury};
     use polynet::tools::{init_mainnet_ccm, init_as_testnet};
-    use polynet::wrapper_v1::{feeCollector, setFeeCollector, lock_and_pay_fee_with_fund};
+    use polynet::wrapper_v1::{fee_collector, set_fee_collector, lock_and_pay_fee_with_fund};
     use polynet::acl::{ Self};
     use sui::test_scenario;
 
@@ -33,7 +33,7 @@ module polynet::wrapper_v1_test {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
             let wStore = borrow_mut_wrapper_store(&mut ccConfig);
-            setFeeCollector(wStore, owner, ctx);
+            set_fee_collector(wStore, owner, ctx);
             test_scenario::return_shared( ccConfig);
         };
 
@@ -43,7 +43,7 @@ module polynet::wrapper_v1_test {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let ctx = test_scenario::ctx(&mut scenario_val);
             let wStore = borrow_mut_wrapper_store(&mut ccConfig);
-            setFeeCollector(wStore, new_fee_collecotr, ctx);
+            set_fee_collector(wStore, new_fee_collecotr, ctx);
             test_scenario::return_shared( ccConfig);
         };
 
@@ -51,7 +51,7 @@ module polynet::wrapper_v1_test {
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let wStore = borrow_mut_wrapper_store(&mut ccConfig);
-            let fee_collector =  feeCollector(wStore);
+            let fee_collector =  fee_collector(wStore);
             assert!(fee_collector==new_fee_collecotr, 4002);
             test_scenario::return_shared(ccConfig);
         };

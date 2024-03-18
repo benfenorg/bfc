@@ -51,9 +51,9 @@ module polynet::config {
         id: UID,
         paused: bool,
         acl_store: ACLStore,
-        crossChainManager: CrossChainManager,
-        lockProxyManager: LockProxyManager,
-        wrapperStore: WrapperStore,
+        cross_chain_manager: CrossChainManager,
+        lock_proxy_manager: LockProxyManager,
+        wrapper_store: WrapperStore,
         version: u64
     }
 
@@ -98,9 +98,9 @@ module polynet::config {
             id: object::new(_ctx),
             paused: false,
             acl_store: acl_store,
-            crossChainManager: cross_chain_manager::new(_ctx),
-            lockProxyManager: lock_proxy::new(_ctx),
-            wrapperStore: wrapper_v1::new(_ctx),
+            cross_chain_manager: cross_chain_manager::new(_ctx),
+            lock_proxy_manager: lock_proxy::new(_ctx),
+            wrapper_store: wrapper_v1::new(_ctx),
             version: VERSION
         };
        
@@ -143,15 +143,14 @@ module polynet::config {
             id: object::new(_ctx),
             paused: false,
             acl_store: acl_store,
-            crossChainManager: cross_chain_manager::new(_ctx),
-            lockProxyManager: lock_proxy::new(_ctx),
-            wrapperStore: wrapper_v1::new(_ctx),
+            cross_chain_manager: cross_chain_manager::new(_ctx),
+            lock_proxy_manager: lock_proxy::new(_ctx),
+            wrapper_store: wrapper_v1::new(_ctx),
             version: VERSION
         };
        
         transfer::share_object(config);
     }
-
 
     public(friend) fun migrate(
         _global: &mut CrossChainGlobalConfig,
@@ -169,28 +168,27 @@ module polynet::config {
     }
 
     public(friend) fun borrow_wrapper_store(_global: &CrossChainGlobalConfig): &WrapperStore {
-        &_global.wrapperStore
+        &_global.wrapper_store
     }
 
     public(friend) fun borrow_mut_wrapper_store(_global: &mut CrossChainGlobalConfig): &mut WrapperStore {
-        &mut _global.wrapperStore
+        &mut _global.wrapper_store
     }
 
     public(friend) fun borrow_mut_crosschain_manager(_global: &mut CrossChainGlobalConfig): &mut CrossChainManager {
-        &mut _global.crossChainManager
+        &mut _global.cross_chain_manager
     }
 
     public(friend) fun borrow_crosschain_manager(_global: &mut CrossChainGlobalConfig): &CrossChainManager {
-        &_global.crossChainManager
+        &_global.cross_chain_manager
     }
-
 
     public(friend) fun borrow_mut_lp_manager(_global: &mut CrossChainGlobalConfig): &mut LockProxyManager {
-        &mut _global.lockProxyManager
+        &mut _global.lock_proxy_manager
     }
 
-     public(friend) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): &LockProxyManager {
-        &_global.lockProxyManager
+    public(friend) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): &LockProxyManager {
+        &_global.lock_proxy_manager
     }
 
     public(friend) fun borrow_mut_all(
@@ -200,7 +198,7 @@ module polynet::config {
         &mut WrapperStore,
         &mut CrossChainManager
         ) {
-        (&mut _global.lockProxyManager, &mut _global.wrapperStore,&mut _global.crossChainManager )
+        (&mut _global.lock_proxy_manager, &mut _global.wrapper_store,&mut _global.cross_chain_manager )
     }
 
     public(friend) fun borrow_mut_lp_and_cc_managers(
@@ -209,7 +207,7 @@ module polynet::config {
         &mut LockProxyManager,
         &mut CrossChainManager
         ) {
-        (&mut _global.lockProxyManager, &mut _global.crossChainManager )
+        (&mut _global.lock_proxy_manager, &mut _global.cross_chain_manager )
     }
 
        // pause/unpause
@@ -223,7 +221,6 @@ module polynet::config {
         assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
       
     }
-
 
     public(friend) fun pause(_global:&mut CrossChainGlobalConfig){
 

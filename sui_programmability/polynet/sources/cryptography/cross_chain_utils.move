@@ -45,11 +45,11 @@ module polynet::cross_chain_utils {
         args: vector<u8>
     }
 
-    public fun merkleProve(auditPath: &vector<u8>, root: &vector<u8>): vector<u8> {
+    public fun merkle_prove(auditPath: &vector<u8>, root: &vector<u8>): vector<u8> {
         let offset: u64 = 0;
         let value: vector<u8>;
         (value, offset) = polynet::zero_copy_source::next_var_bytes(auditPath, offset);
-        let hash: vector<u8> = hashLeaf(&value);
+        let hash: vector<u8> = hash_leaf(&value);
         let size: u64 = (vector::length(auditPath) - offset) / MERKLE_PROOF_NODE_LEN;
         let nodeHash: vector<u8>;
         let index: u64 = 0;
@@ -58,9 +58,9 @@ module polynet::cross_chain_utils {
             (pos, offset) = polynet::zero_copy_source::next_byte(auditPath, offset);
             (nodeHash, offset) = polynet::zero_copy_source::next_hash(auditPath, offset);
             hash = if (pos == 0) {
-                hashChildren(&nodeHash, &hash)
+                hash_children(&nodeHash, &hash)
             } else if (pos == 1) {
-                hashChildren(&hash, &nodeHash)
+                hash_children(&hash, &nodeHash)
             } else {
                 abort EINVALID_POSITION
             };
@@ -70,21 +70,21 @@ module polynet::cross_chain_utils {
         return value
     }
 
-    fun hashLeaf(data: &vector<u8>): vector<u8> {
+    fun hash_leaf(data: &vector<u8>): vector<u8> {
         let data_copy = vector<u8>[0x00];
         vector::append(&mut data_copy, *data);
         return hash::sha2_256(data_copy)
     }
 
-    fun hashChildren(l: &vector<u8>, r: &vector<u8>): vector<u8> {
+    fun hash_children(l: &vector<u8>, r: &vector<u8>): vector<u8> {
         let data = vector<u8>[0x01];
         vector::append(&mut data, *l);
         vector::append(&mut data, *r);
         return hash::sha2_256(data)
     }
 
-    public  fun verifySig(rawHeader: &vector<u8>, sigList: &vector<u8>, keepers: &vector<vector<u8>>, threshold: u64): bool  {
-        let headerHash = getHeaderHash(rawHeader);
+    public  fun verify_sig(rawHeader: &vector<u8>, sigList: &vector<u8>, keepers: &vector<vector<u8>>, threshold: u64): bool  {
+        let headerHash = get_header_hash(rawHeader);
         let sigCount = vector::length<u8>(sigList)/POLYCHAIN_SIGNATURE_LEN;
         let signers = vector::empty<vector<u8>>();
         let recovery_id: u8;
@@ -101,7 +101,7 @@ module polynet::cross_chain_utils {
             vector::push_back<vector<u8>>(&mut signers, the_signer);
             index = index + 1;
         };
-        return containMAddresses(keepers, &signers, threshold)
+        return contain_addresses(keepers, &signers, threshold)
     }
 
 
@@ -111,8 +111,8 @@ module polynet::cross_chain_utils {
         sig: vector<u8>,
         sigList: vector<u8>,
     }
-    public entry  fun verifySigTest(rawHeader: vector<u8>, sigList: vector<u8>, keepers: vector<vector<u8>>, threshold: u64)  {
-        let headerHash = getHeaderHash(&rawHeader);
+    public entry  fun ververify_sig_test(rawHeader: vector<u8>, sigList: vector<u8>, keepers: vector<vector<u8>>, threshold: u64)  {
+        let headerHash = get_header_hash(&rawHeader);
         let sigCount = vector::length<u8>(&sigList)/POLYCHAIN_SIGNATURE_LEN;
         let signers = vector::empty<vector<u8>>();
         let recovery_id: u8;
@@ -141,14 +141,14 @@ module polynet::cross_chain_utils {
             vector::push_back<vector<u8>>(&mut signers, the_signer);
             index = index + 1;
         };
-        let result = containMAddresses(&keepers, &signers, threshold);
+        let result = contain_addresses(&keepers, &signers, threshold);
         if (!result) {
             abort ENOT_ENOUGH_SIG
         }
     }
 
 
-    fun containMAddresses(keepers: &vector<vector<u8>>, signers: &vector<vector<u8>>, threshold: u64): bool {
+    fun contain_addresses(keepers: &vector<vector<u8>>, signers: &vector<vector<u8>>, threshold: u64): bool {
         let keepers_copy = *keepers;
         let cnt: u64 = 0; 
         while (!vector::is_empty<vector<u8>>(&keepers_copy)) {
@@ -160,7 +160,7 @@ module polynet::cross_chain_utils {
         return cnt >= threshold
     }
 
-    public fun deserializeMerkleValue(valueBs: &vector<u8>): (
+    public fun deserialize_merkle_value(valueBs: &vector<u8>): (
         vector<u8>,
         u64,
         vector<u8>,
@@ -206,7 +206,7 @@ module polynet::cross_chain_utils {
         )
     }
 
-    public fun deserializeHeader(headerBs : &vector<u8>): (
+    public fun deserialize_header(headerBs : &vector<u8>): (
         u64,
         u64,
         u64,
@@ -259,7 +259,7 @@ module polynet::cross_chain_utils {
         )
     }
 
-    public fun getHeaderHash(rawHeader: &vector<u8>): vector<u8> {
+    public fun get_header_hash(rawHeader: &vector<u8>): vector<u8> {
         return hash::sha2_256(hash::sha2_256(*rawHeader))
     }
 }

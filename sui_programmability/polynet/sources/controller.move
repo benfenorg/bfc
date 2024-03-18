@@ -43,7 +43,7 @@ module polynet::controller {
         config::check_admin_role(_global, sender);
         config::check_version(_global);
 
-        wrapper_v1::setFeeCollector(
+        wrapper_v1::set_fee_collector(
                         config::borrow_mut_wrapper_store(_global),
                         _new_fee_collector,
                         _ctx
@@ -155,7 +155,7 @@ module polynet::controller {
         let (lp_manager,cc_manager) = config::borrow_mut_lp_and_cc_managers(_global);
         let license_ref = lock_proxy::get_license_ref(lp_manager);
 
-        let certificate = cross_chain_manager::verifyHeaderAndExecuteTx(
+        let certificate = cross_chain_manager::verify_header_and_execute_tx(
                                                     cc_manager,
                                                     license_ref, 
                                                     &_proof, 
@@ -194,7 +194,7 @@ module polynet::controller {
         let (lp_manager,cc_manager) = config::borrow_mut_lp_and_cc_managers(_global);
         let license_ref = lock_proxy::get_license_ref(lp_manager);
 
-       cross_chain_manager::verifyHeaderAndExecuteTx(
+       cross_chain_manager::verify_header_and_execute_tx(
                                             cc_manager,
                                             license_ref, 
                                             &_proof, 

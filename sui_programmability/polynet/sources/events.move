@@ -90,10 +90,142 @@ module polynet::events {
 
     }
 
-     struct IssueLicenseEvent has store, drop, copy {
+    struct IssueLicenseEvent has store, drop, copy {
         module_name: vector<u8>,
         contract: address,
         license_id: vector<u8>
+    }
+
+    struct CrossChainEvent has store, drop, copy {
+        sender: address,
+        tx_id: vector<u8>,
+        proxy_or_asset_contract: vector<u8>,
+        to_chain_id: u64,
+        to_contract: vector<u8>,
+        raw_data: vector<u8>,
+    }
+
+    struct BindProxyEvent has store, drop, copy {
+        to_chain_id: u64,
+        target_proxy_hash: vector<u8>
+    }
+
+    struct UnbindProxyEvent has store, drop, copy {
+        to_chain_id: u64,
+        target_proxy_hash: vector<u8>
+    }
+
+    struct BindAssetEvent has store, drop, copy {
+        from_asset: TypeName,
+        to_chain_id: u64,
+        to_asset_hash: vector<u8>,
+        to_asset_decimals: u8,
+    }
+
+    struct UnbindAssetEvent has store, drop, copy {
+        from_asset: TypeName,
+        to_chain_id: u64,
+        to_asset_hash: vector<u8>,
+        to_asset_decimals: u8,
+    }
+
+    struct UnlockEvent has store, drop, copy {
+        to_asset: TypeName,
+        to_address: address,
+        amount: u64,
+        from_chain_amount: u128,
+    }
+
+    public(friend) fun unlock(
+        _to_asset: TypeName,
+        _to_address: address,
+        _amount: u64,
+        _from_chain_amount: u128,
+    ) {
+        emit(
+            UnlockEvent{
+                    to_asset: _to_asset,
+                    to_address: _to_address,
+                    amount: _amount,
+                    from_chain_amount: _from_chain_amount,
+                }
+        );
+    }
+
+    public(friend) fun unbind_asset(
+        _from_asset: TypeName,
+        _to_chain_id: u64,
+        _to_asset_hash: vector<u8>,
+        _to_asset_decimals: u8,
+    ) {
+        emit(
+            UnbindAssetEvent{
+                    from_asset: _from_asset,
+                    to_chain_id: _to_chain_id,
+                    to_asset_hash: _to_asset_hash,
+                    to_asset_decimals: _to_asset_decimals,
+                }
+        );
+    }
+
+    public(friend) fun bind_asset(
+        _from_asset: TypeName,
+        _to_chain_id: u64,
+        _to_asset_hash: vector<u8>,
+        _to_asset_decimals: u8,
+    ) {
+        emit(
+            BindAssetEvent{
+                    from_asset: _from_asset,
+                    to_chain_id: _to_chain_id,
+                    to_asset_hash: _to_asset_hash,
+                    to_asset_decimals: _to_asset_decimals,
+                }
+        );
+    }
+
+    public(friend) fun bind_proxy(
+        _to_chain_id: u64,
+        _target_proxy_hash: vector<u8>
+    ) {
+        emit(
+            BindProxyEvent{
+                      to_chain_id: _to_chain_id,
+                      target_proxy_hash: _target_proxy_hash
+                }
+        );
+    }
+
+    public(friend) fun unbind_proxy(
+        _to_chain_id: u64,
+        _target_proxy_hash: vector<u8>
+    ) {
+        emit(
+            UnbindProxyEvent{
+                      to_chain_id: _to_chain_id,
+                      target_proxy_hash: _target_proxy_hash
+                }
+        );
+    }
+
+    public(friend) fun cross_chain(
+        _sender: address,
+        _tx_id: vector<u8>,
+        _proxy_or_asset_contract: vector<u8>,
+        _to_chain_id: u64,
+        _to_contract: vector<u8>,
+        _raw_data: vector<u8>,
+    ) {
+        emit(
+            CrossChainEvent{
+                    sender: _sender,
+                    tx_id: _tx_id,
+                    proxy_or_asset_contract: _proxy_or_asset_contract,
+                    to_chain_id: _to_chain_id,
+                    to_contract: _to_contract,
+                    raw_data: _raw_data
+                }
+        );
     }
 
     public(friend) fun issue_license(

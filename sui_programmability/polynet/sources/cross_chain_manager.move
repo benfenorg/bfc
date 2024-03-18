@@ -3,7 +3,6 @@ module polynet::cross_chain_manager {
     use std::hash;
     use std::bcs;
     use polynet::utils;
-    use sui::event;
     use sui::table::{Table, Self};
     use sui::tx_context;
     use sui::tx_context::TxContext;
@@ -40,6 +39,26 @@ module polynet::cross_chain_manager {
         license_black_list: Table<vector<u8>, u8> //cross chain manager control the black_list
     }
 
+      // cross chain license
+    struct License has store, copy, drop {
+        account: address,
+        module_name: vector<u8>
+    }
+
+    struct LicenseInfo has store, drop, copy {
+        account: address,
+        module_name: vector<u8>,
+    }
+
+       // certificate
+    struct Certificate has drop {
+        from_contract: vector<u8>,
+        from_chain_id: u64,
+        target_license_id: vector<u8>,
+        method: vector<u8>,
+        args: vector<u8>
+    }
+
     public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
      
         let manager = CrossChainManager{
@@ -56,12 +75,7 @@ module polynet::cross_chain_manager {
         manager
     }
 
-    // cross chain license
-    struct License has store, copy, drop {
-        account: address,
-        module_name: vector<u8>
-    }
-
+  
     //TODO: make sure account is token contract address 
     public(friend) fun issue_license(
         _module_name: vector<u8>,
@@ -84,7 +98,7 @@ module polynet::cross_chain_manager {
         license
     }
 
-    public fun destroyLicense(license: License) {
+    public fun destroy_license(license: License) {
         //need admin
         let License{
             account: _, module_name: _ } = license;
@@ -100,21 +114,9 @@ module polynet::cross_chain_manager {
         return (res, licenseInfo)
     }
 
-    public fun getLicenseInfo(license: &License): (address, vector<u8>) {
+    public fun get_license_info(license: &License): (address, vector<u8>) {
         (license.account, license.module_name)
     }
-
-
-    struct CrossChainEvent has store, drop, copy {
-        sender: address,
-        tx_id: vector<u8>,
-        proxy_or_asset_contract: vector<u8>,
-        to_chain_id: u64,
-        to_contract: vector<u8>,
-        raw_data: vector<u8>,
-    }
-
-   
 
     public fun check_from_chain_tx_exist(ccManager:&CrossChainManager, fromChainId: u64, fromChainTx: &vector<u8>): bool {
         //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
@@ -126,25 +128,25 @@ module polynet::cross_chain_manager {
         return false
     }
 
-    public fun getEthTxHashIndex(ccManager:&CrossChainManager): u128 {
+    public fun get_eth_tx_hash_index(ccManager:&CrossChainManager): u128 {
         //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
        ccManager.tx_hash_index
     }
 
-    fun putEthTxHash(ccManager:&mut CrossChainManager, hash: &vector<u8>) {
+    fun put_eth_tx_hash(ccManager:&mut CrossChainManager, hash: &vector<u8>) {
         //let config_ref = borrow_global_mut<CrossChainGlobalConfig>(@poly);
         let index = ccManager.tx_hash_index;
         utils::upsert(&mut ccManager.tx_hash_map, index, *hash);
         ccManager.tx_hash_index = index + 1;
     }
 
-    public fun getEthTxHash(ccManager:&CrossChainManager, ethHashIndex: u128): vector<u8>  {
+    public fun get_eth_tx_hash(ccManager:&CrossChainManager, ethHashIndex: u128): vector<u8>  {
         //let config_ref = borrow_global<CrossChainGlobalConfig>(@poly);
         return *table::borrow(&ccManager.tx_hash_map, ethHashIndex)
     }
 
     // cross chain
-    public fun crossChain(
+    public fun cross_chain(
         ccManager:&mut CrossChainManager,
         license: &License,
         toChainId: u64,
@@ -158,10 +160,10 @@ module polynet::cross_chain_manager {
 
         // check license
         let (license_id, _) = get_license_id(license);
-        assert!(!isBlackListedFrom(ccManager, license_id), EBLACKLISTED_FROM);
+        assert!(!is_blacklist_from(ccManager, license_id), EBLACKLISTED_FROM);
 
         // pack args
-        let tx_hash_index = getEthTxHashIndex(ccManager);
+        let tx_hash_index = get_eth_tx_hash_index(ccManager);
         let param_tx_hash = bcs::to_bytes(&tx_hash_index);
         vector::reverse(&mut param_tx_hash);
 
@@ -178,41 +180,24 @@ module polynet::cross_chain_manager {
         vector::append(&mut raw_param, zero_copy_sink::write_var_bytes(txData));
 
         // mark
-        putEthTxHash(ccManager, &hash::sha2_256(copy raw_param));
+        put_eth_tx_hash(ccManager, &hash::sha2_256(copy raw_param));
 
-        // emit event
-        //let event_store = borrow_global_mut<EventStore>(@poly);
-        event::emit(
-            CrossChainEvent{
-                sender: sender,
-                tx_id: param_tx_hash,
-                proxy_or_asset_contract: license_id,
-                to_chain_id: toChainId,
-                to_contract: *toContract,
-                raw_data: raw_param,
-            },
+        events::cross_chain(
+                    sender,
+                    param_tx_hash,
+                    license_id,
+                    toChainId,
+                    *toContract,
+                    raw_param,
         );
-    }
-
-    struct LicenseInfo has store, drop, copy {
-        account: address,
-        module_name: vector<u8>,
     }
 
     public fun get_license_account(license: &LicenseInfo) :address{
         return license.account
     }
+
     public fun get_license_module_name(license: &LicenseInfo) :vector<u8>{
         return license.module_name
-    }
-    
-    // certificate
-    struct Certificate has drop {
-        from_contract: vector<u8>,
-        from_chain_id: u64,
-        target_license_id: vector<u8>,
-        method: vector<u8>,
-        args: vector<u8>
     }
 
     public fun read_certificate(certificate: &Certificate): (
@@ -233,9 +218,7 @@ module polynet::cross_chain_manager {
 
 
     // verify header and execute tx
-    public fun verifyHeaderAndExecuteTx(
-        // polyId: u64,
-        // cur_epoch_start_height: u64,
+    public fun verify_header_and_execute_tx(
         ccManager:&mut CrossChainManager,
         license: &License,
         proof: &vector<u8>,
@@ -257,7 +240,7 @@ module polynet::cross_chain_manager {
             _,
             _,
             _
-        ) = cross_chain_utils::deserializeHeader(rawHeader);
+        ) = cross_chain_utils::deserialize_header(rawHeader);
         let keepers = get_cur_book_keeper(ccManager);
         let poly_id = get_poly_id(ccManager);
         let cur_epoch_start_height = get_cur_epoch_start_height(ccManager);
@@ -266,9 +249,9 @@ module polynet::cross_chain_manager {
 
         // verify header
         if (height >= cur_epoch_start_height) {
-            assert!(cross_chain_utils::verifySig(rawHeader, headerSig, &keepers, threshold), EVERIFY_HEADER_FAILED);
+            assert!(cross_chain_utils::verify_sig(rawHeader, headerSig, &keepers, threshold), EVERIFY_HEADER_FAILED);
         } else {
-            assert!(cross_chain_utils::verifySig(curRawHeader, headerSig, &keepers, threshold), EVERIFY_HEADER_FAILED);
+            assert!(cross_chain_utils::verify_sig(curRawHeader, headerSig, &keepers, threshold), EVERIFY_HEADER_FAILED);
             let (
                 _,
                 _,
@@ -281,13 +264,13 @@ module polynet::cross_chain_manager {
                 blockRoot,
                 _,
                 _
-            ) = cross_chain_utils::deserializeHeader(curRawHeader);
-            let prove_value = cross_chain_utils::merkleProve(headerProof, &blockRoot);
-            assert!(cross_chain_utils::getHeaderHash(rawHeader) == prove_value, EVERIFY_HEADER_PROOF_FAILED);
+            ) = cross_chain_utils::deserialize_header(curRawHeader);
+            let prove_value = cross_chain_utils::merkle_prove(headerProof, &blockRoot);
+            assert!(cross_chain_utils::get_header_hash(rawHeader) == prove_value, EVERIFY_HEADER_PROOF_FAILED);
         };
 
         // verify cross state proof
-        let to_merkle_value_bytes = cross_chain_utils::merkleProve(proof, &cross_states_root);
+        let to_merkle_value_bytes = cross_chain_utils::merkle_prove(proof, &cross_states_root);
         let (
             poly_tx_hash,
             from_chain_id,
@@ -298,7 +281,7 @@ module polynet::cross_chain_manager {
             to_contract,
             method,
             args
-        ) = cross_chain_utils::deserializeMerkleValue(&to_merkle_value_bytes);
+        ) = cross_chain_utils::deserialize_merkle_value(&to_merkle_value_bytes);
 
         // double-spending check/mark
         assert!(!check_from_chain_tx_exist(ccManager, from_chain_id, &poly_tx_hash), EALREADY_EXECUTED);
@@ -312,7 +295,7 @@ module polynet::cross_chain_manager {
         assert!(license_id == to_contract, EVERIFIER_NOT_RECEIVER);
 
         // check black list
-        assert!(!isBlackListedTo(ccManager, to_contract), EBLACKLISTED_TO);
+        assert!(!is_blacklist_to(ccManager, to_contract), EBLACKLISTED_TO);
 
         events::verify_header_and_execute_tx_event(
             from_chain_id,
@@ -452,7 +435,7 @@ module polynet::cross_chain_manager {
 
        // black list
     // access level: 0b000000xy , x means blackListed as fromContract , y means blackListed as toContract
-    public fun isBlackListedFrom(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
+    public fun is_blacklist_from(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
         if (table::contains(&ccManager.license_black_list, license_id)) {
             let access_level = *table::borrow(&ccManager.license_black_list, license_id);
@@ -462,7 +445,7 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public fun isBlackListedTo(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
+    public fun is_blacklist_to(ccManager:&CrossChainManager, license_id: vector<u8>): bool  {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
         if (table::contains(&ccManager.license_black_list, license_id)) {
             let access_level = *table::borrow(&ccManager.license_black_list, license_id);

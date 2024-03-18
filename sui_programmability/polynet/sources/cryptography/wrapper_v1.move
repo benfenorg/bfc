@@ -37,7 +37,7 @@ module polynet::wrapper_v1 {
     }
 
 
-    public(friend) fun setFeeCollector(
+    public(friend) fun set_fee_collector(
         _wrapperstore:&mut WrapperStore, 
         _new_fee_collector: address, 
         _ctx: &mut TxContext
@@ -46,7 +46,7 @@ module polynet::wrapper_v1 {
         _wrapperstore.fee_collector = _new_fee_collector;
     }
 
-    public fun feeCollector(_wrapperstore: &WrapperStore): address {
+    public fun fee_collector(_wrapperstore: &WrapperStore): address {
         return _wrapperstore.fee_collector
     }
     
@@ -69,8 +69,8 @@ module polynet::wrapper_v1 {
 
         //coin::deposit<BFC>(feeCollector(), fee);
 
-        let feeCollector = feeCollector(wrapperstore);
-        transfer::public_transfer(fee, feeCollector);
+        let collector = fee_collector(wrapperstore);
+        transfer::public_transfer(fee, collector);
 
         lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,clock, ctx);
         events::lock_with_fee_event(

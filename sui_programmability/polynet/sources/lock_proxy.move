@@ -1,11 +1,9 @@
 #[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
-    use std::ascii;
-    use std::ascii::{as_bytes, string, String};
+    use std::ascii::{Self, as_bytes, string, String};
     use std::vector;
     use std::option::{Self, Option};
-    use std::string;
-    use std::string::length;
+    use std::string::{Self,length};
     use sui::event;
     use sui::math;
     use sui::table::{Self, Table};
@@ -30,15 +28,12 @@ module polynet::lock_proxy {
     use polynet::consts;
     use polynet::acl::{ Self};
 
-
-
     friend polynet::wrapper_v1;
     friend polynet::controller;
     friend polynet::config;
 
     #[test_only]
     friend polynet::lock_proxy_test;
-
 
     const ENOT_OWNER: u64 = 3001;
     const ETREASURY_NOT_EXIST: u64 = 3002;
@@ -57,8 +52,6 @@ module polynet::lock_proxy {
     const ERR_CHECK_LP_MANAGER_PAUSED: u64 = 3015;
     const ETARGET_ASSET_CHAIN_NOT_BIND: u64 = 3016;
 
-
-
     const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
 
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
@@ -67,7 +60,6 @@ module polynet::lock_proxy {
         time: u64,
         amount_record: VecMap<vector<u8>, u64>,
     }
-
 
     struct LockProxyManager has store{
         lock_proxy_store: LockProxyStore,
@@ -89,25 +81,6 @@ module polynet::lock_proxy {
 
     struct LicenseStore has store {
         license: Option<cross_chain_manager::License>
-    }
-
-
-    // events
-    struct BindProxyEvent has store, drop, copy {
-        to_chain_id: u64,
-        target_proxy_hash: vector<u8>
-    }
-    struct BindAssetEvent has store, drop, copy {
-        from_asset: TypeName,
-        to_chain_id: u64,
-        to_asset_hash: vector<u8>,
-        to_asset_decimals: u8,
-    }
-    struct UnlockEvent has store, drop, copy {
-        to_asset: TypeName,
-        to_address: address,
-        amount: u64,
-        from_chain_amount: u128,
     }
 
     struct LicenseIdEvent has store, drop, copy {
@@ -220,13 +193,10 @@ module polynet::lock_proxy {
     )  {
         //let config_ref = borrow_global_mut<LockProxyStore>(POLY_BRIDGE);
         utils::upsert(&mut lpManager.lock_proxy_store.proxy_map, to_chain_id, target_proxy_hash);
-
-        event::emit(
-            BindProxyEvent{
-                to_chain_id: to_chain_id,
-                target_proxy_hash,
-            },
-        );
+        events::bind_proxy(
+                    to_chain_id,
+                    target_proxy_hash
+                );
     }
 
     public(friend) fun unbind_proxy(
@@ -241,12 +211,10 @@ module polynet::lock_proxy {
             abort ETARGET_PROXY_NOT_BIND
         };
 
-        event::emit(
-            BindProxyEvent{
-                to_chain_id: to_chain_id,
-                target_proxy_hash: vector::empty<u8>(),
-            },
-        );
+        events::unbind_proxy(
+                    to_chain_id,
+                    vector::empty<u8>()
+                );
     }
 
     public(friend) fun bind_asset<CoinType>(
@@ -269,14 +237,12 @@ module polynet::lock_proxy {
             table::add(&mut lpManager.lock_proxy_store.asset_map, from_asset, subTable);
         };
 
-        event::emit(
-            BindAssetEvent{
-                from_asset: from_asset,
-                to_chain_id: to_chain_id,
-                to_asset_hash,
-                to_asset_decimals: to_asset_decimals,
-            },
-        );
+        events::bind_asset(
+                    from_asset,
+                    to_chain_id,
+                    to_asset_hash,
+                    to_asset_decimals,
+                 );
     }
 
     public(friend) fun unbind_asset<CoinType>(
@@ -298,19 +264,17 @@ module polynet::lock_proxy {
             abort ETARGET_ASSET_NOT_BIND
         };
 
-        event::emit(
-            BindAssetEvent{
-                from_asset: from_asset,
-                to_chain_id: to_chain_id,
-                to_asset_hash: vector::empty<u8>(),
-                to_asset_decimals: 0,
-            },
-        );
+        events::unbind_asset(
+                    from_asset,
+                    to_chain_id,
+                    vector::empty<u8>(),
+                    0,
+                 );
     }
 
     // treasury function
     //public entry fun initTreasury<CoinType>(admin: address, ctx: &mut TxContext){
-    public  fun initTreasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
+    public  fun init_treasury<CoinType>(ctx: &mut TxContext): Treasury<CoinType> {
 
 
         let treasury = Treasury<CoinType>{
@@ -357,7 +321,7 @@ module polynet::lock_proxy {
         //let license_opt = &mut borrow_global_mut<LicenseStore>(POLY_BRIDGE).license;
         //assert!(option::is_none<cross_chain_manager::License>(license_opt), ELICENSE_ALREADY_EXIST);
 
-        let (license_account, license_module_name) = cross_chain_manager::getLicenseInfo(&license);
+        let (license_account, license_module_name) = cross_chain_manager::get_license_info(&license);
         let this_type = type_name::get<LicenseStore>();
         let this_account = type_name::get_address(&this_type);
         let this_module_name = type_name::get_module(&this_type);
@@ -464,7 +428,7 @@ module polynet::lock_proxy {
         let tx_data = serializeTxArgs(&to_asset, toAddress, target_chain_amount);
 
         // cross chain
-        cross_chain_manager::crossChain(
+        cross_chain_manager::cross_chain(
                                 ccManager, 
                                 license_ref, 
                                 toChainId,
@@ -536,15 +500,13 @@ module polynet::lock_proxy {
 
         transfer::public_transfer(fund, utils::to_address(to_address));
 
-        // emit event
-        event::emit(
-            UnlockEvent{
-                to_asset: type_name::get<Coin<CoinType>>(),
-                to_address: utils::to_address(to_address),
-                amount,
-                from_chain_amount
-            },
-        );
+        events::unlock(
+                    type_name::get<Coin<CoinType>>(),
+                    utils::to_address(to_address),
+                    amount,
+                    from_chain_amount
+                 );
+
     }
 
 
