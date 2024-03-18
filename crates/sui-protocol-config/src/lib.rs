@@ -1048,7 +1048,7 @@ impl ProtocolConfig {
             obj_access_cost_mutate_per_byte: Some(40),
             obj_access_cost_delete_per_byte: Some(40),
             obj_access_cost_verify_per_byte: Some(200),
-            obj_data_cost_refundable: Some(10),
+            obj_data_cost_refundable: Some(1),
             obj_metadata_cost_non_refundable: Some(50),
             gas_model_version: Some(1),
             storage_rebate_rate: Some(9900),
