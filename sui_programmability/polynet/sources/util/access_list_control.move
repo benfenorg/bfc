@@ -2,7 +2,6 @@ module polynet::acl {
     use std::vector;
 
     friend polynet::config;
-    friend polynet::bfc_btc;
     friend polynet::tools;
     friend polynet::controller;
     friend polynet::lock_proxy;
@@ -11,10 +10,10 @@ module polynet::acl {
     friend polynet::utils_test;
 
     /// The ACL already contains the address.
-    const ECONTAIN: u64 = 4000;
+    const ECONTAIN: u64 = 7000;
     /// The ACL does not contain the address.
-    const ENOT_CONTAIN: u64 = 4001;
-    const ERROR_EMPTY_ADDRESS: u64 = 4002;
+    const ENOT_CONTAIN: u64 = 7001;
+    const ERROR_EMPTY_ADDRESS: u64 = 7002;
 
       //operation admin, some of the operation need to be signed by admin
     const ADMINS: vector<address> =vector[

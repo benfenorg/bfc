@@ -11,7 +11,7 @@ module polynet::tools {
     use sui::tx_context::TxContext;
 
 
-    const EINVALID_ADMIN: u64 = 4015;
+    const EINVALID_ADMIN: u64 = 2006;
 
     // mainnet
     public  fun init_as_mainnet(

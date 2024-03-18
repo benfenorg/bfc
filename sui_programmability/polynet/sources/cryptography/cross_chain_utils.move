@@ -11,9 +11,9 @@ module polynet::cross_chain_utils {
     const POLYCHAIN_SIGNATURE_LEN: u64 = 65;
     const APTOS_SIGNATURE_LEN: u64 = 65;
 
-    const EINVALID_POSITION: u64 = 4001;
-    const EROOT_NOT_MATCH: u64 = 4002;
-    const ENOT_ENOUGH_SIG: u64 = 4003;
+    const EINVALID_POSITION: u64 = 2003;
+    const EROOT_NOT_MATCH: u64 = 2004;
+    const ENOT_ENOUGH_SIG: u64 = 2005;
 
     struct Header has copy, drop {
         version: u64,

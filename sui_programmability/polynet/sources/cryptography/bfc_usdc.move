@@ -12,13 +12,11 @@ module polynet::bfc_usdc {
 
 
     // Errors
-    const EINVALID_ADMIN: u64 = 4001;
+    const EINVALID_ADMIN: u64 = 2001;
 
     const HUGE_U64: u64 = 10000000000000000000;
 
     struct BFC_USDC has drop {}
-
-    // const DECIMALS: u8 = 8;
 
 
     fun init(witness: BFC_USDC, ctx: &mut TxContext){
