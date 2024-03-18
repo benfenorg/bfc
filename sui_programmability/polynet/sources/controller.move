@@ -215,7 +215,7 @@ module polynet::controller {
         let sender = tx_context::sender(_ctx);
         config::check_admin_role(_global, sender);
         let lp_manager = config::borrow_lp_manager(_global);
-        lock_proxy::getToAsset<CoinType>(lp_manager,_to_chain_id);
+        lock_proxy::get_to_asset<CoinType>(lp_manager,_to_chain_id);
     }
 
     public entry fun lock_and_pay_fee<CoinType>(
@@ -415,7 +415,7 @@ module polynet::controller {
         config::check_ca_role(_global,sender);
         let license = cross_chain_manager::issue_license( b"lock_proxy", _contract);
         let lp_manager = config::borrow_mut_lp_manager(_global);
-        lock_proxy::receiveLicense(lp_manager,license);
+        lock_proxy::receive_license(lp_manager,license);
     }
 
     public entry fun pause_global(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){

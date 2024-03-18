@@ -2,6 +2,8 @@ module polynet::events {
     // use std::vector;
     use sui::event::{emit, Self};
     use std::type_name::{TypeName};
+    use std::ascii::{String};
+
 
     friend polynet::config;
     friend polynet::controller;
@@ -134,6 +136,26 @@ module polynet::events {
         to_address: address,
         amount: u64,
         from_chain_amount: u128,
+    }
+
+    struct LicenseIdEvent has store, drop, copy {
+        license_id: vector<u8>,
+        account: address,
+        module_name: String,
+    }
+
+    public(friend) fun license_id(
+        _license_id: vector<u8>,
+        _account: address,
+        _module_name: String,
+    ) {
+        emit(
+            LicenseIdEvent{
+                    license_id: _license_id,
+                    account: _account,
+                    module_name: _module_name
+                }
+        );
     }
 
     public(friend) fun unlock(

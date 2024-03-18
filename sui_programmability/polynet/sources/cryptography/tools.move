@@ -60,7 +60,7 @@ module polynet::tools {
     ) {
         let (lpManager,_, _) = borrow_mut_all(_config);
         let license = cross_chain_manager::issue_license(b"lock_proxy", _contract);
-        lock_proxy::receiveLicense(lpManager,license);
+        lock_proxy::receive_license(lpManager,license);
     }
 
     // testnet
