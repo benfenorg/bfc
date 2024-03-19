@@ -1,0 +1,79 @@
+---
+source: crates/sui-cost/tests/empirical_transaction_cost.rs
+assertion_line: 66
+expression: common_costs_actual
+---
+{
+  "MergeCoin": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "26144",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  },
+  "Publish": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "138244",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  },
+  "SharedCounterAssertValue": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "29108",
+    "storageRebate": "15876",
+    "nonRefundableStorageFee": "160"
+  },
+  "SharedCounterCreate": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "29108",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  },
+  "SharedCounterIncrement": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "29108",
+    "storageRebate": "15876",
+    "nonRefundableStorageFee": "160"
+  },
+  "SplitCoin": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "65360",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  },
+  "TransferPortionSuiCoin": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "26144",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  },
+  "TransferWholeCoin": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "26144",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  },
+  "TransferWholeSuiCoin": {
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "10000",
+    "storageCost": "13072",
+    "storageRebate": "0",
+    "nonRefundableStorageFee": "0"
+  }
+}
