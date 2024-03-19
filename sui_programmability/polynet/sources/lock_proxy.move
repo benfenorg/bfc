@@ -471,7 +471,7 @@ module polynet::lock_proxy {
         let (_, from_asset_decimals) = get_to_asset<CoinType>(lpManager, from_chain_id);
 
         let amount = from_target_chain_amount(from_chain_amount, consts::get_decimal(),from_asset_decimals);
-        assert!(amount > lpManager.unlock_min_amount, EMIN_UNLOCK_AMOUNT);
+        assert!(amount >= lpManager.unlock_min_amount, EMIN_UNLOCK_AMOUNT);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
         
 

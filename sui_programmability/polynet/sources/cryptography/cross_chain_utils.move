@@ -111,7 +111,7 @@ module polynet::cross_chain_utils {
         sig: vector<u8>,
         sigList: vector<u8>,
     }
-    public entry  fun ververify_sig_test(rawHeader: vector<u8>, sigList: vector<u8>, keepers: vector<vector<u8>>, threshold: u64)  {
+    public entry  fun verify_sig_test(rawHeader: vector<u8>, sigList: vector<u8>, keepers: vector<vector<u8>>, threshold: u64)  {
         let headerHash = get_header_hash(&rawHeader);
         let sigCount = vector::length<u8>(&sigList)/POLYCHAIN_SIGNATURE_LEN;
         let signers = vector::empty<vector<u8>>();
