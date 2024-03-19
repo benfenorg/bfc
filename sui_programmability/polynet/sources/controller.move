@@ -243,6 +243,7 @@ module polynet::controller {
                         wrapper_store,
                         sender, 
                         _fund, 
+                        _amount,
                         _fee, 
                         _to_chain_id, 
                         &_to_address,
