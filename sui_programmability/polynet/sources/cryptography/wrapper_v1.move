@@ -39,7 +39,6 @@ module polynet::wrapper_v1 {
         }
     }
 
-
     public(friend) fun set_fee_collector(
         _wrapperstore:&mut WrapperStore, 
         _new_fee_collector: address, 
@@ -47,6 +46,14 @@ module polynet::wrapper_v1 {
     ) {
       
         _wrapperstore.fee_collector = _new_fee_collector;
+    }
+
+    public(friend) fun update_fee_config(
+        _wrapperstore:&mut WrapperStore, 
+        _need_fee: bool 
+    ) {
+      
+        _wrapperstore.need_fee = _need_fee;
     }
 
     public fun fee_collector(_wrapperstore: &WrapperStore): address {

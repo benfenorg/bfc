@@ -50,6 +50,23 @@ module polynet::controller {
                     ); 
     }
 
+    public entry fun update_fee_config(
+        _global: &mut CrossChainGlobalConfig, 
+        _need_fee: bool, 
+        _ctx: &mut TxContext
+    ) {
+     
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        config::check_version(_global);
+
+        wrapper_v1::update_fee_config(
+                        config::borrow_mut_wrapper_store(_global),
+                        _need_fee
+                    ); 
+    }
+
       // change book keeper
     public entry fun change_Book_keeper(
         _global: &mut CrossChainGlobalConfig, 
@@ -433,6 +450,32 @@ module polynet::controller {
         let sender = tx_context::sender(_ctx);
         config::check_pause_role(_global,sender);
         config::unpause(_global);
+    }
+
+     public entry fun update_lock_min_amount(
+        _global:&mut CrossChainGlobalConfig,
+        _min_amount: u64,
+        _ctx: &mut TxContext
+    )  {
+        config::check_version(_global);
+        // config::check_pause(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        let lp_manager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::update_lock_min_amount(lp_manager,_min_amount);
+    }
+
+    public(friend) fun update_unlock_min_amount(
+        _global:&mut CrossChainGlobalConfig,
+        _min_amount: u64,
+        _ctx: &mut TxContext
+    )  {
+        config::check_version(_global);
+        // config::check_pause(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        let lp_manager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::update_unlock_min_amount(lp_manager,_min_amount);
     }
 
     public entry fun reset_lock_amount(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){

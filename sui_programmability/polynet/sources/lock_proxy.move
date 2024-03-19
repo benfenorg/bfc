@@ -592,4 +592,18 @@ module polynet::lock_proxy {
             return b"BFC_BTC"
         }
     }
+
+    public(friend) fun update_lock_min_amount(
+        _lockProxyManager: &mut LockProxyManager,
+        _min_amount: u64
+    )  {
+        _lockProxyManager.lock_min_amount = _min_amount;
+    }
+
+    public(friend) fun update_unlock_min_amount(
+        _lockProxyManager: &mut LockProxyManager,
+        _min_amount: u64
+    )  {
+        _lockProxyManager.unlock_min_amount = _min_amount;
+    }
 }
