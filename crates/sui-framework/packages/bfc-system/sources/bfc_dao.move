@@ -50,7 +50,7 @@ module bfc_system::bfc_dao {
     const MAX_ACTION_NAME_LENGTH: u64 = 100;
     const MAX_DESCRIPTION_LENGTH: u64 = 1000;
 
-    const MIN_STAKE_MANAGER_KEY_COST: u64 = 100 * 1000000000; // 100 BFC
+    const MIN_STAKE_MANAGER_KEY_COST: u64 = 100000 * 1000000000; // 10 0000 BFC
 
     const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max BFC
     const MIN_VOTING_THRESHOLD: u64 = 1_000_000_000; // 1 bfc
