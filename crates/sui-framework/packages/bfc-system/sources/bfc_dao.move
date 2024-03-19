@@ -1099,7 +1099,7 @@ module bfc_system::bfc_dao {
 
 
 
-    public entry fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
+    public fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
         if (index == 1) {
             // Pending
