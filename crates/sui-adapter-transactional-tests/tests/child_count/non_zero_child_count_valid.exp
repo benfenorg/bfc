@@ -6,12 +6,12 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 9-46:
 created: object(1,0)
 mutated: object(0,3)
-gas summary: computation_cost: 100000, storage_cost: 729600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 72960,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 48-48:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 100000, storage_cost: 61788,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 50-54:
 Owner: Object ID: ( BFCfaeccb41267e22d3ab0fb5f7d68cd66a0bed90e7d01af7ec074601d57f016ae82968 )
@@ -21,26 +21,26 @@ Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,1
 task 4 'run'. lines 56-56:
 created: object(4,0), object(4,1), object(4,2)
 mutated: object(0,0)
-gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 100000, storage_cost: 61788,  storage_rebate: 12941, non_refundable_storage_fee: 131
 
 task 5 'run'. lines 58-58:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x6fc0db82d655c8908488781fa399b39eabaf7751c944819695ad37db6d7d07ee, parent_id: 0xe74e9959057c40d2af50294edc6a2079996d19a694af40d4eff32c5e3a0f29fc }
+mutated: object(0,0), object(4,2)
+gas summary: computation_cost: 100000, storage_cost: 25156,  storage_rebate: 24904, non_refundable_storage_fee: 252
 
 task 6 'view-object'. lines 60-64:
-Owner: Object ID: ( BFCe74e9959057c40d2af50294edc6a2079996d19a694af40d4eff32c5e3a0f29fc7a8b )
-Version: 3
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
+Version: 4
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(4,2)}}}
 
 task 7 'run'. lines 66-66:
 created: object(7,0), object(7,1), object(7,2)
 mutated: object(0,0)
-gas summary: computation_cost: 100000, storage_cost: 617880,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 100000, storage_cost: 61788,  storage_rebate: 12941, non_refundable_storage_fee: 131
 
 task 8 'transfer-object'. lines 68-68:
-mutated: object(0,0), object(7,1)
-gas summary: computation_cost: 100000, storage_cost: 251560,  storage_rebate: 249044, non_refundable_storage_fee: 2516
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x3a3daea1f4a556748897946e58a1cadeeb797defd16c8ba119aecef922c2b3d3, parent_id: 0x83e2c947a35701345ba6c78f6db336e825d89c82b02d4687666005fa6705ea19 }
 
 task 9 'view-object'. lines 70-70:
-Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
+Owner: Object ID: ( BFC83e2c947a35701345ba6c78f6db336e825d89c82b02d4687666005fa6705ea19eb48 )
 Version: 5
 Contents: test::m::S {id: sui::object::UID {id: sui::object::ID {bytes: fake(7,1)}}}
