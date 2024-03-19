@@ -3,7 +3,7 @@ module polynet::tools {
     use polynet::lock_proxy;
     use std::vector;
     use polynet::controller::{update_lock_proxy_manager_start_time};
-    use polynet::wrapper_v1::setFeeCollector;
+    use polynet::wrapper_v1::set_fee_collector;
     use polynet::config::{CrossChainGlobalConfig, borrow_mut_all};
     use sui::clock::Clock;
     use polynet::config;
@@ -11,7 +11,7 @@ module polynet::tools {
     use sui::tx_context::TxContext;
 
 
-    const EINVALID_ADMIN: u64 = 4015;
+    const EINVALID_ADMIN: u64 = 2006;
 
     // mainnet
     public  fun init_as_mainnet(
@@ -48,19 +48,19 @@ module polynet::tools {
         vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
         cross_chain_manager::update_cross_chain_manager_config(cc_manager, keepers, startHeight, polyId, _ctx);
 
-        setFeeCollector(wrapper, _feeAddress, _ctx);
+        set_fee_collector(wrapper, _feeAddress, _ctx);
         // issue_license_to_lock_proxy(_global, _ctx);
         update_lock_proxy_manager_start_time(_global, _clock, _ctx);
 
     }
 
-    fun issue_license_to_lock_proxy(
+    public fun issue_license_to_lock_proxy(
         _config: &mut CrossChainGlobalConfig,
         _contract: address
     ) {
         let (lpManager,_, _) = borrow_mut_all(_config);
         let license = cross_chain_manager::issue_license(b"lock_proxy", _contract);
-        lock_proxy::receiveLicense(lpManager,license);
+        lock_proxy::receive_license(lpManager,license);
     }
 
     // testnet
@@ -98,7 +98,7 @@ module polynet::tools {
         vector::push_back(&mut keepers, x"4e552e00b6a7457d6b79298b449922de987561fe02d420398c862f1447e9231f39346373619d6dbdb830a00e0e0d35e0116c74129d0dfa5d8184c2eb5a6dcfbe");
         cross_chain_manager::update_cross_chain_manager_config(cc_manager,keepers, startHeight, polyId, _ctx);
 
-        setFeeCollector(wrapper, _fee_address, _ctx);
+        set_fee_collector(wrapper, _fee_address, _ctx);
         update_lock_proxy_manager_start_time(_global, _clock, _ctx);
         // issue_license_to_lock_proxy(_global, _ctx);
     }
