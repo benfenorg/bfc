@@ -350,6 +350,8 @@ module bfc_system::bfc_dao {
         *data
     }
 
+
+    #[test_only]
     public entry fun create_dao_and_share(        admins: vector<address>,
                                                                ctx: &mut TxContext ) {
         // sender address

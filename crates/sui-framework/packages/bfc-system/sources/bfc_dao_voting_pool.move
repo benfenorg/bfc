@@ -180,12 +180,14 @@ module bfc_system::voting_pool {
 
     /// Split the given votingBfc to the two parts, one with principal `split_amount`,
     /// transfer the newly split part to the sender address.
+    #[test_only]
     public entry fun split_voting_bfc(votingBfc: &mut VotingBfc, split_amount: u64, ctx: &mut TxContext) {
         transfer::transfer(split(votingBfc, split_amount, ctx), tx_context::sender(ctx));
     }
 
     /// Consume the voting bfc `other` and add its value to `self`.
     /// Aborts if some of the staking parameters are incompatible (pool id,  activation epoch, etc.)
+    #[test_only]
     public entry fun join_voting_bfc(self: &mut VotingBfc, other: VotingBfc) {
         assert!(is_equal_staking_metadata(self, &other), EIncompatibleVotingBfc);
         let VotingBfc {

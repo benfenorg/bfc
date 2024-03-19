@@ -51,7 +51,6 @@
 -  [Function `unvote_votes`](#0xc8_bfc_system_unvote_votes)
 -  [Function `vote_of`](#0xc8_bfc_system_vote_of)
 -  [Function `has_vote`](#0xc8_bfc_system_has_vote)
--  [Function `cluster_add_admin`](#0xc8_bfc_system_cluster_add_admin)
 -  [Module Specification](#@Module_Specification_1)
 
 
@@ -1404,33 +1403,6 @@ X treasury  swap stablecoin to bfc
     proposal: &Proposal,
 ) {
     <a href="bfc_dao.md#0xc8_bfc_dao_has_vote">bfc_dao::has_vote</a>(vote, proposal);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_cluster_add_admin"></a>
-
-## Function `cluster_add_admin`
-
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_cluster_add_admin">cluster_add_admin</a>(new_admin: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_cluster_add_admin">cluster_add_admin</a>(
-    new_admin:<b>address</b>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <a href="bfc_dao.md#0xc8_bfc_dao_add_admin">bfc_dao::add_admin</a>(new_admin, ctx);
 }
 </code></pre>
 

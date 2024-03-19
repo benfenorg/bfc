@@ -28,7 +28,6 @@
 -  [Function `create_bfcdao_action`](#0xc8_bfc_dao_create_bfcdao_action)
 -  [Function `create_dao`](#0xc8_bfc_dao_create_dao)
 -  [Function `getDaoActionByActionId`](#0xc8_bfc_dao_getDaoActionByActionId)
--  [Function `create_dao_and_share`](#0xc8_bfc_dao_create_dao_and_share)
 -  [Function `new_dao_config`](#0xc8_bfc_dao_new_dao_config)
 -  [Function `propose`](#0xc8_bfc_dao_propose)
 -  [Function `synchronize_proposal_into_dao`](#0xc8_bfc_dao_synchronize_proposal_into_dao)
@@ -1247,7 +1246,7 @@ Error codes
 
 
 
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MIN_STAKE_MANAGER_KEY_COST">MIN_STAKE_MANAGER_KEY_COST</a>: u64 = 100000000000;
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MIN_STAKE_MANAGER_KEY_COST">MIN_STAKE_MANAGER_KEY_COST</a>: u64 = 100000000000000;
 </code></pre>
 
 
@@ -1552,79 +1551,6 @@ Error codes
 <b>pragma</b> aborts_if_is_partial = <b>true</b>;
 </code></pre>
 
-
-
-</details>
-
-<a name="0xc8_bfc_dao_create_dao_and_share"></a>
-
-## Function `create_dao_and_share`
-
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_dao_and_share">create_dao_and_share</a>(admins: <a href="">vector</a>&lt;<b>address</b>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_dao_and_share">create_dao_and_share</a>(        admins: <a href="">vector</a>&lt;<b>address</b>&gt;,
-                                                           ctx: &<b>mut</b> TxContext ) {
-    // sender <b>address</b>
-    //<b>let</b> sender = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
-
-    <b>let</b> daoConfig = <a href="bfc_dao.md#0xc8_bfc_dao_new_dao_config">new_dao_config</a>(<a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_VOTE_DELAY">DEFAULT_VOTE_DELAY</a>,
-        <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_VOTE_PERIOD">DEFAULT_VOTE_PERIOD</a>,
-        <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_VOTE_QUORUM_RATE">DEFAULT_VOTE_QUORUM_RATE</a>,
-        <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_MIN_ACTION_DELAY">DEFAULT_MIN_ACTION_DELAY</a>);
-
-
-    <b>let</b> daoInfo = <a href="bfc_dao.md#0xc8_bfc_dao_DaoGlobalInfo">DaoGlobalInfo</a>{
-        id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
-        next_proposal_id: 0,
-        next_action_id: 0,
-        proposal_create_event: <a href="bfc_dao.md#0xc8_bfc_dao_ProposalCreatedEvent">ProposalCreatedEvent</a>{
-            proposal_id: 0,
-            proposer: <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
-        },
-        vote_changed_event: <a href="bfc_dao.md#0xc8_bfc_dao_VoteChangedEvent">VoteChangedEvent</a>{
-            proposal_id: 0,
-            voter: <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
-            proposer: <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_TOKEN_ADDRESS">DEFAULT_TOKEN_ADDRESS</a>,
-            agree: <b>false</b>,
-            vote: 0,
-        }
-    };
-
-    <b>let</b> votingPool = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_new">voting_pool::new</a>(ctx);
-    <b>let</b> rootAdmin = <a href="_borrow">vector::borrow</a>(&admins, 0);
-    <b>let</b> dao_obj = <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>{
-        id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx),
-        admin: *rootAdmin,  //using the first of the admins <b>as</b> the admin of the dao
-        config: daoConfig,
-        info: daoInfo,
-        proposal_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        action_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        votes_record: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-        <a href="bfc_dao_voting_pool.md#0xc8_voting_pool">voting_pool</a>: votingPool,
-        current_proposal_status: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
-    };
-
-    <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(dao_obj);
-
-    <a href="bfc_dao.md#0xc8_bfc_dao_set_admins">set_admins</a>(admins, ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<details>
-<summary>Specification</summary>
 
 
 

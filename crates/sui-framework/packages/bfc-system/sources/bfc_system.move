@@ -446,10 +446,10 @@ module bfc_system::bfc_system {
     }
 
 
-    public entry fun cluster_add_admin(
-        new_admin:address,
-        ctx: &mut TxContext,
-    ) {
-        bfc_dao::add_admin(new_admin, ctx);
-    }
+    // public entry fun cluster_add_admin(
+    //     new_admin:address,
+    //     ctx: &mut TxContext,
+    // ) {
+    //     bfc_dao::add_admin(new_admin, ctx);
+    // }
 }

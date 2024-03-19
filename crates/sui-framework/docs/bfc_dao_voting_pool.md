@@ -18,8 +18,6 @@
 -  [Function `pool_id`](#0xc8_voting_pool_pool_id)
 -  [Function `voting_bfc_amount`](#0xc8_voting_pool_voting_bfc_amount)
 -  [Function `split`](#0xc8_voting_pool_split)
--  [Function `split_voting_bfc`](#0xc8_voting_pool_split_voting_bfc)
--  [Function `join_voting_bfc`](#0xc8_voting_pool_join_voting_bfc)
 -  [Function `is_equal_staking_metadata`](#0xc8_voting_pool_is_equal_staking_metadata)
 -  [Function `pool_token_exchange_rate_at_epoch`](#0xc8_voting_pool_pool_token_exchange_rate_at_epoch)
 -  [Function `bfc_amount`](#0xc8_voting_pool_bfc_amount)
@@ -33,7 +31,6 @@
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
-<b>use</b> <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 </code></pre>
 
@@ -611,6 +608,25 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> split_amount &gt; votingBfc.principal.value;
+<b>let</b> remaining_amount = votingBfc.principal.value - split_amount;
+<b>aborts_if</b> remaining_amount &lt; <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> split_amount &lt; <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
+<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
+</code></pre>
+
+
+
+
+<pre><code><b>aborts_if</b> <b>false</b>;
+<b>aborts_if</b> other.pool_id != self.pool_id;
+<b>aborts_if</b> self.principal.value + other.principal.value &gt; MAX_U64;
+</code></pre>
+
+
+
 </details>
 
 <a name="0xc8_voting_pool_split"></a>
@@ -663,98 +679,6 @@ All the other parameters of the votingBfc like <code>voting</code> or <code>pool
 <b>aborts_if</b> remaining_amount &lt; <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
 <b>aborts_if</b> split_amount &lt; <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
 <b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_voting_pool_split_voting_bfc"></a>
-
-## Function `split_voting_bfc`
-
-Split the given votingBfc to the two parts, one with principal <code>split_amount</code>,
-transfer the newly split part to the sender address.
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split_voting_bfc">split_voting_bfc</a>(votingBfc: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, split_amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split_voting_bfc">split_voting_bfc</a>(votingBfc: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>, split_amount: u64, ctx: &<b>mut</b> TxContext) {
-    <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split">split</a>(votingBfc, split_amount, ctx), <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
-}
-</code></pre>
-
-
-
-</details>
-
-<details>
-<summary>Specification</summary>
-
-
-
-<pre><code><b>aborts_if</b> <b>false</b>;
-<b>aborts_if</b> split_amount &gt; votingBfc.principal.value;
-<b>let</b> remaining_amount = votingBfc.principal.value - split_amount;
-<b>aborts_if</b> remaining_amount &lt; <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
-<b>aborts_if</b> split_amount &lt; <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_MIN_STAKING_THRESHOLD">MIN_STAKING_THRESHOLD</a>;
-<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_voting_pool_join_voting_bfc"></a>
-
-## Function `join_voting_bfc`
-
-Consume the voting bfc <code>other</code> and add its value to <code>self</code>.
-Aborts if some of the staking parameters are incompatible (pool id,  activation epoch, etc.)
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_join_voting_bfc">join_voting_bfc</a>(self: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, other: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_join_voting_bfc">join_voting_bfc</a>(self: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>, other: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>) {
-    <b>assert</b>!(<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_is_equal_staking_metadata">is_equal_staking_metadata</a>(self, &other), <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_EIncompatibleVotingBfc">EIncompatibleVotingBfc</a>);
-    <b>let</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a> {
-        id,
-        pool_id: _,
-        principal,
-        stake_end_time: _,
-    } = other;
-
-    <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(id);
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> self.principal, principal);
-}
-</code></pre>
-
-
-
-</details>
-
-<details>
-<summary>Specification</summary>
-
-
-
-<pre><code><b>aborts_if</b> <b>false</b>;
-<b>aborts_if</b> other.pool_id != self.pool_id;
-<b>aborts_if</b> self.principal.value + other.principal.value &gt; MAX_U64;
 </code></pre>
 
 
