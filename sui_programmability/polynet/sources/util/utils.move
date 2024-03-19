@@ -4,11 +4,11 @@ module polynet::utils {
     use sui::bcs;
     use sui::table::{Table, Self};
 
-    const EUNSUPPORT_GENERIC_TYPE: u64 = 4001;
-    const EINVALID_FROM_BYTES_TO_BOOL: u64 = 4002;
-    const EINVALID_FROM_BYTES_TO_U8: u64 = 4003;
-    const EINVALID_FROM_BYTES_TO_U64: u64 = 4004;
-    const EINVALID_FROM_BYTES_TO_U128: u64 = 4005;
+    const EUNSUPPORT_GENERIC_TYPE: u64 = 7003;
+    const EINVALID_FROM_BYTES_TO_BOOL: u64 = 7004;
+    const EINVALID_FROM_BYTES_TO_U8: u64 = 7005;
+    const EINVALID_FROM_BYTES_TO_U64: u64 = 7006;
+    const EINVALID_FROM_BYTES_TO_U128: u64 = 7007;
 
     public fun slice<Element: copy>(v: &vector<Element>, offset: u64, length: u64): vector<Element> {
         let res = vector::empty<Element>();

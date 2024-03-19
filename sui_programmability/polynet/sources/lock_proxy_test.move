@@ -11,7 +11,7 @@ module polynet::lock_proxy_test {
     use sui::test_scenario;
     use polynet::utils;
     use polynet::acl::{ Self};
-    use polynet::lock_proxy::{ LockProxyManager, convert_to_short_key, checkAmountResult};
+    use polynet::lock_proxy::{ LockProxyManager, convert_to_short_key, check_amount_result};
 
     #[test]
     fun test_init_lock_manager(){
@@ -69,9 +69,9 @@ module polynet::lock_proxy_test {
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
-            let result = checkAmountResult(10000000000000, lpmanager, &b"BFC_USDT", false, &clock);
+            let result = check_amount_result(10000000000000, lpmanager, &b"BFC_USDT", false, &clock);
             assert!(result, 4018);
-            let result = checkAmountResult(100000000000000, lpmanager, &b"BFC_USDT", false, &clock);
+            let result = check_amount_result(100000000000000, lpmanager, &b"BFC_USDT", false, &clock);
             assert!(result == false, 4018);
             test_scenario::return_shared(ccConfig);
             clock::destroy_for_testing(clock);

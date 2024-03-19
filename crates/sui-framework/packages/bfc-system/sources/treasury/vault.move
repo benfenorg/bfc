@@ -25,7 +25,9 @@ module bfc_system::vault {
     friend bfc_system::bfc_system;
     friend bfc_system::bfc_system_state_inner;
     #[test_only]
-    friend bfc_system::treasury_test;
+    friend bfc_system::treasury_busd_test;
+    #[test_only]
+    friend bfc_system::treasury_beur_test;
 
     #[test_only]
     friend bfc_system::vault_test;
