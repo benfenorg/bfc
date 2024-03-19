@@ -1,9 +1,11 @@
 #[test_only]
-module bfc_system::treasury_test {
+module bfc_system::treasury_beur_test {
     use sui::test_scenario::{Self};
     use std::debug;
     use std::vector;
     use std::ascii::string;
+    use bfc_system::beur::BEUR;
+    use bfc_system::beur;
     use bfc_system::clmm_math;
     use bfc_system::i32;
     use sui::coin::{Self, Coin};
@@ -13,12 +15,11 @@ module bfc_system::treasury_test {
     use sui::transfer;
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::vault;
-    use bfc_system::busd::{Self, BUSD};
 
     const IS_DEBUG: bool = false;
 
     #[test]
-    public fun test_treasury() {
+    public fun test_beur_treasury() {
         let owner = @0x0;
         let scenario_val = test_scenario::begin(owner);
 
@@ -55,8 +56,8 @@ module bfc_system::treasury_test {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
-            let usd_supply = busd::new(test_scenario::ctx(&mut scenario_val));
-            treasury::create_vault<BUSD>(
+            let usd_supply = beur::new(test_scenario::ctx(&mut scenario_val));
+            treasury::create_vault<BEUR>(
                 &mut t,
                 usd_supply,
                 position_number,
@@ -76,9 +77,9 @@ module bfc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<BUSD>();
-            let mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, usd_vault_key);
-            let ticks = vault::init_positions<BUSD>(
+            let usd_vault_key = treasury::get_vault_key<BEUR>();
+            let mut_vault = treasury::borrow_mut_vault<BEUR>(&mut t, usd_vault_key);
+            let ticks = vault::init_positions<BEUR>(
                 mut_vault,
                 spacing_times,
                 test_scenario::ctx(&mut scenario_val),
@@ -95,9 +96,9 @@ module bfc_system::treasury_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<BUSD>();
-            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
-            let (amount_a, amount_b) = vault::get_position_amounts<BUSD>(
+            let usd_vault_key = treasury::get_vault_key<BEUR>();
+            let usd_vault = treasury::borrow_vault<BEUR>(&t, usd_vault_key);
+            let (amount_a, amount_b) = vault::get_position_amounts<BEUR>(
                 usd_vault,
                 1,
                 true,
@@ -105,7 +106,7 @@ module bfc_system::treasury_test {
             assert!(amount_a == 0, 101);
             assert!(amount_b == 0, 102);
 
-            let (balance_a, balance_b) = vault::balances<BUSD>(
+            let (balance_a, balance_b) = vault::balances<BEUR>(
                 usd_vault,
             );
             assert!(balance_a == 0, 103);
@@ -119,8 +120,8 @@ module bfc_system::treasury_test {
         {
             let position_index = 2;
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<BUSD>();
-            let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, usd_vault_key);
+            let usd_vault_key = treasury::get_vault_key<BEUR>();
+            let usd_mut_vault = treasury::borrow_mut_vault<BEUR>(&mut t, usd_vault_key);
             let upper =  i32::from(1);
             let lower = i32::sub(upper, i32::from(2));
             let (liquidity, amount_a, amount_b) = clmm_math::get_liquidity_by_amount(
@@ -131,24 +132,24 @@ module bfc_system::treasury_test {
                 base_point,
                 false,
             );
-            let balance_a = balance::create_for_testing<BUSD>(amount_a);
+            let balance_a = balance::create_for_testing<BEUR>(amount_a);
             let balance_b = balance::create_for_testing<BFC>(amount_b);
 
-            let receipt = vault::add_liquidity<BUSD>(
+            let receipt = vault::add_liquidity<BEUR>(
                 usd_mut_vault,
                 position_index,
                 liquidity,
             );
             // repay
-            vault::repay_add_liquidity<BUSD>(
+            vault::repay_add_liquidity<BEUR>(
                 usd_mut_vault,
                 balance_a,
                 balance_b,
                 receipt,
             );
 
-            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
-            let (amount_a, amount_b) = vault::balances<BUSD>(usd_vault);
+            let usd_vault = treasury::borrow_vault<BEUR>(&t, usd_vault_key);
+            let (amount_a, amount_b) = vault::balances<BEUR>(usd_vault);
             if (IS_DEBUG) {
                 debug::print(&string(b"get balance after add-l"));
                 debug::print(&amount_a);
@@ -157,7 +158,7 @@ module bfc_system::treasury_test {
             assert!(amount_a == base_point, 103);
             assert!(amount_b == base_point, 104);
 
-            let (amount_a, amount_b) = vault::get_position_amounts<BUSD>(
+            let (amount_a, amount_b) = vault::get_position_amounts<BEUR>(
                 usd_vault,
                 position_index,
                 true,
@@ -173,9 +174,9 @@ module bfc_system::treasury_test {
         {
             let position_index = 2;
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault_key = treasury::get_vault_key<BEUR>();
 
-            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let usd_vault = treasury::borrow_vault<BEUR>(&t, usd_vault_key);
             let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
             let l = vault::get_position_liquidity(usd_vault, position_index);
             if (IS_DEBUG) {
@@ -187,7 +188,7 @@ module bfc_system::treasury_test {
             test_scenario::return_shared(t);
         };
 
-        // alice swap bfc-usd
+        // alice swap bfc-beur
         let alice = @0xA1;
         let amount_bfc = 1_000_000_000u64;
         let total_amount_bfc = amount_bfc * 2;
@@ -206,7 +207,7 @@ module bfc_system::treasury_test {
                 debug::print(&string(b"Alice balances before mint ..."));
                 debug::print(&coin_bfc);
             };
-            treasury::mint<BUSD>(
+            treasury::mint<BEUR>(
                 &mut t,
                 coin_bfc,
                 &clock,
@@ -222,7 +223,7 @@ module bfc_system::treasury_test {
         // alice check balance
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<BEUR>>(&scenario_val);
             let coin_bfc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after mint ..."));
@@ -239,9 +240,9 @@ module bfc_system::treasury_test {
         {
             let position_index = 2;
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault_key = treasury::get_vault_key<BEUR>();
 
-            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let usd_vault = treasury::borrow_vault<BEUR>(&t, usd_vault_key);
             let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
             let l = vault::get_position_liquidity(usd_vault, position_index);
             if (IS_DEBUG) {
@@ -253,20 +254,20 @@ module bfc_system::treasury_test {
             test_scenario::return_shared(t);
         };
 
-        // alice swap osd-bfc
+        // alice swap usd-bfc
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<BEUR>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
             let min_amount: u64 = 0;
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances redeem bfc ..."));
                 debug::print(&amount);
             };
-            treasury::redeem<BUSD>(
+            treasury::redeem<BEUR>(
                 &mut t,
                 coin_usd,
                 &clock,
@@ -282,7 +283,7 @@ module bfc_system::treasury_test {
         // alice check balance
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
+            let coin_usd = test_scenario::take_from_sender<Coin<BEUR>>(&scenario_val);
             let coin_bfc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             let coin_bfc_1 = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             if (IS_DEBUG) {
