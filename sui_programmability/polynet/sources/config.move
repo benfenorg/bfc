@@ -1,7 +1,9 @@
 
 module polynet::config {
     use sui::transfer;
+    use sui::math;
     use polynet::events;
+    use polynet::consts;
     use sui::table::{Table, Self};
     use sui::object::{UID, Self};
     use polynet::acl::{AccessControlManager, Self};
@@ -53,6 +55,8 @@ module polynet::config {
     struct CrossChainGlobalConfig has key {
         id: UID,
         paused: bool,
+        lock_min_amount: u64,
+        unlock_min_amount: u64,
         acl_store: ACLStore,
         cross_chain_manager: CrossChainManager,
         lock_proxy_manager: LockProxyManager,
@@ -96,10 +100,14 @@ module polynet::config {
             role_acls: acls
         };
 
+        let min_amount = (5 * math::pow(10, consts::get_decimal()) as u64);
+
         // init global config
         let config = CrossChainGlobalConfig{
             id: object::new(_ctx),
             paused: false,
+            lock_min_amount: min_amount,
+            unlock_min_amount: min_amount,
             acl_store: acl_store,
             cross_chain_manager: cross_chain_manager::new(_ctx),
             lock_proxy_manager: lock_proxy::new(_ctx),
@@ -140,11 +148,14 @@ module polynet::config {
         let acl_store = ACLStore{
             role_acls: acls
         };
+        let min_amount = (5 * math::pow(10, consts::get_decimal()) as u64);
 
         // init global config
         let config = CrossChainGlobalConfig{
             id: object::new(_ctx),
             paused: false,
+            lock_min_amount: min_amount,
+            unlock_min_amount: min_amount,
             acl_store: acl_store,
             cross_chain_manager: cross_chain_manager::new(_ctx),
             lock_proxy_manager: lock_proxy::new(_ctx),
