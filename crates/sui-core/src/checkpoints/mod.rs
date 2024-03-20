@@ -573,6 +573,9 @@ impl CheckpointStore {
         } else {
             return None;
         };
+
+
+        //todo, add stable coin reward to epoch stats..
         Some(EpochStats {
             checkpoint_count: last_checkpoint.sequence_number - first_checkpoint + 1,
             transaction_count: last_checkpoint.network_total_transactions

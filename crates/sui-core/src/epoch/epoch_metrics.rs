@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use prometheus::{register_int_gauge_with_registry, IntGauge, Registry};
+use prometheus::{register_int_gauge_with_registry, IntGauge, Registry, IntGaugeVec, register_int_gauge_vec_with_registry};
 use std::sync::Arc;
 
 pub struct EpochMetrics {
@@ -26,6 +26,8 @@ pub struct EpochMetrics {
 
 
     pub epoch_total_stable_gas_reward: IntGauge,
+
+    pub epoch_stable_gas_reward_vec: IntGaugeVec,
 
     // An active validator reconfigures through the following steps:
     // 1. Halt validator (a.k.a. close epoch) and stop accepting user transaction certs.
@@ -120,6 +122,13 @@ impl EpochMetrics {
                 "epoch_total_stable_gas_reward",
                 "Total amount of stable gas rewards (i.e. computation gas cost) in the epoch",
                 registry
+            ).unwrap(),
+
+            epoch_stable_gas_reward_vec: register_int_gauge_vec_with_registry!(
+                "epoch_stable_gas_reward_vec",
+                "list of stable gas rewards (i.e. computation gas cost) in the epoch",
+                &["stable_coin"],
+                registry,
             ).unwrap(),
 
             epoch_pending_certs_processed_time_since_epoch_close_ms: register_int_gauge_with_registry!(

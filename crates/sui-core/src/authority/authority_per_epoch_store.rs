@@ -2130,6 +2130,13 @@ impl AuthorityPerEpochStore {
         self.metrics
             .epoch_total_stable_gas_reward
             .set(stats.total_gas_reward as i64);
+
+        //todo change to some for data.
+        let test_stable_name = "busd";
+        self.metrics
+            .epoch_stable_gas_reward_vec
+            .with_label_values(&[&format!("{:?}", test_stable_name)])
+            .set(stats.total_gas_reward as i64);
     }
 
     pub fn record_epoch_reconfig_start_time_metric(&self) {
