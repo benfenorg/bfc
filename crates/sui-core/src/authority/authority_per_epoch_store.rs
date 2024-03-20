@@ -2126,6 +2126,10 @@ impl AuthorityPerEpochStore {
         self.metrics
             .epoch_total_gas_reward
             .set(stats.total_gas_reward as i64);
+
+        self.metrics
+            .epoch_total_stable_gas_reward
+            .set(stats.total_gas_reward as i64);
     }
 
     pub fn record_epoch_reconfig_start_time_metric(&self) {

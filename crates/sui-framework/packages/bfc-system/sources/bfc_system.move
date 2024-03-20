@@ -119,7 +119,7 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
-    public entry fun change_round( wrapper: &mut BfcSystemState, round: u64) {
+    public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
     }
@@ -229,7 +229,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_voting_period(system_state, manager_key, value);
     }
 
-    public entry fun modify_proposal(wrapper: &mut BfcSystemState, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
+    public fun modify_proposal(wrapper: &mut BfcSystemState, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::modify_proposal(system_state, proposal_obj, index, clock);
     }
