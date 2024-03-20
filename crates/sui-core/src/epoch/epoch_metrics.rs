@@ -24,6 +24,9 @@ pub struct EpochMetrics {
     /// Total amount of gas rewards (i.e. computation gas cost) in the epoch.
     pub epoch_total_gas_reward: IntGauge,
 
+
+    pub epoch_total_stable_gas_reward: IntGauge,
+
     // An active validator reconfigures through the following steps:
     // 1. Halt validator (a.k.a. close epoch) and stop accepting user transaction certs.
     // 2. Finishes processing all pending certificates and then send EndOfPublish message.
@@ -113,6 +116,12 @@ impl EpochMetrics {
                 "Total amount of gas rewards (i.e. computation gas cost) in the epoch",
                 registry
             ).unwrap(),
+            epoch_total_stable_gas_reward: register_int_gauge_with_registry!(
+                "epoch_total_stable_gas_reward",
+                "Total amount of stable gas rewards (i.e. computation gas cost) in the epoch",
+                registry
+            ).unwrap(),
+
             epoch_pending_certs_processed_time_since_epoch_close_ms: register_int_gauge_with_registry!(
                 "epoch_pending_certs_processed_time_since_epoch_close_ms",
                 "Time interval from when epoch was closed to when all pending certificates are processed",
