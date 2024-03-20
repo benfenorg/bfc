@@ -58,7 +58,7 @@ obj_access_cost_mutate_per_byte: 40
 obj_access_cost_delete_per_byte: 40
 obj_access_cost_verify_per_byte: 200
 gas_model_version: 1
-obj_data_cost_refundable: 10
+obj_data_cost_refundable: 1
 obj_metadata_cost_non_refundable: 50
 storage_rebate_rate: 9900
 storage_fund_reinvest_rate: 500

@@ -7,7 +7,7 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "261440",
+    "storageCost": "26144",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
@@ -15,7 +15,7 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "1382440",
+    "storageCost": "138244",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
@@ -23,15 +23,15 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "291080",
-    "storageRebate": "158756",
-    "nonRefundableStorageFee": "1604"
+    "storageCost": "29108",
+    "storageRebate": "15876",
+    "nonRefundableStorageFee": "160"
   },
   "SharedCounterCreate": {
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "291080",
+    "storageCost": "29108",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
@@ -39,15 +39,15 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "291080",
-    "storageRebate": "158756",
-    "nonRefundableStorageFee": "1604"
+    "storageCost": "29108",
+    "storageRebate": "15876",
+    "nonRefundableStorageFee": "160"
   },
   "SplitCoin": {
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "653600",
+    "storageCost": "65360",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
@@ -55,7 +55,7 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "261440",
+    "storageCost": "26144",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
@@ -63,7 +63,7 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "261440",
+    "storageCost": "26144",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
@@ -71,7 +71,7 @@ expression: common_costs_actual
     "basePoint": 0,
     "rate": 1,
     "computationCost": "10000",
-    "storageCost": "130720",
+    "storageCost": "13072",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   }
