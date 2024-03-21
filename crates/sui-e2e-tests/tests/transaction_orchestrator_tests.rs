@@ -234,7 +234,7 @@ async fn test_transaction_orchestrator_reconfig() {
 }
 
 #[sim_test]
-async fn test_tx_across_epoch_boundaries() {
+async fn sim_test_tx_across_epoch_boundaries() {
     telemetry_subscribers::init_for_testing();
     let total_tx_cnt = 1;
     let (result_tx, mut result_rx) = tokio::sync::mpsc::channel::<FinalizedEffects>(total_tx_cnt);

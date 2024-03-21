@@ -1172,7 +1172,7 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
 
 
 #[sim_test]
-async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
+async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
@@ -1260,7 +1260,7 @@ async fn destroy_terminated_proposal() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
+async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
