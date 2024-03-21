@@ -1060,7 +1060,7 @@ fn test_change_epoch_transaction() {
     //0x05, 0x06, 0xc0[201]
     assert_eq!(
         objects_length,
-        2
+        3
     );
 }
 
