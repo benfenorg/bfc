@@ -63,6 +63,9 @@ pub struct EpochStats {
     pub checkpoint_count: u64,
     pub transaction_count: u64,
     pub total_gas_reward: u64,
+
+    //todo : add metric for stable coin reward
+    //pub total_stable_reward: hashmap<cointype, summary>
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -576,6 +579,7 @@ impl CheckpointStore {
 
 
         //todo, add stable coin reward to epoch stats..
+        //epoch_rolling_stable_gas_cost_summary_map
         Some(EpochStats {
             checkpoint_count: last_checkpoint.sequence_number - first_checkpoint + 1,
             transaction_count: last_checkpoint.network_total_transactions
