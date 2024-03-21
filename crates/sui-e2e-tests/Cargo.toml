@@ -8,6 +8,7 @@ version = "0.1.0"
 
 [dependencies]
 workspace-hack = { version = "0.1", path = "../workspace-hack" }
+chrono = "0.4.31"
 
 [dev-dependencies]
 tempfile.workspace = true
