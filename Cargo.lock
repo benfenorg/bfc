@@ -9645,6 +9645,7 @@ dependencies = [
  "assert_cmd",
  "async-trait",
  "bcs",
+ "chrono",
  "clap",
  "expect-test",
  "fastcrypto",

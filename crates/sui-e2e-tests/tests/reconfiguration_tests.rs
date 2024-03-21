@@ -44,6 +44,7 @@ use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
+use chrono::Utc;
 
 
 #[sim_test]
@@ -2354,6 +2355,8 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let function = "swap_bfc_to_stablecoin".to_string();
+    let timestamp = Utc::now().timestamp() * 1000 + 600000;
+    let deadtime = timestamp.to_string();
 
     let args = vec![
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
@@ -2361,7 +2364,7 @@ async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
         SuiJsonValue::new(json!("1000000000000"))?,
         SuiJsonValue::new(json!("0"))?,
-        SuiJsonValue::new(json!("1719622441776"))?,
+        SuiJsonValue::new(json!(&deadtime))?,
     ];
 
     let transaction_bytes: TransactionBlockBytes = http_client
