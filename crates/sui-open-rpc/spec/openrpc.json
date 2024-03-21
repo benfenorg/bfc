@@ -1811,7 +1811,7 @@
                   "u64": "40"
                 },
                 "obj_access_cost_read_per_byte": {
-                  "u64": "15"
+                  "u64": "5"
                 },
                 "obj_access_cost_verify_per_byte": {
                   "u64": "200"

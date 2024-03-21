@@ -55,7 +55,7 @@ ChangeEpoch:
         SEQ:
           TUPLE:
             - TYPENAME: TypeTag
-            - TYPENAME: GasCostSummary
+            - TYPENAME: GasCostSummaryAdjusted
     - epoch_start_timestamp_ms: U64
     - system_packages:
         SEQ:
@@ -109,7 +109,7 @@ CheckpointSummary:
           KEY:
             TYPENAME: TypeTag
           VALUE:
-            TYPENAME: GasCostSummary
+            TYPENAME: GasCostSummaryAdjusted
     - timestamp_ms: U64
     - checkpoint_commitments:
         SEQ:
@@ -406,6 +406,12 @@ GasCostSummary:
     - storageCost: U64
     - storageRebate: U64
     - nonRefundableStorageFee: U64
+GasCostSummaryAdjusted:
+  STRUCT:
+    - gasByBfc:
+        TYPENAME: GasCostSummary
+    - gasByStable:
+        TYPENAME: GasCostSummary
 GasData:
   STRUCT:
     - payment:
