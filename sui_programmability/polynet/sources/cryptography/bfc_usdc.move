@@ -61,7 +61,7 @@ module polynet::bfc_usdc {
 
         let (cap, metadata) = coin::create_currency(
             BFC_USDC {},
-            6,
+            consts::get_decimal(),
             b"BFC_USDC",
             b"Benfen usdc",
             b"",
@@ -71,7 +71,7 @@ module polynet::bfc_usdc {
         transfer::public_freeze_object(metadata);
         //coin::treasury_into_supply(cap)
 
-        let initial_lock = coin::mint<BFC_USDC>(&mut cap, HUGE_U64, ctx);
+        let initial_lock = coin::mint<BFC_USDC>(&mut cap, consts::get_huge(), ctx);
         let remain = coin::split<BFC_USDC>(&mut initial_lock, 100000, ctx);
         //lock_proxy::initTreasury<BFC_USDT>(admin, ctx);
         let treasury = lock_proxy::init_treasury<BFC_USDC>(ctx);

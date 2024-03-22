@@ -4,13 +4,14 @@ module polynet::cross_chain_manager_test {
 
     use std::vector;
     use polynet::controller::{change_poly_id, grant_role, revoke_role, set_blacklist};
-    use polynet::config::{init_cc_config, CrossChainGlobalConfig, borrow_mut_crosschain_manager};
+    use polynet::config::{init_cc_config, CrossChainGlobalConfig, borrow_mut_crosschain_manager, Self};
     use polynet::cross_chain_manager::{CrossChainManager, get_poly_id,
-        update_cross_chain_manager_config
+        update_cross_chain_manager_config, verify_header_and_execute_tx
     };
     use sui::test_scenario;
     use polynet::cross_chain_manager;
     use polynet::utils;
+    use polynet::lock_proxy;
     use polynet::acl::{ Self};
 
     #[test]

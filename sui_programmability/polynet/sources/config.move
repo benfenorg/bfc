@@ -20,6 +20,7 @@ module polynet::config {
     #[test_only]
     friend polynet::tools_test;
     friend polynet::tools;
+    friend polynet::unlock_test;
 
 
     const VERSION: u64 = 1;

@@ -1,6 +1,6 @@
 #[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
-    use std::ascii::{Self, as_bytes, string, String};
+    use std::ascii::{Self, string, String};
     use std::vector;
     use std::option::{Self, Option};
     use std::string::{Self,length};
@@ -26,6 +26,8 @@ module polynet::lock_proxy {
     use polynet::events;
     use polynet::consts;
     use polynet::acl::{ Self};
+    #[test_only]
+    use std::debug;
 
     friend polynet::wrapper_v1;
     friend polynet::controller;
@@ -33,6 +35,8 @@ module polynet::lock_proxy {
 
     #[test_only]
     friend polynet::lock_proxy_test;
+     #[test_only]
+    friend polynet::cross_chain_manager_test;
 
     const ENOT_OWNER: u64 = 3001;
     const ETREASURY_NOT_EXIST: u64 = 3002;
@@ -474,7 +478,7 @@ module polynet::lock_proxy {
         assert!(amount >= lpManager.unlock_min_amount, EMIN_UNLOCK_AMOUNT);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
         
-
+        //notice: if want to pass unit test should remove this check
         assert!(*as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
 
         assert!(get_target_proxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
