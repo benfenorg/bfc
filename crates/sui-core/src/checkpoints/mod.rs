@@ -27,6 +27,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
+use im::hashmap;
 use move_core_types::language_storage::TypeTag;
 use sui_protocol_config::ProtocolVersion;
 use sui_types::base_types::{EpochId, TransactionDigest};
@@ -65,7 +66,7 @@ pub struct EpochStats {
     pub total_gas_reward: u64,
 
     //todo : add metric for stable coin reward
-    //pub total_stable_reward: hashmap<cointype, summary>
+    pub total_stable_reward: HashMap<TypeTag,GasCostSummaryAdjusted>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -577,7 +578,10 @@ impl CheckpointStore {
             return None;
         };
 
-
+        let mut hash: HashMap<TypeTag,GasCostSummaryAdjusted> = HashMap::new();
+        for item in &last_checkpoint.epoch_rolling_stable_gas_cost_summary_map {
+            hash.insert(item.0.clone(), item.1.clone());
+        }
         //todo, add stable coin reward to epoch stats..
         //epoch_rolling_stable_gas_cost_summary_map
         Some(EpochStats {
@@ -587,6 +591,7 @@ impl CheckpointStore {
             total_gas_reward: last_checkpoint
                 .epoch_rolling_bfc_gas_cost_summary
                 .computation_cost,
+            total_stable_reward: hash,
         })
     }
 
