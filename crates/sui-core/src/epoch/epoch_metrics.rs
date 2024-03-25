@@ -127,7 +127,7 @@ impl EpochMetrics {
             epoch_stable_gas_reward_vec: register_int_gauge_vec_with_registry!(
                 "epoch_stable_gas_reward_vec",
                 "list of stable gas rewards (i.e. computation gas cost) in the epoch",
-                &["stable_coin","gas_usage","gas_cost_summary"],
+                &["stable_coin","gas_usage_type","gas_cost_summary"],
                 registry,
             ).unwrap(),
 

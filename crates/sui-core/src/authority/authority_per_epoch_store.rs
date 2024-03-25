@@ -2132,28 +2132,29 @@ impl AuthorityPerEpochStore {
             .set(stats.total_gas_reward as i64);
 
         //todo change to some for data.
+        let gas_by_bfc = "gas_by_bfc";
+        let computation_cost = "computation_cost";
+        let storage_cost = "storage_cost";
+        let storage_rebate = "storage_rebate";
+        let gas_by_stable = "gas_by_stable";
+
         for item in stats.total_stable_reward {
             let type_tag = item.0.to_canonical_string();
-            let gas_by_bfc = "gas_by_bfc";
-            let computation_cost = "computation_cost";
             self.metrics
                 .epoch_stable_gas_reward_vec
                 .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", computation_cost)])
                 .set(item.1.gas_by_bfc.computation_cost as i64);
 
-            let storage_cost = "storage_cost";
             self.metrics
                 .epoch_stable_gas_reward_vec
                 .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", storage_cost)])
                 .set(item.1.gas_by_bfc.storage_cost as i64);
 
-            let storage_rebate = "storage_rebate";
             self.metrics
                 .epoch_stable_gas_reward_vec
                 .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", storage_rebate)])
                 .set(item.1.gas_by_bfc.storage_rebate as i64);
 
-            let gas_by_stable = "gas_by_stable";
             self.metrics
                 .epoch_stable_gas_reward_vec
                 .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_stable), &format!("{:?}", computation_cost)])
