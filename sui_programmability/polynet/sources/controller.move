@@ -528,4 +528,44 @@ module polynet::controller {
         let deposit_coin = coin::split<CoinType>(_coin,_amount,_ctx);
         lock_proxy::deposit<CoinType>(_treasury, deposit_coin);    
     }
+
+    #[test_only]
+    public  fun test_relay_unlock_tx<CoinType>(
+        _global:&mut CrossChainGlobalConfig,
+        _treasury_ref:&mut Treasury<CoinType>,
+        _proof: vector<u8>, 
+        _raw_header: vector<u8>, 
+        _header_proof: vector<u8>, 
+        _cur_raw_header: vector<u8>, 
+        _header_sig: vector<u8>,
+        _clock: &Clock,
+        _ctx: &mut TxContext
+    ) {
+        //check system pause
+      
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_assets_role(_global, sender);
+        config::check_pause(_global);
+        let (lp_manager,cc_manager) = config::borrow_mut_lp_and_cc_managers(_global);
+        let license_ref = lock_proxy::get_license_ref(lp_manager);
+
+        let certificate = cross_chain_manager::verify_header_and_execute_tx(
+                                                    cc_manager,
+                                                    license_ref, 
+                                                    &_proof, 
+                                                    &_raw_header, 
+                                                    &_header_proof, 
+                                                    &_cur_raw_header, 
+                                                    &_header_sig, 
+                                                    _ctx
+                                                );
+        lock_proxy::test_relay_unlock_tx<CoinType>(
+                        &certificate,
+                        lp_manager,
+                        _treasury_ref,
+                        _clock, 
+                        _ctx
+                    );
+    }
 }

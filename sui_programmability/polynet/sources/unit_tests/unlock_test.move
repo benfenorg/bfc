@@ -1,7 +1,7 @@
 #[test_only]
 module polynet::unlock_test {
     use std::vector;
-    use polynet::controller::{bind_proxy, bind_asset,relay_unlock_tx};
+    use polynet::controller::{bind_proxy, bind_asset,test_relay_unlock_tx};
     use polynet::config::{init_cc_config, CrossChainGlobalConfig};
     use sui::clock;
     use polynet::lock_proxy::{Treasury};
@@ -90,7 +90,7 @@ module polynet::unlock_test {
             let header_proof = vector::empty<u8>();
             let cur_raw_header = x"00";
             let header_sig = x"8b4c9fb32b017f2aa312592e75924462eb98354eb69fcd9b8c965514b7027f4044ef46da8f61e989b1031201df874fef563c8a764df0e4c2f5e86ea6e0be196f0124ee04d0a2cf683e3e5e57689046a5c05f4694b22bab200e13c88e8697114dc43496f8d39c66638b632849d76b1355305a1a6ca192197b6563b1e42338364f0200813e2bd830990b30232bb9ed785b341fc778ae55a0f9ce582b26c9ff00e0c50f13d5a1d53558c9e854dd973f9a5390c97a3e1606a602c0ec8e4bea5c027b273201";
-            relay_unlock_tx<BFC_USDC>(
+            test_relay_unlock_tx<BFC_USDC>(
                                 &mut ccConfig, 
                                 &mut treasury,
                                 proof,
