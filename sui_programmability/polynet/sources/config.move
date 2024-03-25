@@ -21,6 +21,7 @@ module polynet::config {
     friend polynet::tools_test;
     friend polynet::tools;
     friend polynet::unlock_test;
+    friend polynet::controller_test;
 
 
     const VERSION: u64 = 1;

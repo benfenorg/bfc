@@ -32,7 +32,6 @@ module polynet::controller {
         config::migrate(_global,_ctx);
     }
 
-
     public entry fun update_fee_collector(
         _global: &mut CrossChainGlobalConfig, 
         _new_fee_collector: address, 
@@ -49,7 +48,7 @@ module polynet::controller {
                         _ctx
                     ); 
     }
-
+    // change lock need fee in eth or not
     public entry fun update_fee_config(
         _global: &mut CrossChainGlobalConfig, 
         _need_fee: bool, 
@@ -134,7 +133,7 @@ module polynet::controller {
         _global: &mut CrossChainGlobalConfig,
         _keepers: vector<vector<u8>>,
         _start_height: u64,
-        _poly_d: u64,
+        _poly_id: u64,
         _ctx: &mut TxContext
     )  {
 
@@ -147,7 +146,7 @@ module polynet::controller {
                                 ccManager,
                                 _keepers,
                                 _start_height,
-                                _poly_d,
+                                _poly_id,
                                 _ctx
                              );
     }

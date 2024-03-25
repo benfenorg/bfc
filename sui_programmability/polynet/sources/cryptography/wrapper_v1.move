@@ -18,6 +18,7 @@ module polynet::wrapper_v1 {
 
     #[test_only]
     friend polynet::wrapper_v1_test;
+    friend polynet::controller_test;
    
 
     const DECIMALS: u8 = 8;
@@ -52,9 +53,15 @@ module polynet::wrapper_v1 {
         _wrapperstore:&mut WrapperStore, 
         _need_fee: bool 
     ) {
-      
         _wrapperstore.need_fee = _need_fee;
     }
+
+    public(friend) fun need_fee(
+        _wrapperstore: &WrapperStore
+    ):bool {
+        _wrapperstore.need_fee
+    }
+
 
     public fun fee_collector(_wrapperstore: &WrapperStore): address {
         return _wrapperstore.fee_collector
