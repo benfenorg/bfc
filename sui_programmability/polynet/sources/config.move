@@ -20,7 +20,9 @@ module polynet::config {
     #[test_only]
     friend polynet::tools_test;
     friend polynet::tools;
+    #[test_only]
     friend polynet::unlock_test;
+    #[test_only]
     friend polynet::controller_test;
 
 

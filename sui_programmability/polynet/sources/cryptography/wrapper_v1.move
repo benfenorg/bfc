@@ -18,6 +18,7 @@ module polynet::wrapper_v1 {
 
     #[test_only]
     friend polynet::wrapper_v1_test;
+    #[test_only]
     friend polynet::controller_test;
    
 
