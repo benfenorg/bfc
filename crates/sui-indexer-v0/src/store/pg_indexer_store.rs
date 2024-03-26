@@ -22,6 +22,10 @@ use move_bytecode_utils::module_cache::SyncModuleCache;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use prometheus::{Histogram, IntCounter};
+use sui_json_rpc::{ObjectProvider, ObjectProviderCache};
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_types::effects::ObjectRemoveKind;
+use sui_types::storage::DeleteKind;
 use tracing::info;
 
 use sui_json_rpc_types::{
@@ -78,6 +82,7 @@ use crate::store::module_resolver::IndexerModuleResolver;
 use crate::store::query::DBFilter;
 use crate::store::TransactionObjectChanges;
 use crate::store::{IndexerStore, TemporaryEpochStore};
+use crate::utils::{get_balance_changes_from_effect, get_object_changes};
 use crate::{benfen, PgConnectionPool};
 
 use super::MiningNFTOperation;
@@ -538,7 +543,7 @@ impl PgIndexerStore {
         &self,
         tx: Transaction,
         options: Option<&SuiTransactionBlockResponseOptions>,
-    ) -> Result<SuiTransactionBlockResponse, IndexerError> {
+    ) -> Result<(SuiTransactionBlockResponse, SuiTransactionBlockEffects), IndexerError> {
         let sender_signed_data: SenderSignedData =
             bcs::from_bytes(&tx.raw_transaction).map_err(|err| {
                 IndexerError::InsertableParsingError(format!(
@@ -564,31 +569,6 @@ impl PgIndexerStore {
         let (mut tx_opt, mut effects_opt, mut raw_tx) = (None, None, vec![]);
         let (object_changes, balance_changes, mut events) = (None, None, None);
         if let Some(options) = options {
-            //TODO Object changes and balance changes are not supported atm due to async issues
-            if options.show_balance_changes {
-                return Err(IndexerError::NotSupportedError(
-                    "Object cache is not supported".to_string(),
-                ));
-                // let object_cache = ObjectProviderCache::new(self.clone());
-                // balance_changes =
-                //     Some(get_balance_changes_from_effect(&object_cache, &effects).await?);
-            }
-            if options.show_object_changes {
-                return Err(IndexerError::NotSupportedError(
-                    "Object cache is not supported".to_string(),
-                ));
-                // let object_cache = ObjectProviderCache::new(self.clone());
-                // object_changes = Some(
-                //     get_object_changes(
-                //         &object_cache,
-                //         sender,
-                //         &effects.modified_at_versions(),
-                //         effects.all_changed_objects(),
-                //         effects.all_deleted_objects(),
-                //     )
-                //     .await?,
-                // );
-            }
             if options.show_events {
                 let event_page = self.get_events(
                     EventFilter::Transaction(tx_digest),
@@ -607,23 +587,26 @@ impl PgIndexerStore {
                 raw_tx = tx.raw_transaction;
             }
             if options.show_effects {
-                effects_opt = Some(effects);
+                effects_opt = Some(effects.clone());
             }
         }
 
-        Ok(SuiTransactionBlockResponse {
-            digest: tx_digest,
-            transaction: tx_opt,
-            raw_transaction: raw_tx,
-            effects: effects_opt,
-            confirmed_local_execution: tx.confirmed_local_execution,
-            timestamp_ms: tx.timestamp_ms.map(|t| t as u64),
-            checkpoint: tx.checkpoint_sequence_number.map(|c| c as u64),
-            events,
-            object_changes,
-            balance_changes,
-            errors: vec![],
-        })
+        Ok((
+            SuiTransactionBlockResponse {
+                digest: tx_digest,
+                transaction: tx_opt,
+                raw_transaction: raw_tx,
+                effects: effects_opt,
+                confirmed_local_execution: tx.confirmed_local_execution,
+                timestamp_ms: tx.timestamp_ms.map(|t| t as u64),
+                checkpoint: tx.checkpoint_sequence_number.map(|c| c as u64),
+                events,
+                object_changes,
+                balance_changes,
+                errors: vec![],
+            },
+            effects,
+        ))
     }
 
     fn multi_get_transactions_by_digests(
@@ -2634,11 +2617,42 @@ impl IndexerStore for PgIndexerStore {
         tx: Transaction,
         options: Option<&SuiTransactionBlockResponseOptions>,
     ) -> Result<SuiTransactionBlockResponse, IndexerError> {
-        let options = options.cloned();
-        self.spawn_blocking(move |this| {
-            this.compose_sui_transaction_block_response(tx, options.as_ref())
-        })
-        .await
+        let sender = SuiAddress::from_str(tx.sender.as_str())?;
+        let options_owned = options.cloned();
+        let (mut sui_tx_resp, effects) = self
+            .spawn_blocking(move |this| {
+                this.compose_sui_transaction_block_response(tx, options_owned.as_ref())
+            })
+            .await?;
+        if let Some(options) = options {
+            if options.show_balance_changes {
+                let object_cache = ObjectProviderCache::new(self.clone());
+                sui_tx_resp.balance_changes =
+                    Some(get_balance_changes_from_effect(&object_cache, &effects).await?);
+            }
+            if options.show_object_changes {
+                let object_cache = ObjectProviderCache::new(self.clone());
+                sui_tx_resp.object_changes = Some(
+                    get_object_changes(
+                        &object_cache,
+                        sender,
+                        effects.modified_at_versions(),
+                        effects.all_changed_objects(),
+                        effects
+                            .all_deleted_objects()
+                            .into_iter()
+                            .map(|(obj_ref, kind)| match kind {
+                                DeleteKind::Normal => (obj_ref, ObjectRemoveKind::Delete),
+                                DeleteKind::Wrap => (obj_ref, ObjectRemoveKind::Wrap),
+                                DeleteKind::UnwrapThenDelete => (obj_ref, ObjectRemoveKind::Delete),
+                            })
+                            .collect(),
+                    )
+                    .await?,
+                );
+            }
+        }
+        Ok(sui_tx_resp)
     }
 
     async fn get_all_transaction_page(
@@ -3382,6 +3396,26 @@ impl PartitionManager {
             })
             .collect::<Result<_, _>>()?,
         )
+    }
+}
+
+#[async_trait]
+impl ObjectProvider for PgIndexerStore {
+    type Error = IndexerError;
+    async fn get_object(
+        &self,
+        id: &ObjectID,
+        version: &SequenceNumber,
+    ) -> Result<sui_types::object::Object, Self::Error> {
+        self.get_sui_types_object(id, version)
+    }
+
+    async fn find_object_lt_or_eq_version(
+        &self,
+        id: &ObjectID,
+        version: &SequenceNumber,
+    ) -> Result<Option<sui_types::object::Object>, Self::Error> {
+        self.find_sui_types_object_lt_or_eq_version(id, version)
     }
 }
 
