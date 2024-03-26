@@ -388,6 +388,7 @@ rusoto_core = { version = "0.48.0", default_features = false, features = [
 rusoto_kms = { version = "0.48.0", default_features = false, features = [
   "rustls",
 ] }
+rust_decimal = { version = "1", features = [ "maths" ] }
 rust-version = "1.56.1"
 rustls = { version = "0.21.6", features = ["dangerous_configuration"] }
 rustls-pemfile = "1.0.2"

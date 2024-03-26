@@ -6,9 +6,11 @@ use prometheus::{Histogram, IntCounter};
 
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
-    Checkpoint as RpcCheckpoint, CheckpointId, DaoProposalFilter, EpochInfo, EventFilter,
-    EventPage, MoveCallMetrics, NetworkMetrics, NetworkOverview, SuiDaoProposal, SuiObjectData,
-    SuiObjectDataFilter, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
+    Checkpoint as RpcCheckpoint, CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo,
+    EventFilter, EventPage, MoveCallMetrics, NetworkMetrics, NetworkOverview, SuiDaoProposal,
+    SuiMiningNFT, SuiObjectData, SuiObjectDataFilter, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiTransactionBlockResponse,
+    SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::CheckpointDigest;
@@ -26,8 +28,10 @@ use crate::models::checkpoints::Checkpoint;
 use crate::models::dao_proposals::Proposal;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::events::Event;
+use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit};
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
+use crate::models::prices::PriceHistory;
 use crate::models::system_state::{DBSystemStateSummary, DBValidatorSummary};
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
@@ -217,6 +221,21 @@ pub trait IndexerStore {
         filter: Option<DaoProposalFilter>,
     ) -> Result<Vec<SuiDaoProposal>, IndexerError>;
 
+    async fn get_historic_price(
+        &self,
+        timestamp_ms: i64,
+        coin: String,
+        exact_match: bool,
+    ) -> Result<PriceHistory, IndexerError>;
+
+    async fn get_past_prices(
+        &self,
+        timestamp_ms: i64,
+        coin: String,
+    ) -> Result<Vec<PriceHistory>, IndexerError>;
+
+    async fn persist_price(&self, price: PriceHistory) -> Result<(), IndexerError>;
+
     async fn persist_fast_path(
         &self,
         tx: Transaction,
@@ -305,6 +324,42 @@ pub trait IndexerStore {
         current_checkpoint: i64,
         current_timestamp_ms: i64,
     ) -> Result<f64, IndexerError>;
+    async fn persist_mining_nft(&self, operation: MiningNFTOperation) -> Result<(), IndexerError>;
+
+    async fn get_mining_nfts(
+        &self,
+        address: SuiAddress,
+        page: usize,
+        limit: usize,
+        filter: Option<SuiOwnedMiningNFTFilter>,
+    ) -> Result<ClassicPage<SuiMiningNFT>, IndexerError>;
+
+    async fn get_mining_nft_overview(
+        &self,
+        address: SuiAddress,
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError>;
+
+    async fn get_unsettle_mining_nfts(
+        &self,
+        dt_timestamp_ms: i64,
+    ) -> Result<Vec<MiningNFT>, IndexerError>;
+
+    async fn get_mining_nft_profit(
+        &self,
+        nft: &MiningNFT,
+        dt_timestamp_ms: i64,
+    ) -> Result<MiningNFTHistoryProfit, IndexerError>;
+
+    async fn persist_mining_nft_profits(
+        &self,
+        profits: Vec<MiningNFTHistoryProfit>,
+    ) -> Result<usize, IndexerError>;
+
+    async fn get_owned_mining_nft_profits(
+        &self,
+        address: SuiAddress,
+        limit: usize,
+    ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError>;
 }
 
 #[derive(Clone, Debug)]
@@ -350,6 +405,7 @@ impl ObjectStore for CheckpointData {
 }
 
 // Per checkpoint indexing
+#[derive(Clone, Debug)]
 pub struct TemporaryCheckpointStore {
     pub checkpoint: Checkpoint,
     pub transactions: Vec<Transaction>,
@@ -375,4 +431,10 @@ pub struct TemporaryEpochStore {
     pub new_epoch: DBEpochInfo,
     pub system_state: DBSystemStateSummary,
     pub validators: Vec<DBValidatorSummary>,
+}
+
+#[derive(Clone, Debug)]
+pub enum MiningNFTOperation {
+    Creation(MiningNFT),
+    Operation(crate::models::mining_nft::MiningNFTOperation),
 }

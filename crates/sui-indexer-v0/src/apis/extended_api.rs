@@ -2,31 +2,43 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use async_trait::async_trait;
+use chrono::Utc;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 
+use jsonrpsee::http_client::HttpClient;
 use sui_json_rpc::api::{
     validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS,
 };
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
-    AddressMetrics, CheckpointedObjectID, DaoProposalFilter, EpochInfo, EpochPage, MoveCallMetrics,
-    NetworkMetrics, NetworkOverview, Page, QueryObjectsPage, SuiDaoProposal, SuiObjectDataFilter,
-    SuiObjectResponse, SuiObjectResponseQuery,
+    AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
+    MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage,
+    SuiDaoProposal, SuiMiningNFT, SuiMiningNFTProfitRate, SuiObjectDataFilter, SuiObjectResponse,
+    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
+    SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
+use sui_types::base_types::SuiAddress;
 use sui_types::sui_serde::BigInt;
 
 use crate::errors::IndexerError;
 use crate::store::IndexerStore;
+use crate::{benfen, IndexerConfig};
 
 pub(crate) struct ExtendedApi<S> {
     state: S,
+    fullnode: HttpClient,
+    config: IndexerConfig,
 }
 
 impl<S: IndexerStore> ExtendedApi<S> {
-    pub fn new(state: S) -> Self {
-        Self { state }
+    pub fn new(state: S, fullnode: HttpClient, config: IndexerConfig) -> Self {
+        Self {
+            state,
+            fullnode,
+            config,
+        }
     }
 
     async fn query_objects_internal(
@@ -180,6 +192,90 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         // NOTE: no underflow b/c rolling_total_transaction_blocks is greater than or equal to
         // rolling_total_successful_transaction_blocks.
         Ok((total_txes as u64).into())
+    }
+
+    async fn get_nft_staking_overview(&self) -> RpcResult<NFTStakingOverview> {
+        let timestamp = Utc::now().timestamp();
+        let mut staking = benfen::get_nft_staking_overview(
+            self.fullnode.clone(),
+            self.config.clone(),
+            timestamp as u64,
+        )
+        .await?;
+        let bfc_now_price = benfen::get_bfc_price_in_usd(self.fullnode.clone()).await?;
+        staking.bfc_usd_price = bfc_now_price;
+        let bfc_past_price = self
+            .state
+            .get_historic_price((timestamp - 86_400) * 1000, "BFC".to_owned(), false)
+            .await?
+            .price as f64
+            / 10_000f64;
+        staking.bfc_24h_rate = (bfc_now_price - bfc_past_price) / bfc_past_price;
+
+        let btc_past_prices = self
+            .state
+            .get_past_prices((timestamp - 86_400 * 180) * 1000, "BTC".to_owned())
+            .await?;
+
+        if btc_past_prices.len() > 0 {
+            let inital_price = btc_past_prices[0].price as f64;
+            staking.btc_past_profit_rates = btc_past_prices
+                .iter()
+                .map(|x| SuiMiningNFTProfitRate {
+                    rate: (x.price as f64 - inital_price) / inital_price,
+                    dt_timestamp_ms: x.ts as u64,
+                })
+                .collect();
+        }
+        Ok(staking)
+    }
+
+    async fn get_owned_mining_nfts(
+        &self,
+        address: SuiAddress,
+        page: Option<usize>,
+        limit: Option<usize>,
+        filter: Option<SuiOwnedMiningNFTFilter>,
+    ) -> RpcResult<ClassicPage<SuiMiningNFT>> {
+        let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
+        let page = page.map(|x| if x <= 0 { 1 } else { x }).unwrap_or(1);
+        let mining_nfts = self
+            .state
+            .get_mining_nfts(address, page, limit, filter)
+            .await?;
+        Ok(mining_nfts)
+    }
+
+    async fn get_owned_mining_nft_overview(
+        &self,
+        address: SuiAddress,
+    ) -> RpcResult<SuiOwnedMiningNFTOverview> {
+        let (mut r, ticket_ids) = self.state.get_mining_nft_overview(address).await?;
+        let bfc_now_price = benfen::get_bfc_price_in_usd(self.fullnode.clone()).await?;
+        r.bfc_usd_price = bfc_now_price;
+        for ticket_id in ticket_ids.iter() {
+            r.total_reward += benfen::get_mining_nft_pending_reward(
+                self.fullnode.clone(),
+                &self.config.mining_nft_contract,
+                &self.config.mining_nft_global,
+                &ticket_id,
+            )
+            .await?;
+        }
+
+        Ok(r)
+    }
+
+    async fn get_owned_mining_nft_profits(
+        &self,
+        address: SuiAddress,
+        limit: usize,
+    ) -> RpcResult<Vec<SuiOwnedMiningNFTProfit>> {
+        let r = self
+            .state
+            .get_owned_mining_nft_profits(address, limit)
+            .await?;
+        Ok(r)
     }
 }
 

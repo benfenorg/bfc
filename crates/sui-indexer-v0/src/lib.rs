@@ -37,6 +37,7 @@ use sui_sdk::{SuiClient, SuiClientBuilder};
 use crate::apis::MoveUtilsApi;
 
 pub mod apis;
+pub(crate) mod benfen;
 pub mod errors;
 mod handlers;
 pub mod metrics;
@@ -109,6 +110,27 @@ pub struct IndexerConfig {
     // NOTE: experimental only, do not use in production.
     #[clap(long)]
     pub skip_db_commit: bool,
+    #[clap(
+        long,
+        default_value = "BFC08933cb86b9581613b0402501bd095a279de4b1b4229718f799106df9169f1dfa080",
+        global = true
+    )]
+    pub mining_nft_contract: String,
+    #[clap(
+        long,
+        default_value = "BFCbce35db3a2db428713a72206ffdc705eea323cd3701dbb59eda00adc6f32e229ecae",
+        global = true
+    )]
+    pub mining_nft_event_package: String,
+    #[clap(
+        long,
+        default_value = "BFCea9365be65401fcc68af919eb077446d345be1b436f53791896025f78c7ed3bda764",
+        global = true
+    )]
+    pub mining_nft_global: String,
+
+    #[clap(long)]
+    pub migrate: bool,
 }
 
 impl IndexerConfig {
@@ -163,6 +185,16 @@ impl Default for IndexerConfig {
             fullnode_sync_worker: true,
             rpc_server_worker: true,
             skip_db_commit: false,
+            mining_nft_contract:
+                "BFCf5a54de8d667b66ef7ac77f657c70806f48a9339ef9999049077c4271135d34ad693"
+                    .to_string(),
+            mining_nft_global:
+                "BFC93667906efdfe7eb45ab61ccd25266f5d4cde8e23525c04fa6d888b1435e8c8a27f8"
+                    .to_string(),
+            mining_nft_event_package:
+                "BFCf5a54de8d667b66ef7ac77f657c70806f48a9339ef9999049077c4271135d34ad693"
+                    .to_string(),
+            migrate: false,
         }
     }
 }
@@ -320,7 +352,7 @@ struct PgConectionPoolConfig {
 impl PgConectionPoolConfig {
     const DEFAULT_POOL_SIZE: u32 = 10;
     const DEFAULT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(30);
-    const DEFAULT_STATEMENT_TIMEOUT: Duration = Duration::from_secs(5);
+    const DEFAULT_STATEMENT_TIMEOUT: Duration = Duration::from_secs(60);
 
     fn connection_config(&self) -> PgConnectionConfig {
         PgConnectionConfig {
@@ -400,7 +432,11 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         config.migrated_methods.clone(),
     ))?;
     builder.register_module(WriteApi::new(state.clone(), http_client.clone()))?;
-    builder.register_module(ExtendedApi::new(state.clone()))?;
+    builder.register_module(ExtendedApi::new(
+        state.clone(),
+        http_client.clone(),
+        config.clone(),
+    ))?;
     builder.register_module(MoveUtilsApi::new(http_client))?;
     let default_socket_addr = SocketAddr::new(
         // unwrap() here is safe b/c the address is a static config.
