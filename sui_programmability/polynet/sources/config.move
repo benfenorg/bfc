@@ -20,6 +20,10 @@ module polynet::config {
     #[test_only]
     friend polynet::tools_test;
     friend polynet::tools;
+    #[test_only]
+    friend polynet::unlock_test;
+    #[test_only]
+    friend polynet::controller_test;
 
 
     const VERSION: u64 = 1;
@@ -35,7 +39,6 @@ module polynet::config {
     const ENOT_ASSETS_ROLE: u64 = 6009;
     const ENOT_TREASURY_ROLE: u64 = 6010;
 
-
      //basic roles 
     const ADMIN_ROLE: u64 = 1;
     const PAUSE_ROLE: u64 = 2;
@@ -49,7 +52,6 @@ module polynet::config {
         role_acls: Table<u64, AccessControlManager>
     }
 
-
     struct CrossChainGlobalConfig has key {
         id: UID,
         paused: bool,
@@ -60,7 +62,6 @@ module polynet::config {
         version: u64
     }
 
-  
      //init package and initialize crossChainManager/ lockProxyManager/ wrapperStore/ 
    fun init(_ctx: &mut TxContext)  {
 
@@ -83,7 +84,6 @@ module polynet::config {
         acl::add_all(&mut keeper_acl, acl::get_default_admin_address());
         acl::add_all(&mut assets_acl, acl::get_default_assets_admin_address());
         acl::add_all(&mut treasury_acl, acl::get_default_treasury_admin_address());
-
 
         table::add(&mut acls, ADMIN_ROLE, admin_acl);
         table::add(&mut acls, PAUSE_ROLE, pause_acl);
@@ -124,18 +124,21 @@ module polynet::config {
         let ca_acl = acl::empty();
         let keeper_acl = acl::empty();
         let assets_acl = acl::empty();
+        let treasury_acl = acl::empty();
 
         acl::add_all(&mut admin_acl, acl::get_default_admin_address());
         acl::add_all(&mut pause_acl, acl::get_default_admin_address());
         acl::add_all(&mut ca_acl, acl::get_default_admin_address());
         acl::add_all(&mut keeper_acl, acl::get_default_admin_address());
         acl::add_all(&mut assets_acl, acl::get_default_assets_admin_address());
+        acl::add_all(&mut treasury_acl, acl::get_default_treasury_admin_address());
 
         table::add(&mut acls, ADMIN_ROLE, admin_acl);
         table::add(&mut acls, PAUSE_ROLE, pause_acl);
         table::add(&mut acls, CA_ROLE, ca_acl);
         table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
         table::add(&mut acls, ASSETS_ROLE, assets_acl);
+        table::add(&mut acls, TREASURY_ROLE, treasury_acl);
 
         let acl_store = ACLStore{
             role_acls: acls

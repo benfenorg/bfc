@@ -4,6 +4,7 @@ module polynet::wrapper_v1 {
     use std::type_name::{Self};
     use sui::clock::Clock;
     use polynet::events;
+    use polynet::utils;
     use polynet::lock_proxy::{Treasury, LockProxyManager, Self};
     use polynet::cross_chain_manager::{CrossChainManager};
     use sui::coin::{Coin, Self};
@@ -17,6 +18,8 @@ module polynet::wrapper_v1 {
 
     #[test_only]
     friend polynet::wrapper_v1_test;
+    #[test_only]
+    friend polynet::controller_test;
    
 
     const DECIMALS: u8 = 8;
@@ -27,15 +30,16 @@ module polynet::wrapper_v1 {
 
     struct WrapperStore has store{
         fee_collector: address,
+        need_fee: bool
     }
 
     public(friend) fun new(_ctx: &mut TxContext): WrapperStore {
 
         WrapperStore{
-            fee_collector:tx_context::sender(_ctx) //maybe should set at config file
+            fee_collector:tx_context::sender(_ctx), //maybe should set at config file
+            need_fee: false //default false
         }
     }
-
 
     public(friend) fun set_fee_collector(
         _wrapperstore:&mut WrapperStore, 
@@ -46,40 +50,70 @@ module polynet::wrapper_v1 {
         _wrapperstore.fee_collector = _new_fee_collector;
     }
 
+    public(friend) fun update_fee_config(
+        _wrapperstore:&mut WrapperStore, 
+        _need_fee: bool 
+    ) {
+        _wrapperstore.need_fee = _need_fee;
+    }
+
+    public(friend) fun need_fee(
+        _wrapperstore: &WrapperStore
+    ):bool {
+        _wrapperstore.need_fee
+    }
+
+
     public fun fee_collector(_wrapperstore: &WrapperStore): address {
         return _wrapperstore.fee_collector
     }
     
 
     public(friend) fun lock_and_pay_fee_with_fund<CoinType>(
-        ccManager:&mut CrossChainManager,
-        lpManager: &mut LockProxyManager,
+        cc_manager:&mut CrossChainManager,
+        lp_manager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
-        wrapperstore:&mut WrapperStore,
+        wrapper_store:&mut WrapperStore,
         account: address,
         fund: Coin<CoinType>, 
+        amount: u64,
         fee: Coin<BFC>,
-        toChainId: u64, 
-        toAddress: &vector<u8>,
+        to_chain_id: u64, 
+        to_address: &vector<u8>,
         clock:&Clock,
         ctx: &mut TxContext
     )  {
-        let amount = coin::value(&fund);
-        let fee_amount = coin::value(&fee);
+        // let amount = coin::value(&fund);
+        let fee_amount = 0;
 
         //coin::deposit<BFC>(feeCollector(), fee);
+        if (wrapper_store.need_fee) {
+            let fee_amount = coin::value(&fee);
+            let collector = fee_collector(wrapper_store);
+            transfer::public_transfer(fee, collector); 
+        } else {
+            utils::send_coin(fee,account);
+        };
 
-        let collector = fee_collector(wrapperstore);
-        transfer::public_transfer(fee, collector);
-
-        lock_proxy::lock(ccManager,lpManager,treasury_ref, account, fund, toChainId, toAddress,clock, ctx);
+        lock_proxy::lock(
+                cc_manager,
+                lp_manager,
+                treasury_ref, 
+                account, 
+                fund, 
+                amount, 
+                to_chain_id, 
+                to_address,
+                clock, 
+                ctx
+            );
         events::lock_with_fee_event(
                          type_name::get<Coin<CoinType>>(),
                          account,
-                         toChainId,
-                         *toAddress,
+                         to_chain_id,
+                         *to_address,
                          amount,
-                         fee_amount,
+                         fee_amount
                         );
     }
 

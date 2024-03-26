@@ -32,7 +32,6 @@ module polynet::controller {
         config::migrate(_global,_ctx);
     }
 
-
     public entry fun update_fee_collector(
         _global: &mut CrossChainGlobalConfig, 
         _new_fee_collector: address, 
@@ -47,6 +46,23 @@ module polynet::controller {
                         config::borrow_mut_wrapper_store(_global),
                         _new_fee_collector,
                         _ctx
+                    ); 
+    }
+    // change lock need fee in eth or not
+    public entry fun update_fee_config(
+        _global: &mut CrossChainGlobalConfig, 
+        _need_fee: bool, 
+        _ctx: &mut TxContext
+    ) {
+     
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        config::check_version(_global);
+
+        wrapper_v1::update_fee_config(
+                        config::borrow_mut_wrapper_store(_global),
+                        _need_fee
                     ); 
     }
 
@@ -117,7 +133,7 @@ module polynet::controller {
         _global: &mut CrossChainGlobalConfig,
         _keepers: vector<vector<u8>>,
         _start_height: u64,
-        _poly_d: u64,
+        _poly_id: u64,
         _ctx: &mut TxContext
     )  {
 
@@ -130,7 +146,7 @@ module polynet::controller {
                                 ccManager,
                                 _keepers,
                                 _start_height,
-                                _poly_d,
+                                _poly_id,
                                 _ctx
                              );
     }
@@ -221,8 +237,8 @@ module polynet::controller {
     public entry fun lock_and_pay_fee<CoinType>(
         _global:&mut CrossChainGlobalConfig,
         _treasury_ref:&mut Treasury<CoinType>,
-        _account: address,
         _fund: Coin<CoinType>,
+        _amount: u64,
         _fee: Coin<BFC>,
         _to_chain_id: u64, 
         _to_address: vector<u8>,
@@ -241,8 +257,9 @@ module polynet::controller {
                         lp_manager,
                         _treasury_ref,
                         wrapper_store,
-                        _account, 
+                        sender, 
                         _fund, 
+                        _amount,
                         _fee, 
                         _to_chain_id, 
                         &_to_address,
@@ -434,6 +451,32 @@ module polynet::controller {
         config::unpause(_global);
     }
 
+     public entry fun update_lock_min_amount(
+        _global:&mut CrossChainGlobalConfig,
+        _min_amount: u64,
+        _ctx: &mut TxContext
+    )  {
+        config::check_version(_global);
+        // config::check_pause(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        let lp_manager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::update_lock_min_amount(lp_manager,_min_amount);
+    }
+
+    public entry fun update_unlock_min_amount(
+        _global:&mut CrossChainGlobalConfig,
+        _min_amount: u64,
+        _ctx: &mut TxContext
+    )  {
+        config::check_version(_global);
+        // config::check_pause(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_admin_role(_global, sender);
+        let lp_manager = config::borrow_mut_lp_manager(_global);
+        lock_proxy::update_unlock_min_amount(lp_manager,_min_amount);
+    }
+
     public entry fun reset_lock_amount(_global:&mut CrossChainGlobalConfig, _ctx: &mut TxContext){
         
         config::check_version(_global);
@@ -483,5 +526,45 @@ module polynet::controller {
         assert!(_amount > 0 ,EDEPOSIT_TREASURY_AMOUNT );
         let deposit_coin = coin::split<CoinType>(_coin,_amount,_ctx);
         lock_proxy::deposit<CoinType>(_treasury, deposit_coin);    
+    }
+
+    #[test_only]
+    public  fun test_relay_unlock_tx<CoinType>(
+        _global:&mut CrossChainGlobalConfig,
+        _treasury_ref:&mut Treasury<CoinType>,
+        _proof: vector<u8>, 
+        _raw_header: vector<u8>, 
+        _header_proof: vector<u8>, 
+        _cur_raw_header: vector<u8>, 
+        _header_sig: vector<u8>,
+        _clock: &Clock,
+        _ctx: &mut TxContext
+    ) {
+        //check system pause
+      
+        config::check_version(_global);
+        let sender = tx_context::sender(_ctx);
+        config::check_assets_role(_global, sender);
+        config::check_pause(_global);
+        let (lp_manager,cc_manager) = config::borrow_mut_lp_and_cc_managers(_global);
+        let license_ref = lock_proxy::get_license_ref(lp_manager);
+
+        let certificate = cross_chain_manager::verify_header_and_execute_tx(
+                                                    cc_manager,
+                                                    license_ref, 
+                                                    &_proof, 
+                                                    &_raw_header, 
+                                                    &_header_proof, 
+                                                    &_cur_raw_header, 
+                                                    &_header_sig, 
+                                                    _ctx
+                                                );
+        lock_proxy::test_relay_unlock_tx<CoinType>(
+                        &certificate,
+                        lp_manager,
+                        _treasury_ref,
+                        _clock, 
+                        _ctx
+                    );
     }
 }

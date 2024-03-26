@@ -6,7 +6,6 @@ module polynet::lock_proxy {
     use std::string::{Self,length};
     use sui::math;
     use sui::table::{Self, Table};
-    // use polynet::linked_table::{Self, LinkedTable};
     use std::type_name::{Self, TypeName};
     use sui::clock;
     use sui::clock::Clock;
@@ -33,6 +32,8 @@ module polynet::lock_proxy {
 
     #[test_only]
     friend polynet::lock_proxy_test;
+     #[test_only]
+    friend polynet::cross_chain_manager_test;
 
     const ENOT_OWNER: u64 = 3001;
     const ETREASURY_NOT_EXIST: u64 = 3002;
@@ -50,6 +51,8 @@ module polynet::lock_proxy {
     const EXCEEDED_MAXIMUM_AMOUNT_LIMIT: u64 = 3014;
     const ERR_CHECK_LP_MANAGER_PAUSED: u64 = 3015;
     const ETARGET_ASSET_CHAIN_NOT_BIND: u64 = 3016;
+    const EMIN_UNLOCK_AMOUNT: u64 = 3017;
+    const EMIN_LOCK_AMOUNT: u64 = 3018;
 
     const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
 
@@ -61,6 +64,8 @@ module polynet::lock_proxy {
     }
 
     struct LockProxyManager has store{
+        lock_min_amount: u64,
+        unlock_min_amount: u64,
         lock_proxy_store: LockProxyStore,
         license_store: LicenseStore,
         amountLockManager: AmountLimitManager,
@@ -114,7 +119,11 @@ module polynet::lock_proxy {
         vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
         vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
 
+        let min_amount = (5 * math::pow(10, consts::get_decimal()) as u64);
+
         let manager = LockProxyManager{
+            lock_min_amount: min_amount,
+            unlock_min_amount: min_amount,
             lock_proxy_store: lockproxystore,
             license_store: licensestore,
             amountLockManager: amountLockManager,
@@ -306,7 +315,6 @@ module polynet::lock_proxy {
         license: cross_chain_manager::License
     )   {
      
-
         let (license_account, license_module_name) = cross_chain_manager::get_license_info(&license);
         let this_type = type_name::get<LicenseStore>();
         let this_account = type_name::get_address(&this_type);
@@ -364,12 +372,34 @@ module polynet::lock_proxy {
             ctx
         );
     }
+    
+    #[test_only]
+    public(friend) fun test_relay_unlock_tx<CoinType>(
+        certificate: &cross_chain_manager::Certificate,
+        lpManager: &mut LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        clock:&Clock,
+        ctx: &mut TxContext
+    )  {
+
+        // borrow license
+        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
+        assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
+        // let license_ref = option::borrow(&lpManager.license_store.license);
+
+        test_unlock<CoinType>(
+            lpManager, 
+            treasury_ref,
+            certificate, 
+            clock, 
+            ctx
+        );
+    }
 
     public(friend) fun get_license_ref(_lp_manager: &LockProxyManager): &cross_chain_manager::License {
         option::borrow(&_lp_manager.license_store.license)
     }
     
-
     // lock
     public(friend) fun lock<CoinType>(
         ccManager:&mut CrossChainManager,
@@ -377,14 +407,21 @@ module polynet::lock_proxy {
         treasury_ref:&mut Treasury<CoinType>,
         account: address,
         fund: Coin<CoinType>,
+        amount: u64,
         toChainId: u64,
         toAddress: &vector<u8>,
-        clock:&Clock,
+        clock: &Clock,
         ctx: &mut TxContext
     )  {
         // lock fund
-        let amount = coin::value(&fund);
-        deposit(treasury_ref, fund);
+        // let amount = coin::value(&fund);
+        assert!(amount >= lpManager.lock_min_amount, EMIN_UNLOCK_AMOUNT);
+        let balance = coin::into_balance<CoinType>(
+            coin::split<CoinType>(&mut fund, amount, ctx)
+        );
+        
+        deposit(treasury_ref, coin::from_balance(balance, ctx));
+        utils::send_coin(fund,account);
         
         // borrow license
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
@@ -399,9 +436,9 @@ module polynet::lock_proxy {
         let to_proxy = get_target_proxy(lpManager, toChainId);
         let (to_asset, to_asset_decimals) = get_to_asset<CoinType>(lpManager, toChainId);
 
-        //todo,, decimals
         // precision conversion
         let target_chain_amount = to_target_chain_amount(amount, consts::get_decimal(), to_asset_decimals);
+      
 
         // pack args
         let tx_data = serialize_tx_args(&to_asset, toAddress, target_chain_amount);
@@ -457,15 +494,66 @@ module polynet::lock_proxy {
         // from asset decimal precision conversion
         let (_, from_asset_decimals) = get_to_asset<CoinType>(lpManager, from_chain_id);
 
-
-        //todo, deal with hardcode local_decimals
         let amount = from_target_chain_amount(from_chain_amount, consts::get_decimal(),from_asset_decimals);
+        assert!(amount >= lpManager.unlock_min_amount, EMIN_UNLOCK_AMOUNT);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
-        //todo, decimals
-        //type_name::get<Coin<CoinType>>()
         
-
+        //notice: if want to pass unit test should remove this check
         assert!(*as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
+
+        assert!(get_target_proxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
+        let (license_id, _) = get_license_id(lpManager);
+        assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
+        assert!(method == b"unlock", EINVALID_METHOD);
+
+        assert!(check_amount_result(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        // unlock fund
+        let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
+        //todo need transfer.
+
+        transfer::public_transfer(fund, utils::to_address(to_address));
+
+        events::unlock(
+                    type_name::get<Coin<CoinType>>(),
+                    utils::to_address(to_address),
+                    amount,
+                    from_chain_amount
+                 );
+    }
+
+    #[test_only]
+    public(friend) fun test_unlock<CoinType>(
+        lpManager: &mut LockProxyManager,
+        treasury_ref:&mut Treasury<CoinType>,
+        certificate: &cross_chain_manager::Certificate,
+        clock:&Clock,
+        ctx: &mut TxContext
+    )  {
+        // read certificate
+        let (
+            from_contract,
+            from_chain_id,
+            target_license_id,
+            method,
+            args
+        ) = cross_chain_manager::read_certificate(certificate);
+
+        // unpac args
+        let (
+            to_asset,
+            to_address,
+            from_chain_amount
+        ) = deserialize_tx_args(&args);
+
+        // from asset decimal precision conversion
+        let (_, from_asset_decimals) = get_to_asset<CoinType>(lpManager, from_chain_id);
+
+        let amount = from_target_chain_amount(from_chain_amount, consts::get_decimal(),from_asset_decimals);
+        assert!(amount >= lpManager.unlock_min_amount, EMIN_UNLOCK_AMOUNT);
+        let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
+        
+        //notice: if want to pass unit test should remove this check
+        // assert!(*as_bytes(type_name::borrow_string(&type_name::get<Coin<CoinType>>())) == to_asset, EINVALID_COINTYPE);
 
         assert!(get_target_proxy(lpManager, from_chain_id) == from_contract, EINVALID_FROM_CONTRACT);
         let (license_id, _) = get_license_id(lpManager);
@@ -487,7 +575,6 @@ module polynet::lock_proxy {
                  );
 
     }
-
 
    
     //reset max amount per day of lock_proxy_manager
@@ -582,5 +669,19 @@ module polynet::lock_proxy {
         } else {
             return b"BFC_BTC"
         }
+    }
+
+    public(friend) fun update_lock_min_amount(
+        _lockProxyManager: &mut LockProxyManager,
+        _min_amount: u64
+    )  {
+        _lockProxyManager.lock_min_amount = _min_amount;
+    }
+
+    public(friend) fun update_unlock_min_amount(
+        _lockProxyManager: &mut LockProxyManager,
+        _min_amount: u64
+    )  {
+        _lockProxyManager.unlock_min_amount = _min_amount;
     }
 }

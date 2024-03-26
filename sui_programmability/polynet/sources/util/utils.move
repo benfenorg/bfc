@@ -1,5 +1,7 @@
 module polynet::utils {
     use std::vector;
+    use sui::transfer;
+    use sui::coin::{Self, Coin};
     use std::string::{String, Self};
     use sui::bcs;
     use sui::table::{Table, Self};
@@ -63,6 +65,18 @@ module polynet::utils {
             table::add(table, copy key, default)
         };
         table::borrow_mut(table, key)
+    }
+
+     public fun send_coin<CoinType>(
+        _coin: Coin<CoinType>,
+        _addr: address
+    ) {
+        let amount = coin::value<CoinType>(&_coin);
+        if (amount > 0) {
+            transfer::public_transfer<Coin<CoinType>>(_coin,_addr);
+        }else {
+            coin::destroy_zero<CoinType>(_coin);
+        }
     }
 
     // public fun from_bytes<T>(v: vector<u8>): T {
