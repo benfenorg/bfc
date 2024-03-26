@@ -464,7 +464,7 @@ module polynet::controller {
         lock_proxy::update_lock_min_amount(lp_manager,_min_amount);
     }
 
-    public(friend) fun update_unlock_min_amount(
+    public entry fun update_unlock_min_amount(
         _global:&mut CrossChainGlobalConfig,
         _min_amount: u64,
         _ctx: &mut TxContext

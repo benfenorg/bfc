@@ -10,15 +10,17 @@ module polynet::controller_test {
     use sui::clock;
     use polynet::wrapper_v1::{fee_collector,need_fee};
     use polynet::bfc_usdc::{ BFC_USDC, new_for_test};
-    use polynet::bfc_usdt::{ BFC_USDT};
+    // use polynet::bfc_usdt::{ BFC_USDT};
     use polynet::tools::{ init_as_testnet};
     use polynet::acl::{ Self};
+    use polynet::lock_proxy::{Treasury};
+    use sui::tx_context::{ Self};
     use sui::test_scenario;
+    use sui::coin::{TreasuryCap, Coin};
 
    
-
     #[test]
-    fun test_unlock_tx(){
+    fun test_controllers(){
         let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
         assert!(acl::is_admin(owner), 4001);
 
@@ -156,7 +158,99 @@ module polynet::controller_test {
             test_scenario::return_shared(ccConfig);
         };
 
-        
+          // pause_global
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            pause_global(&mut ccConfig, ctx); 
+            test_scenario::return_shared(ccConfig);
+        };
+
+           // unpause_global
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            unpause_global(&mut ccConfig, ctx); 
+            test_scenario::return_shared(ccConfig);
+        };
+
+           // update_lock_min_amount
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            update_lock_min_amount(&mut ccConfig, 10*100000000, ctx); 
+            test_scenario::return_shared(ccConfig);
+        };
+
+            // update_unlock_min_amount
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            update_unlock_min_amount(&mut ccConfig, 10*100000000, ctx); 
+            test_scenario::return_shared(ccConfig);
+        };
+
+         // reset_lock_amount
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            reset_lock_amount(&mut ccConfig,  ctx); 
+            test_scenario::return_shared(ccConfig);
+        };
+
+         // reset_unlock_amount
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+            let ctx = test_scenario::ctx(&mut scenario_val);
+            reset_unlock_amount(&mut ccConfig,  ctx); 
+            test_scenario::return_shared(ccConfig);
+        };
+
+        // mint_treasury
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let treasure = test_scenario::take_shared<Treasury<BFC_USDC>>(&scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+           
+           
+            let ids = test_scenario::ids_for_address<TreasuryCap<BFC_USDC>>(owner);
+            assert!(vector::length(&ids) > 0, 1);
+            let cap = test_scenario::take_from_address_by_id<TreasuryCap<BFC_USDC>>(
+                &scenario_val, owner, *vector::borrow(&ids, 0)
+            );
+            let ctx = test_scenario::ctx(&mut scenario_val);
+           
+            mint_treasury(&mut ccConfig,&mut cap ,&mut treasure,10000000,ctx); 
+            test_scenario::return_to_address(tx_context::sender(ctx), cap);
+            test_scenario::return_shared(ccConfig);
+            test_scenario::return_shared(treasure);
+        };
+
+         // deposit_treasury
+        test_scenario::next_tx(&mut scenario_val, owner);
+        {
+            let treasure = test_scenario::take_shared<Treasury<BFC_USDC>>(&scenario_val);
+            let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
+           
+            let ids = test_scenario::ids_for_address<Coin<BFC_USDC>>(owner);
+            assert!(vector::length(&ids) > 0, 1);
+            let coin = test_scenario::take_from_address_by_id<Coin<BFC_USDC>>(
+                &scenario_val, owner, *vector::borrow(&ids, 0)
+            );
+            let ctx = test_scenario::ctx(&mut scenario_val);
+           
+            deposit_treasury(&mut ccConfig,&mut treasure,&mut coin,100000,ctx); 
+            test_scenario::return_to_address(tx_context::sender(ctx), coin);
+            test_scenario::return_shared(ccConfig);
+            test_scenario::return_shared(treasure);
+        };
+
         test_scenario::end(scenario_val);
     }
 }

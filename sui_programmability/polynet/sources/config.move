@@ -122,18 +122,21 @@ module polynet::config {
         let ca_acl = acl::empty();
         let keeper_acl = acl::empty();
         let assets_acl = acl::empty();
+        let treasury_acl = acl::empty();
 
         acl::add_all(&mut admin_acl, acl::get_default_admin_address());
         acl::add_all(&mut pause_acl, acl::get_default_admin_address());
         acl::add_all(&mut ca_acl, acl::get_default_admin_address());
         acl::add_all(&mut keeper_acl, acl::get_default_admin_address());
         acl::add_all(&mut assets_acl, acl::get_default_assets_admin_address());
+        acl::add_all(&mut treasury_acl, acl::get_default_treasury_admin_address());
 
         table::add(&mut acls, ADMIN_ROLE, admin_acl);
         table::add(&mut acls, PAUSE_ROLE, pause_acl);
         table::add(&mut acls, CA_ROLE, ca_acl);
         table::add(&mut acls, CHANGE_KEEPER_ROLE, keeper_acl);
         table::add(&mut acls, ASSETS_ROLE, assets_acl);
+        table::add(&mut acls, TREASURY_ROLE, treasury_acl);
 
         let acl_store = ACLStore{
             role_acls: acls
