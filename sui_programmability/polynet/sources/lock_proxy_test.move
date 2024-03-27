@@ -71,7 +71,7 @@ module polynet::lock_proxy_test {
             let clock = clock::create_for_testing(ctx);
             let result = check_amount_result(10000000000000, lpmanager, &b"BFC_USDT", false, &clock);
             assert!(result, 4018);
-            let result = check_amount_result(100000000000000, lpmanager, &b"BFC_USDT", false, &clock);
+            let result = check_amount_result(1000000000000000, lpmanager, &b"BFC_USDT", false, &clock);
             assert!(result == false, 4018);
             test_scenario::return_shared(ccConfig);
             clock::destroy_for_testing(clock);
