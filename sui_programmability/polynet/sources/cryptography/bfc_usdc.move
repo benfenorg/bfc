@@ -35,12 +35,12 @@ module polynet::bfc_usdc {
         transfer::public_freeze_object(metadata);
         //coin::treasury_into_supply(cap)
 
-        let initial_lock = coin::mint<T>(&mut cap, consts::get_huge(), ctx);
+        let initial_lock_token = coin::mint<T>(&mut cap, consts::get_huge(), ctx);
      
-        let remain = coin::split<T>(&mut initial_lock, consts::get_local_amount(), ctx);
+        let remain = coin::split<T>(&mut initial_lock_token, consts::get_local_amount(), ctx);
         let treasury = lock_proxy::init_treasury<T>(ctx);
 
-        lock_proxy::deposit<T>(&mut treasury, initial_lock);
+        lock_proxy::deposit<T>(&mut treasury, initial_lock_token);
         lock_proxy::lock_proxy_transfer(treasury);
 
         transfer::public_transfer(cap, tx_context::sender(ctx));

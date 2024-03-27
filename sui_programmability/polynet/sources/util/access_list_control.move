@@ -15,7 +15,7 @@ module polynet::acl {
     const ENOT_CONTAIN: u64 = 7001;
     const ERROR_EMPTY_ADDRESS: u64 = 7002;
 
-      //operation admin, some of the operation need to be signed by admin
+    //operation admin, some of the operation need to be signed by admin
     const ADMINS: vector<address> =vector[
                                           @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
                                           @0xc3f0bfdf21d95a247e306df123dde0dad1057f188bdc490737f2616f4062804b,
@@ -29,7 +29,7 @@ module polynet::acl {
                                                 @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
                                                 @0x5891702bb260411bc79f35ecd293581e9c4be7c926e6da7d4c7088101a69103e
                                                ];
-       //added:  ONLY admin can MINT TREASURY token..!!!!
+    //added:  ONLY admin can MINT TREASURY token..!!!!
     const TREASURY_ADMIN:vector<address> = vector[
                                                  @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
                                                  @0xb5e92ec96decaa207a41ffa1ea04c9a01ddf049c3a0c06764230cd3be1fc735e

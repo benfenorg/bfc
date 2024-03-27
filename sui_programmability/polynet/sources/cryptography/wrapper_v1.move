@@ -22,10 +22,7 @@ module polynet::wrapper_v1 {
     friend polynet::controller_test;
    
 
-    const DECIMALS: u8 = 8;
-    const MAX_AMOUNT: u64 = 100*0000*100000000; //1 million.
 
-    const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
 
     struct WrapperStore has store{

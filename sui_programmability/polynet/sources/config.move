@@ -11,6 +11,8 @@ module polynet::config {
     use polynet::lock_proxy::{LockProxyManager, Self};
 
     friend polynet::controller;
+    friend polynet::tools;
+
     #[test_only]
     friend polynet::cross_chain_manager_test;
     #[test_only]
@@ -19,7 +21,6 @@ module polynet::config {
     friend polynet::wrapper_v1_test;
     #[test_only]
     friend polynet::tools_test;
-    friend polynet::tools;
     #[test_only]
     friend polynet::unlock_test;
     #[test_only]

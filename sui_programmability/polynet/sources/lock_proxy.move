@@ -54,7 +54,7 @@ module polynet::lock_proxy {
     const EMIN_UNLOCK_AMOUNT: u64 = 3017;
     const EMIN_LOCK_AMOUNT: u64 = 3018;
 
-    const MAX_AMOUNT: u64 = 100*10000*100000000; //1 million.
+    const MAX_AMOUNT: u64 = 100*10000*1000000000; //1 million.
 
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
