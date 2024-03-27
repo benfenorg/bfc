@@ -1,4 +1,4 @@
-#[allow(unused_field)]
+// #[allow(unused_field)]
 module polynet::cross_chain_utils {
     use std::hash;
     use std::vector;
