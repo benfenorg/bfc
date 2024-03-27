@@ -3,15 +3,15 @@ processed 6 tasks
 task 1 'publish'. lines 8-32:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 100000, storage_cost: 463600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 463600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 33-35:
 mutated: object(0,1)
-gas summary: computation_cost: 100000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'run'. lines 36-38:
 mutated: object(0,1)
-gas summary: computation_cost: 100000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 4 'run'. lines 39-41:
 Error: Transaction Effects Status: Insufficient Gas.

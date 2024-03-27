@@ -1323,7 +1323,7 @@ impl ProtocolConfig {
                 }
                 13 => {}
                 14 => {
-                    cfg.gas_rounding_step = Some(100);
+                    cfg.gas_rounding_step = Some(1000);
                     cfg.gas_model_version = Some(6);
                 }
                 15 => {

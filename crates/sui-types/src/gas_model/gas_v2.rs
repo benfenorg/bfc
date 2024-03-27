@@ -63,7 +63,6 @@ mod checked {
             ComputationBucket::simple(20_000, 50_000),
             ComputationBucket::simple(50_000, 200_000),
             ComputationBucket::simple(200_000, max_bucket_cost),
-            // ComputationBucket::simple(1_000_000, max_bucket_cost),
         ]
     }
 
