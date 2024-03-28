@@ -20,6 +20,8 @@ module polynet::bfc_usdc {
         build_usdc(witness, consts::get_decimal(), tx_context::sender(ctx), ctx);
     }
 
+    //todo: change token name and symbol
+    //todo: treasure admin address use config address
     public fun build_usdc<T:drop>(witness: T, decimals: u8, admin: address, ctx: &mut TxContext){
         assert!(acl::is_admin(admin), EINVALID_ADMIN);
 

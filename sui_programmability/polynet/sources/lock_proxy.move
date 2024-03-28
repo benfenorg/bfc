@@ -53,8 +53,6 @@ module polynet::lock_proxy {
     const EMIN_UNLOCK_AMOUNT: u64 = 3017;
     const EMIN_LOCK_AMOUNT: u64 = 3018;
 
-    const MAX_AMOUNT: u64 = 100*10000*1000000000; //1 million.
-
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
     struct AmountLimitManager has  store {
@@ -104,21 +102,19 @@ module polynet::lock_proxy {
             time: start_time,
             amount_record: vec_map::empty()
         };
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+        //todo: change name
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , consts::get_max_amount_per_day());
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , consts::get_max_amount_per_day());
 
         let amountUnlockManager = AmountLimitManager{
             time: start_time,
             amount_record: vec_map::empty()
         };
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+         //todo: change name
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , consts::get_max_amount_per_day());
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , consts::get_max_amount_per_day());
 
-        let min_amount = (5 * math::pow(10, consts::get_decimal()) as u64);
+        let min_amount = consts::get_min_amount_per_tx();
 
         let manager = LockProxyManager{
             lock_min_amount: min_amount,
@@ -606,16 +602,11 @@ module polynet::lock_proxy {
 
     public(friend) fun reset_amount(amountManager:&mut AmountLimitManager){
         let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
-        *usdt = MAX_AMOUNT;
+        *usdt = consts::get_max_amount_per_day();
 
         let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDC");
-        *usdc = MAX_AMOUNT;
+        *usdc = consts::get_max_amount_per_day();
 
-        let btc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_BTC");
-        *btc = MAX_AMOUNT;
-
-        let eth = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_ETH");
-        *eth = MAX_AMOUNT;
     }
    
     public fun to_target_chain_amount(amount: u64,local_decimals: u8,  target_decimals: u8): u128 {
