@@ -25,19 +25,16 @@ module polynet::config {
     #[test_only]
     friend polynet::controller_test;
 
-
     const VERSION: u64 = 1;
     const ERR_CHECK_CONFIG_PAUSED: u64 = 6000;
     const ERR_VERSION_CHECK: u64 = 6001;
     const EALREADY_EXECUTED: u64 = 6002;
     const ENOT_OPERATE_ROLE_ROLE: u64 = 6003;
     const EALREADY_HAS_ROLE: u64 = 6004;
-    const ENOT_PAUSE_ROLE: u64 = 6005;
-    const ENOT_HAS_ROLE: u64 = 6006;
-    const ENOT_CA_ROLE: u64 = 6007;
-    const ENOT_ADMIN: u64 = 6008;
-    const ENOT_ASSETS_ROLE: u64 = 6009;
-    const ENOT_TREASURY_ROLE: u64 = 6010;
+    const ENOT_HAS_ROLE: u64 = 6005;
+    const ENOT_ADMIN: u64 = 6006;
+    const ENOT_ASSETS_ROLE: u64 = 6007;
+    const ENOT_TREASURY_ROLE: u64 = 6008;
 
      //basic roles 
     const ADMIN_ROLE: u64 = 1;
@@ -61,7 +58,7 @@ module polynet::config {
     }
 
      //init package and initialize crossChainManager/ lockProxyManager/ wrapperStore/ 
-   fun init(_ctx: &mut TxContext)  {
+    fun init(_ctx: &mut TxContext)  {
 
         let sender = tx_context::sender(_ctx);
 
@@ -100,7 +97,6 @@ module polynet::config {
         };
        
         transfer::share_object(config);
-
     }
 
     public(friend) fun init_cc_config(_ctx: &mut TxContext){
@@ -203,7 +199,7 @@ module polynet::config {
     }
 
        // pause/unpause
-   fun paused(_global: &CrossChainGlobalConfig): bool  {
+    fun paused(_global: &CrossChainGlobalConfig): bool  {
        _global.paused
     }
 
@@ -302,6 +298,4 @@ module polynet::config {
     ) {
           assert!(has_role(_config, TREASURY_ROLE, _sender), ENOT_TREASURY_ROLE);
     }
-
-
 }

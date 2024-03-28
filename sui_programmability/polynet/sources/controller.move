@@ -9,18 +9,8 @@ module polynet::controller {
     use polynet::cross_chain_manager::{Self};
     use polynet::lock_proxy::{Treasury, Self};
 
-
-    const EINVALID_SYSTEM_IS_PAUSED: u64 = 5000;
-    const ELICENSE_NOT_EXIST: u64 = 5001;
-    const ERR_VERSION_CHECK: u64 = 5002; 
-    const ERR_PAUSE_ROLE: u64 = 5003;
-    const EINVALID_ADMIN_SIGNER: u64 = 5004;
-    const ENOT_CHANGE_KEEPER_ROLE: u64 = 5005;
-    const EVERIFY_HEADER_FAILED: u64 = 5006;
-    const EVERIFY_HEADER_PROOF_FAILED: u64 = 5007;
-    const EVERIFIER_NOT_RECEIVER: u64 = 5008;
-    const EBLACKLISTED_TO: u64 = 5009;
-    const EDEPOSIT_TREASURY_AMOUNT: u64 = 5010;
+    const ERR_VERSION_CHECK: u64 = 5000; 
+    const EDEPOSIT_TREASURY_AMOUNT: u64 = 5001;
 
      // update crosschain_manager
     public entry fun migrate(  

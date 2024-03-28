@@ -1,4 +1,3 @@
-#[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
     use std::ascii::{Self, as_bytes, string, String};
     use std::vector;
@@ -177,15 +176,14 @@ module polynet::lock_proxy {
         } else {
             abort ETARGET_ASSET_NOT_BIND
         }
-      
-       
     }
 
-    public fun getBalance< CoinType>(treasury_ref: &Treasury<CoinType>): u64  {
-        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
-        //let treasury_ref = borrow_global<Treasury<CoinType>>(POLY_BRIDGE);
-        return coin::value(&treasury_ref.coin)
-    }
+    // where we need this
+    // public fun get_balance< CoinType>(treasury_ref: &Treasury<CoinType>): u64  {
+    //     //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
+    //     //let treasury_ref = borrow_global<Treasury<CoinType>>(POLY_BRIDGE);
+    //     return coin::value(&treasury_ref.coin)
+    // }
 
     public(friend) fun bind_proxy(
         lpManager: &mut LockProxyManager,
@@ -282,19 +280,18 @@ module polynet::lock_proxy {
             id: object::new(ctx),
             coin: coin::zero<CoinType>(ctx),
         };
-
         treasury
-
     }
 
     public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>) {
         transfer::share_object(treasury)
     }
 
-    public fun is_treasury_initialzed<CoinType>(): bool {
-        true
-        //exists<Treasury<CoinType>>(POLY_BRIDGE)
-    }
+    //where we need this
+    // public fun is_treasury_initialzed<CoinType>(): bool {
+    //     true
+    //     //exists<Treasury<CoinType>>(POLY_BRIDGE)
+    // }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
@@ -309,18 +306,19 @@ module polynet::lock_proxy {
         return coin::split(&mut treasury_ref.coin, amount, ctx)
     }
 
-    // license function
+    // license function  
+    //notice: license_account can't be equal to the type_name address
     public fun receive_license(
         lpManager: &mut LockProxyManager,
         license: cross_chain_manager::License
     )   {
-     
-        let (license_account, license_module_name) = cross_chain_manager::get_license_info(&license);
+        
+        //license_account not used now
+        let (_, license_module_name) = cross_chain_manager::get_license_info(&license);
         let this_type = type_name::get<LicenseStore>();
-        let this_account = type_name::get_address(&this_type);
+        // let this_account = type_name::get_address(&this_type);
         let this_module_name = type_name::get_module(&this_type);
 
-        //todo
         let license_module_name_string = ascii::string(license_module_name);
         // let license_account_string = address::to_ascii_string(license_account);
         //assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
@@ -340,9 +338,7 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun output_license_id(lpManager: &LockProxyManager) {
-        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
-        //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
-        //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+      
         let (data, licenseInfo) = cross_chain_manager::get_license_id(option::borrow(&lpManager.license_store.license));
         events::license_id(
             data,
@@ -540,7 +536,7 @@ module polynet::lock_proxy {
 
         // unpac args
         let (
-            to_asset,
+            _,
             to_address,
             from_chain_amount
         ) = deserialize_tx_args(&args);
@@ -622,21 +618,21 @@ module polynet::lock_proxy {
         *eth = MAX_AMOUNT;
     }
    
-
     public fun to_target_chain_amount(amount: u64,local_decimals: u8,  target_decimals: u8): u128 {
         //let source_decimals = coin::decimals<CoinType>();
         (amount as u128) * pow_10(target_decimals) / pow_10(local_decimals)
     }
+
     public fun from_target_chain_amount(from_chain_amount: u128,local_decimals: u8, from_decimals: u8): u64 {
         //let source_decimals = coin::decimals<CoinType>();
         (from_chain_amount * pow_10(local_decimals) / pow_10(from_decimals) as u64)
     }
+
     fun pow_10(decimals: u8): u128 {
         //math128::pow(10, (decimals as u128))
         let data = math::pow(10, decimals);
         (data as u128)
     }
-
 
     // codecs
     public fun serialize_tx_args(to_asset: &vector<u8>, to_address: &vector<u8>, amount: u128): vector<u8> {

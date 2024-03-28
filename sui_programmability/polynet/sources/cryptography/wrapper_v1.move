@@ -1,4 +1,3 @@
-#[allow(unused_function)]
 module polynet::wrapper_v1 {
     use sui::bfc::BFC;
     use std::type_name::{Self};
@@ -21,9 +20,6 @@ module polynet::wrapper_v1 {
     #[test_only]
     friend polynet::controller_test;
    
-
-
-
 
     struct WrapperStore has store{
         fee_collector: address,

@@ -1,9 +1,7 @@
 module polynet::events {
-    // use std::vector;
     use sui::event::{emit, Self};
     use std::type_name::{TypeName};
     use std::ascii::{String};
-
 
     friend polynet::config;
     friend polynet::controller;
@@ -282,7 +280,7 @@ module polynet::events {
         );
     }
 
-     public(friend) fun read_asset(
+    public(friend) fun read_asset(
         _to_asset: vector<u8>,
         _from_chain_id: u64,
         _decimals: u8
@@ -311,13 +309,6 @@ module polynet::events {
         )
     }
 
-    // struct UpdateBookKeeperEvent has store, drop, copy {
-    //     height: u64,
-    //     sender: address,
-    //     keepers: vector<vector<u8>>,
-    //     poly_id: u64
-    // }
-
     public(friend) fun update_poly_id_event(
         _poly_id: u64,
         _sender: address
@@ -340,7 +331,7 @@ module polynet::events {
             })
     }
 
-     public(friend) fun update_book_keeper_event(
+    public(friend) fun update_book_keeper_event(
         _height: u64,
         _sender: address,
         _keepers: vector<vector<u8>>,
@@ -355,8 +346,7 @@ module polynet::events {
             })
     }
 
-
-     public(friend) fun lock_event(
+    public(friend) fun lock_event(
         _from_asset: TypeName,
         _from_address: address,
         _to_chain_id: u64,
@@ -377,7 +367,6 @@ module polynet::events {
 
             })
     }
-
 
     public(friend) fun lock_with_fee_event(
         _from_asset: TypeName,
@@ -458,14 +447,4 @@ module polynet::events {
             },
         );
     }
-
-
-
-
-
-
-
-
-
-
 }

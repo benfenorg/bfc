@@ -1,6 +1,5 @@
 
 #[test_only]
-#[allow(unused_use)]
 module polynet::lock_proxy_test {
 
     use std::ascii::string;
@@ -9,9 +8,8 @@ module polynet::lock_proxy_test {
     use sui::clock;
     use polynet::bfc_usdc::BFC_USDC;
     use sui::test_scenario;
-    use polynet::utils;
     use polynet::acl::{ Self};
-    use polynet::lock_proxy::{ LockProxyManager, convert_to_short_key, check_amount_result};
+    use polynet::lock_proxy::{convert_to_short_key, check_amount_result};
 
     #[test]
     fun test_init_lock_manager(){
