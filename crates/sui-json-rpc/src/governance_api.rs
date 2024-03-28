@@ -67,6 +67,7 @@ impl GovernanceReadApi {
         Ok(Proposal::try_from(&obj)?)
     }
 
+    // todo, add a filter function to filter results if many dynamic_fields in state.
     async fn get_stable_pools(&self, owner: SuiAddress) -> Result<Vec<(ObjectID, DynamicFieldInfo)>, Error> {
         Ok(self.state.get_dynamic_fields(ObjectID::from(owner), None, 100).unwrap())
     }
