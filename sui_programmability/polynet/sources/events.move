@@ -142,6 +142,29 @@ module polynet::events {
         module_name: String,
     }
 
+    struct PerDayRemainingAmountEvent has store, drop, copy {
+        asset: TypeName,
+        is_lock: bool,
+        min_amount: u64,
+        remaining_amount: u64
+    }
+
+    public(friend) fun remaining_amount_change_event(
+        _asset: TypeName,
+        _is_lock: bool,
+        _min_amount: u64,
+        _remaining_amount: u64
+    ) {
+        emit(
+            PerDayRemainingAmountEvent{
+                    asset: _asset,
+                    is_lock: _is_lock,
+                    min_amount: _min_amount,
+                    remaining_amount: _remaining_amount
+                }
+        );
+    }
+
     public(friend) fun license_id(
         _license_id: vector<u8>,
         _account: address,
@@ -421,7 +444,6 @@ module polynet::events {
         _startHeight: u64,
         _sender: address
     ) {
-
           event::emit(
             InitBookKeeperEvent{
                 height: _startHeight,

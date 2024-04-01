@@ -77,11 +77,11 @@ module polynet::wrapper_v1 {
         ctx: &mut TxContext
     )  {
         // let amount = coin::value(&fund);
-        let fee_amount = 0;
+        let _fee_amount = 0;
 
         //coin::deposit<BFC>(feeCollector(), fee);
         if (wrapper_store.need_fee) {
-            let fee_amount = coin::value(&fee);
+            let _fee_amount = coin::value(&fee);
             let collector = fee_collector(wrapper_store);
             transfer::public_transfer(fee, collector); 
         } else {
@@ -106,7 +106,7 @@ module polynet::wrapper_v1 {
                          to_chain_id,
                          *to_address,
                          amount,
-                         fee_amount
+                         _fee_amount
                         );
     }
 

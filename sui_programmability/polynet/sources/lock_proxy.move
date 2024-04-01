@@ -420,7 +420,7 @@ module polynet::lock_proxy {
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
-        assert!(check_amount_result(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(check_amount_result<CoinType>(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         
         let license_ref = option::borrow(&lpManager.license_store.license);
 
@@ -498,7 +498,7 @@ module polynet::lock_proxy {
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
-        assert!(check_amount_result(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(check_amount_result<CoinType>(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
         //todo need transfer.
@@ -552,7 +552,7 @@ module polynet::lock_proxy {
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
-        assert!(check_amount_result(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(check_amount_result<CoinType>(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
         //todo need transfer.
@@ -568,16 +568,24 @@ module polynet::lock_proxy {
 
     }
 
-   
     //reset max amount per day of lock_proxy_manager
     //check user input amount if bigger than max amount
-    public fun check_amount_result(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
+    public fun check_amount_result<CoinType>(
+        user_amount: u64, 
+        lockProxyManager: &mut LockProxyManager,  
+        key: &vector<u8>, 
+        flag: bool, 
+        clock: &Clock
+    ):bool{
         let current_time = clock::timestamp_ms(clock);
         let amountLimit : &mut AmountLimitManager;
+        let _min_amount = 0;
         if (flag == true) {
             amountLimit = &mut lockProxyManager.amountLockManager;
+            _min_amount = lockProxyManager.lock_min_amount;
         } else {
             amountLimit = &mut lockProxyManager.amountUnlockManager;
+            _min_amount = lockProxyManager.unlock_min_amount;
         };
 
         if(current_time -  amountLimit.time > ONE_DAY){
@@ -589,6 +597,12 @@ module polynet::lock_proxy {
             return false
         }else{
             *amount = *amount - user_amount;
+            events::remaining_amount_change_event(
+                    type_name::get<CoinType>(),
+                    flag,
+                    _min_amount,
+                    *amount
+            );
         };
         return true
     }

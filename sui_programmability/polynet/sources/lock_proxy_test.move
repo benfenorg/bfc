@@ -1,7 +1,5 @@
-
 #[test_only]
 module polynet::lock_proxy_test {
-
     use std::ascii::string;
     use polynet::controller::{update_lock_proxy_manager_start_time, bind_proxy, unbind_proxy, bind_asset, unbind_asset};
     use polynet::config::{init_cc_config, CrossChainGlobalConfig, borrow_mut_lp_manager};
@@ -67,9 +65,9 @@ module polynet::lock_proxy_test {
             let lpmanager = borrow_mut_lp_manager(&mut ccConfig);
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
-            let result = check_amount_result(10000000000000, lpmanager, &b"BFC_USDT", false, &clock);
+            let result = check_amount_result<BFC_USDC>(10000000000000, lpmanager, &b"BFC_USDC", false, &clock);
             assert!(result, 4018);
-            let result = check_amount_result(1000000000000000, lpmanager, &b"BFC_USDT", false, &clock);
+            let result = check_amount_result<BFC_USDC>(1000000000000000, lpmanager, &b"BFC_USDC", false, &clock);
             assert!(result == false, 4018);
             test_scenario::return_shared(ccConfig);
             clock::destroy_for_testing(clock);
