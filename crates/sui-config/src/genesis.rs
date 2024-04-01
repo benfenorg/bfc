@@ -689,7 +689,9 @@ impl GenesisCeremonyParameters {
 
     fn default_stake_subsidy_decrease_rate() -> u16 {
         // 10% in basis points
-        1000
+        //1000
+        //not decrease, we will keep the same amount
+        0
     }
 
     pub fn to_genesis_chain_parameters(&self) -> GenesisChainParameters {

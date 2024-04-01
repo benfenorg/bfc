@@ -65,7 +65,7 @@ pub struct EpochStats {
     pub transaction_count: u64,
     pub total_gas_reward: u64,
 
-    //todo : add metric for stable coin reward
+    //bfc : add metric for stable coin reward
     pub total_stable_reward: HashMap<TypeTag,GasCostSummaryAdjusted>,
 }
 
