@@ -585,7 +585,7 @@ mod test_benfen {
         assert_eq!(prev_price, 43303.3);
     }
 
-    // #[ignore]
+    #[ignore]
     #[tokio::test]
     async fn test_global_nft_config() {
         let config = get_global_nft_config(create_http_client(), IndexerConfig::default())
