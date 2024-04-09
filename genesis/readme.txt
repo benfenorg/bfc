@@ -1,5 +1,5 @@
 
-
+local area network
 
 1. bfc genesis_ceremony init
 2. ./generate-validator-key.sh
@@ -33,3 +33,52 @@ server2：bfc genesis_private --private-validator-names v4
 Importants
 1. if genesis_private get large error warnings ， loading part is checking temp genesis result ，need delete unsign-genesis-blob, todo , need handle this module later
 2. when using geneiss_private to generate config files, ， You must delete older config fold , other wise , it will cost some strange problem.....!!!!!!
+
+global area network
+
+1. modify the rust code, and replace the code outside the comment with the code inside the comment
+
+============================================================
+let network = Network::bind(config.p2p_config.listen_address)
+    .server_name(&server_name)
+    .private_key(config.network_key_pair().copy().private().0.to_bytes())
+    .config(anemo_config)
+    .outbound_request_layer(outbound_layer)
+    .start(service)?;
+info!(
+    server_name = server_name,
+    "P2p network started on {}",
+    network.local_addr()
+);
+
+/*
+let p2p_port = config.p2p_config.listen_address.port();
+let network = Network::bind(anemo::types::Address::HostAndPort {
+    host: "0.0.0.0".into(),
+    port: p2p_port,
+})
+    .server_name(&server_name)
+    .private_key(config.network_key_pair().copy().private().0.to_bytes())
+    .config(anemo_config)
+    .outbound_request_layer(outbound_layer)
+    .start(service)?;
+info!(
+    server_name = server_name,
+    "P2p network started on {}",
+    network.local_addr()
+);
+
+ */
+
+//network_address: local_ip_utils::new_network_address_for_local_testing(validator.info.network_address.port().unwrap()),
+network_address: validator.info.network_address.clone(),
+p2p_address: validator.info.p2p_address.clone(),
+//p2p_listen_address: local_ip_utils::new_p2p_listen_address_for_local_testing(validator.info.p2p_address.port().unwrap()),
+
+============================================================
+
+2. The same steps as local area networking
+
+3. Call the script(genesis/replace-global-network-ip)
+
+4./bfc-node --config-path ./fullnode.yaml
