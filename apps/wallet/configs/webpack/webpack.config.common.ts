@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { randomBytes } from '@noble/hashes/utils';
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
 import { exec } from 'child_process';
 import CopyPlugin from 'copy-webpack-plugin';
 import DotEnv from 'dotenv-webpack';
@@ -41,7 +40,7 @@ const SRC_ROOT = resolve(PROJECT_ROOT, 'src');
 const OUTPUT_ROOT = resolve(PROJECT_ROOT, 'dist');
 const TS_CONFIGS_ROOT = resolve(CONFIGS_ROOT, 'ts');
 const IS_DEV = process.env.NODE_ENV === 'development';
-const IS_PROD = process.env.NODE_ENV === 'production';
+// const IS_PROD = process.env.NODE_ENV === 'production';
 const TS_CONFIG_FILE = resolve(TS_CONFIGS_ROOT, `tsconfig.${IS_DEV ? 'dev' : 'prod'}.json`);
 const APP_NAME = WALLET_BETA
 	? 'BenFen Wallet (BETA)'
@@ -94,7 +93,6 @@ async function generateAliasFromTs() {
 const commonConfig: () => Promise<Configuration> = async () => {
 	const alias = await generateAliasFromTs();
 	const walletVersionDetails = generateDateVersion(PATCH_VERISON);
-	const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 	return {
 		context: SRC_ROOT,
 		entry: {
@@ -215,15 +213,6 @@ const commonConfig: () => Promise<Configuration> = async () => {
 			}),
 			new ProvidePlugin({
 				Buffer: ['buffer', 'Buffer'],
-			}),
-			new SentryWebpackPlugin({
-				org: 'mysten-labs',
-				project: 'wallet',
-				include: OUTPUT_ROOT,
-				dryRun: !IS_PROD || !sentryAuthToken,
-				authToken: sentryAuthToken,
-				release: walletVersionDetails.version,
-				silent: true,
 			}),
 		],
 	};

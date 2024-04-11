@@ -9,7 +9,7 @@ import { toBigIntBE } from 'bigint-buffer';
 import { base64url } from 'jose';
 import Browser from 'webextension-polyfill';
 import { type ZkProvider, zkProviderDataMap } from './providers';
-import { fetchWithSentry } from '_src/shared/utils';
+import { fetchWithError } from '_src/shared/utils';
 
 export function prepareZKLogin(currentEpoch: number) {
 	const maxEpoch = currentEpoch + 2;
@@ -72,7 +72,7 @@ export async function zkLogin({
 const saltRegistryUrl = 'http://salt.api-devnet.mystenlabs.com';
 
 export async function fetchSalt(jwt: string): Promise<string> {
-	const response = await fetchWithSentry('fetchUserSalt', `${saltRegistryUrl}/get_salt`, {
+	const response = await fetchWithError('fetchUserSalt', `${saltRegistryUrl}/get_salt`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export async function createPartialZKSignature({
 	userSalt,
 	keyClaimName = 'sub',
 }: WalletInputs): Promise<PartialZkSignature> {
-	const response = await fetchWithSentry('createZKProofs', `${zkProofsServerUrl}/test/zkp`, {
+	const response = await fetchWithError('createZKProofs', `${zkProofsServerUrl}/test/zkp`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

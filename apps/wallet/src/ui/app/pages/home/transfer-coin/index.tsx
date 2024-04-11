@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useCoinMetadata } from '@mysten/core';
 import { ArrowRight16, ArrowLeft16 } from '@mysten/icons';
-import * as Sentry from '@sentry/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -52,29 +51,17 @@ function TransferCoinPage() {
 				throw new Error('Missing data');
 			}
 
-			const sentryTransaction = Sentry.startTransaction({
-				name: 'send-tokens',
-			});
-			try {
-				return signer.signAndExecuteTransactionBlock(
-					{
-						transactionBlock: transaction,
-						options: {
-							showInput: true,
-							showEffects: true,
-							showEvents: true,
-						},
+			return signer.signAndExecuteTransactionBlock(
+				{
+					transactionBlock: transaction,
+					options: {
+						showInput: true,
+						showEffects: true,
+						showEvents: true,
 					},
-					clientIdentifier,
-				);
-			} catch (error) {
-				if (!(error instanceof QredoActionIgnoredByUser)) {
-					sentryTransaction.setTag('failure', true);
-				}
-				throw error;
-			} finally {
-				sentryTransaction.finish();
-			}
+				},
+				clientIdentifier,
+			);
 		},
 		onSuccess: (response) => {
 			queryClient.invalidateQueries(['get-coins']);

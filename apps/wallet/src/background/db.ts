@@ -5,7 +5,6 @@ import Dexie, { type Table } from 'dexie';
 import { exportDB, importDB } from 'dexie-export-import';
 import { type AccountSourceSerialized } from './account-sources/AccountSource';
 import { type SerializedAccount } from './accounts/Account';
-import { captureException } from './sentry';
 import { getFromLocalStorage, setToLocalStorage } from './storage-utils';
 
 const dbName = 'SuiWallet DB';
@@ -33,16 +32,13 @@ async function init() {
 		try {
 			const backup = await getFromLocalStorage<string>(dbLocalStorageBackupKey);
 			if (backup) {
-				captureException(new Error('IndexedDB is empty, attempting to restore from backup'), {
-					extra: { backupSize: backup.length },
-				});
 				await db.delete();
 				(await importDB(new Blob([backup], { type: 'application/json' }))).close();
 				await db.open();
 			}
 			await db.settings.put({ setting: 'isPopulated', value: true });
 		} catch (e) {
-			captureException(e);
+			console.error(e);
 		}
 	}
 	if (!db.isOpen()) {
@@ -63,6 +59,6 @@ export async function backupDB() {
 		const backup = await (await exportDB(await getDB())).text();
 		await setToLocalStorage(dbLocalStorageBackupKey, backup);
 	} catch (e) {
-		captureException(e);
+		console.error(e);
 	}
 }

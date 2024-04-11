@@ -255,7 +255,6 @@ module.exports = {
 				],
 				'@typescript-eslint/unified-signatures': 'error',
 				'@typescript-eslint/parameter-properties': 'error',
-				'no-console': ['warn'],
 				'@typescript-eslint/no-non-null-assertion': 'off',
 			},
 		},

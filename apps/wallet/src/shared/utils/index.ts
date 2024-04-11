@@ -3,7 +3,6 @@
 
 import { fromB64, toB64 } from '@benfen/bfc.js/utils';
 import { useGrowthBook } from '@growthbook/growthbook-react';
-import * as Sentry from '@sentry/browser';
 import { useEffect } from 'react';
 import Browser from 'webextension-polyfill';
 
@@ -92,26 +91,10 @@ export function toUtf8OrB64(message: string | Uint8Array) {
 	};
 }
 
-export async function fetchWithSentry(name: string, ...params: Parameters<typeof fetch>) {
-	const url = params[0] instanceof URL ? params[0].href : String(params[0]);
-	const transaction = Sentry.startTransaction({
-		name,
-		op: 'http.request',
-		tags: {
-			url,
-		},
-	});
-	try {
-		const response = await fetch(...params);
-		if (!response.ok) {
-			throw new Error(`Request failed with status ${response.status} (${response.statusText})`);
-		}
-		transaction.setStatus('ok' as Sentry.SpanStatusType);
-		return response;
-	} catch (e) {
-		transaction.setStatus('unknown_error' as Sentry.SpanStatusType);
-		throw e;
-	} finally {
-		transaction.finish();
+export async function fetchWithError(name: string, ...params: Parameters<typeof fetch>) {
+	const response = await fetch(...params);
+	if (!response.ok) {
+		throw new Error(`Request failed with status ${response.status} (${response.statusText})`);
 	}
+	return response;
 }

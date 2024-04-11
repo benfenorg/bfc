@@ -4,9 +4,8 @@
 import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { Popover } from '@headlessui/react';
 import { useCoinMetadata, useGetSystemState, useGetAllBalances } from '@mysten/core';
-import { ArrowLeft16 } from '@mysten/icons';
 import { useSuiClient } from '@mysten/dapp-kit';
-import * as Sentry from '@sentry/react';
+import { ArrowLeft16 } from '@mysten/icons';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Formik } from 'formik';
 import { useCallback, useMemo, useState } from 'react';
@@ -121,27 +120,20 @@ function StakingCard() {
 				throw new Error('Failed, missing required field');
 			}
 
-			const sentryTransaction = Sentry.startTransaction({
-				name: 'stake',
-			});
 			const { data: coins } = await suiClient.getCoins({ owner: accountAddress!, coinType });
-			try {
-				const transactionBlock = createStakeTransaction(amount, validatorAddress, coinType, coins);
-				return await signer.signAndExecuteTransactionBlock(
-					{
-						transactionBlock,
-						requestType: 'WaitForLocalExecution',
-						options: {
-							showInput: true,
-							showEffects: true,
-							showEvents: true,
-						},
+			const transactionBlock = createStakeTransaction(amount, validatorAddress, coinType, coins);
+			return await signer.signAndExecuteTransactionBlock(
+				{
+					transactionBlock,
+					requestType: 'WaitForLocalExecution',
+					options: {
+						showInput: true,
+						showEffects: true,
+						showEvents: true,
 					},
-					clientIdentifier,
-				);
-			} finally {
-				sentryTransaction.finish();
-			}
+				},
+				clientIdentifier,
+			);
 		},
 		onSuccess: (_, { amount, validatorAddress }) => {
 			ampli.stakedSui({
@@ -157,26 +149,19 @@ function StakingCard() {
 				throw new Error('Failed, missing required field.');
 			}
 
-			const sentryTransaction = Sentry.startTransaction({
-				name: 'stake',
-			});
-			try {
-				const transactionBlock = createUnstakeTransaction(stakedSuiId);
-				return await signer.signAndExecuteTransactionBlock(
-					{
-						transactionBlock,
-						requestType: 'WaitForLocalExecution',
-						options: {
-							showInput: true,
-							showEffects: true,
-							showEvents: true,
-						},
+			const transactionBlock = createUnstakeTransaction(stakedSuiId);
+			return await signer.signAndExecuteTransactionBlock(
+				{
+					transactionBlock,
+					requestType: 'WaitForLocalExecution',
+					options: {
+						showInput: true,
+						showEffects: true,
+						showEvents: true,
 					},
-					clientIdentifier,
-				);
-			} finally {
-				sentryTransaction.finish();
-			}
+				},
+				clientIdentifier,
+			);
 		},
 		onSuccess: () => {
 			ampli.unstakedSui({

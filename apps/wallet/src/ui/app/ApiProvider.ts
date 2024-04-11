@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
-import { SentryHttpTransport } from '@mysten/core';
 
 import { type WalletSigner } from './WalletSigner';
 import { BackgroundServiceSigner } from './background-client/BackgroundServiceSigner';
@@ -51,7 +50,6 @@ function getDefaultAPI(env: API_ENV) {
 }
 
 export const DEFAULT_API_ENV = getDefaultApiEnv();
-const SENTRY_MONITORED_ENVS = [API_ENV.mainnet];
 
 type NetworkTypes = keyof typeof API_ENV;
 
@@ -66,10 +64,7 @@ export default class ApiProvider {
 	public setNewJsonRpcProvider(apiEnv: API_ENV = DEFAULT_API_ENV, customRPC?: string | null) {
 		const connection = customRPC ? customRPC : getDefaultAPI(apiEnv);
 		this._apiFullNodeProvider = new SuiClient({
-			transport:
-				!customRPC && SENTRY_MONITORED_ENVS.includes(apiEnv)
-					? new SentryHttpTransport(connection)
-					: new SuiHTTPTransport({ url: connection }),
+			transport: new SuiHTTPTransport({ url: connection }),
 		});
 
 		this._signerByAddress.clear();
