@@ -42,6 +42,7 @@ function ReceiptPage() {
 		enabled: !!transactionId,
 		retry: 8,
 		initialData: location.state?.response,
+		retryDelay: (retryCount) => Math.min(1000 * 2 ** Math.floor(retryCount / 5), 30000),
 	});
 
 	const navigate = useNavigate();
