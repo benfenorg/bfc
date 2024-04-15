@@ -268,9 +268,9 @@ pub mod checked {
             if move_type.is_gas_coin() || move_type.is_stable_gas_coin(){
                 Ok(move_obj.get_coin_value_unsafe())
             }else {
-                return Err(UserInputError::InvalidGasObject {
+                Err(UserInputError::InvalidGasObject {
                     object_id: gas_object.id(),
-                });
+                })
             }
         } else {
             Err(UserInputError::InvalidGasObject {

@@ -388,7 +388,7 @@ impl CheckpointContents {
             ..
         } = self.into_v1();
 
-        transactions.into_iter().zip(user_signatures.into_iter())
+        transactions.into_iter().zip(user_signatures)
     }
 
     /// Return an iterator that enumerates the transactions in the contents.
@@ -552,7 +552,7 @@ impl FullCheckpointContents {
             transaction,
             effects,
         };
-        FullCheckpointContents::new_with_causally_ordered_transactions(vec![exe_data].into_iter())
+        FullCheckpointContents::new_with_causally_ordered_transactions(vec![exe_data])
     }
 }
 

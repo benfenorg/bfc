@@ -93,14 +93,12 @@ pub mod bfc_address_util {
 
         let verify_code = ob_address[ob_address.len() - 4..].to_string();
 
-        return if verify_code == check_sum {
+        if verify_code == check_sum {
             address
         } else {
             warn!("verify_code: {}, check_sum: {}", verify_code, check_sum);
             String::from("")
-        };
-
-        //return address.to_string();
+        }
     }
 
     pub fn convert_to_bfc_address( evm_address: &str) -> String {

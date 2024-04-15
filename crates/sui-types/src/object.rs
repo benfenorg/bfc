@@ -638,10 +638,10 @@ impl Display for Owner {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::AddressOwner(address) => {
-                write!(f, "Account Address ( {} )", sui_address_to_bfc_address(address.clone()))
+                write!(f, "Account Address ( {} )", sui_address_to_bfc_address(*address))
             }
             Self::ObjectOwner(address) => {
-                write!(f, "Object ID: ( {} )", sui_address_to_bfc_address(address.clone()))
+                write!(f, "Object ID: ( {} )", sui_address_to_bfc_address(*address))
             }
             Self::Immutable => {
                 write!(f, "Immutable")

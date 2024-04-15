@@ -85,13 +85,13 @@ macro_rules! assert_invariant {
     Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Error, Hash, AsRefStr, IntoStaticStr,
 )]
 pub enum UserInputError {
-    #[error("Mutable object {:?} cannot appear more than one in one transaction.", objects_id_to_bfc_address(object_id.clone()))]
+    #[error("Mutable object {:?} cannot appear more than one in one transaction.", objects_id_to_bfc_address(*object_id))]
     MutableObjectUsedMoreThanOnce { object_id: ObjectID },
     #[error("Wrong number of parameters for the transaction.")]
     ObjectInputArityViolation,
     #[error(
         "Could not find the referenced object {:?} at version {:?}.",
-        objects_id_to_bfc_address(object_id.clone()),
+        objects_id_to_bfc_address(*object_id),
         version
     )]
     ObjectNotFound {
@@ -99,7 +99,7 @@ pub enum UserInputError {
         version: Option<SequenceNumber>,
     },
     #[error("Object {} {:?} {:?} is not available for consumption, its current version: {current_version:?}.",
-        objects_id_to_bfc_address(provided_obj_ref.0.clone()),
+        objects_id_to_bfc_address(provided_obj_ref.0),
         provided_obj_ref.1,
         provided_obj_ref.2
     )]
@@ -110,7 +110,7 @@ pub enum UserInputError {
     #[error("Package verification failed: {err:?}")]
     PackageVerificationTimedout { err: String },
 
-    #[error("Dependent package not found on-chain: {:?}", objects_id_to_bfc_address(package_id.clone()))]
+    #[error("Dependent package not found on-chain: {:?}", objects_id_to_bfc_address(*package_id))]
     DependentPackageNotFound { package_id: ObjectID },
 
     #[error("Mutable parameter provided, immutable parameter expected.")]
@@ -120,8 +120,8 @@ pub enum UserInputError {
     #[error(
         "Object {:?} is owned by object {:?}. \
         Objects owned by other objects cannot be used as input arguments.",
-        objects_id_to_bfc_address(child_id.clone()),
-        objects_id_to_bfc_address(parent_id.clone())
+        objects_id_to_bfc_address(*child_id),
+        objects_id_to_bfc_address(*parent_id)
     )]
     InvalidChildObjectArgument {
         child_id: ObjectID,
@@ -129,7 +129,7 @@ pub enum UserInputError {
     },
     #[error(
         "Invalid Object digest for object {:?}. Expected digest : {:?}.",
-        objects_id_to_bfc_address(object_id.clone()),
+        objects_id_to_bfc_address(*object_id),
         expected_digest
     )]
     InvalidObjectDigest {
@@ -138,9 +138,9 @@ pub enum UserInputError {
     },
     #[error("Sequence numbers above the maximal value are not usable for transfers.")]
     InvalidSequenceNumber,
-    #[error("A move object is expected, instead a move package is passed: {:?}", objects_id_to_bfc_address(object_id.clone()))]
+    #[error("A move object is expected, instead a move package is passed: {:?}", objects_id_to_bfc_address(*object_id))]
     MovePackageAsObject { object_id: ObjectID },
-    #[error("A move package is expected, instead a move object is passed: {:?}", objects_id_to_bfc_address(object_id.clone()))]
+    #[error("A move package is expected, instead a move object is passed: {:?}", objects_id_to_bfc_address(*object_id))]
     MoveObjectAsPackage { object_id: ObjectID },
     #[error("Transaction was not signed by the correct sender: {}", error)]
     IncorrectUserSignature { error: String },
@@ -185,14 +185,14 @@ pub enum UserInputError {
     #[error("Gas price cannot exceed {:?} mist", max_gas_price)]
     GasPriceTooHigh { max_gas_price: u64 },
 
-    #[error("Object {:?} is not a gas object", objects_id_to_bfc_address(object_id.clone()))]
+    #[error("Object {:?} is not a gas object", objects_id_to_bfc_address(*object_id))]
     InvalidGasObject { object_id: ObjectID },
 
     #[error("Gas object does not have enough balance to cover minimal gas spend")]
     InsufficientBalanceToCoverMinimalGas,
 
     #[error("Could not find the referenced object {:?} as the asked version {:?} is higher than the latest {:?}",
-    objects_id_to_bfc_address(object_id.clone()),
+    objects_id_to_bfc_address(*object_id),
     asked_version,
     latest_version)]
     ObjectSequenceNumberTooHigh {
@@ -201,7 +201,7 @@ pub enum UserInputError {
         latest_version: SequenceNumber,
     },
     #[error("Object deleted at reference {} {:?} {:?}.",
-        objects_id_to_bfc_address(object_ref.0.clone()),
+        objects_id_to_bfc_address(object_ref.0),
         object_ref.1,
         object_ref.2,
     )]
@@ -220,7 +220,7 @@ pub enum UserInputError {
     SharedObjectStartingVersionMismatch,
 
     #[error("Attempt to transfer object {:?} that does not have public transfer. Object transfer must be done instead using a distinct Move function call." ,
-    objects_id_to_bfc_address(object_id.clone()))]
+    objects_id_to_bfc_address(*object_id))]
     TransferObjectWithoutPublicTransferError { object_id: ObjectID },
 
     #[error(
@@ -282,15 +282,15 @@ pub enum UserInputError {
 )]
 #[serde(tag = "code", rename = "ObjectResponseError", rename_all = "camelCase")]
 pub enum SuiObjectResponseError {
-    #[error("Object {:?} does not exist.", objects_id_to_bfc_address(object_id.clone()))]
+    #[error("Object {:?} does not exist.", objects_id_to_bfc_address(*object_id))]
     NotExists { object_id: ObjectID },
 
-    #[error("Cannot find dynamic field for parent object {:?}.", objects_id_to_bfc_address(parent_object_id.clone()))]
+    #[error("Cannot find dynamic field for parent object {:?}.", objects_id_to_bfc_address(*parent_object_id))]
     DynamicFieldNotFound { parent_object_id: ObjectID },
 
     #[error(
         "Object has been deleted object_id: {:?} at version: {:?} in digest {:?}",
-        objects_id_to_bfc_address(object_id.clone()),
+        objects_id_to_bfc_address(*object_id),
         version,
         digest
     )]
@@ -329,7 +329,7 @@ pub enum SuiError {
     #[error("There are too many transactions pending in consensus")]
     TooManyTransactionsPendingConsensus,
 
-    #[error("Input {:?} already has {:?} transactions pending, above threshold of {:?}", objects_id_to_bfc_address(object_id.clone()), queue_len, threshold)]
+    #[error("Input {:?} already has {:?} transactions pending, above threshold of {:?}", objects_id_to_bfc_address(*object_id), queue_len, threshold)]
     TooManyTransactionsPendingOnObject {
         object_id: ObjectID,
         queue_len: usize,
@@ -465,7 +465,7 @@ pub enum SuiError {
     GenericStorageError(String),
     #[error(
         "Attempted to access {:?} through parent {:?}, \
-        but it's actual parent is {:?}", objects_id_to_bfc_address(object.clone()), given_parent, actual_owner
+        but it's actual parent is {:?}", objects_id_to_bfc_address(*object), given_parent, actual_owner
     )]
     InvalidChildObjectAccess {
         object: ObjectID,

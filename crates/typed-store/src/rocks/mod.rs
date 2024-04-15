@@ -872,7 +872,7 @@ impl<K, V> DBMap<K, V> {
             .with_label_values(&[&self.cf])
             .start_timer();
         let perf_ctx = if self.multiget_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1190,7 +1190,7 @@ impl DBBatch {
         let batch_size = self.batch.size_in_bytes();
 
         let perf_ctx = if self.write_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1610,7 +1610,7 @@ where
             .with_label_values(&[&self.cf])
             .start_timer();
         let perf_ctx = if self.get_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1643,7 +1643,7 @@ where
             .with_label_values(&[&self.cf])
             .start_timer();
         let perf_ctx = if self.get_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1676,7 +1676,7 @@ where
             .with_label_values(&[&self.cf])
             .start_timer();
         let perf_ctx = if self.write_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1706,7 +1706,7 @@ where
             .with_label_values(&[&self.cf])
             .start_timer();
         let perf_ctx = if self.write_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1776,7 +1776,7 @@ where
             .rocksdb_iter_keys
             .with_label_values(&[&self.cf]);
         let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1802,7 +1802,7 @@ where
             .with_label_values(&[&self.cf])
             .start_timer();
         let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1856,7 +1856,7 @@ where
             .rocksdb_iter_keys
             .with_label_values(&[&self.cf]);
         let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
@@ -1902,7 +1902,7 @@ where
             .rocksdb_iter_keys
             .with_label_values(&[&self.cf]);
         let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext::default())
+            Some(RocksDBPerfContext)
         } else {
             None
         };
