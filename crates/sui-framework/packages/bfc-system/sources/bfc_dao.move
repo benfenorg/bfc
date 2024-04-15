@@ -32,7 +32,7 @@ module bfc_system::bfc_dao {
         pragma aborts_if_is_strict;
     }
 
-    const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
+    const ZERO_ADDRESS: address = @0000000000000000000000000000000000000000000000000000000000000000;
 
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
@@ -46,7 +46,7 @@ module bfc_system::bfc_dao {
 
     const DEFAULT_BFC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  BFC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 BFC
-    const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 BFC
+    const MIN_NEW_ACTION_COST: u64 = 10 * 1000000000; // 10 BFC
     const MAX_ACTION_NAME_LENGTH: u64 = 100;
     const MAX_DESCRIPTION_LENGTH: u64 = 1000;
 
@@ -243,22 +243,20 @@ module bfc_system::bfc_dao {
     //functions
     public(friend) fun create_bfcdao_action(
         dao: &mut Dao,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         actionName:vector<u8>,
         clock: & Clock,
-        ctx: &mut TxContext): BFCDaoAction {
-        //auth
+        ctx: &mut TxContext
+    ): BFCDaoAction {
 
-        //convert proposal payment to voting_bfc
         let sender = tx_context::sender(ctx);
-        let balance = coin::into_balance(payment);
-        let value = balance::value(&balance);
         // ensure the user pays enough
-        assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!(coin::value(payment) >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
         assert!(vector::length(&actionName) <= MAX_ACTION_NAME_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
-        transfer::public_transfer(voting_bfc, sender);
+        // burn 10 BFC to prevent DDOS attacks
+        let burn_bfc=coin::split(payment, MIN_NEW_ACTION_COST, ctx);
+        transfer::public_transfer(burn_bfc, ZERO_ADDRESS);
 
         let nameString = string::try_utf8(actionName);
         assert!(nameString != option::none(), ERR_INVALID_STRING);
@@ -406,7 +404,7 @@ module bfc_system::bfc_dao {
     public(friend) fun propose (
         dao: &mut Dao,
         version_id: u64,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         description: vector<u8>,
@@ -414,16 +412,14 @@ module bfc_system::bfc_dao {
         ctx: &mut TxContext,
     ) {
 
-        //convert proposal payment to voting_bfc
         let sender = tx_context::sender(ctx);
-        let balance = coin::into_balance(payment);
-        let value = balance::value(&balance);
         // ensure the user pays enough
-        assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!(coin::value(payment) >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
         assert!( vector::length(&description) <= MAX_DESCRIPTION_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
-        transfer::public_transfer(voting_bfc, sender);
+        // burn 200 BFC to prevent DDOS attacks
+        let burn_bfc=coin::split(payment, MIN_NEW_PROPOSE_COST, ctx);
+        transfer::public_transfer(burn_bfc, ZERO_ADDRESS);
 
 
         let action = getDaoActionByActionId(dao, action_id);
