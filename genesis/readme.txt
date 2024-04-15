@@ -40,7 +40,7 @@ Importants
 
 
 ==========================*********************====================================
-global area network
+global area network 【Global ip or global dns】
 
 1. modify the rust code, and replace the code outside the comment with the code inside the comment
 
@@ -86,5 +86,6 @@ p2p_address: validator.info.p2p_address.clone(),
 2. The same steps as local area networking
 
 3. Call the script(genesis/replace-global-network-ip)
+否则可能出现fullnode无法连接的问题
 
 4./bfc-node --config-path ./fullnode.yaml
