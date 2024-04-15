@@ -130,18 +130,12 @@ module bfc_system::bfc_dao {
     }
 
     /// global DAO info of the specified token type `Token`.
-    struct DaoGlobalInfo has key, store {
-        id: UID,
+    struct DaoGlobalInfo has store {
         /// next proposal id.
         next_proposal_id: u64,
 
         // next action id
         next_action_id: u64,
-
-        /// proposal creating event.
-        proposal_create_event: ProposalCreatedEvent,
-        /// voting event.
-        vote_changed_event: VoteChangedEvent,
     }
 
     /// Configuration of the `Token`'s DAO.
@@ -270,8 +264,6 @@ module bfc_system::bfc_dao {
         assert!(nameString != option::none(), ERR_INVALID_STRING);
 
         let name_ref = option::extract(&mut nameString);
-        // sender address
-        let sender = tx_context::sender(ctx);
         let action_id = generate_next_action_id(dao);
 
         let action = BFCDaoAction{
@@ -309,21 +301,25 @@ module bfc_system::bfc_dao {
 
 
         let daoInfo = DaoGlobalInfo{
-            id: object::new(ctx),
             next_proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
             next_action_id: 1,
-            proposal_create_event: ProposalCreatedEvent{
-                proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-            },
-            vote_changed_event: VoteChangedEvent{
-                proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-                voter: DEFAULT_TOKEN_ADDRESS,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-                agree: false,
-                vote: 0,
-            }
         };
+        
+        // event::emit(
+        //     ProposalCreatedEvent{
+        //         proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
+        //         proposer: DEFAULT_TOKEN_ADDRESS,
+        //     }
+        // );
+
+        // event::emit(
+        //     VoteChangedEvent{
+        //         proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
+        //         voter: DEFAULT_TOKEN_ADDRESS,
+        //         proposer: DEFAULT_TOKEN_ADDRESS,
+        //         agree: false,
+        //         vote: 0,
+        // });
 
         let votingPool = voting_pool::new(ctx);
         let rootAdmin = vector::borrow(&admins, 0);
@@ -345,7 +341,7 @@ module bfc_system::bfc_dao {
         dao_obj
     }
 
-    fun getDaoActionByActionId(dao:&mut Dao, actionId: u64) : BFCDaoAction {
+    fun getDaoActionByActionId(dao: &Dao, actionId: u64) : BFCDaoAction {
         let data = vec_map::get(&dao.action_record, &actionId);
         *data
     }
@@ -364,20 +360,8 @@ module bfc_system::bfc_dao {
 
 
         let daoInfo = DaoGlobalInfo{
-            id: object::new(ctx),
             next_proposal_id: 0,
             next_action_id: 0,
-            proposal_create_event: ProposalCreatedEvent{
-                proposal_id: 0,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-            },
-            vote_changed_event: VoteChangedEvent{
-                proposal_id: 0,
-                voter: DEFAULT_TOKEN_ADDRESS,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-                agree: false,
-                vote: 0,
-            }
         };
 
         let votingPool = voting_pool::new(ctx);
@@ -449,8 +433,6 @@ module bfc_system::bfc_dao {
         };
 
         let proposal_id = generate_next_proposal_id(dao);
-
-        let sender = tx_context::sender(ctx);
         let start_time = clock::timestamp_ms(clock)  + voting_delay(dao);
         let quorum_votes = quorum_votes(dao);
         let object_id = object::new(ctx);

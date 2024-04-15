@@ -73,7 +73,7 @@ module bfc_system::voting_pool {
 
     /// Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
     public(friend) fun request_add_voting(
-        pool: &mut VotingPool,
+        pool: &VotingPool,
         voting: Balance<BFC>,
         clock: &Clock,
         ctx: &mut TxContext
@@ -93,18 +93,12 @@ module bfc_system::voting_pool {
     /// Both the principal and corresponding rewards in BFC are withdrawn.
     /// A proportional amount of pool token withdraw is recorded and processed at epoch change time.
     public(friend) fun request_withdraw_voting(
-        pool: &mut VotingPool,
+        pool: &VotingPool,
         voting_bfc: VotingBfc,
         clock: &Clock,
     ) : Balance<BFC> {
         let (_, principal_withdraw) =
             withdraw_from_principal(pool, voting_bfc, clock);
-        let principal_withdraw_amount = balance::value(&principal_withdraw);
-
-
-        let _ = principal_withdraw_amount;
-
-        // TODO: implement withdraw bonding period here.
         principal_withdraw
     }
 
@@ -112,7 +106,7 @@ module bfc_system::voting_pool {
     /// tokens using exchange rate at staking epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of BFC.
     public(friend) fun withdraw_from_principal(
-        pool: &mut VotingPool,
+        pool: &VotingPool,
         voting_bfc: VotingBfc,
         clock: &Clock,
     ) : (u64, Balance<BFC>) {
@@ -135,7 +129,6 @@ module bfc_system::voting_pool {
 
 
     public fun unwrap_voting_bfc(voting_bfc: VotingBfc): Balance<BFC> {
-
         let VotingBfc {
             id,
             pool_id: _,
