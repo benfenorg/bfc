@@ -811,16 +811,16 @@ pub async fn genesis_private(
         let account_key_pair_string = manager.account_keypair.get(&name).unwrap().encode_base64();
         let network_key_pair = manager.network_keypair.get(&name).unwrap();
 
-       let _localhost =  match validator.info.network_address.clone().to_socket_addr().unwrap() {
-            SocketAddr::V4(addr) => {
-                    let ip_string = addr.clone().ip().to_string();
-                    ip_string
-                },
-           SocketAddr::V6(addr) => {
-                 let ip_string = addr.clone().ip().to_string();
-                 ip_string
-           }
-       };
+       // let _localhost =  match validator.info.network_address.clone().to_socket_addr().unwrap() {
+       //      SocketAddr::V4(addr) => {
+       //              let ip_string = addr.clone().ip().to_string();
+       //              ip_string
+       //          },
+       //     SocketAddr::V6(addr) => {
+       //           let ip_string = addr.clone().ip().to_string();
+       //           ip_string
+       //     }
+       // };
         let tmp =  ValidatorGenesisConfig {
             key_pair: author_key_pair.copy(),
             worker_key_pair: worker_key_pair.copy(),
