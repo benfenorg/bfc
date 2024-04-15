@@ -34,6 +34,12 @@ Importants
 1. if genesis_private get large error warnings ， loading part is checking temp genesis result ，need delete unsign-genesis-blob, todo , need handle this module later
 2. when using geneiss_private to generate config files, ， You must delete older config fold , other wise , it will cost some strange problem.....!!!!!!
 
+
+
+
+
+
+==========================*********************====================================
 global area network
 
 1. modify the rust code, and replace the code outside the comment with the code inside the comment
