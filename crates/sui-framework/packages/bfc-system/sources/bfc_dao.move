@@ -32,7 +32,7 @@ module bfc_system::bfc_dao {
         pragma aborts_if_is_strict;
     }
 
-    const DEFAULT_TOKEN_ADDRESS:address=  @0x0;
+    const ZERO_ADDRESS: address = @0000000000000000000000000000000000000000000000000000000000000000;
 
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
@@ -46,7 +46,7 @@ module bfc_system::bfc_dao {
 
     const DEFAULT_BFC_SUPPLY : u64 = 1_0000_0000 * 1000_000_000; // 1  BFC
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 BFC
-    const MIN_NEW_ACTION_COST: u64 = 1 * 1000000000; // 1 BFC
+    const MIN_NEW_ACTION_COST: u64 = 10 * 1000000000; // 10 BFC
     const MAX_ACTION_NAME_LENGTH: u64 = 100;
     const MAX_DESCRIPTION_LENGTH: u64 = 1000;
 
@@ -130,18 +130,12 @@ module bfc_system::bfc_dao {
     }
 
     /// global DAO info of the specified token type `Token`.
-    struct DaoGlobalInfo has key, store {
-        id: UID,
+    struct DaoGlobalInfo has store {
         /// next proposal id.
         next_proposal_id: u64,
 
         // next action id
         next_action_id: u64,
-
-        /// proposal creating event.
-        proposal_create_event: ProposalCreatedEvent,
-        /// voting event.
-        vote_changed_event: VoteChangedEvent,
     }
 
     /// Configuration of the `Token`'s DAO.
@@ -249,29 +243,25 @@ module bfc_system::bfc_dao {
     //functions
     public(friend) fun create_bfcdao_action(
         dao: &mut Dao,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         actionName:vector<u8>,
         clock: & Clock,
-        ctx: &mut TxContext): BFCDaoAction {
-        //auth
+        ctx: &mut TxContext
+    ): BFCDaoAction {
 
-        //convert proposal payment to voting_bfc
         let sender = tx_context::sender(ctx);
-        let balance = coin::into_balance(payment);
-        let value = balance::value(&balance);
         // ensure the user pays enough
-        assert!(value >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!(coin::value(payment) >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
         assert!(vector::length(&actionName) <= MAX_ACTION_NAME_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
-        transfer::public_transfer(voting_bfc, sender);
+        // burn 10 BFC to prevent DDOS attacks
+        let burn_bfc=coin::split(payment, MIN_NEW_ACTION_COST, ctx);
+        transfer::public_transfer(burn_bfc, ZERO_ADDRESS);
 
         let nameString = string::try_utf8(actionName);
         assert!(nameString != option::none(), ERR_INVALID_STRING);
 
         let name_ref = option::extract(&mut nameString);
-        // sender address
-        let sender = tx_context::sender(ctx);
         let action_id = generate_next_action_id(dao);
 
         let action = BFCDaoAction{
@@ -309,21 +299,25 @@ module bfc_system::bfc_dao {
 
 
         let daoInfo = DaoGlobalInfo{
-            id: object::new(ctx),
             next_proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
             next_action_id: 1,
-            proposal_create_event: ProposalCreatedEvent{
-                proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-            },
-            vote_changed_event: VoteChangedEvent{
-                proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-                voter: DEFAULT_TOKEN_ADDRESS,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-                agree: false,
-                vote: 0,
-            }
         };
+        
+        // event::emit(
+        //     ProposalCreatedEvent{
+        //         proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
+        //         proposer: DEFAULT_TOKEN_ADDRESS,
+        //     }
+        // );
+
+        // event::emit(
+        //     VoteChangedEvent{
+        //         proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
+        //         voter: DEFAULT_TOKEN_ADDRESS,
+        //         proposer: DEFAULT_TOKEN_ADDRESS,
+        //         agree: false,
+        //         vote: 0,
+        // });
 
         let votingPool = voting_pool::new(ctx);
         let rootAdmin = vector::borrow(&admins, 0);
@@ -345,7 +339,7 @@ module bfc_system::bfc_dao {
         dao_obj
     }
 
-    fun getDaoActionByActionId(dao:&mut Dao, actionId: u64) : BFCDaoAction {
+    fun getDaoActionByActionId(dao: &Dao, actionId: u64) : BFCDaoAction {
         let data = vec_map::get(&dao.action_record, &actionId);
         *data
     }
@@ -364,20 +358,8 @@ module bfc_system::bfc_dao {
 
 
         let daoInfo = DaoGlobalInfo{
-            id: object::new(ctx),
             next_proposal_id: 0,
             next_action_id: 0,
-            proposal_create_event: ProposalCreatedEvent{
-                proposal_id: 0,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-            },
-            vote_changed_event: VoteChangedEvent{
-                proposal_id: 0,
-                voter: DEFAULT_TOKEN_ADDRESS,
-                proposer: DEFAULT_TOKEN_ADDRESS,
-                agree: false,
-                vote: 0,
-            }
         };
 
         let votingPool = voting_pool::new(ctx);
@@ -422,7 +404,7 @@ module bfc_system::bfc_dao {
     public(friend) fun propose (
         dao: &mut Dao,
         version_id: u64,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         description: vector<u8>,
@@ -430,16 +412,14 @@ module bfc_system::bfc_dao {
         ctx: &mut TxContext,
     ) {
 
-        //convert proposal payment to voting_bfc
         let sender = tx_context::sender(ctx);
-        let balance = coin::into_balance(payment);
-        let value = balance::value(&balance);
         // ensure the user pays enough
-        assert!(value >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
+        assert!(coin::value(payment) >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
         assert!( vector::length(&description) <= MAX_DESCRIPTION_LENGTH, ERR_ACTION_NAME_TOO_LONG);
 
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock, ctx);
-        transfer::public_transfer(voting_bfc, sender);
+        // burn 200 BFC to prevent DDOS attacks
+        let burn_bfc=coin::split(payment, MIN_NEW_PROPOSE_COST, ctx);
+        transfer::public_transfer(burn_bfc, ZERO_ADDRESS);
 
 
         let action = getDaoActionByActionId(dao, action_id);
@@ -449,8 +429,6 @@ module bfc_system::bfc_dao {
         };
 
         let proposal_id = generate_next_proposal_id(dao);
-
-        let sender = tx_context::sender(ctx);
         let start_time = clock::timestamp_ms(clock)  + voting_delay(dao);
         let quorum_votes = quorum_votes(dao);
         let object_id = object::new(ctx);
