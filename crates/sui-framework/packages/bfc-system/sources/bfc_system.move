@@ -194,7 +194,7 @@ module bfc_system::bfc_system {
     public entry fun propose(
         wrapper: &mut BfcSystemState,
         version_id : u64,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         description: vector<u8>,
@@ -207,7 +207,7 @@ module bfc_system::bfc_system {
 
     public entry fun create_bfcdao_action(
         wrapper: &mut BfcSystemState,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         actionName: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext) {
