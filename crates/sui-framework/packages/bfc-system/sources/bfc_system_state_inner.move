@@ -427,7 +427,7 @@ module bfc_system::bfc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        bfc_dao:: propose(&mut self.dao, version_id, payment, action_id, action_delay, description, clock, ctx);
+        bfc_dao::propose(&mut self.dao, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
     public(friend) fun set_voting_delay(self: &mut BfcSystemStateInner, manager_key: &BFCDaoManageKey, value: u64) {

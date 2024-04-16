@@ -482,7 +482,7 @@ module bfc_system::bfc_dao_test {
             let (forvote, agaistvote) = bfc_dao::proposal_info(&mut p);
             debug::print(&forvote);
             debug::print(&agaistvote);
-            assert!(forvote == 200000000000, 0);
+            assert!(forvote == 10000000000, 0);
             assert!(agaistvote == 0, 0);
 
             bfc_dao::change_vote(&mut dao, &mut vote, &mut p, false, &clock, test_scenario::ctx(&mut scenario_val));
@@ -492,7 +492,7 @@ module bfc_system::bfc_dao_test {
             debug::print(&forvote);
             debug::print(&agaistvote);
             assert!(forvote == 0, 0);
-            assert!(agaistvote == 200000000000, 0);
+            assert!(agaistvote == 10000000000, 0);
 
 
 
