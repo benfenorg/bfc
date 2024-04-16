@@ -410,7 +410,7 @@ module bfc_system::bfc_system_state_inner {
 
     public(friend) fun create_bfcdao_action(
         self: &mut BfcSystemStateInner,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         actionName: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext) {
@@ -420,7 +420,7 @@ module bfc_system::bfc_system_state_inner {
     public(friend) fun propose(
         self: &mut BfcSystemStateInner,
         version_id: u64,
-        payment: Coin<BFC>,
+        payment: &mut Coin<BFC>,
         action_id: u64,
         action_delay: u64,
         description: vector<u8>,
