@@ -310,7 +310,7 @@ Create a new, empty voting pool.
 Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>
 </code></pre>
 
 
@@ -320,7 +320,7 @@ Request to voting to a staking pool. The voting starts counting at the beginning
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_add_voting">request_add_voting</a>(
-    pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
+    pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting: Balance&lt;BFC&gt;,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext
@@ -364,7 +364,7 @@ Both the principal and corresponding rewards in BFC are withdrawn.
 A proportional amount of pool token withdraw is recorded and processed at epoch change time.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -374,18 +374,12 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_request_withdraw_voting">request_withdraw_voting</a>(
-    pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
+    pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
 ) : Balance&lt;BFC&gt; {
     <b>let</b> (_, principal_withdraw) =
         <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool, voting_bfc, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
-    <b>let</b> principal_withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&principal_withdraw);
-
-
-    <b>let</b> _ = principal_withdraw_amount;
-
-    // TODO: implement withdraw bonding period here.
     principal_withdraw
 }
 </code></pre>
@@ -416,7 +410,7 @@ tokens using exchange rate at staking epoch.
 Returns values are amount of pool tokens withdrawn and withdrawn principal portion of BFC.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): (u64, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>, voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): (u64, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -426,7 +420,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_withdraw_from_principal">withdraw_from_principal</a>(
-    pool: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
+    pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>,
     voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
 ) : (u64, Balance&lt;BFC&gt;) {
@@ -480,7 +474,6 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_unwrap_voting_bfc">unwrap_voting_bfc</a>(voting_bfc: <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): Balance&lt;BFC&gt; {
-
     <b>let</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a> {
         id,
         pool_id: _,
