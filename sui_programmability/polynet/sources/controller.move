@@ -227,7 +227,7 @@ module polynet::controller {
     public entry fun lock_and_pay_fee<CoinType>(
         _global:&mut CrossChainGlobalConfig,
         _treasury_ref:&mut Treasury<CoinType>,
-        _fund: Coin<CoinType>,
+        _fund: &mut Coin<CoinType>,
         _amount: u64,
         _fee: Coin<BFC>,
         _to_chain_id: u64, 

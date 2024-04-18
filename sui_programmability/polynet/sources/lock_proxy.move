@@ -398,7 +398,7 @@ module polynet::lock_proxy {
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         account: address,
-        fund: Coin<CoinType>,
+        fund: &mut Coin<CoinType>,
         amount: u64,
         toChainId: u64,
         toAddress: &vector<u8>,
@@ -407,10 +407,10 @@ module polynet::lock_proxy {
     )  {
         // lock fund
         assert!(amount >= lpManager.lock_min_amount, EMIN_UNLOCK_AMOUNT);
-        let deposit_coin = coin::split<CoinType>(&mut fund, amount, ctx);
+        let deposit_coin = coin::split<CoinType>(fund, amount, ctx);
         
         deposit(treasury_ref, deposit_coin);
-        utils::send_coin(fund,account);
+        // utils::send_coin(fund,account);
         
         // borrow license
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);

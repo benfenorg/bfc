@@ -68,7 +68,7 @@ module polynet::wrapper_v1 {
         treasury_ref:&mut Treasury<CoinType>,
         wrapper_store:&mut WrapperStore,
         account: address,
-        fund: Coin<CoinType>, 
+        fund: &mut Coin<CoinType>, 
         amount: u64,
         fee: Coin<BFC>,
         to_chain_id: u64, 

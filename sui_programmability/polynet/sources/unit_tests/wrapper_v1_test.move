@@ -146,9 +146,10 @@ module polynet::wrapper_v1_test {
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
             let toAddress = x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899";
-            lock_and_pay_fee_with_fund<BFC_USDC>(manager, lock_proxy, &mut treasury, wrapper_store, @0x2, coin, 7000000000, fee, 10, &toAddress, &clock, ctx);
+            lock_and_pay_fee_with_fund<BFC_USDC>(manager, lock_proxy, &mut treasury, wrapper_store, @0x2, &mut coin, 7000000000, fee, 10, &toAddress, &clock, ctx);
             test_scenario::return_shared(ccConfig);
             test_scenario::return_shared( treasury);
+            coin::burn_for_testing(coin);
             clock::destroy_for_testing(clock);
         };
         test_scenario::end(scenario_val);
