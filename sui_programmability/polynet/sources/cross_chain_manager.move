@@ -29,7 +29,6 @@ module polynet::cross_chain_manager {
     const EVERIFIER_NOT_RECEIVER: u64 = 4007;
 
     struct CrossChainManager has store {
-        paused: bool,
         poly_id: u64,
         book_keepers: vector<vector<u8>>, //special decode pointer
         epoch_start_height: u64,
@@ -62,7 +61,6 @@ module polynet::cross_chain_manager {
     public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
      
         let manager = CrossChainManager{
-            paused: false,
             poly_id: 1200,
             book_keepers: vector::empty<vector<u8>>(),
             epoch_start_height: 0,
