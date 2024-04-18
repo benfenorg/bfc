@@ -406,13 +406,10 @@ module polynet::lock_proxy {
         ctx: &mut TxContext
     )  {
         // lock fund
-        // let amount = coin::value(&fund);
         assert!(amount >= lpManager.lock_min_amount, EMIN_UNLOCK_AMOUNT);
-        let balance = coin::into_balance<CoinType>(
-            coin::split<CoinType>(&mut fund, amount, ctx)
-        );
+        let deposit_coin = coin::split<CoinType>(&mut fund, amount, ctx);
         
-        deposit(treasury_ref, coin::from_balance(balance, ctx));
+        deposit(treasury_ref, deposit_coin);
         utils::send_coin(fund,account);
         
         // borrow license
