@@ -240,7 +240,6 @@ module polynet::controller {
         config::check_pause(_global);
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_assets_role(_global, sender);
         let (lp_manager,wrapper_store,cc_manager) = config::borrow_mut_all(_global);     
         wrapper_v1::lock_and_pay_fee_with_fund<CoinType>(
                         cc_manager,
