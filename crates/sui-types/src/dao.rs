@@ -106,17 +106,17 @@ pub struct DaoConfig{
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
 /// global DAO info of the specified token type `Token`.
 pub struct DaoGlobalInfo{
-    pub id: UID,
-    /// next proposal id.
+    //pub id: UID,
+    // next proposal id.
     pub next_proposal_id: u64,
 
     // next action id
     pub next_action_id: u64,
 
-    /// proposal creating event.
-    pub proposal_create_event: ProposalCreatedEvent,
-    /// voting event.
-    pub vote_changed_event: VoteChangedEvent,
+    // proposal creating event.
+    //pub proposal_create_event: ProposalCreatedEvent,
+    // voting event.
+    //pub vote_changed_event: VoteChangedEvent,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema)]
