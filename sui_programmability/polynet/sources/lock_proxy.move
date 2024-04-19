@@ -612,11 +612,16 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun reset_amount(amountManager:&mut AmountLimitManager){
+        let amount = consts::get_max_amount_per_day();
         let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
-        *usdt = consts::get_max_amount_per_day();
+        *usdt = amount;
 
         let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDC");
-        *usdc = consts::get_max_amount_per_day();
+        *usdc = amount;
+
+        events::reset_per_day_amount_event(amount);
+
+
 
     }
    
@@ -673,13 +678,27 @@ module polynet::lock_proxy {
         _lockProxyManager: &mut LockProxyManager,
         _min_amount: u64
     )  {
+        let old_amount = _lockProxyManager.lock_min_amount;
         _lockProxyManager.lock_min_amount = _min_amount;
+
+        events::update_min_amount_event(
+            true,
+            old_amount,
+            _min_amount
+        );
     }
 
     public(friend) fun update_unlock_min_amount(
         _lockProxyManager: &mut LockProxyManager,
         _min_amount: u64
     )  {
+        let old_amount = _lockProxyManager.lock_min_amount;
         _lockProxyManager.unlock_min_amount = _min_amount;
+
+        events::update_min_amount_event(
+            false,
+            old_amount,
+            _min_amount
+        );
     }
 }

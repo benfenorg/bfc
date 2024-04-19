@@ -168,6 +168,75 @@ module polynet::events {
         sender: address
     }
 
+    struct PauseStatusEvent has store, drop, copy {
+        paused: bool
+    }
+
+    struct UpdateRoleEvent has store, drop, copy {
+        add: bool,
+        role: u64,
+        role_address: address
+    }
+
+    struct UpdateMinAmountEvent has store, drop, copy {
+        lock: bool,
+        old_amount: u64,
+        new_amount: u64
+    }
+
+    struct ResetPerDayAmountEvent has store, drop, copy {
+        per_day_amount: u64
+    }
+
+    public(friend) fun reset_per_day_amount_event(
+        _per_day_amount: u64
+    ) {
+        emit(
+            ResetPerDayAmountEvent{
+                    per_day_amount: _per_day_amount
+                }
+        );
+    }
+
+
+    public(friend) fun update_min_amount_event(
+        _lock: bool,
+        _old_amount: u64,
+        _new_amount: u64
+    ) {
+        emit(
+            UpdateMinAmountEvent{
+                    lock: _lock,
+                    old_amount: _old_amount,
+                    new_amount: _new_amount
+                }
+        );
+    }
+
+    public(friend) fun update_role_event(
+        _add: bool,
+        _role: u64,
+        _role_address: address
+    ) {
+        emit(
+            UpdateRoleEvent{
+                    add: _add,
+                    role: _role,
+                    role_address: _role_address
+                }
+        );
+    }
+
+    public(friend) fun update_pause_status_event(
+        _paused: bool
+    ) {
+        emit(
+            PauseStatusEvent{
+                    paused: _paused
+                }
+        );
+    }
+
     public(friend) fun update_fee_collector_event(
         _old_fee_collector: address,
         _new_fee_collector: address,

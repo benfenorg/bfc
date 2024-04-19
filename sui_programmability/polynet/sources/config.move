@@ -213,12 +213,14 @@ module polynet::config {
 
         assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = true;
+        events::update_pause_status_event(_global.paused);
     }
 
     public(friend) fun unpause(_global:&mut CrossChainGlobalConfig)  {
 
         assert!(paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = false;
+        events::update_pause_status_event(_global.paused);
     }
 
     public(friend) fun has_role(_config: &CrossChainGlobalConfig, _role: u64, _account: address): bool  {
@@ -251,7 +253,12 @@ module polynet::config {
             let role_acl = acl::empty();
             acl::add(&mut role_acl, _account);
             table::add(&mut _config.acl_store.role_acls, _role, role_acl);
-        }
+        };
+        events::update_role_event(
+            true,
+            _role,
+            _account
+        );
     }
 
     public(friend) fun revoke_role(
@@ -267,6 +274,12 @@ module polynet::config {
         assert!(has_role(_config, _role, _account), ENOT_HAS_ROLE);
         let role_acl = table::borrow_mut(&mut _config.acl_store.role_acls, _role);
         acl::remove(role_acl, _account);
+
+        events::update_role_event(
+            false,
+            _role,
+            _account
+        );
     }
 
     public(friend) fun check_operator_role(
