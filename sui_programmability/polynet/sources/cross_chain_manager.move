@@ -408,9 +408,19 @@ module polynet::cross_chain_manager {
         _ctx: &mut TxContext
 
     ) {
+        let old_keepers = _cross_chain_manager.book_keepers;
+        let old_start_height = _cross_chain_manager.epoch_start_height;
         _cross_chain_manager.epoch_start_height = _start_height;
         _cross_chain_manager.book_keepers = _keepers;
 
+        let sender = tx_context::sender(_ctx);
+        events::change_book_keeper_event(
+            old_keepers,
+            old_start_height,
+            _keepers,
+            _start_height,
+            sender
+        );
     }
 
     public(friend) fun set_poly_id(

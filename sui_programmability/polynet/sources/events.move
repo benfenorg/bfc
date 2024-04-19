@@ -142,11 +142,75 @@ module polynet::events {
         module_name: String,
     }
 
+    struct UpdateFeeConfigEvent has store, drop, copy {
+        old_fee_config: bool,
+        new_fee_config: bool
+    }
+
     struct PerDayRemainingAmountEvent has store, drop, copy {
         asset: TypeName,
         is_lock: bool,
         min_amount: u64,
         remaining_amount: u64
+    }
+
+    struct ChangeBookKeeperEvent has store, drop, copy {
+        old_keepers: vector<vector<u8>>,
+        old_start_height: u64,
+        new_keepers: vector<vector<u8>>,
+        new_start_height: u64,
+        sender: address
+    }
+
+    struct UpdateFeeCollectorEvent has store, drop, copy {
+        old_fee_collector: address,
+        new_fee_collector: address,
+        sender: address
+    }
+
+    public(friend) fun update_fee_collector_event(
+        _old_fee_collector: address,
+        _new_fee_collector: address,
+        _sender: address
+    ) {
+        emit(
+            UpdateFeeCollectorEvent{
+                    old_fee_collector: _old_fee_collector,
+                    new_fee_collector: _new_fee_collector,
+                    sender: _sender
+                }
+        );
+    }
+
+
+    public(friend) fun change_book_keeper_event(
+        _old_keepers: vector<vector<u8>>,
+        _old_start_height: u64,
+        _new_keepers: vector<vector<u8>>,
+        _new_start_height: u64,
+        _sender: address
+    ) {
+        emit(
+            ChangeBookKeeperEvent{
+                    old_keepers: _old_keepers,
+                    old_start_height: _old_start_height,
+                    new_keepers: _new_keepers,
+                    new_start_height: _new_start_height,
+                    sender: _sender
+                }
+        );
+    }
+
+    public(friend) fun update_fee_event(
+        _old_fee_config: bool,
+        _new_fee_config: bool
+    ) {
+        emit(
+            UpdateFeeConfigEvent{
+                    old_fee_config: _old_fee_config,
+                    new_fee_config: _new_fee_config
+                }
+        );
     }
 
     public(friend) fun remaining_amount_change_event(

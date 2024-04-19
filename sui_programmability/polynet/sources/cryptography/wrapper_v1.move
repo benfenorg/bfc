@@ -39,15 +39,25 @@ module polynet::wrapper_v1 {
         _new_fee_collector: address, 
         _ctx: &mut TxContext
     ) {
-      
+        let old_collector = _wrapperstore.fee_collector;
         _wrapperstore.fee_collector = _new_fee_collector;
+        let sender = tx_context::sender(_ctx);
+
+        events::update_fee_collector_event(
+            old_collector,
+            _new_fee_collector,
+            sender,
+        );
     }
 
     public(friend) fun update_fee_config(
         _wrapperstore:&mut WrapperStore, 
         _need_fee: bool 
     ) {
+        let old_fee = _wrapperstore.need_fee;
         _wrapperstore.need_fee = _need_fee;
+
+        events::update_fee_event(old_fee,_need_fee);
     }
 
     public(friend) fun need_fee(
