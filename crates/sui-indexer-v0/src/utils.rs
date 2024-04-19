@@ -289,7 +289,7 @@ pub mod validator_stake {
         }
     }
 
-    fn get_stable_pool_keys() -> Vec<String> {
+    pub fn get_stable_pool_keys() -> Vec<String> {
         // https://github.com/hellokittyboy-code/obc/blob/88585bcd2406962ba7cefe46944b0a785cd32a67/crates/sui-framework/packages/sui-system/sources/validator.move#L18-L34
         let stable_coins = vec![
             "bfc_system::bars::BARS",

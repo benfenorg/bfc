@@ -5,12 +5,14 @@ use chrono::NaiveDateTime;
 use chrono::NaiveTime;
 use chrono::Utc;
 use fastcrypto::encoding::Base64;
+use jsonrpsee::core::DeserializeOwned;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::parser::parse_type_tag;
 use rust_decimal::prelude::*;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::ops::Div;
 use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, WriteApiClient};
 use sui_json_rpc_types::DevInspectResults;
@@ -19,16 +21,20 @@ use sui_json_rpc_types::SuiMiningNFTFutureReward;
 use sui_json_rpc_types::SuiMiningNFTProfitRate;
 use sui_json_rpc_types::SuiObjectDataOptions;
 use sui_json_rpc_types::SuiObjectResponse;
+use sui_json_rpc_types::SuiParsedData;
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::SuiAddress;
 use sui_types::collection_types::VecMap;
 use sui_types::dynamic_field::DynamicFieldName;
 use sui_types::dynamic_field::Field;
 use sui_types::error::SuiError;
+use sui_types::gas_coin::MIST_PER_SUI;
 use sui_types::id::ID;
 use sui_types::id::UID;
 use sui_types::object::Object;
+use sui_types::sui_system_state::PoolTokenExchangeRate;
 use sui_types::transaction::ObjectArg;
+use sui_types::SUI_SYSTEM_PACKAGE_ID;
 use sui_types::{
     transaction::{Argument, CallArg, Command, ProgrammableTransaction, TransactionKind},
     Identifier, TypeTag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID,
@@ -83,33 +89,9 @@ pub async fn get_bfc_price_in_stable_coin(
     coin: TypeTag,
     http_client: HttpClient,
 ) -> Result<f64, IndexerError> {
-    let tx = Base64::from_bytes(&bcs::to_bytes(&build_vault_info_tx(coin.clone())?)?);
-    let results: DevInspectResults = http_client
-        .dev_inspect_transaction_block(AccountAddress::ZERO.into(), tx, None, None)
-        .await
-        .map_err(|err| {
-            IndexerError::FullNodeReadingError(format!(
-                "Failed to get stable coin exchange rate {:?} with error {:?}",
-                coin, err,
-            ))
-        })?;
-    if let Some(err) = results.error {
-        return Err(IndexerError::FullNodeReadingError(format!(
-            "Failed to get stable coin exchange rate {:?} with error {:?}",
-            coin, err,
-        )));
-    }
-
-    if let Some(results) = results.results {
-        if results.len() > 0 && results[0].return_values.len() > 0 {
-            let val = bcs::from_bytes::<VaultInfo>(&results[0].return_values[0].0)?;
-            return calculate_price(val.current_sqrt_price);
-        }
-    }
-    Err(IndexerError::FullNodeReadingError(format!(
-        "Failed to get stable coin exchange rate {:?} with no results",
-        coin,
-    )))
+    let tx = &build_vault_info_tx(coin.clone())?;
+    let val: VaultInfo = dev_inspect_tx(http_client, tx).await?;
+    return calculate_price(val.current_sqrt_price);
 }
 
 fn build_vault_info_tx(coin: TypeTag) -> Result<TransactionKind, IndexerError> {
@@ -128,6 +110,37 @@ fn build_vault_info_tx(coin: TypeTag) -> Result<TransactionKind, IndexerError> {
         )],
     };
     Ok(TransactionKind::ProgrammableTransaction(tx))
+}
+
+async fn dev_inspect_tx<T: DeserializeOwned>(
+    http_client: HttpClient,
+    tx: &TransactionKind,
+) -> Result<T, IndexerError> {
+    let tx = Base64::from_bytes(&bcs::to_bytes(tx)?);
+    let results: DevInspectResults = http_client
+        .dev_inspect_transaction_block(AccountAddress::ZERO.into(), tx, None, None)
+        .await
+        .map_err(|err| {
+            IndexerError::FullNodeReadingError(
+                format!("Failed to dry run tx with error {:?}", err,),
+            )
+        })?;
+    if let Some(err) = results.error {
+        return Err(IndexerError::FullNodeReadingError(format!(
+            "Failed to dry run tx with error {:?}",
+            err,
+        )));
+    }
+
+    if let Some(results) = results.results {
+        if results.len() > 0 && results[0].return_values.len() > 0 {
+            let val = bcs::from_bytes::<T>(&results[0].return_values[0].0)?;
+            return Ok(val);
+        }
+    }
+    Err(IndexerError::FullNodeReadingError(format!(
+        "No value returned when dry run tx",
+    )))
 }
 
 fn calculate_price(current_sqrt_price: u128) -> Result<f64, IndexerError> {
@@ -150,6 +163,60 @@ fn calculate_price(current_sqrt_price: u128) -> Result<f64, IndexerError> {
                 err,
             ))
         })
+}
+
+async fn get_mining_nft_cost_in_usd(
+    config: IndexerConfig,
+    http_client: HttpClient,
+) -> Result<f64, IndexerError> {
+    let object_id = ObjectID::from_hex_literal(&config.mining_nft_pool_id)?;
+    let response: SuiObjectResponse = http_client
+        .get_object(
+            object_id.clone(),
+            Some(SuiObjectDataOptions::bcs_lossless().with_content()),
+        )
+        .await
+        .map_err(|err| {
+            IndexerError::FullNodeReadingError(format!(
+                "Failed to read object {:?} with error {:?}",
+                object_id, err
+            ))
+        })?;
+    let object = response.object()?;
+    if let Some(content) = &object.content {
+        if let SuiParsedData::MoveObject(move_obj) = content {
+            let value: Value = move_obj.fields.clone().to_json_value();
+            if let Some(cur_sqrt_price_val) = value.get("current_sqrt_price") {
+                if let Some(cur_sqrt_price) = cur_sqrt_price_val.as_str() {
+                    let div: Decimal = (u64::MAX - 1/* 2^64 */).into();
+                    let coin_a_price = Decimal::from_str_exact(cur_sqrt_price)
+                        .map_err(|err| IndexerError::UncategorizedError(err.into()))?
+                        .div(&div)
+                        .powi(2);
+                    let one: Decimal = 1.into();
+                    return Ok(one.div(coin_a_price).try_into().map_err(|err| {
+                        IndexerError::FullNodeReadingError(format!(
+                            "Failed to convert decimal to f64 with error {:?}",
+                            err,
+                        ))
+                    })?);
+                }
+            }
+        }
+    }
+    Err(IndexerError::FullNodeReadingError(format!(
+        "Failed to extract current_sqrt_price from object: {:?}",
+        object_id
+    )))
+}
+
+async fn get_mining_nft_cost_in_bfc(
+    config: IndexerConfig,
+    http_client: HttpClient,
+) -> Result<u64, IndexerError> {
+    let usd_cost = get_mining_nft_cost_in_usd(config, http_client.clone()).await?;
+    let price = get_bfc_price_in_usd(http_client).await?;
+    Ok((usd_cost / price) as u64)
 }
 
 // {"data":{"amount":"42288.58","base":"BTC","currency":"USD"}}
@@ -238,9 +305,10 @@ pub async fn get_nft_staking_overview(
     let current_period_past_secs = timestamp - nft_staking.begin_at - past_period_secs;
     let current_total_reward = current_period_past_secs as f64 * current_period_rps(rps, p);
 
+    let nft_cost_bfc = get_mining_nft_cost_in_bfc(config.clone(), http_client.clone()).await?;
+    let nft_cost = nft_cost_bfc * MIST_PER_SUI;
     let nft_config = get_global_nft_config(http_client, config).await?;
     let mut nft_future_rewards = vec![];
-    let mut initial_rewarded: u64 = 0;
     let mut nft_future_profit_rates = vec![];
     let mut rewarded: u64 = 0;
     let max_count_per_day: u64 = 20;
@@ -254,11 +322,8 @@ pub async fn get_nft_staking_overview(
             reward: rewarded,
             dt_timestamp_ms: dp * 1_000,
         });
-        if d == 0 {
-            initial_rewarded = rewarded;
-        }
         nft_future_profit_rates.push(SuiMiningNFTProfitRate {
-            rate: (rewarded - initial_rewarded) as f64 / initial_rewarded as f64,
+            rate: rewarded as f64 / nft_cost as f64,
             dt_timestamp_ms: dp * 1_1000,
         });
     }
@@ -432,37 +497,14 @@ pub async fn get_mining_nft_pending_reward(
                 err
             )
         })?);
-    let tx = Base64::from_bytes(&bcs::to_bytes(&build_nft_stake_pending_reward_tx(
-        contract,
-        global,
-        ID::new(ticket_id.clone()),
-    )?)?);
-    let results: DevInspectResults = http_client
-        .dev_inspect_transaction_block(AccountAddress::ZERO.into(), tx, None, None)
-        .await
-        .map_err(|err| {
-            IndexerError::FullNodeReadingError(format!(
-                "Failed to get ticket pending reward {:?} with error {:?}",
-                ticket_id, err,
-            ))
-        })?;
-    if let Some(err) = results.error {
-        return Err(IndexerError::FullNodeReadingError(format!(
+    let tx = build_nft_stake_pending_reward_tx(contract, global, ID::new(ticket_id.clone()))?;
+    let val: u64 = dev_inspect_tx(http_client, &tx).await.map_err(|err| {
+        IndexerError::FullNodeReadingError(format!(
             "Failed to get ticket pending reward {:?} with error {:?}",
             ticket_id, err,
-        )));
-    }
-
-    if let Some(results) = results.results {
-        if results.len() > 0 && results[0].return_values.len() > 0 {
-            let val = bcs::from_bytes::<u64>(&results[0].return_values[0].0)?;
-            return Ok(val);
-        }
-    }
-    Err(IndexerError::FullNodeReadingError(format!(
-        "Failed to get ticket pending reward {:?} with no results",
-        ticket_id,
-    )))
+        ))
+    })?;
+    Ok(val)
 }
 
 fn build_nft_stake_pending_reward_tx(
@@ -530,21 +572,53 @@ pub async fn get_nft_display(
     )))
 }
 
+pub async fn get_pool_exchange_rate(
+    http_client: HttpClient,
+    pool_id: ObjectID,
+    epoch: u64,
+) -> Result<PoolTokenExchangeRate, IndexerError> {
+    let tx = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(ObjectArg::SharedObject {
+                id: pool_id.clone(),
+                initial_shared_version: 1u64.into(),
+                mutable: false,
+            }),
+            CallArg::Pure(bcs::to_bytes(&epoch)?),
+        ],
+        commands: vec![Command::move_call(
+            SUI_SYSTEM_PACKAGE_ID,
+            Identifier::new("sui_system")?,
+            Identifier::new("pool_token_exchange_rate_at_epoch")?,
+            vec![],
+            vec![Argument::Input(0), Argument::Input(1)],
+        )],
+    };
+    let tx = TransactionKind::ProgrammableTransaction(tx);
+    let val: PoolTokenExchangeRate = dev_inspect_tx(http_client, &tx).await.map_err(|err| {
+        IndexerError::FullNodeReadingError(format!(
+            "Failed to read exchange_rates with err {:?}, pool_id: {:?}, epoch: {}",
+            err, pool_id, epoch
+        ))
+    })?;
+    Ok(val)
+}
+
 #[cfg(test)]
 mod test_benfen {
     use std::str::FromStr;
 
     use crate::{
         benfen::{
-            get_bfc_price_in_stable_coin, get_global_nft_config, get_global_nft_staking,
-            get_nft_display, get_nft_staking_overview,
+            get_global_nft_config, get_global_nft_staking, get_nft_display,
+            get_nft_staking_overview,
         },
         IndexerConfig,
     };
 
     use super::{
-        get_bfc_price_in_usd, get_btc_price_in_usd, get_mining_nft_pending_reward, timestamp_to_dt,
-        timestamp_to_dt_string,
+        get_bfc_price_in_usd, get_btc_price_in_usd, get_mining_nft_pending_reward,
+        get_pool_exchange_rate, timestamp_to_dt, timestamp_to_dt_string,
     };
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
     use sui_json_rpc::CLIENT_SDK_TYPE_HEADER;
@@ -648,12 +722,40 @@ mod test_benfen {
             create_http_client(),
             &config.mining_nft_contract,
             &config.mining_nft_global,
-            "0xd146427073345317d1f5e82aeff9fd8d18448e49dc9af9a04337f8b990ee41e",
+            "0x79a2fa0d94dbd6de6b94255a5eba481f70bb3998cc8704500b70af7fe0654f4b",
+            // "0xd146427073345317d1f5e82aeff9fd8d18448e49dc9af9a04337f8b990ee41e",
             // "BFC7232d3d3973b9f27eae8edbc2d379abfae5098c4eb8ebe943b2dba5d0dd48c9c8a8e",
         )
         .await
         .unwrap();
         println!("{:?}", pending);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn test_staking_pool_exchange_rates() {
+        let pool_id = ObjectID::from_hex_literal(
+            "BFCe1438f7094e8af6e3dce4aa6565770acee658e422023fbc2a17d416a5735a28ef159",
+        )
+        .unwrap();
+        let rates = get_pool_exchange_rate(create_http_client(), pool_id, 155)
+            .await
+            .unwrap();
+        println!("{:?}", rates);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn test_long_coin_price_in_usd() {
+        let usd = super::get_mining_nft_cost_in_usd(IndexerConfig::default(), create_http_client())
+            .await
+            .unwrap();
+        println!("usd: {}", usd);
+
+        let bfc = super::get_mining_nft_cost_in_bfc(IndexerConfig::default(), create_http_client())
+            .await
+            .unwrap();
+        println!("bfc: {}", bfc);
     }
 
     #[test]

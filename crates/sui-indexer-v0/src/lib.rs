@@ -129,6 +129,13 @@ pub struct IndexerConfig {
     )]
     pub mining_nft_global: String,
 
+    #[clap(
+        long,
+        default_value = "BFC1537ad845c190d7363b8e558100a5d782c2d4ce6e2a39d0f1b56db639a3ad3fa34bb",
+        global = true
+    )]
+    pub mining_nft_pool_id: String,
+
     #[clap(long)]
     pub migrate: bool,
 }
@@ -186,13 +193,16 @@ impl Default for IndexerConfig {
             rpc_server_worker: true,
             skip_db_commit: false,
             mining_nft_contract:
-                "BFCf5a54de8d667b66ef7ac77f657c70806f48a9339ef9999049077c4271135d34ad693"
+                "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
                     .to_string(),
             mining_nft_global:
-                "BFC93667906efdfe7eb45ab61ccd25266f5d4cde8e23525c04fa6d888b1435e8c8a27f8"
+                "BFC7bfaf4d8018565811b0e84f313baf3bead9bc753f4e9e775d2ad9c7df45145fb4845"
                     .to_string(),
             mining_nft_event_package:
-                "BFCf5a54de8d667b66ef7ac77f657c70806f48a9339ef9999049077c4271135d34ad693"
+                "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
+                    .to_string(),
+            mining_nft_pool_id:
+                "BFC1537ad845c190d7363b8e558100a5d782c2d4ce6e2a39d0f1b56db639a3ad3fa34bb"
                     .to_string(),
             migrate: false,
         }
