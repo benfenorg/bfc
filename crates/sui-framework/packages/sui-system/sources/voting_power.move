@@ -64,7 +64,7 @@ module sui_system::voting_power {
             init_voting_power_info(validators, threshold, stable_rate);
         adjust_voting_power(&mut info_list, threshold, remaining_power);
         update_voting_power(validators, info_list);
-        check_invariants(validators);
+        check_invariants(validators, stable_rate);
     }
 
     /// Create the initial voting power of each validator, set using their stake, but capped using threshold.
@@ -157,7 +157,7 @@ module sui_system::voting_power {
     }
 
     /// Check a few invariants that must hold after setting the voting power.
-    fun check_invariants(v: &vector<Validator>) {
+    fun check_invariants(v: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>) {
         // First check that the total voting power must be TOTAL_VOTING_POWER.
         let i = 0;
         let len = vector::length(v);
@@ -179,8 +179,8 @@ module sui_system::voting_power {
             while (b < len) {
                 let validator_a = vector::borrow(v, a);
                 let validator_b = vector::borrow(v, b);
-                let stake_a = validator::total_stake(validator_a);
-                let stake_b = validator::total_stake(validator_b);
+                let stake_a = validator::total_stake_with_all_stable(validator_a, stable_rate);
+                let stake_b = validator::total_stake_with_all_stable(validator_b, stable_rate);
                 let power_a = validator::voting_power(validator_a);
                 let power_b = validator::voting_power(validator_b);
                 if (stake_a > stake_b) {

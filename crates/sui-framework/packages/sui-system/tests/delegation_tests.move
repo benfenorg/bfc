@@ -572,6 +572,21 @@ module sui_system::stake_tests {
     }
 
     #[test]
+    fun test_rate_problem() {
+        set_up_sui_system_state();
+        let scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        let i = 0;
+        while (i < 10) {
+            stake_with(@0x42, @0x2, 1, scenario);
+            test_scenario::next_tx(scenario, @0x42);
+            advance_epoch(scenario); // advances epoch to effectuate the stake
+            i = i + 1;
+        };
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     fun test_staking_pool_exchange_rate_getter() {
         set_up_sui_system_state();
         let scenario_val = test_scenario::begin(@0x0);
