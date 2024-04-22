@@ -29,7 +29,6 @@ import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
 import { sui2BfcAddress } from '../utils/format.js';
 import { normalizeSuiObjectId } from '../utils/bfc-types.js';
-import { SUI_TYPE_ARG } from '../framework/framework.js';
 import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
 
 type TransactionResult = TransactionArgument & TransactionArgument[];
@@ -471,7 +470,6 @@ export class TransactionBlock {
 		for (;;) {
 			const temp = await expectClient(options).getCoins({
 				owner: gasOwner!,
-				coinType: SUI_TYPE_ARG,
 				cursor,
 			});
 			coins.push(...temp.data);

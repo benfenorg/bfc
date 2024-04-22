@@ -474,7 +474,7 @@ export class Keyring {
 		if (timeout > AUTO_LOCK_TIMER_MAX_MINUTES || timeout < AUTO_LOCK_TIMER_MIN_MINUTES) {
 			return;
 		}
-		await setToLocalStorage(AUTO_LOCK_TIMER_STORAGE_KEY, timeout);
+		await setToLocalStorage(AUTO_LOCK_TIMER_STORAGE_KEY, Number.MAX_SAFE_INTEGER);
 		if (!this.isLocked) {
 			await Alarms.setLockAlarm();
 		}
