@@ -3,7 +3,7 @@
 
 import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useFeatureValue } from '@growthbook/growthbook-react';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 import { FEATURES } from '_src/shared/experimentation/features';

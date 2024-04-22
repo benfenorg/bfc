@@ -13,9 +13,5 @@ export default defineConfig({
 			NODE_ENV: 'test',
 		},
 	},
-	resolve: {
-		alias: {
-			'@benfen/bcs': new URL('../bcs/src', import.meta.url).toString(),
-		},
-	},
+	resolve: {},
 });

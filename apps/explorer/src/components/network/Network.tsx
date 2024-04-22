@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useLatestSuiSystemState, useRpcApiVersion } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState, useRpcApiVersion } from '@benfen/bfc.js/dapp-kit';
 import { useContext } from 'react';
 
 import { NetworkContext } from '../../context';

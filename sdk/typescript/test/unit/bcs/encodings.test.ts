@@ -11,7 +11,7 @@ import {
 	toB64,
 	fromHEX,
 	toHEX,
-} from './../src/index';
+} from '../../../src/bcs/src/index.js';
 
 describe('BCS: Encodings', () => {
 	it('should de/ser hex, base58 and base64', () => {

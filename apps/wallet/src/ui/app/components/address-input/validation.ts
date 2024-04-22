@@ -4,7 +4,7 @@
 import { type SuiClient } from '@benfen/bfc.js/client';
 import { isValidSuiAddress } from '@benfen/bfc.js/utils';
 import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useMemo } from 'react';
 import * as Yup from 'yup';
 

@@ -4,7 +4,7 @@
 import { getTransactionDigest } from '@benfen/bfc.js';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useGetKioskContents, isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field, Formik } from 'formik';

@@ -9,7 +9,7 @@ import {
 
 import { describe, it, expect } from 'vitest';
 import { secp256k1 } from '@noble/curves/secp256k1';
-import { fromB64, toB58, toB64 } from '@benfen/bcs';
+import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
 import { sha256 } from '@noble/hashes/sha256';
 import { verifyPersonalMessage, verifyTransactionBlock } from '../../../src/verify';
 

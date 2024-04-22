@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { BCS, getSuiMoveConfig } from './../src/index';
+import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 
 describe('BCS: Generics', () => {
 	it('should handle generics', () => {

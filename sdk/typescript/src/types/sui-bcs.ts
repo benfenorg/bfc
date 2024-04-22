@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { EnumTypeDefinition, StructTypeDefinition } from '@benfen/bcs';
-import { BCS, getSuiMoveConfig } from '@benfen/bcs';
+import type { EnumTypeDefinition, StructTypeDefinition } from '../bcs/src/index.js';
+import { BCS, getSuiMoveConfig } from '../bcs/src/index.js';
 import type { SuiObjectRef } from './objects.js';
 
 /**

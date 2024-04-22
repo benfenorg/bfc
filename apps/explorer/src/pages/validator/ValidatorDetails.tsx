@@ -4,7 +4,7 @@
 import { sui2BfcAddress } from '@benfen/bfc.js';
 import { type SuiSystemStateSummary } from '@benfen/bfc.js/client';
 import { useGetValidatorsApy, useGetValidatorsEvents } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState } from '@benfen/bfc.js/dapp-kit';
 import { LoadingIndicator } from '@mysten/ui';
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';

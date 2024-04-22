@@ -8,7 +8,7 @@ import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { formatAmount } from '../utils/formatAmount';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 
 type FormattedCoin = [
 	formattedBalance: string,

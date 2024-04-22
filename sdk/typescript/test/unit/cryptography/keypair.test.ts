@@ -6,7 +6,7 @@ import { Ed25519Keypair, Ed25519PublicKey } from '../../../src/keypairs/ed25519'
 import { Secp256k1Keypair } from '../../../src/keypairs/secp256k1';
 import { Secp256r1Keypair } from '../../../src/keypairs/secp256r1';
 import { PublicKey } from '../../../src/cryptography/publickey';
-import { toB64 } from '@benfen/bcs';
+import { toB64 } from '../../../src/bcs/index.js';
 import { bcs } from '../../../src/bcs/index.js';
 import { IntentScope } from '../../../src/cryptography/intent';
 

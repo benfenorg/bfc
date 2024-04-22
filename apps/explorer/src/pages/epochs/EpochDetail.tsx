@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFormatCoin } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState } from '@benfen/bfc.js/dapp-kit';
 import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { LoadingIndicator } from '@mysten/ui';
 import { useQuery } from '@tanstack/react-query';

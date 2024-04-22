@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { BCS, getSuiMoveConfig } from '../src';
+import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 
 describe('parseTypeName', () => {
 	it('parses nested struct type from a string', () => {

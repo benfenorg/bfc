@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetObject } from '@mysten/core';
-import { useNormalizedMoveStruct } from '@mysten/dapp-kit';
+import { useNormalizedMoveStruct } from '@benfen/bfc.js/dapp-kit';
 import { Search24 } from '@mysten/icons';
 import { Text, LoadingIndicator, Combobox, ComboboxInput, ComboboxList } from '@mysten/ui';
 import { useState } from 'react';

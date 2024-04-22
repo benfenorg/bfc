@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetValidatorsApy, useGetValidatorsEvents } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState } from '@benfen/bfc.js/dapp-kit';
 import { ArrowLeft12 } from '@mysten/icons';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';

@@ -3,7 +3,7 @@
 
 import { type SignedTransaction } from '@benfen/bfc.js';
 import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { type SuiSignMessageOutput } from '@benfen/wallet-standard';
+import { type SuiSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
 import { filter, lastValueFrom, map, race, Subject, take } from 'rxjs';
 import { v4 as uuidV4 } from 'uuid';
 import Browser from 'webextension-polyfill';

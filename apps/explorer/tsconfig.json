@@ -21,7 +21,7 @@
 			"@benfen/bfc.js/transactions": ["../../sdk/typescript/src/builder/export.ts"],
 			"@benfen/bfc.js/*": ["../../sdk/typescript/src/*"],
 			"@benfen/bfc.js": ["../../sdk/typescript/src/"],
-			"@mysten/dapp-kit": ["../../sdk/dapp-kit/src/"]
+			"@benfen/bfc.js/dapp-kit": ["../../sdk/dapp-kit/src/"]
 		}
 	},
 	"include": ["src", "tests"],

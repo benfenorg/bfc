@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { BCS, getSuiMoveConfig } from '../src/index';
-import { serde } from './utils';
+import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { serde } from './utils.js';
 
 describe('BCS: Array type', () => {
 	it.skip('should support destructured type name in ser/de', () => {

@@ -4,8 +4,8 @@
 import { KIOSK_ITEM, KioskItem, fetchKiosk, getOwnedKiosks } from '@mysten/kiosk';
 import { useQuery } from '@tanstack/react-query';
 import { ORIGINBYTE_KIOSK_OWNER_TOKEN, getKioskIdFromOwnerCap } from '../utils/kiosk';
-import { SuiClient, SuiObjectResponse } from '@benfen/bfc.js/src/client';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { SuiClient, SuiObjectResponse } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 
 export enum KioskTypes {
 	SUI = 'sui',

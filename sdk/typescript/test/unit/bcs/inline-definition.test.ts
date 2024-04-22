@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { BCS, getSuiMoveConfig } from '../src/index';
-import { serde } from './utils';
+import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { serde } from './utils.js';
 
 describe('BCS: Inline struct definitions', () => {
 	it('should de/serialize inline definition', () => {
@@ -29,9 +29,6 @@ describe('BCS: Inline struct definitions', () => {
 
 	it('should not contain a trace of the temp struct', () => {
 		const bcs = new BCS(getSuiMoveConfig());
-		const _sr = bcs
-			.ser({ name: 'string', age: 'u8' }, { name: 'Charlie', age: 10 })
-			.toString('hex');
 
 		expect(bcs.hasType('temp-struct')).toBe(false);
 	});

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useDynamicFieldObject, useNormalizedMoveStruct } from '@mysten/dapp-kit';
+import { useDynamicFieldObject, useNormalizedMoveStruct } from '@benfen/bfc.js/dapp-kit';
 import { LoadingIndicator } from '@mysten/ui';
 
 import { FieldItem } from './FieldItem';

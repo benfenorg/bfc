@@ -48,7 +48,7 @@ import { DynamicFieldPage } from '../types/dynamic_fields.js';
 import type { WebsocketClientOptions } from '../rpc/websocket-client.js';
 import { DEFAULT_CLIENT_OPTIONS, WebsocketClient } from '../rpc/websocket-client.js';
 import { any, array, string, nullable } from 'superstruct';
-import { fromB58, toB64, toHEX } from '@benfen/bcs';
+import { fromB58, toB64, toHEX } from '../bcs/src/index.js';
 import type { SerializedSignature } from '../cryptography/signature.js';
 import type { Connection } from '../rpc/connection.js';
 import { devnetConnection } from '../rpc/connection.js';

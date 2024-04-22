@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { splitGenericParameters } from '@benfen/bcs';
+import { splitGenericParameters } from '../bcs/src/index.js';
 import type { TypeTag } from '../bcs/index.js';
 import { normalizeSuiAddress } from '../utils/bfc-types.js';
 

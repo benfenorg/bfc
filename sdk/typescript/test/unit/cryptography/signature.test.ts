@@ -12,7 +12,7 @@ import {
 	combinePartialSigs,
 	decodeMultiSig,
 } from '../../../src/cryptography/multisig';
-import { fromB64, toB64 } from '@benfen/bcs';
+import { fromB64, toB64 } from '../../../src/bcs/index.js';
 import { PublicKey } from '../../../src/cryptography/publickey';
 import { Ed25519Keypair, Ed25519PublicKey } from '../../../src/keypairs/ed25519';
 import { Secp256k1Keypair } from '../../../src/keypairs/secp256k1';

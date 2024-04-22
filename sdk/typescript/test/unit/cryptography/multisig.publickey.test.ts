@@ -23,7 +23,7 @@ import {
 	SIGNATURE_SCHEME_TO_FLAG,
 } from '../../../src/cryptography/signature';
 import { builder } from '../../../src/builder/bcs.js';
-import { fromB64 } from '@benfen/bcs';
+import { fromB64 } from '../../../src/bcs/index.js';
 
 describe('Publickey', () => {
 	let k1: Ed25519Keypair,

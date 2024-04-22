@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { BCS } from '@benfen/bcs';
-import { bcs } from '@benfen/bfc.js/bcs';
+import { bcs, BCS } from '@benfen/bfc.js/bcs';
 
 export const zkBcs = new BCS(bcs);
 

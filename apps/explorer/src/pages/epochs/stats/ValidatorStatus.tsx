@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { getRefGasPrice } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState } from '@benfen/bfc.js/dapp-kit';
 import { Heading, Text } from '@mysten/ui';
 import { useMemo } from 'react';
 

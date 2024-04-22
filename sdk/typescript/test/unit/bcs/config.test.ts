@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { BCS, getRustConfig, getSuiMoveConfig } from '../src/index';
-import { serde } from './utils';
+import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { serde } from './utils.js';
 
 describe('BCS: Config', () => {
 	it('should work with Rust config', () => {

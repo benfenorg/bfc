@@ -3,8 +3,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { chunkArray } from '../utils/chunkArray';
-import { SuiObjectDataOptions } from '@benfen/bfc.js/src/client';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { SuiObjectDataOptions } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 
 export function useMultiGetObjects(
 	ids: string[],

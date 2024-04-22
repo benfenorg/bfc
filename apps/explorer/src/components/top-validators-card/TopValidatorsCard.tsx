@@ -3,7 +3,7 @@
 
 import { type SuiValidatorSummary } from '@benfen/bfc.js/client';
 import { useGetValidatorsEvents, useGetValidatorsApy } from '@mysten/core';
-import { useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState } from '@benfen/bfc.js/dapp-kit';
 import { ArrowRight12 } from '@mysten/icons';
 import { Text } from '@mysten/ui';
 import { useMemo } from 'react';

@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SuiClientProvider } from '@benfen/bfc.js/dapp-kit';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/red-hat-mono';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { RpcClientContext } from '@mysten/core';
-import { SuiClientProvider } from '@mysten/dapp-kit';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Fragment, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

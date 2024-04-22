@@ -81,7 +81,7 @@ import {
 	isValidSuiObjectId,
 	normalizeSuiAddress,
 } from '../utils/bfc-types.js';
-import { fromB58, toB64, toHEX } from '@benfen/bcs';
+import { fromB58, toB64, toHEX } from '../bcs/src/index.js';
 import { sui2BfcAddress } from '../utils/format.js';
 import type { TransactionBlock } from '../builder/index.js';
 import { isTransactionBlock } from '../builder/index.js';

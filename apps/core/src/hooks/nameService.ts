@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useQuery } from '@tanstack/react-query';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 
 const SUI_NS_FEATURE_FLAG = 'suins';

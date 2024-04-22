@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { BCS, fromB64, getSuiMoveConfig } from './../src/index';
+import { BCS, fromB64, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 
 describe('BCS: Primitives', () => {
 	it('should de/ser primitives: u8', () => {

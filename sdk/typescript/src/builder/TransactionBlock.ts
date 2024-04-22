@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64 } from '@benfen/bcs';
+import { fromB64 } from '../bcs/src/index.js';
 import { is, mask } from 'superstruct';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
-import type { CoinStruct, SuiObjectResponse } from '../types/index.js';
+import type { SuiObjectResponse } from '../types/index.js';
 import {
 	extractMutableReference,
 	extractStructTag,
@@ -30,6 +30,7 @@ import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client
 import { sui2BfcAddress } from '../utils/format.js';
 import { normalizeSuiObjectId } from '../utils/bfc-types.js';
 import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
+import { SUI_TYPE_ARG } from '../framework/framework.js';
 
 type TransactionResult = TransactionArgument & TransactionArgument[];
 
@@ -450,8 +451,8 @@ export class TransactionBlock {
 
 	// The current default is just picking _all_ coins we can which may not be ideal.
 	async #prepareGasPayment(options: BuildOptions) {
+		const maxGasObjects = this.#getConfig('maxGasObjects', options);
 		if (this.#blockData.gasConfig.payment) {
-			const maxGasObjects = this.#getConfig('maxGasObjects', options);
 			if (this.#blockData.gasConfig.payment.length > maxGasObjects) {
 				throw new Error(`Payment objects exceed maximum amount: ${maxGasObjects}`);
 			}
@@ -464,22 +465,13 @@ export class TransactionBlock {
 
 		const gasOwner = this.#blockData.gasConfig.owner ?? this.#blockData.sender;
 
-		const coins: CoinStruct[] = [];
-		let cursor: string | undefined = undefined;
+		const bfcCoins = await expectClient(options).getCoins({
+			owner: gasOwner!,
+			coinType: SUI_TYPE_ARG,
+			limit: maxGasObjects,
+		});
 
-		for (;;) {
-			const temp = await expectClient(options).getCoins({
-				owner: gasOwner!,
-				cursor,
-			});
-			coins.push(...temp.data);
-			if (!temp.nextCursor) {
-				break;
-			}
-			cursor = temp.nextCursor;
-		}
-
-		const paymentCoins = coins
+		const paymentCoins = bfcCoins.data
 			// Filter out coins that are also used as input:
 			.filter((coin) => {
 				const matchingInput = this.#blockData.inputs.find((input) => {
@@ -499,7 +491,7 @@ export class TransactionBlock {
 
 				return !matchingInput;
 			})
-			.slice(0, this.#getConfig('maxGasObjects', options) - 1)
+			.slice(0, maxGasObjects - 1)
 			.map((coin) => ({
 				objectId: coin.coinObjectId,
 				digest: coin.digest,

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useAllBalances } from '@mysten/dapp-kit';
+import { useAllBalances } from '@benfen/bfc.js/dapp-kit';
 import { type CoinBalance } from '@benfen/bfc.js/client';
 import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
 import { Heading, Text, LoadingIndicator } from '@mysten/ui';

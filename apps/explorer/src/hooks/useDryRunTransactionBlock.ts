@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type TransactionBlock } from '@benfen/bfc.js/transactions';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useWalletKit } from '@benfen/wallet-kit';
 import { useCallback } from 'react';
 

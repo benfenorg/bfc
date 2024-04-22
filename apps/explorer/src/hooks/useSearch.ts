@@ -11,7 +11,7 @@ import {
 	formatDigest,
 } from '@benfen/bfc.js/utils';
 import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useLatestSuiSystemState, useSuiClient } from '@mysten/dapp-kit';
+import { useLatestSuiSystemState, useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);

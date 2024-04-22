@@ -21,7 +21,7 @@ import {
 	type SuiSignTransactionBlockMethod,
 	type SuiSignMessageMethod,
 	BFC_MAINNET_CHAIN,
-} from '@benfen/wallet-standard';
+} from '@benfen/bfc.js/wallet-standard';
 import mitt, { type Emitter } from 'mitt';
 import { filter, map, type Observable } from 'rxjs';
 

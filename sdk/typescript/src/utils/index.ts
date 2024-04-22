@@ -17,7 +17,7 @@ import {
 	strToHex,
 } from './bfc-types.js';
 
-export { fromB64, toB64 } from '@benfen/bcs';
+export { fromB64, toB64 } from '../bcs/src/index.js';
 export { is, assert } from 'superstruct';
 
 export {

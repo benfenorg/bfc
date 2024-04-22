@@ -10,7 +10,7 @@ import {
 	useGetKioskContents,
 	useGetObject,
 } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { take } from '@mysten/kiosk';
 import { useMutation } from '@tanstack/react-query';
 

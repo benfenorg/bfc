@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useLatestCheckpointSequenceNumber } from '@mysten/dapp-kit';
+import { useLatestCheckpointSequenceNumber } from '@benfen/bfc.js/dapp-kit';
 import { ArrowRight12 } from '@mysten/icons';
 import { Text } from '@mysten/ui';
 import { useMemo, useState } from 'react';

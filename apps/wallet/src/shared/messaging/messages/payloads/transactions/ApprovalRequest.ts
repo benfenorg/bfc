@@ -4,7 +4,7 @@
 import {
 	type SuiSignAndExecuteTransactionBlockInput,
 	type SuiSignMessageOutput,
-} from '@benfen/wallet-standard';
+} from '@benfen/bfc.js/wallet-standard';
 
 import type { SignedTransaction } from '@benfen/bfc.js';
 import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';

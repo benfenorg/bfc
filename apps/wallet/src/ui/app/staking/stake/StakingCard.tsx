@@ -4,7 +4,7 @@
 import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { Popover } from '@headlessui/react';
 import { useCoinMetadata, useGetSystemState, useGetAllBalances } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { ArrowLeft16 } from '@mysten/icons';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Formik } from 'formik';

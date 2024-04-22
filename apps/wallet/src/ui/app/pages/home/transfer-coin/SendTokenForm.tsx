@@ -3,6 +3,7 @@
 
 import { Coin as CoinAPI } from '@benfen/bfc.js';
 import { type CoinStruct } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import {
 	useCoinMetadata,
@@ -11,7 +12,6 @@ import {
 	isSuiNSName,
 	useSuiNSEnabled,
 } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
 import { useQuery } from '@tanstack/react-query';
 import cl from 'classnames';

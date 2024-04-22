@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { BCS, fromB64 } from '@benfen/bcs';
+import { BCS, fromB64 } from '../bcs/src/index.js';
 import type { Infer, Struct } from 'superstruct';
 import {
 	is,

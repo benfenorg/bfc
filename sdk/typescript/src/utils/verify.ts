@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64 } from '@benfen/bcs';
+import { fromB64 } from '../bcs/src/index.js';
 import { IntentScope } from '../cryptography/intent.js';
 import { messageWithIntent } from '../cryptography/intent.js';
 import type { SerializedSignature } from '../cryptography/signature.js';

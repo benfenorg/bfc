@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { TypeName } from '@benfen/bcs';
-import { BCS } from '@benfen/bcs';
+import type { TypeName } from '../bcs/src/index.js';
+import { BCS } from '../bcs/src/index.js';
 import { bcs } from '../bcs/index.js';
 import type { TypeTag } from '../bcs/index.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';

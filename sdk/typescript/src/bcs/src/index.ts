@@ -11,8 +11,8 @@
  * @property {BcsReader}
  */
 
-import { toB64, fromB64 } from './b64';
-import { toHEX, fromHEX } from './hex';
+import { toB64, fromB64 } from './b64.js';
+import { toHEX, fromHEX } from './hex.js';
 import bs58 from 'bs58';
 import sha256 from 'fast-sha256';
 

@@ -4,7 +4,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { roundFloat } from '../utils/roundFloat';
-import { useSuiClient, useLatestSuiSystemState } from '@mysten/dapp-kit';
+import { useSuiClient, useLatestSuiSystemState } from '@benfen/bfc.js/dapp-kit';
 
 // recentEpochRewards is list of the last 30 epoch rewards for a specific validator
 // APY_e = (1 + epoch_rewards / stake)^365-1

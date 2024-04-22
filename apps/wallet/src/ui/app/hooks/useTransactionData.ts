@@ -4,7 +4,7 @@
 import { SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useFormatCoin } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 export function useTransactionData(sender?: string | null, transaction?: TransactionBlock | null) {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CoinFormat, formatBalance } from '@mysten/core';
-import { useReferenceGasPrice } from '@mysten/dapp-kit';
+import { useReferenceGasPrice } from '@benfen/bfc.js/dapp-kit';
 import { Heading } from '@mysten/ui';
 
 import { FormattedStatsAmount, StatsWrapper } from './FormattedStatsAmount';

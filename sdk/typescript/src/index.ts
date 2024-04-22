@@ -203,7 +203,7 @@ export {
 	fromB64,
 	/** @deprecated Import from @benfen/bfc.js/utils instead */
 	toB64,
-} from '@benfen/bcs';
+} from './bcs/src/index.js';
 
 export {
 	/** @deprecated Import from @benfen/bfc.js/utils instead */

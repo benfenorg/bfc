@@ -6,7 +6,7 @@ import type { ExportedKeypair } from '../../cryptography/keypair.js';
 import { Ed25519PublicKey } from './publickey.js';
 import { isValidHardenedPath, mnemonicToSeedHex } from '../../cryptography/mnemonics.js';
 import { derivePath } from './ed25519-hd-key.js';
-import { toB64 } from '@benfen/bcs';
+import { toB64 } from '../../bcs/src/index.js';
 import type { SignatureScheme } from '../../cryptography/signature.js';
 import { PRIVATE_KEY_SIZE, Keypair } from '../../cryptography/keypair.js';
 

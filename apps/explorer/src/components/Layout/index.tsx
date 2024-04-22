@@ -3,7 +3,7 @@
 
 import { WalletKitProvider } from '@benfen/wallet-kit';
 import { useCookieConsentBanner } from '@mysten/core';
-import { SuiClientProvider } from '@mysten/dapp-kit';
+import { SuiClientProvider } from '@benfen/bfc.js/dapp-kit';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Fragment } from 'react';
 import { resolveValue, Toaster, type ToastType } from 'react-hot-toast';

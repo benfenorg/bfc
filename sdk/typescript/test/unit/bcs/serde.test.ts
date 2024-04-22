@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
-import { SUI_ADDRESS_LENGTH } from '../../typescript/src';
-import { BCS, getSuiMoveConfig } from './../src/index';
+import { SUI_ADDRESS_LENGTH } from '../../../src/index.js';
+import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 
 describe('BCS: Serde', () => {
 	it('should serialize primitives in both directions', () => {

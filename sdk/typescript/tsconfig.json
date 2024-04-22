@@ -8,6 +8,5 @@
 		"jsx": "react-jsx",
 		"isolatedModules": true,
 		"types": ["vitest/globals"]
-	},
-	"references": [{ "path": "../bcs" }]
+	}
 }

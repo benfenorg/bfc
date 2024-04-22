@@ -3,7 +3,7 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 
 const MAX_PAGE_SIZE = 10;
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { ReadonlyWalletAccount, type Wallet, getWallets } from '@benfen/wallet-standard';
+import { ReadonlyWalletAccount, type Wallet, getWallets } from '@benfen/bfc.js/wallet-standard';
 import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
