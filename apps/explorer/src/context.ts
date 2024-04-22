@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type CoinBalance } from '@benfen/bfc.js';
 import {
 	type ProposalRecordWithStatus,
 	type BfcDao,
@@ -8,8 +9,7 @@ import {
 	type VotingBfc,
 	ProposalStatus,
 } from '@benfen/bfc.js/client';
-import { type CoinBalance } from '@benfen/bfc.js/types';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { useGetCoinBalance } from '@mysten/core';
 import * as Sentry from '@sentry/react';
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo } from 'react';

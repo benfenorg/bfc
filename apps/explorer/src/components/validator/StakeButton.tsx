@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@benfen/wallet-kit';
+import { ConnectButton, useWalletKit, type WalletWithFeatures } from '@benfen/bfc.js';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { Button } from '@mysten/ui';
 import { useParams } from 'react-router-dom';

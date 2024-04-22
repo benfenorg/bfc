@@ -10,7 +10,7 @@ import {
 import { humanReadableToBfcDigits, hexToString, strToHex } from '@benfen/bfc.js/utils';
 import { useZodForm } from '@mysten/core';
 import { Button } from '@mysten/ui';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { Controller } from 'react-hook-form';

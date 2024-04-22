@@ -7,7 +7,7 @@ import {
 	getExecutionStatusType,
 	getTransactionDigest,
 } from '@benfen/bfc.js';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { useZodForm } from '@mysten/core';
 import { Button } from '@mysten/ui';
 import { useMutation } from '@tanstack/react-query';

@@ -9,7 +9,7 @@ import {
 } from '@benfen/bfc.js';
 import { useZodForm } from '@mysten/core';
 import { Button } from '@mysten/ui';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { useMutation } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useContext } from 'react';

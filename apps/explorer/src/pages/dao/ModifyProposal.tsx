@@ -10,7 +10,7 @@ import {
 import { ProposalStatus } from '@benfen/bfc.js/client';
 import { useZodForm } from '@mysten/core';
 import { Button } from '@mysten/ui';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { useMutation } from '@tanstack/react-query';
 import { useContext, useMemo } from 'react';
 import { Controller } from 'react-hook-form';

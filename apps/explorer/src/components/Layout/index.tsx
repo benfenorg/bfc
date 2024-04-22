@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletKitProvider } from '@benfen/wallet-kit';
+import { WalletKitProvider } from '@benfen/bfc.js';
 import { useCookieConsentBanner } from '@mysten/core';
 import { SuiClientProvider } from '@benfen/bfc.js/dapp-kit';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { ProposalStatus } from '@benfen/bfc.js/client';
 import { bfcDigitsToHumanReadable, hexToString } from '@benfen/bfc.js/utils';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { Heading, Button } from '@mysten/ui';
 import dayjs from 'dayjs';
 import { useContext } from 'react';

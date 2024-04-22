@@ -13,6 +13,10 @@ import {
 // all exports deprecated, non-deprecated imports exported separately below
 export * from './types/index.js';
 
+export * from './wallet-kit/index.js';
+export * from './wallet-standard/index.js';
+export * from './dapp-kit/index.js';
+
 export {
 	/** @deprecated Import from `@benfen/bfc.js/keypairs/ed5519` instead */
 	type Ed25519KeypairData,

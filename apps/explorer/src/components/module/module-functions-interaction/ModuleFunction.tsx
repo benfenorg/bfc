@@ -6,7 +6,7 @@ import { TransactionBlock, getPureSerializationType } from '@benfen/bfc.js/trans
 import { useZodForm } from '@mysten/core';
 import { ArrowRight12 } from '@mysten/icons';
 import { Button } from '@mysten/ui';
-import { useWalletKit, ConnectButton } from '@benfen/wallet-kit';
+import { useWalletKit, ConnectButton } from '@benfen/bfc.js';
 import { useMutation } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { useMemo } from 'react';

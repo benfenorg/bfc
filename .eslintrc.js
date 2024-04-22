@@ -73,7 +73,7 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ['sdk/typescript/src/**/*', 'sdk/dapp-kit/**/*'],
+			files: ['sdk/typescript/src/**/*'],
 			rules: {
 				'require-extensions/require-extensions': 'error',
 				'require-extensions/require-index': 'error',

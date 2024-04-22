@@ -18,16 +18,10 @@
 		"baseUrl": ".",
 		"paths": {
 			"~/*": ["./src/*"],
-			"@benfen/bfc.js/transactions": ["../../sdk/typescript/src/builder/export.ts"],
 			"@benfen/bfc.js/*": ["../../sdk/typescript/src/*"],
 			"@benfen/bfc.js": ["../../sdk/typescript/src/"],
-			"@benfen/bfc.js/dapp-kit": ["../../sdk/dapp-kit/src/"]
 		}
 	},
 	"include": ["src", "tests"],
-	"references": [
-		{ "path": "../../sdk/typescript/" },
-		{ "path": "../../sdk/kiosk/" },
-		{ "path": "../../sdk/wallet-kit/react/" }
-	]
+	"references": [{ "path": "../../sdk/typescript/" }, { "path": "../../sdk/kiosk/" }]
 }

@@ -19,7 +19,6 @@
 	"exclude": ["node_modules"],
 	"references": [
 		{ "path": "../../sdk/typescript/" },
-		{ "path": "../../sdk/dapp-kit" },
 		{ "path": "../../sdk/kiosk" }
 	]
 }

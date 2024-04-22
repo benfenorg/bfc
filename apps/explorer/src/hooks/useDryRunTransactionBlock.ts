@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { useWalletKit } from '@benfen/wallet-kit';
+import { useWalletKit } from '@benfen/bfc.js';
 import { useCallback } from 'react';
 
 export const useDryRunTransactionBlock = () => {
