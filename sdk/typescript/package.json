@@ -2,7 +2,7 @@
 	"name": "@benfen/bfc.js",
 	"author": "OpenBlock<developers@benfen.org>",
 	"description": "BenFen TypeScript API(Work in Progress)",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"license": "Apache-2.0",
 	"files": [
 		"CHANGELOG.md",
@@ -157,7 +157,6 @@
 		"@headlessui/react": "^1.7.15",
 		"@iarna/toml": "^2.2.5",
 		"@size-limit/preset-small-lib": "^8.2.6",
-		"@stitches/react": "^1.2.8",
 		"@tanstack/react-query": "^4.29.25",
 		"@testing-library/dom": "^9.3.1",
 		"@testing-library/jest-dom": "^5.17.0",
@@ -168,8 +167,6 @@
 		"@types/react": "^18.2.15",
 		"@types/testing-library__jest-dom": "^5.14.9",
 		"@types/tmp": "^0.2.3",
-		"@wallet-standard/core": "^1.0.3",
-		"bs58": "^5.0.0",
 		"cross-env": "^7.0.3",
 		"msw": "^1.2.2",
 		"react": "^18.2.0",
@@ -190,15 +187,19 @@
 		"@open-rpc/client-js": "^1.8.1",
 		"@scure/bip32": "^1.3.1",
 		"@scure/bip39": "^1.2.1",
+		"@stitches/react": "^1.2.8",
 		"@suchipi/femver": "^1.0.0",
+		"@wallet-standard/core": "^1.0.3",
 		"bignumber.js": "^9.1.1",
+		"bs58": "^5.0.0",
 		"events": "^3.3.0",
 		"fast-sha256": "^1.3.0",
 		"superstruct": "^1.0.3",
 		"tweetnacl": "^1.0.3"
 	},
 	"peerDependencies": {
-		"@tanstack/react-query": "^4.0.0",
+		"@headlessui/react": "*",
+		"@tanstack/react-query": "*",
 		"react": "*"
 	}
 }
