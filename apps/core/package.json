@@ -26,7 +26,6 @@
 		"@amplitude/analytics-types": "^0.20.0",
 		"@growthbook/growthbook-react": "^0.15.0",
 		"@hookform/resolvers": "^3.1.1",
-		"@benfen/dapp-kit": "workspace:*",
 		"@mysten/kiosk": "workspace:*",
 		"@benfen/bfc.js": "workspace:*",
 		"@sentry/react": "^7.59.2",

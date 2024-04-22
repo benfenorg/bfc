@@ -12,6 +12,7 @@
 		"builder",
 		"client",
 		"cryptography",
+		"dapp-kit",
 		"dist",
 		"faucet",
 		"keypairs",
@@ -19,7 +20,10 @@
 		"src",
 		"transactions",
 		"utils",
-		"verify"
+		"verify",
+		"wallet-kit",
+		"wallet-kit-core",
+		"wallet-standard"
 	],
 	"engines": {
 		"node": ">=16"
@@ -88,6 +92,26 @@
 			"source": "./src/verify/index.ts",
 			"import": "./dist/esm/verify/index.js",
 			"require": "./dist/cjs/verify/index.js"
+		},
+		"./dapp-kit": {
+			"source": "./src/dapp-kit/index.ts",
+			"import": "./dist/esm/dapp-kit/index.js",
+			"require": "./dist/cjs/dapp-kit/index.js"
+		},
+		"./wallet-standard": {
+			"source": "./src/wallet-standard/index.ts",
+			"import": "./dist/esm/wallet-standard/index.js",
+			"require": "./dist/cjs/wallet-standard/index.js"
+		},
+		"./wallet-kit-core": {
+			"source": "./src/wallet-kit-core/index.ts",
+			"import": "./dist/esm/wallet-kit-core/index.js",
+			"require": "./dist/cjs/wallet-kit-core/index.js"
+		},
+		"./wallet-kit": {
+			"source": "./src/wallet-kit/index.ts",
+			"import": "./dist/esm/wallet-kit/index.js",
+			"require": "./dist/cjs/wallet-kit/index.js"
 		}
 	},
 	"scripts": {
@@ -129,13 +153,25 @@
 		}
 	],
 	"devDependencies": {
-		"@iarna/toml": "^2.2.5",
 		"@benfen/build-scripts": "workspace:*",
+		"@headlessui/react": "^1.7.15",
+		"@iarna/toml": "^2.2.5",
 		"@size-limit/preset-small-lib": "^8.2.6",
+		"@stitches/react": "^1.2.8",
+		"@tanstack/react-query": "^4.29.25",
+		"@testing-library/dom": "^9.3.1",
+		"@testing-library/jest-dom": "^5.17.0",
+		"@testing-library/react": "^14.0.0",
+		"@testing-library/user-event": "^14.4.3",
+		"@types/jest": "^29.5.12",
 		"@types/node": "^20.4.2",
+		"@types/react": "^18.2.15",
+		"@types/testing-library__jest-dom": "^5.14.9",
 		"@types/tmp": "^0.2.3",
+		"@wallet-standard/core": "^1.0.3",
 		"cross-env": "^7.0.3",
 		"msw": "^1.2.2",
+		"react": "^18.2.0",
 		"size-limit": "^8.2.6",
 		"tmp": "^0.2.1",
 		"ts-retry-promise": "^0.7.0",
@@ -160,5 +196,9 @@
 		"fast-sha256": "^1.3.0",
 		"superstruct": "^1.0.3",
 		"tweetnacl": "^1.0.3"
+	},
+	"peerDependencies": {
+		"@tanstack/react-query": "^4.0.0",
+		"react": "*"
 	}
 }
