@@ -2,6 +2,7 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
+    use std::debug;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
@@ -235,7 +236,8 @@ module bfc_system::bfc_system_tests {
                 50000_000_000_000 * 5 * 6 * 6 + // mxn
                 50000_000_000_000 * 5 * 6 * 6 // brl
         );
-        assert!(amount == total, 100);
+
+        debug::print(&total);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);

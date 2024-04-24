@@ -97,7 +97,7 @@ module bfc_system::test_utils {
             let required_bfc = treasury::next_epoch_bfc_required(&t);
             debug::print(&string(b"require bfc"));
             debug::print(&required_bfc);
-            let bfc = balance::create_for_testing<BFC>(required_bfc);
+            let bfc = balance::create_for_testing<BFC>(required_bfc * 2);
             treasury::deposit(&mut t, coin::from_balance(bfc, test_scenario::ctx(scenario_val)));
             test_scenario::return_shared(t);
         };

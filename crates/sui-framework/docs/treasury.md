@@ -898,25 +898,25 @@ Rebalance
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">next_epoch_bfc_required</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): u64 {
-    <b>let</b> times_per_day = (3600 * 24 / _treasury.time_interval <b>as</b> u64);
+    <b>let</b> treasury_total_bfc_supply = _treasury.total_bfc_supply;
 
-    <b>let</b> total = <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BUSD&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;MGG&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BJPY&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BAUD&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BKRW&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BBRL&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BCAD&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BEUR&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BGBP&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BIDR&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BINR&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BRUB&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BSAR&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BTRY&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BZAR&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BMXN&gt;(_treasury, times_per_day) +
-        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BARS&gt;(_treasury, times_per_day);
+    <b>let</b> total = <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BUSD&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;MGG&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BJPY&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BAUD&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BKRW&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BBRL&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BCAD&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BEUR&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BGBP&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BIDR&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BINR&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BRUB&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BSAR&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BTRY&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BZAR&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BMXN&gt;(_treasury, treasury_total_bfc_supply) +
+        <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BARS&gt;(_treasury, treasury_total_bfc_supply);
 
     <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
     <b>if</b> (total &gt; get_treasury_balance) {
@@ -1152,7 +1152,7 @@ Rebalance
 
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _times_per_day: u64): u64
+<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _treasury_total_bfc_supply: u64): u64
 </code></pre>
 
 
@@ -1163,11 +1163,11 @@ Rebalance
 
 <pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(
     _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
-    _times_per_day: u64
+    _treasury_total_bfc_supply: u64
 ): u64 {
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
     <b>if</b> (<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, key)) {
-        <a href="vault.md#0xc8_vault_bfc_required">vault::bfc_required</a>(<a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, key)) * _times_per_day
+        <a href="vault.md#0xc8_vault_bfc_required">vault::bfc_required</a>(<a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, key), _treasury_total_bfc_supply)
     } <b>else</b> {
         0
     }
