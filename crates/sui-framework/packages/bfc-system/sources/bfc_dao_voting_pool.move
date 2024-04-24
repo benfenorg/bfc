@@ -13,6 +13,10 @@ module bfc_system::voting_pool {
 
 
     friend bfc_system::bfc_dao;
+
+    #[test_only]
+    friend bfc_system::bfc_dao_voting_pool_test;
+
     //friend bfc_system::bfc_dao_voting_pool_test;
     /// votingBfc objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 bfc

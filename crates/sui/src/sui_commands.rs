@@ -17,7 +17,6 @@ use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 use std::collections::HashMap;
-use std::net::SocketAddr;
 use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
 use sui_config::p2p::SeedPeer;
 use sui_genesis_builder::Builder;
