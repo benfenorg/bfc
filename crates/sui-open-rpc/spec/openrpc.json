@@ -5675,42 +5675,19 @@
         "description": "global DAO info of the specified token type `Token`.",
         "type": "object",
         "required": [
-          "id",
           "next_action_id",
-          "next_proposal_id",
-          "proposal_create_event",
-          "vote_changed_event"
+          "next_proposal_id"
         ],
         "properties": {
-          "id": {
-            "$ref": "#/components/schemas/UID"
-          },
           "next_action_id": {
             "type": "integer",
             "format": "uint64",
             "minimum": 0.0
           },
           "next_proposal_id": {
-            "description": "next proposal id.",
             "type": "integer",
             "format": "uint64",
             "minimum": 0.0
-          },
-          "proposal_create_event": {
-            "description": "proposal creating event.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProposalCreatedEvent"
-              }
-            ]
-          },
-          "vote_changed_event": {
-            "description": "voting event.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/VoteChangedEvent"
-              }
-            ]
           }
         }
       },
@@ -7951,30 +7928,6 @@
           },
           "proposal": {
             "$ref": "#/components/schemas/ProposalInfo"
-          }
-        }
-      },
-      "ProposalCreatedEvent": {
-        "description": "emitted when proposal created.",
-        "type": "object",
-        "required": [
-          "proposal_id",
-          "proposer"
-        ],
-        "properties": {
-          "proposal_id": {
-            "description": "the proposal id.",
-            "type": "integer",
-            "format": "uint64",
-            "minimum": 0.0
-          },
-          "proposer": {
-            "description": "proposer is the user who create the proposal.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ObjectID"
-              }
-            ]
           }
         }
       },
@@ -10884,51 +10837,6 @@
           },
           "epoch": {
             "$ref": "#/components/schemas/BigInt_for_uint64"
-          }
-        }
-      },
-      "VoteChangedEvent": {
-        "description": "emitted when user vote/revoke_vote.",
-        "type": "object",
-        "required": [
-          "agree",
-          "proposal_id",
-          "proposer",
-          "vote",
-          "voter"
-        ],
-        "properties": {
-          "agree": {
-            "description": "agree with the proposal or not",
-            "type": "boolean"
-          },
-          "proposal_id": {
-            "description": "the proposal id.",
-            "type": "integer",
-            "format": "uint64",
-            "minimum": 0.0
-          },
-          "proposer": {
-            "description": "creator of the proposal.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ObjectID"
-              }
-            ]
-          },
-          "vote": {
-            "description": "latest vote count of the voter.",
-            "type": "integer",
-            "format": "uint64",
-            "minimum": 0.0
-          },
-          "voter": {
-            "description": "the voter.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ObjectID"
-              }
-            ]
           }
         }
       },
