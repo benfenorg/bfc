@@ -2,6 +2,7 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
+    use std::vector;
     use std::debug;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
@@ -16,6 +17,7 @@ module bfc_system::bfc_system_tests {
     use sui::vec_map::{Self};
 
     use bfc_system::bfc_system;
+    use bfc_system::busd::BUSD;
     use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::test_utils;
     use bfc_system::bfc_system_state_inner;
@@ -279,6 +281,19 @@ module bfc_system::bfc_system_tests {
 
         let new_balance = bfc_system::treasury_balance(&system_state);
         assert!(new_balance == amount, 3);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_fetch_positions() {
+        let scenario_val = setup();
+        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let positons = bfc_system::vault_positions<BUSD>(&system_state);
+
+        assert!(vector::length(&positons) == 9, 300);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
