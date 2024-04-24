@@ -6,7 +6,7 @@ module bfc_system::treasury {
     use sui::balance::{Self, Balance, Supply};
     use sui::bfc::BFC;
     use sui::clock::{Self, Clock};
-    use sui::coin::{Self, Coin};
+    use sui::coin::{Self, Coin, value};
     use sui::dynamic_field;
     use sui::object::{Self, UID};
     use sui::transfer;
@@ -417,7 +417,8 @@ module bfc_system::treasury {
     public(friend) fun rebalance(
         _treasury: &mut Treasury,
         _pool_balance: u64,
-        clock: &Clock,
+        _update: bool,
+        _clock: &Clock,
         _ctx: &mut TxContext,
     ) {
         // check init
@@ -425,15 +426,11 @@ module bfc_system::treasury {
             return
         };
 
-        // check time_interval
-        let current_ts = clock::timestamp_ms(clock) / 1000;
-        if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
-            return
-        };
+        let current_ts = clock::timestamp_ms(_clock) / 1000;
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        let bfc_in_vault = rebalance_internal(_treasury, true, _ctx);
+        let bfc_in_vault = rebalance_internal(_treasury, _update, _ctx);
         _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + balance::value(&_treasury.bfc_balance);
     }
 
@@ -518,6 +515,9 @@ module bfc_system::treasury {
         );
         if (_update) {
             vault::update_state(mut_v);
+            if (!vault::is_rebalance_cond(mut_v)) {
+                return vault::last_bfc_rebalance_amount(mut_v)
+            }
         };
 
         // first rebalance just place liquidity not change vault state

@@ -120,7 +120,7 @@ module bfc_system::test_utils {
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
 
         let t = test_scenario::take_shared<Treasury>(scenario_val);
-        treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(scenario_val));
+        treasury::rebalance(&mut t, 0, false, &c, test_scenario::ctx(scenario_val));
 
         clock::destroy_for_testing(c);
         test_scenario::return_shared(t);

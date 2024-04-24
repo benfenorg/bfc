@@ -355,7 +355,7 @@ module bfc_system::bfc_system_state_inner {
             };
         };
         let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
-        treasury::rebalance(&mut self.treasury, pool_balance, clock, ctx);
+        treasury::rebalance(&mut self.treasury, pool_balance, true, clock, ctx);
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 

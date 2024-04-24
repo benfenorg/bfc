@@ -993,7 +993,7 @@ Rebalance
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance">rebalance</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pool_balance: u64, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance">rebalance</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pool_balance: u64, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1005,7 +1005,7 @@ Rebalance
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance">rebalance</a>(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _pool_balance: u64,
-    <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
+    _clock: &Clock,
     _ctx: &<b>mut</b> TxContext,
 ) {
     // check init
@@ -1014,7 +1014,7 @@ Rebalance
     };
 
     // check time_interval
-    <b>let</b> current_ts = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) / 1000;
+    <b>let</b> current_ts = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(_clock) / 1000;
     <b>if</b> ((current_ts - _treasury.updated_at) &lt; (_treasury.time_interval <b>as</b> u64)) {
         <b>return</b>
     };
@@ -1185,6 +1185,9 @@ Rebalance
     );
     <b>if</b> (_update) {
         <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(mut_v);
+        <b>if</b> (!<a href="vault.md#0xc8_vault_check_rebalance_cond">vault::check_rebalance_cond</a>(mut_v)) {
+            <b>return</b> 0;
+        }
     };
 
     // first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
