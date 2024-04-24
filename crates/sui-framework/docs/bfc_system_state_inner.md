@@ -981,7 +981,7 @@ X-treasury
         };
     };
     <b>let</b> pool_balance = <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">treasury_pool::get_balance</a>(&self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
-    <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+    <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <b>true</b>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
     self.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>

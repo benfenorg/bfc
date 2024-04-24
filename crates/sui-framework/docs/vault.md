@@ -43,7 +43,8 @@
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
--  [Function `check_rebalance_cond`](#0xc8_vault_check_rebalance_cond)
+-  [Function `is_rebalance_cond`](#0xc8_vault_is_rebalance_cond)
+-  [Function `last_bfc_rebalance_amount`](#0xc8_vault_last_bfc_rebalance_amount)
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
 -  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
@@ -2086,13 +2087,13 @@ vault info
 
 </details>
 
-<a name="0xc8_vault_check_rebalance_cond"></a>
+<a name="0xc8_vault_is_rebalance_cond"></a>
 
-## Function `check_rebalance_cond`
+## Function `is_rebalance_cond`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_check_rebalance_cond">check_rebalance_cond</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_is_rebalance_cond">is_rebalance_cond</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): bool
 </code></pre>
 
 
@@ -2101,8 +2102,32 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_check_rebalance_cond">check_rebalance_cond</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): bool {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_is_rebalance_cond">is_rebalance_cond</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): bool {
     _vault.state_counter &gt;= _vault.max_counter_times
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_last_bfc_rebalance_amount"></a>
+
+## Function `last_bfc_rebalance_amount`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+    _vault.last_bfc_rebalance_amount
 }
 </code></pre>
 
@@ -2563,7 +2588,7 @@ State checker
 ): u64 {
     <b>let</b> (balance0, balance1, ticks) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
     <b>let</b> shape = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
-    <b>if</b> (<a href="vault.md#0xc8_vault_check_rebalance_cond">check_rebalance_cond</a>(_vault)) {
+    <b>if</b> (<a href="vault.md#0xc8_vault_is_rebalance_cond">is_rebalance_cond</a>(_vault)) {
         shape = _vault.state;
         // reset state counter
         _vault.state_counter = 0;

@@ -993,7 +993,7 @@ Rebalance
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance">rebalance</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pool_balance: u64, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance">rebalance</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pool_balance: u64, _update: bool, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1005,6 +1005,7 @@ Rebalance
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance">rebalance</a>(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _pool_balance: u64,
+    _update: bool,
     _clock: &Clock,
     _ctx: &<b>mut</b> TxContext,
 ) {
@@ -1013,15 +1014,11 @@ Rebalance
         <b>return</b>
     };
 
-    // check time_interval
     <b>let</b> current_ts = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(_clock) / 1000;
-    <b>if</b> ((current_ts - _treasury.updated_at) &lt; (_treasury.time_interval <b>as</b> u64)) {
-        <b>return</b>
-    };
 
     // <b>update</b> updated_at
     _treasury.updated_at = current_ts;
-    <b>let</b> bfc_in_vault = <a href="treasury.md#0xc8_treasury_rebalance_internal">rebalance_internal</a>(_treasury, <b>true</b>, _ctx);
+    <b>let</b> bfc_in_vault = <a href="treasury.md#0xc8_treasury_rebalance_internal">rebalance_internal</a>(_treasury, _update, _ctx);
     _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_treasury.bfc_balance);
 }
 </code></pre>
@@ -1185,8 +1182,8 @@ Rebalance
     );
     <b>if</b> (_update) {
         <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(mut_v);
-        <b>if</b> (!<a href="vault.md#0xc8_vault_check_rebalance_cond">vault::check_rebalance_cond</a>(mut_v)) {
-            <b>return</b> 0;
+        <b>if</b> (!<a href="vault.md#0xc8_vault_is_rebalance_cond">vault::is_rebalance_cond</a>(mut_v)) {
+            <b>return</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">vault::last_bfc_rebalance_amount</a>(mut_v)
         }
     };
 
