@@ -61,7 +61,6 @@
 -  [Function `set_admins`](#0xc8_bfc_dao_set_admins)
 -  [Function `create_stake_manager_key`](#0xc8_bfc_dao_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_dao_unstake_manager_key)
--  [Function `add_admin`](#0xc8_bfc_dao_add_admin)
 -  [Function `modify_proposal_obj`](#0xc8_bfc_dao_modify_proposal_obj)
 -  [Function `create_voting_bfc`](#0xc8_bfc_dao_create_voting_bfc)
 -  [Function `withdraw_voting`](#0xc8_bfc_dao_withdraw_voting)
@@ -2476,7 +2475,7 @@ Get the proposal state.
     proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
 ): u8  {
-    <b>assert</b>!(proposal.proposal.pid == proposal.proposal.pid, (<a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_ID_MISMATCH">ERR_PROPOSAL_ID_MISMATCH</a>));
+    //<b>assert</b>!(proposal.proposal.pid == proposal.proposal.pid, (<a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_ID_MISMATCH">ERR_PROPOSAL_ID_MISMATCH</a>));
     <b>let</b> current_time =  <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>) ;
     <b>let</b> status = <a href="bfc_dao.md#0xc8_bfc_dao_judge_proposal_state">judge_proposal_state</a>(& proposal.proposal, current_time);
 
@@ -3315,46 +3314,6 @@ set min action delay
 <b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
 <b>aborts_if</b> key.amount != token.principal.value;
 <b>aborts_if</b> key.key_type != 1;
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_dao_add_admin"></a>
-
-## Function `add_admin`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_add_admin">add_admin</a>(new_admin: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_add_admin">add_admin</a>(
-    new_admin:<b>address</b>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_new">bfc_dao_manager::new</a>(new_admin, ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<details>
-<summary>Specification</summary>
-
-
-
-<pre><code><b>aborts_if</b> <b>false</b>;
-<b>aborts_if</b> ctx.ids_created + 1 &gt; MAX_U64;
 </code></pre>
 
 

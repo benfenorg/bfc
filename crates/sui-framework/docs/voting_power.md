@@ -207,7 +207,7 @@ at <code><a href="voting_power.md#0x3_voting_power_MAX_VOTING_POWER">MAX_VOTING_
         <a href="voting_power.md#0x3_voting_power_init_voting_power_info">init_voting_power_info</a>(validators, threshold, stable_rate);
     <a href="voting_power.md#0x3_voting_power_adjust_voting_power">adjust_voting_power</a>(&<b>mut</b> info_list, threshold, remaining_power);
     <a href="voting_power.md#0x3_voting_power_update_voting_power">update_voting_power</a>(validators, info_list);
-    <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(validators);
+    <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(validators, stable_rate);
 }
 </code></pre>
 
@@ -411,7 +411,7 @@ Update validators with the decided voting power.
 Check a few invariants that must hold after setting the voting power.
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(v: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;)
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(v: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;)
 </code></pre>
 
 
@@ -420,7 +420,7 @@ Check a few invariants that must hold after setting the voting power.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(v: &<a href="">vector</a>&lt;Validator&gt;) {
+<pre><code><b>fun</b> <a href="voting_power.md#0x3_voting_power_check_invariants">check_invariants</a>(v: &<a href="">vector</a>&lt;Validator&gt;, stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;) {
     // First check that the total voting power must be <a href="voting_power.md#0x3_voting_power_TOTAL_VOTING_POWER">TOTAL_VOTING_POWER</a>.
     <b>let</b> i = 0;
     <b>let</b> len = <a href="_length">vector::length</a>(v);
@@ -442,8 +442,8 @@ Check a few invariants that must hold after setting the voting power.
         <b>while</b> (b &lt; len) {
             <b>let</b> validator_a = <a href="_borrow">vector::borrow</a>(v, a);
             <b>let</b> validator_b = <a href="_borrow">vector::borrow</a>(v, b);
-            <b>let</b> stake_a = <a href="validator.md#0x3_validator_total_stake">validator::total_stake</a>(validator_a);
-            <b>let</b> stake_b = <a href="validator.md#0x3_validator_total_stake">validator::total_stake</a>(validator_b);
+            <b>let</b> stake_a = <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(validator_a, stable_rate);
+            <b>let</b> stake_b = <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(validator_b, stable_rate);
             <b>let</b> power_a = <a href="validator.md#0x3_validator_voting_power">validator::voting_power</a>(validator_a);
             <b>let</b> power_b = <a href="validator.md#0x3_validator_voting_power">validator::voting_power</a>(validator_b);
             <b>if</b> (stake_a &gt; stake_b) {

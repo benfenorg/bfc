@@ -69,10 +69,10 @@ spec bfc_system::bfc_dao {
         aborts_if false;
         pragma aborts_if_is_partial = true;
     }
-    spec add_admin {
-        aborts_if false;
-        aborts_if ctx.ids_created + 1 > MAX_U64;
-    }
+    // spec add_admin {
+    //     aborts_if false;
+    //     aborts_if ctx.ids_created + 1 > MAX_U64;
+    // }
     spec create_dao {
         aborts_if false;
         pragma aborts_if_is_partial = true;

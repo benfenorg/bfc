@@ -738,7 +738,7 @@ module hello_world::bfc_dao {
         proposal: &Proposal,
         clock: & Clock,
     ): u8  {
-        assert!(proposal.proposal.pid == proposal.proposal.pid, (ERR_PROPOSAL_ID_MISMATCH));
+        //assert!(proposal.proposal.pid == proposal.proposal.pid, (ERR_PROPOSAL_ID_MISMATCH));
         let current_time =  clock::timestamp_ms(clock) ;
         let status = judge_proposal_state(proposal, current_time);
 
@@ -961,13 +961,13 @@ module hello_world::bfc_dao {
 
     }
 
-    public fun add_admin(
-        _: &BFCDaoManageKey,
-        new_admin:address,
-        ctx: &mut TxContext,
-    ) {
-        bfc_dao_manager::new(new_admin, ctx);
-    }
+    // public fun add_admin(
+    //     _: &BFCDaoManageKey,
+    //     new_admin:address,
+    //     ctx: &mut TxContext,
+    // ) {
+    //     bfc_dao_manager::new(new_admin, ctx);
+    // }
 
 
     public fun send_bfc_dao_event(manager_key: &BFCDaoManageKey, msg: vector<u8>) {

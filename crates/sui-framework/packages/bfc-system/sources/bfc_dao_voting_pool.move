@@ -13,6 +13,7 @@ module bfc_system::voting_pool {
 
 
     friend bfc_system::bfc_dao;
+    //friend bfc_system::bfc_dao_voting_pool_test;
     /// votingBfc objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 bfc
 
@@ -128,7 +129,7 @@ module bfc_system::voting_pool {
 
 
 
-    public fun unwrap_voting_bfc(voting_bfc: VotingBfc): Balance<BFC> {
+    public(friend) fun unwrap_voting_bfc(voting_bfc: VotingBfc): Balance<BFC> {
         let VotingBfc {
             id,
             pool_id: _,

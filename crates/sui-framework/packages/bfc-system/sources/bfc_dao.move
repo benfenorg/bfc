@@ -346,7 +346,7 @@ module bfc_system::bfc_dao {
 
 
     #[test_only]
-    public entry fun create_dao_and_share(        admins: vector<address>,
+    public fun create_dao_and_share(        admins: vector<address>,
                                                                ctx: &mut TxContext ) {
         // sender address
         //let sender = tx_context::sender(ctx);
@@ -818,7 +818,7 @@ module bfc_system::bfc_dao {
         proposal: &Proposal,
         clock: & Clock,
     ): u8  {
-        assert!(proposal.proposal.pid == proposal.proposal.pid, (ERR_PROPOSAL_ID_MISMATCH));
+        //assert!(proposal.proposal.pid == proposal.proposal.pid, (ERR_PROPOSAL_ID_MISMATCH));
         let current_time =  clock::timestamp_ms(clock) ;
         let status = judge_proposal_state(& proposal.proposal, current_time);
 
@@ -1068,13 +1068,12 @@ module bfc_system::bfc_dao {
         bfc_dao_manager::unstake_key(key,token, ctx);
     }
 
-    public fun add_admin(
-        new_admin:address,
-        ctx: &mut TxContext,
-    ) {
-        bfc_dao_manager::new(new_admin, ctx);
-    }
-
+    // public fun add_admin(
+    //     new_admin:address,
+    //     ctx: &mut TxContext,
+    // ) {
+    //     //bfc_dao_manager::new(new_admin, ctx);
+    // }
 
 
     public fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
