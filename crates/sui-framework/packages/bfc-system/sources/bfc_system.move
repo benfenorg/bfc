@@ -35,6 +35,8 @@ module bfc_system::bfc_system {
 
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
@@ -315,6 +317,16 @@ module bfc_system::bfc_system {
     public fun vault_info<StableCoinType>(wrapper: &BfcSystemState): VaultInfo {
         let inner_state = load_system_state(wrapper);
         bfc_system_state_inner::vault_info<StableCoinType>(inner_state)
+    }
+
+    public fun vault_ticks<StableCoinType>(wrapper: &BfcSystemState): vector<Tick> {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::vault_ticks<StableCoinType>(inner_state)
+    }
+
+    public fun vault_positions<StableCoinType>(wrapper: &BfcSystemState): vector<Position> {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::vault_positions<StableCoinType>(inner_state)
     }
 
     public fun total_supply<StableCoinType>(wrapper: &BfcSystemState): u64 {

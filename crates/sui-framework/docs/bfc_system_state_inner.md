@@ -32,6 +32,8 @@
 -  [Function `request_gas_balance`](#0xc8_bfc_system_state_inner_request_gas_balance)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
+-  [Function `vault_ticks`](#0xc8_bfc_system_state_inner_vault_ticks)
+-  [Function `vault_positions`](#0xc8_bfc_system_state_inner_vault_positions)
 -  [Function `get_total_supply`](#0xc8_bfc_system_state_inner_get_total_supply)
 -  [Function `bfc_system_parameters`](#0xc8_bfc_system_state_inner_bfc_system_parameters)
 -  [Function `bfc_system_treasury_parameters`](#0xc8_bfc_system_state_inner_bfc_system_treasury_parameters)
@@ -79,6 +81,8 @@
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
+<b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
+<b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
 <b>use</b> <a href="treasury_pool.md#0xc8_treasury_pool">0xc8::treasury_pool</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
@@ -1056,6 +1060,54 @@ X-vault
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_info">vault_info</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): VaultInfo {
     <a href="treasury.md#0xc8_treasury_vault_info">treasury::vault_info</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_vault_ticks"></a>
+
+## Function `vault_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_ticks">vault_ticks</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_ticks">vault_ticks</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): <a href="">vector</a>&lt;Tick&gt; {
+    <a href="treasury.md#0xc8_treasury_fetch_ticks">treasury::fetch_ticks</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_vault_positions"></a>
+
+## Function `vault_positions`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_positions">vault_positions</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_positions">vault_positions</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): <a href="">vector</a>&lt;Position&gt; {
+   <a href="treasury.md#0xc8_treasury_fetch_positions">treasury::fetch_positions</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
 }
 </code></pre>
 

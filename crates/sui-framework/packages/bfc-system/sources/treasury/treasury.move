@@ -33,6 +33,8 @@ module bfc_system::treasury {
     use bfc_system::event;
     use bfc_system::tick_math;
     use bfc_system::vault::{Self, Vault, VaultInfo};
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
 
     friend bfc_system::bfc_system_state_inner;
     #[test_only]
@@ -126,6 +128,18 @@ module bfc_system::treasury {
 
     public fun vault_info<StableCoinType>(_treasury: &Treasury): VaultInfo {
         vault::vault_info(
+            borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
+        )
+    }
+
+    public fun fetch_ticks<StableCoinType>(_treasury: &Treasury): vector<Tick> {
+        vault::fetch_ticks(
+            borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
+        )
+    }
+
+    public fun fetch_positions<StableCoinType>(_treasury: &Treasury): vector<Position> {
+        vault::fetch_positions(
             borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
         )
     }

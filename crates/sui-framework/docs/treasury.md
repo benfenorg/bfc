@@ -15,6 +15,8 @@
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
+-  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
+-  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
 -  [Function `create_vault`](#0xc8_treasury_create_vault)
 -  [Function `init_vault_with_positions`](#0xc8_treasury_init_vault_with_positions)
 -  [Function `create_vault_internal`](#0xc8_treasury_create_vault_internal)
@@ -67,6 +69,8 @@
 <b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
 <b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
+<b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
+<b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 </code></pre>
@@ -412,6 +416,58 @@
 
 <pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_vault_info">vault_info</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): VaultInfo {
     <a href="vault.md#0xc8_vault_vault_info">vault::vault_info</a>(
+        <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_fetch_ticks"></a>
+
+## Function `fetch_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): <a href="">vector</a>&lt;Tick&gt; {
+    <a href="vault.md#0xc8_vault_fetch_ticks">vault::fetch_ticks</a>(
+        <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_fetch_positions"></a>
+
+## Function `fetch_positions`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): <a href="">vector</a>&lt;Position&gt; {
+    <a href="vault.md#0xc8_vault_fetch_positions">vault::fetch_positions</a>(
         <a href="treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
     )
 }

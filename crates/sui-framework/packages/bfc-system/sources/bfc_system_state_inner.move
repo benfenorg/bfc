@@ -34,6 +34,8 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
     use bfc_system::voting_pool::VotingBfc;
 
 
@@ -372,6 +374,14 @@ module bfc_system::bfc_system_state_inner {
     /// X-vault
     public fun vault_info<StableCoinType>(self: &BfcSystemStateInner): VaultInfo {
         treasury::vault_info<StableCoinType>(&self.treasury)
+    }
+
+    public fun vault_ticks<StableCoinType>(self: &BfcSystemStateInner): vector<Tick> {
+        treasury::fetch_ticks<StableCoinType>(&self.treasury)
+    }
+
+    public fun vault_positions<StableCoinType>(self: &BfcSystemStateInner): vector<Position> {
+       treasury::fetch_positions<StableCoinType>(&self.treasury)
     }
 
     public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInner): u64 {
