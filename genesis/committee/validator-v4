@@ -1,17 +1,17 @@
 ---
 info:
   name: validator-v4
-  account-address: BFC7d65118843fd73fc48f08926290fc72ebf59f555c8ce84e0e80cf687d93ee8a7994b
-  protocol-key: oH2NURxfVU5Ste9ADMtZyLy7rpstzKBf4ZfF4EiJYgFGPwOCN0mDnUavmdB2DVY/D8Ytr0XVTZT67dwwXTETSnFyvib+FIsCdy86PEWLLj/Wq05TEXCYgnsr0Nl0BI/D
-  worker-key: u879SDx7BlVlbZ7b4177mGwmGFc5aMc+DrQP/IB1b9A=
-  network-key: qoZ9UWK3FGOga2wsNdkermvioZiKOCy3GIwhIs/aQDU=
+  account-address: BFCa7059374aaf5fbe968e4481136d5c17db6a71d4be8008cc09e50c474ad44ac00c2de
+  protocol-key: gNK1S6k1C9gw9b+8kFc35+A1FtSdJ2ZJizrOU/tRXDXnVkhV7GEbUYwWv9yClpIQBgT2YtesE+ensrWuiZSEtxuTvlZNN14FDEcNgknDazBHL6hutfbqljt5sFsStx2H
+  worker-key: ycRYPjvm67JP+wH0Qrr0riJBvL+dnlRyGph/j0POmbw=
+  network-key: oZFBSv31nw/ToZx0+k0aPAA9fd8wpBxl+9BRVK4iW7M=
   gas-price: 100
   commission-rate: 200
-  network-address: /ip4/192.168.1.4/tcp/40000/http
-  p2p-address: /ip4/192.168.1.4/udp/40002
-  narwhal-primary-address: /ip4/192.168.1.4/udp/40004
-  narwhal-worker-address: /ip4/192.168.1.4/udp/40006
-  description: abc
+  network-address: /ip4/192.168.1.2/tcp/40000/http
+  p2p-address: /ip4/192.168.1.2/udp/40002
+  narwhal-primary-address: /ip4/192.168.1.2/udp/40004
+  narwhal-worker-address: /ip4/192.168.1.2/udp/40006
+  description: Default Validator
   image-url: abc
-  project-url: abc
-proof_of_possession: g0OH0kZv7I6c2hOa1jm+16e5fuTyJQrVM8tlAaRPkNFCRDuSjxgZAmzHp2Jru9VC
+  project-url: "https://www.benfen.org/"
+proof_of_possession: s3L+YNzIqMIWS9BrjCT6JKIQvHuaKOB97DHBqiOAVs7XpCd+F7hQ6l/1KuEdTP6A

@@ -21,8 +21,8 @@ bfc genesis_ceremony add-validator \
 --p2p-address "/ip4/$ip/udp/$port2" \
 --narwhal-primary-address "/ip4/$ip/udp/$port3" \
 --narwhal-worker-address "/ip4/$ip/udp/$port4" \
---description bfc_default_validator \
+--description "Default Validator" \
 --image-url abc \
---project-url www.benfen.org
+--project-url "https://www.benfen.org/"
 
 echo "end of add validator"
