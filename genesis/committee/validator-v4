@@ -1,10 +1,10 @@
 ---
 info:
   name: validator-v4
-  account-address: BFCa7059374aaf5fbe968e4481136d5c17db6a71d4be8008cc09e50c474ad44ac00c2de
-  protocol-key: gNK1S6k1C9gw9b+8kFc35+A1FtSdJ2ZJizrOU/tRXDXnVkhV7GEbUYwWv9yClpIQBgT2YtesE+ensrWuiZSEtxuTvlZNN14FDEcNgknDazBHL6hutfbqljt5sFsStx2H
-  worker-key: ycRYPjvm67JP+wH0Qrr0riJBvL+dnlRyGph/j0POmbw=
-  network-key: oZFBSv31nw/ToZx0+k0aPAA9fd8wpBxl+9BRVK4iW7M=
+  account-address: BFCf107d500ef00f1bc918429f8626c645c9d15362d9ce523cb7c3af0c5d596738faa4e
+  protocol-key: jJwW1UufxO747t18n9D5B8fsQhjDhmylC8lh75Iqpe+2yw8XSUyPzlAhjczr/AtWEA/Y0VChAiMiSyGXeG/igVonTX2pECxvFtr3TpRtM4TjF915cfxm6bB2reY9HrUW
+  worker-key: 7D/jkb1AWlClFJ0qQlUV4STDeMB58/+uWcP/qzQCeFM=
+  network-key: nLEwmxAYy4ANLf/Wp2wuYwcJ/mOXjMg5x3zuLME+dUc=
   gas-price: 100
   commission-rate: 200
   network-address: /ip4/192.168.1.2/tcp/40000/http
@@ -14,4 +14,4 @@ info:
   description: Default Validator
   image-url: abc
   project-url: "https://www.benfen.org/"
-proof_of_possession: s3L+YNzIqMIWS9BrjCT6JKIQvHuaKOB97DHBqiOAVs7XpCd+F7hQ6l/1KuEdTP6A
+proof_of_possession: kt+H/ArtEMy0dFMb/a+YZD+IwHb9/nW77s4j+bCrCN02gVvFxV6ye5eWLmfjF5ub
