@@ -21,9 +21,9 @@ port4=`expr $port3 + $num1`
 --p2p-address "/dns/$ip/udp/$port2" \
 --narwhal-primary-address "/dns/$ip/udp/$port3" \
 --narwhal-worker-address "/dns/$ip/udp/$port4" \
---description abc \
+--description bfc_default_validator \
 --image-url abc \
---project-url abc
+--project-url www.benfen.org
 
 echo "end of add validator"
 
