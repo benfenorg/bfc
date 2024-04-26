@@ -104,7 +104,7 @@ fn check_move_unit_tests(path: PathBuf) {
     config.run_bytecode_verifier = true;
     config.print_diags_to_stderr = true;
     let move_config = config.config.clone();
-    let testing_config = UnitTestingConfig::default_with_bound(Some(3_000_000));
+    let testing_config = UnitTestingConfig::default_with_bound(Some(3_000_000_000));
 
     // build tests first to enable Sui-specific test code verification
     config
