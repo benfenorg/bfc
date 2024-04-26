@@ -229,10 +229,10 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_voting_period(system_state, manager_key, value);
     }
 
-    public fun modify_proposal(wrapper: &mut BfcSystemState, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
-        let system_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::modify_proposal(system_state, proposal_obj, index, clock);
-    }
+    // public fun modify_proposal(wrapper: &mut BfcSystemState, proposal_obj: &mut Proposal, index: u8, clock: &Clock) {
+    //     let system_state = load_system_state_mut(wrapper);
+    //     bfc_system_state_inner::modify_proposal(system_state, proposal_obj, index, clock);
+    // }
 
     public entry fun set_voting_quorum_rate(wrapper: &mut BfcSystemState, manager_key: &BFCDaoManageKey, value: u8,){
         let system_state = load_system_state_mut(wrapper);
