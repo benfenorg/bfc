@@ -558,6 +558,8 @@ all the information we need in the system.
     <b>while</b> (i &lt; count) {
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="_borrow_mut">vector::borrow_mut</a>(validators, i);
         <a href="validator.md#0x3_validator_activate">validator::activate</a>(<a href="validator.md#0x3_validator">validator</a>, 0);
+        <a href="validator.md#0x3_validator_activate_stable">validator::activate_stable</a>(<a href="validator.md#0x3_validator">validator</a>, 0);
+
         i = i + 1;
     };
 

@@ -249,6 +249,8 @@ module sui_system::genesis {
         while (i < count) {
             let validator = vector::borrow_mut(validators, i);
             validator::activate(validator, 0);
+            validator::activate_stable(validator, 0);
+
             i = i + 1;
         };
 
