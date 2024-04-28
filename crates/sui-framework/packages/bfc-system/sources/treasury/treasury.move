@@ -531,7 +531,7 @@ module bfc_system::treasury {
         );
         if (_update) {
             vault::update_state(mut_v);
-            if (!vault::is_rebalance_cond(mut_v)) {
+            if (!vault::has_swapped(mut_v)) {
                 return vault::last_bfc_rebalance_amount(mut_v)
             }
         };

@@ -101,6 +101,9 @@ module bfc_system::vault {
 
         /// last rebalance bfc amount
         last_bfc_rebalance_amount: u64,
+
+        /// when swap happend after rebalance
+        has_swapped: bool,
     }
 
     struct VaultInfo has copy, drop {
@@ -124,6 +127,7 @@ module bfc_system::vault {
         base_point: u64,
         coin_market_cap: u64,
         last_bfc_rebalance_amount: u64,
+        has_swapped: bool,
     }
 
     spec create_vault {
@@ -167,6 +171,7 @@ module bfc_system::vault {
             max_counter_times: _max_counter_times,
             coin_market_cap: 0,
             last_bfc_rebalance_amount: 0,
+            has_swapped: false,
         }
     }
 
@@ -603,6 +608,9 @@ module bfc_system::vault {
             pay_coin_b,
             flash_receipt
         );
+        if (!_vault.has_swapped) {
+            _vault.has_swapped = true;
+        };
         (coin::into_balance(_coin_a), coin::into_balance(_coin_b))
     }
 
@@ -853,7 +861,8 @@ module bfc_system::vault {
             index: _vault.index,
             base_point: _vault.base_point,
             coin_market_cap: _vault.coin_market_cap,
-            last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
+            last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount,
+            has_swapped: _vault.has_swapped,
         }
     }
 
@@ -869,8 +878,8 @@ module bfc_system::vault {
         _vault.current_tick_index
     }
 
-    public(friend) fun is_rebalance_cond<StableCoinType>(_vault: &Vault<StableCoinType>): bool {
-        _vault.state_counter >= _vault.max_counter_times
+    public(friend) fun has_swapped<StableCoinType>(_vault: &Vault<StableCoinType>): bool {
+        return _vault.has_swapped
     }
 
     public(friend) fun last_bfc_rebalance_amount<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
@@ -1075,7 +1084,7 @@ module bfc_system::vault {
     ): u64 {
         let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
         let shape = SHAPE_EQUAL_SIZE;
-        if (is_rebalance_cond(_vault)) {
+        if (_vault.state_counter >= _vault.max_counter_times) {
             shape = _vault.state;
             // reset state counter
             _vault.state_counter = 0;
@@ -1089,6 +1098,7 @@ module bfc_system::vault {
             balance1,
             liquidities
         );
+        _vault.has_swapped = false;
         _vault.last_bfc_rebalance_amount = balance::value(&_vault.coin_b);
         _vault.last_bfc_rebalance_amount
     }
