@@ -24,7 +24,6 @@
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_create_bfcdao_action)
 -  [Function `judge_proposal_state`](#0xc8_bfc_system_judge_proposal_state)
 -  [Function `set_voting_period`](#0xc8_bfc_system_set_voting_period)
--  [Function `modify_proposal`](#0xc8_bfc_system_modify_proposal)
 -  [Function `set_voting_quorum_rate`](#0xc8_bfc_system_set_voting_quorum_rate)
 -  [Function `set_min_action_delay`](#0xc8_bfc_system_set_min_action_delay)
 -  [Function `withdraw_voting`](#0xc8_bfc_system_withdraw_voting)
@@ -648,31 +647,6 @@
 ) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_voting_period">bfc_system_state_inner::set_voting_period</a>(system_state, manager_key, value);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_modify_proposal"></a>
-
-## Function `modify_proposal`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_modify_proposal">modify_proposal</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, proposal_obj: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_modify_proposal">modify_proposal</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, proposal_obj: &<b>mut</b> Proposal, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
-    <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_modify_proposal">bfc_system_state_inner::modify_proposal</a>(system_state, proposal_obj, index, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>);
 }
 </code></pre>
 
