@@ -4,3 +4,4 @@ DROP TABLE IF EXISTS mining_nfts;
 DROP TABLE IF EXISTS mining_nft_staking;
 DROP TABLE IF EXISTS mining_nft_profits;
 DROP TABLE IF EXISTS mining_nft_rewards;
+DROP TABLE IF EXISTS mining_nft_liquidities;

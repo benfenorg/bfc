@@ -12,7 +12,7 @@ use diesel::dsl::{count, max};
 use diesel::pg::PgConnection;
 use diesel::sql_types::{BigInt, VarChar};
 use diesel::upsert::excluded;
-use diesel::ExpressionMethods;
+use diesel::{ExpressionMethods, TextExpressionMethods};
 use diesel::{OptionalExtension, QueryableByName};
 use diesel::{QueryDsl, RunQueryDsl};
 use fastcrypto::hash::Digest;
@@ -65,7 +65,9 @@ use crate::models::dao_votes::Vote;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::epoch_stake;
 use crate::models::events::Event;
-use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTStaking};
+use crate::models::mining_nft::{
+    MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MiningNFTStaking,
+};
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
 use crate::models::network_segment_metrics::NetworkSegmentMetrics;
@@ -80,9 +82,9 @@ use crate::models::transactions::Transaction;
 use crate::schema::{
     active_addresses, address_stakes, address_stats, addresses, changed_objects,
     checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes,
-    epochs, events, input_objects, mining_nft_history_profits, mining_nft_staking, mining_nfts,
-    move_calls, network_segment_metrics, objects, objects_history, packages, price_history,
-    recipients, system_states, transactions, validators,
+    epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities,
+    mining_nft_staking, mining_nfts, move_calls, network_segment_metrics, objects, objects_history,
+    packages, price_history, recipients, system_states, transactions, validators,
 };
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
@@ -1443,6 +1445,7 @@ impl PgIndexerStore {
                                 dt_timestamp_ms: benfen::timestamp_to_dt(
                                     (v.timestamp * 1_000) as i64,
                                 ),
+                                cost_bfc: 0,
                                 mint_bfc: 0,       // update daily
                                 mint_usd: 0,       // update daily
                                 pending_reward: 0, // update daily
@@ -1514,7 +1517,7 @@ impl PgIndexerStore {
     fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError> {
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError> {
         let mining_nfts: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
             mining_nfts::dsl::mining_nfts
                 .filter(
@@ -1523,6 +1526,7 @@ impl PgIndexerStore {
                 .load(conn)
         })
         .context("Failed to load mining NFTs.")?;
+        let total_cost: f64 = mining_nfts.iter().map(|x| x.cost_bfc as f64).sum();
         let stakings: Vec<&MiningNFT> = mining_nfts
             .iter()
             .filter_map(|x| {
@@ -1544,9 +1548,11 @@ impl PgIndexerStore {
                 total_nfts: mining_nfts.iter().filter(|x| !x.miner_redeem).count(),
                 total_reward: mining_nfts.iter().map(|x| x.total_mint_bfc as u64).sum(),
                 bfc_usd_price: 0f64,
+                profit_rate: 0f64,
                 yesterady_reward: stakings.iter().map(|x| x.yesterday_mint_bfc as u64).sum(),
             },
             ticket_ids,
+            total_cost,
         ))
     }
 
@@ -1610,6 +1616,8 @@ impl PgIndexerStore {
                         .eq(excluded(mining_nft_history_profits::dsl::mint_bfc)),
                     mining_nft_history_profits::dsl::mint_usd
                         .eq(excluded(mining_nft_history_profits::dsl::mint_usd)),
+                    mining_nft_history_profits::dsl::cost_bfc
+                        .eq(excluded(mining_nft_history_profits::dsl::cost_bfc)),
                     mining_nft_history_profits::dsl::pending_reward
                         .eq(excluded(mining_nft_history_profits::dsl::pending_reward)),
                 ))
@@ -1618,13 +1626,41 @@ impl PgIndexerStore {
         .context("Failed to handle unstaking event.")
     }
 
+    fn calculate_mining_nft_overall(
+        &self,
+        dt_timestamp_ms: i64,
+        pending_reward: u64,
+    ) -> Result<(), IndexerError> {
+        let nfts = read_only_blocking!(&self.blocking_cp, |conn| {
+            mining_nfts::table.load::<MiningNFT>(conn)
+        })
+        .context("Failed to load NFTs")?;
+        let overall = MiningNFTHistoryProfit {
+            owner: AccountAddress::ZERO.to_hex_literal(),
+            miner_id: AccountAddress::ZERO.to_hex_literal(),
+            dt_timestamp_ms,
+            mint_bfc: nfts.iter().map(|x| x.total_mint_bfc).sum::<i64>() + pending_reward as i64,
+            mint_usd: 0,
+            cost_bfc: nfts.iter().map(|x| x.cost_bfc).sum(),
+            pending_reward: 0,
+            claimed_reward: 0,
+        };
+        self.persist_mining_nft_profits(vec![overall])?;
+        Ok(())
+    }
+
     fn get_owned_mining_nft_profits(
         &self,
         address: AccountAddress,
-        limit: usize,
+        limit: Option<usize>,
     ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError> {
         let dt_stopped_at = benfen::get_yesterday_started_at();
-        let dt_started_at = dt_stopped_at - (limit as i64 * 86_400_000);
+        let dt_started_at = if let Some(limit) = limit {
+            dt_stopped_at - (limit as i64 * 86_400_000)
+        } else {
+            0
+        };
+
         let profits: Vec<MiningNFTHistoryProfit> = read_only_blocking!(&self.blocking_cp, |conn| {
             mining_nft_history_profits::dsl::mining_nft_history_profits
                 .filter(mining_nft_history_profits::dsl::owner.eq(address.to_hex_literal()))
@@ -1640,6 +1676,7 @@ impl PgIndexerStore {
             .map(|x| SuiOwnedMiningNFTProfit {
                 mint_bfc: x.mint_bfc as u64,
                 mint_usd: x.mint_usd as u64,
+                cost_bfc: x.cost_bfc as u64,
                 dt_timestamp_ms: x.dt_timestamp_ms as u64,
             })
             .collect();
@@ -1650,6 +1687,7 @@ impl PgIndexerStore {
                 .and_modify(|e| {
                     e.mint_bfc += profit.mint_bfc;
                     e.mint_usd += profit.mint_usd;
+                    e.cost_bfc += profit.cost_bfc;
                 })
                 .or_insert(profit.clone());
         }
@@ -1658,6 +1696,40 @@ impl PgIndexerStore {
             .into_values()
             .sorted_by(|a, b| a.dt_timestamp_ms.cmp(&b.dt_timestamp_ms))
             .collect())
+    }
+    fn persist_mining_nft_liquidities(
+        &self,
+        mls: Vec<MiningNFTLiquiditiy>,
+    ) -> Result<usize, IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::insert_into(mining_nft_liquidities::table)
+                .values(mls)
+                .on_conflict_do_nothing()
+                .execute(conn)
+        })
+        .context("Failed to persist mining nft liquidities.")
+    }
+
+    fn get_mining_nft_liquidities(
+        &self,
+        base_coin: String,
+        limit: usize,
+    ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError> {
+        let mut query = mining_nft_liquidities::table.into_boxed();
+        if base_coin.ends_with("::long::LONG") {
+            query = query.filter(mining_nft_liquidities::dsl::quote_coin.eq(base_coin));
+        } else {
+            query = query
+                .filter(mining_nft_liquidities::dsl::base_coin.eq(base_coin))
+                .filter(mining_nft_liquidities::dsl::quote_coin.not_like("%::long::LONG"));
+        }
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            query
+                .order(mining_nft_liquidities::dsl::timestamp_ms.desc())
+                .limit(limit as i64)
+                .load::<MiningNFTLiquiditiy>(conn)
+        })
+        .context(&format!("Failed to loading liquidities from PostgresDB."))
     }
 
     fn persist_fast_path(
@@ -3130,6 +3202,7 @@ impl IndexerStore for PgIndexerStore {
         self.spawn_blocking(move |this| this.persist_mining_nft(operation))
             .await
     }
+
     async fn get_mining_nfts(
         &self,
         address: SuiAddress,
@@ -3144,7 +3217,7 @@ impl IndexerStore for PgIndexerStore {
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError> {
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError> {
         self.spawn_blocking(move |this| this.get_mining_nft_overview(address))
             .await
     }
@@ -3152,7 +3225,7 @@ impl IndexerStore for PgIndexerStore {
     async fn get_owned_mining_nft_profits(
         &self,
         address: SuiAddress,
-        limit: usize,
+        limit: Option<usize>,
     ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError> {
         self.spawn_blocking(move |this| this.get_owned_mining_nft_profits(address.into(), limit))
             .await
@@ -3448,6 +3521,17 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn calculate_mining_nft_overall(
+        &self,
+        dt_timestamp_ms: i64,
+        pending_reward: u64,
+    ) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| {
+            this.calculate_mining_nft_overall(dt_timestamp_ms, pending_reward)
+        })
+        .await
+    }
+
     async fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError> {
         self.spawn_blocking(move |this| this.get_last_epoch_stake())
             .await
@@ -3456,6 +3540,23 @@ impl IndexerStore for PgIndexerStore {
     async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError> {
         let data = data.clone();
         self.spawn_blocking(move |this| this.persist_epoch_stake(&data))
+            .await
+    }
+
+    async fn persist_mining_nft_liquidities(
+        &self,
+        mls: Vec<MiningNFTLiquiditiy>,
+    ) -> Result<usize, IndexerError> {
+        self.spawn_blocking(move |this| this.persist_mining_nft_liquidities(mls))
+            .await
+    }
+
+    async fn get_mining_nft_liquidities(
+        &self,
+        base_coin: String,
+        limit: usize,
+    ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_mining_nft_liquidities(base_coin, limit))
             .await
     }
 }

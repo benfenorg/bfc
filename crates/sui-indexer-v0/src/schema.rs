@@ -409,6 +409,7 @@ diesel::table! {
         miner_name -> Varchar,
         token_id -> Varchar,
         power -> Int8,
+        cost_bfc -> Int8,
         mint_at -> Int8,
         earliest_held_at -> Int8,
         mint_duration -> Int8,
@@ -451,6 +452,7 @@ diesel::table! {
         dt_timestamp_ms -> Int8,
         mint_bfc -> Int8,
         mint_usd -> Int8,
+        cost_bfc -> Int8,
         pending_reward -> Int8,
         claimed_reward -> Int8,
     }
@@ -478,7 +480,19 @@ diesel::table! {
         unstaking_timestamp_ms -> Nullable<Int8>,
 
         unstaking_reward_amount -> Nullable<Int8>,
+        timestamp_ms -> Int8,
+    }
+}
 
+diesel::table! {
+    mining_nft_liquidities(transaction_digest) {
+        transaction_digest -> Varchar,
+        base_coin -> Varchar,
+        quote_coin -> Varchar,
+        base_price_gte -> Int8,
+        base_price_lte -> Int8,
+        base_amount -> Int8,
+        quote_amount -> Int8,
         timestamp_ms -> Int8,
     }
 }

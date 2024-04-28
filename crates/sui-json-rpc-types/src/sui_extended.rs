@@ -10,6 +10,7 @@ use serde_with::DisplayFromStr;
 
 use sui_types::base_types::SuiAddress;
 use sui_types::base_types::{EpochId, ObjectID};
+use sui_types::digests::TransactionDigest;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::sui_serde::{BigInt, SuiTypeTag};
 use sui_types::sui_system_state::sui_system_state_summary::SuiValidatorSummary;
@@ -345,7 +346,7 @@ pub struct NFTStakingOverview {
 
     pub nft_future_rewards: Vec<SuiMiningNFTFutureReward>,
     pub nft_future_profit_rates: Vec<SuiMiningNFTProfitRate>,
-    pub btc_past_profit_rates: Vec<SuiMiningNFTProfitRate>,
+    pub overall_profit_rates: Vec<SuiMiningNFTProfitRate>,
 }
 
 #[serde_as]
@@ -432,6 +433,7 @@ pub struct SuiOwnedMiningNFTOverview {
     pub num_of_staking_nfts: usize,
     pub total_nfts: usize,
     pub bfc_usd_price: f64,
+    pub profit_rate: f64,
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
@@ -456,5 +458,39 @@ pub struct SuiOwnedMiningNFTProfit {
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
+    pub cost_bfc: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
     pub dt_timestamp_ms: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+pub struct SuiMiningNFTLiquidity {
+    /// The transaction digest
+    pub transaction_digest: TransactionDigest,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub timestamp_ms: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub base_coin: TypeTag,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub quote_coin: TypeTag,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub base_amount: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub quote_amount: u64,
+
+    pub price_upper: f64,
+    pub price_lower: f64,
 }

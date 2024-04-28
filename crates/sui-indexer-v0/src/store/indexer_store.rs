@@ -30,7 +30,7 @@ use crate::models::dao_proposals::Proposal;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::epoch_stake;
 use crate::models::events::Event;
-use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit};
+use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy};
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
 use crate::models::prices::PriceHistory;
@@ -357,7 +357,7 @@ pub trait IndexerStore {
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError>;
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError>;
 
     async fn get_unsettle_mining_nfts(
         &self,
@@ -375,14 +375,30 @@ pub trait IndexerStore {
         profits: Vec<MiningNFTHistoryProfit>,
     ) -> Result<usize, IndexerError>;
 
+    async fn calculate_mining_nft_overall(
+        &self,
+        dt_timestamp_ms: i64,
+        total_pending_reward: u64,
+    ) -> Result<(), IndexerError>;
+
     async fn get_owned_mining_nft_profits(
         &self,
         address: SuiAddress,
-        limit: usize,
+        limit: Option<usize>,
     ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError>;
 
     async fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError>;
     async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
+    async fn persist_mining_nft_liquidities(
+        &self,
+        mls: Vec<MiningNFTLiquiditiy>,
+    ) -> Result<usize, IndexerError>;
+
+    async fn get_mining_nft_liquidities(
+        &self,
+        base_coin: String,
+        limit: usize,
+    ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError>;
 }
 
 #[derive(Clone, Debug)]

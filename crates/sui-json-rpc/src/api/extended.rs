@@ -7,8 +7,9 @@ use jsonrpsee::proc_macros::rpc;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
     IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview,
-    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiObjectResponseQuery,
-    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity,
+    SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
+    SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc_macros::open_rpc;
 use sui_types::{
@@ -114,4 +115,10 @@ pub trait ExtendedApi {
         address: SuiAddress,
         limit: usize,
     ) -> RpcResult<Vec<SuiOwnedMiningNFTProfit>>;
+
+    #[method(name = "getMiningNFTRecentLiquidities")]
+    async fn get_mining_nft_recent_liquidities(
+        &self,
+        base_coin: String,
+    ) -> RpcResult<Vec<SuiMiningNFTLiquidity>>;
 }

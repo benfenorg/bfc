@@ -12,9 +12,9 @@ use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
     IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page,
-    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiObjectDataFilter,
-    SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview,
-    SuiOwnedMiningNFTProfit,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity,
+    SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
 use sui_types::base_types::{SequenceNumber, SuiAddress};
@@ -175,6 +175,13 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
     }
 
     async fn get_indexed_stakes(&self, _owner: SuiAddress) -> RpcResult<Vec<IndexedStake>> {
+        todo!()
+    }
+
+    async fn get_mining_nft_recent_liquidities(
+        &self,
+        _base_coin: String,
+    ) -> RpcResult<Vec<SuiMiningNFTLiquidity>> {
         todo!()
     }
 

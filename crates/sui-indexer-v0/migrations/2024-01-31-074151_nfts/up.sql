@@ -20,6 +20,7 @@ CREATE TABLE mining_nfts
   mint_at                   BIGINT        NOT NULL,
   earliest_held_at          BIGINT        NOT NULL,
   -- Total mint duration in the past staking.
+  cost_bfc                  BIGINT        NOT NULL,
   mint_duration             BIGINT        NOT NULL,
   mining_ticket_id          VARCHAR       NULL,
   -- When is the mining started at of current staking.
@@ -55,7 +56,23 @@ CREATE TABLE mining_nft_history_profits
   dt_timestamp_ms           BIGINT        NOT NULL,
   mint_bfc                  BIGINT        NOT NULL,
   mint_usd                  BIGINT        NOT NULL,
+  cost_bfc                  BIGINT        NOT NULL,
   pending_reward            BIGINT        NOT NULL,
   claimed_reward            BIGINT        NOT NULL,
   CONSTRAINT mining_nft_hisotry_profits_pk PRIMARY KEY (owner, dt_timestamp_ms, miner_id)
 );
+
+CREATE TABLE mining_nft_liquidities
+(
+    transaction_digest        base58digest  PRIMARY KEY,
+    base_coin                 VARCHAR       NOT NULL,
+    quote_coin                VARCHAR       NOT NULL,
+    base_price_gte            BIGINT        NOT NULL,
+    base_price_lte            BIGINT        NOT NULL,
+    base_amount               BIGINT        NOT NULL,
+    quote_amount              BIGINT        NOT NULL,
+    timestamp_ms              BIGINT        NOT NULL
+);
+CREATE INDEX mining_nft_liquidities_base_coin_index ON mining_nft_liquidities(base_coin);
+CREATE INDEX mining_nft_liquidities_quote_coin_index ON mining_nft_liquidities(quote_coin);
+CREATE INDEX mining_nft_liquidities_timestamp_ms_index ON mining_nft_liquidities(timestamp_ms);

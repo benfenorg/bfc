@@ -110,6 +110,17 @@ pub struct IndexerConfig {
     // NOTE: experimental only, do not use in production.
     #[clap(long)]
     pub skip_db_commit: bool,
+
+    #[clap(long, num_args(1..))]
+    pub mining_nft_liquidity_admins: Vec<String>,
+
+    #[clap(
+        long,
+        default_value = "BFC697b63cd5a30f919d003eb0b5cf69fbfdcd8a5231a17b702b56f57846023493ec247",
+        global = true
+    )]
+    pub mining_nft_dex_contract: String,
+
     #[clap(
         long,
         default_value = "BFC08933cb86b9581613b0402501bd095a279de4b1b4229718f799106df9169f1dfa080",
@@ -192,6 +203,17 @@ impl Default for IndexerConfig {
             fullnode_sync_worker: true,
             rpc_server_worker: true,
             skip_db_commit: false,
+            mining_nft_liquidity_admins: vec![
+                "BFCe0c4a22895dc9b82706f5a62193b4a4d1f9f5d25d492f42e3b9fd2ffa50e83431348"
+                    .to_string(),
+                "BFCe0c4a22895dc9b82706f5a62193b4a4d1f9f5d25d492f42e3b9fd2ffa50e83431348"
+                    .to_string(),
+                "BFC520eef03f83d2fd08316762b60601a88cdbc956912f3ee22f804c521bc352c8f2f80"
+                    .to_string(),
+            ],
+            mining_nft_dex_contract:
+                "BFC697b63cd5a30f919d003eb0b5cf69fbfdcd8a5231a17b702b56f57846023493ec247"
+                    .to_string(),
             mining_nft_contract:
                 "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
                     .to_string(),
@@ -202,7 +224,7 @@ impl Default for IndexerConfig {
                 "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
                     .to_string(),
             mining_nft_pool_id:
-                "BFC1537ad845c190d7363b8e558100a5d782c2d4ce6e2a39d0f1b56db639a3ad3fa34bb"
+                "BFC8d7dd979d4860e8df8f519e9ccf124a1a76fef8cbba9378102f9361929218c7952d9"
                     .to_string(),
             migrate: false,
         }

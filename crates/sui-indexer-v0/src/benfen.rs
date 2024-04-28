@@ -21,6 +21,7 @@ use sui_json_rpc_types::SuiMiningNFTFutureReward;
 use sui_json_rpc_types::SuiMiningNFTProfitRate;
 use sui_json_rpc_types::SuiObjectDataOptions;
 use sui_json_rpc_types::SuiObjectResponse;
+use sui_json_rpc_types::SuiOwnedMiningNFTProfit;
 use sui_json_rpc_types::SuiParsedData;
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::SuiAddress;
@@ -32,9 +33,7 @@ use sui_types::gas_coin::MIST_PER_SUI;
 use sui_types::id::ID;
 use sui_types::id::UID;
 use sui_types::object::Object;
-use sui_types::sui_system_state::PoolTokenExchangeRate;
 use sui_types::transaction::ObjectArg;
-use sui_types::SUI_SYSTEM_PACKAGE_ID;
 use sui_types::{
     transaction::{Argument, CallArg, Command, ProgrammableTransaction, TransactionKind},
     Identifier, TypeTag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID,
@@ -188,18 +187,7 @@ async fn get_mining_nft_cost_in_usd(
             let value: Value = move_obj.fields.clone().to_json_value();
             if let Some(cur_sqrt_price_val) = value.get("current_sqrt_price") {
                 if let Some(cur_sqrt_price) = cur_sqrt_price_val.as_str() {
-                    let div: Decimal = (u64::MAX - 1/* 2^64 */).into();
-                    let coin_a_price = Decimal::from_str_exact(cur_sqrt_price)
-                        .map_err(|err| IndexerError::UncategorizedError(err.into()))?
-                        .div(&div)
-                        .powi(2);
-                    let one: Decimal = 1.into();
-                    return Ok(one.div(coin_a_price).try_into().map_err(|err| {
-                        IndexerError::FullNodeReadingError(format!(
-                            "Failed to convert decimal to f64 with error {:?}",
-                            err,
-                        ))
-                    })?);
+                    return Ok(get_price_from_sqrt_price(cur_sqrt_price)?);
                 }
             }
         }
@@ -210,61 +198,28 @@ async fn get_mining_nft_cost_in_usd(
     )))
 }
 
-async fn get_mining_nft_cost_in_bfc(
+fn get_price_from_sqrt_price(sqrt_price: &str) -> Result<f64, IndexerError> {
+    let div: Decimal = (u64::MAX - 1/* 2^64 */).into();
+    let coin_a_price = Decimal::from_str_exact(sqrt_price)
+        .map_err(|err| IndexerError::UncategorizedError(err.into()))?
+        .div(&div)
+        .powi(2);
+    let one: Decimal = 1.into();
+    Ok(one.div(coin_a_price).try_into().map_err(|err| {
+        IndexerError::FullNodeReadingError(format!(
+            "Failed to convert decimal to f64 with error {:?}",
+            err,
+        ))
+    })?)
+}
+
+pub async fn get_mining_nft_cost_in_bfc(
     config: IndexerConfig,
     http_client: HttpClient,
 ) -> Result<u64, IndexerError> {
     let usd_cost = get_mining_nft_cost_in_usd(config, http_client.clone()).await?;
     let price = get_bfc_price_in_usd(http_client).await?;
-    Ok((usd_cost / price) as u64)
-}
-
-// {"data":{"amount":"42288.58","base":"BTC","currency":"USD"}}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct CoinbasePriceResponse {
-    pub data: CoinbasePriceData,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct CoinbasePriceData {
-    pub amount: String,
-    pub base: String,
-    pub currency: String,
-}
-
-pub async fn get_btc_price_in_usd(dt_timestamp_ms: Option<i64>) -> Result<f64, IndexerError> {
-    let url = match dt_timestamp_ms {
-        Some(ts) => format!(
-            "https://api.coinbase.com/v2/prices/BTC-USD/spot?date={}",
-            timestamp_to_dt_string(ts)
-        ),
-        None => "https://api.coinbase.com/v2/prices/BTC-USD/spot".to_owned(),
-    };
-    let response = reqwest::get(&url)
-        .await
-        .map_err(|x| {
-            IndexerError::UncategorizedError(anyhow::anyhow!(
-                "Failed to get BTC price from {}, err: {:?}",
-                url,
-                x
-            ))
-        })?
-        .json::<CoinbasePriceResponse>()
-        .await
-        .map_err(|x| -> IndexerError {
-            IndexerError::UncategorizedError(anyhow::anyhow!(
-                "Failed to parse BTC price from {}, err: {:?}",
-                url,
-                x
-            ))
-        })?;
-    Ok(response.data.amount.parse::<f64>().map_err(|x| {
-        IndexerError::UncategorizedError(anyhow::anyhow!(
-            "Failed to parse amount {} to f64 with error : {:?}",
-            response.data.amount,
-            x,
-        ))
-    })?)
+    Ok((usd_cost / price * MIST_PER_SUI as f64) as u64)
 }
 
 pub fn timestamp_to_dt(timestamp_ms: i64) -> i64 {
@@ -291,8 +246,20 @@ fn get_shared_global_object_id(config: &IndexerConfig) -> ObjectID {
 pub async fn get_nft_staking_overview(
     http_client: HttpClient,
     config: IndexerConfig,
+    mut overall_profits: Vec<SuiOwnedMiningNFTProfit>,
     timestamp: u64,
 ) -> Result<NFTStakingOverview, IndexerError> {
+    let latest_profit = if overall_profits.len() > 0 {
+        overall_profits[overall_profits.len() - 1].clone()
+    } else {
+        SuiOwnedMiningNFTProfit {
+            mint_bfc: 0,
+            mint_usd: 0,
+            cost_bfc: 0,
+            dt_timestamp_ms: 0,
+        }
+    };
+
     let nft_staking = get_global_nft_staking(http_client.clone(), config.clone()).await?;
     let di = nft_staking.decrease_interval;
     let rps = nft_staking.reward_per_second;
@@ -304,28 +271,37 @@ pub async fn get_nft_staking_overview(
     let past_period_secs = di * (p - 1);
     let current_period_past_secs = timestamp - nft_staking.begin_at - past_period_secs;
     let current_total_reward = current_period_past_secs as f64 * current_period_rps(rps, p);
-
-    let nft_cost_bfc = get_mining_nft_cost_in_bfc(config.clone(), http_client.clone()).await?;
-    let nft_cost = nft_cost_bfc * MIST_PER_SUI;
     let nft_config = get_global_nft_config(http_client, config).await?;
     let mut nft_future_rewards = vec![];
     let mut nft_future_profit_rates = vec![];
     let mut rewarded: u64 = 0;
+    let mut overall_reward: u64 = 0;
     let max_count_per_day: u64 = 20;
     for d in 0..180 {
+        let new_suply = (d + 1) * max_count_per_day;
         let dp = timestamp + d * 86_400;
         let p: u64 = (dp - nft_staking.begin_at) / di + 1;
         let crps = current_period_rps(rps, p);
-        let current_supply = nft_config.total_supply + d * max_count_per_day + 1;
+        overall_reward += (crps * 86_400f64) as u64;
+        let current_supply = nft_config.total_supply + new_suply;
         rewarded += (crps * 86_400f64 / current_supply as f64) as u64;
         nft_future_rewards.push(SuiMiningNFTFutureReward {
             reward: rewarded,
             dt_timestamp_ms: dp * 1_000,
         });
+        let nft_cost = calculate_nft_cost(nth_day(nft_staking.begin_at, dp));
         nft_future_profit_rates.push(SuiMiningNFTProfitRate {
             rate: rewarded as f64 / nft_cost as f64,
-            dt_timestamp_ms: dp * 1_1000,
+            dt_timestamp_ms: dp * 1_000,
         });
+        if d < 30 {
+            overall_profits.push(SuiOwnedMiningNFTProfit {
+                mint_bfc: latest_profit.mint_bfc + overall_reward,
+                mint_usd: 0,
+                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 5)),
+                dt_timestamp_ms: dp * 1_000,
+            })
+        }
     }
 
     Ok(NFTStakingOverview {
@@ -336,12 +312,32 @@ pub async fn get_nft_staking_overview(
         bfc_24h_rate: 0f64,
         nft_future_rewards,
         nft_future_profit_rates,
-        btc_past_profit_rates: vec![],
+        overall_profit_rates: overall_profits
+            .iter()
+            .map(|x| SuiMiningNFTProfitRate {
+                rate: if x.cost_bfc > 0 {
+                    x.mint_bfc as f64 / x.cost_bfc as f64
+                } else {
+                    0f64
+                },
+                dt_timestamp_ms: x.dt_timestamp_ms,
+            })
+            .collect(),
     })
 }
 
 fn current_period_rps(rps: u64, p: u64) -> f64 {
     rps as f64 / (2f64.powi(p as i32 - 1) as f64)
+}
+
+fn nth_day(begin_at: u64, now: u64) -> u64 {
+    (now - begin_at) / 86_400 + 1
+}
+
+fn calculate_nft_cost(n: u64) -> u64 {
+    let m: u64 = 0;
+    let l = 12960f64;
+    (((1 + 180 / (n + m)) as f64).ln() * l) as u64 * MIST_PER_SUI
 }
 
 const NFT_SHARED_GLOBAL_STAKING_FIELD: &'static str = "4";
@@ -572,36 +568,29 @@ pub async fn get_nft_display(
     )))
 }
 
-pub async fn get_pool_exchange_rate(
+pub async fn get_price_at_tick(
     http_client: HttpClient,
-    pool_id: ObjectID,
-    epoch: u64,
-) -> Result<PoolTokenExchangeRate, IndexerError> {
+    contract: &str,
+    tick: u32,
+) -> Result<f64, IndexerError> {
+    let contract = ObjectID::from_address(SuiAddress::from_str(contract)?.into());
     let tx = ProgrammableTransaction {
-        inputs: vec![
-            CallArg::Object(ObjectArg::SharedObject {
-                id: pool_id.clone(),
-                initial_shared_version: 1u64.into(),
-                mutable: false,
-            }),
-            CallArg::Pure(bcs::to_bytes(&epoch)?),
-        ],
+        inputs: vec![CallArg::Pure(bcs::to_bytes(&tick)?)],
         commands: vec![Command::move_call(
-            SUI_SYSTEM_PACKAGE_ID,
-            Identifier::new("sui_system")?,
-            Identifier::new("pool_token_exchange_rate_at_epoch")?,
+            contract,
+            Identifier::new("tick_math")?,
+            Identifier::new("get_sqrt_price_at_tick")?,
             vec![],
-            vec![Argument::Input(0), Argument::Input(1)],
+            vec![Argument::Input(0)],
         )],
     };
     let tx = TransactionKind::ProgrammableTransaction(tx);
-    let val: PoolTokenExchangeRate = dev_inspect_tx(http_client, &tx).await.map_err(|err| {
-        IndexerError::FullNodeReadingError(format!(
-            "Failed to read exchange_rates with err {:?}, pool_id: {:?}, epoch: {}",
-            err, pool_id, epoch
-        ))
-    })?;
-    Ok(val)
+    let val: u128 = dev_inspect_tx(http_client, &tx).await?;
+    let coin_b = get_price_from_sqrt_price(&format!("{}", val))?;
+    if coin_b == 0f64 {
+        return Ok(coin_b);
+    }
+    Ok(1f64 / coin_b)
 }
 
 #[cfg(test)]
@@ -617,8 +606,8 @@ mod test_benfen {
     };
 
     use super::{
-        get_bfc_price_in_usd, get_btc_price_in_usd, get_mining_nft_pending_reward,
-        get_pool_exchange_rate, timestamp_to_dt, timestamp_to_dt_string,
+        get_bfc_price_in_usd, get_mining_nft_pending_reward, timestamp_to_dt,
+        timestamp_to_dt_string,
     };
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
     use sui_json_rpc::CLIENT_SDK_TYPE_HEADER;
@@ -646,15 +635,6 @@ mod test_benfen {
 
     #[ignore]
     #[tokio::test]
-    async fn test_btc_price() {
-        let price = get_btc_price_in_usd(None).await.unwrap();
-        println!("Current price: {:.2}", price);
-        let prev_price = get_btc_price_in_usd(Some(1706640071000)).await.unwrap();
-        assert_eq!(prev_price, 43303.3);
-    }
-
-    #[ignore]
-    #[tokio::test]
     async fn test_global_nft_config() {
         let config = get_global_nft_config(create_http_client(), IndexerConfig::default())
             .await
@@ -677,6 +657,7 @@ mod test_benfen {
         let overview = get_nft_staking_overview(
             create_http_client(),
             IndexerConfig::default(),
+            vec![],
             1_708_326_921,
         )
         .await
@@ -686,6 +667,7 @@ mod test_benfen {
         let overview = get_nft_staking_overview(
             create_http_client(),
             IndexerConfig::default(),
+            vec![],
             1_707_100_000,
         )
         .await
@@ -733,19 +715,6 @@ mod test_benfen {
 
     #[ignore]
     #[tokio::test]
-    async fn test_staking_pool_exchange_rates() {
-        let pool_id = ObjectID::from_hex_literal(
-            "BFCe1438f7094e8af6e3dce4aa6565770acee658e422023fbc2a17d416a5735a28ef159",
-        )
-        .unwrap();
-        let rates = get_pool_exchange_rate(create_http_client(), pool_id, 155)
-            .await
-            .unwrap();
-        println!("{:?}", rates);
-    }
-
-    #[ignore]
-    #[tokio::test]
     async fn test_long_coin_price_in_usd() {
         let usd = super::get_mining_nft_cost_in_usd(IndexerConfig::default(), create_http_client())
             .await
@@ -758,6 +727,28 @@ mod test_benfen {
         println!("bfc: {}", bfc);
     }
 
+    #[ignore]
+    #[tokio::test]
+    async fn test_tick_price() {
+        let usd = super::get_price_at_tick(
+            create_http_client(),
+            &IndexerConfig::default().mining_nft_dex_contract,
+            4294950696u32,
+        )
+        .await
+        .unwrap();
+        println!("lower: {}", usd); // 0.190154
+
+        let usd = super::get_price_at_tick(
+            create_http_client(),
+            &IndexerConfig::default().mining_nft_dex_contract,
+            4294964496u32,
+        )
+        .await
+        .unwrap();
+        println!("upper: {}", usd); // 0.755794
+    }
+
     #[test]
     fn test_timestamp_ms_to_dt_string() {
         assert_eq!(timestamp_to_dt_string(1706640071000), "2024-01-30");
@@ -766,5 +757,10 @@ mod test_benfen {
     #[test]
     fn test_timestamp_ms_to_dt() {
         assert_eq!(timestamp_to_dt(1706640071000), 1706572800000)
+    }
+
+    #[test]
+    fn test_calculate_nft_cost() {
+        println!("{}", super::calculate_nft_cost(1));
     }
 }

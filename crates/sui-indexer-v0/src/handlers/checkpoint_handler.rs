@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::cmp::max;
+use std::collections::HashSet;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::{collections::BTreeMap, time::Duration};
 
@@ -29,14 +31,14 @@ use sui_json_rpc_types::{
     SuiTransactionBlockDataAPI, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI,
 };
 use sui_sdk::error::Error;
-use sui_types::base_types::{ObjectID, SequenceNumber};
+use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress};
+use sui_types::committee::EpochId;
 use sui_types::messages_checkpoint::{CheckpointCommitment, CheckpointSequenceNumber};
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_types::sui_system_state::{
     get_sui_system_state, PoolTokenExchangeRate, SuiSystemStateTrait,
 };
 use sui_types::SUI_SYSTEM_ADDRESS;
-use sui_types::{base_types::SuiAddress, committee::EpochId};
 
 use crate::models::address_stake;
 use crate::models::address_stake::AddressStake;
@@ -1390,11 +1392,6 @@ where
         spawn_monitored_task!(async move {
             handler.start_persisting_bfc_history_price().await;
         });
-
-        let handler = self.clone();
-        spawn_monitored_task!(async move {
-            handler.start_persisting_btc_history_price().await;
-        });
         let handler = self.clone();
         spawn_monitored_task!(async move {
             handler.start_settling_minging_nft_profits().await;
@@ -1420,6 +1417,7 @@ where
         let pendings = self.state.get_unsettle_mining_nfts(dt_timestamp_ms).await?;
         let mut results = vec![];
         let price = benfen::get_bfc_price_in_usd(self.http_client.clone()).await?;
+        let mut total_pending_bfc = 0u64;
         for nft in pendings.iter() {
             let current = self
                 .state
@@ -1440,22 +1438,30 @@ where
             } else {
                 0
             };
+            total_pending_bfc += pending_bfc;
             let mint_bfc = if current.claimed_reward > 0 {
                 current.claimed_reward - previous.pending_reward + pending_bfc as i64
             } else {
                 pending_bfc as i64 - previous.pending_reward
             };
+            let mint_usd = (mint_bfc as f64 * price) as i64;
             results.push(MiningNFTHistoryProfit {
                 owner: nft.owner.clone(),
                 miner_id: nft.miner_id.clone(),
                 dt_timestamp_ms,
                 mint_bfc,
-                mint_usd: (mint_bfc as f64 * price) as i64,
+                mint_usd,
                 pending_reward: pending_bfc as i64,
                 claimed_reward: current.claimed_reward,
+                cost_bfc: nft.cost_bfc,
             });
         }
-        self.state.persist_mining_nft_profits(results).await?;
+        if results.len() > 0 {
+            self.state.persist_mining_nft_profits(results).await?;
+            self.state
+                .calculate_mining_nft_overall(dt_timestamp_ms, total_pending_bfc)
+                .await?;
+        }
         Ok(())
     }
 
@@ -1481,60 +1487,6 @@ where
                 Err(err) => warn!("Failed to get BFC price with error: {:?}", err),
             }
         }
-    }
-
-    async fn start_persisting_btc_history_price(&self) {
-        let mut interval = tokio::time::interval(Duration::from_secs(600));
-        info!("Indexer starts to fill the prices of past 180 days...");
-        let started_at = benfen::get_yesterday_started_at();
-        let a_day_milis = 86_400_000;
-        for d in 0..180 {
-            let timestamp_ms = started_at - (d * a_day_milis);
-            if let Err(err) = self.persist_btc_price_if_absent(timestamp_ms).await {
-                warn!("Failed to persist btc price with error {:?}", err);
-            }
-        }
-        loop {
-            interval.tick().await;
-
-            info!("Indexer starts to maintain BTC price history peridocially...");
-            let timestamp_ms = benfen::get_yesterday_started_at();
-            if let Err(err) = self.persist_btc_price_if_absent(timestamp_ms).await {
-                warn!("Failed to persist btc price with error {:?}", err);
-            }
-        }
-    }
-
-    async fn persist_btc_price_if_absent(&self, timestamp_ms: i64) -> Result<(), IndexerError> {
-        if let Err(_) = self
-            .state
-            .get_historic_price(timestamp_ms, "BTC".to_owned(), true)
-            .await
-        {
-            let mut price_res = self.persist_btc_price(timestamp_ms).await;
-            while let Err(err) = price_res {
-                warn!(
-                    "Failed to persist BTC history price with error: {:?}, retrying...",
-                    err
-                );
-                tokio::time::sleep(std::time::Duration::from_secs(30)).await;
-                price_res = self.persist_btc_price(timestamp_ms).await;
-            }
-        }
-        Ok(())
-    }
-
-    async fn persist_btc_price(&self, timestamp_ms: i64) -> Result<(), IndexerError> {
-        let price = benfen::get_btc_price_in_usd(Some(timestamp_ms)).await?;
-
-        self.state
-            .persist_price(PriceHistory {
-                ts: timestamp_ms,
-                coin: "BTC".to_owned(),
-                price: (price * 10000.0) as i64,
-            })
-            .await?;
-        Ok(())
     }
 
     async fn index_mining_nfts(
@@ -1576,6 +1528,9 @@ where
             let display = benfen::get_nft_display(self.http_client.clone(), object_id).await?;
             mining_nft.miner_name = display.name.clone();
             mining_nft.miner_url = display.image_url.clone();
+            mining_nft.cost_bfc =
+                benfen::get_mining_nft_cost_in_bfc(self.config.clone(), self.http_client.clone())
+                    .await? as i64;
             self.state
                 .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft))
                 .await?;
@@ -1586,6 +1541,48 @@ where
                 .await?;
         }
 
+        let liq_admin_addrs: HashSet<AccountAddress> = self
+            .config
+            .mining_nft_liquidity_admins
+            .iter()
+            .map(|x| SuiAddress::from_str(x).unwrap_or_default().into())
+            .collect();
+
+        let liq_events: Vec<_> = events
+            .iter()
+            .filter(|x| {
+                liq_admin_addrs.contains(
+                    &AccountAddress::from_hex_literal(&x.sender).unwrap_or(AccountAddress::ZERO),
+                )
+            })
+            .cloned()
+            .collect();
+        if liq_events.len() > 0 {
+            let liquidities = mining_nft::extract_liquidities_from_event(&liq_events)?;
+            let mut mls = vec![];
+            for liq in liquidities.into_iter() {
+                let base_price_gte = benfen::get_price_at_tick(
+                    self.http_client.clone(),
+                    &self.config.mining_nft_dex_contract,
+                    liq.1.tick_lower,
+                )
+                .await?;
+                let base_price_lte = benfen::get_price_at_tick(
+                    self.http_client.clone(),
+                    &self.config.mining_nft_dex_contract,
+                    liq.1.tick_upper,
+                )
+                .await?;
+
+                let mut ml: mining_nft::MiningNFTLiquiditiy = (checkpoint.clone(), liq).into();
+                ml.base_price_gte = (base_price_gte * mining_nft::PRICE_TO_INT_SCALE) as i64;
+                ml.base_price_lte = (base_price_lte * mining_nft::PRICE_TO_INT_SCALE) as i64;
+                mls.push(ml);
+            }
+            if mls.len() > 0 {
+                self.state.persist_mining_nft_liquidities(mls).await?;
+            }
+        }
         Ok(())
     }
 

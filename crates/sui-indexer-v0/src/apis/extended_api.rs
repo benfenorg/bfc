@@ -10,17 +10,19 @@ use jsonrpsee::http_client::HttpClient;
 use sui_json_rpc::api::{
     validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS,
 };
+use sui_json_rpc::error::SuiRpcInputError;
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
     AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
     IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page,
-    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTProfitRate,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity,
     SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
     SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
 };
 use sui_open_rpc::Module;
 use sui_types::base_types::{SequenceNumber, SuiAddress};
 
+use sui_types::parse_sui_struct_tag;
 use sui_types::sui_serde::BigInt;
 
 use crate::errors::IndexerError;
@@ -219,9 +221,16 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
 
     async fn get_nft_staking_overview(&self) -> RpcResult<NFTStakingOverview> {
         let timestamp = Utc::now().timestamp();
+
+        let overall_profits = self
+            .state
+            .get_owned_mining_nft_profits(SuiAddress::ZERO, None)
+            .await?;
+
         let mut staking = benfen::get_nft_staking_overview(
             self.fullnode.clone(),
             self.config.clone(),
+            overall_profits,
             timestamp as u64,
         )
         .await?;
@@ -234,22 +243,6 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
             .price as f64
             / 10_000f64;
         staking.bfc_24h_rate = (bfc_now_price - bfc_past_price) / bfc_past_price;
-
-        let btc_past_prices = self
-            .state
-            .get_past_prices((timestamp - 86_400 * 180) * 1000, "BTC".to_owned())
-            .await?;
-
-        if btc_past_prices.len() > 0 {
-            let inital_price = btc_past_prices[0].price as f64;
-            staking.btc_past_profit_rates = btc_past_prices
-                .iter()
-                .map(|x| SuiMiningNFTProfitRate {
-                    rate: (x.price as f64 - inital_price) / inital_price,
-                    dt_timestamp_ms: x.ts as u64,
-                })
-                .collect();
-        }
         Ok(staking)
     }
 
@@ -273,7 +266,7 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         &self,
         address: SuiAddress,
     ) -> RpcResult<SuiOwnedMiningNFTOverview> {
-        let (mut r, ticket_ids) = self.state.get_mining_nft_overview(address).await?;
+        let (mut r, ticket_ids, total_cost) = self.state.get_mining_nft_overview(address).await?;
         let bfc_now_price = benfen::get_bfc_price_in_usd(self.fullnode.clone()).await?;
         r.bfc_usd_price = bfc_now_price;
         for ticket_id in ticket_ids.iter() {
@@ -285,6 +278,11 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
             )
             .await?;
         }
+        r.profit_rate = if total_cost > 0f64 {
+            r.total_reward as f64 / total_cost
+        } else {
+            0f64
+        };
 
         Ok(r)
     }
@@ -296,9 +294,22 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
     ) -> RpcResult<Vec<SuiOwnedMiningNFTProfit>> {
         let r = self
             .state
-            .get_owned_mining_nft_profits(address, limit)
+            .get_owned_mining_nft_profits(address, Some(limit))
             .await?;
         Ok(r)
+    }
+
+    async fn get_mining_nft_recent_liquidities(
+        &self,
+        base_coin: String,
+    ) -> RpcResult<Vec<SuiMiningNFTLiquidity>> {
+        let base_coin = parse_sui_struct_tag(&base_coin)
+            .map_err(|e| SuiRpcInputError::CannotParseSuiStructTag(format!("{e}")))?;
+        let results = self
+            .state
+            .get_mining_nft_liquidities(base_coin.to_string(), 5usize)
+            .await?;
+        Ok(results.into_iter().map(|x| x.into()).collect())
     }
 }
 
