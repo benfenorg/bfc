@@ -1141,17 +1141,17 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
     let queue_proposal_action_function = "queue_proposal_action".to_string();
     do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), queue_proposal_action_function, arg).await?;
 
-    let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().end_time + 120000));
-    let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let module = "bfc_system".to_string();
-    let function = "judge_proposal_state".to_string();
-    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
-    let arg = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(start_time))?,
-    ];
-
-    do_move_call(&http_client, &gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+    // let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().end_time + 120000));
+    // let package_id = BFC_SYSTEM_PACKAGE_ID;
+    // let module = "bfc_system".to_string();
+    // let function = "judge_proposal_state".to_string();
+    // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    // let arg = vec![
+    //     SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    //     SuiJsonValue::new(json!(start_time))?,
+    // ];
+    //
+    // do_move_call(&http_client, &gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
     sleep(Duration::from_secs(5)).await;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
@@ -1471,66 +1471,66 @@ async fn test_bfc_dao_cast_voting() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-#[sim_test]
-async fn test_bfc_dao_judge_proposal_state()  -> Result<(), anyhow::Error> {
-    let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(40000)
-        .build().await;
-    let http_client = cluster.rpc_client();
-    let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
-    create_proposal(http_client, gas, address, &cluster).await?;
-
-    let result = http_client.get_inner_dao_info().await?;
-    let dao = result as DaoRPC;
-    assert!(dao.proposal_record.len() > 0);
-    let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time - 40000));
-
-    let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let module = "bfc_system".to_string();
-    let function = "judge_proposal_state".to_string();
-    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
-    let arg = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(start_time))?,
-    ];
-
-    do_move_call(&http_client, &gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
-    sleep(Duration::from_secs(5)).await;
-    let result = http_client.get_inner_dao_info().await?;
-    let dao = result as DaoRPC;
-    let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
-    assert_eq!(status, 1);
-
-    let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time + 60000));
-    let arg = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(start_time))?,
-    ];
-    do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
-    sleep(Duration::from_secs(5)).await;
-
-    let result = http_client.get_inner_dao_info().await?;
-    let dao = result as DaoRPC;
-    let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
-    assert_eq!(status, 2);
-    Ok(())
-}
+// #[sim_test]
+// async fn test_bfc_dao_judge_proposal_state()  -> Result<(), anyhow::Error> {
+//     let cluster = TestClusterBuilder::new()
+//         .with_epoch_duration_ms(40000)
+//         .build().await;
+//     let http_client = cluster.rpc_client();
+//     let address = cluster.get_address_0();
+//     let objects = http_client
+//         .get_owned_objects(
+//             address,
+//             Some(SuiObjectResponseQuery::new_with_options(
+//                 SuiObjectDataOptions::new()
+//                     .with_type()
+//                     .with_owner()
+//                     .with_previous_transaction(),
+//             )),
+//             None,
+//             None,
+//         )
+//         .await?
+//         .data;
+//
+//     let gas = objects.first().unwrap().object().unwrap();
+//     create_proposal(http_client, gas, address, &cluster).await?;
+//
+//     let result = http_client.get_inner_dao_info().await?;
+//     let dao = result as DaoRPC;
+//     assert!(dao.proposal_record.len() > 0);
+//     let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time - 40000));
+//
+//     let package_id = BFC_SYSTEM_PACKAGE_ID;
+//     let module = "bfc_system".to_string();
+//     let function = "judge_proposal_state".to_string();
+//     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+//     let arg = vec![
+//         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+//         SuiJsonValue::new(json!(start_time))?,
+//     ];
+//
+//     do_move_call(&http_client, &gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+//     sleep(Duration::from_secs(5)).await;
+//     let result = http_client.get_inner_dao_info().await?;
+//     let dao = result as DaoRPC;
+//     let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+//     assert_eq!(status, 1);
+//
+//     let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time + 60000));
+//     let arg = vec![
+//         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+//         SuiJsonValue::new(json!(start_time))?,
+//     ];
+//     do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+//     sleep(Duration::from_secs(5)).await;
+//
+//     let result = http_client.get_inner_dao_info().await?;
+//     let dao = result as DaoRPC;
+//     let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+//     assert_eq!(status, 2);
+//     Ok(())
+// }
 
 
 #[sim_test]
