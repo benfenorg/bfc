@@ -2373,7 +2373,7 @@ queue agreed proposal to execute.
 extract proposal action to execute.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_extract_proposal_action">extract_proposal_action</a>(proposal: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">bfc_dao::BFCDaoAction</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_extract_proposal_action">extract_proposal_action</a>(proposal: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>): <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">bfc_dao::BFCDaoAction</a>
 </code></pre>
 
 
@@ -2382,7 +2382,7 @@ extract proposal action to execute.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_extract_proposal_action">extract_proposal_action</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_extract_proposal_action">extract_proposal_action</a>(
     proposal: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>,
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: & Clock,
 ): <a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a>  {
@@ -2421,7 +2421,7 @@ extract proposal action to execute.
 check whether a proposal exists in <code>proposer_address</code> with id <code>proposal_id</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_proposal_exists">proposal_exists</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_proposal_exists">proposal_exists</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>): bool
 </code></pre>
 
 
@@ -2430,7 +2430,7 @@ check whether a proposal exists in <code>proposer_address</code> with id <code>p
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_proposal_exists">proposal_exists</a> (
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_proposal_exists">proposal_exists</a> (
     dao : &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,
     proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>,
 ): bool {
@@ -2929,7 +2929,7 @@ update function, modify dao config.
 if any param is 0, it means no change to that param.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_dao_config">modify_dao_config</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, _: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, voting_delay: u64, voting_period: u64, voting_quorum_rate: u8, min_action_delay: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_dao_config">modify_dao_config</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, _: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, voting_delay: u64, voting_period: u64, voting_quorum_rate: u8, min_action_delay: u64)
 </code></pre>
 
 
@@ -2938,7 +2938,7 @@ if any param is 0, it means no change to that param.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_dao_config">modify_dao_config</a>(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_dao_config">modify_dao_config</a>(
     dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,
     _: &BFCDaoManageKey,
     voting_delay: u64,
@@ -3326,7 +3326,7 @@ set min action delay
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_proposal_obj">modify_proposal_obj</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, proposal_obj: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_proposal_obj">modify_proposal_obj</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, proposal_obj: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, index: u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>)
 </code></pre>
 
 
@@ -3335,7 +3335,7 @@ set min action delay
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_proposal_obj">modify_proposal_obj</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>, proposal_obj: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>, index : u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_modify_proposal_obj">modify_proposal_obj</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>, proposal_obj: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>, index : u8, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock) {
     //<b>let</b> proposal = proposal_obj.proposal;
     <b>if</b> (index == 1) {
         // Pending

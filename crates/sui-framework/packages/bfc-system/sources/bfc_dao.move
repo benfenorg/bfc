@@ -791,7 +791,7 @@ module bfc_system::bfc_dao {
     }
 
     /// extract proposal action to execute.
-    public fun extract_proposal_action(
+    public(friend) fun extract_proposal_action(
         proposal: &mut Proposal,
         clock: & Clock,
     ): BFCDaoAction  {
@@ -805,7 +805,7 @@ module bfc_system::bfc_dao {
     }
 
     /// check whether a proposal exists in `proposer_address` with id `proposal_id`.
-    public fun proposal_exists (
+    public(friend) fun proposal_exists (
         dao : &mut Dao,
         proposal: &Proposal,
     ): bool {
@@ -939,7 +939,7 @@ module bfc_system::bfc_dao {
 
     /// update function, modify dao config.
     /// if any param is 0, it means no change to that param.
-    public fun modify_dao_config(
+    public(friend) fun modify_dao_config(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         voting_delay: u64,
@@ -1076,7 +1076,7 @@ module bfc_system::bfc_dao {
     // }
 
 
-    public fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
+    public(friend) fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
         if (index == 1) {
             // Pending

@@ -507,7 +507,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_balance">bfc_balance</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_balance">bfc_balance</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">voting_pool::VotingPool</a>): u64
 </code></pre>
 
 
@@ -516,7 +516,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_balance">bfc_balance</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>): u64 { pool.bfc_balance }
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_balance">bfc_balance</a>(pool: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingPool">VotingPool</a>): u64 { pool.bfc_balance }
 </code></pre>
 
 
@@ -541,7 +541,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_id">pool_id</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_id">pool_id</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
 </code></pre>
 
 
@@ -550,7 +550,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_id">pool_id</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): ID { voting_bfc.pool_id }
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_id">pool_id</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): ID { voting_bfc.pool_id }
 </code></pre>
 
 
@@ -575,7 +575,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_voting_bfc_amount">voting_bfc_amount</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_voting_bfc_amount">voting_bfc_amount</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): u64
 </code></pre>
 
 
@@ -584,7 +584,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_voting_bfc_amount">voting_bfc_amount</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): u64 { <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&voting_bfc.principal) }
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_voting_bfc_amount">voting_bfc_amount</a>(voting_bfc: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): u64 { <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&voting_bfc.principal) }
 </code></pre>
 
 
@@ -631,7 +631,7 @@ and the remaining principal is left in <code>self</code>.
 All the other parameters of the votingBfc like <code>voting</code> or <code>pool_id</code> remain the same.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split">split</a>(self: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, split_amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split">split</a>(self: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, split_amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>
 </code></pre>
 
 
@@ -640,7 +640,7 @@ All the other parameters of the votingBfc like <code>voting</code> or <code>pool
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split">split</a>(self: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>, split_amount: u64, ctx: &<b>mut</b> TxContext): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a> {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_split">split</a>(self: &<b>mut</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>, split_amount: u64, ctx: &<b>mut</b> TxContext): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a> {
     <b>let</b> original_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.principal);
     <b>assert</b>!(split_amount &lt;= original_amount, <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_EInsufficientBfcTokenBalance">EInsufficientBfcTokenBalance</a>);
     <b>let</b> remaining_amount = original_amount - split_amount;
@@ -685,7 +685,7 @@ All the other parameters of the votingBfc like <code>voting</code> or <code>pool
 Returns true if all the staking parameters of the voting bfc except the principal are identical
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_is_equal_staking_metadata">is_equal_staking_metadata</a>(self: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, other: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_is_equal_staking_metadata">is_equal_staking_metadata</a>(self: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>, other: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">voting_pool::VotingBfc</a>): bool
 </code></pre>
 
 
@@ -694,7 +694,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_is_equal_staking_metadata">is_equal_staking_metadata</a>(self: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>, other: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): bool {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_is_equal_staking_metadata">is_equal_staking_metadata</a>(self: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>, other: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_VotingBfc">VotingBfc</a>): bool {
     (self.pool_id == other.pool_id)
 }
 </code></pre>
@@ -721,7 +721,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>
 </code></pre>
 
 
@@ -730,7 +730,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a> {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(): <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a> {
     <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_initial_exchange_rate">initial_exchange_rate</a>()
 }
 </code></pre>
@@ -757,7 +757,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_amount">bfc_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_amount">bfc_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>): u64
 </code></pre>
 
 
@@ -766,7 +766,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_amount">bfc_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>): u64 {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_bfc_amount">bfc_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>): u64 {
     exchange_rate.bfc_amount
 }
 </code></pre>
@@ -793,7 +793,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_amount">pool_token_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_amount">pool_token_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">voting_pool::PoolTokenExchangeRate</a>): u64
 </code></pre>
 
 
@@ -802,7 +802,7 @@ Returns true if all the staking parameters of the voting bfc except the principa
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_amount">pool_token_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>): u64 {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_pool_token_amount">pool_token_amount</a>(exchange_rate: &<a href="bfc_dao_voting_pool.md#0xc8_voting_pool_PoolTokenExchangeRate">PoolTokenExchangeRate</a>): u64 {
     exchange_rate.pool_token_amount
 }
 </code></pre>
