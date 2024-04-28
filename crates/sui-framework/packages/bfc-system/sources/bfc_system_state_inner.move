@@ -531,7 +531,7 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::revoke_vote(&mut system_state.dao, proposal, my_vote, voting_power, clock, ctx);
     }
 
-    public fun withdraw_voting(system_state: &mut BfcSystemStateInner,
+    public(friend) fun withdraw_voting(system_state: &mut BfcSystemStateInner,
                                voting_bfc: VotingBfc,
                                clock: & Clock,
                                ctx: &mut TxContext) {
