@@ -1423,7 +1423,8 @@ Error codes
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">create_dao</a>(        admins: <a href="">vector</a>&lt;<b>address</b>&gt;,
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">create_dao</a>(
+                                admins: <a href="">vector</a>&lt;<b>address</b>&gt;,
                               ctx: &<b>mut</b> TxContext ) : <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a> {
 
 

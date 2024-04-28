@@ -284,7 +284,8 @@ module bfc_system::bfc_dao {
     }
 
     // Part 3: transfer the BFC Dao object to the sender
-    public(friend) fun create_dao(        admins: vector<address>,
+    public(friend) fun create_dao(
+                                    admins: vector<address>,
                                   ctx: &mut TxContext ) : Dao {
 
 
