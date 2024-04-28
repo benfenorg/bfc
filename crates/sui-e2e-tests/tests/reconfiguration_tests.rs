@@ -499,6 +499,7 @@ async fn get_checkpoints(http_client: &HttpClient,descending_order: bool) -> Res
 }
 
 #[sim_test]
+#[ignore]
 async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
     //telemetry_subscribers::init_for_testing();
 

@@ -119,6 +119,7 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
+    #[test_only]
     public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
