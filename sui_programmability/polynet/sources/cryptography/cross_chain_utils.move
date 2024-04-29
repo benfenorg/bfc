@@ -9,8 +9,8 @@ module polynet::cross_chain_utils {
     use sui::event;
 
     const MERKLE_PROOF_NODE_LEN: u64 = 33;
-    const POLYCHAIN_SIGNATURE_LEN: u64 = 65;
-    const APTOS_SIGNATURE_LEN: u64 = 65;
+    const POLYCHAIN_SIGNATURE_LEN: u64 = 34;
+    const APTOS_SIGNATURE_LEN: u64 = 35;
 
     const EINVALID_POSITION: u64 = 2003;
     const EROOT_NOT_MATCH: u64 = 2004;
