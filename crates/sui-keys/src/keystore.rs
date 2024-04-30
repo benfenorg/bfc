@@ -13,7 +13,7 @@ use std::fmt::Write;
 use std::fmt::{Display, Formatter};
 use std::fs;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use sui_types::base_types::SuiAddress;
 use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
@@ -21,6 +21,8 @@ use sui_types::crypto::get_key_pair_from_rng;
 use sui_types::crypto::{
     enum_dispatch, EncodeDecodeBase64, PublicKey, Signature, SignatureScheme, SuiKeyPair,
 };
+use crate::aes_utils::{default_des_128_decode, default_des_128_encode};
+
 
 #[derive(Serialize, Deserialize)]
 #[enum_dispatch(AccountKeystore)]
@@ -176,12 +178,29 @@ impl AccountKeystore for FileBasedKeystore {
 impl FileBasedKeystore {
     pub fn new(path: &PathBuf) -> Result<Self, anyhow::Error> {
         let keys = if path.exists() {
-            let reader = BufReader::new(
+            let mut reader = BufReader::new(
                 File::open(path)
                     .map_err(|e| anyhow!("Can't open FileBasedKeystore from {:?}: {e}", path))?,
             );
-            let kp_strings: Vec<String> = serde_json::from_reader(reader)
-                .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
+            //add aes-128-cbc default decryption if the file is encrypted
+
+            let mut contents = String::new();
+            reader.read_to_string(&mut contents).expect("Can not read keytore file content.");
+
+
+            let mut kp_strings: Vec<String> = Vec::new();
+            if contents.starts_with("[") {
+                kp_strings = serde_json::from_str(&*contents)
+                    .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
+
+            }else {
+                let decode_data = default_des_128_decode(contents);
+                kp_strings = serde_json::from_str(&*decode_data)
+                    .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
+            }
+
+
+
             kp_strings
                 .iter()
                 .map(|kpstr| {
@@ -214,7 +233,10 @@ impl FileBasedKeystore {
                     .collect::<Vec<_>>(),
             )
             .unwrap();
-            fs::write(path, store)?
+            //add aes-128-cbc default encryption
+            let encode_data = default_des_128_encode(store.as_bytes());
+
+            fs::write(path, encode_data)?
         }
         Ok(())
     }
