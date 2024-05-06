@@ -5,8 +5,8 @@ use crate::parser::{parse_address_number, NumberFormat};
 use anyhow::anyhow;
 use move_core_types::account_address::AccountAddress;
 use num_bigint::BigUint;
-use std::{fmt, hash::Hash};
 use sha2::{Digest, Sha256};
+use std::{fmt, hash::Hash};
 
 // Parsed Address, either a name or a numerical address
 #[derive(Eq, PartialEq, Debug, Clone)]
@@ -30,15 +30,15 @@ impl ParsedAddress {
         self,
         mapping: &impl Fn(&str) -> Option<AccountAddress>,
     ) -> anyhow::Result<AccountAddress> {
-
         match self {
             Self::Named(n) => {
-
-                if n.as_str().starts_with("bfc") || n.as_str().starts_with("BFC"){
-                    let bfc_str = convert_to_evm_address(n);
-                    return mapping(bfc_str.as_str()).ok_or_else(|| anyhow!("Unbound named address: '{}'", bfc_str))
-                }
-                return mapping(n.as_str()).ok_or_else(|| anyhow!("Unbound named address: '{}'", n))
+                // Moved to parse_address_impl
+                // if n.as_str().starts_with("bfc") || n.as_str().starts_with("BFC") {
+                //     let bfc_str = convert_to_evm_address(n);
+                //     return Ok(AccountAddress::from_hex_literal(&bfc_str)?);
+                // }
+                return mapping(n.as_str())
+                    .ok_or_else(|| anyhow!("Unbound named address: '{}'", n));
             }
             Self::Numerical(a) => Ok(a.into_inner()),
         }

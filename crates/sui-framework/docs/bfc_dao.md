@@ -888,52 +888,6 @@ return: (id, start_time, end_time, for_votes, against_votes).
 
 
 
-<a name="0xc8_bfc_dao_DEFEATED"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_DEFEATED">DEFEATED</a>: u8 = 3;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_dao_EXECUTABLE"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_EXECUTABLE">EXECUTABLE</a>: u8 = 6;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_dao_EXTRACTED"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_EXTRACTED">EXTRACTED</a>: u8 = 7;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_dao_PENDING"></a>
-
-Proposal state
-
-
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_PENDING">PENDING</a>: u8 = 1;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_dao_QUEUED"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_QUEUED">QUEUED</a>: u8 = 5;
-</code></pre>
-
-
-
 <a name="0xc8_bfc_dao_DEFAULT_BFC_SUPPLY"></a>
 
 
@@ -984,6 +938,15 @@ Proposal state
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_VOTE_QUORUM_RATE">DEFAULT_VOTE_QUORUM_RATE</a>: u8 = 10;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_DEFEATED"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_DEFEATED">DEFEATED</a>: u8 = 3;
 </code></pre>
 
 
@@ -1151,6 +1114,24 @@ Error codes
 
 
 
+<a name="0xc8_bfc_dao_EXECUTABLE"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_EXECUTABLE">EXECUTABLE</a>: u8 = 6;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_EXTRACTED"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_EXTRACTED">EXTRACTED</a>: u8 = 7;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH"></a>
 
 
@@ -1228,6 +1209,25 @@ Error codes
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MIN_VOTING_THRESHOLD">MIN_VOTING_THRESHOLD</a>: u64 = 1000000000;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_PENDING"></a>
+
+Proposal state
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_PENDING">PENDING</a>: u8 = 1;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_QUEUED"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_QUEUED">QUEUED</a>: u8 = 5;
 </code></pre>
 
 
