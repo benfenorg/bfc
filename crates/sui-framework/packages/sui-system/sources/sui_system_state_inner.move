@@ -1061,10 +1061,21 @@ module sui_system::sui_system_state_inner {
         validator_set::validator_staking_pool_id(&self.validators, validator_addr)
     }
 
+    public(friend) fun validator_stable_pool_id<STABLE>(self: &SuiSystemStateInnerV2, validator_addr: address): ID {
+
+        validator_set::validator_stable_pool_id<STABLE>(&self.validators, validator_addr)
+    }
+
     /// Returns reference to the staking pool mappings that map pool ids to active validator addresses
     public(friend) fun validator_staking_pool_mappings(self: &SuiSystemStateInnerV2): &Table<ID, address> {
 
         validator_set::staking_pool_mappings(&self.validators)
+    }
+
+    /// Returns reference to the stable staking pool mappings that map pool ids to active validator addresses
+    public(friend) fun validator_stable_staking_pool_mappings(self: &SuiSystemStateInnerV2): &Table<ID, address> {
+
+        validator_set::stalbe_staking_pool_mappings(&self.validators)
     }
 
     /// Returns all the validators who are currently reporting `addr`

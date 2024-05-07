@@ -33,6 +33,7 @@
 -  [Function `validator_stable_stake_amount`](#0x3_validator_set_validator_stable_stake_amount)
 -  [Function `validator_staking_pool_id`](#0x3_validator_set_validator_staking_pool_id)
 -  [Function `staking_pool_mappings`](#0x3_validator_set_staking_pool_mappings)
+-  [Function `stalbe_staking_pool_mappings`](#0x3_validator_set_stalbe_staking_pool_mappings)
 -  [Function `pool_exchange_rates`](#0x3_validator_set_pool_exchange_rates)
 -  [Function `next_epoch_validator_count`](#0x3_validator_set_next_epoch_validator_count)
 -  [Function `is_active_validator_by_sui_address`](#0x3_validator_set_is_active_validator_by_sui_address)
@@ -762,6 +763,16 @@ Called by <code><a href="sui_system.md#0x3_sui_system">sui_system</a></code> to 
     // Add <a href="validator.md#0x3_validator">validator</a> <b>to</b> the candidates mapping and the pool id mappings so that users can start
     // staking <b>with</b> this candidate.
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(&<b>mut</b> self.staking_pool_mappings, staking_pool_id(&<a href="validator.md#0x3_validator">validator</a>), validator_address);
+    //stable staking <b>with</b> this candidate.
+    <b>let</b> id_vec = all_stable_pool_id(&<a href="validator.md#0x3_validator">validator</a>);
+    <b>let</b> id_len = <a href="_length">vector::length</a>(&id_vec);
+    <b>let</b> j = 0;
+    <b>while</b> (j &lt; id_len) {
+        <b>let</b> id = <a href="_borrow">vector::borrow</a>(&id_vec, j);
+        <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(&<b>mut</b> self.stable_pool_mappings, *id, sui_address(&<a href="validator.md#0x3_validator">validator</a>));
+        j = j + 1;
+    };
+
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_add">table::add</a>(
         &<b>mut</b> self.validator_candidates,
         sui_address(&<a href="validator.md#0x3_validator">validator</a>),
@@ -804,6 +815,15 @@ Called by <code><a href="sui_system.md#0x3_sui_system">sui_system</a></code> to 
 
     // Remove the <a href="validator.md#0x3_validator">validator</a>'s staking pool from mappings.
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.staking_pool_mappings, staking_pool_id);
+    // Remove the <a href="validator.md#0x3_validator">validator</a>'s stable staking pool from mappings.
+    <b>let</b> id_vec = all_stable_pool_id(&<a href="validator.md#0x3_validator">validator</a>);
+    <b>let</b> id_len = <a href="_length">vector::length</a>(&id_vec);
+    <b>let</b> j = 0;
+    <b>while</b> (j &lt; id_len) {
+        <b>let</b> id = <a href="_borrow">vector::borrow</a>(&id_vec, j);
+        <a href="../../../.././build/Sui/docs/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.stable_pool_mappings, *id);
+        j = j + 1;
+    };
 
     // Deactivate the staking pool.
     <b>let</b> deactivation_epoch = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx);
@@ -1579,6 +1599,30 @@ gas price, weighted by stake.
 
 </details>
 
+<a name="0x3_validator_set_stalbe_staking_pool_mappings"></a>
+
+## Function `stalbe_staking_pool_mappings`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_stalbe_staking_pool_mappings">stalbe_staking_pool_mappings</a>(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>): &<a href="../../../.././build/Sui/docs/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, <b>address</b>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_stalbe_staking_pool_mappings">stalbe_staking_pool_mappings</a>(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>): &Table&lt;ID, <b>address</b>&gt; {
+    &self.stable_pool_mappings
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_set_pool_exchange_rates"></a>
 
 ## Function `pool_exchange_rates`
@@ -2337,6 +2381,16 @@ is removed from <code>validators</code> and its staking pool is put into the <co
 
     // Remove the <a href="validator.md#0x3_validator">validator</a> from our tables.
     <a href="../../../.././build/Sui/docs/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.staking_pool_mappings, validator_pool_id);
+    // Remove the <a href="validator.md#0x3_validator">validator</a>'s stable staking pool from m our tables.
+    <b>let</b> id_vec = all_stable_pool_id(&<a href="validator.md#0x3_validator">validator</a>);
+    <b>let</b> id_len = <a href="_length">vector::length</a>(&id_vec);
+    <b>let</b> j = 0;
+    <b>while</b> (j &lt; id_len) {
+        <b>let</b> id = <a href="_borrow">vector::borrow</a>(&id_vec, j);
+        <a href="../../../.././build/Sui/docs/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.stable_pool_mappings, *id);
+        j = j + 1;
+    };
+
     <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.at_risk_validators, &validator_address)) {
         <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> self.at_risk_validators, &validator_address);
     };

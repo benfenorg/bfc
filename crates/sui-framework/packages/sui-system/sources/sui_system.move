@@ -738,10 +738,24 @@ module sui_system::sui_system {
     }
 
     #[test_only]
+    /// Returns the stable staking pool id of a given validator.
+    public fun validator_stable_staking_pool_id<STABLE>(wrapper: &mut SuiSystemState, validator_addr: address): ID {
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::validator_stable_pool_id<STABLE>(self, validator_addr)
+    }
+
+    #[test_only]
     /// Returns reference to the staking pool mappings that map pool ids to active validator addresses
     public fun validator_staking_pool_mappings(wrapper: &mut SuiSystemState): &Table<ID, address> {
         let self = load_system_state(wrapper);
         sui_system_state_inner::validator_staking_pool_mappings(self)
+    }
+
+    #[test_only]
+    /// Returns reference to the stable staking pool mappings that map pool ids to active validator addresses
+    public fun validator_stable_staking_pool_mappings(wrapper: &mut SuiSystemState): &Table<ID, address> {
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::validator_stable_staking_pool_mappings(self)
     }
 
     #[test_only]

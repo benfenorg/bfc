@@ -238,6 +238,16 @@ module sui_system::validator_set {
         // Add validator to the candidates mapping and the pool id mappings so that users can start
         // staking with this candidate.
         table::add(&mut self.staking_pool_mappings, staking_pool_id(&validator), validator_address);
+        //stable staking with this candidate.
+        let id_vec = all_stable_pool_id(&validator);
+        let id_len = vector::length(&id_vec);
+        let j = 0;
+        while (j < id_len) {
+            let id = vector::borrow(&id_vec, j);
+            table::add(&mut self.stable_pool_mappings, *id, sui_address(&validator));
+            j = j + 1;
+        };
+
         table::add(
             &mut self.validator_candidates,
             sui_address(&validator),
@@ -260,6 +270,15 @@ module sui_system::validator_set {
 
         // Remove the validator's staking pool from mappings.
         table::remove(&mut self.staking_pool_mappings, staking_pool_id);
+        // Remove the validator's stable staking pool from mappings.
+        let id_vec = all_stable_pool_id(&validator);
+        let id_len = vector::length(&id_vec);
+        let j = 0;
+        while (j < id_len) {
+            let id = vector::borrow(&id_vec, j);
+            table::remove(&mut self.stable_pool_mappings, *id);
+            j = j + 1;
+        };
 
         // Deactivate the staking pool.
         let deactivation_epoch = tx_context::epoch(ctx);
@@ -655,8 +674,17 @@ module sui_system::validator_set {
         validator::staking_pool_id(validator)
     }
 
+    public fun validator_stable_pool_id<STABLE>(self: &ValidatorSet, validator_address: address): ID {
+        let validator = get_validator_ref(&self.active_validators, validator_address);
+        validator::stable_pool_id<STABLE>(validator)
+    }
+
     public fun staking_pool_mappings(self: &ValidatorSet): &Table<ID, address> {
         &self.staking_pool_mappings
+    }
+
+    public fun stalbe_staking_pool_mappings(self: &ValidatorSet): &Table<ID, address> {
+        &self.stable_pool_mappings
     }
 
     public(friend) fun pool_exchange_rates(
@@ -954,6 +982,16 @@ module sui_system::validator_set {
 
         // Remove the validator from our tables.
         table::remove(&mut self.staking_pool_mappings, validator_pool_id);
+        // Remove the validator's stable staking pool from m our tables.
+        let id_vec = all_stable_pool_id(&validator);
+        let id_len = vector::length(&id_vec);
+        let j = 0;
+        while (j < id_len) {
+            let id = vector::borrow(&id_vec, j);
+            table::remove(&mut self.stable_pool_mappings, *id);
+            j = j + 1;
+        };
+
         if (vec_map::contains(&self.at_risk_validators, &validator_address)) {
             vec_map::remove(&mut self.at_risk_validators, &validator_address);
         };
