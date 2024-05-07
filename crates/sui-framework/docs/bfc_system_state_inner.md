@@ -35,6 +35,7 @@
 -  [Function `vault_ticks`](#0xc8_bfc_system_state_inner_vault_ticks)
 -  [Function `vault_positions`](#0xc8_bfc_system_state_inner_vault_positions)
 -  [Function `get_total_supply`](#0xc8_bfc_system_state_inner_get_total_supply)
+-  [Function `vault_set_pause`](#0xc8_bfc_system_state_inner_vault_set_pause)
 -  [Function `bfc_system_parameters`](#0xc8_bfc_system_state_inner_bfc_system_parameters)
 -  [Function `bfc_system_treasury_parameters`](#0xc8_bfc_system_state_inner_bfc_system_treasury_parameters)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_state_inner_create_bfcdao_action)
@@ -311,6 +312,15 @@ Default stable base points
 
 
 
+<a name="0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>: <b>address</b> = 0;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_create_inner_state"></a>
 
 ## Function `create_inner_state`
@@ -350,6 +360,7 @@ Default stable base points
 ): <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
 
     <b>let</b> dao = <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">bfc_dao::create_dao</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
+    <a href="treasury.md#0xc8_treasury_create_treasury_pause_cap">treasury::create_treasury_pause_cap</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>, ctx);
     <b>let</b> (t, remain_balance, rate_map) = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(
         bfc_balance,
         usd_supply,
@@ -1132,6 +1143,30 @@ X-vault
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_total_supply">get_total_supply</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): u64 {
     <a href="treasury.md#0xc8_treasury_get_total_supply">treasury::get_total_supply</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_vault_set_pause"></a>
+
+## Function `vault_set_pause`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(cap: &<a href="treasury.md#0xc8_treasury_TreasuryPauseCap">treasury::TreasuryPauseCap</a>, self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(cap: &TreasuryPauseCap, self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>, pause: bool) {
+    <a href="treasury.md#0xc8_treasury_vault_set_pause">treasury::vault_set_pause</a>&lt;StableCoinType&gt;(cap, &<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pause)
 }
 </code></pre>
 

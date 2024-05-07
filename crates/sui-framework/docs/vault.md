@@ -13,6 +13,7 @@
 -  [Struct `FlashSwapReceipt`](#0xc8_vault_FlashSwapReceipt)
 -  [Constants](#@Constants_0)
 -  [Function `create_vault`](#0xc8_vault_create_vault)
+-  [Function `set_pause`](#0xc8_vault_set_pause)
 -  [Function `init_positions`](#0xc8_vault_init_positions)
 -  [Function `open_position`](#0xc8_vault_open_position)
 -  [Function `close_position`](#0xc8_vault_close_position)
@@ -808,6 +809,34 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 <pre><code><b>pragma</b> opaque;
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_set_pause"></a>
+
+## Function `set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _pause: bool,
+) {
+    _vault.is_pause = _pause;
+    event::set_pause(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _pause);
+}
 </code></pre>
 
 
@@ -2008,7 +2037,8 @@ vault info
         base_point: _vault.base_point,
         coin_market_cap: _vault.coin_market_cap,
         last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
-    } }
+    }
+}
 </code></pre>
 
 
@@ -2227,7 +2257,7 @@ vault info
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64): u64 {
-     <b>let</b> curve_dx_q64 = curve_dx((_vault.coin_market_cap <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
+    <b>let</b> curve_dx_q64 = curve_dx((_vault.coin_market_cap <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
     <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> u64);
     (_vault.position_number <b>as</b> u64) * base_point_amount
 }

@@ -5,7 +5,7 @@ module bfc_system::bfc_system_tests {
     use std::vector;
     use std::debug;
     use bfc_system::treasury;
-    use bfc_system::treasury::Treasury;
+    use bfc_system::treasury::{Treasury, TreasuryPauseCap};
     use sui::object;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
@@ -296,6 +296,19 @@ module bfc_system::bfc_system_tests {
         assert!(vector::length(&positons) == 9, 300);
 
         test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_vault_set_pause() {
+        let scenario_val = setup();
+        let cap = test_scenario::take_from_sender<TreasuryPauseCap>(&mut scenario_val);
+        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        bfc_system::vault_set_pause<BUSD>(&cap, &mut system_state, true);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, cap);
         tearDown(scenario_val);
     }
 }

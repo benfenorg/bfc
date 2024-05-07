@@ -5,15 +5,18 @@
 
 
 
+-  [Resource `TreasuryPauseCap`](#0xc8_treasury_TreasuryPauseCap)
 -  [Resource `Treasury`](#0xc8_treasury_Treasury)
 -  [Constants](#@Constants_0)
 -  [Function `create_treasury`](#0xc8_treasury_create_treasury)
+-  [Function `create_treasury_pause_cap`](#0xc8_treasury_create_treasury_pause_cap)
 -  [Function `index`](#0xc8_treasury_index)
 -  [Function `get_balance`](#0xc8_treasury_get_balance)
 -  [Function `check_vault`](#0xc8_treasury_check_vault)
 -  [Function `get_vault_key`](#0xc8_treasury_get_vault_key)
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
+-  [Function `vault_set_pause`](#0xc8_treasury_vault_set_pause)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
 -  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
 -  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
@@ -76,6 +79,33 @@
 </code></pre>
 
 
+
+<a name="0xc8_treasury_TreasuryPauseCap"></a>
+
+## Resource `TreasuryPauseCap`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xc8_treasury_TreasuryPauseCap">TreasuryPauseCap</a> <b>has</b> store, key
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_UID">object::UID</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
 
 <a name="0xc8_treasury_Treasury"></a>
 
@@ -241,6 +271,30 @@
 
 </details>
 
+<a name="0xc8_treasury_create_treasury_pause_cap"></a>
+
+## Function `create_treasury_pause_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_treasury_pause_cap">create_treasury_pause_cap</a>(admin: <b>address</b>, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_create_treasury_pause_cap">create_treasury_pause_cap</a>(admin: <b>address</b>, ctx: &<b>mut</b> TxContext) {
+    <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(<a href="treasury.md#0xc8_treasury_TreasuryPauseCap">TreasuryPauseCap</a> { id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_new">object::new</a>(ctx) }, admin);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_treasury_index"></a>
 
 ## Function `index`
@@ -392,6 +446,33 @@
 ): &<b>mut</b> Vault&lt;StableCoinType&gt; {
     <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury, _vault_key);
     <a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>&lt;String, Vault&lt;StableCoinType&gt;&gt;(&<b>mut</b> _treasury.id, _vault_key)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_vault_set_pause"></a>
+
+## Function `vault_set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(_: &<a href="treasury.md#0xc8_treasury_TreasuryPauseCap">treasury::TreasuryPauseCap</a>, _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(_: &<a href="treasury.md#0xc8_treasury_TreasuryPauseCap">TreasuryPauseCap</a>, _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _pause: bool) {
+    <a href="vault.md#0xc8_vault_set_pause">vault::set_pause</a>(
+        <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;()),
+        _pause,
+    );
 }
 </code></pre>
 

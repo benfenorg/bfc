@@ -36,6 +36,7 @@ module bfc_system::bfc_system {
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
     use bfc_system::position::Position;
+    use bfc_system::treasury::TreasuryPauseCap;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
@@ -380,6 +381,15 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(self);
         let bfc= coin::from_balance(bfc_balance, ctx);
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
+    }
+
+    public entry fun vault_set_pause<StableCoinType>(
+        cap: &TreasuryPauseCap,
+        wrapper: &mut BfcSystemState,
+        pause: bool
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::vault_set_pause<StableCoinType>(cap, inner_state, pause)
     }
 
     /// DAO

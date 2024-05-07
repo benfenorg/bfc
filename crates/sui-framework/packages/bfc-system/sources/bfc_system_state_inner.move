@@ -29,7 +29,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::treasury::{Self, Treasury};
+    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -50,6 +50,7 @@ module bfc_system::bfc_system_state_inner {
     const DEFAULT_STABLE_RATE: u64 = 1_000_000_000;
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
+    const DEFAULT_TREASURY_ADMIN: address = @0x0;
 
     spec module { pragma verify = false; }
 
@@ -104,6 +105,7 @@ module bfc_system::bfc_system_state_inner {
     ): BfcSystemStateInner {
 
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
+        treasury::create_treasury_pause_cap(DEFAULT_TREASURY_ADMIN, ctx);
         let (t, remain_balance, rate_map) = create_treasury(
             bfc_balance,
             usd_supply,
@@ -386,6 +388,10 @@ module bfc_system::bfc_system_state_inner {
 
     public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInner): u64 {
         treasury::get_total_supply<StableCoinType>(&self.treasury)
+    }
+
+    public fun vault_set_pause<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInner, pause: bool) {
+        treasury::vault_set_pause<StableCoinType>(cap, &mut self.treasury, pause)
     }
 
     public(friend) fun bfc_system_parameters(

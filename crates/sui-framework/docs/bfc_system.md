@@ -42,6 +42,7 @@
 -  [Function `deposit_to_treasury`](#0xc8_bfc_system_deposit_to_treasury)
 -  [Function `deposit_to_treasury_pool`](#0xc8_bfc_system_deposit_to_treasury_pool)
 -  [Function `deposit_to_treasury_pool_no_entry`](#0xc8_bfc_system_deposit_to_treasury_pool_no_entry)
+-  [Function `vault_set_pause`](#0xc8_bfc_system_vault_set_pause)
 -  [Function `set_voting_delay`](#0xc8_bfc_system_set_voting_delay)
 -  [Function `cast_vote`](#0xc8_bfc_system_cast_vote)
 -  [Function `change_vote`](#0xc8_bfc_system_change_vote)
@@ -85,6 +86,7 @@
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
 <b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
 <b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
+<b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -1143,6 +1145,35 @@ X treasury  swap stablecoin to bfc
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
     <b>let</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>= <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(bfc_balance, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury_pool">bfc_system_state_inner::deposit_to_treasury_pool</a>(inner_state, <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_vault_set_pause"></a>
+
+## Function `vault_set_pause`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(cap: &<a href="treasury.md#0xc8_treasury_TreasuryPauseCap">treasury::TreasuryPauseCap</a>, wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(
+    cap: &TreasuryPauseCap,
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    pause: bool
+) {
+    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause">bfc_system_state_inner::vault_set_pause</a>&lt;StableCoinType&gt;(cap, inner_state, pause)
 }
 </code></pre>
 

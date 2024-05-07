@@ -56,6 +56,10 @@ module bfc_system::treasury {
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
 
+    struct TreasuryPauseCap has key, store {
+        id: UID
+    }
+
     struct Treasury has key, store {
         id: UID,
         bfc_balance: Balance<BFC>,
@@ -86,6 +90,11 @@ module bfc_system::treasury {
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
         treasury
+    }
+
+    // call in bfc_system
+    public(friend) fun create_treasury_pause_cap(admin: address, ctx: &mut TxContext) {
+        transfer::transfer(TreasuryPauseCap { id: object::new(ctx) }, admin);
     }
 
     public fun index(_treasury: &Treasury): u64 {
@@ -124,6 +133,13 @@ module bfc_system::treasury {
     ): &mut Vault<StableCoinType> {
         check_vault(_treasury, _vault_key);
         dynamic_field::borrow_mut<String, Vault<StableCoinType>>(&mut _treasury.id, _vault_key)
+    }
+
+    public(friend) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
+        vault::set_pause(
+            borrow_mut_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>()),
+            _pause,
+        );
     }
 
     public fun vault_info<StableCoinType>(_treasury: &Treasury): VaultInfo {
