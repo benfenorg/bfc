@@ -223,7 +223,7 @@ module bfc_system::bfc_system_state_inner {
 
         let rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
-            let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
+            let deposit_balance = balance::split(&mut bfc_balance, treasury::bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
             treasury::rebalance_internal(&mut t, false, ctx);
             rate_map = treasury::get_exchange_rates(&t);
@@ -324,11 +324,11 @@ module bfc_system::bfc_system_state_inner {
     }
 
     /// X-treasury
-    public fun next_epoch_bfc_required(self: &BfcSystemStateInner): u64 {
-        treasury::next_epoch_bfc_required(&self.treasury)
+    public(friend) fun bfc_required(self: &BfcSystemStateInner): u64 {
+        treasury::bfc_required(&self.treasury)
     }
 
-    public fun treasury_balance(self: &BfcSystemStateInner): u64 {
+    public(friend) fun treasury_balance(self: &BfcSystemStateInner): u64 {
         treasury::get_balance(&self.treasury)
     }
 
@@ -345,7 +345,7 @@ module bfc_system::bfc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let amount = treasury::next_epoch_bfc_required(&self.treasury);
+        let amount = treasury::bfc_required(&self.treasury);
         if (amount > 0) {
             let withdraw_balance = treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
             if (balance::value(&withdraw_balance) > 0) {

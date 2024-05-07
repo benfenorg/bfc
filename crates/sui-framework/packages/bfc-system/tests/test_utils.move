@@ -94,7 +94,7 @@ module bfc_system::test_utils {
         {
             // let bfc = balance::create_for_testing<BFC>(300000000_000_000_000);
             let t = test_scenario::take_shared<Treasury>(scenario_val);
-            let required_bfc = treasury::next_epoch_bfc_required(&t);
+            let required_bfc = treasury::bfc_required(&t);
             debug::print(&string(b"require bfc"));
             debug::print(&required_bfc);
             let bfc = balance::create_for_testing<BFC>(required_bfc * 2);

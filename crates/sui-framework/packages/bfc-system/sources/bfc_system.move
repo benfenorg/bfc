@@ -268,6 +268,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
     }
 
+    /// X treasury rebalance
+    public entry fun rebalance(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+    }
+
     /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
         wrapper: &mut BfcSystemState,
@@ -346,9 +356,9 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::get_stablecoin_exchange_rate<StableCoinType>(system_state)
     }
 
-    public fun next_epoch_bfc_required(wrapper: &BfcSystemState): u64 {
+    public fun bfc_required(wrapper: &BfcSystemState): u64 {
         let system_state = load_system_state(wrapper);
-        bfc_system_state_inner::next_epoch_bfc_required(system_state)
+        bfc_system_state_inner::bfc_required(system_state)
     }
 
     public fun treasury_balance(wrapper: &BfcSystemState): u64 {
@@ -361,25 +371,18 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
     }
 
-    public fun deposit_to_treasury_inner(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, _ctx: &mut TxContext,
-    ) {
-        let inner_state = load_system_state_mut(self);
-        let bfc= coin::from_balance(bfc_balance, _ctx);
-        bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
-    }
-
     public entry fun deposit_to_treasury_pool(self: &mut BfcSystemState, bfc: Coin<BFC>) {
         let inner_state = load_system_state_mut(self);
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
-    public  fun deposit_to_treasury_pool_no_entry(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, ctx: &mut TxContext) {
+    public fun deposit_to_treasury_pool_no_entry(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, ctx: &mut TxContext) {
         let inner_state = load_system_state_mut(self);
         let bfc= coin::from_balance(bfc_balance, ctx);
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
-
+    /// DAO
     public entry fun set_voting_delay(
         self: &mut BfcSystemState,
         manager_key: &BFCDaoManageKey,

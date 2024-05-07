@@ -212,12 +212,12 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    fun test_next_epoch_bfc_required() {
+    fun test_bfc_required() {
         let scenario_val = setup();
 
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
-        let amount = bfc_system::next_epoch_bfc_required(&system_state);
+        let amount = bfc_system::bfc_required(&system_state);
         // basepoint = 1000 /  position = 9 / timeinterval=4h
         let total = (
                 50000_000_000_000 * 5 * 6 * 6 + // usd
@@ -269,7 +269,7 @@ module bfc_system::bfc_system_tests {
     fun test_deposit_success() {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-        let amount = bfc_system::next_epoch_bfc_required(&system_state);
+        let amount = bfc_system::bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);
