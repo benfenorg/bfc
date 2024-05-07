@@ -79,7 +79,7 @@ module bfc_system::vault_test {
         let c = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario);
-        treasury::rebalance(&mut t, 0, true, &c, test_scenario::ctx(&mut scenario));
+        treasury::rebalance(&mut t, 0, false, &c, test_scenario::ctx(&mut scenario));
         let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, type_name::into_string(type_name::get<BUSD>()));
         if (IS_DEBUG) {
             let (amount_a, amount_b) = vault::get_position_amounts(usd_mut_vault, 5, true);

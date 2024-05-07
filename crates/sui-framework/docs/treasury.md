@@ -1263,7 +1263,7 @@ Rebalance
     );
     <b>if</b> (_update) {
         <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(mut_v);
-        <b>if</b> (!<a href="vault.md#0xc8_vault_is_rebalance_cond">vault::is_rebalance_cond</a>(mut_v)) {
+        <b>if</b> (!<a href="vault.md#0xc8_vault_has_swapped">vault::has_swapped</a>(mut_v)) {
             <b>return</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">vault::last_bfc_rebalance_amount</a>(mut_v)
         }
     };

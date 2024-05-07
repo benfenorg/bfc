@@ -44,7 +44,7 @@
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
--  [Function `is_rebalance_cond`](#0xc8_vault_is_rebalance_cond)
+-  [Function `has_swapped`](#0xc8_vault_has_swapped)
 -  [Function `last_bfc_rebalance_amount`](#0xc8_vault_last_bfc_rebalance_amount)
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
@@ -219,6 +219,12 @@
 <dd>
  last rebalance bfc amount
 </dd>
+<dt>
+<code>has_swapped: bool</code>
+</dt>
+<dd>
+ when swap happend after rebalance
+</dd>
 </dl>
 
 
@@ -356,6 +362,12 @@
 </dd>
 <dt>
 <code>last_bfc_rebalance_amount: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>has_swapped: bool</code>
 </dt>
 <dd>
 
@@ -795,6 +807,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         max_counter_times: _max_counter_times,
         coin_market_cap: 0,
         last_bfc_rebalance_amount: 0,
+        has_swapped: <b>false</b>,
     }
 }
 </code></pre>
@@ -1607,6 +1620,9 @@ open <code>position_number</code> positions
         pay_coin_b,
         flash_receipt
     );
+    <b>if</b> (!_vault.has_swapped) {
+        _vault.has_swapped = <b>true</b>;
+    };
     (<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_a), <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_b))
 }
 </code></pre>
@@ -2036,7 +2052,8 @@ vault info
         index: _vault.index,
         base_point: _vault.base_point,
         coin_market_cap: _vault.coin_market_cap,
-        last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
+        last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount,
+        has_swapped: _vault.has_swapped,
     }
 }
 </code></pre>
@@ -2117,13 +2134,13 @@ vault info
 
 </details>
 
-<a name="0xc8_vault_is_rebalance_cond"></a>
+<a name="0xc8_vault_has_swapped"></a>
 
-## Function `is_rebalance_cond`
+## Function `has_swapped`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_is_rebalance_cond">is_rebalance_cond</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_has_swapped">has_swapped</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): bool
 </code></pre>
 
 
@@ -2132,8 +2149,8 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_is_rebalance_cond">is_rebalance_cond</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): bool {
-    _vault.state_counter &gt;= _vault.max_counter_times
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_has_swapped">has_swapped</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): bool {
+    <b>return</b> _vault.has_swapped
 }
 </code></pre>
 
@@ -2618,7 +2635,7 @@ State checker
 ): u64 {
     <b>let</b> (balance0, balance1, ticks) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
     <b>let</b> shape = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
-    <b>if</b> (<a href="vault.md#0xc8_vault_is_rebalance_cond">is_rebalance_cond</a>(_vault)) {
+    <b>if</b> (_vault.state_counter &gt;= _vault.max_counter_times) {
         shape = _vault.state;
         // reset state counter
         _vault.state_counter = 0;
@@ -2632,6 +2649,7 @@ State checker
         balance1,
         liquidities
     );
+    _vault.has_swapped = <b>false</b>;
     _vault.last_bfc_rebalance_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b);
     _vault.last_bfc_rebalance_amount
 }
