@@ -149,8 +149,9 @@ module sui_system::validator_set_tests {
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         {
             let ctx1 = test_scenario::ctx(scenario);
-            let withdraw = validator_set::request_withdraw_stable_stake<BUSD>(&mut validator_set, staked, ctx1);
+            let (withdraw, bfc) = validator_set::request_withdraw_stable_stake<BUSD>(&mut validator_set, staked, ctx1);
             transfer::public_transfer(coin::from_balance(withdraw, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc, ctx1), @0x1);
         };
 
 
@@ -199,7 +200,7 @@ module sui_system::validator_set_tests {
             assert!(validator_set::total_stake(&validator_set) == 100 * MIST_PER_SUI, 1);
             //add stable stake
             let new_stake1 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
-            let staked1 = validator_set::request_add_stable_stake<BAUD>(&mut validator_set, @0x1, new_stake1, ctx1);
+            let staked1 = validator_set::request_add_stable_stake<BUSD>(&mut validator_set, @0x1, new_stake1, ctx1);
             let new_stake2 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
             let staked2 =validator_set::request_add_stable_stake<BARS>(&mut validator_set, @0x1, new_stake2, ctx1);
             let new_stake3 = coin::into_balance(coin::mint_for_testing(500 * MIST_PER_SUI, ctx1));
@@ -239,23 +240,23 @@ module sui_system::validator_set_tests {
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         {
             let ctx1 = test_scenario::ctx(scenario);
-            let withdraw1 = validator_set::request_withdraw_stable_stake<BAUD>(&mut validator_set, staked1, ctx1);
-            let withdraw2 = validator_set::request_withdraw_stable_stake<BARS>(&mut validator_set, staked2, ctx1);
-            let withdraw3 = validator_set::request_withdraw_stable_stake<BBRL>(&mut validator_set, staked3, ctx1);
-            let withdraw4 = validator_set::request_withdraw_stable_stake<BAUD>(&mut validator_set, staked4, ctx1);
-            let withdraw5 = validator_set::request_withdraw_stable_stake<BJPY>(&mut validator_set, staked5, ctx1);
-            let withdraw6 = validator_set::request_withdraw_stable_stake<BCAD>(&mut validator_set, staked6, ctx1);
-            let withdraw7 = validator_set::request_withdraw_stable_stake<BEUR>(&mut validator_set, staked7, ctx1);
-            let withdraw8 = validator_set::request_withdraw_stable_stake<BGBP>(&mut validator_set, staked8, ctx1);
-            let withdraw9 = validator_set::request_withdraw_stable_stake<BINR>(&mut validator_set, staked9, ctx1);
-            let withdraw10 = validator_set::request_withdraw_stable_stake<BIDR>(&mut validator_set, staked10, ctx1);
-            let withdraw11 = validator_set::request_withdraw_stable_stake<BKRW>(&mut validator_set, staked11, ctx1);
-            let withdraw12 = validator_set::request_withdraw_stable_stake<BMXN>(&mut validator_set, staked12, ctx1);
-            let withdraw13 = validator_set::request_withdraw_stable_stake<BRUB>(&mut validator_set, staked13, ctx1);
-            let withdraw14 = validator_set::request_withdraw_stable_stake<BTRY>(&mut validator_set, staked14, ctx1);
-            let withdraw15 = validator_set::request_withdraw_stable_stake<BZAR>(&mut validator_set, staked15, ctx1);
-            let withdraw16 = validator_set::request_withdraw_stable_stake<MGG>(&mut validator_set, staked16, ctx1);
-            let withdraw17 = validator_set::request_withdraw_stable_stake<BSAR>(&mut validator_set, staked17, ctx1);
+            let (withdraw1, bfc1) = validator_set::request_withdraw_stable_stake<BUSD>(&mut validator_set, staked1, ctx1);
+            let (withdraw2, bfc2) = validator_set::request_withdraw_stable_stake<BARS>(&mut validator_set, staked2, ctx1);
+            let (withdraw3, bfc3) = validator_set::request_withdraw_stable_stake<BBRL>(&mut validator_set, staked3, ctx1);
+            let (withdraw4, bfc4) = validator_set::request_withdraw_stable_stake<BAUD>(&mut validator_set, staked4, ctx1);
+            let (withdraw5, bfc5) = validator_set::request_withdraw_stable_stake<BJPY>(&mut validator_set, staked5, ctx1);
+            let (withdraw6, bfc6) = validator_set::request_withdraw_stable_stake<BCAD>(&mut validator_set, staked6, ctx1);
+            let (withdraw7, bfc7) = validator_set::request_withdraw_stable_stake<BEUR>(&mut validator_set, staked7, ctx1);
+            let (withdraw8, bfc8) = validator_set::request_withdraw_stable_stake<BGBP>(&mut validator_set, staked8, ctx1);
+            let (withdraw9, bfc9) = validator_set::request_withdraw_stable_stake<BINR>(&mut validator_set, staked9, ctx1);
+            let (withdraw10, bfc10) = validator_set::request_withdraw_stable_stake<BIDR>(&mut validator_set, staked10, ctx1);
+            let (withdraw11, bfc11) = validator_set::request_withdraw_stable_stake<BKRW>(&mut validator_set, staked11, ctx1);
+            let (withdraw12, bfc12) = validator_set::request_withdraw_stable_stake<BMXN>(&mut validator_set, staked12, ctx1);
+            let (withdraw13, bfc13) = validator_set::request_withdraw_stable_stake<BRUB>(&mut validator_set, staked13, ctx1);
+            let (withdraw14, bfc14) = validator_set::request_withdraw_stable_stake<BTRY>(&mut validator_set, staked14, ctx1);
+            let (withdraw15, bfc15) = validator_set::request_withdraw_stable_stake<BZAR>(&mut validator_set, staked15, ctx1);
+            let (withdraw16, bfc16) = validator_set::request_withdraw_stable_stake<MGG>(&mut validator_set, staked16, ctx1);
+            let (withdraw17, bfc17) = validator_set::request_withdraw_stable_stake<BSAR>(&mut validator_set, staked17, ctx1);
             transfer::public_transfer(coin::from_balance(withdraw1, ctx1), @0x1);
             transfer::public_transfer(coin::from_balance(withdraw2, ctx1), @0x1);
             transfer::public_transfer(coin::from_balance(withdraw3, ctx1), @0x1);
@@ -273,6 +274,23 @@ module sui_system::validator_set_tests {
             transfer::public_transfer(coin::from_balance(withdraw15, ctx1), @0x1);
             transfer::public_transfer(coin::from_balance(withdraw16, ctx1), @0x1);
             transfer::public_transfer(coin::from_balance(withdraw17, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc1, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc2, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc3, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc4, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc5, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc6, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc7, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc8, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc9, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc10, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc11, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc12, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc13, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc14, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc15, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc16, ctx1), @0x1);
+            transfer::public_transfer(coin::from_balance(bfc17, ctx1), @0x1);
         };
 
 

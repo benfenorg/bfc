@@ -569,7 +569,7 @@ module sui_system::sui_system_state_inner {
         self: &mut SuiSystemStateInnerV2,
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         assert!(
             stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
             EStakeWithdrawBeforeActivation

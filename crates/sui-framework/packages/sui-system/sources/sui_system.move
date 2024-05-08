@@ -336,8 +336,9 @@ module sui_system::sui_system {
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
     ) {
-        let withdrawn_stake = request_withdraw_stable_stake_non_entry(wrapper, staked_sui, ctx);
+        let (withdrawn_stake, reward) = request_withdraw_stable_stake_non_entry(wrapper, staked_sui, ctx);
         transfer::public_transfer(coin::from_balance(withdrawn_stake, ctx), tx_context::sender(ctx));
+        transfer::public_transfer(coin::from_balance(reward, ctx), tx_context::sender(ctx));
     }
 
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
@@ -354,7 +355,7 @@ module sui_system::sui_system {
         wrapper: &mut SuiSystemState,
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::request_withdraw_stable_stake(self, staked_sui, ctx)
     }
