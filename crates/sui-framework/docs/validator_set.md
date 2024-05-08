@@ -32,6 +32,7 @@
 -  [Function `validator_stake_amount`](#0x3_validator_set_validator_stake_amount)
 -  [Function `validator_stable_stake_amount`](#0x3_validator_set_validator_stable_stake_amount)
 -  [Function `validator_staking_pool_id`](#0x3_validator_set_validator_staking_pool_id)
+-  [Function `validator_stable_pool_id`](#0x3_validator_set_validator_stable_pool_id)
 -  [Function `staking_pool_mappings`](#0x3_validator_set_staking_pool_mappings)
 -  [Function `stalbe_staking_pool_mappings`](#0x3_validator_set_stalbe_staking_pool_mappings)
 -  [Function `pool_exchange_rates`](#0x3_validator_set_pool_exchange_rates)
@@ -1568,6 +1569,31 @@ gas price, weighted by stake.
 <pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_staking_pool_id">validator_staking_pool_id</a>(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>, validator_address: <b>address</b>): ID {
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator_set.md#0x3_validator_set_get_validator_ref">get_validator_ref</a>(&self.active_validators, validator_address);
     <a href="validator.md#0x3_validator_staking_pool_id">validator::staking_pool_id</a>(<a href="validator.md#0x3_validator">validator</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_set_validator_stable_pool_id"></a>
+
+## Function `validator_stable_pool_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_stable_pool_id">validator_stable_pool_id</a>&lt;STABLE&gt;(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, validator_address: <b>address</b>): <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator_set.md#0x3_validator_set_validator_stable_pool_id">validator_stable_pool_id</a>&lt;STABLE&gt;(self: &<a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>, validator_address: <b>address</b>): ID {
+    <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="validator_set.md#0x3_validator_set_get_validator_ref">get_validator_ref</a>(&self.active_validators, validator_address);
+    <a href="validator.md#0x3_validator_stable_pool_id">validator::stable_pool_id</a>&lt;STABLE&gt;(<a href="validator.md#0x3_validator">validator</a>)
 }
 </code></pre>
 

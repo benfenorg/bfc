@@ -2896,7 +2896,7 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
 async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(3000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
