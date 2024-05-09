@@ -143,7 +143,7 @@ module sui_system::stable_pool {
         let principal_withdraw_amount = balance::value(&principal_withdraw);
 
         let rewards_withdraw = withdraw_rewards(
-            pool, principal_withdraw_amount, pool_token_withdraw_amount, rate,tx_context::epoch(ctx)
+            pool, principal_withdraw_amount, pool_token_withdraw_amount,tx_context::epoch(ctx), rate
         );
         let total_sui_withdraw_amount = principal_withdraw_amount + balance::value(&rewards_withdraw);
 

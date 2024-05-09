@@ -566,11 +566,12 @@ module sui_system::validator {
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
     public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>) {
         let total = balance::value(&reward);
-        self.next_epoch_stake = self.next_epoch_stake + total;
+        let bfc_stake = 0;
         let pool_count = get_stable_staking_pool_count(self);
         if (pool_count > 0) {
             let dis_count = total / (pool_count + 1);
             staking_pool::deposit_rewards(&mut self.staking_pool, balance::split(&mut reward, dis_count));
+            bfc_stake = dis_count;
             //reward distribute for stable and bfc
             if (is_stable_pool_staking<BUSD>(self) > 0) {
                 deposit_stable_stake_rewards<BUSD>(self, balance::split(&mut reward, dis_count));
@@ -624,14 +625,18 @@ module sui_system::validator {
                 deposit_stable_stake_rewards<MGG>(self, balance::split(&mut reward, dis_count));
             };
 
-            if (balance::value(&reward) > 0) {
+            let remainder = balance::value(&reward);
+            if (remainder > 0) {
                 staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+                bfc_stake = dis_count +remainder;
             } else {
                 balance::destroy_zero(reward);
             };
         }else {
             staking_pool::deposit_rewards(&mut self.staking_pool, reward);
-        }
+            bfc_stake = total;
+        };
+        self.next_epoch_stake = self.next_epoch_stake + bfc_stake;
     }
 
     fun get_stable_staking_pool_count(self: &Validator): u64 {
@@ -669,11 +674,11 @@ module sui_system::validator {
         reward: Balance<BFC>,
     ) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
-        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
-        if (option::is_none(&next_stable_stake)) {
+        if (vec_map::contains(&self.next_epoch_stable_stake, &pool_key)) {
+            let next_stake = vec_map::get_mut(&mut self.next_epoch_stable_stake, &pool_key);
+            *next_stake = *next_stake + balance::value(&reward);
+        }else {
             vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward));
-        } else {
-            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward) + *option::borrow(&next_stable_stake));
         };
         let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
 
