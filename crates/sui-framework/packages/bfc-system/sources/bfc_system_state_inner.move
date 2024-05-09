@@ -361,7 +361,7 @@ module bfc_system::bfc_system_state_inner {
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
-    public(friend) fun request_gas_balance(
+    fun request_gas_balance(
         self: &mut BfcSystemStateInner,
         amount: u64,
         ctx: &mut TxContext,

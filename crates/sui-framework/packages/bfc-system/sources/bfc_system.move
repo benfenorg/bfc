@@ -154,14 +154,6 @@ module bfc_system::bfc_system {
         bfc_balance
     }
 
-    public fun request_gas_balance(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        ctx: &mut TxContext,
-    ): Balance<BFC> {
-        bfc_system_state_inner::request_gas_balance(load_system_state_mut(wrapper), amount, ctx)
-    }
-
     fun load_system_state(
         self: &BfcSystemState,
     ): &BfcSystemStateInner {
