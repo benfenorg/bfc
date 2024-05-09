@@ -530,10 +530,8 @@ module bfc_system::treasury {
             key,
         );
         if (_update) {
+            // update shape
             vault::update_state(mut_v);
-            if (!vault::has_swapped(mut_v)) {
-                return vault::last_bfc_rebalance_amount(mut_v)
-            }
         };
 
         // first rebalance just place liquidity not change vault state
