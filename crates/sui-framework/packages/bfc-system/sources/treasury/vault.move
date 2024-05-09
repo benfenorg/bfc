@@ -980,7 +980,8 @@ module bfc_system::vault {
             position_index = position_index + 1;
         };
         tick::rebuild_ticks(&mut _vault.tick_manager, _ctx);
-        let ticks = init_positions(_vault, _vault.spacing_times, _ctx);
+        let spacing_times = _vault.spacing_times;
+        let ticks = init_positions(_vault, spacing_times, _ctx);
         (balance0, balance1, ticks)
     }
 

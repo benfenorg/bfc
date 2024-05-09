@@ -44,11 +44,11 @@
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
--  [Function `has_swapped`](#0xc8_vault_has_swapped)
 -  [Function `last_bfc_rebalance_amount`](#0xc8_vault_last_bfc_rebalance_amount)
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
 -  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
+-  [Function `get_last_rebalance_vault_state`](#0xc8_vault_get_last_rebalance_vault_state)
 -  [Function `bfc_required`](#0xc8_vault_bfc_required)
 -  [Function `min_liquidity_rate`](#0xc8_vault_min_liquidity_rate)
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
@@ -116,6 +116,12 @@
 </dt>
 <dd>
  0 -- init, equal, 1 -- down, 2 -- up
+</dd>
+<dt>
+<code>last_rebalance_state: u8</code>
+</dt>
+<dd>
+
 </dd>
 <dt>
 <code>state_counter: u32</code>
@@ -219,12 +225,6 @@
 <dd>
  last rebalance bfc amount
 </dd>
-<dt>
-<code>has_swapped: bool</code>
-</dt>
-<dd>
- when swap happend after rebalance
-</dd>
 </dl>
 
 
@@ -260,6 +260,12 @@
 </dd>
 <dt>
 <code>state: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>last_rebalance_state: u8</code>
 </dt>
 <dd>
 
@@ -362,12 +368,6 @@
 </dd>
 <dt>
 <code>last_bfc_rebalance_amount: u64</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>has_swapped: bool</code>
 </dt>
 <dd>
 
@@ -790,7 +790,8 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         id: uid,
         position_number: _position_number,
         state: 0,
-        state_counter: 0,
+        last_rebalance_state: 0,
+        state_counter: _max_counter_times, // init
         last_sqrt_price: current_sqrt_price,
         coin_a: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;(),
         coin_b: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;(),
@@ -807,7 +808,6 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         max_counter_times: _max_counter_times,
         coin_market_cap: 0,
         last_bfc_rebalance_amount: 0,
-        has_swapped: <b>false</b>,
     }
 }
 </code></pre>
@@ -1140,12 +1140,7 @@ open <code>position_number</code> positions
         tick_upper,
         _delta_liquidity,
     );
-    <b>let</b> is_in = <b>false</b>;
-    <b>if</b> (<a href="i32.md#0xc8_i32_lte">i32::lte</a>(tick_lower, _vault.current_tick_index)) {
-        is_in = <a href="i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper);
-    };
-
-    <b>if</b> (is_in) {
+    <b>if</b> (<a href="i32.md#0xc8_i32_gt">i32::gt</a>(_vault.current_tick_index, tick_lower) && <a href="i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper)) {
         _vault.liquidity = _vault.liquidity - _delta_liquidity;
     };
 
@@ -1620,9 +1615,6 @@ open <code>position_number</code> positions
         pay_coin_b,
         flash_receipt
     );
-    <b>if</b> (!_vault.has_swapped) {
-        _vault.has_swapped = <b>true</b>;
-    };
     (<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_a), <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_b))
 }
 </code></pre>
@@ -1789,9 +1781,8 @@ open <code>position_number</code> positions
     <b>let</b> swap_result = <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
     <b>let</b> next_score = <a href="tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(&_vault.tick_manager, _vault.current_tick_index, _a2b);
     <b>let</b> remaining_amount = _amount;
-    <b>let</b> current_sqrt_price = _vault.current_sqrt_price;
-    swap_result.vault_sqrt_price = current_sqrt_price;
-    <b>while</b> (remaining_amount &gt; 0 && current_sqrt_price != _sqrt_price_limit) {
+    swap_result.vault_sqrt_price = _vault.current_sqrt_price;
+    <b>while</b> (remaining_amount &gt; 0 && _vault.current_sqrt_price != _sqrt_price_limit) {
         <b>assert</b>!(!<a href="option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
         <b>let</b> (<a href="tick.md#0xc8_tick">tick</a>, tick_score) = <a href="tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
             &_vault.tick_manager,
@@ -1842,7 +1833,6 @@ open <code>position_number</code> positions
                 _vault.current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
             }
         };
-        current_sqrt_price = _vault.current_sqrt_price;
     };
     swap_result
 }
@@ -2036,6 +2026,7 @@ vault info
         vault_id: <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         position_number: _vault.position_number,
         state: _vault.state,
+        last_rebalance_state: _vault.last_rebalance_state,
         state_counter: _vault.state_counter,
         max_counter_times: _vault.max_counter_times,
         last_sqrt_price: _vault.last_sqrt_price,
@@ -2053,7 +2044,6 @@ vault info
         base_point: _vault.base_point,
         coin_market_cap: _vault.coin_market_cap,
         last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount,
-        has_swapped: _vault.has_swapped,
     }
 }
 </code></pre>
@@ -2127,30 +2117,6 @@ vault info
 
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): I32 {
     _vault.current_tick_index
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_vault_has_swapped"></a>
-
-## Function `has_swapped`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_has_swapped">has_swapped</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): bool
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_has_swapped">has_swapped</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): bool {
-    <b>return</b> _vault.has_swapped
 }
 </code></pre>
 
@@ -2251,6 +2217,30 @@ vault info
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8
 {
     _vault.state
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_get_last_rebalance_vault_state"></a>
+
+## Function `get_last_rebalance_vault_state`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b>  <a href="vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8 {
+    _vault.last_rebalance_state
 }
 </code></pre>
 
@@ -2381,23 +2371,37 @@ State checker
         <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
-            // reset counter = 0  & set state = down
-            _vault.state_counter = 0;
-            _vault.state = <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
+            <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+                // reset counter = 1  & set state = down
+                _vault.state_counter = 1;
+                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
+            } <b>else</b> {
+                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
+                    _vault.max_counter_times
+                } <b>else</b> {
+                    0
+                };
+            }
         }
     } <b>else</b> <b>if</b> (price &gt; last_price) {
         // up
         <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
-            // reset counter = 0  & set state = up
-            _vault.state_counter = 0;
-            _vault.state = <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
+            <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+                // reset counter = 1  & set state = up
+                _vault.state_counter = 1;
+                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
+            } <b>else</b> {
+                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
+                    _vault.max_counter_times
+                } <b>else</b> {
+                    0
+                };
+            }
         }
-    } <b>else</b> {
-        // equal
-        _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
-        _vault.state_counter = 0;
     };
 
     _vault.last_sqrt_price = price;
@@ -2435,11 +2439,9 @@ State checker
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="">vector</a>&lt;<a href="">vector</a>&lt;I32&gt;&gt;)
 {
     <b>let</b> position_index = 1u64;
-    <b>let</b> position_number = (_vault.position_number <b>as</b> u64);
     <b>let</b> balance0 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
     <b>let</b> balance1 = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
-    <b>let</b> spacing_times = _vault.spacing_times;
-    <b>while</b> (position_index &lt;= position_number) {
+    <b>while</b> (position_index &lt;= (_vault.position_number <b>as</b> u64)) {
         <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         <b>let</b> liquidity_delta = <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>);
         <b>if</b> (liquidity_delta != 0) {
@@ -2450,6 +2452,8 @@ State checker
         <a href="position.md#0xc8_position_close_position">position::close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         position_index = position_index + 1;
     };
+    <a href="tick.md#0xc8_tick_rebuild_ticks">tick::rebuild_ticks</a>(&<b>mut</b> _vault.tick_manager, _ctx);
+    <b>let</b> spacing_times = _vault.spacing_times;
     <b>let</b> ticks = <a href="vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
     (balance0, balance1, ticks)
 }
@@ -2633,14 +2637,25 @@ State checker
     _treasury_total_bfc_supply: u64,
     _ctx: &<b>mut</b> TxContext
 ): u64 {
-    <b>let</b> (balance0, balance1, ticks) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
     <b>let</b> shape = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
     <b>if</b> (_vault.state_counter &gt;= _vault.max_counter_times) {
         shape = _vault.state;
         // reset state counter
         _vault.state_counter = 0;
+    } <b>else</b> {
+        <b>return</b> _vault.last_bfc_rebalance_amount
     };
-    <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(_vault, &ticks, shape, _treasury_total_bfc_supply);
+    <b>let</b> (
+        balance0,
+        balance1,
+        ticks
+    ) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
+    <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(
+        _vault,
+        &ticks,
+        shape,
+        _treasury_total_bfc_supply
+    );
     <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>(
         _vault,
         _bfc_balance,
@@ -2649,7 +2664,7 @@ State checker
         balance1,
         liquidities
     );
-    _vault.has_swapped = <b>false</b>;
+    _vault.last_rebalance_state = _vault.state;
     _vault.last_bfc_rebalance_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b);
     _vault.last_bfc_rebalance_amount
 }

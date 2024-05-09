@@ -1262,10 +1262,8 @@ Rebalance
         key,
     );
     <b>if</b> (_update) {
+        // <b>update</b> shape
         <a href="vault.md#0xc8_vault_update_state">vault::update_state</a>(mut_v);
-        <b>if</b> (!<a href="vault.md#0xc8_vault_has_swapped">vault::has_swapped</a>(mut_v)) {
-            <b>return</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">vault::last_bfc_rebalance_amount</a>(mut_v)
-        }
     };
 
     // first rebalance just place liquidity not change <a href="vault.md#0xc8_vault">vault</a> state
