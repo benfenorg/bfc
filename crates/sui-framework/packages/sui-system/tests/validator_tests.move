@@ -150,7 +150,7 @@ module sui_system::validator_tests {
             assert!(validator::pending_stake_amount(&validator) == 30_000_000_000, 0);
             assert!(validator::pending_stake_withdraw_amount(&validator) == 1_000_000_000, 0);
 
-            validator::deposit_stake_rewards(&mut validator, balance::zero());
+            validator::deposit_stake_rewards(&mut validator, balance::zero(), &rate_vec_map());
 
             // Calling `process_pending_stakes_and_withdraws` will withdraw the coin and transfer to sender.
             validator::process_pending_stakes_and_withdraws(&mut validator, ctx);

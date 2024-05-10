@@ -531,6 +531,7 @@ module sui_system::validator_set {
             &adjusted_storage_fund_reward_amounts,
             computation_reward,
             storage_fund_reward,
+            stable_rate,
             ctx
         );
 
@@ -1320,6 +1321,7 @@ module sui_system::validator_set {
         adjusted_storage_fund_reward_amounts: &vector<u64>,
         staking_rewards: &mut Balance<BFC>,
         storage_fund_reward: &mut Balance<BFC>,
+        stable_rate: VecMap<ascii::String, u64>,
         ctx: &mut TxContext
     ) {
         let length = vector::length(validators);
@@ -1349,7 +1351,7 @@ module sui_system::validator_set {
             };
 
             // Add rewards to stake staking pool to auto compound for stakers.
-            validator::deposit_stake_rewards(validator, staker_reward);
+            validator::deposit_stake_rewards(validator, staker_reward, &stable_rate);
             i = i + 1;
         }
     }
