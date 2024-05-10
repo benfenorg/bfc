@@ -18,7 +18,11 @@ use sui_types::execution_status::ExecutionStatus;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, DeleteKindWithOldVersion};
 use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
+use sui_types::bfc_system_state::get_stable_rate_and_reward_rate;
+
 use sui_types::type_resolver::LayoutResolver;
+use sui_types::collection_types::VecMap;
+
 use sui_types::{
     base_types::{
         ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
@@ -828,6 +832,12 @@ impl<'backing> TemporaryStore<'backing> {
                 )
             })
         }
+    }
+
+    pub fn get_stable_rate_map_and_reward_rate(&self) -> (VecMap<String, u64>, u64) {
+        let (wrapper, reward_rate) = get_stable_rate_and_reward_rate(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        (wrapper, reward_rate)
     }
 
     /// Return the list of all modified objects, for each object, returns
