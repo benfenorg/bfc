@@ -1176,24 +1176,6 @@ module bfc_system::bfc_dao {
             let _ =  proposal.proposal.action;
         };
 
-        // let Proposal {
-        //     id: uid,
-        //     proposal: ProposalInfo{
-        //         pid: _,
-        //         proposer: _,
-        //         start_time: _,
-        //         end_time: _,
-        //         for_votes: _,
-        //         against_votes: _,
-        //         eta: _,
-        //         action_delay: _,
-        //         quorum_votes: _,
-        //         action: _c
-        //         } ,
-        //     } = proposal;
-        //
-        //  object::delete(uid);
-        //send_bfc_dao_event(manager_key, b"ProposalDestroyed");
 
     }
 
