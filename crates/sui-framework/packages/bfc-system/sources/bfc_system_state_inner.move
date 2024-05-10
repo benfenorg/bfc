@@ -7,6 +7,7 @@ module bfc_system::bfc_system_state_inner {
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
+    use sui::tx_context;
     use sui::tx_context::TxContext;
     use sui::vec_map::{Self, VecMap};
 
@@ -51,6 +52,11 @@ module bfc_system::bfc_system_state_inner {
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
     const DEFAULT_TREASURY_ADMIN: address = @0x0;
+    const INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000000000_000_000_000;
+
+    /// Errors
+    const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
+    const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
 
     spec module { pragma verify = false; }
 
@@ -279,6 +285,8 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ): Balance<BFC> {
         let amount = coin::value(&coin_sc);
+        assert!(amount <= INNER_STABLECOIN_TO_BFC_LIMIT, ERR_INNER_STABLECOIN_TO_BFC_LIMIT);
+        assert!(tx_context::sender(ctx) == @0x0, ERR_NOT_SYSTEM_ADDRESS);
         let result_balance= treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
         if (expected_amount == 0||balance::value(&result_balance) == expected_amount) {
             result_balance

@@ -321,6 +321,25 @@ Default stable base points
 
 
 
+<a name="0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT"></a>
+
+Errors
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>: u64 = 1000;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT">INNER_STABLECOIN_TO_BFC_LIMIT</a>: u64 = 1000000000000000000;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_create_inner_state"></a>
 
 ## Function `create_inner_state`
@@ -734,6 +753,7 @@ swap stablecoin to bfc
     ctx: &<b>mut</b> TxContext,
 ): Balance&lt;BFC&gt; {
     <b>let</b> amount = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&coin_sc);
+    <b>assert</b>!(amount &lt;= <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT">INNER_STABLECOIN_TO_BFC_LIMIT</a>, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>);
     <b>let</b> result_balance= <a href="treasury.md#0xc8_treasury_redeem_internal">treasury::redeem_internal</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_sc, amount, ctx);
     <b>if</b> (expected_amount == 0||<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&result_balance) == expected_amount) {
         result_balance
