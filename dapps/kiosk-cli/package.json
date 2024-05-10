@@ -1,6 +1,6 @@
 {
   "name": "kiosk-cli",
-  "version": "1.0.9",
+  "version": "1.0.8",
   "main": "index.js",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@mysten/kiosk": "workspace:*",
-    "@mysten/sui.js": "workspace:*",
+    "@benfen/bfc.js": "workspace:*",
     "commander": "^11.0.0"
   }
 }

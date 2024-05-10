@@ -48,3 +48,7 @@ move-core-types.workspace = true
 default = ["postgres-feature"]
 postgres-feature = ["diesel/postgres", "diesel/postgres_backend"]
 pg_integration = []
+
+[[bin]]
+name = "bfc-cluster-test"
+path = "src/main.rs"

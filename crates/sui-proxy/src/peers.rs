@@ -118,7 +118,7 @@ impl SuiNodeProvider {
 
     /// get_validators will retrieve known validators
     async fn get_validators(url: String) -> Result<SuiSystemStateSummary> {
-        let rpc_method = "suix_getLatestSuiSystemState";
+        let rpc_method = "bfcx_getLatestSuiSystemState";
         let observe = || {
             let timer = JSON_RPC_DURATION
                 .with_label_values(&[rpc_method])

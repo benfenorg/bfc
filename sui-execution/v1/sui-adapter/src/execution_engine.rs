@@ -8,11 +8,27 @@ mod checked {
 
     use move_binary_format::CompiledModule;
     use move_vm_runtime::move_vm::MoveVM;
+<<<<<<< HEAD:sui-execution/v1/sui-adapter/src/execution_engine.rs
     use std::{collections::HashSet, sync::Arc};
     use sui_types::balance::{
+=======
+    use once_cell::sync::Lazy;
+    use std::{
+        collections::{BTreeSet, HashSet},
+        sync::Arc,
+    };
+    use sui_types::inner_temporary_store::InnerTemporaryStore;
+    use sui_types::{
+        sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
+        bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME, BfcRoundParams},
+        SUI_FRAMEWORK_ADDRESS,
+    };
+
+    use sui_types::{balance::{
+>>>>>>> develop_v.1.1.5:sui-execution/suivm/sui-adapter/src/execution_engine.rs
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
-    };
+    } , transaction::ChangeBfcRound};
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
@@ -37,9 +53,14 @@ mod checked {
     use sui_types::execution_config_utils::to_binary_config;
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::GasCostSummary;
+<<<<<<< HEAD:sui-execution/v1/sui-adapter/src/execution_engine.rs
     use sui_types::gas::SuiGasStatus;
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::storage::BackingStore;
+=======
+    use sui_types::messages_consensus::ConsensusCommitPrologue;
+    use sui_types::storage::WriteKind;
+>>>>>>> develop_v.1.1.5:sui-execution/suivm/sui-adapter/src/execution_engine.rs
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
     use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME};
@@ -51,11 +72,48 @@ mod checked {
     };
     use sui_types::{
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
+<<<<<<< HEAD:sui-execution/v1/sui-adapter/src/execution_engine.rs
         object::{Object, ObjectInner},
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID,
     };
+=======
+        object::Object,
+    };
+    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
+
+    /// If a transaction digest shows up in this list, when executing such transaction,
+    /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
+    /// gas smashing). Because this list is not gated by protocol version, there are a few important
+    /// criteria for adding a digest to this list:
+    /// 1. The certificate must be causing all validators to either panic or hang forever deterministically.
+    /// 2. If we ever ship a fix to make it no longer panic or hang when executing such transaction,
+    /// we must make sure the transaction is already in this list. Otherwise nodes running the newer version
+    /// without these transactions in the list will generate forked result.
+    /// Below is a scenario of when we need to use this list:
+    /// 1. We detect that a specific transaction is causing all validators to either panic or hang forever deterministically.
+    /// 2. We push a CertificateDenyConfig to deny such transaction to all validators asap.
+    /// 3. To make sure that all fullnodes are able to sync to the latest version, we need to add the transaction digest
+    /// to this list as well asap, and ship this binary to all fullnodes, so that they can sync past this transaction.
+    /// 4. We then can start fixing the issue, and ship the fix to all nodes.
+    /// 5. Unfortunately, we can't remove the transaction digest from this list, because if we do so, any future
+    /// node that sync from genesis will fork on this transaction. We may be able to remove it once
+    /// we have stable snapshots and the binary has a minimum supported protocol version past the epoch.
+    pub fn get_denied_certificates() -> &'static HashSet<TransactionDigest> {
+        static DENIED_CERTIFICATES: Lazy<HashSet<TransactionDigest>> =
+            Lazy::new(|| HashSet::from([]));
+        Lazy::force(&DENIED_CERTIFICATES)
+    }
+
+    fn is_certificate_denied(
+        transaction_digest: &TransactionDigest,
+        certificate_deny_set: &HashSet<TransactionDigest>,
+    ) -> bool {
+        certificate_deny_set.contains(transaction_digest)
+            || get_denied_certificates().contains(transaction_digest)
+    }
+>>>>>>> develop_v.1.1.5:sui-execution/suivm/sui-adapter/src/execution_engine.rs
 
     #[instrument(name = "tx_execute_to_effects", level = "debug", skip_all)]
     pub fn execute_transaction_to_effects<Mode: ExecutionMode>(
@@ -572,6 +630,7 @@ mod checked {
                     pt,
                 )
             }
+<<<<<<< HEAD:sui-execution/v1/sui-adapter/src/execution_engine.rs
             TransactionKind::EndOfEpochTransaction(txns) => {
                 let mut builder = ProgrammableTransactionBuilder::new();
                 let len = txns.len();
@@ -630,6 +689,22 @@ mod checked {
         }?;
         temporary_store.check_execution_results_consistency()?;
         Ok(result)
+=======
+            TransactionKind::ChangeBfcRound(change_round) => {
+                bfc_round(
+                    change_round,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )?;
+                Ok(Mode::empty_results())
+            }
+
+        }
+>>>>>>> develop_v.1.1.5:sui-execution/suivm/sui-adapter/src/execution_engine.rs
     }
 
     fn mint_epoch_rewards_in_pt(
@@ -767,6 +842,78 @@ mod checked {
         Ok(builder.finish())
     }
 
+    pub fn construct_bfc_round_pt(
+        round_id: u64,
+    ) -> Result<ProgrammableTransaction, ExecutionError> {
+        let mut builder = ProgrammableTransactionBuilder::new();
+
+        let mut arguments = vec![];
+
+        let args = vec![
+            CallArg::BFC_SYSTEM_MUT,
+            //CallArg::SUI_SYSTEM_MUT,
+            CallArg::CLOCK_IMM,
+            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
+        ] .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
+
+        arguments.append(&mut args.unwrap());
+
+        info!("Call arguments to bfc round transaction: {:?}",round_id);
+
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            BFC_ROUND_FUNCTION_NAME.to_owned(),
+            vec![],
+            arguments,
+        );
+
+        Ok(builder.finish())
+    }
+
+
+    fn bfc_round(
+        change_round: ChangeBfcRound,
+        temporary_store: &mut TemporaryStore<'_>,
+        tx_ctx: &mut TxContext,
+        move_vm: &Arc<MoveVM>,
+        gas_charger: &mut GasCharger,
+        protocol_config: &ProtocolConfig,
+        metrics: Arc<LimitsMetrics>,
+    ) -> Result<(), ExecutionError>{
+        let _ = BfcRoundParams {
+            round_id:change_round.bfc_round
+        };
+        let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
+        let result = programmable_transactions::execution::execute::<execution_mode::System>(
+            protocol_config,
+            metrics.clone(),
+            move_vm,
+            temporary_store,
+            tx_ctx,
+            gas_charger,
+            advance_epoch_pt,
+        );
+
+        #[cfg(msim)]
+            let result = maybe_modify_result(result, change_round.bfc_round);
+
+        if result.is_err() {
+            tracing::error!(
+            "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
+            result.as_ref().err(),
+            temporary_store.objects(),
+        );
+            // temporary_store.drop_writes();
+            // // Must reset the storage rebate since we are re-executing.
+            // gas_charger.reset_storage_cost_and_rebate();
+            // temporary_store.advance_bfc_round_mode(protocol_config);
+        }
+        Ok(())
+    }
+
     fn advance_epoch(
         builder: ProgrammableTransactionBuilder,
         change_epoch: ChangeEpoch,
@@ -780,10 +927,10 @@ mod checked {
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.storage_charge,
-            computation_charge: change_epoch.computation_charge,
-            storage_rebate: change_epoch.storage_rebate,
-            non_refundable_storage_fee: change_epoch.non_refundable_storage_fee,
+            storage_charge: change_epoch.bfc_storage_charge,
+            computation_charge: change_epoch.bfc_computation_charge,
+            storage_rebate: change_epoch.bfc_storage_rebate,
+            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,

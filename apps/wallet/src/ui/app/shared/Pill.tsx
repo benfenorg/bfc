@@ -8,21 +8,20 @@ import { ButtonOrLink, type ButtonOrLinkProps } from './utils/ButtonOrLink';
 
 const styles = cva(
 	[
-		'inline-block outline-none transition no-underline bg-white py-1 px-2',
-		'border border-solid rounded-20 cursor-pointer',
-		'truncate leading-tight uppercase text-captionSmall font-semibold',
-		'disabled:border-transparent disabled:text-gray-60',
+		'inline-block outline-none transition no-underline bg-transparent border-none',
+		'cursor-pointer',
+		'truncate leading-tight uppercase text-bodySmall font-medium',
+		'disabled:text-bfc-text3',
 	],
 	{
 		variants: {
 			loading: {
-				true: 'bg-white border-gray-45 text-steel disabled:border-gray-45 disabled:text-steel',
+				true: 'text-text1',
 				false: '',
 			},
 			dark: {
-				true: 'border-gray-60 text-steel-darker hover:border-steel-darker hover:text-steel-darker disabled:bg-gray-40 font-medium',
-				false:
-					'border-sui-light text-hero-dark active:bg-gray-45 active:text-steel-darker active:border-gray-45 disabled:bg-white hover:bg-sui-light focus:bg-sui-light',
+				true: 'text-bfc-text1 font-medium',
+				false: 'text-bfc-text1 font-medium',
 			},
 		},
 		defaultVariants: {

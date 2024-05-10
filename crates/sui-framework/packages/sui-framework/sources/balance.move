@@ -6,6 +6,7 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::balance {
 
+    friend sui::bfc;
     /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
     public use fun sui::coin::from_balance as Balance.into_coin;
 
@@ -138,12 +139,12 @@ module sui::balance {
 #[test_only]
 module sui::balance_tests {
     use sui::balance;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_utils;
 
     #[test]
     fun test_balance() {
-        let mut balance = balance::zero<SUI>();
+        let mut balance = balance::zero<BFC>();
         let another = balance::create_for_testing(1000);
 
         balance.join(another);

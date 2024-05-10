@@ -93,6 +93,7 @@ impl WritePathPendingTransactionLog {
 
 #[cfg(test)]
 mod tests {
+    //use sui_types::utils::{create_fake_transaction};
     use super::*;
     use anyhow;
     use std::collections::HashSet;

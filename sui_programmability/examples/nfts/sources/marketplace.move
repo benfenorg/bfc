@@ -166,7 +166,7 @@ module nfts::marketplace {
 #[test_only]
 module nfts::marketplaceTests {
     use sui::coin;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
     use nfts::marketplace;
 
@@ -184,14 +184,14 @@ module nfts::marketplaceTests {
     /// Create a shared [`Marketplace`].
     fun create_marketplace(scenario: &mut Scenario) {
         test_scenario::next_tx(scenario, ADMIN);
-        marketplace::create<SUI>(test_scenario::ctx(scenario));
+        marketplace::create<BFC>(test_scenario::ctx(scenario));
     }
 
     #[allow(unused_function)]
     /// Mint SUI and send it to BUYER.
     fun mint_some_coin(scenario: &mut Scenario) {
         test_scenario::next_tx(scenario, ADMIN);
-        let coin = coin::mint_for_testing<SUI>(1000, test_scenario::ctx(scenario));
+        let coin = coin::mint_for_testing<BFC>(1000, test_scenario::ctx(scenario));
         transfer::public_transfer(coin, BUYER);
     }
 
@@ -285,7 +285,7 @@ module nfts::marketplaceTests {
     //     // BUYER takes 100 SUI from his wallet and purchases Kitty.
     //     test_scenario::next_tx(scenario, BUYER);
     //     {
-    //         let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+    //         let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
     //         let mkp_val = test_scenario::take_shared<Marketplace>(scenario);
     //         let mkp = &mut mkp_val;
     //         let bag = test_scenario::take_child_object<Marketplace, Bag>(scenario, mkp);
@@ -318,7 +318,7 @@ module nfts::marketplaceTests {
     //     // BUYER takes 100 SUI from his wallet and purchases Kitty.
     //     test_scenario::next_tx(scenario, BUYER);
     //     {
-    //         let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+    //         let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
     //         let mkp_val = test_scenario::take_shared<Marketplace>(scenario);
     //         let mkp = &mut mkp_val;
     //         let bag = test_scenario::take_child_object<Marketplace, Bag>(scenario, mkp);

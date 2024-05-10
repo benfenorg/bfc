@@ -6,7 +6,9 @@ module utils::safe_tests {
     use utils::safe::{Self, Safe, TransferCapability, OwnerCapability};
     use sui::test_scenario::{Self as ts, Scenario, ctx};
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::object::{Self, ID};
+    use sui::bfc::BFC;
+    use sui::transfer;
     use sui::test_utils;
 
     const TEST_SENDER_ADDR: address = @0x1;
@@ -16,7 +18,7 @@ module utils::safe_tests {
     fun create_safe(scenario: &mut Scenario, owner: address, stored_amount: u64) {
         ts::next_tx(scenario, owner);
         {
-            let coin = coin::mint_for_testing<SUI>(stored_amount, ctx(scenario));
+            let coin = coin::mint_for_testing<BFC>(stored_amount, ctx(scenario));
             safe::create(coin, ctx(scenario));
         };
     }
@@ -25,8 +27,8 @@ module utils::safe_tests {
     fun delegate_safe(scenario: &mut Scenario, owner: address, delegate_to: address, delegate_amount: u64): ID {
         let id;
         ts::next_tx(scenario, owner);
-        let mut safe = ts::take_shared<Safe<SUI>>(scenario);
-        let cap = ts::take_from_sender<OwnerCapability<SUI>>(scenario);
+        let safe = ts::take_shared<Safe<BFC>>(scenario);
+        let cap = ts::take_from_sender<OwnerCapability<BFC>>(scenario);
         let capability = safe::create_transfer_capability(&mut safe, &cap, delegate_amount, ctx(scenario));
         id = object::id(&capability);
         transfer::public_transfer(capability, delegate_to);
@@ -37,8 +39,8 @@ module utils::safe_tests {
 
     fun withdraw_as_delegatee(scenario: &mut Scenario, delegatee: address, withdraw_amount: u64) {
         ts::next_tx(scenario, delegatee);
-        let mut safe = ts::take_shared<Safe<SUI>>(scenario);
-        let mut capability = ts::take_from_sender<TransferCapability<SUI>>(scenario);
+        let safe = ts::take_shared<Safe<BFC>>(scenario);
+        let capability = ts::take_from_sender<TransferCapability<BFC>>(scenario);
         let balance = safe::debit(&mut safe, &mut capability, withdraw_amount);
         test_utils::destroy(balance);
 
@@ -48,8 +50,8 @@ module utils::safe_tests {
 
     fun revoke_capability(scenario: &mut Scenario, owner: address, capability_id: ID) {
         ts::next_tx(scenario, owner);
-        let mut safe = ts::take_shared<Safe<SUI>>(scenario);
-        let cap = ts::take_from_sender<OwnerCapability<SUI>>(scenario);
+        let safe = ts::take_shared<Safe<BFC>>(scenario);
+        let cap = ts::take_from_sender<OwnerCapability<BFC>>(scenario);
         safe::revoke_transfer_capability(&mut safe, &cap, capability_id);
 
         ts::return_to_sender(scenario, cap);
@@ -60,19 +62,19 @@ module utils::safe_tests {
     /// Ensure that all funds can be withdrawn by the owners
     fun test_safe_create_and_withdraw_funds_as_owner() {
         let owner = TEST_OWNER_ADDR;
-        let mut scenario_val = ts::begin(TEST_SENDER_ADDR);
+        let scenario_val = ts::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
 
         let initial_funds = 1000u64;
         create_safe(scenario, owner, initial_funds);
 
         ts::next_tx(scenario, owner);
-        let mut safe = ts::take_shared<Safe<SUI>>(scenario);
-        let cap = ts::take_from_sender<OwnerCapability<SUI>>(scenario);
+        let safe = ts::take_shared<Safe<BFC>>(scenario);
+        let cap = ts::take_from_sender<OwnerCapability<BFC>>(scenario);
 
         safe::withdraw(&mut safe, &cap, initial_funds, ts::ctx(scenario));
         ts::next_tx(scenario, owner);
-        let withdrawn_coin = ts::take_from_sender<Coin<SUI>>(scenario);
+        let withdrawn_coin = ts::take_from_sender<Coin<BFC>>(scenario);
         assert!(coin::value(&withdrawn_coin) == initial_funds, 0);
 
         test_utils::destroy(withdrawn_coin);
@@ -88,7 +90,7 @@ module utils::safe_tests {
     fun test_safe_create_and_withdraw_funds_as_delegatee() {
         let owner = TEST_OWNER_ADDR;
         let delegatee = TEST_DELEGATEE_ADDR;
-        let mut scenario_val = ts::begin(TEST_SENDER_ADDR);
+        let scenario_val = ts::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
 
         let initial_funds = 1000u64;
@@ -106,7 +108,7 @@ module utils::safe_tests {
     fun test_safe_attempt_to_over_withdraw() {
         let owner = TEST_OWNER_ADDR;
         let delegatee = TEST_DELEGATEE_ADDR;
-        let mut scenario_val = ts::begin(TEST_SENDER_ADDR);
+        let scenario_val = ts::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
 
         let initial_funds = 1000u64;
@@ -129,7 +131,7 @@ module utils::safe_tests {
     fun test_safe_withdraw_revoked() {
         let owner = TEST_OWNER_ADDR;
         let delegatee = TEST_DELEGATEE_ADDR;
-        let mut scenario_val = ts::begin(TEST_SENDER_ADDR);
+        let scenario_val = ts::begin(TEST_SENDER_ADDR);
         let scenario = &mut scenario_val;
 
         let initial_funds = 1000u64;
@@ -151,23 +153,23 @@ module utils::safe_tests {
     /// Ensure owner cannot withdraw funds after revoking itself.
     fun test_safe_withdraw_self_revoked() {
         let owner = TEST_OWNER_ADDR;
-        let mut scenario_val = ts::begin(owner);
+        let scenario_val = ts::begin(owner);
         let scenario = &mut scenario_val;
 
         let initial_funds = 1000u64;
         create_safe(scenario, owner, initial_funds);
 
         ts::next_tx(scenario, owner);
-        let cap = ts::take_from_sender<OwnerCapability<SUI>>(scenario);
-        let mut safe = ts::take_shared<Safe<SUI>>(scenario);
-        let mut transfer_capability = safe::create_transfer_capability(&mut safe, &cap, initial_funds, ctx(scenario));
+        let cap = ts::take_from_sender<OwnerCapability<BFC>>(scenario);
+        let safe = ts::take_shared<Safe<BFC>>(scenario);
+        let transfer_capability = safe::create_transfer_capability(&mut safe, &cap, initial_funds, ctx(scenario));
         // Function under test
         safe::self_revoke_transfer_capability(&mut safe, &transfer_capability);
         ts::return_shared(safe);
 
         // Try withdraw funds with transfer capability.
         ts::next_tx(scenario, owner);
-        let mut safe = ts::take_shared<Safe<SUI>>(scenario);
+        let safe = ts::take_shared<Safe<BFC>>(scenario);
         let balance = safe::debit(&mut safe, &mut transfer_capability, 1000u64);
         test_utils::destroy(balance);
 

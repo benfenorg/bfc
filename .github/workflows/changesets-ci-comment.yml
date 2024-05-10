@@ -3,6 +3,7 @@ name: Changesets CI Comment
 # NOTE: This workflow run indirection is used to securely comment on PRs when
 # changeset CI runs are completed.
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Changesets CI"]
     types:
@@ -10,7 +11,7 @@ on:
 
 jobs:
   upload:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     if: >
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'

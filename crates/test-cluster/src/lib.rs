@@ -992,7 +992,6 @@ impl TestClusterBuilder {
 
         let swarm = self.start_swarm().await.unwrap();
         let working_dir = swarm.dir();
-
         let mut wallet_conf: SuiClientConfig =
             PersistedConfig::read(&working_dir.join(SUI_CLIENT_CONFIG)).unwrap();
 

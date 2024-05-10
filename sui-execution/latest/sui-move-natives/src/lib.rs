@@ -33,6 +33,7 @@ use self::{
     tx_context::TxContextDeriveIdCostParams,
     types::TypesIsOneTimeWitnessCostParams,
     validator::ValidatorValidateMetadataBcsCostParams,
+    curve::CurveDxCostParams
 };
 use crate::crypto::group_ops;
 use crate::crypto::group_ops::GroupOpsCostParams;
@@ -74,6 +75,7 @@ mod transfer;
 mod tx_context;
 mod types;
 mod validator;
+mod curve;
 
 #[derive(Tid)]
 pub struct NativesCostTable {
@@ -81,6 +83,9 @@ pub struct NativesCostTable {
     pub address_from_bytes_cost_params: AddressFromBytesCostParams,
     pub address_to_u256_cost_params: AddressToU256CostParams,
     pub address_from_u256_cost_params: AddressFromU256CostParams,
+
+    // Curve natives
+    pub curve_dx_cost_params: CurveDxCostParams,
 
     // Dynamic field natives
     pub dynamic_field_hash_type_and_key_cost_params: DynamicFieldHashTypeAndKeyCostParams,
@@ -171,6 +176,10 @@ impl NativesCostTable {
             },
             address_from_u256_cost_params: AddressFromU256CostParams {
                 address_from_u256_cost_base: protocol_config.address_from_u256_cost_base().into(),
+            },
+
+            curve_dx_cost_params: CurveDxCostParams {
+                curve_dx_cost_base: protocol_config.curve_dx_cost_base().into(),
             },
 
             dynamic_field_hash_type_and_key_cost_params: DynamicFieldHashTypeAndKeyCostParams {
@@ -619,6 +628,7 @@ pub fn all_natives(silent: bool) -> NativeFunctionTable {
         ("address", "from_bytes", make_native!(address::from_bytes)),
         ("address", "to_u256", make_native!(address::to_u256)),
         ("address", "from_u256", make_native!(address::from_u256)),
+        ("curve", "curve_dx", make_native!(curve::curve_dx)),
         ("hash", "blake2b256", make_native!(hash::blake2b256)),
         (
             "bls12381",

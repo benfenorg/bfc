@@ -68,7 +68,7 @@ function ConnectedDapps() {
 			</div>
 			<div className="my-4">
 				<Text variant="pBodySmall" color="gray-80" weight="normal">
-					Apps you have connected to through the Sui Wallet in this browser.
+					Apps you have connected to through the BenFen Wallet in this browser.
 				</Text>
 			</div>
 

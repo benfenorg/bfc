@@ -291,7 +291,7 @@ pub struct AccountConfig {
     pub gas_amounts: Vec<u64>,
 }
 
-pub const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000_000_000;
+pub const DEFAULT_GAS_AMOUNT: u64 = 3_000_000_000_000_000;
 pub const DEFAULT_NUMBER_OF_AUTHORITIES: usize = 4;
 const DEFAULT_NUMBER_OF_ACCOUNT: usize = 5;
 pub const DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT: usize = 5;
@@ -416,6 +416,15 @@ impl GenesisConfig {
         self.accounts.push(AccountConfig {
             address: None,
             gas_amounts: vec![DEFAULT_GAS_AMOUNT; DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT],
+        });
+        self
+    }
+
+    //todo: using this to add customize account
+    pub fn add_customize_account(mut self, address: SuiAddress, gas_amounts: Vec<u64>) -> Self {
+        self.accounts.push(AccountConfig {
+            address: Some(address),
+            gas_amounts: gas_amounts,
         });
         self
     }

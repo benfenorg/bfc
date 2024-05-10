@@ -97,6 +97,8 @@ async fn main() {
             .with_env()
             .init(),
     };
-    debug!("Sui CLI version: {VERSION}");
+
+    debug!("Bfc CLI version: {VERSION}");
+
     exit_main!(args.command.execute().await);
 }

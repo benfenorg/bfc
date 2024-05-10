@@ -1,13 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type QredoSerializedUiAccount } from '_src/background/accounts/QredoAccount';
-import { type UIQredoInfo, type UIQredoPendingRequest } from '_src/background/qredo/types';
+import { type BasePayload, isBasePayload } from './BasePayload';
+import { type Payload } from './Payload';
+import {
+	type QredoConnectIdentity,
+	type UIQredoInfo,
+	type UIQredoPendingRequest,
+} from '_src/background/qredo/types';
 import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
 import { type Wallet } from '_src/shared/qredo-api';
-
-import { isBasePayload, type BasePayload } from './BasePayload';
-import { type Payload } from './Payload';
 
 type Methods = {
 	connect: QredoConnectInput;
@@ -15,7 +17,7 @@ type Methods = {
 	getPendingRequest: { requestID: string };
 	getPendingRequestResponse: { request: UIQredoPendingRequest | null };
 	getQredoInfo: {
-		qredoID: string;
+		filter: { qredoID: string } | { identity: QredoConnectIdentity };
 		refreshAccessToken: boolean;
 	};
 	getQredoInfoResponse: { qredoInfo: UIQredoInfo | null };
@@ -24,7 +26,6 @@ type Methods = {
 		accounts: Wallet[];
 		password: string;
 	};
-	acceptQredoConnectionResponse: { accounts: QredoSerializedUiAccount[] };
 	rejectQredoConnection: {
 		qredoID: string;
 	};

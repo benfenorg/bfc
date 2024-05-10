@@ -1,21 +1,20 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useFeatureValue } from '@growthbook/growthbook-react';
 import {
-	getKioskIdFromOwnerCap,
 	KioskTypes,
 	ORIGINBYTE_KIOSK_OWNER_TOKEN,
+	getKioskIdFromOwnerCap,
 	useGetKioskContents,
 	useGetObject,
 } from '@mysten/core';
-import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
-import { useSuiClient } from '@mysten/dapp-kit';
-import { KioskTransaction } from '@mysten/kiosk';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { take } from '@mysten/kiosk';
 import { useMutation } from '@tanstack/react-query';
+
+import { useActiveAddress, useSigner } from '_src/ui/app/hooks';
 
 const ORIGINBYTE_PACKAGE_ID = '0x083b02db943238dcea0ff0938a54a17d7575f5b48034506446e501e963391480';
 
@@ -24,16 +23,15 @@ export function useTransferKioskItem({
 	objectType,
 }: {
 	objectId: string;
-	objectType?: string | null;
+	objectType?: string;
 }) {
-	const client = useSuiClient();
-	const activeAccount = useActiveAccount();
-	const signer = useSigner(activeAccount);
-	const address = activeAccount?.address;
+	const rpc = useSuiClient();
+	const signer = useSigner();
+	const address = useActiveAddress();
 	const obPackageId = useFeatureValue('kiosk-originbyte-packageid', ORIGINBYTE_PACKAGE_ID);
-	const { data: kioskData } = useGetKioskContents(address); // show personal kiosks too
+	const { data: kioskData } = useGetKioskContents(address);
+
 	const objectData = useGetObject(objectId);
-	const kioskClient = useKioskClient();
 
 	return useMutation({
 		mutationFn: async ({ to, clientIdentifier }: { to: string; clientIdentifier?: string }) => {
@@ -49,19 +47,14 @@ export function useTransferKioskItem({
 			}
 
 			if (kiosk.type === KioskTypes.SUI && objectData?.data?.data?.type && kiosk?.ownerCap) {
-				const txb = new TransactionBlock();
-
-				new KioskTransaction({ transactionBlock: txb, kioskClient, cap: kiosk.ownerCap })
-					.transfer({
-						itemType: objectData.data.data.type as string,
-						itemId: objectId,
-						address: to,
-					})
-					.finalize();
-
+				const tx = new TransactionBlock();
+				// take item out of kiosk
+				const obj = take(tx, objectData.data?.data?.type, kioskId, kiosk?.ownerCap, objectId);
+				// transfer as usual
+				tx.transferObjects([obj], tx.pure(to));
 				return signer.signAndExecuteTransactionBlock(
 					{
-						transactionBlock: txb,
+						transactionBlock: tx,
 						options: {
 							showInput: true,
 							showEffects: true,
@@ -74,7 +67,7 @@ export function useTransferKioskItem({
 
 			if (kiosk.type === KioskTypes.ORIGINBYTE && objectData?.data?.data?.type) {
 				const tx = new TransactionBlock();
-				const recipientKiosks = await client.getOwnedObjects({
+				const recipientKiosks = await rpc.getOwnedObjects({
 					owner: to,
 					options: { showContent: true },
 					filter: { StructType: ORIGINBYTE_KIOSK_OWNER_TOKEN },

@@ -12,6 +12,13 @@ use crate::{
     naming::ast::{
         self as N, BuiltinTypeName_, FunctionSignature, StructFields, Type, TypeName_, Type_, Var,
     },
+    sui_mode::{
+        ASCII_MODULE_NAME, ASCII_TYPE_NAME, CLOCK_MODULE_NAME, CLOCK_TYPE_NAME,
+        ENTRY_FUN_SIGNATURE_DIAG, ID_TYPE_NAME, INIT_CALL_DIAG, INIT_FUN_DIAG, OBJECT_MODULE_NAME,
+        OPTION_MODULE_NAME, OPTION_TYPE_NAME, OTW_DECL_DIAG, SCRIPT_DIAG,
+        STD_ADDR_NAME, SUI_ADDR_NAME, TX_CONTEXT_MODULE_NAME,
+        TX_CONTEXT_TYPE_NAME, UTF_MODULE_NAME, UTF_TYPE_NAME,
+    },
     parser::ast::{Ability_, DatatypeName, FunctionName},
     shared::{program_info::TypingProgramInfo, CompilationEnv, Identifier},
     sui_mode::*,
@@ -947,6 +954,26 @@ fn exp(context: &mut Context, e: &T::Exp) {
                 check_private_transfer(context, e.exp.loc, mcall)
             }
         }
+
+        //warning : skip one-time-witness init check, by kakaxi.
+        // T::UnannotatedExp_::Pack(m, s, _, _) => {
+        //     if !context.in_test
+        //         && !context
+        //             .current_module()
+        //             .value
+        //             .is(SUI_ADDR_NAME, SUI_MODULE_NAME)
+        //         && context.one_time_witness.as_ref().is_some_and(|otw| {
+        //             otw.as_ref()
+        //                 .is_ok_and(|o| m == context.current_module() && o == s)
+        //         })
+        //     {
+        //         let msg = "Invalid one-time witness construction. One-time witness types \
+        //             cannot be created manually, but are passed as an argument 'init'";
+        //         let mut diag = diag!(OTW_USAGE_DIAG, (e.exp.loc, msg));
+        //         diag.add_note(OTW_NOTE);
+        //         context.env.add_diag(diag)
+        //     }
+        // }
         T::UnannotatedExp_::Pack(m, s, _, _) => {
             if !context.in_test
                 && !otw_special_cases(context)

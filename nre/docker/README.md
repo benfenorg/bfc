@@ -10,15 +10,15 @@ Tested using:
 
 2. Update [validator.yaml](../config/validator.yaml) and place it in the same directory as `docker-compose.yaml`.
 
-Add the paths to your private keys to validator.yaml. If you chose to put them in `/opt/sui/key-pairs`, you can use the following example: 
+Add the paths to your private keys to validator.yaml. If you chose to put them in `/opt/bfc/key-pairs`, you can use the following example: 
 
 ```
 protocol-key-pair:
-  path: /opt/sui/key-pairs/protocol.key
+  path: /opt/bfc/key-pairs/protocol.key
 worker-key-pair: 
-  path: /opt/sui/key-pairs/worker.key
+  path: /opt/bfc/key-pairs/worker.key
 network-key-pair: 
-  path: /opt/sui/key-pairs/network.key
+  path: /opt/bfc/key-pairs/network.key
 ```
 
 3. Place `genesis.blob` in the same directory as `docker-compose.yaml`. (available post genesis ceremony)

@@ -1,13 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { formatAddress } from '@benfen/bfc.js';
+import { useGetSystemState } from '@mysten/core';
+import cl from 'classnames';
+import { useMemo } from 'react';
+
 import { Heading } from '_app/shared/heading';
 import { ImageIcon } from '_app/shared/image-icon';
 import { Text } from '_app/shared/text';
 import { Badge } from '_src/ui/app/shared/Badge';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
-import { formatAddress } from '@mysten/sui.js/utils';
-import cl from 'clsx';
-import { useMemo } from 'react';
 
 interface ValidatorLogoProps {
 	validatorAddress: string;
@@ -30,7 +31,7 @@ export function ValidatorLogo({
 	showActiveStatus = false,
 	activeEpoch,
 }: ValidatorLogoProps) {
-	const { data, isPending } = useSuiClientQuery('getLatestSuiSystemState');
+	const { data, isLoading } = useGetSystemState();
 
 	const validatorMeta = useMemo(() => {
 		if (!data) return null;
@@ -50,7 +51,7 @@ export function ValidatorLogo({
 	// flag if the validator is at risk of being removed from the active set
 	const isAtRisk = data?.atRiskValidators.some((item) => item[0] === validatorAddress);
 
-	if (isPending) {
+	if (isLoading) {
 		return <div className="flex justify-center items-center">...</div>;
 	}
 	// for inactive validators, show the epoch number
@@ -62,9 +63,8 @@ export function ValidatorLogo({
 	return (
 		<div
 			className={cl(
-				'w-full flex justify-start font-semibold',
+				'w-full flex justify-start font-body gap-1.25',
 				stacked ? 'flex-col items-start' : 'flex-row items-center',
-				isTitle ? 'gap-2.5' : 'gap-2',
 			)}
 		>
 			<ImageIcon
@@ -72,17 +72,17 @@ export function ValidatorLogo({
 				label={validatorMeta?.name || ''}
 				fallback={validatorMeta?.name || ''}
 				size={iconSize}
-				rounded="full"
+				circle
 			/>
-			<div className="flex flex-col gap-1.5 overflow-hidden">
+			<div className="flex flex-col overflow-hidden">
 				<div className="flex">
 					{isTitle ? (
-						<Heading as="h4" variant="heading4" color="steel-darker" truncate>
+						<Heading as="h4" variant="heading4" color="bfc-text1" weight="semibold" truncate>
 							{validatorName}
 						</Heading>
 					) : (
 						<div className="line-clamp-2 break-all">
-							<Text color="gray-90" variant={size} weight="semibold">
+							<Text color="bfc-text1" variant="body" weight="medium">
 								{validatorName}
 							</Text>
 						</div>
@@ -96,7 +96,7 @@ export function ValidatorLogo({
 					)}
 				</div>
 				{showAddress && (
-					<Text variant="body" color="steel-dark" mono>
+					<Text variant="body" color="bfc-text3" mono>
 						{formatAddress(validatorAddress)}
 					</Text>
 				)}

@@ -1,24 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Serializable } from '_src/shared/cryptography/keystore';
 import {
+	type SerializedSignature,
 	toSerializedSignature,
 	type Keypair,
-	type SerializedSignature,
-} from '@mysten/sui.js/cryptography';
+} from '@benfen/bfc.js/cryptography';
 import { blake2b } from '@noble/hashes/blake2b';
-
-import { setupAutoLockAlarm } from '../auto-lock-accounts';
+import { accountsEvents } from './events';
 import { getDB } from '../db';
 import {
 	clearEphemeralValue,
 	getEphemeralValue,
 	setEphemeralValue,
 } from '../session-ephemeral-values';
-import { accountsEvents } from './events';
+import { type Serializable } from '_src/shared/cryptography/keystore';
 
-export type AccountType = 'mnemonic-derived' | 'imported' | 'ledger' | 'qredo' | 'zkLogin';
+export type AccountType = 'mnemonic-derived' | 'imported' | 'ledger' | 'qredo' | 'zk';
 
 export abstract class Account<
 	T extends SerializedAccount = SerializedAccount,
@@ -79,7 +77,7 @@ export abstract class Account<
 		return toSerializedSignature({
 			signature,
 			signatureScheme,
-			publicKey: pubkey,
+			pubKey: pubkey,
 		});
 	}
 
@@ -99,7 +97,6 @@ export abstract class Account<
 	}
 
 	protected async onUnlocked() {
-		await setupAutoLockAlarm();
 		await (await getDB()).accounts.update(this.id, { lastUnlockedOn: Date.now() });
 		accountsEvents.emit('accountStatusChanged', { accountID: this.id });
 	}
@@ -131,7 +128,6 @@ export interface SerializedAccount {
 	 */
 	readonly selected: boolean;
 	readonly nickname: string | null;
-	readonly createdAt: number;
 }
 
 export interface SerializedUIAccount {
@@ -155,12 +151,11 @@ export interface SerializedUIAccount {
 	readonly selected: boolean;
 	readonly nickname: string | null;
 	readonly isPasswordUnlockable: boolean;
-	readonly isKeyPairExportable: boolean;
 }
 
 export interface PasswordUnlockableAccount {
 	readonly unlockType: 'password';
-	passwordUnlock(password?: string): Promise<void>;
+	passwordUnlock(password: string): Promise<void>;
 	verifyPassword(password: string): Promise<void>;
 }
 
@@ -181,17 +176,4 @@ export interface SigningAccount {
 
 export function isSigningAccount(account: any): account is SigningAccount {
 	return 'signData' in account && 'canSign' in account && account.canSign === true;
-}
-
-export interface KeyPairExportableAccount {
-	readonly exportableKeyPair: true;
-	exportKeyPair(password: string): Promise<string>;
-}
-
-export function isKeyPairExportableAccount(account: any): account is KeyPairExportableAccount {
-	return (
-		'exportKeyPair' in account &&
-		'exportableKeyPair' in account &&
-		account.exportableKeyPair === true
-	);
 }

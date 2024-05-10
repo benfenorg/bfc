@@ -17,6 +17,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
+use tracing::log::info;
 
 use crate::base_types::{MoveObjectType, ObjectIDParseError};
 use crate::coin::{Coin, CoinMetadata, TreasuryCap};
@@ -34,6 +35,8 @@ use crate::{
     gas_coin::GasCoin,
 };
 use sui_protocol_config::ProtocolConfig;
+use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
+use crate::stable_coin::{StableCoin};
 
 use self::balance_traversal::BalanceTraversal;
 use self::bounded_visitor::BoundedVisitor;
@@ -133,6 +136,19 @@ impl MoveObject {
         }
     }
 
+    pub fn new_stable_coin(version: SequenceNumber, id: ObjectID, value: u64) -> Self {
+        unsafe {
+            Self::new_from_execution_with_limit(
+                StableCoin::type_().into(),
+                true,
+                version,
+                StableCoin::new(id, value).to_bcs_bytes(),
+                256,
+            )
+                .unwrap()
+        }
+    }
+
     pub fn new_coin(
         coin_type: MoveObjectType,
         version: SequenceNumber,
@@ -154,6 +170,10 @@ impl MoveObject {
 
     pub fn type_(&self) -> &MoveObjectType {
         &self.type_
+    }
+
+    pub fn type_tag(&self) -> TypeTag {
+        TypeTag::Struct(Box::new(self.type_().clone().into()))
     }
 
     pub fn is_type(&self, s: &StructTag) -> bool {
@@ -186,6 +206,17 @@ impl MoveObject {
 
         // unwrap safe because we checked that it is a coin
         u64::from_le_bytes(<[u8; 8]>::try_from(&self.contents[ID_END_INDEX..]).unwrap())
+    }
+
+
+    pub fn get_scoin_value_unsafe(&self) -> u64 {
+        //debug_assert!(self.type_.is_coin());
+        // 32 bytes for object ID, 8 for balance
+        //debug_assert!(self.contents.len() == 40);
+
+        // unwrap safe because we checked that it is a coin
+        //the length = 80., so we start from 72 to get last 8.
+        u64::from_le_bytes(<[u8; 8]>::try_from(&self.contents[72..]).unwrap())
     }
 
     /// Update the `value: u64` field of a `Coin<T>` type.
@@ -363,6 +394,13 @@ impl MoveObject {
 
 // Helpers for extracting Coin<T> balances for all T
 impl MoveObject {
+<<<<<<< HEAD
+=======
+    fn is_balance(s: &StructTag) -> Option<&TypeTag> {
+        (Balance::is_balance(s) && s.type_params.len() == 1 && GAS::is_gas_type(&s.type_params[0])).then(|| &s.type_params[0])
+    }
+
+>>>>>>> develop_v.1.1.5
     /// Get the total balances for all `Coin<T>` embedded in `self`.
     pub fn get_coin_balances(
         &self,
@@ -388,6 +426,72 @@ impl MoveObject {
 
             Ok(traversal.finish())
         }
+<<<<<<< HEAD
+=======
+
+        Ok(balances)
+    }
+
+    /// Get the total balances for all `Coin<T>` embedded in `s`, eitehr directly or in its
+    /// (transitive fields).
+    fn get_coin_balances_in_struct(
+        s: &MoveStruct,
+        balances: &mut BTreeMap<TypeTag, u64>,
+        value_depth: u64,
+    ) -> Result<(), SuiError> {
+        let (struct_type, fields) = match s {
+            MoveStruct::WithTypes { type_, fields } => (type_, fields),
+            _ => unreachable!(),
+        };
+
+        if let Some(type_tag) = Self::is_balance(struct_type) {
+            let balance = match fields[0].1 {
+                MoveValue::U64(n) => n,
+                _ => unreachable!(), // a Balance<T> object should have exactly one field, of type int
+            };
+
+            // Accumulate the found balance
+            if balance > 0 {
+                *balances.entry(type_tag.clone()).or_insert(0) += balance;
+            }
+        } else {
+            info!("get value: {:?}", s);
+            for field in fields {
+                Self::get_coin_balances_in_value(&field.1, balances, value_depth)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn get_coin_balances_in_value(
+        v: &MoveValue,
+        balances: &mut BTreeMap<TypeTag, u64>,
+        value_depth: u64,
+    ) -> Result<(), SuiError> {
+        const MAX_MOVE_VALUE_DEPTH: u64 = 256; // This is 2x was the current value of
+                                               // `max_move_value_depth` is from protocol config
+
+        let value_depth = value_depth + 1;
+
+        if value_depth > MAX_MOVE_VALUE_DEPTH {
+            return Err(SuiError::GenericAuthorityError {
+                error: "exceeded max move value depth".to_owned(),
+            });
+        }
+
+        match v {
+            MoveValue::Struct(s) => Self::get_coin_balances_in_struct(s, balances, value_depth)?,
+            MoveValue::Vector(vec) => {
+                for entry in vec {
+                    Self::get_coin_balances_in_value(entry, balances, value_depth)?;
+                }
+            }
+            _ => {}
+        }
+
+        Ok(())
+>>>>>>> develop_v.1.1.5
     }
 }
 
@@ -546,10 +650,10 @@ impl Display for Owner {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::AddressOwner(address) => {
-                write!(f, "Account Address ( {} )", address)
+                write!(f, "Account Address ( {} )", sui_address_to_bfc_address(*address))
             }
             Self::ObjectOwner(address) => {
-                write!(f, "Object ID: ( {} )", address)
+                write!(f, "Object ID: ( {} )", sui_address_to_bfc_address(*address))
             }
             Self::Immutable => {
                 write!(f, "Immutable")
@@ -805,6 +909,21 @@ impl ObjectInner {
             false
         }
     }
+    pub fn is_stable_gas_coin(&self) -> bool {
+        if let Some(move_object) = self.data.try_as_move() {
+            move_object.type_().is_stable_gas_coin()
+        } else {
+            false
+        }
+    }
+
+    pub fn get_gas_coin_name(&self) -> String {
+        if let Some(move_object) = self.data.try_as_move() {
+            move_object.type_().get_gas_coin_name()
+        }else {
+            "".to_string()
+        }
+    }
 
     // TODO: use `MoveObj::get_balance_unsafe` instead.
     // context: https://github.com/MystenLabs/sui/pull/10679#discussion_r1165877816
@@ -891,10 +1010,15 @@ impl ObjectInner {
 impl Object {
     /// Get the total amount of SUI embedded in `self`, including both Move objects and the storage rebate
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
-        Ok(self.storage_rebate
-            + match &self.data {
-                Data::Move(m) => m.get_total_sui(layout_resolver)?,
-                Data::Package(_) => 0,
+        Ok(match &self.data {
+                Data::Move(m) => {
+                    if m.type_.is_stable_gas_coin() {
+                        self.storage_rebate
+                    }else {
+                        self.storage_rebate +  m.get_total_sui(layout_resolver)?
+                    }
+                },
+                Data::Package(_) => self.storage_rebate,
             })
     }
 
@@ -1027,6 +1151,45 @@ impl Object {
             storage_rebate: 0,
         }
         .into()
+    }
+    pub fn with_stable_id_owner_version_for_testing(
+        id: ObjectID,
+        version: SequenceNumber,
+        owner: SuiAddress,
+    ) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: StableCoin::type_().into(),
+            has_public_transfer: true,
+            version,
+            contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
+        });
+        Self {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }
+    }
+
+    pub fn with_stable_tag_id_owner_version_for_testing(
+        id: ObjectID,
+        version: SequenceNumber,
+        owner: SuiAddress,
+        stable_tag: StructTag,
+        amount: u64,
+    ) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: stable_tag.into(),
+            has_public_transfer: true,
+            version,
+            contents: StableCoin::new(id, amount).to_bcs_bytes(),
+        });
+        Self {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }
     }
 
     pub fn with_owner_for_testing(owner: SuiAddress) -> Self {

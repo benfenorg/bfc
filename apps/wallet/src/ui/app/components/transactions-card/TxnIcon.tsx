@@ -2,28 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-	Account24,
-	ArrowRight16,
+	WalletActionStake24,
+	ArrowTopRight24,
 	Info16,
-	Sui,
 	Swap16,
 	Unstaked,
-	WalletActionStake24,
+	Sui,
+	Account24,
 } from '@mysten/icons';
-import cl from 'clsx';
+import cl from 'classnames';
 
 import LoadingIndicator from '../loading/LoadingIndicator';
 
 const icons = {
-	Send: (
-		<ArrowRight16 fill="currentColor" className="text-gradient-blue-start text-body -rotate-45" />
-	),
-	Receive: (
-		<ArrowRight16 fill="currentColor" className="text-gradient-blue-start text-body rotate-135" />
-	),
-	Transaction: (
-		<ArrowRight16 fill="currentColor" className="text-gradient-blue-start text-body -rotate-45" />
-	),
+	Send: <ArrowTopRight24 className="text-bfc text-body" />,
+	Receive: <ArrowTopRight24 className="text-bfc text-body rotate-180" />,
+	Transaction: <ArrowTopRight24 className="text-bfc text-body" />,
 	Staked: <WalletActionStake24 className="text-gradient-blue-start text-heading2 bg-transparent" />,
 	Unstaked: <Unstaked className="text-gradient-blue-start text-heading3" />,
 	Rewards: <Sui className="text-gradient-blue-start text-body" />,
@@ -40,12 +34,7 @@ interface TxnItemIconProps {
 
 export function TxnIcon({ txnFailed, variant }: TxnItemIconProps) {
 	return (
-		<div
-			className={cl([
-				txnFailed ? 'bg-issue-light' : 'bg-gray-40',
-				'w-7.5 h-7.5 flex justify-center items-center rounded-2lg',
-			])}
-		>
+		<div className={cl(['w-6 h-6 flex justify-center items-center'])}>
 			{icons[txnFailed ? 'Failed' : variant]}
 		</div>
 	);

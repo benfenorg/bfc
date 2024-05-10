@@ -51,7 +51,7 @@ fn test_protocol_overrides_2() {
     );
 }
 
-#[cfg(msim)]
+#[cfg(any(msim, feature="bfc_skip_dao_update"))]
 mod sim_only_tests {
 
     use super::*;
@@ -82,6 +82,10 @@ mod sim_only_tests {
         TransactionData, TEST_ONLY_GAS_UNIT_FOR_GENERIC,
     };
     use sui_types::{
+        base_types::SequenceNumber, digests::TransactionDigest, object::Object,
+        programmable_transaction_builder::ProgrammableTransactionBuilder, storage::ObjectStore,
+        transaction::TransactionKind, MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
+        SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID,
         base_types::{SequenceNumber, SuiAddress},
         digests::TransactionDigest,
         object::Object,
@@ -1005,6 +1009,7 @@ mod sim_only_tests {
             u64::MAX,
             &[
                 BuiltInFramework::get_package_by_id(&MOVE_STDLIB_PACKAGE_ID).genesis_move_package(),
+                BuiltInFramework::get_package_by_id(&BFC_SYSTEM_PACKAGE_ID).genesis_move_package(),
                 BuiltInFramework::get_package_by_id(&SUI_FRAMEWORK_PACKAGE_ID)
                     .genesis_move_package(),
             ],

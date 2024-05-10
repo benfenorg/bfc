@@ -23,13 +23,20 @@ use crate::{
     sui_mode::{OBJECT_NEW, TEST_SCENARIO_MODULE_NAME, TS_NEW_OBJECT},
 };
 use std::collections::BTreeMap;
+use crate::sui_mode::{BFC_SYSTEM_ADDR_NAME, BFC_SYSTEM_CREATE, BFC_SYSTEM_MODULE_NAME};
 
 use super::{
+<<<<<<< HEAD:external-crates/move/crates/move-compiler/src/sui_mode/id_leak.rs
     AUTHENTICATOR_STATE_CREATE, AUTHENTICATOR_STATE_MODULE_NAME, BRIDGE_ADDR_NAME, BRIDGE_CREATE,
     BRIDGE_MODULE_NAME, CLOCK_MODULE_NAME, DENY_LIST_CREATE, DENY_LIST_MODULE_NAME, ID_LEAK_DIAG,
     OBJECT_MODULE_NAME, OBJECT_NEW_UID_FROM_HASH, RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE,
     SUI_ADDR_NAME, SUI_CLOCK_CREATE, SUI_SYSTEM_ADDR_NAME, SUI_SYSTEM_CREATE,
     SUI_SYSTEM_MODULE_NAME, UID_TYPE_NAME,
+=======
+    CLOCK_MODULE_NAME, ID_LEAK_DIAG, OBJECT_MODULE_NAME, OBJECT_NEW_UID_FROM_HASH, SUI_ADDR_NAME,
+    SUI_CLOCK_CREATE, SUI_SYSTEM_ADDR_NAME, SUI_SYSTEM_CREATE, SUI_SYSTEM_MODULE_NAME,
+    UID_TYPE_NAME,
+>>>>>>> develop_v.1.1.5:external-crates/move/move-compiler/src/sui_mode/id_leak.rs
 };
 
 pub const FRESH_ID_FUNCTIONS: &[(Symbol, Symbol, Symbol)] = &[
@@ -44,6 +51,7 @@ pub const FUNCTIONS_TO_SKIP: &[(Symbol, Symbol, Symbol)] = &[
         SUI_SYSTEM_CREATE,
     ),
     (SUI_ADDR_NAME, CLOCK_MODULE_NAME, SUI_CLOCK_CREATE),
+<<<<<<< HEAD:external-crates/move/crates/move-compiler/src/sui_mode/id_leak.rs
     (
         SUI_ADDR_NAME,
         AUTHENTICATOR_STATE_MODULE_NAME,
@@ -56,6 +64,9 @@ pub const FUNCTIONS_TO_SKIP: &[(Symbol, Symbol, Symbol)] = &[
     ),
     (SUI_ADDR_NAME, DENY_LIST_MODULE_NAME, DENY_LIST_CREATE),
     (BRIDGE_ADDR_NAME, BRIDGE_MODULE_NAME, BRIDGE_CREATE),
+=======
+    (BFC_SYSTEM_ADDR_NAME, BFC_SYSTEM_MODULE_NAME, BFC_SYSTEM_CREATE)
+>>>>>>> develop_v.1.1.5:external-crates/move/move-compiler/src/sui_mode/id_leak.rs
 ];
 
 //**************************************************************************************************

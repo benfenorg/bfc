@@ -347,18 +347,99 @@ pub fn print_checkpoint_content(
     Ok(())
 }
 
+<<<<<<< HEAD
+=======
+/// Force removes a transaction and its outputs, if no other dependent transaction has executed yet.
+/// Usually this should be paired with rewind_checkpoint_execution() to re-execute the removed
+/// transaction, to repair corrupted database.
+/// Dry run with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live remove-transaction --digest xxxx
+/// Add --confirm to actually remove the transaction.
+pub fn remove_transaction(path: &Path, opt: RemoveTransactionOptions) -> anyhow::Result<()> {
+    let perpetual_db = AuthorityPerpetualTables::open(&path.join("store"), None);
+    let epoch = if let Some(epoch) = opt.epoch {
+        epoch
+    } else {
+        get_sui_system_state(&perpetual_db)?.epoch()
+    };
+    let epoch_store = AuthorityEpochTables::open(epoch, &path.join("store"), None);
+    let Some(_transaction) = perpetual_db.get_transaction(&opt.digest)? else {
+        bail!("Transaction {:?} not found and cannot be re-executed!", opt.digest);
+    };
+    let Some(effects) = perpetual_db.get_effects(&opt.digest)? else {
+        bail!("Transaction {:?} not executed or effects have been pruned!", opt.digest);
+    };
+    let mut objects_to_remove = vec![];
+    for mutated_obj in effects.modified_at_versions() {
+        let new_objs = perpetual_db.get_newer_object_keys(&mutated_obj)?;
+        if new_objs.len() > 1 {
+            bail!(
+                "Dependents of transaction {:?} have already executed! Mutated object: {:?}, new objects: {:?}",
+                opt.digest,
+                mutated_obj,
+                new_objs,
+            );
+        }
+        objects_to_remove.extend(new_objs);
+    }
+    for (created_obj, _owner) in effects.created() {
+        let new_objs = perpetual_db.get_newer_object_keys(&(created_obj.0, created_obj.1))?;
+        if new_objs.len() > 1 {
+            bail!(
+                "Dependents of transaction {:?} have already executed! Created object: {:?}, new objects: {:?}",
+                opt.digest,
+                created_obj,
+                new_objs,
+            );
+        }
+        objects_to_remove.extend(new_objs);
+    }
+    // TODO: verify there is no newer object for read-only input, before dynamic child mvcc is implemented.
+    println!(
+        "Transaction {:?} will be removed from the database. The following output objects will be removed too:\n{:#?}",
+        opt.digest, objects_to_remove
+    );
+    if opt.confirm {
+        println!("Proceeding to remove transaction {:?} in 5s ..", opt.digest);
+        std::thread::sleep(std::time::Duration::from_secs(5));
+        perpetual_db.remove_executed_effects_and_outputs_subtle(&opt.digest, &objects_to_remove)?;
+        epoch_store.remove_executed_tx_subtle(&opt.digest)?;
+        println!("Done!");
+    }
+    Ok(())
+}
+
+pub fn remove_object_lock(path: &Path, opt: RemoveObjectLockOptions) -> anyhow::Result<()> {
+    let perpetual_db = AuthorityPerpetualTables::open(&path.join("store"), None);
+    let key = ObjectKey(opt.id, SequenceNumber::from_u64(opt.version));
+    if !opt.confirm && !perpetual_db.has_object_lock(&key) {
+        bail!("Owned object lock for {:?} is not found!", key);
+    };
+    println!("Removing owned object lock for {:?}", key);
+    if opt.confirm {
+        println!(
+            "Proceeding to remove owned object lock for {:?} in 5s ..",
+            key
+        );
+        std::thread::sleep(std::time::Duration::from_secs(5));
+        let created_ref = perpetual_db.remove_object_lock_subtle(&key)?;
+        println!("Done! Lock is now initialized for {:?}", created_ref);
+    }
+    Ok(())
+}
+
+>>>>>>> develop_v.1.1.5
 pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
     // Follow the below steps to test:
     //
     // Get a db snapshot. Either generate one by running stress locally and enabling db checkpoints or download one from S3 bucket (pretty big in size though).
-    // Download the snapshot for the epoch you want to restore to the local disk. You will find one snapshot per epoch in the S3 bucket. We need to place the snapshot in the dir where config is pointing to. If db-config in fullnode.yaml is /opt/sui/db/authorities_db and we want to restore from epoch 10, we want to copy the snapshot to /opt/sui/db/authorities_dblike this:
-    // aws s3 cp s3://myBucket/dir /opt/sui/db/authorities_db/ --recursive —exclude “*” —include “epoch_10*”
-    // Mark downloaded snapshot as live: mv  /opt/sui/db/authorities_db/epoch_10  /opt/sui/db/authorities_db/live
-    // Reset the downloaded db to execute from genesis with: cargo run --package sui-tool -- db-tool --db-path /opt/sui/db/authorities_db/live reset-db
-    // Start the sui full node: cargo run --release --bin sui-node -- --config-path ~/db_checkpoints/fullnode.yaml
+    // Download the snapshot for the epoch you want to restore to the local disk. You will find one snapshot per epoch in the S3 bucket. We need to place the snapshot in the dir where config is pointing to. If db-config in fullnode.yaml is /opt/bfc/db/authorities_db and we want to restore from epoch 10, we want to copy the snapshot to /opt/bfc/db/authorities_dblike this:
+    // aws s3 cp s3://myBucket/dir /opt/bfc/db/authorities_db/ --recursive —exclude “*” —include “epoch_10*”
+    // Mark downloaded snapshot as live: mv  /opt/bfc/db/authorities_db/epoch_10  /opt/bfc/db/authorities_db/live
+    // Reset the downloaded db to execute from genesis with: cargo run --package sui-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live reset-db
+    // Start the bfc full node: cargo run --release --bin bfc-node -- --config-path ~/db_checkpoints/fullnode.yaml
     // A sample fullnode.yaml config would be:
     // ---
-    // db-path:  /opt/sui/db/authorities_db
+    // db-path:  /opt/bfc/db/authorities_db
     // network-address: /ip4/0.0.0.0/tcp/8080/http
     // json-rpc-address: "0.0.0.0:9000"
     // websocket-address: "0.0.0.0:9001"
@@ -406,7 +487,7 @@ pub fn reset_db_to_genesis(path: &Path) -> anyhow::Result<()> {
 
 /// Force sets the highest executed checkpoint.
 /// NOTE: Does not force re-execution of transactions.
-/// Run with: cargo run --package sui-tool -- db-tool --db-path /opt/sui/db/authorities_db/live rewind-checkpoint-execution --epoch 3 --checkpoint-sequence-number 300000
+/// Run with: cargo run --package bfc-tool -- db-tool --db-path /opt/bfc/db/authorities_db/live rewind-checkpoint-execution --epoch 3 --checkpoint-sequence-number 300000
 pub fn rewind_checkpoint_execution(
     path: &Path,
     epoch: EpochId,

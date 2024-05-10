@@ -25,14 +25,14 @@ use crate::{
 pub const MIST_PER_SUI: u64 = 1_000_000_000;
 
 /// Total supply denominated in Sui
-pub const TOTAL_SUPPLY_SUI: u64 = 10_000_000_000;
+pub const TOTAL_SUPPLY_SUI: u64 = 1_000_000_000;
 
 // Note: cannot use checked arithmetic here since `const unwrap` is still unstable.
 /// Total supply denominated in Mist
 pub const TOTAL_SUPPLY_MIST: u64 = TOTAL_SUPPLY_SUI * MIST_PER_SUI;
 
-pub const GAS_MODULE_NAME: &IdentStr = ident_str!("sui");
-pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("SUI");
+pub const GAS_MODULE_NAME: &IdentStr = ident_str!("bfc");
+pub const GAS_STRUCT_NAME: &IdentStr = ident_str!("BFC");
 
 pub use checked::*;
 
@@ -127,7 +127,7 @@ mod checked {
         type Error = ExecutionError;
 
         fn try_from(value: &MoveObject) -> Result<GasCoin, ExecutionError> {
-            if !value.type_().is_gas_coin() {
+            if !value.type_().is_gas_coin() &&!value.type_().is_stable_gas_coin(){
                 return Err(ExecutionError::new_with_source(
                     ExecutionErrorKind::InvalidGasObject,
                     format!("Gas object type is not a gas coin: {}", value.type_()),

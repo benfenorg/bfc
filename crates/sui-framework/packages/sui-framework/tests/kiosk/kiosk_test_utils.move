@@ -3,14 +3,18 @@
 
 #[test_only]
 module sui::kiosk_test_utils {
-    use sui::sui::SUI;
+    use std::vector;
+    //use sui::package;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
+    use sui::object::{Self, ID, UID};
     use sui::package::{Self, Publisher};
+    use sui::tx_context::{Self, TxContext};
     use sui::transfer_policy::{Self as policy, TransferPolicy, TransferPolicyCap};
     use sui::kiosk::{Self, Kiosk, KioskOwnerCap};
 
-    public struct OTW has drop {}
-    public struct Asset has key, store { id: UID }
+    struct OTW has drop {}
+    struct Asset has key, store { id: UID }
 
     /// Prepare: dummy context
     public fun ctx(): TxContext { tx_context::dummy() }
@@ -33,14 +37,14 @@ module sui::kiosk_test_utils {
     }
 
     /// Prepare: Get Sui
-    public fun get_sui(amount: u64, ctx: &mut TxContext): Coin<SUI> {
+    public fun get_sui(amount: u64, ctx: &mut TxContext): Coin<BFC> {
         coin::mint_for_testing(amount, ctx)
     }
 
     /// Prepare: Asset
     public fun get_asset(ctx: &mut TxContext): (Asset, ID) {
         let uid = object::new(ctx);
-        let id = uid.to_inner();
+        let id = object::uid_to_inner(&uid);
         (Asset { id: uid }, id)
     }
 
@@ -50,28 +54,28 @@ module sui::kiosk_test_utils {
     }
 
     public fun return_publisher(publisher: Publisher) {
-        publisher.burn_publisher()
+        package::burn_publisher(publisher)
     }
 
     /// Cleanup: TransferPolicy
     public fun return_policy(policy: TransferPolicy<Asset>, cap: TransferPolicyCap<Asset>, ctx: &mut TxContext): u64 {
-        let profits = policy.destroy_and_withdraw(cap, ctx);
-        profits.burn_for_testing()
+        let profits = policy::destroy_and_withdraw(policy, cap, ctx);
+        coin::burn_for_testing(profits)
     }
 
     /// Cleanup: Kiosk
     public fun return_kiosk(kiosk: Kiosk, cap: KioskOwnerCap, ctx: &mut TxContext): u64 {
-        let profits = kiosk.close_and_withdraw(cap, ctx);
-        profits.burn_for_testing()
+        let profits = kiosk::close_and_withdraw(kiosk, cap, ctx);
+        coin::burn_for_testing(profits)
     }
 
     /// Cleanup: vector<Asset>
-    public fun return_assets(mut assets: vector<Asset>) {
-        while (assets.length() > 0) {
-            let Asset { id } = assets.pop_back();
-            id.delete()
+    public fun return_assets(assets: vector<Asset>) {
+        while (vector::length(&assets) > 0) {
+            let Asset { id } = vector::pop_back(&mut assets);
+            object::delete(id)
         };
 
-        assets.destroy_empty()
+        vector::destroy_empty(assets)
     }
 }

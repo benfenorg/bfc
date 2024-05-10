@@ -9,15 +9,11 @@ type DateCardProps = {
 	size: 'sm' | 'md';
 };
 
-export function DateCard({ timestamp, size }: DateCardProps) {
+export function DateCard({ timestamp }: DateCardProps) {
 	const txnDate = formatDate(timestamp, ['month', 'day', 'hour', 'minute']);
 
 	return (
-		<Text
-			color="steel-dark"
-			weight={size === 'sm' ? 'medium' : 'normal'}
-			variant={size === 'sm' ? 'subtitleSmallExtra' : 'pBodySmall'}
-		>
+		<Text color="bfc-text3" weight="normal" variant="body">
 			{txnDate}
 		</Text>
 	);

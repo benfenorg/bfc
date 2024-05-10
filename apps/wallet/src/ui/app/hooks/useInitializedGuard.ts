@@ -1,22 +1,26 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAccounts } from './useAccounts';
+import useAppSelector from './useAppSelector';
 import { useRestrictedGuard } from './useRestrictedGuard';
 
-export default function useInitializedGuard(initializedRequired: boolean, enabled = true) {
+export default function useInitializedGuard(initializedRequired: boolean) {
 	const restricted = useRestrictedGuard();
-	const { data: allAccounts, isPending } = useAccounts();
-	const isInitialized = !!allAccounts?.length;
+
+	const isInitialized = useAppSelector(({ account }) => account.isInitialized);
+	const loading = isInitialized === null;
 	const navigate = useNavigate();
-	const guardAct = !restricted && !isPending && initializedRequired !== isInitialized && enabled;
+	const guardAct = useMemo(
+		() => !restricted && !loading && initializedRequired !== isInitialized,
+		[loading, initializedRequired, isInitialized, restricted],
+	);
 	useEffect(() => {
 		if (guardAct) {
-			navigate(isInitialized ? '/' : '/accounts/welcome', { replace: true });
+			navigate(isInitialized ? '/' : '/welcome', { replace: true });
 		}
 	}, [guardAct, isInitialized, navigate]);
-	return isPending || guardAct;
+	return loading || guardAct;
 }

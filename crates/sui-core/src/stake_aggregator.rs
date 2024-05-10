@@ -106,10 +106,6 @@ impl<S: Clone + Eq, const STRENGTH: bool> StakeAggregator<S, STRENGTH> {
         self.total_votes
     }
 
-    pub fn has_quorum(&self) -> bool {
-        self.total_votes >= self.committee.threshold::<STRENGTH>()
-    }
-
     pub fn validator_sig_count(&self) -> usize {
         self.data.len()
     }
@@ -281,6 +277,7 @@ where
             .collect()
     }
 }
+<<<<<<< HEAD
 
 impl<K, V, const STRENGTH: bool> MultiStakeAggregator<K, V, STRENGTH>
 where
@@ -399,3 +396,5 @@ fn test_votes_per_authority() {
     agg.insert(authority1, key3);
     assert_eq!(agg.votes_for_authority(authority1), 2);
 }
+=======
+>>>>>>> develop_v.1.1.5

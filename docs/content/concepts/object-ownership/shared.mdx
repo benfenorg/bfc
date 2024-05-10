@@ -1,20 +1,12 @@
----
-title: Shared Objects
-description: Anyone can access shared objects on the Sui network, so care must be taken to secure access, if needed.
----
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
 
-A shared object is an object that is shared using the `sui::transfer::share_object` function and is accessible to everyone. Unlike owned objects, anyone can access shared ones on the network. Extended functionality and accessibility of this kind of objects requires additional effort by securing access, if needed.
-
-Shared objects require the `key` ability.
-
-## Example
-
-The following example creates a shop to sell digital donuts. Everyone needs access to the shop to purchase donuts from it, so the example creates the shop as a shared object using `sui::transfer::share_object`.
-
-```move
+/// Unlike `Owned` objects, `Shared` ones can be accessed by anyone on the
+/// network. Extended functionality and accessibility of this kind of objects
+/// requires additional effort by securing access if needed.
 module examples::donuts {
     use sui::transfer;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, UID};
     use sui::balance::{Self, Balance};
@@ -33,11 +25,14 @@ module examples::donuts {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<SUI>
+        balance: Balance<BFC>
     }
 
+    #[allow(unused_function)]
     /// Init function is often ideal place for initializing
     /// a shared object as it is called only once.
+    ///
+    /// To share an object `transfer::share_object` is used.
     fun init(ctx: &mut TxContext) {
         transfer::transfer(ShopOwnerCap {
             id: object::new(ctx)
@@ -52,8 +47,8 @@ module examples::donuts {
     }
 
     /// Entry function available to everyone who owns a Coin.
-    public fun buy_donut(
-        shop: &mut DonutShop, payment: &mut Coin<SUI>, ctx: &mut TxContext
+    public entry fun buy_donut(
+        shop: &mut DonutShop, payment: &mut Coin<BFC>, ctx: &mut TxContext
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 
@@ -70,14 +65,14 @@ module examples::donuts {
     }
 
     /// Consume donut and get nothing...
-    public fun eat_donut(d: Donut) {
+    public entry fun eat_donut(d: Donut) {
         let Donut { id } = d;
         object::delete(id);
     }
 
     /// Take coin from `DonutShop` and transfer it to tx sender.
     /// Requires authorization with `ShopOwnerCap`.
-    public fun collect_profits(
+    public entry fun collect_profits(
         _: &ShopOwnerCap, shop: &mut DonutShop, ctx: &mut TxContext
     ) {
         let amount = balance::value(&shop.balance);
@@ -86,4 +81,3 @@ module examples::donuts {
         transfer::public_transfer(profits, tx_context::sender(ctx))
     }
 }
-```

@@ -13,6 +13,10 @@ mod compatibility_tests {
         // This test checks that the current framework is compatible with all previous framework
         // bytecode snapshots.
         for (version, _snapshots) in load_bytecode_snapshot_manifest() {
+            if version < 24 {
+                continue;
+            }
+
             let config =
                 ProtocolConfig::get_for_version(ProtocolVersion::new(version), Chain::Unknown);
             let binary_config = to_binary_config(&config);

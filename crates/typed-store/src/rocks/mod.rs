@@ -1951,6 +1951,30 @@ where
     /// Returns an unbounded iterator visiting each key-value pair in the map.
     /// This is potentially unsafe as it can perform a full table scan
     fn unbounded_iter(&'a self) -> Self::Iterator {
+<<<<<<< HEAD
+=======
+        let _timer = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_latency_seconds
+            .with_label_values(&[&self.cf])
+            .start_timer();
+        let bytes_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_bytes
+            .with_label_values(&[&self.cf]);
+        let keys_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_keys
+            .with_label_values(&[&self.cf]);
+        let _perf_ctx = if self.iter_sample_interval.sample() {
+            Some(RocksDBPerfContext)
+        } else {
+            None
+        };
+>>>>>>> develop_v.1.1.5
         let db_iter = self
             .rocksdb
             .raw_iterator_cf(&self.cf(), self.opts.readopts());
@@ -1960,8 +1984,50 @@ where
             db_iter,
             _timer,
             _perf_ctx,
+<<<<<<< HEAD
             bytes_scanned,
             keys_scanned,
+=======
+            Some(bytes_scanned),
+            Some(keys_scanned),
+            Some(self.db_metrics.clone()),
+        )
+    }
+
+    fn safe_iter(&'a self) -> Self::SafeIterator {
+        let _timer = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_latency_seconds
+            .with_label_values(&[&self.cf])
+            .start_timer();
+        let _perf_ctx = if self.iter_sample_interval.sample() {
+            Some(RocksDBPerfContext)
+        } else {
+            None
+        };
+        let bytes_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_bytes
+            .with_label_values(&[&self.cf]);
+        let keys_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_keys
+            .with_label_values(&[&self.cf]);
+        let mut db_iter = self
+            .rocksdb
+            .raw_iterator_cf(&self.cf(), self.opts.readopts());
+        db_iter.seek_to_first();
+        SafeIter::new(
+            self.cf.clone(),
+            db_iter,
+            Some(_timer),
+            _perf_ctx,
+            Some(bytes_scanned),
+            Some(keys_scanned),
+>>>>>>> develop_v.1.1.5
             Some(self.db_metrics.clone()),
         )
     }
@@ -1974,7 +2040,40 @@ where
         lower_bound: Option<K>,
         upper_bound: Option<K>,
     ) -> Self::Iterator {
+<<<<<<< HEAD
         let readopts = self.create_read_options_with_bounds(lower_bound, upper_bound);
+=======
+        let _timer = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_latency_seconds
+            .with_label_values(&[&self.cf])
+            .start_timer();
+        let bytes_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_bytes
+            .with_label_values(&[&self.cf]);
+        let keys_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_keys
+            .with_label_values(&[&self.cf]);
+        let _perf_ctx = if self.iter_sample_interval.sample() {
+            Some(RocksDBPerfContext)
+        } else {
+            None
+        };
+        let mut readopts = self.opts.readopts();
+        if let Some(lower_bound) = lower_bound {
+            let key_buf = be_fix_int_ser(&lower_bound).unwrap();
+            readopts.set_iterate_lower_bound(key_buf);
+        }
+        if let Some(upper_bound) = upper_bound {
+            let key_buf = be_fix_int_ser(&upper_bound).unwrap();
+            readopts.set_iterate_upper_bound(key_buf);
+        }
+>>>>>>> develop_v.1.1.5
         let db_iter = self.rocksdb.raw_iterator_cf(&self.cf(), readopts);
         let (_timer, bytes_scanned, keys_scanned, _perf_ctx) = self.create_iter_context();
         Iter::new(
@@ -1991,7 +2090,74 @@ where
     /// Similar to `iter_with_bounds` but allows specifying inclusivity/exclusivity of ranges explicitly.
     /// TODO: find better name
     fn range_iter(&'a self, range: impl RangeBounds<K>) -> Self::Iterator {
+<<<<<<< HEAD
         let readopts = self.create_read_options_with_range(range);
+=======
+        // TODO: Change the metrics?
+        let _timer = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_latency_seconds
+            .with_label_values(&[&self.cf])
+            .start_timer();
+        let bytes_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_bytes
+            .with_label_values(&[&self.cf]);
+        let keys_scanned = self
+            .db_metrics
+            .op_metrics
+            .rocksdb_iter_keys
+            .with_label_values(&[&self.cf]);
+        let _perf_ctx = if self.iter_sample_interval.sample() {
+            Some(RocksDBPerfContext)
+        } else {
+            None
+        };
+        let mut readopts = self.opts.readopts();
+
+        let lower_bound = range.start_bound();
+        let upper_bound = range.end_bound();
+
+        match lower_bound {
+            Bound::Included(lower_bound) => {
+                // Rocksdb lower bound is inclusive by default so nothing to do
+                let key_buf = be_fix_int_ser(&lower_bound).expect("Serialization must not fail");
+                readopts.set_iterate_lower_bound(key_buf);
+            }
+            Bound::Excluded(lower_bound) => {
+                let mut key_buf =
+                    be_fix_int_ser(&lower_bound).expect("Serialization must not fail");
+
+                // Since we want exclusive, we need to increment the key to exclude the previous
+                big_endian_saturating_add_one(&mut key_buf);
+                readopts.set_iterate_lower_bound(key_buf);
+            }
+            Bound::Unbounded => (),
+        };
+
+        match upper_bound {
+            Bound::Included(upper_bound) => {
+                let mut key_buf =
+                    be_fix_int_ser(&upper_bound).expect("Serialization must not fail");
+
+                // If the key is already at the limit, there's nowhere else to go, so no upper bound
+                if !is_max(&key_buf) {
+                    // Since we want exclusive, we need to increment the key to get the upper bound
+                    big_endian_saturating_add_one(&mut key_buf);
+                    readopts.set_iterate_upper_bound(key_buf);
+                }
+            }
+            Bound::Excluded(upper_bound) => {
+                // Rocksdb upper bound is inclusive by default so nothing to do
+                let key_buf = be_fix_int_ser(&upper_bound).expect("Serialization must not fail");
+                readopts.set_iterate_upper_bound(key_buf);
+            }
+            Bound::Unbounded => (),
+        };
+
+>>>>>>> develop_v.1.1.5
         let db_iter = self.rocksdb.raw_iterator_cf(&self.cf(), readopts);
         let (_timer, bytes_scanned, keys_scanned, _perf_ctx) = self.create_iter_context();
         Iter::new(

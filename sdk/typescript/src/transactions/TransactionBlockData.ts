@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toB58 } from '@mysten/bcs';
+import { toB58 } from '../bcs/src/index.js';
 import type { Infer } from 'superstruct';
 import {
 	array,
@@ -16,13 +16,14 @@ import {
 	string,
 	union,
 } from 'superstruct';
-
-import { bcs } from '../bcs/index.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
 import { hashTypedData } from './hash.js';
-import { BuilderCallArg, PureCallArg, SuiObjectRef } from './Inputs.js';
-import { TransactionBlockInput, TransactionType } from './Transactions.js';
+import { SuiObjectRef } from '../types/index.js';
+import { builder } from './bcs.js';
+import { TransactionType, TransactionBlockInput } from './Transactions.js';
+import { BuilderCallArg, PureCallArg } from './Inputs.js';
 import { create } from './utils.js';
+import { bfc2SuiAddress } from '../utils/format.js';
+import { normalizeSuiAddress } from '../utils/bfc-types.js';
 
 export const TransactionExpiration = optional(
 	nullable(
@@ -31,7 +32,7 @@ export const TransactionExpiration = optional(
 );
 export type TransactionExpiration = Infer<typeof TransactionExpiration>;
 
-const StringEncodedBigint = define<string | number | bigint>('StringEncodedBigint', (val) => {
+const StringEncodedBigint = define<string>('StringEncodedBigint', (val) => {
 	if (!['string', 'number', 'bigint'].includes(typeof val)) return false;
 
 	try {
@@ -61,13 +62,17 @@ export const SerializedTransactionDataBuilder = object({
 export type SerializedTransactionDataBuilder = Infer<typeof SerializedTransactionDataBuilder>;
 
 function prepareSuiAddress(address: string) {
-	return normalizeSuiAddress(address).replace('0x', '');
+	let value = address;
+	if (/^bfc/i.test(address)) {
+		value = bfc2SuiAddress(address);
+	}
+	return normalizeSuiAddress(value).replace('0x', '');
 }
 
 export class TransactionBlockDataBuilder {
 	static fromKindBytes(bytes: Uint8Array) {
-		const kind = bcs.TransactionKind.parse(bytes);
-		const programmableTx = 'ProgrammableTransaction' in kind ? kind.ProgrammableTransaction : null;
+		const kind = builder.de('TransactionKind', bytes);
+		const programmableTx = kind?.ProgrammableTransaction;
 		if (!programmableTx) {
 			throw new Error('Unable to deserialize from bytes.');
 		}
@@ -96,10 +101,9 @@ export class TransactionBlockDataBuilder {
 	}
 
 	static fromBytes(bytes: Uint8Array) {
-		const rawData = bcs.TransactionData.parse(bytes);
+		const rawData = builder.de('TransactionData', bytes);
 		const data = rawData?.V1;
-		const programmableTx =
-			'ProgrammableTransaction' in data.kind ? data?.kind?.ProgrammableTransaction : null;
+		const programmableTx = data?.kind?.ProgrammableTransaction;
 		if (!data || !programmableTx) {
 			throw new Error('Unable to deserialize from bytes.');
 		}
@@ -185,7 +189,7 @@ export class TransactionBlockDataBuilder {
 		};
 
 		if (onlyTransactionKind) {
-			return bcs.TransactionKind.serialize(kind, { maxSize: maxSizeBytes }).toBytes();
+			return builder.ser('TransactionKind', kind, { maxSize: maxSizeBytes }).toBytes();
 		}
 
 		const expiration = overrides?.expiration ?? this.expiration;
@@ -225,10 +229,9 @@ export class TransactionBlockDataBuilder {
 			},
 		};
 
-		return bcs.TransactionData.serialize(
-			{ V1: transactionData },
-			{ maxSize: maxSizeBytes },
-		).toBytes();
+		return builder
+			.ser('TransactionData', { V1: transactionData }, { maxSize: maxSizeBytes })
+			.toBytes();
 	}
 
 	getDigest() {

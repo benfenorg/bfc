@@ -8,11 +8,16 @@
 /// and can be linked off-chain with additional tooling. Kept for usability
 /// and development speed purposes.
 module capy::capy_market {
+    use sui::object::{Self, UID, ID};
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
     use sui::pay;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::event::emit;
     use sui::coin::{Self, Coin};
     use sui::dynamic_object_field as dof;
+
+    use std::vector as vec;
 
     // The Capy Manager gains all control over admin actions
     // of the capy_marketplace. Modules must be published together
@@ -31,12 +36,12 @@ module capy::capy_market {
     // ======= Types =======
 
     /// A generic marketplace for anything.
-    public struct CapyMarket<phantom T: key> has key {
+    struct CapyMarket<phantom T: key> has key {
         id: UID,
     }
 
     /// A listing for the marketplace. Intermediary object which owns an Item.
-    public struct Listing has key, store {
+    struct Listing has key, store {
         id: UID,
         price: u64,
         owner: address,
@@ -45,12 +50,12 @@ module capy::capy_market {
     // ======= Events =======
 
     /// Emitted when a new CapyMarket is created.
-    public struct MarketCreated<phantom T> has copy, drop {
+    struct MarketCreated<phantom T> has copy, drop {
         market_id: ID,
     }
 
     /// Emitted when someone lists a new item on the CapyMarket<T>.
-    public struct ItemListed<phantom T> has copy, drop {
+    struct ItemListed<phantom T> has copy, drop {
         listing_id: ID,
         item_id: ID,
         price: u64,
@@ -58,14 +63,14 @@ module capy::capy_market {
     }
 
     /// Emitted when owner delists an item from the CapyMarket<T>.
-    public struct ItemDelisted<phantom T> has copy, drop {
+    struct ItemDelisted<phantom T> has copy, drop {
         listing_id: ID,
         item_id: ID,
     }
 
     /// Emitted when someone makes a purchase. `new_owner` shows
     /// who's a happy new owner of the purchased item.
-    public struct ItemPurchased<phantom T> has copy, drop {
+    struct ItemPurchased<phantom T> has copy, drop {
         listing_id: ID,
         item_id: ID,
         new_owner: address,
@@ -73,7 +78,7 @@ module capy::capy_market {
 
     /// For when someone collects profits from the market. Helps
     /// indexer show who has how much.
-    public struct ProfitsCollected<phantom T> has copy, drop {
+    struct ProfitsCollected<phantom T> has copy, drop {
         owner: address,
         amount: u64
     }
@@ -107,15 +112,15 @@ module capy::capy_market {
     /// List a batch of T at once.
     public fun batch_list<T: key + store>(
         market: &mut CapyMarket<T>,
-        mut items: vector<T>,
+        items: vector<T>,
         price: u64,
         ctx: &mut TxContext
     ) {
-        while (items.length() > 0) {
-            list(market, items.pop_back(), price, ctx)
+        while (vec::length(&items) > 0) {
+            list(market, vec::pop_back(&mut items), price, ctx)
         };
 
-        items.destroy_empty();
+        vec::destroy_empty(items);
     }
 
     /// List a new item on the CapyMarket.
@@ -127,7 +132,7 @@ module capy::capy_market {
     ) {
         let id = object::new(ctx);
         let owner = tx_context::sender(ctx);
-        let mut listing = Listing { id, price, owner };
+        let listing = Listing { id, price, owner };
 
         emit(ItemListed<T> {
             item_id: object::id(&item),
@@ -148,7 +153,7 @@ module capy::capy_market {
         listing_id: ID,
         ctx: &TxContext
     ): T {
-        let Listing { mut id, price: _, owner } = dof::remove<ID, Listing>(&mut market.id, listing_id);
+        let Listing { id, price: _, owner } = dof::remove<ID, Listing>(&mut market.id, listing_id);
         let item = dof::remove(&mut id, true);
 
         assert!(tx_context::sender(ctx) == owner, ENotOwner);
@@ -182,7 +187,7 @@ module capy::capy_market {
     ) {
         let sender = tx_context::sender(ctx);
         assert!(dof::exists_(&market.id, sender), ENoProfits);
-        let profit = dof::remove<address, Coin<SUI>>(&mut market.id, sender);
+        let profit = dof::remove<address, Coin<BFC>>(&mut market.id, sender);
 
         emit(ProfitsCollected<T> {
             owner: sender,
@@ -198,10 +203,10 @@ module capy::capy_market {
     public fun purchase<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        paid: Coin<SUI>,
+        paid: Coin<BFC>,
         ctx: &TxContext
     ): T {
-        let Listing { mut id, price, owner } = dof::remove<ID, Listing>(&mut market.id, listing_id);
+        let Listing { id, price, owner } = dof::remove<ID, Listing>(&mut market.id, listing_id);
         let item = dof::remove(&mut id, true);
         let new_owner = tx_context::sender(ctx);
 
@@ -216,7 +221,7 @@ module capy::capy_market {
         // if there's a balance attached to the marketplace - merge it with paid.
         // if not -> leave a Coin hanging as a dynamic field of the marketplace.
         if (dof::exists_(&market.id, owner)) {
-            coin::join(dof::borrow_mut<address, Coin<SUI>>(&mut market.id, owner), paid)
+            coin::join(dof::borrow_mut<address, Coin<BFC>>(&mut market.id, owner), paid)
         } else {
             dof::add(&mut market.id, owner, paid)
         };
@@ -229,7 +234,7 @@ module capy::capy_market {
     entry fun purchase_and_take<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        paid: Coin<SUI>,
+        paid: Coin<BFC>,
         ctx: &TxContext
     ) {
         transfer::public_transfer(
@@ -238,11 +243,11 @@ module capy::capy_market {
         )
     }
 
-    /// Use `&mut Coin<SUI>` to purchase `T` from marketplace.
+    /// Use `&mut Coin<BFC>` to purchase `T` from marketplace.
     entry fun purchase_and_take_mut<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        paid: &mut Coin<SUI>,
+        paid: &mut Coin<BFC>,
         ctx: &mut TxContext
     ) {
         let listing = dof::borrow<ID, Listing>(&market.id, *&listing_id);
@@ -254,11 +259,11 @@ module capy::capy_market {
     entry fun purchase_and_take_mul_coins<T: key + store>(
         market: &mut CapyMarket<T>,
         listing_id: ID,
-        mut coins: vector<Coin<SUI>>,
+        coins: vector<Coin<BFC>>,
         ctx: &mut TxContext
     ) {
         let listing = dof::borrow<ID, Listing>(&market.id, *&listing_id);
-        let mut coin = coins.pop_back();
+        let coin = vec::pop_back(&mut coins);
 
         pay::join_vec(&mut coin, coins);
 

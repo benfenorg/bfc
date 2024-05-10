@@ -34,7 +34,7 @@ pub trait TransactionBuilder {
     ) -> RpcResult<TransactionBlockBytes>;
 
     /// Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used as the gas object.
-    #[method(name = "transferSui")]
+    #[method(name = "transferBfc")]
     async fn transfer_sui(
         &self,
         /// the transaction signer's Sui address
@@ -79,7 +79,7 @@ pub trait TransactionBuilder {
     /// input coin, then use the first input coin as the gas coin object.
     /// 3. the balance of the first input coin after tx is sum(input_coins) - sum(amounts) - actual_gas_cost
     /// 4. all other input coints other than the first one are deleted.
-    #[method(name = "paySui")]
+    #[method(name = "payBfc")]
     async fn pay_sui(
         &self,
         /// the transaction signer's Sui address
@@ -101,7 +101,7 @@ pub trait TransactionBuilder {
     /// 2. transfer the updated first coin to the recipient and also use this first coin as gas coin object.
     /// 3. the balance of the first input coin after tx is sum(input_coins) - actual_gas_cost.
     /// 4. all other input coins other than the first are deleted.
-    #[method(name = "payAllSui")]
+    #[method(name = "payAllBfc")]
     async fn pay_all_sui(
         &self,
         /// the transaction signer's Sui address

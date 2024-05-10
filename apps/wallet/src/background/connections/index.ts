@@ -1,28 +1,30 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import Browser from 'webextension-polyfill';
+
+import { ContentScriptConnection } from './ContentScriptConnection';
+import { KeepAliveConnection } from './KeepAliveConnection';
+import { UiConnection } from './UiConnection';
 import { createMessage } from '_messages';
+import { KEEP_ALIVE_BG_PORT_NAME } from '_src/content-script/keep-bg-alive';
+import { type QredoConnectPayload } from '_src/shared/messaging/messages/payloads/QredoConnect';
+
+import type { Connection } from './Connection';
+import type { NetworkEnvType } from '../NetworkEnv';
 import type { SetNetworkPayload } from '_payloads/network';
 import type { Permission } from '_payloads/permissions';
 import type { WalletStatusChange, WalletStatusChangePayload } from '_payloads/wallet-status-change';
-import type { NetworkEnvType } from '_src/shared/api-env';
-import { type UIAccessibleEntityType } from '_src/shared/messaging/messages/payloads/MethodPayload';
-import { type QredoConnectPayload } from '_src/shared/messaging/messages/payloads/QredoConnect';
-import Browser from 'webextension-polyfill';
-
-import type { Connection } from './Connection';
-import { ContentScriptConnection } from './ContentScriptConnection';
-import { UiConnection } from './UiConnection';
 
 const appOrigin = new URL(Browser.runtime.getURL('')).origin;
 
 export class Connections {
-	#connections: Connection[] = [];
+	#connections: (Connection | KeepAliveConnection)[] = [];
 
 	constructor() {
 		Browser.runtime.onConnect.addListener((port) => {
 			try {
-				let connection: Connection;
+				let connection: Connection | KeepAliveConnection;
 				switch (port.name) {
 					case ContentScriptConnection.CHANNEL:
 						connection = new ContentScriptConnection(port);
@@ -34,6 +36,9 @@ export class Connections {
 							);
 						}
 						connection = new UiConnection(port);
+						break;
+					case KEEP_ALIVE_BG_PORT_NAME:
+						connection = new KeepAliveConnection(port);
 						break;
 					default:
 						throw new Error(`[Connections] Unknown connection ${port.name}`);
@@ -108,7 +113,7 @@ export class Connections {
 	public notifyUI(
 		notification:
 			| { event: 'networkChanged'; network: NetworkEnvType }
-			| { event: 'storedEntitiesUpdated'; type: UIAccessibleEntityType },
+			| { event: 'lockStatusUpdate'; isLocked: boolean },
 	) {
 		for (const aConnection of this.#connections) {
 			if (aConnection instanceof UiConnection) {
@@ -121,8 +126,8 @@ export class Connections {
 							}),
 						);
 						break;
-					case 'storedEntitiesUpdated':
-						aConnection.notifyEntitiesUpdated(notification.type);
+					case 'lockStatusUpdate':
+						aConnection.sendLockedStatusUpdate(notification.isLocked);
 						break;
 				}
 			}

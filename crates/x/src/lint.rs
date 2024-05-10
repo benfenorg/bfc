@@ -69,6 +69,8 @@ pub fn run(args: Args) -> crate::Result<()> {
     let direct_dep_dups_config = DirectDepDupsConfig {
         allow: vec![
             // TODO spend the time to de-dup these direct dependencies
+            "base64".to_owned(),
+            "clap".to_owned(),
             "serde_yaml".to_owned(),
             "syn".to_owned(),
             // Our opentelemetry integration requires that we use the same version of these packages

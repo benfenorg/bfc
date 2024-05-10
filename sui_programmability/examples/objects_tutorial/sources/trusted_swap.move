@@ -4,21 +4,24 @@
 module tutorial::trusted_swap {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::object::{Self, UID};
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
 
     const MIN_FEE: u64 = 1000;
 
-    public struct Object has key, store {
+    struct Object has key, store {
         id: UID,
         scarcity: u8,
         style: u8,
     }
 
-    public struct ObjectWrapper has key {
+    struct ObjectWrapper has key {
         id: UID,
         original_owner: address,
         to_swap: Object,
-        fee: Balance<SUI>,
+        fee: Balance<BFC>,
     }
 
     public entry fun create_object(scarcity: u8, style: u8, ctx: &mut TxContext) {
@@ -32,7 +35,7 @@ module tutorial::trusted_swap {
 
     /// Anyone owns an `Object` can request swapping their object. This object
     /// will be wrapped into `ObjectWrapper` and sent to `service_address`.
-    public entry fun request_swap(object: Object, fee: Coin<SUI>, service_address: address, ctx: &mut TxContext) {
+    public entry fun request_swap(object: Object, fee: Coin<BFC>, service_address: address, ctx: &mut TxContext) {
         assert!(coin::value(&fee) >= MIN_FEE, 0);
         let wrapper = ObjectWrapper {
             id: object::new(ctx),
@@ -55,7 +58,7 @@ module tutorial::trusted_swap {
             id: id1,
             original_owner: original_owner1,
             to_swap: object1,
-            fee: mut fee1,
+            fee: fee1,
         } = wrapper1;
 
         let ObjectWrapper {

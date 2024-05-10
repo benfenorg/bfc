@@ -13,8 +13,8 @@ const textStyles = cva([], {
 			bold: 'font-bold',
 		},
 		variant: {
-			body: 'text-body',
-			bodySmall: 'text-bodySmall',
+			body: 'text-body/[18px]',
+			bodySmall: 'text-bodySmall/[18px]',
 			subtitle: 'text-subtitle',
 			subtitleSmall: 'text-subtitleSmall',
 			subtitleSmallExtra: 'text-subtitleSmallExtra',
@@ -47,6 +47,12 @@ const textStyles = cva([], {
 			'hero-darkest': 'text-hero-darkest',
 			'success-dark': 'text-success-dark',
 			'issue-dark': 'text-issue-dark',
+			'bfc-text1': 'text-bfc-text1',
+			'bfc-text2': 'text-bfc-text2',
+			'bfc-text3': 'text-bfc-text3',
+			'bfc-red': 'text-bfc-red',
+			'bfc-link': 'text-bfc-link',
+			black: 'text-black',
 		},
 		italic: {
 			true: 'italic',

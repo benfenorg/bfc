@@ -4,13 +4,13 @@
 #[test_only]
 module games::drand_based_scratch_card_tests {
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
 
     use games::drand_based_scratch_card;
 
     fun mint(addr: address, amount: u64, scenario: &mut Scenario) {
-        transfer::public_transfer(coin::mint_for_testing<SUI>(amount, test_scenario::ctx(scenario)), addr);
+        transfer::public_transfer(coin::mint_for_testing<BFC>(amount, test_scenario::ctx(scenario)), addr);
         test_scenario::next_tx(scenario, addr);
     }
 
@@ -24,7 +24,7 @@ module games::drand_based_scratch_card_tests {
 
         // Create the game and get back the output objects.
         mint(user1, 10, scenario);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         drand_based_scratch_card::create(coin1, 10, 10, test_scenario::ctx(scenario));
         test_scenario::next_tx(scenario, user1);
         let game = test_scenario::take_immutable<drand_based_scratch_card::Game>(scenario);
@@ -38,10 +38,10 @@ module games::drand_based_scratch_card_tests {
             // User2 buys a ticket.
             test_scenario::next_tx(scenario, user2);
             mint(user2, 1, scenario);
-            let coin2 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+            let coin2 = test_scenario::take_from_sender<Coin<BFC>>(scenario);
             drand_based_scratch_card::buy_ticket(coin2, &game, test_scenario::ctx(scenario));
             test_scenario::next_tx(scenario, user1);
-            let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+            let coin1 = test_scenario::take_from_sender<Coin<BFC>>(scenario);
             assert!(coin::value(&coin1) == 1, 1);
             test_scenario::return_to_sender(scenario, coin1);
             test_scenario::next_tx(scenario, user2);
@@ -69,7 +69,7 @@ module games::drand_based_scratch_card_tests {
         let reward = &mut reward_val;
         drand_based_scratch_card::take_reward(winner, reward, test_scenario::ctx(scenario));
         test_scenario::next_tx(scenario, user2);
-        let coin2 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin2 = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         assert!(coin::value(&coin2) == 10, 1);
         test_scenario::return_to_sender(scenario, coin2);
 
@@ -87,7 +87,7 @@ module games::drand_based_scratch_card_tests {
 
         // Create the game and get back the output objects.
         mint(user1, 10, scenario);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         drand_based_scratch_card::create(coin1, 10, 10, test_scenario::ctx(scenario));
         test_scenario::next_tx(scenario, user1);
         let game = test_scenario::take_immutable<drand_based_scratch_card::Game>(scenario);
@@ -103,7 +103,7 @@ module games::drand_based_scratch_card_tests {
         let reward = &mut reward_val;
         drand_based_scratch_card::redeem(reward, &game, test_scenario::ctx(scenario));
         test_scenario::next_tx(scenario, user1);
-        let coin1 = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin1 = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         assert!(coin::value(&coin1) == 10, 1);
         test_scenario::return_to_sender(scenario, coin1);
 

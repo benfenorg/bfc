@@ -8,7 +8,7 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 use std::str::FromStr;
 
-use fastcrypto::encoding::Hex;
+use fastcrypto::encoding::{decode_bytes_hex, Hex};
 use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::{StructTag, TypeTag};
 use schemars::JsonSchema;
@@ -19,6 +19,10 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
+//use tonic::codegen::Body;
+use sha2::{Digest, Sha256};
+use tracing::info;
+//use shared_crypto::intent::AppId::Sui;
 
 use sui_protocol_config::ProtocolVersion;
 
@@ -26,6 +30,9 @@ use crate::{
     parse_sui_struct_tag, parse_sui_type_tag, DEEPBOOK_ADDRESS, SUI_CLOCK_ADDRESS,
     SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_STATE_ADDRESS,
 };
+//use crate::base_types::{SuiAddress};
+use crate::base_types_bfc::bfc_address_util::convert_to_evm_address;
+use crate::base_types_bfc::bfc_address_util::sha256_string;
 
 #[inline]
 fn to_custom_error<'de, D, E>(e: E) -> D::Error
@@ -98,6 +105,59 @@ where
     }
 }
 
+///===============
+/// custom serde for AccountAddress
+pub struct HexBFCAddress;
+
+impl SerializeAs<[u8; 32]> for HexBFCAddress {
+    fn serialize_as<S>(value: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if serializer.is_human_readable() {
+            let mut s = String::new();
+            for i in value.iter()  {
+                write!(s, "{:02x}", i).unwrap();
+            }
+            let result = sha256_string(&s.clone());
+            let check_sum = result.get(0..4).unwrap();
+
+            let bfc_address = String::from("BFC") + &s + check_sum;
+
+            return bfc_address.serialize(serializer);
+        }
+
+        Hex::serialize_as(value, serializer)
+    }
+}
+
+impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
+    fn deserialize_as<D>(deserializer: D) -> Result<[u8; 32], D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let mut s = String::deserialize(deserializer)?;
+        if s.starts_with("bfc") || s.starts_with("BFC") {
+            let sui = convert_to_evm_address(s.clone());
+            if !sui.is_empty() {
+                s = sui;
+            } else {
+                info!(
+                    "HexBFCAddress deserializing error bfc address from hex: {}",
+                    s
+                );
+                return Err("invalid bfc address").map_err(serde::de::Error::custom);
+            }
+        }
+        let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
+        Ok(value)
+    }
+}
+
+///
+///
+///
+
 /// custom serde for AccountAddress
 pub struct HexAccountAddress;
 
@@ -106,6 +166,21 @@ impl SerializeAs<AccountAddress> for HexAccountAddress {
     where
         S: Serializer,
     {
+        if serializer.is_human_readable() {
+            let mut s = String::new();
+            for i in 0..value.len() {
+                write!(s, "{:02x}", value[i]).unwrap();
+            }
+            //let temp =  serializer.clone().serialize_str(&s.clone());
+            let mut hasher = Sha256::new();
+            hasher.update(s.as_bytes());
+            let result = format!("{:x}", hasher.finalize());
+            let check_sum = result.get(0..4).unwrap();
+            let bfc_address = String::from("BFC") + &s + check_sum;
+
+            return bfc_address.serialize(serializer);
+        }
+
         Hex::serialize_as(value, serializer)
     }
 }
@@ -115,7 +190,21 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
+        let mut s = String::deserialize(deserializer)?;
+
+        //bfcAddress convert to suiAddress format...
+        if s.starts_with("bfc") || s.starts_with("BFC") {
+            let sui = convert_to_evm_address(s.clone());
+            if !sui.is_empty() {
+                s = sui;
+            } else {
+                //todo..
+                info!("deserializing error bfc address from hex: {}", s);
+                return Err("invalid bfc address").map_err(serde::de::Error::custom);
+            }
+        }
+        //end of bfcAddress convert to suiAddress format...
+
         if s.starts_with("0x") {
             AccountAddress::from_hex_literal(&s)
         } else {

@@ -1,0 +1,17 @@
+---
+info:
+  name: validator-v1
+  account-address: BFC1e5ec63520f8ba4fd3eb36624cf7f718ca78ce6c89c1ba04b4394ac245eb65c4cd8c
+  protocol-key: qyssVuhyKj5FaEGTxVMAruqoN6qTrqLihAhz8S789Oo+drioPMWRtQhdaYPIJxi0GUdVoDV1KEwPbHFDYl4XCSZbBXkG6nOSPNDOQATBQvGISSq1DKQJIW4xmOR8zGyI
+  worker-key: pK+v92vKCghgV1E1WIgsZK5053uYJRhPOa7bniFvYMk=
+  network-key: 3wJblNsNj3zvnrK5eYOLfuQcoJHDEtPmdyl10gDnrd4=
+  gas-price: 100
+  commission-rate: 200
+  network-address: /ip4/192.168.1.2/tcp/10000/http
+  p2p-address: /ip4/192.168.1.2/udp/10002
+  narwhal-primary-address: /ip4/192.168.1.2/udp/10004
+  narwhal-worker-address: /ip4/192.168.1.2/udp/10006
+  description: Default Validator
+  image-url: abc
+  project-url: "https://www.benfen.org/"
+proof_of_possession: puw7g882VuUDkEEPAwPZb4Bsgx6rOo2DdFMgNSD7szuPvMyaCopQrIAVzyjErzP3

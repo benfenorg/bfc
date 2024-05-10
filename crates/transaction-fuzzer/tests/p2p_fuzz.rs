@@ -77,14 +77,13 @@ fn fuzz_p2p_random_gas_budget_low_balance() {
 }
 
 #[test]
-#[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_high_balance() {
     let universe = AccountUniverseGen::strategy(
         3..default_num_accounts(),
         1_000_000_000_000u64..10_000_000_000_000,
     );
     let transfers = vec(
-        any_with::<P2PTransferGenRandomGasRandomPrice>((1, 10_000)),
+        any_with::<P2PTransferGenRandomGasRandomPrice>((1, 1_000)),
         0..default_num_transactions(),
     );
     let strategy = (universe, transfers).boxed();
@@ -94,12 +93,11 @@ fn fuzz_p2p_random_gas_budget_and_price_high_balance() {
 }
 
 #[test]
-#[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_low_balance() {
     let universe =
         AccountUniverseGen::strategy(3..default_num_accounts(), 1_000_000u64..10_000_000);
     let transfers = vec(
-        any_with::<P2PTransferGenRandomGasRandomPrice>((1_000_000, 100_000_000)),
+        any_with::<P2PTransferGenRandomGasRandomPrice>((10_000, 1_000_000)),
         0..default_num_transactions(),
     );
     let strategy = (universe, transfers).boxed();
@@ -109,14 +107,13 @@ fn fuzz_p2p_random_gas_budget_and_price_low_balance() {
 }
 
 #[test]
-#[cfg_attr(msim, ignore)]
 fn fuzz_p2p_rand_gas_budget_price_and_coins() {
     let universe = AccountUniverseGen::strategy(
         3..default_num_accounts(),
-        10_000_000_000u64..1_000_000_000_000,
+        10_000_000_000u64..100_000_000_000,
     );
     let transfers = vec(
-        any_with::<P2PTransferGenRandGasRandPriceRandCoins>((1_000_000, 100_000_000)),
+        any_with::<P2PTransferGenRandGasRandPriceRandCoins>((100_000, 10_000_000)),
         0..default_num_transactions(),
     );
     let strategy = (universe, transfers).boxed();
@@ -126,11 +123,10 @@ fn fuzz_p2p_rand_gas_budget_price_and_coins() {
 }
 
 #[test]
-#[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_high_balance_random_sponsorship() {
     let universe = AccountUniverseGen::strategy(
         3..default_num_accounts(),
-        1_000_000_000_000u64..10_000_000_000_000,
+        100_000_000_000u64..1_000_000_000_000,
     );
     let transfers = vec(
         any_with::<P2PTransferGenRandomGasRandomPriceRandomSponsorship>((1, 10_000)),
@@ -147,7 +143,6 @@ fn fuzz_p2p_random_gas_budget_and_price_high_balance_random_sponsorship() {
 }
 
 #[test]
-#[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_low_balance_random_sponsorship() {
     let universe =
         AccountUniverseGen::strategy(3..default_num_accounts(), 1_000_000u64..10_000_000);
@@ -173,7 +168,7 @@ fn fuzz_p2p_mixed() {
         log_balance_strategy(1_000_000, 1_000_000_000_000),
     );
     let transfers = vec(
-        p2p_transfer_strategy(1, 1_000_000),
+        p2p_transfer_strategy(1, 100_000),
         0..default_num_transactions(),
     );
     let strategy = (universe, transfers).boxed();

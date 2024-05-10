@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    address::{convert_to_evm_address, NumericalAddress, ParsedAddress},
+    types::{ParsedStructType, ParsedType, TypeToken},
     address::{NumericalAddress, ParsedAddress},
     types::{ParsedFqName, ParsedModuleId, ParsedStructType, ParsedType, TypeToken},
     values::{ParsableValue, ParsedValue, ValueToken},
@@ -12,6 +14,7 @@ use move_core_types::{
     u256::{U256FromStrError, U256},
 };
 use num_bigint::BigUint;
+use std::{borrow::Cow, collections::BTreeMap, fmt::Display, iter::Peekable, num::ParseIntError};
 use std::{fmt::Display, iter::Peekable, num::ParseIntError};
 
 const MAX_TYPE_DEPTH: u64 = 128;
@@ -353,10 +356,21 @@ impl<'a, I: Iterator<Item = (ValueToken, &'a str)>> Parser<'a, ValueToken, I> {
     }
 }
 
-pub fn parse_address_impl(tok: ValueToken, contents: &str) -> Result<ParsedAddress> {
+pub fn parse_address_impl(mut tok: ValueToken, contents: &str) -> Result<ParsedAddress> {
+    let contents = if (contents.starts_with("bfc") && !contents.starts_with("bfc_"))
+        || contents.starts_with("BFC")
+    {
+        // We should change the implementation of ValueToken in values.rs,
+        // but that could be very complicated and hard to make it right.
+        tok = ValueToken::Number;
+        Cow::from(convert_to_evm_address(contents.to_owned()))
+    } else {
+        Cow::from(contents)
+    };
+
     Ok(match tok {
         ValueToken::Number => {
-            ParsedAddress::Numerical(NumericalAddress::parse_str(contents).map_err(|s| {
+            ParsedAddress::Numerical(NumericalAddress::parse_str(&contents).map_err(|s| {
                 anyhow!(
                     "Failed to parse numerical address '{}'. Got error: {}",
                     contents,
@@ -364,7 +378,7 @@ pub fn parse_address_impl(tok: ValueToken, contents: &str) -> Result<ParsedAddre
                 )
             })?)
         }
-        ValueToken::Ident => ParsedAddress::Named(contents.to_owned()),
+        ValueToken::Ident => ParsedAddress::Named(contents.into_owned()),
         _ => bail!("unexpected token {}, expected identifier or number", tok),
     })
 }

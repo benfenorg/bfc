@@ -8,14 +8,15 @@ use fastcrypto::traits::KeyPair;
 use move_binary_format::CompiledModule;
 use move_core_types::ident_str;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
+<<<<<<< HEAD
 use std::collections::{BTreeMap, HashSet};
+=======
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+>>>>>>> develop_v.1.1.5
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use sui_config::genesis::{
-    Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule,
-    UnsignedGenesis,
-};
+use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, BfcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST, TokenAllocation};
 use sui_execution::{self, Executor};
 use sui_framework::{BuiltInFramework, SystemPackage};
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
@@ -31,8 +32,10 @@ use sui_types::deny_list::{DENY_LIST_CREATE_FUNC, DENY_LIST_MODULE};
 use sui_types::digests::ChainIdentifier;
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
 use sui_types::epoch_data::EpochData;
+
 use sui_types::gas::SuiGasStatus;
 use sui_types::gas_coin::GasCoin;
+use sui_types::gas_coin::GAS;
 use sui_types::governance::StakedSui;
 use sui_types::in_memory_storage::InMemoryStorage;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
@@ -44,14 +47,23 @@ use sui_types::metrics::LimitsMetrics;
 use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
+<<<<<<< HEAD
 use sui_types::transaction::{
     CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
 use sui_types::{SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::trace;
+=======
+use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
+use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use tracing::{trace};
+>>>>>>> develop_v.1.1.5
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
 pub mod validator_info;
+
+
+extern crate csv;
 
 const GENESIS_BUILDER_COMMITTEE_DIR: &str = "committee";
 const GENESIS_BUILDER_PARAMETERS_FILE: &str = "parameters";
@@ -195,6 +207,38 @@ impl Builder {
 
         self.token_distribution_schedule = Some(token_distribution_schedule);
 
+        self.built_genesis.clone().unwrap()
+    }
+
+    pub fn build_unsigned_genesis_checkpoint_with_obc_allocation(&mut self, bfc_user_allocation:&Vec<TokenAllocation>) -> UnsignedGenesis {
+        if let Some(built_genesis) = &self.built_genesis {
+            return built_genesis.clone();
+        }
+
+        // Verify that all input data is valid
+        self.validate().unwrap();
+
+        let objects = self.objects.clone().into_values().collect::<Vec<_>>();
+        let validators = self.validators.clone().into_values().collect::<Vec<_>>();
+
+
+        let token_distribution_schedule =
+            if let Some(token_distribution_schedule) = &self.token_distribution_schedule {
+                token_distribution_schedule.clone()
+            } else {
+                TokenDistributionSchedule::new_for_validators_with_default_allocation_and_bfc_allocation(
+                    validators.iter().map(|v| v.info.sui_address()),
+                    bfc_user_allocation,
+                )
+            };
+
+        self.built_genesis = Some(build_unsigned_genesis_data(
+            &self.parameters,
+            &token_distribution_schedule,
+            &validators,
+            &objects,
+        ));
+        self.token_distribution_schedule = Some(token_distribution_schedule);
         self.built_genesis.clone().unwrap()
     }
 
@@ -467,11 +511,19 @@ impl Builder {
                     .iter()
                     .find(|(_k, (o, s))| {
                         let Owner::AddressOwner(owner) = &o.owner else {
+<<<<<<< HEAD
                             panic!("gas object owner must be address owner");
                         };
                         *owner == allocation.recipient_address
                             && s.principal() == allocation.amount_mist
                             && s.pool_id() == staking_pool_id
+=======
+                        panic!("gas object owner must be address owner");
+                    };
+                        *owner == allocation.recipient_address &&
+                        s.principal() == allocation.amount_mist
+                          && s.pool_id() == staking_pool_id
+>>>>>>> develop_v.1.1.5
                     })
                     .map(|(k, _)| *k)
                     .expect("all allocations should be present");
@@ -525,6 +577,99 @@ impl Builder {
                 )
                 .expect("signature should be valid");
         }
+    }
+
+    pub fn load_private_genesis<P: AsRef<Path>>(path: P, with_genesis: bool) -> anyhow::Result<Self, anyhow::Error> {
+        let path = path.as_ref();
+        let path: &Utf8Path = path.try_into()?;
+        trace!("Reading Genesis Builder from {}", path);
+
+        if !path.is_dir() {
+            bail!("path must be a directory");
+        }
+
+        // Load parameters
+        let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
+        let parameters = serde_yaml::from_slice(
+            &fs::read(parameters_file).context("unable to read genesis parameters file")?,
+        )
+            .context("unable to deserialize genesis parameters")?;
+
+        let token_distribution_schedule_file =
+            path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE);
+        let token_distribution_schedule = if token_distribution_schedule_file.exists() {
+            Some(TokenDistributionSchedule::from_csv(fs::File::open(
+                token_distribution_schedule_file,
+            )?)?)
+        } else {
+            None
+        };
+
+        // Load validator infos
+        let mut committee = BTreeMap::new();
+        for entry in path.join(GENESIS_BUILDER_COMMITTEE_DIR).read_dir_utf8()? {
+            let entry = entry?;
+            if entry.file_name().starts_with('.') {
+                continue;
+            }
+
+            let path = entry.path();
+            let validator_info_bytes = fs::read(path)?;
+            let validator_info: GenesisValidatorInfo =
+                serde_yaml::from_slice(&validator_info_bytes)
+                    .with_context(|| format!("unable to load validator info for {path}"))?;
+            committee.insert(validator_info.info.protocol_key(), validator_info);
+        }
+
+        // Load Signatures
+        let mut signatures = BTreeMap::new();
+        for entry in path.join(GENESIS_BUILDER_SIGNATURE_DIR).read_dir_utf8()? {
+            let entry = entry?;
+            if entry.file_name().starts_with('.') {
+                continue;
+            }
+
+            let path = entry.path();
+            let signature_bytes = fs::read(path)?;
+            let sigs: AuthoritySignInfo = bcs::from_bytes(&signature_bytes)
+                .with_context(|| format!("unable to load validator signatrue for {path}"))?;
+            signatures.insert(sigs.authority, sigs);
+        }
+
+        let mut builder = Self {
+            parameters,
+            token_distribution_schedule,
+            objects: Default::default(),
+            validators: committee,
+            signatures,
+            built_genesis: None, // Leave this as none, will build and compare below
+        };
+
+        let unsigned_genesis_file = path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE);
+        if unsigned_genesis_file.exists() && with_genesis == false {
+            let unsigned_genesis_bytes = fs::read(unsigned_genesis_file)?;
+            let loaded_genesis: UnsignedGenesis = bcs::from_bytes(&unsigned_genesis_bytes)?;
+
+            // If we have a built genesis, then we must have a token_distribution_schedule present
+            // as well.
+            assert!(
+                builder.token_distribution_schedule.is_some(),
+                "If a built genesis is present, then there must also be a token-distribution-schedule present"
+            );
+
+            // Verify loaded genesis matches one build from the constituent parts
+            let built = builder.build_unsigned_genesis_checkpoint();
+            loaded_genesis.checkpoint_contents.digest(); // cache digest before compare
+            assert_eq!(
+                built, loaded_genesis,
+                "loaded genesis does not match built genesis"
+            );
+
+            // Just to double check that its set after building above
+            assert!(builder.unsigned_genesis_checkpoint().is_some());
+        }
+
+        Ok(builder)
     }
 
     pub fn load<P: AsRef<Path>>(path: P) -> anyhow::Result<Self, anyhow::Error> {
@@ -719,6 +864,7 @@ fn build_unsigned_genesis_data(
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
+    let bfc_system_parameters = parameters.to_bfc_system_parameters();
     let genesis_validators = validators
         .iter()
         .cloned()
@@ -756,6 +902,7 @@ fn build_unsigned_genesis_data(
         objects,
         &genesis_validators,
         &genesis_chain_parameters,
+        &bfc_system_parameters,
         token_distribution_schedule,
         system_packages,
         metrics.clone(),
@@ -795,7 +942,8 @@ fn create_genesis_checkpoint(
         network_total_transactions: contents.size().try_into().unwrap(),
         content_digest: *contents.digest(),
         previous_digest: None,
-        epoch_rolling_gas_cost_summary: Default::default(),
+        epoch_rolling_bfc_gas_cost_summary: Default::default(),
+        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
         end_of_epoch_data: None,
         timestamp_ms: parameters.chain_start_timestamp_ms,
         version_specific_data: Vec::new(),
@@ -846,6 +994,13 @@ fn create_genesis_transaction(
     let genesis_digest = *genesis_transaction.digest();
     // execute txn to effects
     let (effects, events, objects) = {
+        // let temporary_store = TemporaryStore::new(
+        //     InMemoryStorage::new(Vec::new()),
+        //     InputObjects::new(vec![]),
+        //     genesis_digest,
+        //     protocol_config,
+        // );
+
         let silent = true;
 
         let executor = sui_execution::executor(protocol_config, silent, None)
@@ -865,7 +1020,15 @@ fn create_genesis_transaction(
                 &certificate_deny_set,
                 &epoch_data.epoch_id(),
                 epoch_data.epoch_start_timestamp(),
+<<<<<<< HEAD
                 input_objects,
+=======
+                // temporary_store,
+                // shared_object_refs,
+                // &mut GasCharger::new_unmetered(genesis_digest),
+                InputObjects::new(vec![]),
+                shared_object_refs,
+>>>>>>> develop_v.1.1.5
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
@@ -892,6 +1055,7 @@ fn create_genesis_objects(
     input_objects: &[Object],
     validators: &[GenesisValidatorMetadata],
     parameters: &GenesisChainParameters,
+    bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     system_packages: Vec<SystemPackage>,
     metrics: Arc<LimitsMetrics>,
@@ -934,6 +1098,7 @@ fn create_genesis_objects(
         validators,
         genesis_ctx,
         parameters,
+        bfc_system_parameters,
         token_distribution_schedule,
         metrics,
     )
@@ -983,6 +1148,13 @@ fn process_package(
         })
         .collect();
 
+    let _genesis_digest = ctx.digest();
+    // let mut temporary_store = TemporaryStore::new(
+    //     store.clone(),
+    //     InputObjects::new(loaded_dependencies),
+    //     genesis_digest,
+    //     protocol_config,
+    // );
     let module_bytes = modules
         .iter()
         .map(|m| {
@@ -997,8 +1169,28 @@ fn process_package(
         builder.command(Command::Publish(module_bytes, dependencies));
         builder.finish()
     };
+<<<<<<< HEAD
     let InnerTemporaryStore { written, .. } = executor.update_genesis_state(
         &*store,
+=======
+    // executor.update_genesis_state(
+    //     protocol_config,
+    //     metrics,
+    //     &mut temporary_store,
+    //     ctx,
+    //     &mut GasCharger::new_unmetered(genesis_digest),
+    //     pt,
+    // )?;
+    //
+    // let InnerTemporaryStore {
+    //     written, deleted, ..
+    // } = temporary_store.into_inner();
+
+    let InnerTemporaryStore {
+        written, deleted, ..
+    } = executor.update_genesis_state(
+        store.clone(),
+>>>>>>> develop_v.1.1.5
         protocol_config,
         metrics,
         ctx,
@@ -1017,6 +1209,7 @@ pub fn generate_genesis_system_object(
     genesis_validators: &[GenesisValidatorMetadata],
     genesis_ctx: &mut TxContext,
     genesis_chain_parameters: &GenesisChainParameters,
+    bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
 ) -> anyhow::Result<()> {
@@ -1024,7 +1217,6 @@ pub fn generate_genesis_system_object(
         ProtocolVersion::new(genesis_chain_parameters.protocol_version),
         ChainIdentifier::default().chain(),
     );
-
     let pt = {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create the SuiSystemState UID
@@ -1032,6 +1224,14 @@ pub fn generate_genesis_system_object(
             SUI_FRAMEWORK_ADDRESS.into(),
             ident_str!("object").to_owned(),
             ident_str!("sui_system_state").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bfc_system_state_uid = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("object").to_owned(),
+            ident_str!("bfc_system_state").to_owned(),
             vec![],
             vec![],
         );
@@ -1078,16 +1278,32 @@ pub fn generate_genesis_system_object(
         // Step 4: Mint the supply of SUI.
         let sui_supply = builder.programmable_move_call(
             SUI_FRAMEWORK_ADDRESS.into(),
-            ident_str!("sui").to_owned(),
+            ident_str!("bfc").to_owned(),
             ident_str!("new").to_owned(),
             vec![],
             vec![],
         );
 
+<<<<<<< HEAD
+=======
+        let arguments =  vec![
+            sui_supply,
+            builder.input(CallArg::Pure(bcs::to_bytes(&TOTAL_SUPPLY_WITH_ALLOCATION_MIST).unwrap()))?
+        ];
+        //Step 4 allocation to swap_pool
+        let new_sui_supply= builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("balance").to_owned(),
+            ident_str!("split").to_owned(),
+            vec![GAS::type_tag()],
+            arguments,
+        );
+
+>>>>>>> develop_v.1.1.5
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
-        let mut arguments = vec![sui_system_state_uid, sui_supply];
+        let mut arguments = vec![sui_system_state_uid, bfc_system_state_uid,sui_supply];
         let mut call_arg_arguments = vec![
             CallArg::Pure(bcs::to_bytes(&genesis_chain_parameters).unwrap()),
             CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),
@@ -1104,11 +1320,206 @@ pub fn generate_genesis_system_object(
             vec![],
             arguments,
         );
+
+        // Step 6: Create the BfcSystemState UID
+        let bfc_system_state_uid = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("object").to_owned(),
+            ident_str!("bfc_system_state").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        // create the supply of USD.
+        let busd_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("busd").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let mgg_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("mgg").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bjpy_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bjpy").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bkrw_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bkrw").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let baud_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("baud").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bars_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bars").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bbrl_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bbrl").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bcad_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bcad").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let beur_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("beur").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bgbp_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bgbp").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bidr_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bidr").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let binr_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("binr").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let brub_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("brub").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bsar_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bsar").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let btry_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("btry").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bzar_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bzar").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let bmxn_supply = builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bmxn").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let arguments = vec![
+            bfc_system_state_uid,
+            new_sui_supply,
+            busd_supply,
+            bjpy_supply,
+            bkrw_supply,
+            baud_supply,
+            bars_supply,
+            bbrl_supply,
+            bcad_supply,
+            beur_supply,
+            bgbp_supply,
+            bidr_supply,
+            binr_supply,
+            brub_supply,
+            bsar_supply,
+            btry_supply,
+            bzar_supply,
+            bmxn_supply,
+            mgg_supply,
+            builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?
+        ];
+
+        builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bfc_system").to_owned(),
+            ident_str!("create").to_owned(),
+            vec![],
+            arguments,
+        );
+
         builder.finish()
     };
 
+<<<<<<< HEAD
     let InnerTemporaryStore { mut written, .. } = executor.update_genesis_state(
         &*store,
+=======
+    //todo:
+    // executor.update_genesis_state(
+    //     &protocol_config,
+    //     metrics,
+    //     &mut temporary_store,
+    //     genesis_ctx,
+    //     &mut GasCharger::new_unmetered(genesis_digest),
+    //     pt,
+    // )?;
+
+    let InnerTemporaryStore {
+        written, deleted, ..
+    } = executor.update_genesis_state(
+        store.clone(),
+>>>>>>> develop_v.1.1.5
         &protocol_config,
         metrics,
         genesis_ctx,
@@ -1133,6 +1544,11 @@ pub fn generate_genesis_system_object(
 
 #[cfg(test)]
 mod test {
+    use std::env;
+    use std::error::Error;
+    use std::fs::File;
+    use std::thread::sleep;
+    use std::time::Duration;
     use crate::validator_info::ValidatorInfo;
     use crate::Builder;
     use fastcrypto::traits::KeyPair;
@@ -1197,5 +1613,34 @@ mod test {
         }
         builder.save(dir.path()).unwrap();
         Builder::load(dir.path()).unwrap();
+    }
+
+    #[test]
+    fn read_from_csv() -> Result<(), Box<dyn Error>> {
+        if let Ok(current_dir) = env::current_dir() {
+            println!("Current directory: {:?}", current_dir);
+        } else {
+            println!("Failed to get current directory.");
+        }
+        // 打开CSV文件
+        let file = File::open("data.csv")?;
+        let mut rdr = csv::Reader::from_reader(file);
+
+        let mut count = 0;
+        // 迭代每一行并打印值
+        for result in rdr.records() {
+            count = count + 1;
+            let record = result?;
+            for field in record.iter() {
+                print!("{}....", field);
+            }
+            println!();
+        }
+
+        sleep(Duration::from_secs(3));
+        //Sleep(Duration::from_millis(2000));
+
+        println!("count: {}", count);
+        Ok(())
     }
 }

@@ -1,25 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import FiltersPortal from '_components/filters-tags';
-import { isQredoAccountSerializedUI } from '_src/background/accounts/QredoAccount';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
-import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
-import PageTitle from '_src/ui/app/shared/PageTitle';
-import cl from 'clsx';
+import cl from 'classnames';
 import { Navigate, useParams } from 'react-router-dom';
 
 import { CompletedTransactions } from './CompletedTransactions';
 import { QredoPendingTransactions } from './QredoPendingTransactions';
+import FiltersPortal from '_components/filters-tags';
+import { AccountType } from '_src/background/keyring/Account';
+import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
+import PageTitle from '_src/ui/app/shared/PageTitle';
 
 function TransactionBlocksPage() {
 	const activeAccount = useActiveAccount();
-	const isQredoAccount = !!(activeAccount && isQredoAccountSerializedUI(activeAccount));
+	const isQredoAccount = activeAccount?.type === AccountType.QREDO;
 	const { status } = useParams();
 	const isPendingTransactions = status === 'pending';
-	if (useUnlockedGuard()) {
-		return null;
-	}
 	if (activeAccount && !isQredoAccount && isPendingTransactions) {
 		return <Navigate to="/transactions" replace />;
 	}
@@ -39,7 +35,7 @@ function TransactionBlocksPage() {
 			<PageTitle title="Your Activity" />
 			<div
 				className={cl(
-					'mt-5 flex-grow overflow-y-auto px-5 -mx-5 divide-y divide-solid divide-gray-45 divide-x-0',
+					'mt-5 flex-grow overflow-y-auto divide-y divide-solid divide-bfc-border divide-x-0',
 					{ 'mb-4': isQredoAccount },
 				)}
 			>

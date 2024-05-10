@@ -25,17 +25,37 @@ fn main() {
     let deepbook_path = packages_path.join("deepbook");
     let sui_system_path = packages_path.join("sui-system");
     let sui_framework_path = packages_path.join("sui-framework");
+    let bfc_system_path = packages_path.join("bfc-system");
+    let move_stdlib_path = packages_path.join("move-stdlib");
+
     let deepbook_path_clone = deepbook_path.clone();
     let sui_system_path_clone = sui_system_path.clone();
     let sui_framework_path_clone = sui_framework_path.clone();
-    let move_stdlib_path = packages_path.join("move-stdlib");
+    let bfc_system_path_clone = bfc_system_path.clone();
 
+<<<<<<< HEAD
     build_packages(
         deepbook_path_clone,
         sui_system_path_clone,
         sui_framework_path_clone,
         out_dir,
     );
+=======
+    Builder::new()
+        .stack_size(16 * 1024 * 1024) // build_packages require bigger stack size on windows.
+        .spawn(move || {
+            build_packages(
+                deepbook_path_clone,
+                sui_system_path_clone,
+                sui_framework_path_clone,
+                bfc_system_path_clone,
+                out_dir,
+            )
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+>>>>>>> develop_v.1.1.5
 
     println!("cargo:rerun-if-changed=build.rs");
     println!(
@@ -68,7 +88,15 @@ fn main() {
     );
     println!(
         "cargo:rerun-if-changed={}",
-        move_stdlib_path.join("sources").display()
+         move_stdlib_path.join("sources").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+         bfc_system_path.join("Move.toml").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+         bfc_system_path.join("sources").display()
     );
 }
 
@@ -76,6 +104,7 @@ fn build_packages(
     deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
+    bfc_system_path: PathBuf,
     out_dir: PathBuf,
 ) {
     let config = MoveBuildConfig {
@@ -87,15 +116,18 @@ fn build_packages(
         ..Default::default()
     };
     debug_assert!(!config.test_mode);
+
     build_packages_with_move_config(
         deepbook_path.clone(),
         sui_system_path.clone(),
         sui_framework_path.clone(),
+        bfc_system_path.clone(),
         out_dir.clone(),
         "deepbook",
         "sui-system",
         "sui-framework",
         "move-stdlib",
+        "bfc-system",
         config,
         true,
     );
@@ -112,11 +144,13 @@ fn build_packages(
         deepbook_path,
         sui_system_path,
         sui_framework_path,
+        bfc_system_path,
         out_dir,
         "deepbook-test",
         "sui-system-test",
         "sui-framework-test",
         "move-stdlib-test",
+        "bfc-system-test",
         config,
         false,
     );
@@ -126,11 +160,14 @@ fn build_packages_with_move_config(
     deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
+    bfc_system_path: PathBuf,
     out_dir: PathBuf,
+
     deepbook_dir: &str,
     system_dir: &str,
     framework_dir: &str,
     stdlib_dir: &str,
+    bfc_system_dir: &str,
     config: MoveBuildConfig,
     write_docs: bool,
 ) {
@@ -141,6 +178,16 @@ fn build_packages_with_move_config(
     }
     .build(sui_framework_path)
     .unwrap();
+
+    let bfc_system_pkg = BuildConfig {
+               config:config.clone(),
+                run_bytecode_verifier: true,
+                print_diags_to_stderr: false,
+        lint: false,
+    }
+        .build(bfc_system_path)
+                .unwrap();
+
     let system_pkg = BuildConfig {
         config: config.clone(),
         run_bytecode_verifier: true,
@@ -148,6 +195,7 @@ fn build_packages_with_move_config(
     }
     .build(sui_system_path)
     .unwrap();
+
     let deepbook_pkg = BuildConfig {
         config,
         run_bytecode_verifier: true,
@@ -160,7 +208,9 @@ fn build_packages_with_move_config(
     let sui_framework = framework_pkg.get_sui_framework_modules();
     let deepbook = deepbook_pkg.get_deepbook_modules();
     let move_stdlib = framework_pkg.get_stdlib_modules();
+    let bfc_system = bfc_system_pkg.get_bfc_system_modules();
 
+<<<<<<< HEAD
     let sui_system_members =
         serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
     let sui_framework_members =
@@ -168,6 +218,13 @@ fn build_packages_with_move_config(
     let deepbook_members =
         serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
     let stdlib_members = serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
+=======
+    serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
+    serialize_modules_to_file(sui_framework, &out_dir.join(framework_dir)).unwrap();
+    serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
+    serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
+    serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
+>>>>>>> develop_v.1.1.5
 
     // write out generated docs
     if write_docs {
@@ -252,6 +309,11 @@ fn relocate_docs(prefix: &str, files: &[(String, String)], output: &mut BTreeMap
             .to_string()
         });
     }
+    for (fname, doc) in bfc_system_pkg.package.compiled_docs.unwrap() {
+        let mut dst_path = PathBuf::from(DOCS_DIR);
+               dst_path.push(fname);
+               fs::write(dst_path, doc).unwrap();
+           }
 }
 
 fn serialize_modules_to_file<'a>(

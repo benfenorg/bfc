@@ -6,8 +6,7 @@ use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_types::SuiObjectResponse;
 use sui_macros::sim_test;
 use sui_types::{
-    base_types::ObjectID, digests::TransactionDigest, object::Object, MOVE_STDLIB_PACKAGE_ID,
-    SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_PACKAGE_ID,
+    base_types::ObjectID, digests::TransactionDigest, object::Object, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_PACKAGE_ID,
 };
 use test_cluster::TestClusterBuilder;
 
@@ -59,6 +58,8 @@ async fn test_package_override() {
 
         let package_override = Object::new_package_for_testing(
             &framework_modules,
+            TransactionDigest::genesis(),
+            BuiltInFramework::genesis_move_packages(),
             TransactionDigest::genesis_marker(),
             [
                 BuiltInFramework::get_package_by_id(&MOVE_STDLIB_PACKAGE_ID).genesis_move_package(),

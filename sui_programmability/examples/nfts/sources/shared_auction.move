@@ -27,7 +27,8 @@
 
 module nfts::shared_auction {
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
+    use sui::tx_context::{Self, TxContext};
 
     use nfts::auction_lib::{Self, Auction};
 
@@ -50,7 +51,7 @@ module nfts::shared_auction {
     /// of the funds (if the bid was too low). This is executed by a
     /// bidder.
     public entry fun bid<T: key + store>(
-        coin: Coin<SUI>, auction: &mut Auction<T>, ctx: &mut TxContext
+        coin: Coin<BFC>, auction: &mut Auction<T>, ctx: &mut TxContext
     ) {
         auction_lib::update_auction(
             auction,

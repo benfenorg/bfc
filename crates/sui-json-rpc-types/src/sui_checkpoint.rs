@@ -1,22 +1,25 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use crate::Page;
 use fastcrypto::encoding::Base64;
+use move_core_types::language_storage::TypeTag;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
+use serde_with::{serde_as};
 use sui_types::base_types::TransactionDigest;
 use sui_types::committee::EpochId;
 use sui_types::crypto::AggregateAuthoritySignature;
 use sui_types::digests::CheckpointDigest;
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted};
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::{
     CheckpointCommitment, CheckpointContents, CheckpointSequenceNumber, CheckpointSummary,
     CheckpointTimestamp, EndOfEpochData,
 };
-use sui_types::sui_serde::BigInt;
+use sui_types::sui_serde::{BigInt,SuiTypeTag,Readable};
+
 pub type CheckpointPage = Page<Checkpoint, BigInt<u64>>;
 
 #[serde_as]
@@ -43,7 +46,11 @@ pub struct Checkpoint {
     pub previous_digest: Option<CheckpointDigest>,
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
-    pub epoch_rolling_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
+    #[schemars(with = "schemars::Map<TypeTag, GasCostSummary>")]
+    #[serde_as(as = "Vec<(Readable<SuiTypeTag,_>,_)>")]
+    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummaryAdjusted>,
+
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent
     /// checkpoints can have same timestamp if they originate from the same underlining consensus commit
@@ -84,7 +91,8 @@ impl
             sequence_number,
             network_total_transactions,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map,
             timestamp_ms,
             end_of_epoch_data,
             ..
@@ -96,7 +104,8 @@ impl
             digest,
             network_total_transactions,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map,
             timestamp_ms,
             end_of_epoch_data,
             transactions: contents.iter().map(|digest| digest.transaction).collect(),

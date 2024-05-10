@@ -30,6 +30,7 @@ export type UIQredoInfo = {
 	accessToken: string | null;
 	apiUrl: string;
 	service: string;
+	accounts: Wallet[];
 };
 
 export type QredoConnection = Omit<

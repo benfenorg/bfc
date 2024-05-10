@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use crate::accumulator::Accumulator;
 use crate::base_types::{
     random_object_ref, ExecutionData, ExecutionDigests, VerifiedExecutionData,
@@ -13,8 +14,15 @@ use crate::crypto::{
 use crate::digests::Digest;
 use crate::effects::{TestEffectsBuilder, TransactionEffectsAPI};
 use crate::error::SuiResult;
+<<<<<<< HEAD
 use crate::gas::GasCostSummary;
 use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelope};
+=======
+use crate::gas::{GasCostSummary, GasCostSummaryAdjusted};
+use crate::message_envelope::{
+    Envelope, Message, TrustedEnvelope, UnauthenticatedMessage, VerifiedEnvelope,
+};
+>>>>>>> develop_v.1.1.5
 use crate::signature::GenericSignature;
 use crate::storage::ReadStore;
 use crate::sui_serde::AsProtocolVersion;
@@ -32,6 +40,7 @@ use shared_crypto::intent::{Intent, IntentScope};
 use std::fmt::{Debug, Display, Formatter};
 use std::slice::Iter;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use move_core_types::language_storage::TypeTag;
 use tap::TapFallible;
 use tracing::warn;
 
@@ -167,7 +176,8 @@ pub struct CheckpointSummary {
     pub previous_digest: Option<CheckpointDigest>,
     /// The running total gas costs of all transactions included in the current epoch so far
     /// until this checkpoint.
-    pub epoch_rolling_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
+    pub epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummaryAdjusted>,
 
     /// Timestamp of the checkpoint - number of milliseconds from the Unix epoch
     /// Checkpoint timestamps are monotonic, but not strongly monotonic - subsequent
@@ -204,7 +214,8 @@ impl CheckpointSummary {
         network_total_transactions: u64,
         transactions: &CheckpointContents,
         previous_digest: Option<CheckpointDigest>,
-        epoch_rolling_gas_cost_summary: GasCostSummary,
+        epoch_rolling_bfc_gas_cost_summary: GasCostSummary,
+        epoch_rolling_stable_gas_cost_summary_map: HashMap<TypeTag,GasCostSummaryAdjusted>,
         end_of_epoch_data: Option<EndOfEpochData>,
         timestamp_ms: CheckpointTimestamp,
     ) -> CheckpointSummary {
@@ -216,7 +227,8 @@ impl CheckpointSummary {
             network_total_transactions,
             content_digest,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map,
             end_of_epoch_data,
             timestamp_ms,
             version_specific_data: Vec::new(),
@@ -276,7 +288,7 @@ impl Display for CheckpointSummary {
             self.epoch,
             self.sequence_number,
             self.content_digest,
-            self.epoch_rolling_gas_cost_summary,
+            self.epoch_rolling_bfc_gas_cost_summary,
         )
     }
 }
@@ -751,6 +763,7 @@ mod tests {
                         &set,
                         None,
                         GasCostSummary::default(),
+                        HashMap::new(),
                         None,
                         0,
                     ),
@@ -785,6 +798,7 @@ mod tests {
             &set,
             None,
             GasCostSummary::default(),
+            HashMap::new(),
             None,
             0,
         );
@@ -824,6 +838,7 @@ mod tests {
                         &set,
                         None,
                         GasCostSummary::default(),
+                        HashMap::new(),
                         None,
                         0,
                     ),

@@ -11,6 +11,7 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use move_binary_format::binary_config::BinaryConfig;
 use move_binary_format::file_format::SignatureToken;
+use move_core_types::ident_str;
 use move_binary_format::CompiledModule;
 use move_core_types::ident_str;
 use move_core_types::identifier::Identifier;
@@ -33,6 +34,8 @@ use sui_types::transaction::{
     Argument, CallArg, Command, InputObjectKind, ObjectArg, TransactionData, TransactionKind,
 };
 use sui_types::{coin, fp_ensure, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
+use tracing::info;
+use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 
 #[async_trait]
 pub trait DataReader {
@@ -352,6 +355,50 @@ impl TransactionBuilder {
             coin_refs,
             recipient,
             gas_object_ref,
+            gas_budget,
+            gas_price,
+        ))
+    }
+
+    pub async fn move_call_by_gas_coin(
+        &self,
+        signer: SuiAddress,
+        package_object_id: ObjectID,
+        module: &str,
+        function: &str,
+        type_args: Vec<SuiTypeTag>,
+        call_args: Vec<SuiJsonValue>,
+        stable: ObjectRef,
+        gas_budget: u64,
+    ) -> anyhow::Result<TransactionData> {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        let state = builder.input(CallArg::SUI_SYSTEM_MUT)?;
+        let stable_args = builder.input(CallArg::Object(ObjectArg::ImmOrOwnedObject(stable)))?;
+        builder.programmable_move_call(
+            SUI_SYSTEM_PACKAGE_ID,
+            ident_str!("sui_system").to_owned(),
+            ident_str!("request_exchange_gas").to_owned(),
+            vec![],
+            vec![state, stable_args],
+        );
+
+        self.single_move_call(
+            &mut builder,
+            package_object_id,
+            module,
+            function,
+            type_args,
+            call_args,
+        )
+            .await?;
+        let pt = builder.finish();
+        let gas_price = self.0.get_reference_gas_price().await?;
+
+        info!("move_call_by_gas_coin gas ok!");
+        Ok(TransactionData::new(
+            TransactionKind::programmable(pt),
+            signer,
+            stable,
             gas_budget,
             gas_price,
         ))

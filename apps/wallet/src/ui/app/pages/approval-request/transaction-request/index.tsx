@@ -1,25 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-// import { Transaction } from '@mysten/sui.js';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { useTransactionSummary } from '@mysten/core';
+import { useMemo, useState } from 'react';
+
+import { GasFees } from './GasFees';
+import { TransactionDetails } from './TransactionDetails';
+import { ConfirmationModal } from '../../../shared/ConfirmationModal';
 import { UserApproveContainer } from '_components/user-approve-container';
-import { useAppDispatch, useTransactionData, useTransactionDryRun } from '_hooks';
+import { useAppDispatch, useSigner, useTransactionData, useTransactionDryRun } from '_hooks';
 import { type TransactionApprovalRequest } from '_payloads/transactions/ApprovalRequest';
 import { respondToTransactionRequest } from '_redux/slices/transaction-requests';
 import { ampli } from '_src/shared/analytics/ampli';
-import { useAccountByAddress } from '_src/ui/app/hooks/useAccountByAddress';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
 import { PageMainLayoutTitle } from '_src/ui/app/shared/page-main-layout/PageMainLayoutTitle';
 import { TransactionSummary } from '_src/ui/app/shared/transaction-summary';
-import { useTransactionSummary } from '@mysten/core';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { useMemo, useState } from 'react';
-
-import { ConfirmationModal } from '../../../shared/ConfirmationModal';
-import { GasFees } from './GasFees';
-import { TransactionDetails } from './TransactionDetails';
 
 export type TransactionRequestProps = {
 	txRequest: TransactionApprovalRequest;
@@ -33,8 +30,7 @@ const appOriginsToExcludeFromAnalytics = ['https://sui8192.ethoswallet.xyz'];
 
 export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 	const addressForTransaction = txRequest.tx.account;
-	const { data: accountForTransaction } = useAccountByAddress(addressForTransaction);
-	const signer = useSigner(accountForTransaction);
+	const signer = useSigner(addressForTransaction);
 	const dispatch = useAppDispatch();
 	const transaction = useMemo(() => {
 		const tx = TransactionBlock.from(txRequest.tx.data);
@@ -43,13 +39,13 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 		}
 		return tx;
 	}, [txRequest.tx.data, addressForTransaction]);
-	const { isPending, isError } = useTransactionData(addressForTransaction, transaction);
+	const { isLoading, isError } = useTransactionData(addressForTransaction, transaction);
 	const [isConfirmationVisible, setConfirmationVisible] = useState(false);
 
 	const {
 		data,
 		isError: isDryRunError,
-		isPending: isDryRunLoading,
+		isLoading: isDryRunLoading,
 	} = useTransactionDryRun(addressForTransaction, transaction);
 	const recognizedPackagesList = useRecognizedPackages();
 
@@ -70,7 +66,9 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 				approveTitle="Approve"
 				rejectTitle="Reject"
 				onSubmit={async (approved: boolean) => {
-					if (isPending) return;
+					if (isLoading) {
+						return;
+					}
 					if (approved && isError) {
 						setConfirmationVisible(true);
 						return;
@@ -92,27 +90,23 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
 					}
 				}}
 				address={addressForTransaction}
-				approveLoading={isPending || isConfirmationVisible}
-				checkAccountLock
+				approveLoading={isLoading || isConfirmationVisible}
 			>
 				<PageMainLayoutTitle title="Approve Transaction" />
-				<div className="flex flex-col">
-					<div className="flex flex-col gap-4">
-						<TransactionSummary
-							isDryRun
-							isLoading={isDryRunLoading}
-							isError={isDryRunError}
-							showGasSummary={false}
-							summary={summary}
-						/>
-					</div>
-					<section className=" bg-white -mx-6">
-						<div className="flex flex-col gap-4 p-6">
-							<GasFees sender={addressForTransaction} transaction={transaction} />
-							<TransactionDetails sender={addressForTransaction} transaction={transaction} />
-						</div>
-					</section>
+
+				<div className="flex flex-col gap-5">
+					<TransactionSummary
+						isDryRun
+						isLoading={isDryRunLoading}
+						isError={isDryRunError}
+						showGasSummary={false}
+						summary={summary}
+					/>
 				</div>
+				<section className="flex flex-col gap-5">
+					<GasFees sender={addressForTransaction} transaction={transaction} />
+					<TransactionDetails sender={addressForTransaction} transaction={transaction} />
+				</section>
 			</UserApproveContainer>
 			<ConfirmationModal
 				isOpen={isConfirmationVisible}

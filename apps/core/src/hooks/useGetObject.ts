@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@mysten/dapp-kit';
-import { normalizeSuiAddress } from '@mysten/sui.js/utils';
+import { sui2BfcAddress } from '@benfen/bfc.js';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 const defaultOptions = {
@@ -16,7 +16,7 @@ const defaultOptions = {
 
 export function useGetObject(objectId?: string | null) {
 	const client = useSuiClient();
-	const normalizedObjId = objectId && normalizeSuiAddress(objectId);
+	const normalizedObjId = objectId && sui2BfcAddress(objectId);
 	return useQuery({
 		queryKey: ['object', normalizedObjId],
 		queryFn: () =>

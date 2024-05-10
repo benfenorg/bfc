@@ -29,19 +29,23 @@ module games::drand_based_scratch_card {
     use sui::balance::{Self};
     use sui::coin::{Self, Coin};
     use sui::hmac::hmac_sha3_256;
+    use sui::object::{Self, ID, UID};
 
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
 
     /// Error codes
     const EInvalidDeposit: u64 = 0;
     const EInvalidEpoch: u64 = 1;
     const EInvalidTicket: u64 = 2;
+    const EInvalidRandomness: u64 = 3;
     const EInvalidReward: u64 = 4;
     const ETooSoonToRedeem: u64 = 5;
     const EInvalidGame: u64 = 6;
 
     /// Game represents a set of parameters of a single game.
-    public struct Game has key {
+    struct Game has key {
         id: UID,
         creator: address,
         reward_amount: u64,
@@ -51,22 +55,22 @@ module games::drand_based_scratch_card {
     }
 
     /// Reward that is attached to a specific game. Can be withdrawn once.
-    public struct Reward has key {
+    struct Reward has key {
         id: UID,
         game_id: ID,
-        balance: Balance<SUI>,
+        balance: Balance<BFC>,
     }
 
     /// Ticket represents a participant in a single game.
     /// Can be deconstructed only by the owner.
-    public struct Ticket has key, store {
+    struct Ticket has key, store {
         id: UID,
         game_id: ID,
     }
 
     /// Winner represents a participant that won in a specific game.
     /// Can be consumed by the take_reward.
-    public struct Winner has key, store {
+    struct Winner has key, store {
         id: UID,
         game_id: ID,
     }
@@ -76,7 +80,7 @@ module games::drand_based_scratch_card {
     /// The reward must be a positive balance, dividable by reward_factor. reward/reward_factor will be the ticket
     /// price. base_drand_round is the current drand round.
     public entry fun create(
-        reward: Coin<SUI>,
+        reward: Coin<BFC>,
         reward_factor: u64,
         base_drand_round: u64,
         ctx: &mut TxContext
@@ -104,7 +108,7 @@ module games::drand_based_scratch_card {
     /// Buy a ticket for a specific game, costing reward/reward_factor SUI. Can be called only during the epoch in which
     /// the game was created.
     /// Note that the reward might have been withdrawn already. It's the user's responsibility to verify that.
-    public entry fun buy_ticket(coin: Coin<SUI>, game: &Game, ctx: &mut TxContext) {
+    public entry fun buy_ticket(coin: Coin<BFC>, game: &Game, ctx: &mut TxContext) {
         assert!(coin::value(&coin) * game.reward_factor == game.reward_amount, EInvalidDeposit);
         assert!(tx_context::epoch(ctx) == game.base_epoch, EInvalidEpoch);
         let ticket = Ticket {
@@ -119,10 +123,11 @@ module games::drand_based_scratch_card {
         ticket: Ticket,
         game: &Game,
         drand_sig: vector<u8>,
+        drand_prev_sig: vector<u8>,
         ctx: &mut TxContext
     ) {
         assert!(ticket.game_id == object::id(game), EInvalidTicket);
-        drand_lib::verify_drand_signature(drand_sig, end_of_game_round(game.base_drand_round));
+        drand_lib::verify_drand_signature(drand_sig, drand_prev_sig, end_of_game_round(game.base_drand_round));
         // The randomness for the current ticket is derived by HMAC(drand randomness, ticket id).
         // A solution like checking if (drand randomness % reward_factor) == (ticket id % reward_factor) is not secure
         // as the adversary can control the values of ticket id. (For this particular game this attack is not
@@ -182,6 +187,6 @@ module games::drand_based_scratch_card {
         // at least 24 hours from now. Since the creator does not know as well if its game is created in the beginning
         // or the end of the epoch, we define the end of the game to be 24h + 24h from when it started, +1h to be on
         // the safe side since epoch duration is not deterministic.
-        round + 20 * 60 * (24 + 25)
+        round + 2 * 60 * (24 + 25)
     }
 }

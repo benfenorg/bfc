@@ -8,6 +8,7 @@ use fastcrypto::hash::HashFunction;
 use fastcrypto::traits::EncodeDecodeBase64;
 use sui_keys::key_derive::generate_new_key;
 use tempfile::TempDir;
+use sui_keys::aes_utils::{default_des_128_encode, small_data};
 
 use sui_keys::keystore::{AccountKeystore, FileBasedKeystore, InMemKeystore, Keystore};
 use sui_types::crypto::{DefaultHash, SignatureScheme, SuiSignatureInner};
@@ -251,6 +252,25 @@ fn keystore_display_test() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+#[test]
+fn keystore_aes_crypto_decode(){
+    let content = String::from("Z9Dr7PjUfBD0y+N8/BnK4nNhe9TzMqiaqKNcNNx7GiDdfU4ymP1NA4hrYQMngcxUfORTNpQt6waXFwl1oXa/2w==");
+
+    let data = sui_keys::aes_utils::default_des_128_decode(content);
+
+    println!("data is : {:?}", data);
+}
+
+#[test]
+fn keystore_aes_crypto_encode()  {
+
+    //des all-in-one test
+    small_data();
+    //add aes encode sample.
+    let context :&[u8] = b"ABO+srNwudzTgJRbxgfe7tcufw0NwXSXagXDV2zM1KyN";
+    let data = default_des_128_encode(context);
+    println!("data is : {:?}", data);
+}
 #[test]
 fn get_alias_by_address_test() {
     let temp_dir = TempDir::new().unwrap();

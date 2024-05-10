@@ -146,7 +146,7 @@ async fn test_stake() {
             "operation_identifier":{"index":0},
             "type":"Stake",
             "account": { "address" : sender.to_string() },
-            "amount" : { "value": "-1000000000" , "currency": { "symbol": "SUI", "decimals": 9}},
+            "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}},
             "metadata": { "Stake" : {"validator": validator.to_string()} }
         }]
     ))
@@ -273,7 +273,7 @@ async fn test_withdraw_stake() {
             "operation_identifier":{"index":0},
             "type":"Stake",
             "account": { "address" : sender.to_string() },
-            "amount" : { "value": "-1000000000" , "currency": { "symbol": "SUI", "decimals": 9}},
+            "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}},
             "metadata": { "Stake" : {"validator": validator.to_string()} }
         }]
     ))
@@ -313,6 +313,7 @@ async fn test_withdraw_stake() {
         )
         .await;
 
+    println!("response is {:?}",response);
     assert_eq!(1, response.balances.len());
     assert_eq!(1000000000, response.balances[0].value);
 
@@ -383,17 +384,19 @@ async fn test_pay_sui() {
 
     let (rosetta_client, _handle) = start_rosetta_test_server(client.clone()).await;
 
+
+    //todo , change paySui -> payBfc
     let ops = serde_json::from_value(json!(
         [{
             "operation_identifier":{"index":0},
             "type":"PaySui",
             "account": { "address" : recipient.to_string() },
-            "amount" : { "value": "1000000000" , "currency": { "symbol": "SUI", "decimals": 9}}
+            "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
         },{
             "operation_identifier":{"index":1},
             "type":"PaySui",
             "account": { "address" : sender.to_string() },
-            "amount" : { "value": "-1000000000" , "currency": { "symbol": "SUI", "decimals": 9}}
+            "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
         }]
     ))
     .unwrap();
@@ -431,7 +434,7 @@ async fn test_pay_sui() {
 #[tokio::test]
 async fn test_pay_sui_multiple_times() {
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(36000000)
+        .with_epoch_duration_ms(10000)
         .build()
         .await;
     let sender = test_cluster.get_address_0();
@@ -441,19 +444,20 @@ async fn test_pay_sui_multiple_times() {
 
     let (rosetta_client, _handle) = start_rosetta_test_server(client.clone()).await;
 
-    for i in 1..20 {
-        println!("Iteration: {}", i);
+
+    //todo change paysui --> pay bfc,
+    for _ in 1..20 {
         let ops = serde_json::from_value(json!(
             [{
                 "operation_identifier":{"index":0},
                 "type":"PaySui",
                 "account": { "address" : recipient.to_string() },
-                "amount" : { "value": "1000000000" , "currency": { "symbol": "SUI", "decimals": 9}}
+                "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
             },{
                 "operation_identifier":{"index":1},
                 "type":"PaySui",
                 "account": { "address" : sender.to_string() },
-                "amount" : { "value": "-1000000000" , "currency": { "symbol": "SUI", "decimals": 9}}
+                "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
             }]
         ))
         .unwrap();

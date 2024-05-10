@@ -9,11 +9,15 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
   workflow_dispatch:
+env:
+  PATH: ${{ vars.PATH }}
+  HTTPS_PROXY: ${{ vars.https_proxy }}
+  HTTP_PROXY: ${{ vars.http_proxy }}
 
 jobs:
   docs:
     name: Generate crate documentation
-    runs-on: ubuntu-latest
+    runs-on: yizhuang
     steps:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # Pin v4.1.1

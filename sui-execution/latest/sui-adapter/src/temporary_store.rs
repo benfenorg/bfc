@@ -6,7 +6,13 @@ use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::StructTag;
 use move_core_types::resolver::ResourceResolver;
 use parking_lot::RwLock;
+<<<<<<< HEAD
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+=======
+use std::collections::{BTreeMap, HashSet};
+use std::sync::Arc;
+use tracing::info;
+>>>>>>> develop_v.1.1.5
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
 use sui_types::committee::EpochId;
@@ -20,6 +26,7 @@ use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, PackageObject};
 use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
 use sui_types::type_resolver::LayoutResolver;
+<<<<<<< HEAD
 use sui_types::{
     base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
     effects::EffectsObjectChange,
@@ -31,7 +38,18 @@ use sui_types::{
     storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
     transaction::InputObjects,
 };
+=======
+use sui_types::{base_types::{
+    ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
+}, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
+    BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
+    WriteKind,
+}, transaction::InputObjects};
+>>>>>>> develop_v.1.1.5
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
+use sui_types::collection_types::VecMap;
+use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
+use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
     // The backing store for retrieving Move packages onchain.
@@ -366,8 +384,16 @@ impl<'backing> TemporaryStore<'backing> {
     ) {
         #[cfg(debug_assertions)]
         {
+<<<<<<< HEAD
             for (id, v1) in &loaded_runtime_objects {
                 if let Some(v2) = self.loaded_runtime_objects.get(id) {
+=======
+            for (id, v1) in &loaded_child_objects {
+                if let Some(v2) = self.loaded_child_objects.get(id) {
+                    if v1!= v2 {
+                        info!("id is {:?}",id);
+                    }
+>>>>>>> develop_v.1.1.5
                     assert_eq!(v1, v2);
                 }
             }
@@ -706,6 +732,67 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.advance_epoch_safe_mode(params, self.store.as_object_store(), protocol_config);
         self.mutate_child_object(old_object, new_object);
     }
+    pub fn advance_bfc_round_mode(
+        &mut self,
+        protocol_config: &ProtocolConfig,
+    ) {
+        let wrapper = get_bfc_system_state_wrapper(self.store.as_object_store())
+            .expect("System state wrapper object must exist");
+        let new_object =
+            wrapper.bfc_round_safe_mode(self.store.as_object_store(),protocol_config);
+        self.write_object(new_object, WriteKind::Mutate);
+    }
+    pub fn get_bfc_system_proposal_stauts_map(& self) -> VecMap<u64, ProposalStatus> {
+        get_bfc_system_proposal_state_map(self.store.as_object_store())
+            .expect("System state wrapper object must exist")
+    }
+
+    pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {
+        let wrapper = get_stable_rate_map(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        wrapper
+    }
+
+    pub fn get_stable_rate_map_with_base_point(&self) -> (VecMap<String, u64>, u64) {
+        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        (wrapper, base_point)
+    }
+    pub fn get_stable_rate_map_and_reward_rate(&self) -> (VecMap<String, u64>, u64) {
+        let (wrapper, reward_rate) = get_stable_rate_and_reward_rate(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        (wrapper, reward_rate)
+    }
+
+    pub fn get_stable_rate_by_name(&self, name: String) -> u64 {
+        let wrapper = get_stable_rate_map(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        wrapper.contents.clone().into_iter()
+            .find(|e| e.key == name)
+            .map(|e| e.value)
+            .unwrap_or_default()
+    }
+
+    pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> (u64, u64) {
+        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        let rate = wrapper.contents.clone().into_iter()
+            .find(|e| e.key == name)
+            .map(|e| e.value)
+            .unwrap_or_default();
+        (rate, base_point)
+    }
+
+    pub fn get_bfc_state(&self) -> BFCSystemState {
+        let wrapper = get_bfc_system_state(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        wrapper
+    }
+
+    pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {
+        get_bfc_system_state_wrapper(self.store.as_object_store()).expect("System state wrapper object must exist")
+    }
+
 }
 
 type ModifiedObjectInfo<'a> = (
@@ -716,6 +803,7 @@ type ModifiedObjectInfo<'a> = (
 );
 
 impl<'backing> TemporaryStore<'backing> {
+
     fn get_input_sui(
         &self,
         id: &ObjectID,
@@ -904,6 +992,7 @@ impl<'backing> TemporaryStore<'backing> {
                 })?;
             }
         }
+<<<<<<< HEAD
         // note: storage_cost flows into the storage_rebate field of the output objects, which is
         // why it is not accounted for here.
         // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
@@ -912,6 +1001,26 @@ impl<'backing> TemporaryStore<'backing> {
         if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
             total_input_sui += epoch_fees;
             total_output_sui += epoch_rebates;
+=======
+        if do_expensive_checks {
+            // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
+            // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
+            // both computation costs and storage rebate inflow are
+            total_output_sui +=
+                gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+            if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
+                total_input_sui += epoch_fees;
+                total_output_sui += epoch_rebates;
+            }
+            if total_input_sui != total_output_sui {
+                // return Err(ExecutionError::invariant_violation(
+                //     format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                //             total_input_sui,
+                //             total_output_sui))
+                // );
+                //return  Ok(());
+            }
+>>>>>>> develop_v.1.1.5
         }
         if total_input_sui != total_output_sui {
             return Err(ExecutionError::invariant_violation(format!(
@@ -980,9 +1089,45 @@ impl<'backing> Storage for TemporaryStore<'backing> {
         let ExecutionResults::V2(results) = results else {
             panic!("ExecutionResults::V2 expected in sui-execution v1 and above");
         };
+<<<<<<< HEAD
         // It's important to merge instead of override results because it's
         // possible to execute PT more than once during tx execution.
         self.execution_results.merge_results(results);
+=======
+        let mut object_changes = BTreeMap::new();
+        //info!("results is {:?}",results);
+        for (id, object) in results.written_objects {
+            let write_kind = if results.created_object_ids.contains(&id) {
+                WriteKind::Create
+            } else if results.objects_modified_at.contains_key(&id) {
+                WriteKind::Mutate
+            } else {
+                WriteKind::Unwrap
+            };
+            object_changes.insert(id, ObjectChange::Write(object, write_kind));
+        }
+
+        for id in results.deleted_object_ids {
+            let delete_kind: DeleteKindWithOldVersion =
+                if let Some((version, _)) = results.objects_modified_at.get(&id) {
+                    DeleteKindWithOldVersion::Normal(*version)
+                } else {
+                    DeleteKindWithOldVersion::UnwrapThenDelete
+                };
+            object_changes.insert(id, ObjectChange::Delete(delete_kind));
+        }
+        for (id, (version, _)) in results.objects_modified_at {
+            object_changes.entry(id).or_insert(ObjectChange::Delete(
+                DeleteKindWithOldVersion::Wrap(version),
+            ));
+        }
+        //info!("object_changes is {:?}",object_changes);
+        self.apply_object_changes(object_changes);
+
+        for event in results.user_events {
+            self.events.push(event);
+        }
+>>>>>>> develop_v.1.1.5
     }
 
     fn save_loaded_runtime_objects(

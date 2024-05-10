@@ -38,6 +38,12 @@ enum_dispatch.workspace = true
 eyre.workspace = true
 indexmap.workspace = true
 derivative.workspace = true
+parking_lot.workspace = true
+hex = "0.4.3"
+sha2 = "0.9.5"
+num_enum = "0.6.1"
+
+
 jsonrpsee.workspace = true
 move-binary-format.workspace = true
 move-bytecode-utils.workspace = true

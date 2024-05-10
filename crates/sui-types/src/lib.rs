@@ -27,7 +27,6 @@ use crate::{base_types::RESOLVED_STD_OPTION, id::RESOLVED_SUI_ID};
 pub mod error;
 
 pub mod accumulator;
-pub mod authenticator_state;
 pub mod balance;
 pub mod base_types;
 pub mod bridge;
@@ -53,6 +52,9 @@ pub mod gas;
 pub mod gas_coin;
 pub mod gas_model;
 pub mod governance;
+pub mod proposal;
+pub mod dao;
+pub mod dao_manager;
 pub mod id;
 pub mod in_memory_storage;
 pub mod inner_temporary_store;
@@ -83,9 +85,17 @@ pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
+<<<<<<< HEAD
+=======
+pub mod base_types_bfc;
+pub mod epoch_data;
+pub mod bfc_system_state;
+mod bfc_base_types;
+>>>>>>> develop_v.1.1.5
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
+pub mod stable_coin;
 
 macro_rules! built_in_ids {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
@@ -125,9 +135,37 @@ built_in_ids! {
 
 pub const SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+<<<<<<< HEAD
 pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 const fn builtin_address(suffix: u16) -> AccountAddress {
+=======
+
+
+/// 0x7: hardcoded object ID for the bfc system.
+pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
+pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_ADDRESS);
+
+pub const BFC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
+pub const BFC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_STATE_ADDRESS);
+pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+
+
+/// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries
+/// All new system package ID's must be added here
+pub fn is_system_package(id: ObjectID) -> bool {
+    matches!(
+        id,
+        MOVE_STDLIB_PACKAGE_ID
+            | SUI_FRAMEWORK_PACKAGE_ID
+            | SUI_SYSTEM_PACKAGE_ID
+            | DEEPBOOK_PACKAGE_ID
+        |BFC_SYSTEM_PACKAGE_ID
+    )
+}
+
+const fn address_from_single_byte(b: u8) -> AccountAddress {
+>>>>>>> develop_v.1.1.5
     let mut addr = [0u8; AccountAddress::LENGTH];
     let [hi, lo] = suffix.to_be_bytes();
     addr[AccountAddress::LENGTH - 2] = hi;
@@ -194,7 +232,11 @@ pub fn resolve_address(addr: &str) -> Option<AccountAddress> {
         "std" => Some(MOVE_STDLIB_ADDRESS),
         "sui" => Some(SUI_FRAMEWORK_ADDRESS),
         "sui_system" => Some(SUI_SYSTEM_ADDRESS),
+<<<<<<< HEAD
         "bridge" => Some(BRIDGE_ADDRESS),
+=======
+        "bfc_system" => Some(BFC_SYSTEM_ADDRESS),
+>>>>>>> develop_v.1.1.5
         _ => None,
     }
 }

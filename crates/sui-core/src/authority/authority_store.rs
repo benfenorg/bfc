@@ -11,6 +11,7 @@ use crate::authority::authority_store_types::{
     get_store_object_pair, ObjectContentDigest, StoreObject, StoreObjectPair, StoreObjectWrapper,
 };
 use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfiguration};
+<<<<<<< HEAD
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use either::Either;
@@ -39,12 +40,16 @@ use typed_store::{
     rocks::{DBBatch, DBMap},
     TypedStoreError,
 };
+=======
+use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
+>>>>>>> develop_v.1.1.5
 
 use super::authority_store_tables::LiveObject;
 use super::{authority_store_tables::AuthorityPerpetualTables, *};
 use mysten_common::sync::notify_read::NotifyRead;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
+use sui_types::bfc_system_state::{get_bfc_system_state, BFCSystemState};
 use typed_store::rocks::util::is_ref_count_value;
 
 const NUM_SHARDS: usize = 4096;
@@ -617,7 +622,27 @@ impl AuthorityStore {
                 let mark_data_ok = marker == MarkerValue::OwnedDeleted;
                 Ok(object_data_ok && epoch_data_ok && mark_data_ok)
             }
+<<<<<<< HEAD
             None => Ok(false),
+=======
+            .into()
+        );
+
+        for kind in objects {
+            let obj = match kind {
+                InputObjectKind::MovePackage(id) | InputObjectKind::SharedMoveObject { id, .. } => {
+                    self.get_object(id)?
+                }
+                InputObjectKind::ImmOrOwnedMoveObject(objref) => {
+                    self.get_object_by_key(&objref.0, objref.1)?
+                }
+            }
+            .ok_or_else(|| SuiError::from(UserInputError::BFCObjectNotFound {
+                object_id: objects_id_to_bfc_address(kind.object_id()),
+                version: None,
+            }))?;
+            result.push(obj);
+>>>>>>> develop_v.1.1.5
         }
     }
 
@@ -887,9 +912,13 @@ impl AuthorityStore {
         // Insert each output object into the stores
         let (new_objects, new_indirect_move_objects): (Vec<_>, Vec<_>) = written
             .iter()
+<<<<<<< HEAD
             .map(|(id, new_object)| {
                 let version = new_object.version();
                 debug!(?id, ?version, "writing object");
+=======
+            .map(|(_, (obj_ref, new_object, _))| {
+>>>>>>> develop_v.1.1.5
                 let StoreObjectPair(store_object, indirect_object) =
                     get_store_object_pair(new_object.clone(), self.indirect_objects_threshold);
                 (
@@ -1635,7 +1664,23 @@ impl AuthorityStore {
         get_sui_system_state(self.perpetual_tables.as_ref())
     }
 
+<<<<<<< HEAD
     pub fn expensive_check_sui_conservation<T>(
+=======
+    pub fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
+        get_bfc_system_state(self.perpetual_tables.as_ref())
+    }
+
+    pub fn iter_live_object_set(
+        &self,
+        include_wrapped_object: bool,
+    ) -> impl Iterator<Item = LiveObject> + '_ {
+        self.perpetual_tables
+            .iter_live_object_set(include_wrapped_object)
+    }
+
+    pub fn expensive_check_sui_conservation(
+>>>>>>> develop_v.1.1.5
         self: &Arc<Self>,
         type_layout_store: T,
         old_epoch_store: &AuthorityPerEpochStore,
@@ -1648,7 +1693,7 @@ impl AuthorityStore {
         }
 
         let executor = old_epoch_store.executor();
-        info!("Starting SUI conservation check. This may take a while..");
+        info!("Starting BFC conservation check. This may take a while..");
         let cur_time = Instant::now();
         let mut pending_objects = vec![];
         let mut count = 0;
@@ -1696,9 +1741,10 @@ impl AuthorityStore {
         });
         let mut layout_resolver = executor.type_layout_resolver(Box::new(type_layout_store));
         for object in pending_objects {
+            let total = object.get_total_sui(layout_resolver.as_mut()).unwrap();
             total_storage_rebate += object.storage_rebate;
-            total_sui +=
-                object.get_total_sui(layout_resolver.as_mut()).unwrap() - object.storage_rebate;
+                total_sui = total_sui +
+                    total - object.storage_rebate;
         }
         info!(
             "Scanned {} live objects, took {:?}",
@@ -1722,7 +1768,7 @@ impl AuthorityStore {
             .into_sui_system_state_summary();
         let storage_fund_balance = system_state.storage_fund_total_object_storage_rebates;
         info!(
-            "Total SUI amount in the network: {}, storage fund balance: {}, total storage rebate: {} at beginning of epoch {}",
+            "Total BFC amount in the network: {}, storage fund balance: {},  total storage rebate: {} at beginning of epoch {}",
             total_sui, storage_fund_balance, total_storage_rebate, system_state.epoch
         );
 
@@ -1759,6 +1805,7 @@ impl AuthorityStore {
                 .expect("DB write cannot fail");
         }
 
+
         if let Some(expected_sui) = self
             .perpetual_tables
             .expected_network_sui_amount
@@ -1769,7 +1816,7 @@ impl AuthorityStore {
                 total_sui == expected_sui,
                 SuiError::from(
                     format!(
-                        "Inconsistent state detected at epoch {}: total sui: {}, expecting {}",
+                        "Inconsistent state detected at epoch {}: total bfc: {}, expecting {}",
                         system_state.epoch, total_sui, expected_sui
                     )
                     .as_str()
@@ -2051,6 +2098,73 @@ impl ObjectStore for AuthorityStore {
     }
 }
 
+<<<<<<< HEAD
+=======
+impl ChildObjectResolver for AuthorityStore {
+    fn read_child_object(
+        &self,
+        parent: &ObjectID,
+        child: &ObjectID,
+        child_version_upper_bound: SequenceNumber,
+    ) -> SuiResult<Option<Object>> {
+        let Some(child_object) =
+            self.find_object_lt_or_eq_version(*child, child_version_upper_bound)
+        else {
+            return Ok(None)
+        };
+
+        let parent = *parent;
+        if child_object.owner != Owner::ObjectOwner(parent.into()) {
+            return Err(SuiError::InvalidChildObjectAccess {
+                object: *child,
+                given_parent: parent,
+                actual_owner: child_object.owner,
+            });
+        }
+        Ok(Some(child_object))
+    }
+}
+
+impl ParentSync for AuthorityStore {
+    fn get_latest_parent_entry_ref(&self, object_id: ObjectID) -> SuiResult<Option<ObjectRef>> {
+        self.get_latest_object_ref_or_tombstone(object_id)
+    }
+}
+
+impl ModuleResolver for AuthorityStore {
+    type Error = SuiError;
+
+    fn get_module(&self, module_id: &ModuleId) -> Result<Option<Vec<u8>>, Self::Error> {
+        // TODO: We should cache the deserialized modules to avoid
+        // fetching from the store / re-deserializing them every time.
+        // https://github.com/MystenLabs/sui/issues/809
+        Ok(self
+            .get_package_object(&ObjectID::from(*module_id.address()))?
+            .and_then(|package| {
+                // unwrap safe since get_package() ensures it's a package object.
+                package
+                    .data
+                    .try_as_package()
+                    .unwrap()
+                    .serialized_module_map()
+                    .get(module_id.name().as_str())
+                    .cloned()
+            }))
+    }
+}
+
+impl GetModule for AuthorityStore {
+    type Error = SuiError;
+    type Item = CompiledModule;
+
+    fn get_module_by_id(&self, id: &ModuleId) -> anyhow::Result<Option<Self::Item>, Self::Error> {
+        get_module_by_id(self, id)
+    }
+}
+
+
+
+>>>>>>> develop_v.1.1.5
 /// A wrapper to make Orphan Rule happy
 pub struct ResolverWrapper<T: BackingPackageStore> {
     pub resolver: Arc<T>,

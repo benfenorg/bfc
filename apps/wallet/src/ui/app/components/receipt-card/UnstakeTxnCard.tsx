@@ -1,14 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { useFormatCoin } from '@mysten/core';
+
+import { Card } from '../../shared/transaction-summary/Card';
 import { ValidatorLogo } from '_app/staking/validators/ValidatorLogo';
 import { TxnAmount } from '_components/receipt-card/TxnAmount';
 import { Text } from '_src/ui/app/shared/text';
-import { useFormatCoin } from '@mysten/core';
-import type { SuiEvent } from '@mysten/sui.js/client';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 
-import { Card } from '../../shared/transaction-summary/Card';
+import type { SuiEvent } from '@benfen/bfc.js/client';
 
 type UnStakeTxnCardProps = {
 	event: SuiEvent;
@@ -45,7 +46,7 @@ export function UnStakeTxnCard({ event }: UnStakeTxnCardProps) {
 				<div className="flex justify-between w-full py-3.5">
 					<div className="flex gap-1 items-baseline text-steel">
 						<Text variant="body" weight="medium" color="steel-darker">
-							Your SUI Stake
+							Your BFC Stake
 						</Text>
 					</div>
 

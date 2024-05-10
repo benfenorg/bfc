@@ -31,6 +31,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+<<<<<<< HEAD
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::{
@@ -39,6 +40,12 @@ use std::{
     pin::Pin,
     sync::Arc,
     vec,
+=======
+use std::time::{Duration, Instant};
+use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
+use std::{
+    collections::{ HashSet},
+>>>>>>> develop_v.1.1.5
 };
 use sui_config::node::{AuthorityOverloadConfig, StateDebugDumpConfig};
 use sui_config::NodeConfig;
@@ -74,6 +81,7 @@ use sui_json_rpc_types::{
 };
 use sui_macros::{fail_point, fail_point_async, fail_point_if};
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
+use sui_simulator::sui_adapter::temporary_store::TemporaryStore;
 use sui_storage::indexes::{CoinInfo, ObjectIndexChanges};
 use sui_storage::key_value_store::{TransactionKeyValueStore, TransactionKeyValueStoreTrait};
 use sui_storage::key_value_store_metrics::KeyValueStoreMetrics;
@@ -92,7 +100,7 @@ use sui_types::effects::{
 use sui_types::error::{ExecutionError, UserInputError};
 use sui_types::event::{Event, EventID};
 use sui_types::executable_transaction::VerifiedExecutableTransaction;
-use sui_types::gas::{GasCostSummary, SuiGasStatus};
+use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted, SuiGasStatus};
 use sui_types::inner_temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TemporaryPackageStore, TxCoins,
     WrittenObjects,
@@ -116,6 +124,7 @@ use sui_types::storage::{
 };
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
+<<<<<<< HEAD
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::{
     base_types::*,
@@ -129,6 +138,16 @@ use sui_types::{
 };
 use sui_types::{is_system_package, TypeTag};
 use typed_store::TypedStoreError;
+=======
+
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+use sui_types::{is_system_package, TypeTag};
+use sui_types::collection_types::VecMap;
+use sui_types::bfc_system_state::BFCSystemState;
+use sui_types::proposal::ProposalStatus;
+use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
+use typed_store::Map;
+>>>>>>> develop_v.1.1.5
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};
 use crate::authority::authority_per_epoch_store_pruner::AuthorityPerEpochStorePruner;
@@ -312,6 +331,8 @@ pub struct AuthorityMetrics {
 const POSITIVE_INT_BUCKETS: &[f64] = &[
     1., 2., 5., 10., 20., 50., 100., 200., 500., 1000., 2000., 5000., 10000., 20000., 50000.,
 ];
+
+const PROPOSAL_EXECUTABLE_STATE: u8 = 6;
 
 const LATENCY_SEC_BUCKETS: &[f64] = &[
     0.0005, 0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1., 2., 3., 4., 5., 6., 7., 8., 9.,
@@ -801,11 +822,15 @@ pub struct AuthorityState {
     /// Config for state dumping on forks
     debug_dump_config: StateDebugDumpConfig,
 
+<<<<<<< HEAD
     /// Config for when we consider the node overloaded.
     authority_overload_config: AuthorityOverloadConfig,
 
     /// Current overload status in this authority. Updated periodically.
     pub overload_info: AuthorityOverloadInfo,
+=======
+    pub proposal_state_map: Mutex<VecMap<u64, ProposalStatus>>
+>>>>>>> develop_v.1.1.5
 }
 
 /// The authority state encapsulates all state, drives execution, and ensures safety.
@@ -1319,12 +1344,19 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
+<<<<<<< HEAD
         let (inner_temporary_store, effects, execution_error_opt) = match self.prepare_certificate(
             &execution_guard,
             certificate,
             input_objects,
             epoch_store,
         ) {
+=======
+        let (inner_temporary_store, _, effects, execution_error_opt) = match self
+            .prepare_certificate(&execution_guard, certificate, epoch_store)
+            .await
+        {
+>>>>>>> develop_v.1.1.5
             Err(e) => {
                 info!(name = ?self.name, ?digest, "Error preparing transaction: {e}");
                 tx_guard.release();
@@ -1381,6 +1413,7 @@ impl AuthorityState {
             epoch_store,
         )
         .await?;
+<<<<<<< HEAD
 
         if let TransactionKind::AuthenticatorStateUpdate(auth_state) =
             certificate.data().transaction_data().kind()
@@ -1421,6 +1454,8 @@ impl AuthorityState {
                 .execution_gas_latency_ratio
                 .observe(effects.gas_cost_summary().computation_cost as f64 / elapsed);
         };
+=======
+>>>>>>> develop_v.1.1.5
         Ok((effects, execution_error_opt))
     }
 
@@ -1567,6 +1602,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
     ) -> SuiResult<(
         InnerTemporaryStore,
+        Option<VecMap<u64, ProposalStatus>>,
         TransactionEffects,
         Option<ExecutionError>,
     )> {
@@ -1591,11 +1627,34 @@ impl AuthorityState {
         self.check_owned_locks(&owned_object_refs)?;
         let tx_digest = *certificate.digest();
         let protocol_config = epoch_store.protocol_config();
+<<<<<<< HEAD
+=======
+        let shared_object_refs = input_objects.filter_shared_objects();
+        let transaction_dependencies = input_objects.transaction_dependencies();
+        let temporary_store = TemporaryStore::new(
+            self.database.clone(),
+            input_objects.clone(),
+            tx_digest,
+            protocol_config,
+        );
+>>>>>>> develop_v.1.1.5
         let transaction_data = &certificate.data().intent_message().value;
+        let mut proposal_map= None;
+
+        if transaction_data.is_change_epoch_tx() {
+            proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
+        };
+
         let (kind, signer, gas) = transaction_data.execution_parts();
+<<<<<<< HEAD
 
         #[allow(unused_mut)]
         let (inner_temp_store, _, mut effects, execution_error_opt) =
+=======
+        //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
+
+        let (inner_temp_store, effects, execution_error_opt) =
+>>>>>>> develop_v.1.1.5
             epoch_store.executor().execute_transaction_to_effects(
                 self.get_backing_store().as_ref(),
                 protocol_config,
@@ -1610,6 +1669,9 @@ impl AuthorityState {
                     .epoch_start_config()
                     .epoch_data()
                     .epoch_start_timestamp(),
+                //temporary_store,
+                //shared_object_refs,
+                //&mut gas_charger,
                 input_objects,
                 gas,
                 gas_status,
@@ -1618,6 +1680,7 @@ impl AuthorityState {
                 tx_digest,
             );
 
+<<<<<<< HEAD
         fail_point_if!("cp_execution_nondeterminism", || {
             #[cfg(msim)]
             self.create_fail_state(certificate, epoch_store, &mut effects);
@@ -1631,6 +1694,9 @@ impl AuthorityState {
         }
 
         Ok((inner_temp_store, effects, execution_error_opt.err()))
+=======
+        Ok((inner_temp_store, proposal_map, effects, execution_error_opt.err()))
+>>>>>>> develop_v.1.1.5
     }
 
     pub fn prepare_certificate_for_benchmark(
@@ -1665,11 +1731,16 @@ impl AuthorityState {
                 error: "dry-exec is only supported on fullnodes".to_string(),
             });
         }
-
-        if transaction.kind().is_system_tx() {
-            return Err(SuiError::UnsupportedFeatureError {
-                error: "dry-exec does not support system transactions".to_string(),
-            });
+        match transaction.kind() {
+            TransactionKind::ProgrammableTransaction(_) => (),
+            TransactionKind::ChangeEpoch(_)
+            | TransactionKind::Genesis(_)
+            | TransactionKind::ChangeBfcRound(_)
+            | TransactionKind::ConsensusCommitPrologue(_) => {
+                return Err(SuiError::UnsupportedFeatureError {
+                    error: "dry-exec does not support system transactions".to_string(),
+                });
+            }
         }
 
         self.dry_exec_transaction_impl(&epoch_store, transaction, transaction_digest)
@@ -1771,6 +1842,11 @@ impl AuthorityState {
         };
 
         let protocol_config = epoch_store.protocol_config();
+<<<<<<< HEAD
+=======
+        let transaction_dependencies = input_objects.transaction_dependencies();
+
+>>>>>>> develop_v.1.1.5
         let (kind, signer, _) = transaction.execution_parts();
 
         let silent = true;
@@ -1814,6 +1890,7 @@ impl AuthorityState {
 
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let balance_changes = Vec::new();
+<<<<<<< HEAD
 
         let written_with_kind = effects
             .created()
@@ -1838,6 +1915,8 @@ impl AuthorityState {
             })
             .collect();
 
+=======
+>>>>>>> develop_v.1.1.5
         Ok((
             DryRunTransactionBlockResponse {
                 input: SuiTransactionBlockData::try_from(transaction, &module_cache).map_err(
@@ -1846,9 +1925,14 @@ impl AuthorityState {
                             "Failed to convert transaction to SuiTransactionBlockData: {}",
                             e
                         ),
+<<<<<<< HEAD
                     },
                 )?, // TODO: replace the underlying try_from to SuiError. This one goes deep
                 effects: effects.clone().try_into()?,
+=======
+                    })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
+                effects:  effects.clone().try_into()?,
+>>>>>>> develop_v.1.1.5
                 events: SuiTransactionBlockEvents::try_from(
                     inner_temp_store.events.clone(),
                     tx_digest,
@@ -2038,6 +2122,42 @@ impl AuthorityState {
             transaction_digest,
             skip_checks,
         );
+        /*
+        let silent = true;
+
+        let executor = sui_execution::executor(
+            protocol_config,
+            self.expensive_safety_check_config
+                .enable_move_vm_paranoid_checks(),
+            silent,
+        )
+        .expect("Creating an executor should not fail here");
+        let expensive_checks = false;
+        let (inner_temp_store, effects, execution_result) = executor.dev_inspect_transaction(
+            protocol_config,
+            self.metrics.limits_metrics.clone(),
+            expensive_checks,
+            self.certificate_deny_config.certificate_deny_set(),
+            &epoch_store.epoch_start_config().epoch_data().epoch_id(),
+            epoch_store
+                .epoch_start_config()
+                .epoch_data()
+                .epoch_start_timestamp(),
+            temporary_store,
+            shared_object_refs,
+            &mut GasCharger::new(
+                transaction_digest,
+                vec![gas_object_ref],
+                gas_status,
+                protocol_config,
+            ),
+            transaction_kind,
+            sender,
+            transaction_digest,
+            transaction_dependencies,
+        );
+        */
+
 
         let raw_effects = if show_raw_txn_data_and_effects {
             bcs::to_bytes(&effects).map_err(|_| SuiError::TransactionSerializationError {
@@ -2556,6 +2676,7 @@ impl AuthorityState {
         })
     }
 
+<<<<<<< HEAD
     #[instrument(level = "trace", skip_all)]
     pub fn handle_checkpoint_request_v2(
         &self,
@@ -2590,6 +2711,36 @@ impl AuthorityState {
             contents,
         })
     }
+=======
+    // pub fn load_fastpath_input_objects(
+    //     &self,
+    //     effects: &TransactionEffects,
+    // ) -> SuiResult<Vec<Object>> {
+    //     // Note: any future addition to the returned object list needs cautions
+    //     // to make sure not to mess up object pruning.
+    //
+    //     let clock_ref = effects
+    //         .input_shared_objects()
+    //         .into_iter()
+    //         .find(|(obj_ref, _)| obj_ref.0.is_clock())
+    //         .map(|(obj_ref, _)| obj_ref);
+    //
+    //     if let Some((id, version, digest)) = clock_ref {
+    //         let clock_obj = self.database.get_object_by_key(&id, version)?;
+    //         debug_assert!(clock_obj.is_some());
+    //         debug_assert_eq!(
+    //             clock_obj.as_ref().unwrap().compute_object_reference().2,
+    //             digest
+    //         );
+    //         Ok(clock_obj
+    //             .tap_none(|| error!("Clock object not found: {:?}", clock_ref))
+    //             .into_iter()
+    //             .collect())
+    //     } else {
+    //         Ok(vec![])
+    //     }
+    // }
+>>>>>>> develop_v.1.1.5
 
     fn check_protocol_version(
         supported_protocol_versions: SupportedProtocolVersions,
@@ -2687,8 +2838,14 @@ impl AuthorityState {
             transaction_deny_config,
             certificate_deny_config,
             debug_dump_config,
+<<<<<<< HEAD
             authority_overload_config: authority_overload_config.clone(),
             overload_info: AuthorityOverloadInfo::default(),
+=======
+            proposal_state_map: Mutex::new(VecMap{
+                contents: vec![],
+            }),
+>>>>>>> develop_v.1.1.5
         });
 
         // Start a task to execute ready certificates.
@@ -3143,13 +3300,41 @@ impl AuthorityState {
             .compute_object_reference())
     }
 
+<<<<<<< HEAD
+=======
+
+    pub async fn get_bfc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
+        Ok(self
+            .get_object(&BFC_SYSTEM_ADDRESS.into())
+            .await?
+            .expect("bfc framework object should always exist")
+            .compute_object_reference())
+    }
+
+
+    /// This function should be called once and exactly once during reconfiguration.
+    /// Instead of this function use AuthorityEpochStore::epoch_start_configuration() to access this object everywhere
+    /// besides when we are reading fields for the current epoch
+    pub fn get_sui_system_state_object_during_reconfig(&self) -> SuiResult<SuiSystemState> {
+        self.database.get_sui_system_state_object()
+    }
+
+>>>>>>> develop_v.1.1.5
     // This function is only used for testing.
     pub fn get_sui_system_state_object_for_testing(&self) -> SuiResult<SuiSystemState> {
         self.execution_cache.get_sui_system_state_object_unsafe()
     }
 
+<<<<<<< HEAD
     #[instrument(level = "trace", skip_all)]
     fn get_transaction_checkpoint_sequence(
+=======
+    pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
+        self.database.get_bfc_system_state_object()
+    }
+
+    pub fn get_transaction_checkpoint_sequence(
+>>>>>>> develop_v.1.1.5
         &self,
         digest: &TransactionDigest,
         epoch_store: &AuthorityPerEpochStore,
@@ -3485,7 +3670,39 @@ impl AuthorityState {
         Ok((transaction, effects))
     }
 
+<<<<<<< HEAD
     #[instrument(level = "trace", skip_all)]
+=======
+    pub fn multi_get_transaction_checkpoint(
+        &self,
+        digests: &[TransactionDigest],
+        epoch_store: &AuthorityPerEpochStore,
+    ) -> SuiResult<Vec<Option<CheckpointSequenceNumber>>> {
+        if epoch_store.per_epoch_finalized_txns_enabled() {
+            epoch_store.multi_get_transaction_checkpoint(digests)
+        } else {
+            Ok(self
+                .database
+                .deprecated_multi_get_transaction_checkpoint(digests)?
+                .iter()
+                .map(|opt| match opt {
+                    Some((epoch_id, seq_num)) if *epoch_id == epoch_store.epoch() => Some(*seq_num),
+                    Some(_) => None,
+                    None => None,
+                })
+                .collect())
+        }
+
+    }
+
+    pub fn multi_get_events(
+        &self,
+        digests: &[TransactionEventsDigest],
+    ) -> SuiResult<Vec<Option<TransactionEvents>>> {
+        self.database.multi_get_events(digests)
+    }
+
+>>>>>>> develop_v.1.1.5
     pub fn multi_get_checkpoint_by_sequence_number(
         &self,
         sequence_numbers: &[CheckpointSequenceNumber],
@@ -4337,6 +4554,7 @@ impl AuthorityState {
         (next_protocol_version, system_packages)
     }
 
+<<<<<<< HEAD
     #[instrument(level = "debug", skip_all)]
     fn create_authenticator_state_tx(
         &self,
@@ -4408,6 +4626,18 @@ impl AuthorityState {
         let tx = EndOfEpochTransactionKind::new_deny_list_state_create();
         info!("Creating DenyListStateCreate tx");
         Some(tx)
+=======
+    async fn get_proposal_state(&self, version_id: u64) -> bool{
+        let mut proposal_result = false;
+        // todo judge proposal.value
+        for proposal in self.proposal_state_map.lock().contents.to_vec() {
+
+            if proposal.value.version_id  == version_id && proposal.value.status == PROPOSAL_EXECUTABLE_STATE {
+                proposal_result = true;
+            }
+        }
+        return proposal_result;
+>>>>>>> develop_v.1.1.5
     }
 
     /// Creates and execute the advance epoch transaction to effects without committing it to the database.
@@ -4424,7 +4654,8 @@ impl AuthorityState {
     pub async fn create_and_execute_advance_epoch_tx(
         &self,
         epoch_store: &Arc<AuthorityPerEpochStore>,
-        gas_cost_summary: &GasCostSummary,
+        bfc_gas_cost_summary: &GasCostSummary,
+        stable_gas_cost_summarys: &HashMap<TypeTag,GasCostSummaryAdjusted>,
         checkpoint: CheckpointSequenceNumber,
         epoch_start_timestamp_ms: CheckpointTimestamp,
     ) -> anyhow::Result<(SuiSystemState, TransactionEffects)> {
@@ -4444,7 +4675,7 @@ impl AuthorityState {
 
         let buffer_stake_bps = epoch_store.get_effective_buffer_stake_bps();
 
-        let (next_epoch_protocol_version, next_epoch_system_packages) =
+        let (mut next_epoch_protocol_version, mut next_epoch_system_packages) =
             Self::choose_protocol_version_and_system_packages(
                 epoch_store.protocol_version(),
                 epoch_store.protocol_config(),
@@ -4454,6 +4685,26 @@ impl AuthorityState {
                     .expect("read capabilities from db cannot fail"),
                 buffer_stake_bps,
             );
+
+
+        //if proposal fail , empty and next_epoch_system_packages,
+        // and if the next_protocol_version is update + 1, roll back next
+        // next_epoch_protocol_version
+
+        let version = epoch_store.protocol_version().as_u64();
+        let proposal_result = self.get_proposal_state(version + 1).await;
+        info!("===========protocol: {:?} detecting next version:{:?}", version, version+1);
+        info!("===========system package size {:?}", next_epoch_system_packages.len());
+
+        if cfg!(feature="bfc_skip_dao_update")  {
+            info!("===========msim test skip ========");
+        } else if  proposal_result == false{
+            info!("=========skip system package update, proposal fail=======",);
+            next_epoch_system_packages.clear();
+            next_epoch_protocol_version = epoch_store.protocol_version();
+        } else {
+            info!("======= system package update, proposal success=======");
+        };
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version
@@ -4481,6 +4732,7 @@ impl AuthorityState {
             ));
         };
 
+<<<<<<< HEAD
         let tx = if epoch_store
             .protocol_config()
             .end_of_epoch_transaction_supported()
@@ -4509,6 +4761,19 @@ impl AuthorityState {
                 next_epoch_system_package_bytes,
             )
         };
+=======
+        let tx = VerifiedTransaction::new_change_epoch(
+            next_epoch,
+            next_epoch_protocol_version,
+            bfc_gas_cost_summary.storage_cost,
+            bfc_gas_cost_summary.computation_cost,
+            bfc_gas_cost_summary.storage_rebate,
+            bfc_gas_cost_summary.non_refundable_storage_fee,
+            stable_gas_cost_summarys.clone(),
+            epoch_start_timestamp_ms,
+            next_epoch_system_package_bytes,
+        );
+>>>>>>> develop_v.1.1.5
 
         let executable_tx = VerifiedExecutableTransaction::new_from_checkpoint(
             tx.clone(),
@@ -4522,10 +4787,10 @@ impl AuthorityState {
             ?next_epoch,
             ?next_epoch_protocol_version,
             ?next_epoch_system_packages,
-            computation_cost=?gas_cost_summary.computation_cost,
-            storage_cost=?gas_cost_summary.storage_cost,
-            storage_rebate=?gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee=?gas_cost_summary.non_refundable_storage_fee,
+            computation_cost=?bfc_gas_cost_summary.computation_cost,
+            storage_cost=?bfc_gas_cost_summary.storage_cost,
+            storage_rebate=?bfc_gas_cost_summary.storage_rebate,
+            non_refundable_storage_fee=?bfc_gas_cost_summary.non_refundable_storage_fee,
             ?tx_digest,
             "Creating advance epoch transaction"
         );
@@ -4549,6 +4814,7 @@ impl AuthorityState {
         let execution_guard = self
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
+<<<<<<< HEAD
 
         let input_objects = self
             .input_loader
@@ -4565,6 +4831,18 @@ impl AuthorityState {
 
         let (temporary_store, effects, _execution_error_opt) =
             self.prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store)?;
+=======
+        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
+            .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
+            .await?;
+
+        if let Some(new_proposal_map) = proposal_map {
+            let mut tmp = self.proposal_state_map.lock();
+            tmp.contents = new_proposal_map.contents;
+        }
+
+        //let system_obj = temporary_store.get_sui_system_state_object();
+>>>>>>> develop_v.1.1.5
         let system_obj = get_sui_system_state(&temporary_store.written)
             .expect("change epoch tx must write to system object");
 
@@ -4588,7 +4866,80 @@ impl AuthorityState {
         Ok((system_obj, effects))
     }
 
-    /// This function is called at the very end of the epoch.
+    pub async fn create_and_execute_bfc_round_tx(
+        &self,
+        epoch_store: &Arc<AuthorityPerEpochStore>,
+        checkpoint: CheckpointSequenceNumber,
+    ) -> anyhow::Result<(InnerTemporaryStore,TransactionEffects)>{
+        let epoch = epoch_store.epoch();
+
+        let tx = VerifiedTransaction::new_change_bfc_round(
+            checkpoint,
+        );
+
+        let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
+            tx.clone(),
+            epoch,
+            epoch,
+            checkpoint,
+        );
+
+        let tx_digest = executable_tx.digest();
+
+        let _tx_lock = epoch_store.acquire_tx_guard(&executable_tx).await?;
+
+        if self
+            .database
+            .is_tx_already_executed(tx_digest)
+            .expect("read cannot fail")
+        {
+            warn!("bfc round has already been executed via state sync： {:?}", tx_digest);
+            return Err(anyhow::anyhow!(
+                "bfc round tx has already been executed via state sync"
+            ));
+        }
+
+        let execution_guard = self
+            .database
+            .execution_lock_for_executable_transaction(&executable_tx)
+            .await?;
+
+        info!(
+            "Try to execute transaction: {:?}",tx_digest
+        );
+
+        let (store, _, effects, _execution_error_opt) = self
+            .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
+            .await?;
+
+
+        self.commit_cert_and_notify(
+            &executable_tx,
+            store.clone(),
+            &effects,
+            _tx_lock,
+            execution_guard,
+            epoch_store,
+        )
+            .await?;
+
+        // We must write tx and effects to the state sync tables so that state sync is able to
+        // deliver to the transaction to CheckpointExecutor after it is included in a certified
+        // checkpoint.
+
+        info!(
+            "Effects summary of the change bfc round transaction: {:?}",
+            effects.summary_for_debug()
+        );
+
+        //epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
+        // The change epoch transaction cannot fail to execute.
+        assert!(effects.status().is_ok());
+
+        Ok((store,effects))
+    }
+
+        /// This function is called at the very end of the epoch.
     /// This step is required before updating new epoch in the db and calling reopen_epoch_db.
     #[instrument(level = "error", skip_all)]
     async fn revert_uncommitted_epoch_transactions(
@@ -4895,6 +5246,7 @@ impl TransactionKeyValueStoreTrait for AuthorityState {
         &self,
         digest: TransactionDigest,
     ) -> SuiResult<Option<CheckpointSequenceNumber>> {
+<<<<<<< HEAD
         self.execution_cache
             .deprecated_get_transaction_checkpoint(&digest)
             .map(|res| res.map(|(_epoch, checkpoint)| checkpoint))
@@ -4922,6 +5274,11 @@ impl TransactionKeyValueStoreTrait for AuthorityState {
             .into_iter()
             .map(|maybe| maybe.map(|(_epoch, checkpoint)| checkpoint))
             .collect())
+=======
+        self.database
+            .deprecated_get_transaction_checkpoint(&digest)
+            .map(|maybe| maybe.map(|(_epoch, checkpoint)| checkpoint))
+>>>>>>> develop_v.1.1.5
     }
 }
 

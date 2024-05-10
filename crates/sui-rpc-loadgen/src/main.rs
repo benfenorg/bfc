@@ -23,9 +23,9 @@ use crate::payload::{
 
 #[derive(Parser)]
 #[clap(
-    name = "Sui RPC Load Generator",
+    name = "Bfc RPC Load Generator",
     version = "0.1",
-    about = "A load test application for Sui RPC"
+    about = "A load test application for Bfc RPC"
 )]
 struct Opts {
     // TODO(chris): support running multiple commands at once
@@ -38,10 +38,10 @@ struct Opts {
     #[clap(long, num_args(1..), default_value = "http://127.0.0.1:9000")]
     pub urls: Vec<String>,
     /// the path to log file directory
-    #[clap(long, default_value = "~/.sui/sui_config/logs")]
+    #[clap(long, default_value = "~/.bfc/bfc_config/logs")]
     logs_directory: String,
 
-    #[clap(long, default_value = "~/.sui/loadgen/data")]
+    #[clap(long, default_value = "~/.bfc/loadgen/data")]
     data_directory: String,
 }
 
@@ -88,8 +88,8 @@ pub enum ClapCommand {
         #[clap(flatten)]
         common: CommonOptions,
     },
-    #[clap(name = "pay-sui")]
-    PaySui {
+    #[clap(name = "pay-bfc")]
+    PayBfc {
         // TODO(chris) customize recipients and amounts
         #[clap(flatten)]
         common: CommonOptions,
@@ -137,8 +137,8 @@ pub enum ClapCommand {
 
 fn get_keypair() -> Result<SignerInfo> {
     // TODO(chris) allow pass in custom path for keystore
-    // Load keystore from ~/.sui/sui_config/sui.keystore
-    let keystore_path = get_sui_config_directory().join("sui.keystore");
+    // Load keystore from ~/.bfc/bfc_config/bfc.keystore
+    let keystore_path = get_sui_config_directory().join("bfc.keystore");
     let keystore = Keystore::from(FileBasedKeystore::new(&keystore_path)?);
     let active_address = keystore.addresses().pop().unwrap();
     let keypair: &SuiKeyPair = keystore.get_key(&active_address)?;
@@ -148,7 +148,7 @@ fn get_keypair() -> Result<SignerInfo> {
 
 fn get_sui_config_directory() -> PathBuf {
     match dirs::home_dir() {
-        Some(v) => v.join(".sui").join("sui_config"),
+        Some(v) => v.join(".bfc").join("bfc_config"),
         None => panic!("Cannot obtain home directory path"),
     }
 }
@@ -190,7 +190,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let (command, common, need_keystore) = match opts.command {
         ClapCommand::DryRun { common } => (Command::new_dry_run(), common, false),
-        ClapCommand::PaySui { common } => (Command::new_pay_sui(), common, true),
+        ClapCommand::PayBfc { common } => (Command::new_pay_sui(), common, true),
         ClapCommand::GetCheckpoints {
             common,
             start,

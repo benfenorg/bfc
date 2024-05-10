@@ -3,7 +3,7 @@
 
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
-use move_core_types::language_storage::StructTag;
+use move_core_types::language_storage::{StructTag, TypeTag};
 
 use crate::balance::Balance;
 use crate::base_types::ObjectID;
@@ -22,32 +22,37 @@ pub const MAX_VALIDATOR_COUNT: u64 = 150;
 
 /// Lower-bound on the amount of stake required to become a validator.
 ///
-/// 30 million SUI
-pub const MIN_VALIDATOR_JOINING_STAKE_MIST: u64 = 30_000_000 * MIST_PER_SUI;
+/// 0.3 million SUI
+pub const MIN_VALIDATOR_JOINING_STAKE_MIST: u64 = 300_000 * MIST_PER_SUI;
 
 /// Validators with stake amount below `validator_low_stake_threshold` are considered to
 /// have low stake and will be escorted out of the validator set after being below this
 /// threshold for more than `validator_low_stake_grace_period` number of epochs.
 ///
-/// 20 million SUI
-pub const VALIDATOR_LOW_STAKE_THRESHOLD_MIST: u64 = 20_000_000 * MIST_PER_SUI;
+/// 0.2 million SUI
+pub const VALIDATOR_LOW_STAKE_THRESHOLD_MIST: u64 = 200_000 * MIST_PER_SUI;
 
 /// Validators with stake below `validator_very_low_stake_threshold` will be removed
 /// immediately at epoch change, no grace period.
 ///
-/// 15 million SUI
-pub const VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST: u64 = 15_000_000 * MIST_PER_SUI;
+/// 0.15 million SUI
+pub const VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST: u64 = 150_000 * MIST_PER_SUI;
 
 /// A validator can have stake below `validator_low_stake_threshold`
 /// for this many epochs before being kicked out.
 pub const VALIDATOR_LOW_STAKE_GRACE_PERIOD: u64 = 7;
 
 pub const STAKING_POOL_MODULE_NAME: &IdentStr = ident_str!("staking_pool");
-pub const STAKED_SUI_STRUCT_NAME: &IdentStr = ident_str!("StakedSui");
+pub const STAKED_SUI_STRUCT_NAME: &IdentStr = ident_str!("StakedBfc"); //dont touch this
+
+pub const STABLE_POOL_MODULE_NAME: &IdentStr = ident_str!("stable_pool");
+pub const STAKED_STABLE_STRUCT_NAME: &IdentStr = ident_str!("StakedStable");
 
 pub const ADD_STAKE_MUL_COIN_FUN_NAME: &IdentStr = ident_str!("request_add_stake_mul_coin");
 pub const ADD_STAKE_FUN_NAME: &IdentStr = ident_str!("request_add_stake");
 pub const WITHDRAW_STAKE_FUN_NAME: &IdentStr = ident_str!("request_withdraw_stake");
+pub const ADD_STABLE_STAKE_FUN_NAME: &IdentStr = ident_str!("request_add_stable_stake");
+pub const WITHDRAW_STABLE_STAKE_FUN_NAME: &IdentStr = ident_str!("request_withdraw_stable_stake");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct StakedSui {
@@ -113,5 +118,46 @@ impl TryFrom<&Object> for StakedSui {
         Err(SuiError::TypeError {
             error: format!("Object type is not a StakedSui: {:?}", object),
         })
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct StakedStable {
+    id: UID,
+    pool_id: ID,
+    stake_activation_epoch: u64,
+    principal: Balance,
+}
+impl StakedStable {
+    pub fn type_with_tag(tag: TypeTag) -> StructTag {
+        StructTag {
+            address: SUI_SYSTEM_ADDRESS,
+            module: STABLE_POOL_MODULE_NAME.to_owned(),
+            name: STAKED_STABLE_STRUCT_NAME.to_owned(),
+            type_params: vec![tag],
+        }
+    }
+
+    pub fn is_staked_stable(tag: TypeTag, s: &StructTag) -> bool {
+        s.address == SUI_SYSTEM_ADDRESS
+            && s.module.as_ident_str() == STABLE_POOL_MODULE_NAME
+            && s.name.as_ident_str() == STAKED_STABLE_STRUCT_NAME
+            && s.type_params.len() == 1 && s.type_params[0] == tag
+    }
+
+    pub fn id(&self) -> ObjectID {
+        self.id.id.bytes
+    }
+
+    pub fn pool_id(&self) -> ObjectID {
+        self.pool_id.bytes
+    }
+
+    pub fn activation_epoch(&self) -> EpochId {
+        self.stake_activation_epoch
+    }
+
+    pub fn principal(&self) -> u64 {
+        self.principal.value()
     }
 }

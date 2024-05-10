@@ -2,25 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-	arrow,
-	autoUpdate,
-	flip,
-	FloatingPortal,
-	offset,
-	shift,
-	useDismiss,
 	useFloating,
-	useFocus,
+	autoUpdate,
+	offset,
+	flip,
+	shift,
 	useHover,
-	useInteractions,
+	useFocus,
+	useDismiss,
 	useRole,
+	useInteractions,
+	FloatingPortal,
+	arrow,
 } from '@floating-ui/react';
-import type { Placement } from '@floating-ui/react';
 import { Info16 } from '@mysten/icons';
-import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+
+import type { Placement } from '@floating-ui/react';
+import type { ReactNode, CSSProperties } from 'react';
 
 const TOOLTIP_DELAY = 150;
 
@@ -28,17 +28,17 @@ interface TooltipProps {
 	tip: ReactNode;
 	children: ReactNode;
 	placement?: Placement;
-	noFullWidth?: boolean;
 }
 
-export function Tooltip({ tip, children, noFullWidth, placement = 'top' }: TooltipProps) {
+export function Tooltip({ tip, children, placement = 'top' }: TooltipProps) {
 	const [open, setOpen] = useState(false);
 	const arrowRef = useRef(null);
 
 	const {
 		x,
 		y,
-		refs,
+		reference,
+		floating,
 		strategy,
 		context,
 		middlewareData,
@@ -88,8 +88,8 @@ export function Tooltip({ tip, children, noFullWidth, placement = 'top' }: Toolt
 		<>
 			<div
 				tabIndex={0}
-				className={clsx('flex', !noFullWidth && 'w-full')}
-				{...getReferenceProps({ ref: refs.setReference })}
+				className="w-fit flex items-center"
+				{...getReferenceProps({ ref: reference })}
 			>
 				{children}
 			</div>
@@ -97,7 +97,7 @@ export function Tooltip({ tip, children, noFullWidth, placement = 'top' }: Toolt
 				<AnimatePresence>
 					{open ? (
 						<motion.div
-							className="pointer-events-none left-0 top-0 z-[99999] text-subtitleSmall font-semibold text-white leading-130"
+							className="pointer-events-none left-0 top-0 z-[99999] text-body font-normal text-white leading-130"
 							initial={{
 								opacity: 0,
 								scale: 0,
@@ -124,14 +124,12 @@ export function Tooltip({ tip, children, noFullWidth, placement = 'top' }: Toolt
 								width: 'max-content',
 								maxWidth: '200px',
 							}}
-							{...getFloatingProps({ ref: refs.setFloating })}
+							{...getFloatingProps({ ref: floating })}
 						>
-							<div className="flex flex-col flex-nowrap gap-px rounded-md bg-gray-100 p-2">
-								{tip}
-							</div>
+							<div className="flex flex-col flex-nowrap gap-px rounded-md bg-bfc p-2">{tip}</div>
 							<div
 								ref={arrowRef}
-								className="absolute z-[-1] h-[12px] w-[12px] rotate-45 transform bg-gray-100"
+								className="absolute z-[-1] h-[12px] w-[12px] rotate-45 transform bg-bfc"
 								style={arrowStyle}
 							/>
 						</motion.div>
@@ -147,7 +145,7 @@ export type IconTooltipProps = Omit<TooltipProps, 'children'>;
 export function IconTooltip(props: IconTooltipProps) {
 	return (
 		<Tooltip {...props}>
-			<Info16 className="shrink-0 font-normal text-steel" />
+			<Info16 className="shrink-0 font-normal text-bfc-text2" />
 		</Tooltip>
 	);
 }

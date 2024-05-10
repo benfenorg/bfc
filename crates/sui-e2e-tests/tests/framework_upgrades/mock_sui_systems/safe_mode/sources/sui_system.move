@@ -4,7 +4,7 @@
 module sui_system::sui_system {
     use sui::balance::Balance;
     use sui::object::UID;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::dynamic_field;
@@ -16,12 +16,14 @@ module sui_system::sui_system {
     public struct SuiSystemState has key {
         id: UID,
         version: u64,
+        bfc_system_id: UID,
     }
 
     public(package) fun create(
         id: UID,
+        bfc_system_id: UID,
         validators: vector<Validator>,
-        storage_fund: Balance<SUI>,
+        storage_fund: Balance<BFC>,
         protocol_version: u64,
         epoch_start_timestamp_ms: u64,
         epoch_duration_ms: u64,
@@ -39,14 +41,15 @@ module sui_system::sui_system {
         let mut self = SuiSystemState {
             id,
             version,
+            bfc_system_id,
         };
         dynamic_field::add(&mut self.id, version, system_state);
         transfer::share_object(self);
     }
 
     fun advance_epoch(
-        storage_reward: Balance<SUI>,
-        computation_reward: Balance<SUI>,
+        storage_reward: Balance<BFC>,
+        computation_reward: Balance<BFC>,
         wrapper: &mut SuiSystemState,
         _new_epoch: u64,
         _next_protocol_version: u64,
@@ -55,8 +58,9 @@ module sui_system::sui_system {
         _storage_fund_reinvest_rate: u64,
         _reward_slashing_rate: u64,
         _epoch_start_timestamp_ms: u64,
+        _rate_vec : vector<u64>,
         ctx: &mut TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         let self = load_system_state_mut(wrapper);
         assert!(tx_context::sender(ctx) == @0x1, 0); // aborts here
         sui_system_state_inner::advance_epoch(

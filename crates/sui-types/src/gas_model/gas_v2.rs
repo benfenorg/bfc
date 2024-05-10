@@ -47,7 +47,7 @@ mod checked {
         }
         match table.last() {
             // maybe not a literal here could be better?
-            None => 5_000_000,
+            None => 500_000,
             Some(bucket) => bucket.cost,
         }
     }
@@ -55,7 +55,7 @@ mod checked {
     // define the bucket table for computation charging
     // If versioning defines multiple functions and
     fn computation_bucket(max_bucket_cost: u64) -> Vec<ComputationBucket> {
-        assert!(max_bucket_cost >= 5_000_000);
+        assert!(max_bucket_cost >= 500_000);
         vec![
             ComputationBucket::simple(0, 1_000),
             ComputationBucket::simple(1_000, 5_000),
@@ -63,8 +63,7 @@ mod checked {
             ComputationBucket::simple(10_000, 20_000),
             ComputationBucket::simple(20_000, 50_000),
             ComputationBucket::simple(50_000, 200_000),
-            ComputationBucket::simple(200_000, 1_000_000),
-            ComputationBucket::simple(1_000_000, max_bucket_cost),
+            ComputationBucket::simple(200_000, max_bucket_cost),
         ]
     }
 
@@ -139,7 +138,7 @@ mod checked {
                 storage_per_byte_cost: 0,
                 execution_cost_table: ZERO_COST_SCHEDULE.clone(),
                 // should not matter
-                computation_bucket: computation_bucket(5_000_000),
+                computation_bucket: computation_bucket(500_000),
             }
         }
     }
@@ -288,6 +287,7 @@ mod checked {
         // 1. Gas object has an address owner.
         // 2. Gas budget is between min and max budget allowed
         // 3. Gas balance (all gas coins together) is bigger or equal to budget
+        // 4. Gas Coin type should be same type for all gas objects
         pub(crate) fn check_gas_balance(
             &self,
             gas_objs: &[&ObjectReadResult],
@@ -320,6 +320,19 @@ mod checked {
                     gas_budget,
                     min_budget: self.cost_table.min_transaction_cost,
                 });
+            }
+
+            //4. Gas Coin type should be same type for all gas objects
+            if gas_objs.len() >1 {
+                let gas_coin_type = gas_objs[0].coin_type_maybe().unwrap();
+                for gas_object in gas_objs {
+                    if gas_object.coin_type_maybe().unwrap() != gas_coin_type {
+                        return Err(UserInputError::GasCoinTypeMismatch {
+                            coin_type: gas_object.coin_type_maybe().unwrap().to_canonical_string(),
+                            second_coin_type: gas_coin_type.to_canonical_string(),
+                        });
+                    }
+                }
             }
 
             // 3. Gas balance (all gas coins together) is bigger or equal to budget
@@ -395,6 +408,8 @@ mod checked {
             assert!(sender_rebate <= storage_rebate);
             let non_refundable_storage_fee = storage_rebate - sender_rebate;
             GasCostSummary {
+                base_point:0,
+                rate:1,
                 computation_cost: self.computation_cost,
                 storage_cost: self.storage_cost(),
                 storage_rebate: sender_rebate,

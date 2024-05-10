@@ -3,3 +3,4 @@
 
 /// Dummy module for testing
 module std::address {}
+

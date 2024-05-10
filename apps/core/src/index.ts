@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './api/SentryHttpTransport';
+export * from './api/RpcClientContext';
 export * from './hooks/useFormatCoin';
 export * from './hooks/useTimeAgo';
 export * from './hooks/useGetValidatorsEvents';
@@ -21,18 +22,20 @@ export * from './utils/transaction';
 export * from './hooks/useOnScreen';
 export * from './hooks/useGetOwnedObjects';
 export * from './hooks/useCopyToClipboard';
-export * from './hooks/useAppsBackend';
 export * from './hooks/useGetCoins';
 export * from './utils/hasDisplayData';
 export * from './hooks/useMultiGetObjects';
 export * from './utils/persistableStorage';
-export * from './hooks/useProductAnalyticsConfig';
+export * from './hooks/useGetBinaryVersion';
+export * from './hooks/useGetNetworkOverview';
 export * from './hooks/useCookieConsentBanner';
 export * from './hooks/useGetKioskContents';
 export * from './hooks/useZodForm';
 export * from './utils/kiosk';
 export * from './hooks/useElementDimensions';
-export * from './hooks/useSuiCoinData';
 export * from './hooks/useLocalStorage';
-export * from './hooks/useGetDelegatedStake';
-export * from './hooks/useTokenPrice';
+export * from './hooks/useGetReferenceGasPrice';
+export * from './hooks/useGetTotalTransactionBlocks';
+export * from './hooks/useGetSystemState';
+export * from './hooks/useGetCoinBalance';
+export * from './hooks/useGetAllBalances';

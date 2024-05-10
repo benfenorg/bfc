@@ -1,21 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
-import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
-import { Button } from '_app/shared/ButtonUI';
-import { Text } from '_app/shared/text';
-import { ActiveCoinsCard } from '_components/active-coins-card';
-import Overlay from '_components/overlay';
-import { ampli } from '_src/shared/analytics/ampli';
-import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
-import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
-import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
-import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
 import { useCoinMetadata } from '@mysten/core';
-import { ArrowLeft16, ArrowRight16 } from '@mysten/icons';
-import * as Sentry from '@sentry/react';
+import { ArrowRight16, ArrowLeft16 } from '@mysten/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -23,8 +9,19 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { PreviewTransfer } from './PreviewTransfer';
 import { SendTokenForm } from './SendTokenForm';
-import type { SubmitProps } from './SendTokenForm';
 import { createTokenTransferTransaction } from './utils/transaction';
+import { Button } from '_app/shared/ButtonUI';
+import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
+import { Text } from '_app/shared/text';
+import { ActiveCoinsCard } from '_components/active-coins-card';
+import Overlay from '_components/overlay';
+import { ampli } from '_src/shared/analytics/ampli';
+import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
+import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
+import { useSigner } from '_src/ui/app/hooks';
+import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
+import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
+import type { SubmitProps } from './SendTokenForm';
 
 function TransferCoinPage() {
 	const [searchParams] = useSearchParams();
@@ -33,9 +30,8 @@ function TransferCoinPage() {
 	const [formData, setFormData] = useState<SubmitProps>();
 	const navigate = useNavigate();
 	const { data: coinMetadata } = useCoinMetadata(coinType);
-	const activeAccount = useActiveAccount();
-	const signer = useSigner(activeAccount);
-	const address = activeAccount?.address;
+	const signer = useSigner();
+	const address = useActiveAddress();
 	const queryClient = useQueryClient();
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
 
@@ -55,33 +51,21 @@ function TransferCoinPage() {
 				throw new Error('Missing data');
 			}
 
-			const sentryTransaction = Sentry.startTransaction({
-				name: 'send-tokens',
-			});
-			try {
-				return signer.signAndExecuteTransactionBlock(
-					{
-						transactionBlock: transaction,
-						options: {
-							showInput: true,
-							showEffects: true,
-							showEvents: true,
-						},
+			return signer.signAndExecuteTransactionBlock(
+				{
+					transactionBlock: transaction,
+					options: {
+						showInput: true,
+						showEffects: true,
+						showEvents: true,
 					},
-					clientIdentifier,
-				);
-			} catch (error) {
-				if (!(error instanceof QredoActionIgnoredByUser)) {
-					sentryTransaction.setTag('failure', true);
-				}
-				throw error;
-			} finally {
-				sentryTransaction.finish();
-			}
+				},
+				clientIdentifier,
+			);
 		},
 		onSuccess: (response) => {
-			queryClient.invalidateQueries({ queryKey: ['get-coins'] });
-			queryClient.invalidateQueries({ queryKey: ['coin-balance'] });
+			queryClient.invalidateQueries(['get-coins']);
+			queryClient.invalidateQueries(['coin-balance']);
 
 			ampli.sentCoins({
 				coinType: coinType!,
@@ -107,10 +91,6 @@ function TransferCoinPage() {
 		},
 	});
 
-	if (useUnlockedGuard()) {
-		return null;
-	}
-
 	if (!coinType) {
 		return <Navigate to="/" replace={true} />;
 	}
@@ -121,7 +101,7 @@ function TransferCoinPage() {
 			title={showTransactionPreview ? 'Review & Send' : 'Send Coins'}
 			closeOverlay={() => navigate('/')}
 		>
-			<div className="flex flex-col w-full h-full">
+			<div className="flex flex-col w-full">
 				{showTransactionPreview && formData ? (
 					<BottomMenuLayout>
 						<Content>
@@ -149,18 +129,16 @@ function TransferCoinPage() {
 								text="Send Now"
 								disabled={coinType === null}
 								after={<ArrowRight16 />}
-								loading={executeTransfer.isPending}
+								loading={executeTransfer.isLoading}
 							/>
 						</Menu>
 					</BottomMenuLayout>
 				) : (
 					<>
-						<div className="mb-7 flex flex-col gap-2.5">
-							<div className="pl-1.5">
-								<Text variant="caption" color="steel" weight="semibold">
-									Select all Coins
-								</Text>
-							</div>
+						<div className="mb-7.5 flex flex-col gap-1.25">
+							<Text variant="body" color="bfc-text2" weight="normal">
+								Select all Coins
+							</Text>
 							<ActiveCoinsCard activeCoinType={coinType} />
 						</div>
 

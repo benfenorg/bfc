@@ -19,7 +19,7 @@ import type {
 const packageRoot = path.resolve(import.meta.url.slice(5), '../..');
 const openRpcSpec: OpenRpcSpec = JSON.parse(
 	await fs.readFile(
-		path.resolve(packageRoot, '../../crates/sui-open-rpc/spec/openrpc.json'),
+		path.resolve(packageRoot, '../../crates/bfc-open-rpc/spec/openrpc.json'),
 		'utf-8',
 	),
 );
@@ -33,7 +33,7 @@ export const LICENSE_HEADER = `
  *  ######################################
  *
  * This file is generated from:
- * /crates/sui-open-rpc/spec/openrpc.json
+ * /crates/bfc-open-rpc/spec/openrpc.json
  */
 `.trim();
 
@@ -763,11 +763,11 @@ function normalizeName(name: string) {
 }
 
 export function normalizeMethodName(name: string): string {
-	if (name.startsWith('sui_')) {
+	if (name.startsWith('bfc_')) {
 		return normalizeMethodName(name.slice(4));
 	}
 
-	if (name.startsWith('suix_')) {
+	if (name.startsWith('bfcx_')) {
 		return normalizeMethodName(name.slice(5));
 	}
 

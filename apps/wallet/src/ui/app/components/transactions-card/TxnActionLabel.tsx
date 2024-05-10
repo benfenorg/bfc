@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js/utils';
+
 import { Text } from '_app/shared/text';
-import { formatAddress } from '@mysten/sui.js/utils';
 
 type TxnTypeProps = {
 	address: string;

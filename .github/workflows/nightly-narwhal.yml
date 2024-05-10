@@ -27,36 +27,27 @@ env:
   RUSTUP_MAX_RETRIES: 10
   # Don't emit giant backtraces in the CI logs.
   RUST_BACKTRACE: short
-
+  #PATH: ${{ vars.PATH }}
+  #HTTPS_PROXY: ${{ vars.https_proxy }}
+  #HTTP_PROXY: ${{ vars.http_proxy }}
+  
 jobs:
   end-to-end-tests:
     name: Narwhal run long-running end-to-end tests
-    runs-on: ubuntu-ghcloud
+    runs-on: yizhuang
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # Pin v4.1.1
-      - uses: taiki-e/install-action@nextest
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 256
-      # Enable caching of the 'librocksdb-sys' crate by additionally caching the
-      # 'librocksdb-sys' src directory which is managed by cargo
-      - uses: bmwill/rust-cache@v1 # Fork of 'Swatinem/rust-cache' which allows caching additional paths
-        with:
-          path: ~/.cargo/registry/src/**/librocksdb-sys-*
-      # We run only the integration tests that are ignored under the primary package.
-      # These are considered the end-to-end "slow" tests for us
+      - uses: actions/checkout@v3
       - name: cargo nextest
         run: |
-          cargo nextest run -E 'kind(test) and package(narwhal-primary)' --profile narwhalnightly --run-ignored ignored-only
+          cargo nextest run -E 'kind(test) and (package(narwhal-primary) + package(narwhal-consensus))' --profile narwhalnightly --run-ignored ignored-only
 
   report-status:
     name: Report Status
-    runs-on: ubuntu-latest
+    runs-on: yizhuang
     if: always()
     needs: [end-to-end-tests]
     steps:
-      - uses: technote-space/workflow-conclusion-action@45ce8e0eb155657ab8ccf346ade734257fd196a5 # Pin v4.1.1
+      - uses: technote-space/workflow-conclusion-action@v3
 
       - name: Post to slack
         uses: slackapi/slack-github-action@v1.24.0
@@ -64,7 +55,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         if: env.WORKFLOW_CONCLUSION == 'failure' # notify only if failure
         with:
-          channel-id: 'narwhal-tusk'
+          channel-id: 'alert'
           payload: |
             {
               "text": "NARWAL Workflow *${{ github.workflow }}* failed",

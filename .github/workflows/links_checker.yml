@@ -73,8 +73,8 @@ jobs:
             report
             automated issue
 
-      - name: Close last report open issue
-        if: ${{ steps.lychee.outputs.exit_code == 0 }}
-        uses: peter-evans/close-issue@v3
-        with:
-          issue-number: ${{ steps.last_issue.outputs.issue_number }}
+#       - name: Close last report open issue
+#         if: ${{ steps.lychee.outputs.exit_code == 0 }}
+#         uses: peter-evans/close-issue@v3
+#         with:
+#           issue-number: ${{ steps.last_issue.outputs.issue_number }}

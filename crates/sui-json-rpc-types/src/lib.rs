@@ -5,6 +5,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub use balance_changes::*;
+pub use dao_proposals::*;
 pub use object_changes::*;
 pub use sui_checkpoint::*;
 pub use sui_coin::*;
@@ -23,6 +24,7 @@ use sui_types::dynamic_field::DynamicFieldInfo;
 mod rpc_types_tests;
 
 mod balance_changes;
+mod dao_proposals;
 mod displays;
 mod object_changes;
 mod sui_checkpoint;
@@ -45,6 +47,15 @@ pub struct Page<T, C> {
     pub data: Vec<T>,
     pub next_cursor: Option<C>,
     pub has_next_page: bool,
+}
+
+#[derive(Clone, Debug, JsonSchema, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ClassicPage<T> {
+    pub data: Vec<T>,
+    pub next_page: Option<usize>,
+    pub prev_page: Option<usize>,
+    pub total: usize,
 }
 
 impl<T, C> Page<T, C> {

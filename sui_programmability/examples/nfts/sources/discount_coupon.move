@@ -3,7 +3,10 @@
 
 module nfts::discount_coupon {
     use sui::coin;
-    use sui::sui::SUI;
+    use sui::object::{Self, UID};
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
 
     /// Sending to wrong recipient.
     const EWrongRecipient: u64 = 0;
@@ -12,7 +15,7 @@ module nfts::discount_coupon {
     const EOutOfRangeDiscount: u64 = 1;
 
     /// Discount coupon NFT.
-    public struct DiscountCoupon has key {
+    struct DiscountCoupon has key {
         id: UID,
         // coupon issuer
         issuer: address,
@@ -29,7 +32,7 @@ module nfts::discount_coupon {
 
     /// Mint then transfer a new `DiscountCoupon` NFT, and top up recipient with some SUI.
     public entry fun mint_and_topup(
-        coin: coin::Coin<SUI>,
+        coin: coin::Coin<BFC>,
         discount: u8,
         expiration: u64,
         recipient: address,

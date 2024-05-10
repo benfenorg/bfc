@@ -1161,6 +1161,51 @@ async fn test_dry_run_dev_inspect_max_gas_version() {
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
 }
 
+//test dry run with stable coin gas
+#[tokio::test]
+async fn test_dry_run_with_stable_gas_coin() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let (validator, fullnode) = init_state_validator_with_fullnode().await;
+    let (validator, object_basics) = publish_object_basics(validator).await;
+    let (fullnode, _object_basics) = publish_object_basics(fullnode).await;
+    let gas_object = Object::with_stable_id_owner_version_for_testing(
+        gas_object_id,
+        SequenceNumber::from_u64(1),
+        sender,
+    );
+    let gas_object_ref = gas_object.compute_object_reference();
+    validator.insert_genesis_object(gas_object.clone()).await;
+    fullnode.insert_genesis_object(gas_object).await;
+    let rgp = fullnode.reference_gas_price_for_testing().unwrap();
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Pure(bcs::to_bytes(&(32_u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&sender).unwrap()),
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: object_basics.0,
+            module: Identifier::new("object_basics").unwrap(),
+            function: Identifier::new("create").unwrap(),
+            type_arguments: vec![],
+            arguments: vec![Argument::Input(0), Argument::Input(1)],
+        }))],
+    };
+    // dry run
+    let data = TransactionData::new_programmable(
+        sender,
+        vec![gas_object_ref],
+        pt,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp,
+    );
+    let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
+    let digest = *transaction.digest();
+    let DryRunTransactionBlockResponse { effects, .. } =
+        fullnode.dry_exec_transaction(data, digest).await.unwrap().0;
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
 #[tokio::test]
 async fn test_handle_transfer_transaction_bad_signature() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
@@ -1880,7 +1925,7 @@ async fn test_publish_non_existing_dependent_module() {
         .handle_transaction(&epoch_store, transaction)
         .await;
     assert!(std::string::ToString::to_string(&response.unwrap_err())
-        .contains("DependentPackageNotFound"));
+        .contains("BFCObjectNotFound"));
     // Check that gas was not charged.
     assert_eq!(
         authority
@@ -2202,7 +2247,7 @@ async fn test_missing_package() {
         .await;
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::DependentPackageNotFound { .. }
+        UserInputError::BFCObjectNotFound { .. }
     ));
 }
 
@@ -2303,7 +2348,7 @@ async fn test_type_argument_dependencies() {
 
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::DependentPackageNotFound { .. }
+        UserInputError::BFCObjectNotFound { .. }
     ));
 }
 
@@ -2900,7 +2945,7 @@ async fn test_authority_persist() {
         AuthorityStore::open_with_committee_for_testing(perpetual_tables, &committee, &genesis, 0)
             .await
             .unwrap();
-    let authority = init_state(&genesis, authority_key, store).await;
+    let authority = init_state(&genesis, authority_key.copy(), store).await;
 
     // Create an object
     let recipient = dbg_addr(2);
@@ -4222,7 +4267,24 @@ pub async fn init_state_with_ids_and_object_basics<
     publish_object_basics(state).await
 }
 
-async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
+#[cfg(test)]
+pub async fn init_state_with_ids_and_objects_basics<
+    I: IntoIterator<Item = (SuiAddress, (ObjectID,ObjectID))>,
+>(
+    objects: I,
+) -> (Arc<AuthorityState>, ObjectRef) {
+    let state = TestAuthorityBuilder::new().build().await;
+    for (address, (object_id,stable_id)) in objects {
+        let obj = Object::with_id_owner_for_testing(object_id, address);
+        let stable_obj = Object::with_stable_id_owner_version_for_testing(stable_id, SequenceNumber::new(),address);
+
+        state.insert_genesis_object(obj).await;
+        state.insert_genesis_object(stable_obj).await;
+    }
+    publish_object_basics(state).await
+}
+
+pub(crate) async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
     use sui_move_build::BuildConfig;
 
     // add object_basics package object to genesis, since lots of test use it

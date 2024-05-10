@@ -101,7 +101,7 @@ impl Env {
                     .with_accounts(vec![AccountConfig {
                         address: Some(primary_gas_owner),
                         // We can't use TOTAL_SUPPLY_MIST because we need to account for validator stakes in genesis allocation.
-                        gas_amounts: vec![TOTAL_SUPPLY_MIST / 2],
+                        gas_amounts: vec![TOTAL_SUPPLY_MIST / 10],
                     }])
                     .with_num_validators(committee_size)
                     .build()

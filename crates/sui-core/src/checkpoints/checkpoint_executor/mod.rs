@@ -577,6 +577,50 @@ impl CheckpointExecutor {
         .await;
     }
 
+    pub async fn check_epoch_first_checkpoint(
+        &self,
+        epoch_store: Arc<AuthorityPerEpochStore>,
+        checkpoint: &VerifiedCheckpoint,
+    ) -> bool {
+        let cur_epoch = epoch_store.epoch();
+
+        let first = self.checkpoint_store.get_epoch_first_checkpoint(cur_epoch).unwrap();
+        if let Some(first_) = first {
+            if first_.sequence_number == checkpoint.sequence_number {
+                info!("check_epoch_first_checkpoint {checkpoint:?}");
+                if let Some((bfc_round_execution_digests, bfc_round_tx)) =
+                    extract_bfc_round_tx(
+                        checkpoint,
+                        self.authority_store.clone(),
+                        self.checkpoint_store.clone(),
+                        epoch_store.clone(),
+                    )
+                {
+                    let change_epoch_tx_digest = bfc_round_execution_digests.transaction;
+
+                    info!(
+                    ended_epoch = cur_epoch,
+                    last_checkpoint = checkpoint.sequence_number(),
+                    "first of epoch, executing obc round transaction",
+                );
+
+                    self.execute_change_epoch_tx(
+                        bfc_round_execution_digests,
+                        change_epoch_tx_digest,
+                        bfc_round_tx,
+                        epoch_store.clone(),
+                        checkpoint.clone(),
+                    ).await;
+                }
+            }else {
+                warn!("First checkpoint for epoch {} is not the first checkpoint, {}, verify: {}", cur_epoch, first_.sequence_number, checkpoint.sequence_number());
+            }
+        }else {
+            warn!("No first checkpoint for epoch {}", cur_epoch);
+        }
+        return true;
+    }
+
     /// Check whether `checkpoint` is the last checkpoint of the current epoch. If so,
     /// perform special case logic (execute change_epoch tx, accumulate epoch,
     /// finalize transactions), then return true.
@@ -963,6 +1007,56 @@ fn extract_end_of_epoch_tx(
         .is_end_of_epoch_tx());
 
     Some((*digests, change_epoch_tx))
+}
+
+fn extract_bfc_round_tx(
+    checkpoint: &VerifiedCheckpoint,
+    authority_store: Arc<AuthorityStore>,
+    checkpoint_store: Arc<CheckpointStore>,
+    epoch_store: Arc<AuthorityPerEpochStore>,
+) -> Option<(ExecutionDigests, VerifiedExecutableTransaction)> {
+    let checkpoint_sequence = checkpoint.sequence_number();
+    let execution_digests = checkpoint_store
+        .get_checkpoint_contents(&checkpoint.content_digest)
+        .expect("Failed to get checkpoint contents from store")
+        .unwrap_or_else(|| {
+            panic!(
+                "Checkpoint contents for digest {:?} does not exist",
+                checkpoint.content_digest
+            )
+        })
+        .into_inner();
+    let digests:ExecutionDigests = {
+        let digests_len = execution_digests.len();
+        if digests_len >= 2 {
+            execution_digests[digests_len - 2]
+        }else {
+            execution_digests[0]
+        }
+    };
+
+    let round_txn = authority_store
+        .get_transaction_block(&digests.transaction)
+        .expect("read cannot fail");
+
+    let change_epoch_tx = VerifiedExecutableTransaction::new_from_checkpoint(
+        round_txn.unwrap_or_else(||
+            panic!(
+                "state-sync should have ensured that transaction with digest {:?} exists for checkpoint: {checkpoint:?}",
+                digests.transaction,
+            )
+        ),
+        epoch_store.epoch(),
+        *checkpoint_sequence,
+    );
+
+    assert!(change_epoch_tx
+        .data()
+        .intent_message()
+        .value
+        .is_change_bfc_round_tx());
+
+    Some((digests, change_epoch_tx))
 }
 
 // Given a checkpoint, filter out any already executed transactions, then return the remaining

@@ -108,6 +108,10 @@ name = "generate-genesis-checkpoint"
 path = "src/generate_genesis_checkpoint.rs"
 test = false
 
+[[bin]]
+name = "bfc"
+path = "src/main.rs"
+
 [[test]]
 name = "ptb_files_tests"
 harness = false

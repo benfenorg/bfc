@@ -1,0 +1,48 @@
+@use '_values/colors';
+@use '_utils';
+
+.container {
+	flex: 1;
+	display: flex;
+	flex-flow: column nowrap;
+	padding: 40px 20px 20px;
+	height: 100%;
+}
+
+.scroll-body {
+	flex: 1;
+	padding-bottom: 0;
+	display: flex;
+	flex-flow: column;
+	gap: 50px;
+}
+
+.children {
+	margin-bottom: 20px;
+	flex: 1;
+	display: flex;
+	flex-flow: column;
+
+	&.scrollable {
+		overflow-y: hidden;
+		min-height: 150px;
+	}
+}
+
+.actions-container {
+	position: sticky;
+	bottom: 0;
+}
+
+.actions {
+	padding: 20px 0;
+	background: colors.$white;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	position: relative;
+	z-index: 1;
+	&.flip-actions {
+		flex-direction: row-reverse;
+	}
+}

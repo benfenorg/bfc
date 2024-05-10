@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::base_types::AuthorityName;
-use crate::committee::{Committee, EpochId};
+use crate::committee::{Committee, EpochId, BfcRoundId};
 use crate::crypto::{
     AuthorityKeyPair, AuthorityQuorumSignInfo, AuthoritySignInfo, AuthoritySignInfoTrait,
     AuthoritySignature, AuthorityStrongQuorumSignInfo, EmptySignInfo, Signer,
@@ -359,6 +359,7 @@ where
     }
 }
 
+
 /// The following implementation provides two ways to construct a VerifiedEnvelope with CertificateProof.
 /// It is implemented in this file such that we could reuse the digest without having to
 /// recompute it.
@@ -400,6 +401,24 @@ impl<T: Message> VerifiedEnvelope<T, CertificateProof> {
         })
     }
 
+    pub fn new_round_from_checkpoint(
+        transaction: VerifiedEnvelope<T, EmptySignInfo>,
+        epoch: EpochId,
+        round: BfcRoundId,
+        checkpoint: CheckpointSequenceNumber,
+    ) -> Self {
+        let inner = transaction.into_inner();
+        let Envelope {
+            digest,
+            data,
+            auth_signature: _,
+        } = inner;
+        VerifiedEnvelope::new_unchecked(Envelope {
+            digest,
+            data,
+            auth_signature: CertificateProof::new_round_from_checkpoint(round,epoch,checkpoint),
+        })
+    }
     pub fn new_system(transaction: VerifiedEnvelope<T, EmptySignInfo>, epoch: EpochId) -> Self {
         let inner = transaction.into_inner();
         let Envelope {

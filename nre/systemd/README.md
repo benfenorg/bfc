@@ -6,15 +6,15 @@ Tested using:
 
 ## Prerequisites and Setup
 
-1. Add a `sui` user and the `/opt/sui` directories
+1. Add a `sui` user and the `/opt/bfc` directories
 
 ```shell
 sudo useradd sui
-sudo mkdir -p /opt/sui/bin
-sudo mkdir -p /opt/sui/config
-sudo mkdir -p /opt/sui/db
-sudo mkdir -p /opt/sui/key-pairs
-sudo chown -R sui:sui /opt/sui
+sudo mkdir -p /opt/bfc/bin
+sudo mkdir -p /opt/bfc/config
+sudo mkdir -p /opt/bfc/db
+sudo mkdir -p /opt/bfc/key-pairs
+sudo chown -R sui:sui /opt/bfc
 ```
 
 2. Install the Sui Node (sui-node) binary, two options:
@@ -24,7 +24,7 @@ sudo chown -R sui:sui /opt/sui
 ```shell
 wget https://releases.sui.io/$SUI_SHA/sui-node
 chmod +x sui-node
-sudo mv sui-node /opt/sui/bin
+sudo mv sui-node /opt/bfc/bin
 ```
 
 - Build from source:
@@ -33,29 +33,29 @@ sudo mv sui-node /opt/sui/bin
 git clone https://github.com/MystenLabs/sui.git && cd sui
 git checkout $SUI_SHA
 cargo build --release --bin sui-node
-mv ./target/release/sui-node /opt/sui/bin/sui-node
+mv ./target/release/sui-node /opt/bfc/bin/sui-node
 ```
 
-3. Copy your key-pairs into `/opt/sui/key-pairs/` 
+3. Copy your key-pairs into `/opt/bfc/key-pairs/` 
 
 If generated during the Genesis ceremony these will be at `SuiExternal.git/sui-testnet-wave3/genesis/key-pairs/`
 
-Make sure when you copy them they retain `sui` user permissions. To be safe you can re-run: `sudo chown -R sui:sui /opt/sui`
+Make sure when you copy them they retain `sui` user permissions. To be safe you can re-run: `sudo chown -R sui:sui /opt/bfc`
 
-4. Update the node configuration file and place it in the `/opt/sui/config/` directory.
+4. Update the node configuration file and place it in the `/opt/bfc/config/` directory.
 
-Add the paths to your private keys to validator.yaml. If you chose to put them in `/opt/sui/key-pairs`, you can use the following example: 
+Add the paths to your private keys to validator.yaml. If you chose to put them in `/opt/bfc/key-pairs`, you can use the following example: 
 
 ```
 protocol-key-pair: 
-  path: /opt/sui/key-pairs/protocol.key
+  path: /opt/bfc/key-pairs/protocol.key
 worker-key-pair: 
-  path: /opt/sui/key-pairs/worker.key
+  path: /opt/bfc/key-pairs/worker.key
 network-key-pair: 
-  path: /opt/sui/key-pairs/network.key
+  path: /opt/bfc/key-pairs/network.key
 ```
 
-5. Place genesis.blob in `/opt/sui/config/` (should be available after the Genesis ceremony)
+5. Place genesis.blob in `/opt/bfc/config/` (should be available after the Genesis ceremony)
 
 6. Copy the sui-node systemd service unit file 
 
@@ -103,7 +103,7 @@ journalctl -u sui-node -f
 
 When an update is required to the Sui Node software the following procedure can be used. It is highly **unlikely** that you will want to restart with a clean database.
 
-- assumes sui-node lives in `/opt/sui/bin/`
+- assumes sui-node lives in `/opt/bfc/bin/`
 - assumes systemd service is named sui-node
 - **DO NOT** delete the Sui databases
 
@@ -123,7 +123,7 @@ wget https://releases.sui.io/${SUI_SHA}/sui-node
 
 ```
 chmod +x sui-node
-sudo mv sui-node /opt/sui/bin/
+sudo mv sui-node /opt/bfc/bin/
 ```
 
 4. start sui-node systemd service

@@ -471,9 +471,9 @@ pub async fn watch_for_upgrades(
         .await?;
     let mut subscription: Subscription<SuiTransactionBlockEffects> = client
         .subscribe(
-            "suix_subscribeTransaction",
+            "bfcx_subscribeTransaction",
             watch_ids,
-            "suix_unsubscribeTransaction",
+            "bfcx_unsubscribeTransaction",
         )
         .await
         .map_err(|e| anyhow!("Failed to open websocket connection for {}: {}", network, e))?;

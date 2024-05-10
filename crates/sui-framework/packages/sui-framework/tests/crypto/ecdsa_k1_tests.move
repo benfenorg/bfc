@@ -25,6 +25,63 @@ module sui::ecdsa_k1_tests {
     }
 
     #[test]
+    fun test_secp256k1_ecrecover() {
+            // test case generated against fastcrypto/fastcrypto/src/tests/secp256k1_recoverable_tests.rs at f9e64dc028040f863a53a6a88072bda71a
+            let msg = b"test aptos secp256k1";
+
+            // recover with keccak256 hash
+            let sig = x"f7ad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c777c423a1d2849baafd7ff6a9930814a43c3f80d59db56f00";
+            let pubkey_bytes = x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559";
+            let pubkey = ecdsa_k1::secp256k1_ecrecover(&sig, &msg, 1);
+
+            let uncompressed = ecdsa_k1::decompress_pubkey(&pubkey);
+
+            // Take the last 64 bytes of the uncompressed pubkey.
+            let uncompressed_64 = vector::empty<u8>();
+            let i = 1;
+            while (i < 65) {
+                let value = vector::borrow(&uncompressed, i);
+                vector::push_back(&mut uncompressed_64, *value);
+                i = i + 1;
+            };
+
+            assert!(uncompressed_64 == pubkey_bytes, 0);
+    }
+
+    #[test]
+    fun test_ecdsa_recover_success() {
+        // test case generated against fastcrypto/fastcrypto/src/tests/secp256k1_recoverable_tests.rs at f9e64dc028040f863a53a6a88072bda71a
+        let msg = b"test aptos secp256k1";
+
+        // recover with keccak256 hash
+        let sig = x"f7ad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c777c423a1d2849baafd7ff6a9930814a43c3f80d59db56f00";
+        let pubkey_bytes = x"4646ae5047316b4230d0086c8acec687f00b1cd9d1dc634f6cb358ac0a9a8ffffe77b4dd0a4bfb95851f3b7355c781dd60f8418fc8a65d14907aff47c903a559";
+        let pubkey = ecdsa_k1::secp256k1_ecrecover(&sig, &msg, 1);
+
+        let uncompressed = ecdsa_k1::decompress_pubkey(&pubkey);
+
+        // Take the last 64 bytes of the uncompressed pubkey.
+        let uncompressed_64 = vector::empty<u8>();
+        let i = 1;
+        while (i < 65) {
+            let value = vector::borrow(&uncompressed, i);
+            vector::push_back(&mut uncompressed_64, *value);
+            i = i + 1;
+        };
+
+        assert!(uncompressed_64 == pubkey_bytes, 0);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ecdsa_k1::EInvalidSignature)]
+    fun test_ecdsa_recover_failed() {
+        let sig = x"ffad936da03f948c14c542020e3c5f4e02aaacd1f20427c11aa6e2fbf8776477646bba0e1a37f9e7c7f7c423a1d2849baafd7ff6a9930814a43c3f80d59db56f";
+        // Flipped bits; Signature becomes invalid
+        let msg = b"test aptos secp256k1";
+        ecdsa_k1::secp256k1_ecrecover(&sig, &msg, 1);
+    }
+
+    #[test]
     #[expected_failure(abort_code = ecdsa_k1::EFailToRecoverPubKey)]
     fun test_ecrecover_pubkey_fail_to_recover() {
         let msg = x"00";

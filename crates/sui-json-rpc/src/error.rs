@@ -183,6 +183,7 @@ impl From<Error> for RpcError {
                             })
                             .collect::<BTreeMap<_, Vec<_>>>();
 
+<<<<<<< HEAD
                         let error_object = ErrorObject::owned(
                             TRANSACTION_EXECUTION_CLIENT_ERROR_CODE,
                             error_message,
@@ -218,6 +219,43 @@ impl From<Error> for RpcError {
                                 }
                             })
                             .collect();
+=======
+                    let error_object = ErrorObject::owned(
+                        TRANSACTION_EXECUTION_CLIENT_ERROR_CODE,
+                        error_message,
+                        Some(new_map),
+                    );
+                    RpcError::Call(CallError::Custom(error_object))
+                }
+                QuorumDriverError::NonRecoverableTransactionError { errors } => {
+                    let new_errors: Vec<String> = errors
+                        .into_iter()
+                        // sort by total stake, descending, so users see the most prominent one first
+                        .sorted_by(|(_, a, _), (_, b, _)| b.cmp(a))
+                        .filter_map(|(err, _, _)| {
+                            match &err {
+                                // Special handling of UserInputError:
+                                // ObjectNotFound and DependentPackageNotFound are considered
+                                // retryable errors but they have different treatment
+                                // in AuthorityAggregator.
+                                // The optimal fix would be to examine if the total stake
+                                // of ObjectNotFound/DependentPackageNotFound exceeds the
+                                // quorum threshold, but it takes a Committee here.
+                                // So, we take an easier route and consider them non-retryable
+                                // at all. Combining this with the sorting above, clients will
+                                // see the dominant error first.
+                                SuiError::UserInputError { error } => Some(error.to_string()),
+                                _ => {
+                                    if err.is_retryable().0 {
+                                        None
+                                    } else {
+                                        Some(err.to_string())
+                                    }
+                                }
+                            }
+                        })
+                        .collect();
+>>>>>>> develop_v.1.1.5
 
                         assert!(
                             !new_errors.is_empty(),
@@ -402,7 +440,7 @@ mod tests {
             let expected_message = expect!["Failed to sign transaction by a quorum of validators because of locked objects. Retried a conflicting transaction Some(TransactionDigest(11111111111111111111111111111111)), success: Some(true)"];
             expected_message.assert_eq(error_object.message());
             let expected_data = expect![[
-                r#"{"11111111111111111111111111111111":[["0x0000000000000000000000000000000000000000000000000000000000000000",0,"11111111111111111111111111111111"]]}"#
+                r#"{"11111111111111111111111111111111":[["BFC000000000000000000000000000000000000000000000000000000000000000060e0",0,"11111111111111111111111111111111"]]}"#
             ]];
             let actual_data = error_object.data().unwrap().to_string();
             expected_data.assert_eq(&actual_data);
@@ -441,7 +479,7 @@ mod tests {
             let expected_code = expect!["-32002"];
             expected_code.assert_eq(&error_object.code().to_string());
             let expected_message =
-                expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Balance of gas object 10 is lower than the needed amount: 100., Object (0x0000000000000000000000000000000000000000000000000000000000000000, SequenceNumber(0), o#11111111111111111111111111111111) is not available for consumption, its current version: SequenceNumber(10).."];
+                expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Balance of gas object 10 is lower than the needed amount: 100., Object BFC000000000000000000000000000000000000000000000000000000000000000060e0 SequenceNumber(0) o#11111111111111111111111111111111 is not available for consumption, its current version: SequenceNumber(10).."];
             expected_message.assert_eq(error_object.message());
         }
 
@@ -473,7 +511,11 @@ mod tests {
             let expected_code = expect!["-32002"];
             expected_code.assert_eq(&error_object.code().to_string());
             let expected_message =
+<<<<<<< HEAD
                 expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object 0x0000000000000000000000000000000000000000000000000000000000000000 at version None.."];
+=======
+                expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object \"BFC000000000000000000000000000000000000000000000000000000000000000060e0\" at version None.."];
+>>>>>>> develop_v.1.1.5
             expected_message.assert_eq(error_object.message());
         }
 

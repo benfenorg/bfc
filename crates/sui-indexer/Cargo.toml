@@ -74,5 +74,5 @@ criterion.workspace = true
 simulacrum.workspace = true
 
 [[bin]]
-name = "sui-indexer"
+name = "bfc-indexer"
 path = "src/main.rs"

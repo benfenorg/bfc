@@ -401,6 +401,7 @@ impl TransactionKeyValueStore {
             .deprecated_get_transaction_checkpoint(digest)
             .await
     }
+<<<<<<< HEAD
 
     pub async fn get_object(
         &self,
@@ -416,6 +417,8 @@ impl TransactionKeyValueStore {
     ) -> SuiResult<Vec<Option<CheckpointSequenceNumber>>> {
         self.inner.multi_get_transaction_checkpoint(digests).await
     }
+=======
+>>>>>>> develop_v.1.1.5
 }
 
 /// Immutable key/value store trait for storing/retrieving transactions, effects, and events.
@@ -443,6 +446,7 @@ pub trait TransactionKeyValueStoreTrait {
         &self,
         digest: TransactionDigest,
     ) -> SuiResult<Option<CheckpointSequenceNumber>>;
+<<<<<<< HEAD
 
     async fn get_object(
         &self,
@@ -454,6 +458,8 @@ pub trait TransactionKeyValueStoreTrait {
         &self,
         digests: &[TransactionDigest],
     ) -> SuiResult<Vec<Option<CheckpointSequenceNumber>>>;
+=======
+>>>>>>> develop_v.1.1.5
 }
 
 /// A TransactionKeyValueStoreTrait that falls back to a secondary store for any key for which the
@@ -574,7 +580,10 @@ impl TransactionKeyValueStoreTrait for FallbackTransactionKVStore {
         Ok((res.0, res.1, res.2, res.3))
     }
 
+<<<<<<< HEAD
     #[instrument(level = "trace", skip_all)]
+=======
+>>>>>>> develop_v.1.1.5
     async fn deprecated_get_transaction_checkpoint(
         &self,
         digest: TransactionDigest,
@@ -591,6 +600,7 @@ impl TransactionKeyValueStoreTrait for FallbackTransactionKVStore {
         }
         Ok(res)
     }
+<<<<<<< HEAD
 
     #[instrument(level = "trace", skip_all)]
     async fn get_object(
@@ -630,6 +640,8 @@ impl TransactionKeyValueStoreTrait for FallbackTransactionKVStore {
 
         Ok(res)
     }
+=======
+>>>>>>> develop_v.1.1.5
 }
 
 fn find_fallback<T, K: Clone>(values: &[Option<T>], keys: &[K]) -> (Vec<K>, Vec<usize>) {

@@ -2,6 +2,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use tracing::warn;
 pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
@@ -23,6 +24,7 @@ pub mod checked {
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
     use sui_protocol_config::ProtocolConfig;
+    use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
 
     #[enum_dispatch]
     pub trait SuiGasStatusAPI {
@@ -134,9 +136,11 @@ pub mod checked {
     /// storage_rebate + non_refundable_storage_fee`
 
     #[serde_as]
-    #[derive(Eq, PartialEq, Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+    #[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
     #[serde(rename_all = "camelCase")]
     pub struct GasCostSummary {
+        pub base_point:u64,
+        pub rate:u64,
         /// Cost of computation/execution
         #[schemars(with = "BigInt<u64>")]
         #[serde_as(as = "Readable<BigInt<u64>, _>")]
@@ -156,6 +160,14 @@ pub mod checked {
         pub non_refundable_storage_fee: u64,
     }
 
+    #[serde_as]
+    #[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
+    #[serde(rename_all = "camelCase")]
+    pub struct GasCostSummaryAdjusted{
+        pub gas_by_bfc:GasCostSummary,
+        pub gas_by_stable: GasCostSummary,
+    }
+
     impl GasCostSummary {
         pub fn new(
             computation_cost: u64,
@@ -164,6 +176,8 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
+                base_point:0,
+                rate:1,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -182,8 +196,8 @@ pub mod checked {
             // `< x.5` goes to x (truncates). We replicate `f32/64::round()`
             const BASIS_POINTS: u128 = 10000;
             (((self.storage_rebate as u128 * storage_rebate_rate as u128)
-            + (BASIS_POINTS / 2)) // integer rounding adds half of the BASIS_POINTS (denominator)
-            / BASIS_POINTS) as u64
+                + (BASIS_POINTS / 2)) // integer rounding adds half of the BASIS_POINTS (denominator)
+                / BASIS_POINTS) as u64
         }
 
         /// Get net gas usage, positive number means used gas; negative number means refund.
@@ -192,7 +206,7 @@ pub mod checked {
         }
 
         pub fn new_from_txn_effects<'a>(
-            transactions: impl Iterator<Item = &'a TransactionEffects>,
+            transactions: impl Iterator<Item=&'a TransactionEffects>,
         ) -> GasCostSummary {
             let (storage_costs, computation_costs, storage_rebates, non_refundable_storage_fee): (
                 Vec<u64>,
@@ -211,10 +225,23 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
+                base_point:0,
+                rate:1,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
                 storage_rebate: storage_rebates.iter().sum(),
                 non_refundable_storage_fee: non_refundable_storage_fee.iter().sum(),
+            }
+        }
+
+        pub fn into_rpc(&self) -> GasCostSummary  {
+            GasCostSummary {
+                base_point:self.base_point,
+                rate:self.rate,
+                storage_cost:calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point),
+                computation_cost: calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point),
+                storage_rebate: calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point),
+                non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(self.non_refundable_storage_fee, self.rate, self.base_point),
             }
         }
     }
@@ -263,16 +290,85 @@ pub mod checked {
 
     pub fn get_gas_balance(gas_object: &Object) -> UserInputResult<u64> {
         if let Some(move_obj) = gas_object.data.try_as_move() {
-            if !move_obj.type_().is_gas_coin() {
-                return Err(UserInputError::InvalidGasObject {
+            let move_type = move_obj.type_();
+            if move_type.is_gas_coin() || move_type.is_stable_gas_coin(){
+                Ok(move_obj.get_coin_value_unsafe())
+            }else {
+                Err(UserInputError::InvalidGasObject {
                     object_id: gas_object.id(),
-                });
+                })
             }
-            Ok(move_obj.get_coin_value_unsafe())
         } else {
             Err(UserInputError::InvalidGasObject {
                 object_id: gas_object.id(),
             })
         }
+    }
+}
+
+pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
+    if reward_rate == 0 {
+        warn!("reward rate is zero, reward: {}", reward);
+        return reward;
+    }
+    (reward as u128 * reward_rate as u128 / 100u128 ) as u64
+}
+
+pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
+    if rate == 0 || rate == 1 {
+        return cost;
+    }
+    //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
+    ((cost as u128 * 1000000000u128 * (100 + base_point) as u128) / (rate * 100u64) as u128) as u64
+}
+
+pub fn calculate_stable_net_used_with_base_point(summary :GasCostSummary) -> i64 {
+    let computation_cost = calculate_bfc_to_stable_cost_with_base_point(summary.computation_cost, summary.rate, summary.base_point);
+    let storage_cost = calculate_bfc_to_stable_cost_with_base_point(summary.storage_cost, summary.rate, summary.base_point);
+    let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(summary.storage_rebate, summary.rate, summary.base_point);
+    (computation_cost + storage_cost) as i64 - (storage_rebate as i64)
+}
+
+pub fn calculate_stable_to_bfc_cost_with_base_point(stable_cost: u64, rate: u64, base_point: u64) -> u64 {
+    stable_cost * (rate * 100u64) / (1000000000u128 * (100 + base_point) as u128) as u64
+}
+
+pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
+    if rate == 0 {
+        warn!("rate is zero, cost: {}, rate: {}", cost, rate);
+        return cost;
+    }
+    let num = cost as u128 * rate as u128;
+    let denom = 1000000000u128;
+    let quotient = num / denom;
+    let remained = num % denom;
+    if remained > 0 {
+        (quotient + 1) as u64
+    } else {
+        quotient as u64
+    }
+}
+
+#[cfg(test)]
+mod test{
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_stable_to_bfc_cost};
+    #[test]
+    fn test_calculate_stable_rate() {
+        let cost = 132240;
+        let rate = 1000000032u64;
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost, rate, 0);
+        println!("result: {}", result);
+        let result = calculate_stable_to_bfc_cost(result, rate);
+        println!("result: {}", result);
+        assert_eq!(cost, result);
+        let cost_u64_max = u64::MAX;
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost_u64_max, rate, 0);
+        println!("result: {}", result);
+        let result = calculate_stable_to_bfc_cost(result, rate);
+        assert_eq!(cost_u64_max, result);
+        let cost = -87119i64;
+        let rate = 999999999u64;
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost.abs() as u64, rate, 10);
+        println!("result: {}", result);
     }
 }

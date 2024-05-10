@@ -1,80 +1,81 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { bfc2SuiAddress, sui2BfcAddress } from '@benfen/bfc.js';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { toB64, fromB64 } from '@benfen/bfc.js/utils';
+import {
+	BFC_CHAINS,
+	ReadonlyWalletAccount,
+	BFC_DEVNET_CHAIN,
+	BFC_TESTNET_CHAIN,
+	BFC_LOCALNET_CHAIN,
+	type SuiFeatures,
+	type SuiSignAndExecuteTransactionBlockMethod,
+	type StandardConnectFeature,
+	type StandardConnectMethod,
+	type Wallet,
+	type StandardEventsFeature,
+	type StandardEventsOnMethod,
+	type StandardEventsListeners,
+	type SuiSignTransactionBlockMethod,
+	type SuiSignMessageMethod,
+	BFC_MAINNET_CHAIN,
+} from '@benfen/bfc.js/wallet-standard';
+import mitt, { type Emitter } from 'mitt';
+import { filter, map, type Observable } from 'rxjs';
+
+import { mapToPromise } from './utils';
 import { createMessage } from '_messages';
 import { WindowMessageStream } from '_messaging/WindowMessageStream';
-import type { BasePayload, Payload } from '_payloads';
-import type { GetAccount } from '_payloads/account/GetAccount';
-import type { GetAccountResponse } from '_payloads/account/GetAccountResponse';
-import type { SetNetworkPayload } from '_payloads/network';
 import {
-	ALL_PERMISSION_TYPES,
 	type AcquirePermissionsRequest,
 	type AcquirePermissionsResponse,
 	type HasPermissionsRequest,
 	type HasPermissionsResponse,
+	ALL_PERMISSION_TYPES,
 } from '_payloads/permissions';
-import type {
-	ExecuteTransactionRequest,
-	ExecuteTransactionResponse,
-	SignTransactionRequest,
-	SignTransactionResponse,
-} from '_payloads/transactions';
 import { API_ENV } from '_src/shared/api-env';
-import type { NetworkEnvType } from '_src/shared/api-env';
 import {
 	isQredoConnectPayload,
 	type QredoConnectPayload,
 } from '_src/shared/messaging/messages/payloads/QredoConnect';
 import { type SignMessageRequest } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { isWalletStatusChangePayload } from '_src/shared/messaging/messages/payloads/wallet-status-change';
-import { isTransactionBlock } from '@mysten/sui.js/transactions';
-import { fromB64, toB64 } from '@mysten/sui.js/utils';
-import {
-	ReadonlyWalletAccount,
-	SUI_CHAINS,
-	SUI_DEVNET_CHAIN,
-	SUI_LOCALNET_CHAIN,
-	SUI_MAINNET_CHAIN,
-	SUI_TESTNET_CHAIN,
-	type StandardConnectFeature,
-	type StandardConnectMethod,
-	type StandardEventsFeature,
-	type StandardEventsListeners,
-	type StandardEventsOnMethod,
-	type SuiFeatures,
-	type SuiSignAndExecuteTransactionBlockMethod,
-	type SuiSignMessageMethod,
-	type SuiSignPersonalMessageMethod,
-	type SuiSignTransactionBlockMethod,
-	type Wallet,
-} from '@mysten/wallet-standard';
-import mitt, { type Emitter } from 'mitt';
-import { filter, map, type Observable } from 'rxjs';
 
-import { mapToPromise } from './utils';
+import type { BasePayload, Payload } from '_payloads';
+import type { GetAccount } from '_payloads/account/GetAccount';
+import type { GetAccountResponse } from '_payloads/account/GetAccountResponse';
+import type { SetNetworkPayload } from '_payloads/network';
+import type {
+	StakeRequest,
+	ExecuteTransactionRequest,
+	ExecuteTransactionResponse,
+	SignTransactionRequest,
+	SignTransactionResponse,
+} from '_payloads/transactions';
+import type { NetworkEnvType } from '_src/shared/api-env';
 
 type WalletEventsMap = {
 	[E in keyof StandardEventsListeners]: Parameters<StandardEventsListeners[E]>[0];
 };
 
 // NOTE: Because this runs in a content script, we can't fetch the manifest.
-const name = process.env.APP_NAME || 'Sui Wallet';
+const name = process.env.APP_NAME || 'BenFen Wallet';
 
+type StakeInput = { validatorAddress: string };
+type SuiWalletStakeFeature = {
+	'benfenWallet:stake': {
+		version: '0.0.1';
+		stake: (input: StakeInput) => Promise<void>;
+	};
+};
 export type QredoConnectInput = {
 	service: string;
 	apiUrl: string;
 	token: string;
-} & (
-	| {
-			/** @deprecated renamed to workspace, please use that */
-			organization: string;
-	  }
-	| {
-			workspace: string;
-	  }
-);
-
+	organization: string;
+};
 type QredoConnectFeature = {
 	'qredo:connect': {
 		version: '0.0.1';
@@ -83,10 +84,10 @@ type QredoConnectFeature = {
 };
 type ChainType = Wallet['chains'][number];
 const API_ENV_TO_CHAIN: Record<Exclude<API_ENV, API_ENV.customRPC>, ChainType> = {
-	[API_ENV.local]: SUI_LOCALNET_CHAIN,
-	[API_ENV.devNet]: SUI_DEVNET_CHAIN,
-	[API_ENV.testNet]: SUI_TESTNET_CHAIN,
-	[API_ENV.mainnet]: SUI_MAINNET_CHAIN,
+	[API_ENV.local]: BFC_LOCALNET_CHAIN,
+	[API_ENV.devNet]: BFC_DEVNET_CHAIN,
+	[API_ENV.testNet]: BFC_TESTNET_CHAIN,
+	[API_ENV.mainnet]: BFC_MAINNET_CHAIN,
 };
 
 export class SuiWallet implements Wallet {
@@ -111,12 +112,13 @@ export class SuiWallet implements Wallet {
 
 	get chains() {
 		// TODO: Extract chain from wallet:
-		return SUI_CHAINS;
+		return BFC_CHAINS;
 	}
 
 	get features(): StandardConnectFeature &
 		StandardEventsFeature &
 		SuiFeatures &
+		SuiWalletStakeFeature &
 		QredoConnectFeature {
 		return {
 			'standard:connect': {
@@ -127,25 +129,32 @@ export class SuiWallet implements Wallet {
 				version: '1.0.0',
 				on: this.#on,
 			},
-			'sui:signTransactionBlock': {
+			'bfc:signTransactionBlock': {
 				version: '1.0.0',
 				signTransactionBlock: this.#signTransactionBlock,
 			},
-			'sui:signAndExecuteTransactionBlock': {
+			'bfc:signAndExecuteTransactionBlock': {
 				version: '1.0.0',
 				signAndExecuteTransactionBlock: this.#signAndExecuteTransactionBlock,
 			},
-			'sui:signMessage': {
+			'benfenWallet:stake': {
+				version: '0.0.1',
+				stake: this.#stake,
+			},
+			'bfc:signMessage': {
 				version: '1.0.0',
 				signMessage: this.#signMessage,
-			},
-			'sui:signPersonalMessage': {
-				version: '1.0.0',
-				signPersonalMessage: this.#signPersonalMessage,
 			},
 			'qredo:connect': {
 				version: '0.0.1',
 				qredoConnect: this.#qredoConnect,
+			},
+			'bfc:signPersonalMessage': {
+				version: '1.0.0',
+				signPersonalMessage: async () => {
+					// TODO: Implement
+					return { bytes: '', signature: '' };
+				},
 			},
 		};
 	}
@@ -156,13 +165,12 @@ export class SuiWallet implements Wallet {
 
 	#setAccounts(accounts: GetAccountResponse['accounts']) {
 		this.#accounts = accounts.map(
-			({ address, publicKey, nickname }) =>
+			({ address, publicKey }) =>
 				new ReadonlyWalletAccount({
-					address,
-					label: nickname || undefined,
+					address: sui2BfcAddress(address),
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
-					features: ['sui:signAndExecuteTransaction'],
+					features: ['bfc:signAndExecuteTransaction'],
 				}),
 		);
 	}
@@ -170,7 +178,7 @@ export class SuiWallet implements Wallet {
 	constructor() {
 		this.#events = mitt();
 		this.#accounts = [];
-		this.#messagesStream = new WindowMessageStream('sui_in-page', 'sui_content-script');
+		this.#messagesStream = new WindowMessageStream('bfc_in-page', 'bfc_content-script');
 		this.#messagesStream.messages.subscribe(({ payload }) => {
 			if (isWalletStatusChangePayload(payload)) {
 				const { network, accounts } = payload;
@@ -233,12 +241,8 @@ export class SuiWallet implements Wallet {
 		return { accounts: this.accounts };
 	};
 
-	#signTransactionBlock: SuiSignTransactionBlockMethod = async ({
-		transactionBlock,
-		account,
-		...input
-	}) => {
-		if (!isTransactionBlock(transactionBlock)) {
+	#signTransactionBlock: SuiSignTransactionBlockMethod = async (input) => {
+		if (!TransactionBlock.is(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);
@@ -251,8 +255,8 @@ export class SuiWallet implements Wallet {
 					...input,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: account?.address || this.#accounts[0]?.address || '',
-					transaction: transactionBlock.serialize(),
+					account: bfc2SuiAddress(input.account?.address || this.#accounts[0]?.address || ''),
+					transaction: input.transactionBlock.serialize(),
 				},
 			}),
 			(response) => response.result,
@@ -260,7 +264,7 @@ export class SuiWallet implements Wallet {
 	};
 
 	#signAndExecuteTransactionBlock: SuiSignAndExecuteTransactionBlockMethod = async (input) => {
-		if (!isTransactionBlock(input.transactionBlock)) {
+		if (!TransactionBlock.is(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);
@@ -275,11 +279,18 @@ export class SuiWallet implements Wallet {
 					options: input.options,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: input.account?.address || this.#accounts[0]?.address || '',
+					account: bfc2SuiAddress(input.account?.address || this.#accounts[0]?.address || ''),
 				},
 			}),
 			(response) => response.result,
 		);
+	};
+
+	#stake = async (input: StakeInput) => {
+		this.#send<StakeRequest, void>({
+			type: 'stake-request',
+			validatorAddress: input.validatorAddress,
+		});
 	};
 
 	#signMessage: SuiSignMessageMethod = async ({ message, account }) => {
@@ -288,7 +299,7 @@ export class SuiWallet implements Wallet {
 				type: 'sign-message-request',
 				args: {
 					message: toB64(message),
-					accountAddress: account.address,
+					accountAddress: bfc2SuiAddress(account.address),
 				},
 			}),
 			(response) => {
@@ -296,27 +307,6 @@ export class SuiWallet implements Wallet {
 					throw new Error('Invalid sign message response');
 				}
 				return response.return;
-			},
-		);
-	};
-
-	#signPersonalMessage: SuiSignPersonalMessageMethod = async ({ message, account }) => {
-		return mapToPromise(
-			this.#send<SignMessageRequest, SignMessageRequest>({
-				type: 'sign-message-request',
-				args: {
-					message: toB64(message),
-					accountAddress: account.address,
-				},
-			}),
-			(response) => {
-				if (!response.return) {
-					throw new Error('Invalid sign message response');
-				}
-				return {
-					bytes: response.return.messageBytes,
-					signature: response.return.signature,
-				};
 			},
 		);
 	};
@@ -350,7 +340,7 @@ export class SuiWallet implements Wallet {
 	}
 
 	#setActiveChain({ env }: NetworkEnvType) {
-		this.#activeChain = env === API_ENV.customRPC ? 'sui:unknown' : API_ENV_TO_CHAIN[env];
+		this.#activeChain = env === API_ENV.customRPC ? 'bfc:unknown' : API_ENV_TO_CHAIN[env];
 	}
 
 	#qredoConnect = async (input: QredoConnectInput): Promise<void> => {

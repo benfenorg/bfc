@@ -17,6 +17,7 @@ use fastcrypto::traits::ToFromBytes;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use crate::sui_system_state::sui_system_state_summary::BagSummary;
 
 use super::epoch_start_sui_system_state::EpochStartValidatorInfoV1;
 use super::sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary};
@@ -304,8 +305,10 @@ pub struct ValidatorV1 {
     pub operation_cap_id: ID,
     pub gas_price: u64,
     pub staking_pool: StakingPoolV1,
+    pub stable_pools: Bag,
     pub commission_rate: u64,
     pub next_epoch_stake: u64,
+    pub next_epoch_stable_stake: VecMap<String, u64>,
     pub next_epoch_gas_price: u64,
     pub next_epoch_commission_rate: u64,
     pub extra_fields: Bag,
@@ -369,8 +372,10 @@ impl ValidatorV1 {
                     pending_pool_token_withdraw,
                     extra_fields: _,
                 },
+            stable_pools,
             commission_rate,
             next_epoch_stake,
+            next_epoch_stable_stake: _,
             next_epoch_gas_price,
             next_epoch_commission_rate,
             extra_fields: _,
@@ -415,6 +420,10 @@ impl ValidatorV1 {
             next_epoch_stake,
             next_epoch_gas_price,
             next_epoch_commission_rate,
+            stable_pools: Some(BagSummary{
+                id: stable_pools.id,
+                size: stable_pools.size,
+            }),
         }
     }
 }
@@ -435,6 +444,21 @@ pub struct StakingPoolV1 {
     pub extra_fields: Bag,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct StablePoolV1 {
+    pub id: ObjectID,
+    pub activation_epoch: Option<u64>,
+    pub deactivation_epoch: Option<u64>,
+    pub stable_balance: u64,
+    pub rewards_pool: Balance,
+    pub pool_token_balance: u64,
+    pub exchange_rates: Table,
+    pub pending_stake: u64,
+    pub pending_total_sui_withdraw: u64,
+    pub pending_pool_token_withdraw: u64,
+    pub extra_fields: Bag,
+}
+
 /// Rust version of the Move sui_system::validator_set::ValidatorSet type
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ValidatorSetV1 {
@@ -443,6 +467,7 @@ pub struct ValidatorSetV1 {
     pub pending_active_validators: TableVec,
     pub pending_removals: Vec<u64>,
     pub staking_pool_mappings: Table,
+    pub stable_pool_mappings: Table,
     pub inactive_validators: Table,
     pub validator_candidates: Table,
     pub at_risk_validators: VecMap<SuiAddress, u64>,
@@ -633,6 +658,11 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                             id: staking_pool_mappings_id,
                             size: staking_pool_mappings_size,
                         },
+                    stable_pool_mappings:
+                    Table {
+                        id: _stable_pool_mappings_id,
+                        size: _stable_pool_mappings_size,
+                    },
                     inactive_validators:
                         Table {
                             id: inactive_pools_id,

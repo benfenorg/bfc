@@ -28,7 +28,7 @@ use sui_types::{TypeTag, SUI_SYSTEM_PACKAGE_ID};
 pub struct TestTransactionBuilder {
     test_data: TestTransactionData,
     sender: SuiAddress,
-    gas_object: ObjectRef,
+    gas_objects: Vec<ObjectRef>,
     gas_price: u64,
 }
 
@@ -37,7 +37,16 @@ impl TestTransactionBuilder {
         Self {
             test_data: TestTransactionData::Empty,
             sender,
-            gas_object,
+            gas_objects:vec![gas_object],
+            gas_price,
+        }
+    }
+
+    pub fn new_with_gas_objects(sender: SuiAddress, gas_objects: Vec<ObjectRef>, gas_price: u64) -> Self {
+        Self {
+            test_data: TestTransactionData::Empty,
+            sender,
+            gas_objects,
             gas_price,
         }
     }
@@ -69,6 +78,7 @@ impl TestTransactionBuilder {
         self
     }
 
+<<<<<<< HEAD
     pub fn with_type_args(mut self, type_args: Vec<TypeTag>) -> Self {
         if let TestTransactionData::Move(data) = &mut self.test_data {
             assert!(data.type_args.is_empty());
@@ -76,6 +86,24 @@ impl TestTransactionBuilder {
         } else {
             panic!("Cannot set type args for non-move call");
         }
+=======
+    pub fn move_call_with_tag(
+        mut self,
+        package_id: ObjectID,
+        module: &'static str,
+        function: &'static str,
+        type_tags: Vec<TypeTag>,
+        args: Vec<CallArg>,
+    ) -> Self {
+        assert!(matches!(self.test_data, TestTransactionData::Empty));
+        self.test_data = TestTransactionData::Move(MoveData {
+            package_id,
+            module,
+            function,
+            args,
+            type_args: type_tags,
+        });
+>>>>>>> develop_v.1.1.5
         self
     }
 
@@ -174,6 +202,34 @@ impl TestTransactionBuilder {
         )
     }
 
+    pub fn call_stable_staking(self, stake_coin: ObjectRef, validator: SuiAddress, tags: Vec<TypeTag>) -> Self {
+        self.move_call_with_tag(
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.as_str(),
+            "request_add_stable_stake",
+            tags,
+            vec![
+                CallArg::SUI_SYSTEM_MUT,
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(stake_coin)),
+                CallArg::Pure(bcs::to_bytes(&validator).unwrap()),
+            ],
+        )
+    }
+
+    pub fn call_stable_withdraw_stake(self, staked_coin: ObjectRef, tags: Vec<TypeTag>) -> Self {
+        self.move_call_with_tag(
+            SUI_SYSTEM_PACKAGE_ID,
+            SUI_SYSTEM_MODULE_NAME.as_str(),
+            "request_withdraw_stable_stake",
+            tags,
+            vec![
+                CallArg::SUI_SYSTEM_MUT,
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(staked_coin)),
+            ],
+        )
+    }
+
+
     pub fn call_request_add_validator(self) -> Self {
         self.move_call(
             SUI_SYSTEM_PACKAGE_ID,
@@ -268,13 +324,13 @@ impl TestTransactionBuilder {
 
     pub fn build(self) -> TransactionData {
         match self.test_data {
-            TestTransactionData::Move(data) => TransactionData::new_move_call(
+            TestTransactionData::Move(data) => TransactionData::new_move_call_with_gas_coins(
                 self.sender,
                 data.package_id,
                 ident_str!(data.module).to_owned(),
                 ident_str!(data.function).to_owned(),
                 data.type_args,
-                self.gas_object,
+                self.gas_objects,
                 data.args,
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE,
                 self.gas_price,
@@ -284,15 +340,15 @@ impl TestTransactionBuilder {
                 data.recipient,
                 data.object,
                 self.sender,
-                self.gas_object,
+                self.gas_objects[0],
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
-            TestTransactionData::TransferSui(data) => TransactionData::new_transfer_sui(
+            TestTransactionData::TransferSui(data) => TransactionData::new_transfer_sui_with_gas_coins(
                 data.recipient,
                 self.sender,
                 data.amount,
-                self.gas_object,
+                self.gas_objects,
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
@@ -315,7 +371,7 @@ impl TestTransactionBuilder {
 
                 TransactionData::new_module(
                     self.sender,
-                    self.gas_object,
+                    self.gas_objects[0],
                     all_module_bytes,
                     dependencies,
                     self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE,
@@ -324,7 +380,7 @@ impl TestTransactionBuilder {
             }
             TestTransactionData::Programmable(pt) => TransactionData::new_programmable(
                 self.sender,
-                vec![self.gas_object],
+                self.gas_objects,
                 pt,
                 self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE,
                 self.gas_price,
@@ -473,6 +529,35 @@ pub async fn make_transfer_sui_transaction(
     )
 }
 
+pub async fn make_transfer_sui_transaction_with_gas(
+    context: &WalletContext,
+    recipient: Option<SuiAddress>,
+    amount: Option<u64>,
+    sender: SuiAddress,
+    gas_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .transfer_sui(amount, recipient.unwrap_or(sender))
+            .build(),
+    )
+}
+
+pub async fn make_transfer_sui_transaction_with_gas_coins(
+    context: &WalletContext,
+    recipient: Option<SuiAddress>,
+    amount: Option<u64>,
+    sender: SuiAddress,
+    gas_objects: Vec<ObjectRef>,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new_with_gas_objects(sender, gas_objects, gas_price)
+            .transfer_sui(amount, recipient.unwrap_or(sender))
+            .build(),
+    )
+}
 pub async fn make_staking_transaction(
     context: &WalletContext,
     validator_address: SuiAddress,
@@ -483,11 +568,61 @@ pub async fn make_staking_transaction(
     let stake_object = accounts_and_objs[0].1[1];
     let gas_price = context.get_reference_gas_price().await.unwrap();
     context.sign_transaction(
-        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+        &TestTransactionBuilder::new(sender,gas_object, gas_price)
             .call_staking(stake_object, validator_address)
             .build(),
     )
 }
+
+pub async fn make_stable_staking_transaction(
+    context: &WalletContext,
+    validator_address: SuiAddress,
+    tags: Vec<TypeTag>,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    stake_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_stable_staking(stake_object, validator_address, tags)
+            .build(),
+    )
+}
+
+pub async fn make_stable_withdraw_stake_transaction(
+    context: &WalletContext,
+    tags: Vec<TypeTag>,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    stake_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_stable_withdraw_stake(stake_object, tags)
+            .build(),
+    )
+}
+
+pub async fn make_and_sign_stable_staking_transaction(
+    key: AccountKeyPair,
+    context: &WalletContext,
+    validator_address: SuiAddress,
+    tags: Vec<TypeTag>,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    stake_object: ObjectRef,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    let txn_data = TestTransactionBuilder::new(sender, gas_object, gas_price)
+        .call_stable_staking(stake_object, validator_address, tags)
+        .build();
+    let msg = bcs::to_bytes(&txn_data).unwrap();
+    let sig= key.sign(&msg);
+    Transaction::from_data(txn_data.clone(), Intent::sui_transaction(), vec![sig])
+}
+
 
 pub async fn make_publish_transaction(context: &WalletContext, path: PathBuf) -> Transaction {
     let (sender, gas_object) = context.get_one_gas_object().await.unwrap().unwrap();

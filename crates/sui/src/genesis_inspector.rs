@@ -16,12 +16,12 @@ use sui_types::{
 
 const STR_ALL: &str = "All";
 const STR_EXIT: &str = "Exit";
-const STR_SUI: &str = "Sui";
-const STR_STAKED_SUI: &str = "StakedSui";
+const STR_SUI: &str = "BFC";
+const STR_STAKED_SUI: &str = "StakedBfc";
 const STR_PACKAGE: &str = "Package";
 const STR_COIN_METADATA: &str = "CoinMetadata";
 const STR_OTHER: &str = "Other";
-const STR_SUI_DISTRIBUTION: &str = "Sui Distribution";
+const STR_SUI_DISTRIBUTION: &str = "BFC Distribution";
 const STR_OBJECTS: &str = "Objects";
 const STR_VALIDATORS: &str = "Validators";
 
@@ -46,7 +46,7 @@ pub(crate) fn examine_genesis_checkpoint(genesis: UnsignedGenesis) {
     validator_options.extend_from_slice(&[STR_ALL, STR_EXIT]);
     println!("Total Number of Validators: {}", validator_set.len());
 
-    // Prepare Sui distribution info
+    // Prepare Bfc distribution info
     let mut sui_distribution = BTreeMap::new();
     let entry = sui_distribution
         .entry("Sui System".to_string())
@@ -207,7 +207,7 @@ fn examine_object(
                 for gas_coin in sui_map.values() {
                     display_sui(gas_coin, owner_map);
                 }
-                print_divider("Sui");
+                print_divider("BFC");
             }
             Ok(name) if name == STR_STAKED_SUI => {
                 for staked_sui_coin in staked_sui_map.values() {
@@ -265,7 +265,7 @@ fn examine_total_supply(
         if print {
             println!("Owner {:?}", owner);
             println!(
-                "Total Amount of Sui/StakedSui Owned: {amount_sum} MIST or {} SUI:",
+                "Total Amount of Bfc/StakedBfc Owned: {amount_sum} MIST or {} BFC:",
                 amount_sum / MIST_PER_SUI
             );
             println!("{:#?}\n", coins);
@@ -274,15 +274,15 @@ fn examine_total_supply(
     assert_eq!(total_sui, TOTAL_SUPPLY_MIST);
     // Always print this.
     println!(
-        "Total Supply of Sui: {total_sui} MIST or {} SUI",
+        "Total Supply of Bfc: {total_sui} MIST or {} BFC",
         total_sui / MIST_PER_SUI
     );
     println!(
-        "Total Amount of StakedSui: {total_staked_sui} MIST or {} SUI\n",
+        "Total Amount of StakedBfc: {total_staked_sui} MIST or {} BFC\n",
         total_staked_sui / MIST_PER_SUI
     );
     if print {
-        print_divider("Sui Distribution");
+        print_divider("Bfc Distribution");
     }
 }
 
@@ -309,7 +309,7 @@ fn display_validator(validator: &SuiValidatorGenesis) {
         validator.staking_pool.deactivation_epoch
     );
     println!(
-        "Staking Pool Sui Balance: {:?}",
+        "Staking Pool Bfc Balance: {:?}",
         validator.staking_pool.sui_balance
     );
     println!(
@@ -325,7 +325,7 @@ fn display_validator(validator: &SuiValidatorGenesis) {
         validator.staking_pool.pending_stake
     );
     println!(
-        "Pending Total Sui Withdraw: {}",
+        "Pending Total Bfc Withdraw: {}",
         validator.staking_pool.pending_total_sui_withdraw
     );
     println!(
@@ -340,6 +340,7 @@ fn display_validator(validator: &SuiValidatorGenesis) {
         "Exchange Rates Size: {}",
         validator.staking_pool.exchange_rates.size
     );
+    println!("Stable Pools : {:?}", validator.stable_pools);
     print_divider(&metadata.name);
 }
 

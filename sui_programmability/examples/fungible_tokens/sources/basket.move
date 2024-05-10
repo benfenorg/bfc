@@ -10,19 +10,22 @@ module fungible_tokens::basket {
     use fungible_tokens::managed::MANAGED;
     use sui::coin::{Self, Coin};
     use sui::balance::{Self, Balance, Supply};
-    use sui::sui::SUI;
+    use sui::object::{Self, UID};
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::TxContext;
 
     /// Name of the coin. By convention, this type has the same name as its parent module
     /// and has no fields. The full type of the coin defined by this module will be `COIN<BASKET>`.
-    public struct BASKET has drop { }
+    struct BASKET has drop { }
 
     /// Singleton shared object holding the reserve assets and the capability.
-    public struct Reserve has key {
+    struct Reserve has key {
         id: UID,
         /// capability allowing the reserve to mint and burn BASKET
         total_supply: Supply<BASKET>,
         /// SUI coins held in the reserve
-        sui: Balance<SUI>,
+        sui: Balance<BFC>,
         /// MANAGED coins held in the reserve
         managed: Balance<MANAGED>,
     }
@@ -38,7 +41,7 @@ module fungible_tokens::basket {
         transfer::share_object(Reserve {
             id: object::new(ctx),
             total_supply,
-            sui: balance::zero<SUI>(),
+            sui: balance::zero<BFC>(),
             managed: balance::zero<MANAGED>(),
         })
     }
@@ -47,7 +50,7 @@ module fungible_tokens::basket {
 
     /// Mint BASKET coins by accepting an equal number of SUI and MANAGED coins
     public fun mint(
-        reserve: &mut Reserve, sui: Coin<SUI>, managed: Coin<MANAGED>, ctx: &mut TxContext
+        reserve: &mut Reserve, sui: Coin<BFC>, managed: Coin<MANAGED>, ctx: &mut TxContext
     ): Coin<BASKET> {
         let num_sui = coin::value(&sui);
         assert!(num_sui == coin::value(&managed), EBadDepositRatio);
@@ -63,7 +66,7 @@ module fungible_tokens::basket {
     /// Burn BASKET coins and return the underlying reserve assets
     public fun burn(
         reserve: &mut Reserve, basket: Coin<BASKET>, ctx: &mut TxContext
-    ): (Coin<SUI>, Coin<MANAGED>) {
+    ): (Coin<BFC>, Coin<MANAGED>) {
         let num_basket = balance::decrease_supply(&mut reserve.total_supply, coin::into_balance(basket));
         let sui = coin::take(&mut reserve.sui, num_basket, ctx);
         let managed = coin::take(&mut reserve.managed, num_basket, ctx);

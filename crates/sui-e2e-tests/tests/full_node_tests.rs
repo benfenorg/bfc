@@ -215,6 +215,7 @@ async fn test_full_node_move_function_index() -> Result<(), anyhow::Error> {
     .await;
     let digest = response.digest;
 
+
     let txes = node
         .state()
         .get_transactions_for_tests(
@@ -283,6 +284,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     let context = &mut test_cluster.wallet;
 
     let (transferred_object, sender, receiver, digest, _) = transfer_coin(context).await?;
+
 
     let txes = node
         .state()
@@ -657,9 +659,9 @@ async fn test_full_node_sub_and_query_move_event_ok() -> Result<(), anyhow::Erro
 
     let mut sub: Subscription<SuiEvent> = ws_client
         .subscribe(
-            "suix_subscribeEvent",
+            "bfcx_subscribeEvent",
             rpc_params![EventFilter::MoveEventType(struct_tag.clone())],
-            "suix_unsubscribeEvent",
+            "bfcx_unsubscribeEvent",
         )
         .await
         .unwrap();
@@ -784,7 +786,7 @@ async fn test_full_node_event_read_api_ok() {
     // query by move event struct name
     let params = rpc_params![digest2];
     let events: Vec<SuiEvent> = jsonrpc_client
-        .request("sui_getEvents", params)
+        .request("bfc_getEvents", params)
         .await
         .unwrap();
     assert_eq!(events.len(), 1);
@@ -817,7 +819,7 @@ async fn test_full_node_event_query_by_module_ok() {
         module: ident_str!("devnet_nft").into()
     }];
     let page: EventPage = jsonrpc_client
-        .request("suix_queryEvents", params)
+        .request("bfcx_queryEvents", params)
         .await
         .unwrap();
     assert_eq!(page.data.len(), 1);
@@ -917,6 +919,7 @@ async fn test_full_node_transaction_orchestrator_basic() -> Result<(), anyhow::E
         .notify_read_executed_effects(vec![digest])
         .await
         .unwrap();
+    //fullnode.state().get_executed_transaction_and_effects(digest).await
     fullnode.state().get_executed_transaction_and_effects(digest, kv_store).await
         .unwrap_or_else(|e| panic!("Fullnode does not know about the txn {:?} that was executed with WaitForEffectsCert: {:?}", digest, e));
 
@@ -966,7 +969,7 @@ async fn test_execute_tx_with_serialized_signature() -> Result<(), anyhow::Error
             ExecuteTransactionRequestType::WaitForLocalExecution
         ];
         let response: SuiTransactionBlockResponse = jsonrpc_client
-            .request("sui_executeTransactionBlock", params)
+            .request("bfc_executeTransactionBlock", params)
             .await
             .unwrap();
 
@@ -1007,7 +1010,7 @@ async fn test_full_node_transaction_orchestrator_rpc_ok() -> Result<(), anyhow::
         ExecuteTransactionRequestType::WaitForLocalExecution
     ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_executeTransactionBlock", params)
+        .request("bfc_executeTransactionBlock", params)
         .await
         .unwrap();
 
@@ -1020,7 +1023,7 @@ async fn test_full_node_transaction_orchestrator_rpc_ok() -> Result<(), anyhow::
     assert!(confirmed_local_execution.unwrap());
 
     let _response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_getTransactionBlock", rpc_params![*tx_digest])
+        .request("bfc_getTransactionBlock", rpc_params![*tx_digest])
         .await
         .unwrap();
 
@@ -1033,7 +1036,7 @@ async fn test_full_node_transaction_orchestrator_rpc_ok() -> Result<(), anyhow::
         ExecuteTransactionRequestType::WaitForEffectsCert
     ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_executeTransactionBlock", params)
+        .request("bfc_executeTransactionBlock", params)
         .await
         .unwrap();
 
@@ -1173,7 +1176,7 @@ async fn test_get_objects_read() -> Result<(), anyhow::Error> {
 
 // Test for restoring a full node from a db snapshot
 #[sim_test]
-async fn test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(10_000)

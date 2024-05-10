@@ -5,6 +5,7 @@ use crate::parser::{parse_address_number, NumberFormat};
 use anyhow::anyhow;
 use move_core_types::account_address::AccountAddress;
 use num_bigint::BigUint;
+use sha2::{Digest, Sha256};
 use std::{fmt, hash::Hash};
 
 // Parsed Address, either a name or a numerical address
@@ -31,7 +32,13 @@ impl ParsedAddress {
     ) -> anyhow::Result<AccountAddress> {
         match self {
             Self::Named(n) => {
-                mapping(n.as_str()).ok_or_else(|| anyhow!("Unbound named address: '{}'", n))
+                // Moved to parse_address_impl
+                // if n.as_str().starts_with("bfc") || n.as_str().starts_with("BFC") {
+                //     let bfc_str = convert_to_evm_address(n);
+                //     return Ok(AccountAddress::from_hex_literal(&bfc_str)?);
+                // }
+                return mapping(n.as_str())
+                    .ok_or_else(|| anyhow!("Unbound named address: '{}'", n));
             }
             Self::Numerical(a) => Ok(a.into_inner()),
         }
@@ -187,4 +194,36 @@ impl Hash for NumericalAddress {
         } = self;
         self_bytes.hash(state)
     }
+}
+
+pub fn convert_to_evm_address(ob_address: String) -> String {
+    if ob_address.len() == 0 {
+        return String::from("");
+    }
+
+    let mut address = ob_address[3..].to_string();
+    let evm_prefix = String::from("0x");
+    address.insert_str(0, evm_prefix.as_str());
+    address.truncate(address.len() - 4);
+
+    let result = sha256_string(&address[2..]);
+    let check_sum = result.get(0..4).unwrap();
+
+    let verify_code = ob_address[ob_address.len() - 4..].to_string();
+
+    return if verify_code == check_sum {
+        address
+    } else {
+        println!("verify_code: {}, check_sum: {}", verify_code, check_sum);
+        String::from("")
+    };
+
+    //return address.to_string();
+}
+
+pub fn sha256_string(input: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(input.as_bytes());
+    let result = hasher.finalize();
+    format!("{:x}", result)
 }

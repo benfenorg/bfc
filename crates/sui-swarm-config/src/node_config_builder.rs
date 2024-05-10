@@ -335,6 +335,118 @@ impl FullnodeConfigBuilder {
         self
     }
 
+    pub fn build_fulnode_config<R: rand::RngCore + rand::CryptoRng>(
+        self,
+        rng: &mut R,
+        network_config: &NetworkConfig,
+    ) -> NodeConfig {
+        // Take advantage of ValidatorGenesisConfigBuilder to build the keypairs and addresses,
+        // even though this is a fullnode.
+        let validator_config = ValidatorGenesisConfigBuilder::new().build(rng);
+        let ip = validator_config
+            .network_address
+            .to_socket_addr()
+            .unwrap()
+            .ip()
+            .to_string();
+
+        let key_path = get_key_path(&validator_config.key_pair);
+        let config_directory = self
+            .config_directory
+            .unwrap_or_else(|| tempfile::tempdir().unwrap().into_path());
+
+        let p2p_config = {
+            let seed_peers = network_config
+                .validator_configs
+                .iter()
+                .map(|config| SeedPeer {
+                    peer_id: Some(anemo::PeerId(
+                        config.network_key_pair().public().0.to_bytes(),
+                    )),
+                    address: config.p2p_config.external_address.clone().unwrap(),
+                })
+                .collect();
+
+            P2pConfig {
+                listen_address: self.p2p_listen_address.unwrap_or_else(|| {
+                    validator_config.p2p_listen_address.unwrap_or_else(|| {
+                        local_ip_utils::get_global_socket_addr(validator_config.p2p_address.port().unwrap()).unwrap()
+                    })
+                }),
+                external_address: self
+                    .p2p_external_address
+                    .or(Some( local_ip_utils::get_global_multiaddr( validator_config.p2p_address.port().unwrap()))),
+                seed_peers,
+                ..Default::default()
+            }
+        };
+
+        let localhost = local_ip_utils::localhost_for_testing();
+        let json_rpc_address = self.rpc_addr.unwrap_or_else(|| {
+            let rpc_port = self
+                .rpc_port
+                .unwrap_or_else(|| local_ip_utils::get_available_port(&ip));
+            format!("{}:{}", ip, rpc_port).parse().unwrap()
+        });
+
+        NodeConfig {
+            protocol_key_pair: AuthorityKeyPairWithPath::new(validator_config.key_pair),
+            account_key_pair: KeyPairWithPath::new(validator_config.account_key_pair),
+            worker_key_pair: KeyPairWithPath::new(SuiKeyPair::Ed25519(
+                validator_config.worker_key_pair,
+            )),
+            network_key_pair: self.network_key_pair.unwrap_or(KeyPairWithPath::new(
+                SuiKeyPair::Ed25519(validator_config.network_key_pair),
+            )),
+            db_path: self
+                .db_path
+                .unwrap_or(config_directory.join(FULL_NODE_DB_PATH).join(key_path)),
+            network_address: self
+                .network_address
+                .unwrap_or(validator_config.network_address),
+            metrics_address: self
+                .metrics_address
+                .unwrap_or(local_ip_utils::new_local_tcp_socket_for_testing()),
+            admin_interface_port: self
+                .admin_interface_port
+                .unwrap_or(local_ip_utils::get_available_port(&localhost)),
+            json_rpc_address: self.json_rpc_address.unwrap_or(json_rpc_address),
+            consensus_config: None,
+            enable_event_processing: true, // This is unused.
+            enable_index_processing: default_enable_index_processing(),
+            genesis: self.genesis.unwrap_or(sui_config::node::Genesis::new(
+                network_config.genesis.clone(),
+            )),
+            grpc_load_shed: None,
+            grpc_concurrency_limit: None,
+            p2p_config,
+            authority_store_pruning_config: AuthorityStorePruningConfig::fullnode_config(),
+            end_of_epoch_broadcast_channel_capacity:
+            default_end_of_epoch_broadcast_channel_capacity(),
+            checkpoint_executor_config: Default::default(),
+            metrics: None,
+            supported_protocol_versions: self.supported_protocol_versions,
+            db_checkpoint_config: self.db_checkpoint_config.unwrap_or_default(),
+            indirect_objects_threshold: usize::MAX,
+            expensive_safety_check_config: self
+                .expensive_safety_check_config
+                .unwrap_or_else(ExpensiveSafetyCheckConfig::new_enable_all),
+            name_service_package_address: None,
+            name_service_registry_id: None,
+            name_service_reverse_registry_id: None,
+            transaction_deny_config: Default::default(),
+            certificate_deny_config: Default::default(),
+            state_debug_dump_config: Default::default(),
+            state_archive_write_config: StateArchiveConfig::default(),
+            state_archive_read_config: vec![],
+            state_snapshot_write_config: StateSnapshotConfig::default(),
+            indexer_max_subscriptions: Default::default(),
+            transaction_kv_store_read_config: Default::default(),
+            transaction_kv_store_write_config: Default::default(),
+            enable_experimental_rest_api: true,
+        }
+    }
+
     pub fn with_run_with_range(mut self, run_with_range: Option<RunWithRange>) -> Self {
         if let Some(run_with_range) = run_with_range {
             self.run_with_range = Some(run_with_range);

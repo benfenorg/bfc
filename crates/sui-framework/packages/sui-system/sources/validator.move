@@ -5,17 +5,73 @@
 module sui_system::validator {
     use std::bcs;
 
+<<<<<<< HEAD
     use sui::balance::Balance;
     use sui::sui::SUI;
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedSui, StakingPool};
     use std::string::String;
+=======
+    use sui::balance::{Self, Balance};
+    use sui::bfc::BFC;
+    use sui::tx_context::{Self, TxContext};
+    use sui_system::validator_cap::{Self, ValidatorOperationCap};
+    use sui::object::{Self, ID};
+    use std::option::{Option, Self};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
+    use std::string::{Self, String};
+    use std::type_name;
+    use bfc_system::bars::BARS;
+    use bfc_system::baud::BAUD;
+    use bfc_system::bbrl::BBRL;
+    use bfc_system::bcad::BCAD;
+    use bfc_system::beur::BEUR;
+    use bfc_system::bgbp::BGBP;
+    use bfc_system::bidr::BIDR;
+    use bfc_system::binr::BINR;
+    use bfc_system::bjpy::BJPY;
+    use bfc_system::bkrw::BKRW;
+    use bfc_system::bmxn::BMXN;
+    use bfc_system::brub::BRUB;
+    use bfc_system::bsar::BSAR;
+    use bfc_system::btry::BTRY;
+    use bfc_system::busd::BUSD;
+    use bfc_system::bzar::BZAR;
+    use bfc_system::mgg::MGG;
+    use sui::transfer;
+>>>>>>> develop_v.1.1.5
     use sui::url::Url;
     use sui::url;
     use sui::event;
     use sui::bag::Bag;
     use sui::bag;
+<<<<<<< HEAD
+=======
+    use sui::vec_map;
+    use sui::vec_map::VecMap;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::{StablePool, StakedStable, PoolStableTokenExchangeRate};
+    friend sui_system::genesis;
+    friend sui_system::sui_system_state_inner;
+    friend sui_system::validator_wrapper;
+    friend sui_system::validator_set;
+    friend sui_system::voting_power;
 
+    #[test_only]
+    friend sui_system::validator_tests;
+    #[test_only]
+    friend sui_system::validator_set_tests;
+    #[test_only]
+    friend sui_system::sui_system_tests;
+    #[test_only]
+    friend sui_system::governance_test_utils;
+    #[test_only]
+    friend sui_system::voting_power_tests;
+    #[test_only]
+    friend sui_system::sui_system;
+>>>>>>> develop_v.1.1.5
+
+    const MAX_U64: u128 = 18446744073709551615;
     /// Invalid proof_of_possession field in ValidatorMetadata
     const EInvalidProofOfPossession: u64 = 0;
 
@@ -128,10 +184,14 @@ module sui_system::validator {
         gas_price: u64,
         /// Staking pool for this validator.
         staking_pool: StakingPool,
+        /// stable pool for this validator.
+        stable_pools: Bag,
         /// Commission rate of the validator, in basis point.
         commission_rate: u64,
         /// Total amount of stake that would be active in the next epoch.
         next_epoch_stake: u64,
+        /// Total amount of stable stake that would be active in the next epoch.
+        next_epoch_stable_stake: VecMap<ascii::String, u64>,
         /// This validator's gas price quote for the next epoch.
         next_epoch_gas_price: u64,
         /// The commission rate of the validator starting the next epoch, in basis point.
@@ -264,12 +324,49 @@ module sui_system::validator {
     }
 
     /// Deactivate this validator's staking pool
+<<<<<<< HEAD
     public(package) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
         self.staking_pool.deactivate_staking_pool(deactivation_epoch)
+=======
+    public(friend) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
+        staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch);
+    }
+
+    public(friend) fun deactivate_stable<STABLE>(self: &mut Validator, deactivation_epoch: u64) {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        stable_pool::deactivate_stable_pool(pool, deactivation_epoch);
+>>>>>>> develop_v.1.1.5
     }
 
     public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
         self.staking_pool.activate_staking_pool(activation_epoch);
+    }
+
+    public(friend) fun activate_stable(self: &mut Validator, activation_epoch: u64) {
+        activate_stable_<BUSD>(self, activation_epoch);
+        activate_stable_<BARS>(self, activation_epoch);
+        activate_stable_<BAUD>(self, activation_epoch);
+        activate_stable_<BBRL>(self, activation_epoch);
+        activate_stable_<BCAD>(self, activation_epoch);
+        activate_stable_<BEUR>(self, activation_epoch);
+        activate_stable_<BGBP>(self, activation_epoch);
+        activate_stable_<BIDR>(self, activation_epoch);
+        activate_stable_<BINR>(self, activation_epoch);
+        activate_stable_<BKRW>(self, activation_epoch);
+        activate_stable_<BMXN>(self, activation_epoch);
+        activate_stable_<BRUB>(self, activation_epoch);
+        activate_stable_<BSAR>(self, activation_epoch);
+        activate_stable_<BTRY>(self, activation_epoch);
+        activate_stable_<BZAR>(self, activation_epoch);
+        activate_stable_<BJPY>(self, activation_epoch);
+        activate_stable_<MGG>(self, activation_epoch);
+    }
+
+    fun activate_stable_<STABLE>(self: &mut Validator, activation_epoch: u64) {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        stable_pool::activate_stable_pool(pool, activation_epoch);
     }
 
     /// Process pending stake and pending withdraws, and update the gas price.
@@ -281,11 +378,16 @@ module sui_system::validator {
     /// Request to add stake to the validator's staking pool, processed at the end of the epoch.
     public(package) fun request_add_stake(
         self: &mut Validator,
-        stake: Balance<SUI>,
+        stake: Balance<BFC>,
         staker_address: address,
         ctx: &mut TxContext,
+<<<<<<< HEAD
     ) : StakedSui {
         let stake_amount = stake.value();
+=======
+    ) : StakedBfc {
+        let stake_amount = balance::value(&stake);
+>>>>>>> develop_v.1.1.5
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = ctx.epoch() + 1;
         let staked_sui = self.staking_pool.request_add_stake(stake, stake_epoch, ctx);
@@ -306,10 +408,59 @@ module sui_system::validator {
         staked_sui
     }
 
+    fun get_stable_pool_mut<STABLE>(
+        bag: &mut Bag,
+    ) :&mut StablePool<STABLE> {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        bag::borrow_mut<ascii::String, StablePool<STABLE>>(bag, pool_key)
+    }
+
+    public(friend) fun get_stable_pool<STABLE>(bag: &Bag) :&StablePool<STABLE> {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        bag::borrow<ascii::String, StablePool<STABLE>>(bag, pool_key)
+    }
+
+    public(friend) fun request_add_stable_stake<STABLE>(
+        self: &mut Validator,
+        stake: Balance<STABLE>,
+        staker_address: address,
+        ctx: &mut TxContext,
+    ) : StakedStable<STABLE> {
+        let stake_amount = balance::value(&stake);
+        assert!(stake_amount > 0, EInvalidStakeAmount);
+        let stake_epoch = tx_context::epoch(ctx) + 1;
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        let staked_sui = stable_pool::request_add_stake<STABLE>(
+            pool, stake, stake_epoch, ctx
+        );
+        // Process stake right away if stable pool is preactive.
+        if (stable_pool::is_preactive<STABLE>(pool)) {
+            stable_pool::process_pending_stake<STABLE>(pool);
+        };
+        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        if (option::is_none(&next_stable_stake)) {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount);
+        } else {
+            let (_, next_stable_stake) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount + next_stable_stake);
+        };
+        event::emit(
+            StakingRequestEvent {
+                pool_id: stable_pool_id<STABLE>(self),
+                validator_address: self.metadata.sui_address,
+                staker_address,
+                epoch: tx_context::epoch(ctx),
+                amount: stake_amount,
+            }
+        );
+        staked_sui
+    }
+
     /// Request to add stake to the validator's staking pool at genesis
     public(package) fun request_add_stake_at_genesis(
         self: &mut Validator,
-        stake: Balance<SUI>,
+        stake: Balance<BFC>,
         staker_address: address,
         ctx: &mut TxContext,
     ) {
@@ -333,6 +484,7 @@ module sui_system::validator {
     /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
     public(package) fun request_withdraw_stake(
         self: &mut Validator,
+<<<<<<< HEAD
         staked_sui: StakedSui,
         ctx: &TxContext,
     ) : Balance<SUI> {
@@ -340,6 +492,16 @@ module sui_system::validator {
         let stake_activation_epoch = staked_sui.stake_activation_epoch();
         let withdrawn_stake = self.staking_pool.request_withdraw_stake(staked_sui, ctx);
         let withdraw_amount = withdrawn_stake.value();
+=======
+        staked_sui: StakedBfc,
+        ctx: &mut TxContext,
+    ) : Balance<BFC> {
+        let principal_amount = staking_pool::staked_sui_amount(&staked_sui);
+        let stake_activation_epoch = staking_pool::stake_activation_epoch(&staked_sui);
+        let withdrawn_stake = staking_pool::request_withdraw_stake(
+                &mut self.staking_pool, staked_sui, ctx);
+        let withdraw_amount = balance::value(&withdrawn_stake);
+>>>>>>> develop_v.1.1.5
         let reward_amount = withdraw_amount - principal_amount;
         self.next_epoch_stake = self.next_epoch_stake - withdraw_amount;
         event::emit(
@@ -349,6 +511,38 @@ module sui_system::validator {
                 staker_address: ctx.sender(),
                 stake_activation_epoch,
                 unstaking_epoch: ctx.epoch(),
+                principal_amount,
+                reward_amount,
+            }
+        );
+        withdrawn_stake
+    }
+
+    public(friend) fun request_withdraw_stable_stake<STABLE>(
+        self: &mut Validator,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        let principal_amount = stable_pool::staked_sui_amount(&staked_sui);
+        let stake_activation_epoch = stable_pool::stake_activation_epoch(&staked_sui);
+        let withdrawn_stake = stable_pool::request_withdraw_stake(
+            pool, staked_sui, ctx);
+        let withdraw_amount = balance::value(&withdrawn_stake);
+        let reward_amount = withdraw_amount - principal_amount;
+        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        if (option::is_some(&next_stable_stake)) {
+            let (_, next_stable) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key,next_stable - withdraw_amount);
+        };
+        event::emit(
+            UnstakingRequestEvent {
+                pool_id: stable_pool_id<STABLE>(self),
+                validator_address: self.metadata.sui_address,
+                staker_address: tx_context::sender(ctx),
+                stake_activation_epoch,
+                unstaking_epoch: tx_context::epoch(ctx),
                 principal_amount,
                 reward_amount,
             }
@@ -397,15 +591,64 @@ module sui_system::validator {
     }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
+<<<<<<< HEAD
     public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<SUI>) {
         self.next_epoch_stake = self.next_epoch_stake + reward.value();
         self.staking_pool.deposit_rewards(reward);
+=======
+    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>) {
+        self.next_epoch_stake = self.next_epoch_stake + balance::value(&reward);
+        staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+>>>>>>> develop_v.1.1.5
+    }
+
+    public(friend) fun deposit_stable_stake_rewards<STABLE>(
+        self: &mut Validator,
+        reward: Balance<STABLE>,
+    ) {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        if (option::is_none(&next_stable_stake)) {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward));
+        } else {
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward) + *option::borrow(&next_stable_stake));
+        };
+        let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
+        stable_pool::deposit_rewards<STABLE>(pool, reward);
     }
 
     /// Process pending stakes and withdraws, called at the end of the epoch.
     public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
         self.staking_pool.process_pending_stakes_and_withdraws(ctx);
         assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
+    }
+
+    public(friend) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
+        process_pending_stable_stakes_and_withdraws<BUSD>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BARS>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BAUD>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BBRL>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BCAD>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BEUR>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BGBP>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BIDR>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BINR>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BKRW>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BMXN>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BRUB>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BSAR>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BTRY>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BZAR>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<BJPY>(self, ctx);
+        process_pending_stable_stakes_and_withdraws<MGG>(self, ctx);
+    }
+
+    public(friend) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &mut TxContext) {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
+        stable_pool::process_pending_stakes_and_withdraws<STABLE>(pool, ctx);
+        //todo add muiti stable pool
+        // assert!(stable_stake_amount<STABLE>(self) == self.next_epoch_stable_stake, EInvalidStakeAmount);
     }
 
     /// Returns true if the validator is preactive.
@@ -519,9 +762,43 @@ module sui_system::validator {
         self.staking_pool.sui_balance()
     }
 
+    public fun stable_stake_amount<STABLE>(self: &Validator): u64 {
+        stable_pool::stable_balance(get_stable_pool<STABLE>(&self.stable_pools))
+    }
+
     /// Return the total amount staked with this validator
     public fun total_stake(self: &Validator): u64 {
         stake_amount(self)
+    }
+
+    public fun total_stake_with_all_stable(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
+        let total_stake = total_stake(self);
+        total_stake = total_stake + total_stake_of_stable<BUSD>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BARS>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BAUD>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BBRL>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BCAD>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BEUR>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BGBP>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BIDR>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BINR>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BKRW>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BMXN>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BRUB>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BSAR>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BTRY>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BZAR>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<BJPY>(self, stable_rate);
+        total_stake = total_stake + total_stake_of_stable<MGG>(self, stable_rate);
+        total_stake
+    }
+
+    public fun total_stake_of_stable<STABLE>(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
+        let stable_stake =  stable_stake_amount<STABLE>(self);
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let rate = vec_map::get(&stable_rate, &pool_key);
+        let total_stake = (stable_stake as u128) * (1000000000 as u128) / (*rate as u128);
+        (total_stake as u64)
     }
 
     /// Return the voting power of this validator.
@@ -554,9 +831,57 @@ module sui_system::validator {
         self.staking_pool.pool_token_exchange_rate_at_epoch(epoch)
     }
 
+    public fun pool_stable_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): vector<PoolStableTokenExchangeRate> {
+        let vec_rate = vector::empty<PoolStableTokenExchangeRate>();
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BUSD>(get_stable_pool(&self.stable_pools), epoch), 0);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BARS>(get_stable_pool(&self.stable_pools), epoch), 1);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BAUD>(get_stable_pool(&self.stable_pools), epoch), 2);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BBRL>(get_stable_pool(&self.stable_pools), epoch), 3);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BCAD>(get_stable_pool(&self.stable_pools), epoch), 4);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BEUR>(get_stable_pool(&self.stable_pools), epoch), 5);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BGBP>(get_stable_pool(&self.stable_pools), epoch), 6);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BIDR>(get_stable_pool(&self.stable_pools), epoch), 7);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BINR>(get_stable_pool(&self.stable_pools), epoch), 8);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BJPY>(get_stable_pool(&self.stable_pools), epoch), 9);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BKRW>(get_stable_pool(&self.stable_pools), epoch), 10);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BMXN>(get_stable_pool(&self.stable_pools), epoch), 11);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BRUB>(get_stable_pool(&self.stable_pools), epoch), 12);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BSAR>(get_stable_pool(&self.stable_pools), epoch), 13);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BTRY>(get_stable_pool(&self.stable_pools), epoch), 14);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BZAR>(get_stable_pool(&self.stable_pools), epoch), 15);
+        vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<MGG>(get_stable_pool(&self.stable_pools), epoch), 16);
+        vec_rate
+    }
+
     public fun staking_pool_id(self: &Validator): ID {
         object::id(&self.staking_pool)
     }
+
+    public fun stable_pool_id<STABLE>(self: &Validator): ID {
+        object::id(get_stable_pool<STABLE>(&self.stable_pools))
+    }
+    public fun all_stable_pool_id(self:&Validator): vector<ID> {
+        let id_vec = vector[];
+        vector::insert(&mut id_vec ,stable_pool_id<BUSD>(self), 0);
+        vector::insert(&mut id_vec ,stable_pool_id<BARS>(self), 1);
+        vector::insert(&mut id_vec ,stable_pool_id<BAUD>(self), 2);
+        vector::insert(&mut id_vec ,stable_pool_id<BBRL>(self), 3);
+        vector::insert(&mut id_vec ,stable_pool_id<BCAD>(self), 4);
+        vector::insert(&mut id_vec ,stable_pool_id<BEUR>(self), 5);
+        vector::insert(&mut id_vec ,stable_pool_id<BGBP>(self), 6);
+        vector::insert(&mut id_vec ,stable_pool_id<BIDR>(self), 7);
+        vector::insert(&mut id_vec ,stable_pool_id<BINR>(self), 8);
+        vector::insert(&mut id_vec ,stable_pool_id<BJPY>(self), 9);
+        vector::insert(&mut id_vec ,stable_pool_id<BKRW>(self), 10);
+        vector::insert(&mut id_vec ,stable_pool_id<BMXN>(self), 11);
+        vector::insert(&mut id_vec ,stable_pool_id<BRUB>(self), 12);
+        vector::insert(&mut id_vec ,stable_pool_id<BSAR>(self), 13);
+        vector::insert(&mut id_vec ,stable_pool_id<BTRY>(self), 14);
+        vector::insert(&mut id_vec ,stable_pool_id<BZAR>(self), 15);
+        vector::insert(&mut id_vec ,stable_pool_id<MGG>(self), 16);
+        id_vec
+    }
+
 
     // MUSTFIX: We need to check this when updating metadata as well.
     public fun is_duplicate(self: &Validator, other: &Validator): bool {
@@ -855,6 +1180,43 @@ module sui_system::validator {
         let sui_address = metadata.sui_address;
 
         let staking_pool = staking_pool::new(ctx);
+        let stable_pools = bag::new(ctx);
+
+        let pool_key = type_name::into_string(type_name::get<BUSD>());
+        bag::add<ascii::String, StablePool<BUSD>>(&mut stable_pools, pool_key,stable_pool::new<BUSD>(ctx));
+        pool_key = type_name::into_string(type_name::get<BARS>());
+        bag::add<ascii::String, StablePool<BARS>>(&mut stable_pools, pool_key,stable_pool::new<BARS>(ctx));
+        pool_key = type_name::into_string(type_name::get<BAUD>());
+        bag::add<ascii::String, StablePool<BAUD>>(&mut stable_pools, pool_key,stable_pool::new<BAUD>(ctx));
+        pool_key = type_name::into_string(type_name::get<BBRL>());
+        bag::add<ascii::String, StablePool<BBRL>>(&mut stable_pools, pool_key,stable_pool::new<BBRL>(ctx));
+        pool_key = type_name::into_string(type_name::get<BCAD>());
+        bag::add<ascii::String, StablePool<BCAD>>(&mut stable_pools, pool_key,stable_pool::new<BCAD>(ctx));
+        pool_key = type_name::into_string(type_name::get<BEUR>());
+        bag::add<ascii::String, StablePool<BEUR>>(&mut stable_pools, pool_key,stable_pool::new<BEUR>(ctx));
+        pool_key = type_name::into_string(type_name::get<BGBP>());
+        bag::add<ascii::String, StablePool<BGBP>>(&mut stable_pools, pool_key,stable_pool::new<BGBP>(ctx));
+        pool_key = type_name::into_string(type_name::get<BIDR>());
+        bag::add<ascii::String, StablePool<BIDR>>(&mut stable_pools, pool_key,stable_pool::new<BIDR>(ctx));
+        pool_key = type_name::into_string(type_name::get<BINR>());
+        bag::add<ascii::String, StablePool<BINR>>(&mut stable_pools, pool_key,stable_pool::new<BINR>(ctx));
+        pool_key = type_name::into_string(type_name::get<BJPY>());
+        bag::add<ascii::String, StablePool<BJPY>>(&mut stable_pools, pool_key,stable_pool::new<BJPY>(ctx));
+        pool_key = type_name::into_string(type_name::get<BKRW>());
+        bag::add<ascii::String, StablePool<BKRW>>(&mut stable_pools, pool_key,stable_pool::new<BKRW>(ctx));
+        pool_key = type_name::into_string(type_name::get<BMXN>());
+        bag::add<ascii::String, StablePool<BMXN>>(&mut stable_pools, pool_key,stable_pool::new<BMXN>(ctx));
+        pool_key = type_name::into_string(type_name::get<BRUB>());
+        bag::add<ascii::String, StablePool<BRUB>>(&mut stable_pools, pool_key,stable_pool::new<BRUB>(ctx));
+        pool_key = type_name::into_string(type_name::get<BSAR>());
+        bag::add<ascii::String, StablePool<BSAR>>(&mut stable_pools, pool_key,stable_pool::new<BSAR>(ctx));
+        pool_key = type_name::into_string(type_name::get<BTRY>());
+        bag::add<ascii::String, StablePool<BTRY>>(&mut stable_pools, pool_key,stable_pool::new<BTRY>(ctx));
+        pool_key = type_name::into_string(type_name::get<BZAR>());
+        bag::add<ascii::String, StablePool<BZAR>>(&mut stable_pools, pool_key,stable_pool::new<BZAR>(ctx));
+        pool_key = type_name::into_string(type_name::get<MGG>());
+        bag::add<ascii::String, StablePool<MGG>>(&mut stable_pools, pool_key,stable_pool::new<MGG>(ctx));
+
 
         let operation_cap_id = validator_cap::new_unverified_validator_operation_cap_and_transfer(sui_address, ctx);
         Validator {
@@ -866,8 +1228,10 @@ module sui_system::validator {
             operation_cap_id,
             gas_price,
             staking_pool,
+            stable_pools,
             commission_rate,
             next_epoch_stake: 0,
+            next_epoch_stable_stake: vec_map::empty(),
             next_epoch_gas_price: gas_price,
             next_epoch_commission_rate: commission_rate,
             extra_fields: bag::new(ctx),
@@ -894,7 +1258,11 @@ module sui_system::validator {
         p2p_address: vector<u8>,
         primary_address: vector<u8>,
         worker_address: vector<u8>,
+<<<<<<< HEAD
         mut initial_stake_option: Option<Balance<SUI>>,
+=======
+        initial_stake_option: Option<Balance<BFC>>,
+>>>>>>> develop_v.1.1.5
         gas_price: u64,
         commission_rate: u64,
         is_active_at_genesis: bool,
@@ -935,8 +1303,31 @@ module sui_system::validator {
 
         if (is_active_at_genesis) {
             activate(&mut validator, 0);
+            activate_stable(&mut validator, 0);
         };
 
         validator
+    }
+
+    public(friend) fun rate_vec_map() : VecMap<ascii::String, u64> {
+        let rate_map = vec_map::empty<ascii::String, u64>();
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BARS>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BAUD>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BBRL>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BCAD>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BEUR>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BGBP>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BIDR>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BINR>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BJPY>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BKRW>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BMXN>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BRUB>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BSAR>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BTRY>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BZAR>()), 1000000000);
+        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<MGG>()), 1000000000);
+        rate_map
     }
 }

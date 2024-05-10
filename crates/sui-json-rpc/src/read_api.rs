@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use anyhow::anyhow;
@@ -36,11 +36,13 @@ use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_storage::key_value_store::TransactionKeyValueStore;
 use sui_types::base_types::{ObjectID, SequenceNumber, TransactionDigest};
 use sui_types::collection_types::VecMap;
+use sui_types::dao::DaoRPC;
 use sui_types::crypto::AggregateAuthoritySignature;
 use sui_types::digests::TransactionEventsDigest;
 use sui_types::display::DisplayVersionUpdatedEvent;
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
 use sui_types::error::{SuiError, SuiObjectResponseError};
+//use sui_types::messages_checkpoint::{};
 use sui_types::messages_checkpoint::{
     CheckpointContents, CheckpointContentsDigest, CheckpointSequenceNumber, CheckpointSummary,
     CheckpointTimestamp,
@@ -1016,6 +1018,43 @@ impl ReadApiServer for ReadApi {
                 },
             })
         })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
+        let inner_system_state = self.state.get_db().get_bfc_system_state_object()
+            .expect("Reading bfc system state object cannot fail").inner_state();
+        let dao = inner_system_state.dao;
+        let mut proposal_record = Vec::new();
+        for proposal in dao.proposal_record.contents {
+            proposal_record.push(proposal.value);
+        }
+
+        let mut action_record = BTreeMap::new();
+        for action in dao.action_record.contents {
+            action_record.insert(action.key, action.value);
+        }
+        let mut votes_record = BTreeMap::new();
+        for vote in dao.votes_record.contents {
+            votes_record.insert(vote.key, vote.value);
+        }
+        let mut current_proposal_status = BTreeMap::new();
+        for status in dao.current_proposal_status.contents {
+            current_proposal_status.insert(status.key, status.value);
+        }
+
+        let result = DaoRPC{
+            id: dao.id,
+            admin: dao.admin,
+            config: dao.config,
+            info: dao.info,
+            proposal_record,
+            action_record,
+            voting_pool: dao.voting_pool,
+            votes_record,
+            current_proposal_status,
+        };
+        Ok(result)
     }
 
     #[instrument(skip(self))]

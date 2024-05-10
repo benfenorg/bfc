@@ -28,6 +28,8 @@ use move_core_types::{
     account_address::AccountAddress, ident_str, identifier::IdentStr, vm_status::StatusCode,
 };
 use std::{collections::BTreeMap, error::Error, num::NonZeroU64};
+use sui_types::{clock::CLOCK_MODULE_NAME, error::{ExecutionError, VMMVerifierErrorSubStatusCode}, id::OBJECT_MODULE_NAME, sui_system_state::SUI_SYSTEM_MODULE_NAME, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 use sui_types::{
     clock::CLOCK_MODULE_NAME,
     error::{ExecutionError, VMMVerifierErrorSubStatusCode},
@@ -83,6 +85,9 @@ const SUI_CLOCK_CREATE: FunctionIdent = (
     ident_str!("create"),
 );
 
+const BFC_SYSTEM_CREATE: FunctionIdent = (
+    &BFC_SYSTEM_ADDRESS,
+    BFC_SYSTEM_MODULE_NAME,
 // Note: the authenticator/randomness objects should never exist when v0 execution is being used.
 // However, object_deletion_tests.rs forcibly sets the execution version to 0, so we need
 // to handle this case. Since that test only runs in the simulator we can special case it with
@@ -107,6 +112,7 @@ const SUI_DENY_LIST_OBJECT_CREATE: FunctionIdent = (
 );
 
 const FRESH_ID_FUNCTIONS: &[FunctionIdent] = &[OBJECT_NEW, OBJECT_NEW_UID_FROM_HASH, TS_NEW_OBJECT];
+const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE, BFC_SYSTEM_CREATE];
 #[cfg(not(msim))]
 const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE];
 

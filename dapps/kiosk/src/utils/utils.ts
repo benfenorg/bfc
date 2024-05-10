@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { KioskListing, KioskOwnerCap } from '@mysten/kiosk';
-import { SuiObjectResponse } from '@mysten/sui.js/client';
-import { MIST_PER_SUI, normalizeSuiAddress } from '@mysten/sui.js/utils';
 
+import { SuiObjectResponse } from '@benfen/bfc.js/client';
+import { MIST_PER_SUI } from '@benfen/bfc.js/utils';
+import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
 // Parse the display of a list of objects into a simple {object_id: display} map
 // to use throughout the app.
 export const parseObjectDisplays = (

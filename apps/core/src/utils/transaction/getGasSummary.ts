@@ -6,7 +6,7 @@ import {
 	SuiGasData,
 	SuiTransactionBlockResponse,
 	TransactionEffects,
-} from '@mysten/sui.js/client';
+} from '@benfen/bfc.js/client';
 
 type Optional<T> = {
 	[K in keyof T]?: T[K];

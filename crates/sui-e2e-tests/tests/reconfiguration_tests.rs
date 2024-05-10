@@ -3,33 +3,59 @@
 
 use futures::future::join_all;
 use rand::rngs::OsRng;
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
+
+use fastcrypto::encoding::Base64;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
+<<<<<<< HEAD
 use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_macros::{register_fail_point_arg, sim_test};
+=======
+use anyhow::Error;
+use jsonrpsee::http_client::HttpClient;
+use move_core_types::identifier::Identifier;
+use move_core_types::language_storage::TypeTag;
+use serde::{Deserialize, Serialize};
+use sui_core::consensus_adapter::position_submit_certificate;
+use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_macros::sim_test;
+>>>>>>> develop_v.1.1.5
 use sui_node::SuiNodeHandle;
-use sui_protocol_config::ProtocolConfig;
+use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, TestTransactionBuilder};
-use sui_types::base_types::SuiAddress;
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins};
+use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
 use sui_types::gas::GasCostSummary;
-use sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST;
+use sui_types::governance::{MIN_VALIDATOR_JOINING_STAKE_MIST, StakedStable};
 use sui_types::message_envelope::Message;
 use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{TransactionDataAPI, TransactionExpiration};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
+use tracing::{error, info};
+use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
+use sui_sdk::json::{SuiJsonValue, type_args};
+use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag};
+use serde_json::json;
+use sui_types::balance::Balance;
+use sui_types::dao::DaoRPC;
+use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
+use chrono::Utc;
+
 
 #[sim_test]
-async fn advance_epoch_tx_test() {
+async fn sim_advance_epoch_tx_test() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let states = test_cluster
         .swarm
@@ -44,6 +70,7 @@ async fn advance_epoch_tx_test() {
                 .create_and_execute_advance_epoch_tx(
                     &state.epoch_store_for_testing(),
                     &GasCostSummary::new(0, 0, 0, 0),
+                    &HashMap::new(),
                     0, // checkpoint
                     0, // epoch_start_timestamp_ms
                 )
@@ -260,6 +287,7 @@ async fn reconfig_with_revert_end_to_end_test() {
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
+<<<<<<< HEAD
 async fn test_passive_reconfig() {
     do_test_passive_reconfig().await;
 }
@@ -270,6 +298,9 @@ async fn test_passive_reconfig_determinism() {
 }
 
 async fn do_test_passive_reconfig() {
+=======
+async fn sim_test_passive_reconfig() {
+>>>>>>> develop_v.1.1.5
     telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
@@ -306,6 +337,7 @@ async fn do_test_passive_reconfig() {
         });
 }
 
+<<<<<<< HEAD
 // Test for syncing a node to an authority that already has many txes.
 #[sim_test]
 async fn test_expired_locks() {
@@ -373,6 +405,1476 @@ async fn do_test_lock_table_upgrade() {
         .create_certificate(t1.clone(), None)
         .await
         .unwrap_err();
+=======
+#[sim_test]
+async fn test_change_bfc_round() {
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let state = node
+                .state()
+                .get_bfc_system_state_object_for_testing().unwrap();
+            assert_eq!(state.inner_state().round, 0);
+        });
+
+    test_cluster.wait_for_epoch(Some(target_epoch)).await;
+
+    test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .with(|node| {
+            let _state = node
+                .state()
+                .get_bfc_system_state_object_for_testing().unwrap();
+            assert!(_state.inner_state().round >= 1);
+        });
+
+}
+
+
+#[sim_test]
+async fn sim_test_bfc_dao_update_system_package_blocked(){
+    // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+    //     config.set_commit_root_state_digest_supported(true);
+    //     config
+    // });
+    ProtocolConfig::poison_get_for_min_version();
+
+    let start_version = 23u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
+
+
+    let  node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
+
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    //waiting for....
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(20u64).await;
+
+
+    sleep(Duration::from_secs(10)).await;
+
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+    assert_eq!(protocol_version, ProtocolVersion::new(start_version));
+
+}
+
+async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            arg,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    Ok(tx_response)
+}
+
+async fn do_get_owned_objects_with_filter(filter_tag: &str, http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction()
+        .with_content();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    Ok(objects)
+}
+
+async fn get_checkpoints(http_client: &HttpClient,descending_order: bool) -> Result<CheckpointPage,Error> {
+    let check_point_page = http_client
+        .get_checkpoints(
+            Option::None,Option::None,descending_order)
+        .await?;
+    Ok(check_point_page)
+}
+
+#[sim_test]
+#[ignore]
+async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
+    //telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000)
+        .build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    // now do the call
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "change_round".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::new(json!("5"))?,
+    ];
+
+    info!("call change round");
+    let response = do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("response is {:?}",response);
+
+    // it will be timeout, if change round transaction is unsuccessful.
+    cluster
+        .wait_for_epoch_with_timeout(None, Duration::from_secs(360))
+        .await;
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_dao_create_action() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    //let manager_obj = add_cluster_admin(http_client, gas, address, &cluster).await?;
+    let payment = objects.get(2).unwrap().object().unwrap();
+    // now do the call
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "create_bfcdao_action".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+
+    do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+
+
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao actions {:?}", dao.action_record);
+    assert!(dao.action_record.len() > 0);
+
+    Ok(())
+}
+
+async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    // now do the call
+    let payment = objects.get(2).unwrap().object().unwrap();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let function = "set_voting_period".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("60000"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let function = "set_voting_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+    // now do the call
+    let function = "create_bfcdao_action".to_string();
+    let propose_function = "propose".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+
+    let coin_obj = objects.get(3).unwrap().object().unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::new(json!("19"))?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+        SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
+
+    Ok(())
+}
+
+async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+
+    // now do the call
+    let payment = objects.get(2).unwrap().object().unwrap();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+    let function = "set_voting_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    // now do the call
+    let function = "create_bfcdao_action".to_string();
+    let propose_function = "propose".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+        SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+
+    let coin_obj = objects.get(4).unwrap().object().unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::new(json!("19"))?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+        SuiJsonValue::new(json!("100"))?,
+        SuiJsonValue::new(json!("hello world"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
+
+    Ok(())
+}
+
+async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<ObjectID, anyhow::Error> {
+    // now do the call
+    let module = "bfc_system".to_string();
+    let function = "create_stake_manager_key".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let payment =  objects.get(1).unwrap().object().unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&payment.object_id.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    let objects = do_get_owned_objects_with_filter("0xc8::bfc_dao_manager::BFCDaoManageKey", http_client, address).await?;
+    let manager_obj = objects.get(0).unwrap().object().unwrap();
+    Ok(manager_obj.object_id)
+}
+
+#[sim_test]
+async fn test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
+    //telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await.unwrap();
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao actions {:?}", dao.action_record);
+    info!("============finish get dao proposes {:?}", dao.proposal_record);
+    assert_eq!(dao.proposal_record.len(), 1);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_dao_create_votingbfc()  -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    let amount  = 1_000_000_000u64* 100;
+    let tx = make_transfer_sui_transaction(&cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    let coin_obj = objects.get(2).unwrap().object().unwrap();
+
+
+    // now do the call
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "create_voting_bfc".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingBfc").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 1. pass.
+    info!("============finish get owned objects {}", objects.len());
+
+    Ok(())
+}
+
+async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) ->  Result<ObjectID, anyhow::Error>{
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "create_voting_bfc".to_string();
+
+    let coin_obj = objects.get(4).unwrap().object().unwrap();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+    let objects = do_get_owned_objects_with_filter("0xc8::voting_pool::VotingBfc", http_client, address).await?;
+    let voting_bfc = objects.get(0).unwrap().object().unwrap();
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "cast_vote".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&voting_bfc.object_id.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::bfc_dao::Vote").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    let vote = objects.get(0).unwrap().object().unwrap();
+    Ok(vote.object_id)
+}
+
+#[sim_test]
+async fn test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+    //create votingbfc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::new(json!("1000000000"))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let revoke_vote_function = "revoke_vote".to_string();
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, revoke_vote_function, arg).await?;
+    Ok(())
+}
+
+#[sim_test]
+#[ignore]
+async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
+    let start_version = 18u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
+
+
+    let  node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid =  node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+
+    //waiting for....
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &test_cluster).await?;
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+
+    // modify voting quorum
+    let function = "set_voting_quorum_rate".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    // set voting delay
+    let function = "set_min_action_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    create_active_proposal(http_client, gas, address, &test_cluster).await?;
+    //create votingBfc
+    // now do the call
+    case_vote(http_client, gas, address, &test_cluster).await?;
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(objects.len() > 0);
+
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    let queue_proposal_action_function = "queue_proposal_action".to_string();
+    do_move_call(http_client, gas, address, &test_cluster, package_id, module.clone(), queue_proposal_action_function, arg).await?;
+
+    // let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().end_time + 120000));
+    // let package_id = BFC_SYSTEM_PACKAGE_ID;
+    // let module = "bfc_system".to_string();
+    // let function = "judge_proposal_state".to_string();
+    // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    // let arg = vec![
+    //     SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    //     SuiJsonValue::new(json!(start_time))?,
+    // ];
+    //
+    // do_move_call(&http_client, &gas, address, &test_cluster, package_id, module.clone(), function.clone(), arg).await?;
+    sleep(Duration::from_secs(5)).await;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let _status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+
+    test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    epochid =  node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+    assert_ne!(protocol_version, ProtocolVersion::new(start_version));
+
+    Ok(())
+}
+
+
+#[sim_test]
+async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
+    let start_version = 23u64;
+
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+    
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    // now do the call
+    // modify voting period
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    // modify voting quorum
+    let function = "set_voting_quorum_rate".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    // set voting delay
+    let function = "set_min_action_delay".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    create_active_proposal(http_client, gas, address, &cluster).await?;
+    //create votingBfc
+    // now do the call
+    case_vote(http_client, gas, address, &cluster).await?;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(objects.len() > 0);
+
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    let queue_proposal_action_function = "queue_proposal_action".to_string();
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), queue_proposal_action_function, arg).await?;
+
+    let destroy_terminated_proposal_function = "destroy_terminated_proposal".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module, destroy_terminated_proposal_function, arg).await?;
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
+    let start_version = 23u64;
+
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    // now do the call
+    // modify voting period
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+
+    // modify voting quorum
+    let function = "set_voting_quorum_rate".to_string();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("1"))?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+
+    let objects1 = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas1 = objects1.first().unwrap().object().unwrap();
+    create_active_proposal(http_client, gas1, address, &cluster).await?;
+    // //create votingBfc
+    // // now do the call
+    case_vote(http_client, gas, address, &cluster).await?;
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    assert!(objects.len() > 0);
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    let queue_proposal_action_function = "queue_proposal_action".to_string();
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
+
+     Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    create_active_proposal(http_client, gas, address, &cluster).await?;
+    //create votingBfc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+    assert!(objects.len() > 0);
+
+
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let change_vote_function = "unvote_votes".to_string();
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, change_vote_function, arg).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+    //create votingBfc
+    // now do the call
+    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
+    assert!(objects.len() > 0);
+    let result = http_client.get_inner_dao_info().await?;
+    let dao = result as DaoRPC;
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&vote_id.to_string())?,
+        SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
+        SuiJsonValue::new(json!(true))?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+    let change_vote_function = "change_vote".to_string();
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, change_vote_function, arg).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_dao_cast_voting() -> Result<(), anyhow::Error> {
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    create_proposal(http_client, gas, address, &cluster).await?;
+
+    case_vote(http_client, gas, address, &cluster).await?;
+    Ok(())
+}
+
+// #[sim_test]
+// async fn test_bfc_dao_judge_proposal_state()  -> Result<(), anyhow::Error> {
+//     let cluster = TestClusterBuilder::new()
+//         .with_epoch_duration_ms(40000)
+//         .build().await;
+//     let http_client = cluster.rpc_client();
+//     let address = cluster.get_address_0();
+//     let objects = http_client
+//         .get_owned_objects(
+//             address,
+//             Some(SuiObjectResponseQuery::new_with_options(
+//                 SuiObjectDataOptions::new()
+//                     .with_type()
+//                     .with_owner()
+//                     .with_previous_transaction(),
+//             )),
+//             None,
+//             None,
+//         )
+//         .await?
+//         .data;
+//
+//     let gas = objects.first().unwrap().object().unwrap();
+//     create_proposal(http_client, gas, address, &cluster).await?;
+//
+//     let result = http_client.get_inner_dao_info().await?;
+//     let dao = result as DaoRPC;
+//     assert!(dao.proposal_record.len() > 0);
+//     let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time - 40000));
+//
+//     let package_id = BFC_SYSTEM_PACKAGE_ID;
+//     let module = "bfc_system".to_string();
+//     let function = "judge_proposal_state".to_string();
+//     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+//     let arg = vec![
+//         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+//         SuiJsonValue::new(json!(start_time))?,
+//     ];
+//
+//     do_move_call(&http_client, &gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+//     sleep(Duration::from_secs(5)).await;
+//     let result = http_client.get_inner_dao_info().await?;
+//     let dao = result as DaoRPC;
+//     let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+//     assert_eq!(status, 1);
+//
+//     let start_time = format!("{:?}", (dao.proposal_record.get(0).unwrap().start_time + 60000));
+//     let arg = vec![
+//         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+//         SuiJsonValue::new(json!(start_time))?,
+//     ];
+//     do_move_call(&http_client, &gas, address, &cluster, package_id, module, function, arg).await?;
+//     sleep(Duration::from_secs(5)).await;
+//
+//     let result = http_client.get_inner_dao_info().await?;
+//     let dao = result as DaoRPC;
+//     let status = dao.current_proposal_status.first_key_value().unwrap().1.status;
+//     assert_eq!(status, 2);
+//     Ok(())
+// }
+
+
+#[sim_test]
+async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
+    //log
+    //telemetry_subscribers::init_for_testing();
+
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    assert!(objects.len() > 0);
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+    let amount  = 1_000_000_000u64* 100;
+    let tx = make_transfer_sui_transaction(&cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    info!("============finish get owned objects {}", objects.len());
+    let coin_obj = objects.get(2).unwrap().object().unwrap();
+
+
+    let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    // now do the call
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "create_voting_bfc".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&coin_obj.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+
+
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingBfc").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 1. pass.
+    info!("============finish get owned objects {}", objects.len());
+    assert_eq!(objects.len(), 1);
+
+
+    let voting_bfc = objects.get(0).unwrap().object().unwrap();
+
+    //with draw the voting bfc,,,
+    // now do the call
+    //public entry fun withdraw_voting(   wrapper: &mut BfcSystemState voting_bfc: VotingBfc)
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "withdraw_voting".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&voting_bfc.object_id.to_string())?,
+        SuiJsonValue::from_str(&clock.to_string())?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+
+
+
+    let filter =  SuiObjectDataFilter::StructType(parse_sui_struct_tag("0xc8::voting_pool::VotingBfc").unwrap());
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    //should be size = 0. pass.
+    info!("============finish get owned objects {}", objects.len());
+    assert_ne!(objects.len(), 0);
+
+    Ok(())
+}
+
+
+#[sim_test]
+async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
+
+    //telemetry_subscribers::init_for_testing();
+
+    let cluster = TestClusterBuilder::new().build().await;
+    let http_client = cluster.rpc_client();
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+
+    // now do the call  public entry fun set_voting_period(
+    //         wrapper: &mut BfcSystemState,
+    //         manager_key: &BFCDaoManageKey,
+    //         value: u64,
+    //     )
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let module = "bfc_system".to_string();
+    let function = "set_voting_period".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("888888"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_voting_period");
+
+
+    let module = "bfc_system".to_string();
+    let function = "set_min_action_delay".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("888888"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_min_action_delay");
+
+
+
+    let module = "bfc_system".to_string();
+    let function = "set_voting_delay".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("888888"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_voting_delay");
+
+
+    let module = "bfc_system".to_string();
+    let function = "set_voting_quorum_rate".to_string();
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let arg = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+        SuiJsonValue::from_str(&manager_obj.to_string())?,
+        SuiJsonValue::new(json!("88"))?,
+    ];
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish set_voting_quorum_rate");
+
+
+
+
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    info!("============finish get dao info {:?}", dao.config);
+    assert_eq!(dao.config.voting_period, 888888);
+    assert_eq!(dao.config.min_action_delay, 888888);
+    assert_eq!(dao.config.voting_delay, 888888);
+    assert_eq!(dao.config.voting_quorum_rate, 88);
+    Ok(())
+>>>>>>> develop_v.1.1.5
 }
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
@@ -526,15 +2028,14 @@ async fn test_validator_candidate_pool_read() {
             system_state_summary.validator_candidates_id,
             &address,
         )
-        .unwrap()
-        .staking_pool_id;
+            .unwrap()
+            .staking_pool_id;
         let validator = get_validator_by_pool_id(
             node.state().get_object_store().as_ref(),
             &system_state,
             &system_state_summary,
             staking_pool_id,
-        )
-        .unwrap();
+        ).unwrap();
         assert_eq!(validator.sui_address, address);
     });
 }
@@ -572,7 +2073,7 @@ async fn test_inactive_validator_pool_read() {
             &system_state_summary,
             staking_pool_id,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(validator.sui_address, address);
     });
     execute_remove_validator_tx(&test_cluster, &validator).await;
@@ -607,7 +2108,7 @@ async fn test_inactive_validator_pool_read() {
             &system_state_summary,
             staking_pool_id,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(validator.sui_address, address);
         assert!(validator.staking_pool_deactivation_epoch.is_some());
     })
@@ -661,6 +2162,7 @@ async fn test_reconfig_with_committee_change_basic() {
 }
 
 #[sim_test]
+<<<<<<< HEAD
 async fn test_reconfig_with_committee_change_stress() {
     do_test_reconfig_with_committee_change_stress().await;
 }
@@ -671,6 +2173,9 @@ async fn test_reconfig_with_committee_change_stress_determinism() {
 }
 
 async fn do_test_reconfig_with_committee_change_stress() {
+=======
+async fn sim_test_reconfig_with_committee_change_stress() {
+>>>>>>> develop_v.1.1.5
     let mut candidates = (0..6)
         .map(|_| ValidatorGenesisConfigBuilder::new().build(&mut OsRng))
         .collect::<Vec<_>>();
@@ -787,10 +2292,8 @@ async fn safe_mode_reconfig_test() {
     assert_eq!(system_state.system_state_version(), 2);
 }
 
-async fn add_validator_candidate(
-    test_cluster: &TestCluster,
-    new_validator: &ValidatorGenesisConfig,
-) {
+async fn add_validator_candidate(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig, ) {
+
     let cur_validator_candidate_count = test_cluster.fullnode_handle.sui_node.with(|node| {
         node.state()
             .get_sui_system_state_object_for_testing()
@@ -849,10 +2352,7 @@ async fn execute_remove_validator_tx(test_cluster: &TestCluster, handle: &SuiNod
 /// Execute a sequence of transactions to add a validator, including adding candidate, adding stake
 /// and activate the validator.
 /// It does not however trigger reconfiguration yet.
-async fn execute_add_validator_transactions(
-    test_cluster: &TestCluster,
-    new_validator: &ValidatorGenesisConfig,
-) {
+async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_validator: &ValidatorGenesisConfig){
     let pending_active_count = test_cluster.fullnode_handle.sui_node.with(|node| {
         let system_state = node
             .state()
@@ -912,4 +2412,807 @@ async fn execute_add_validator_transactions(
             address
         );
     });
+}
+
+#[sim_test]
+async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
+    ProtocolConfig::poison_get_for_min_version();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+
+    let bfc_system_state = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap()
+        .inner()
+        .state()
+        .get_bfc_system_state_object_for_testing().unwrap();
+
+    let treasury = bfc_system_state.clone().inner_state().treasury.clone();
+    assert_eq!(treasury.bfc_balance, Balance::new(102433173437554378));
+    Ok(())
+}
+
+async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+    swap_bfc_to_stablecoin_with_tag(test_cluster, http_client, address, SuiTypeTag::new("0xc8::busd::BUSD".to_string())).await?;
+    Ok(())
+}
+
+async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, type_tag: SuiTypeTag) -> Result<(), anyhow::Error> {
+    let objects = http_client
+        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
+            SuiObjectDataOptions::full_content()
+        )), None, None).await?.data;
+    let gas = objects.last().unwrap().object().unwrap();
+    let coin = objects.first().unwrap().object().unwrap();
+
+    let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let function = "swap_bfc_to_stablecoin".to_string();
+    let timestamp = Utc::now().timestamp() * 1000 + 600000;
+    let deadtime = timestamp.to_string();
+
+    let args = vec![
+        SuiJsonValue::from_str(&bfc_system_address.to_string())?,
+        SuiJsonValue::from_str(&coin.object_id.to_string())?,
+        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
+        SuiJsonValue::new(json!("1000000000000"))?,
+        SuiJsonValue::new(json!("0"))?,
+        SuiJsonValue::new(json!(&deadtime))?,
+    ];
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            vec![type_tag],
+            args,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let effects = tx_response.effects.unwrap().clone();
+
+    match effects {
+        SuiTransactionBlockEffects::V1(_effects) => {
+            if _effects.status.is_err() {
+                error!("effects is {:?}",_effects);
+            }
+            assert!(_effects.status.is_ok());
+        },
+    };
+    Ok(())
+}
+
+async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+    let gas_objects = http_client
+        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
+            SuiObjectDataOptions::full_content()
+        )), None, None).await?.data;
+    let gas = gas_objects.last().unwrap().object().unwrap();
+    let usd_objects =  do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    let coin = usd_objects.first().unwrap().object().unwrap();
+
+    let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let function = "swap_stablecoin_to_bfc".to_string();
+
+    let args = vec![
+        SuiJsonValue::from_str(&bfc_system_address.to_string())?,
+        SuiJsonValue::from_str(&coin.object_id.to_string())?,
+        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
+        SuiJsonValue::new(json!("80000000000"))?,
+        SuiJsonValue::new(json!("0"))?,
+        SuiJsonValue::new(json!("1709622441776884"))?,
+    ];
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
+            args,
+            Some(gas.object_id),
+            1_000_000_000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let effects = tx_response.effects.unwrap().clone();
+    match effects {
+        SuiTransactionBlockEffects::V1(_effects) => {
+            assert!(_effects.status.is_ok());
+        },
+    };
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 10;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let mut objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    assert!(objects.len() == 0);
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    assert!(objects.len() == 1);
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 100;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let swap_before_bfc_objects_length = bfc_objects.len();
+    swap_stablecoin_to_bfc(&test_cluster, http_client, address).await?;
+    bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let swap_after_bfc_objects_length = bfc_objects.len();
+    assert!(swap_after_bfc_objects_length > swap_before_bfc_objects_length);
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(3000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+    let busd_balance_before = get_busd_balance(busd_data);
+
+    let receiver_address = test_cluster.get_address_1();
+    let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
+                                           Some(receiver_address),
+                                           Some(amount), address,busd_data.object_ref()).await;
+
+    let _response = test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let gas_object_info = http_client.get_object(busd_data.object_id,Some(SuiObjectDataOptions::new().
+        with_owner().with_type().with_display().with_content())).await?;
+
+    let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    assert!(busd_balance_after < busd_balance_before);
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
+
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+
+    // transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::beur::BEUR".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
+    // let _ = sleep(Duration::from_secs(4)).await;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::busd::BUSD".to_string()).await?;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
+
+    Ok(())
+}
+
+async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64, token_name : String,multi_gas:bool,another_token_name : String) -> Result<(), Error> {
+    swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, address, SuiTypeTag::new(token_name.clone())).await?;
+
+    let _ = sleep(Duration::from_secs(2)).await;
+
+    let busd_response_vec = do_get_owned_objects_with_filter(format!("0x2::coin::Coin<{}>",token_name.as_str()).as_str(), http_client, address).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+    let mut busd_balance_before = get_busd_balance(busd_data);
+
+    let receiver_address = test_cluster.get_address_1();
+
+    let tx;
+    if !multi_gas {
+        tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
+                                                    Some(receiver_address),
+                                                    Some(amount), address, busd_data.object_ref()).await;
+    }else {
+        let mut gas_coins = vec![busd_data.object_ref()];
+
+        swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, address, SuiTypeTag::new(another_token_name.clone())).await?;
+
+        let _ = sleep(Duration::from_secs(2)).await;
+
+        let busd_response_vec = do_get_owned_objects_with_filter(format!("0x2::coin::Coin<{}>",another_token_name.as_str()).as_str(), http_client, address).await?;
+
+        assert!(busd_response_vec.len() >= 1);
+        let busd_response = busd_response_vec.get(0).unwrap();
+
+        let busd_data = busd_response.data.as_ref().unwrap();
+        busd_balance_before += get_busd_balance(busd_data);
+        gas_coins.push(busd_data.object_ref());
+        tx = make_transfer_sui_transaction_with_gas_coins(&test_cluster.wallet,
+                                                    Some(receiver_address),
+                                                    Some(amount), address, gas_coins).await;
+    };
+
+    if !multi_gas && token_name == another_token_name{
+        let _response = test_cluster
+            .execute_transaction(tx.clone())
+            .await
+            .effects
+            .unwrap();
+
+        let check_point_page = get_checkpoints(http_client,true).await?;
+        assert!(check_point_page.data.len()>0);
+        let _ = sleep(Duration::from_secs(2)).await;
+
+        let gas_object_info = http_client.get_object(busd_data.object_id, Some(SuiObjectDataOptions::new().
+            with_owner().with_type().with_display().with_content())).await?;
+
+        let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
+
+        let _ = sleep(Duration::from_secs(2)).await;
+
+        assert!(busd_balance_after < busd_balance_before);
+
+    } else {
+        let _response = test_cluster
+            .execute_transaction_return_raw_effects(tx.clone())
+            .await;
+        assert!(_response.is_err());
+    }
+
+    Ok(())
+}
+
+fn get_busd_balance(busd_data: &SuiObjectData)->u64{
+    if let SuiParsedData::MoveObject(move_object)=busd_data.content.clone().unwrap(){
+        if let SuiMoveStruct::WithFields(data) = move_object.fields{
+            match data.get("balance").unwrap(){
+                SuiMoveValue::String(balance)=> return balance.parse().unwrap(),
+                _=>return 0,
+            }
+        }
+    }
+    0
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SwapStepResult {
+    current_sqrt_price: u128,
+    target_sqrt_price: u128,
+    current_liquidity: u128,
+    current_tick_index: i32,
+    amount_in: u64,
+    amount_out: u64,
+    remainer_amount: u64
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CalculatedSwapResult {
+    amount_in: u64,
+    amount_out: u64,
+    after_sqrt_price: u128,
+    vault_sqrt_price: u128,
+    is_exceed: bool,
+    step_results: Vec<SwapStepResult>,
+    steps: u64
+}
+
+async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) -> CalculatedSwapResult
+{
+    let client = cluster.rpc_client();
+    let sender = cluster.get_address_0();
+    let txn = TransactionKind::programmable(pt);
+    let response = client
+        .dev_inspect_transaction_block(
+            sender,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            /* gas_price */ None,
+            /* epoch_id */ None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
+
+    bcs::from_bytes(&return_).unwrap()
+}
+#[sim_test]
+async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT,
+            CallArg::Pure(bcs::to_bytes(&(1_000_000_000_u64)).unwrap()),
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_stablecoin_by_bfc").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0), Argument::Input(1)],
+        }))],
+    };
+    let r = dev_inspect_call(&test_cluster, pt.clone()).await;
+    assert_eq!(r.amount_out, 100_000_022);
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let validator = test_cluster.swarm.validator_node_handles().pop().unwrap();
+    let validator_addr = validator.with(|node| node.get_config().sui_address());
+
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+
+    let amount  = 1_000_000_000u64 * 100;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+
+    let gas_coin = test_cluster
+        .wallet
+        .gas_for_owner_budget(
+            address,
+            MIN_VALIDATOR_JOINING_STAKE_MIST,
+            Default::default(),
+        )
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+
+    let gas = test_cluster
+        .wallet
+        .gas_for_owner_budget(address, 0, BTreeSet::from([gas_coin.0]))
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+
+    let stake_tx = make_stable_staking_transaction(
+        &test_cluster.wallet,
+        validator_addr,
+        vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+        address,
+        gas,
+        busd_data.object_ref()
+    ).await;
+
+    test_cluster.execute_transaction(stake_tx).await;
+
+    let _ = sleep(Duration::from_secs(10)).await;
+
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(3000)
+        .with_num_validators(5)
+        .build()
+        .await;
+
+    let validator = test_cluster.swarm.validator_node_handles().pop().unwrap();
+    let validator_addr = validator.with(|node| node.get_config().sui_address());
+
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::bjpy::BJPY", "0x2::coin::Coin<0xc8::bjpy::BJPY>", BJPY.type_tag()).await?;
+    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
+    Ok(())
+}
+
+async fn stable_stake_and_withdraw(test_cluster: &TestCluster, validator_addr: SuiAddress, http_client: &HttpClient,
+                                   sender: SuiAddress, stable_name: &str, stable_coin: &str,
+                                    stable_tag: TypeTag) -> Result<(), Error> {
+    swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, sender, SuiTypeTag::new(stable_name.to_string())).await?;
+    let _ = sleep(Duration::from_secs(5)).await;
+
+    let busd_response_vec = do_get_owned_objects_with_filter(stable_coin, http_client, sender).await?;
+
+    assert!(busd_response_vec.len() >= 1);
+    let busd_response = busd_response_vec.get(0).unwrap();
+
+    let busd_data = busd_response.data.as_ref().unwrap();
+    let gas_coin = test_cluster
+        .wallet
+        .gas_for_owner_budget(
+            sender,
+            MIN_VALIDATOR_JOINING_STAKE_MIST,
+            Default::default(),
+        )
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+    let gas = test_cluster
+        .wallet
+        .gas_for_owner_budget(sender, 0, BTreeSet::from([gas_coin.0]))
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+
+    let stake_tx = make_stable_staking_transaction(
+        &test_cluster.wallet,
+        validator_addr,
+        vec![stable_tag.clone()],
+        sender,
+        gas,
+        busd_data.object_ref()
+    ).await;
+
+    let response = test_cluster.execute_transaction(stake_tx).await;
+    error!("response is {:?}",response);
+    assert_eq!(response.status_ok().unwrap(), true);
+    let staked = get_staked_stable(response.object_changes.unwrap(), stable_tag.clone());
+    assert!(staked.is_some());
+    let _ = sleep(Duration::from_secs(5)).await;
+
+    let gas = test_cluster
+        .wallet
+        .gas_for_owner_budget(sender, 0, BTreeSet::from([gas_coin.0]))
+        .await
+        .unwrap()
+        .1
+        .object_ref();
+    //withdraw staked
+    let withdraw_tx = make_stable_withdraw_stake_transaction(
+        &test_cluster.wallet,
+        vec![stable_tag.clone()],
+        sender,
+        gas,
+        staked.unwrap(),
+    ).await;
+    let response = test_cluster.execute_transaction(withdraw_tx).await;
+    assert_eq!(response.status_ok().unwrap(), true);
+    Ok(())
+}
+
+fn get_staked_stable(object_change: Vec<ObjectChange>, stable_tag: TypeTag) ->Option<ObjectRef> {
+    for object_change in object_change {
+        if let ObjectChange::Created { object_id, object_type, version, digest, .. } = object_change {
+            if StakedStable::is_staked_stable(stable_tag.clone(), &object_type) {
+                return Some((object_id, version, digest))
+            }
+        }
+    }
+    None
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT,
+            CallArg::Pure(bcs::to_bytes(&(1_000_000_000_u64)).unwrap()),
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_bfc_by_stablecoin").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0), Argument::Input(1)],
+        }))],
+    };
+    let r = dev_inspect_call(&test_cluster, pt.clone()).await;
+    // 1bfc = 0.1busd
+    assert_eq!(r.amount_out, 9_999_997_779);
+    Ok(())
+}
+
+async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTransaction) -> u64
+{
+    let client = cluster.rpc_client();
+    let sender = cluster.get_address_0();
+    let txn = TransactionKind::programmable(pt);
+    let response = client
+        .dev_inspect_transaction_block(
+            sender,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            /* gas_price */ None,
+            /* epoch_id */ None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
+
+    bcs::from_bytes(&return_).unwrap()
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_bfc_exchange_rate").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert_eq!(r, 100_000_022);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("get_stablecoin_exchange_rate").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert_eq!(r, 9999997779);
+    Ok(())
+}
+
+#[sim_test]
+async fn test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("total_supply").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
+    assert!(r > 0);
+    Ok(())
 }

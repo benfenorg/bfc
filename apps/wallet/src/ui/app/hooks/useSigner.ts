@@ -1,38 +1,41 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SerializedUIAccount } from '_src/background/accounts/Account';
-import { isLedgerAccountSerializedUI } from '_src/background/accounts/LedgerAccount';
-import { isQredoAccountSerializedUI } from '_src/background/accounts/QredoAccount';
-import { useSuiClient } from '@mysten/dapp-kit';
-
-import { walletApiProvider } from '../ApiProvider';
-import { useSuiLedgerClient } from '../components/ledger/SuiLedgerClientProvider';
+import { useAccounts } from './useAccounts';
+import { useActiveAccount } from './useActiveAccount';
+import useAppSelector from './useAppSelector';
+import { useQredoAPI } from './useQredoAPI';
 import { LedgerSigner } from '../LedgerSigner';
 import { QredoSigner } from '../QredoSigner';
 import { type WalletSigner } from '../WalletSigner';
-import useAppSelector from './useAppSelector';
-import { useBackgroundClient } from './useBackgroundClient';
-import { useQredoAPI } from './useQredoAPI';
+import { useSuiLedgerClient } from '../components/ledger/SuiLedgerClientProvider';
+import { thunkExtras } from '_redux/store/thunk-extras';
+import { AccountType } from '_src/background/keyring/Account';
 
-export function useSigner(account: SerializedUIAccount | null): WalletSigner | null {
+export function useSigner(address?: string): WalletSigner | null {
+	const activeAccount = useActiveAccount();
+	const existingAccounts = useAccounts();
+	const signerAccount = address
+		? existingAccounts.find((account) => account.address === address)
+		: activeAccount;
+
 	const { connectToLedger } = useSuiLedgerClient();
-	const api = useSuiClient();
-	const background = useBackgroundClient();
+	const { api, background } = thunkExtras;
 	const [qredoAPI] = useQredoAPI(
-		account && !account?.isLocked && isQredoAccountSerializedUI(account)
-			? account.sourceID
-			: undefined,
+		signerAccount?.type === AccountType.QREDO ? signerAccount.qredoConnectionID : undefined,
 	);
 	const networkName = useAppSelector(({ app: { apiEnv } }) => apiEnv);
-	if (!account) {
-		return null;
+	if (!signerAccount) {
+		throw new Error("Can't find account for the signer address");
 	}
-	if (isLedgerAccountSerializedUI(account)) {
-		return new LedgerSigner(connectToLedger, account.derivationPath, api);
+
+	if (signerAccount.type === AccountType.LEDGER) {
+		return new LedgerSigner(connectToLedger, signerAccount.derivationPath, api.instance.fullNode);
 	}
-	if (isQredoAccountSerializedUI(account)) {
-		return qredoAPI ? new QredoSigner(api, account, qredoAPI, networkName) : null;
+	if (signerAccount.type === AccountType.QREDO) {
+		return qredoAPI
+			? new QredoSigner(api.instance.fullNode, signerAccount, qredoAPI, networkName)
+			: null;
 	}
-	return walletApiProvider.getSignerInstance(account, background);
+	return api.getSignerInstance(signerAccount, background);
 }

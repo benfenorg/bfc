@@ -1,0 +1,5 @@
+{
+	"private": true,
+	"import": "../dist/esm/wallet-standard/index.js",
+	"main": "../dist/cjs/wallet-standard/index.js"
+}

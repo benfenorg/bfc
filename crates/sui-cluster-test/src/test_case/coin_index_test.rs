@@ -146,7 +146,7 @@ impl TestCaseImpl for CoinIndexTest {
             "token package published, package: {:?}, cap: {:?}",
             package, cap
         );
-        let sui_type_str = "0x2::sui::SUI";
+        let sui_type_str = "0x2::bfc::BFC";
         let coin_type_str = format!("{}::managed::MANAGED", package.0);
         info!("coin type: {}", coin_type_str);
 
@@ -176,7 +176,7 @@ impl TestCaseImpl for CoinIndexTest {
         let balance_changes = &response.balance_changes.unwrap();
         let sui_balance_change = balance_changes
             .iter()
-            .find(|b| b.coin_type.to_string().contains("SUI"))
+            .find(|b| b.coin_type.to_string().contains("BFC"))
             .unwrap();
         let managed_balance_change = balance_changes
             .iter()

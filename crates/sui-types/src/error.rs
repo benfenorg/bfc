@@ -17,8 +17,13 @@ use std::{collections::BTreeMap, fmt::Debug};
 use strum_macros::{AsRefStr, IntoStaticStr};
 use thiserror::Error;
 use tonic::Status;
+<<<<<<< HEAD
 use typed_store_error::TypedStoreError;
 
+=======
+use typed_store::rocks::TypedStoreError;
+use crate::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
+>>>>>>> develop_v.1.1.5
 pub const TRANSACTION_NOT_FOUND_MSG_PREFIX: &str = "Could not find the referenced transaction";
 pub const TRANSACTIONS_NOT_FOUND_MSG_PREFIX: &str = "Could not find the referenced transactions";
 
@@ -85,42 +90,52 @@ macro_rules! assert_invariant {
     Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Error, Hash, AsRefStr, IntoStaticStr,
 )]
 pub enum UserInputError {
-    #[error("Mutable object {object_id} cannot appear more than one in one transaction.")]
+    #[error("Mutable object {:?} cannot appear more than one in one transaction.", objects_id_to_bfc_address(*object_id))]
     MutableObjectUsedMoreThanOnce { object_id: ObjectID },
     #[error("Wrong number of parameters for the transaction.")]
     ObjectInputArityViolation,
     #[error(
         "Could not find the referenced object {:?} at version {:?}.",
-        object_id,
+        objects_id_to_bfc_address(*object_id),
         version
     )]
     ObjectNotFound {
         object_id: ObjectID,
         version: Option<SequenceNumber>,
     },
-    #[error("Object {provided_obj_ref:?} is not available for consumption, its current version: {current_version:?}.")]
+    #[error("Object {} {:?} {:?} is not available for consumption, its current version: {current_version:?}.",
+        objects_id_to_bfc_address(provided_obj_ref.0),
+        provided_obj_ref.1,
+        provided_obj_ref.2
+    )]
     ObjectVersionUnavailableForConsumption {
         provided_obj_ref: ObjectRef,
         current_version: SequenceNumber,
     },
     #[error("Package verification failed: {err:?}")]
     PackageVerificationTimedout { err: String },
-    #[error("Dependent package not found on-chain: {package_id:?}")]
+
+    #[error("Dependent package not found on-chain: {:?}", objects_id_to_bfc_address(*package_id))]
     DependentPackageNotFound { package_id: ObjectID },
+
     #[error("Mutable parameter provided, immutable parameter expected.")]
     ImmutableParameterExpectedError { object_id: ObjectID },
     #[error("Size limit exceeded: {limit} is {value}")]
     SizeLimitExceeded { limit: String, value: String },
     #[error(
-        "Object {child_id:?} is owned by object {parent_id:?}. \
-        Objects owned by other objects cannot be used as input arguments."
+        "Object {:?} is owned by object {:?}. \
+        Objects owned by other objects cannot be used as input arguments.",
+        objects_id_to_bfc_address(*child_id),
+        objects_id_to_bfc_address(*parent_id)
     )]
     InvalidChildObjectArgument {
         child_id: ObjectID,
         parent_id: ObjectID,
     },
     #[error(
-        "Invalid Object digest for object {object_id:?}. Expected digest : {expected_digest:?}."
+        "Invalid Object digest for object {:?}. Expected digest : {:?}.",
+        objects_id_to_bfc_address(*object_id),
+        expected_digest
     )]
     InvalidObjectDigest {
         object_id: ObjectID,
@@ -128,9 +143,9 @@ pub enum UserInputError {
     },
     #[error("Sequence numbers above the maximal value are not usable for transfers.")]
     InvalidSequenceNumber,
-    #[error("A move object is expected, instead a move package is passed: {object_id}")]
+    #[error("A move object is expected, instead a move package is passed: {:?}", objects_id_to_bfc_address(*object_id))]
     MovePackageAsObject { object_id: ObjectID },
-    #[error("A move package is expected, instead a move object is passed: {object_id}")]
+    #[error("A move package is expected, instead a move object is passed: {:?}", objects_id_to_bfc_address(*object_id))]
     MoveObjectAsPackage { object_id: ObjectID },
     #[error("Transaction was not signed by the correct sender: {}", error)]
     IncorrectUserSignature { error: String },
@@ -149,6 +164,9 @@ pub enum UserInputError {
     GasBudgetTooHigh { gas_budget: u64, max_budget: u64 },
     #[error("Gas budget: {:?} is lower than min: {:?}.", gas_budget, min_budget)]
     GasBudgetTooLow { gas_budget: u64, min_budget: u64 },
+    #[error("Gas coin type should be the same,{:?} and {:?} is differentt", coin_type, second_coin_type)]
+    GasCoinTypeMismatch { coin_type: String, second_coin_type: String },
+
     #[error(
         "Balance of gas object {:?} is lower than the needed amount: {:?}.",
         gas_balance,
@@ -171,18 +189,27 @@ pub enum UserInputError {
     },
     #[error("Gas price cannot exceed {:?} mist", max_gas_price)]
     GasPriceTooHigh { max_gas_price: u64 },
-    #[error("Object {object_id} is not a gas object")]
+
+    #[error("Object {:?} is not a gas object", objects_id_to_bfc_address(*object_id))]
     InvalidGasObject { object_id: ObjectID },
+
     #[error("Gas object does not have enough balance to cover minimal gas spend")]
     InsufficientBalanceToCoverMinimalGas,
 
-    #[error("Could not find the referenced object {:?} as the asked version {:?} is higher than the latest {:?}", object_id, asked_version, latest_version)]
+    #[error("Could not find the referenced object {:?} as the asked version {:?} is higher than the latest {:?}",
+    objects_id_to_bfc_address(*object_id),
+    asked_version,
+    latest_version)]
     ObjectSequenceNumberTooHigh {
         object_id: ObjectID,
         asked_version: SequenceNumber,
         latest_version: SequenceNumber,
     },
-    #[error("Object deleted at reference {:?}.", object_ref)]
+    #[error("Object deleted at reference {} {:?} {:?}.",
+        objects_id_to_bfc_address(object_ref.0),
+        object_ref.1,
+        object_ref.2,
+    )]
     ObjectDeleted { object_ref: ObjectRef },
     #[error("Invalid Batch Transaction: {}", error)]
     InvalidBatchTransaction { error: String },
@@ -197,7 +224,8 @@ pub enum UserInputError {
     #[error("Wrong initial version given for shared object")]
     SharedObjectStartingVersionMismatch,
 
-    #[error("Attempt to transfer object {object_id} that does not have public transfer. Object transfer must be done instead using a distinct Move function call.")]
+    #[error("Attempt to transfer object {:?} that does not have public transfer. Object transfer must be done instead using a distinct Move function call." ,
+    objects_id_to_bfc_address(*object_id))]
     TransferObjectWithoutPublicTransferError { object_id: ObjectID },
 
     #[error(
@@ -234,9 +262,11 @@ pub enum UserInputError {
     TransactionCursorNotFound(u64),
 
     #[error(
-        "Object {:?} is a system object and cannot be accessed by user transactions.",
-        object_id
+    "Could not find the referenced object {:?} at version {:?}.",
+    object_id,
+    version
     )]
+<<<<<<< HEAD
     InaccessibleSystemObject { object_id: ObjectID },
     #[error(
         "{max_publish_commands} max publish/upgrade commands allowed, {publish_count} provided"
@@ -257,6 +287,12 @@ pub enum UserInputError {
 
     #[error("Commands following a command with Random can only be TransferObjects or MergeCoins")]
     PostRandomCommandRestrictions,
+=======
+    BFCObjectNotFound {
+        object_id: String,
+        version: Option<SequenceNumber>,
+    },
+>>>>>>> develop_v.1.1.5
 }
 
 #[derive(
@@ -274,13 +310,15 @@ pub enum UserInputError {
 )]
 #[serde(tag = "code", rename = "ObjectResponseError", rename_all = "camelCase")]
 pub enum SuiObjectResponseError {
-    #[error("Object {:?} does not exist.", object_id)]
+    #[error("Object {:?} does not exist.", objects_id_to_bfc_address(*object_id))]
     NotExists { object_id: ObjectID },
-    #[error("Cannot find dynamic field for parent object {:?}.", parent_object_id)]
+
+    #[error("Cannot find dynamic field for parent object {:?}.", objects_id_to_bfc_address(*parent_object_id))]
     DynamicFieldNotFound { parent_object_id: ObjectID },
+
     #[error(
         "Object has been deleted object_id: {:?} at version: {:?} in digest {:?}",
-        object_id,
+        objects_id_to_bfc_address(*object_id),
         version,
         digest
     )]
@@ -291,6 +329,7 @@ pub enum SuiObjectResponseError {
         /// Base64 string representing the object digest
         digest: ObjectDigest,
     },
+
     #[error("Unknown Error.")]
     Unknown,
     #[error("Display Error: {:?}", error)]
@@ -318,7 +357,7 @@ pub enum SuiError {
     #[error("There are too many transactions pending in consensus")]
     TooManyTransactionsPendingConsensus,
 
-    #[error("Input {object_id} already has {queue_len} transactions pending, above threshold of {threshold}")]
+    #[error("Input {:?} already has {:?} transactions pending, above threshold of {:?}", objects_id_to_bfc_address(*object_id), queue_len, threshold)]
     TooManyTransactionsPendingOnObject {
         object_id: ObjectID,
         queue_len: usize,
@@ -479,8 +518,8 @@ pub enum SuiError {
     #[error("DEPRECATED")]
     DEPRECATED_GenericStorageError,
     #[error(
-        "Attempted to access {object} through parent {given_parent}, \
-        but it's actual parent is {actual_owner}"
+        "Attempted to access {:?} through parent {:?}, \
+        but it's actual parent is {:?}", objects_id_to_bfc_address(*object), given_parent, actual_owner
     )]
     InvalidChildObjectAccess {
         object: ObjectID,

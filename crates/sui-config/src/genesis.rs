@@ -1,14 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::{fs, path::Path};
+
 use anyhow::{Context, Result};
 use fastcrypto::encoding::{Base64, Encoding};
 use fastcrypto::hash::HashFunction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use tracing::trace;
+
 use std::{fs, path::Path};
 use sui_types::authenticator_state::{get_authenticator_state, AuthenticatorStateInner};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::clock::Clock;
+use sui_types::collection_types::{Entry, VecMap};
 use sui_types::committee::CommitteeWithNetworkMetadata;
 use sui_types::crypto::DefaultHash;
 use sui_types::deny_list::{get_coin_deny_list, PerTypeDenyList};
@@ -29,8 +34,8 @@ use sui_types::{
     error::SuiResult,
     object::Object,
 };
-use tracing::trace;
 
+pub const TOTAL_SUPPLY_WITH_ALLOCATION_MIST: u64 = TOTAL_SUPPLY_MIST / 2;
 #[derive(Clone, Debug)]
 pub struct Genesis {
     checkpoint: CertifiedCheckpointSummary,
@@ -49,6 +54,248 @@ pub struct UnsignedGenesis {
     pub effects: TransactionEffects,
     pub events: TransactionEvents,
     pub objects: Vec<Object>,
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct TreasuryParameters {
+    /// The position_number is the quantity of positions in the Treasury.
+    /// Implement the adjustment of liquidity for a limited number of positions.
+    pub position_numbers: u32,
+
+    /// Tick spacing is to control the granularity of liquidity.
+    /// Setting the appropriate tick spacing helps to balance
+    /// between maintaining operating efficiency and price accuracy
+    pub tick_spacing: u32,
+
+    /// Ticks numbers according to spacing_times
+    pub spacing_times: u32,
+
+    /// maximum state counter value
+    pub max_counter_times: u32,
+
+    /// BFC requirement base point
+    pub base_point: u64,
+
+    /// Initialize Price
+    pub initialize_price: u128,
+}
+
+impl TreasuryParameters {
+    pub fn to_genesis_treasury_parameters() -> VecMap<String, TreasuryParameters> {
+        let mut parameters = vec![];
+        // usd
+        parameters.push(Entry {
+            key: "BUSD".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 58333726687135162368,
+            },
+        });
+
+        // mg-gold
+        parameters.push(Entry {
+            key: "MGG".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 14986205729530720256,
+            },
+        });
+
+        // jpy
+        parameters.push(Entry {
+            key: "BJPY".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 4915287178933356544,
+            },
+        });
+
+        // krw
+        parameters.push(Entry {
+            key: "BKRW".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 1618695223101379840,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BAUD".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 48103223333394006016,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BARS".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 2020739568339092224,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BBRL".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 26731871811266244608,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BCAD".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 50854163925868765184,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BEUR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 61180928696206655488,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BGBP".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 65738771359798919168,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BIDR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 10000_000_000_000,
+                initialize_price: 470301539970485312,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BINR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 6390139593977006080,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BRUB".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 6118092869620665344,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BSAR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 30311093525086388224,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BTRY".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 10756207731032303616,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BZAR".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 13555533118889377792,
+            },
+        });
+
+        parameters.push(Entry {
+            key: "BMXN".to_string(),
+            value: TreasuryParameters {
+                position_numbers: 9,
+                tick_spacing: 1,
+                spacing_times: 2,
+                max_counter_times: 5,
+                base_point: 50000_000_000_000,
+                initialize_price: 14169212980379457536,
+            },
+        });
+
+        VecMap {
+            contents: parameters,
+        }
+    }
 }
 
 // Hand implement PartialEq in order to get around the fact that AuthSigs don't impl Eq
@@ -168,6 +415,15 @@ impl Genesis {
     }
 
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, anyhow::Error> {
+        let path = path.as_ref();
+        trace!("Reading Genesis from {}", path.display());
+        let bytes = fs::read(path)
+            .with_context(|| format!("Unable to load Genesis from {}", path.display()))?;
+        bcs::from_bytes(&bytes)
+            .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
+    }
+
+    pub fn load_gensis<P: AsRef<Path>>(&self, path: P) -> Result<Self, anyhow::Error> {
         let path = path.as_ref();
         trace!("Reading Genesis from {}", path.display());
         let bytes = fs::read(path)
@@ -359,6 +615,15 @@ pub struct GenesisChainParameters {
     pub validator_low_stake_grace_period: u64,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct BfcSystemParameters {
+    pub chain_start_timestamp_ms: u64,
+    /// re-balance time interval in seconds
+    pub time_interval: u32,
+    pub treasury_parameters: VecMap<String, TreasuryParameters>,
+}
+
 /// Initial set of parameters for a chain.
 #[derive(Serialize, Deserialize)]
 pub struct GenesisCeremonyParameters {
@@ -383,7 +648,7 @@ pub struct GenesisCeremonyParameters {
     /// The amount of stake subsidy to be drawn down per distribution.
     /// This amount decays and decreases over time.
     #[serde(
-        default = "GenesisCeremonyParameters::default_initial_stake_subsidy_distribution_amount"
+    default = "GenesisCeremonyParameters::default_initial_stake_subsidy_distribution_amount"
     )]
     pub stake_subsidy_initial_distribution_amount: u64,
 
@@ -407,7 +672,7 @@ impl GenesisCeremonyParameters {
             stake_subsidy_start_epoch: 0,
             epoch_duration_ms: Self::default_epoch_duration_ms(),
             stake_subsidy_initial_distribution_amount:
-                Self::default_initial_stake_subsidy_distribution_amount(),
+            Self::default_initial_stake_subsidy_distribution_amount(),
             stake_subsidy_period_length: Self::default_stake_subsidy_period_length(),
             stake_subsidy_decrease_rate: Self::default_stake_subsidy_decrease_rate(),
         }
@@ -426,12 +691,15 @@ impl GenesisCeremonyParameters {
 
     fn default_epoch_duration_ms() -> u64 {
         // 24 hrs
-        24 * 60 * 60 * 1000
+        //24 * 60 * 60 * 1000
+
+        //10 mins
+        1000*60*5
     }
 
     fn default_initial_stake_subsidy_distribution_amount() -> u64 {
-        // 1M Sui
-        1_000_000 * sui_types::gas_coin::MIST_PER_SUI
+        // 5000 Sui
+        4500 * sui_types::gas_coin::MIST_PER_SUI
     }
 
     fn default_stake_subsidy_period_length() -> u64 {
@@ -441,7 +709,9 @@ impl GenesisCeremonyParameters {
 
     fn default_stake_subsidy_decrease_rate() -> u16 {
         // 10% in basis points
-        1000
+        //1000
+        //not decrease, we will keep the same amount
+        0
     }
 
     pub fn to_genesis_chain_parameters(&self) -> GenesisChainParameters {
@@ -462,6 +732,15 @@ impl GenesisCeremonyParameters {
                 sui_types::governance::VALIDATOR_VERY_LOW_STAKE_THRESHOLD_MIST,
             validator_low_stake_grace_period:
                 sui_types::governance::VALIDATOR_LOW_STAKE_GRACE_PERIOD,
+        }
+    }
+
+    pub fn to_bfc_system_parameters(&self) -> BfcSystemParameters {
+        BfcSystemParameters {
+            chain_start_timestamp_ms: self.chain_start_timestamp_ms,
+            // re-balance time interval, default 4h
+            time_interval: 14400,
+            treasury_parameters: TreasuryParameters::to_genesis_treasury_parameters(),
         }
     }
 }
@@ -487,8 +766,8 @@ impl TokenDistributionSchedule {
             total_mist += allocation.amount_mist;
         }
 
-        if total_mist != TOTAL_SUPPLY_MIST {
-            panic!("TokenDistributionSchedule adds up to {total_mist} and not expected {TOTAL_SUPPLY_MIST}");
+        if total_mist != TOTAL_SUPPLY_WITH_ALLOCATION_MIST {
+            panic!("TokenDistributionSchedule adds up to {total_mist} and not expected {TOTAL_SUPPLY_WITH_ALLOCATION_MIST}");
         }
     }
 
@@ -527,7 +806,7 @@ impl TokenDistributionSchedule {
     pub fn new_for_validators_with_default_allocation<I: IntoIterator<Item = SuiAddress>>(
         validators: I,
     ) -> Self {
-        let mut supply = TOTAL_SUPPLY_MIST;
+        let mut supply = TOTAL_SUPPLY_WITH_ALLOCATION_MIST;
         let default_allocation = sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST;
 
         let allocations = validators
@@ -551,6 +830,49 @@ impl TokenDistributionSchedule {
         schedule
     }
 
+    pub fn new_for_validators_with_default_allocation_and_bfc_allocation<
+        I: IntoIterator<Item = SuiAddress>,
+    >(
+        validators: I,
+        bfc_user_allocation: &Vec<TokenAllocation>,
+    ) -> Self {
+        let mut supply = TOTAL_SUPPLY_WITH_ALLOCATION_MIST;
+        let default_allocation = sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST;
+
+        let mut allocations: Vec<_> = validators
+            .into_iter()
+            .map(|a| {
+                supply -= default_allocation;
+                TokenAllocation {
+                    recipient_address: a,
+                    amount_mist: default_allocation,
+                    staked_with_validator: Some(a),
+                }
+            })
+            .collect();
+
+        for user_allocation in bfc_user_allocation {
+            let allocation = user_allocation.amount_mist;
+            let user_address = user_allocation.recipient_address;
+
+            supply -= allocation;
+            let data = TokenAllocation {
+                recipient_address: user_address,
+                amount_mist: allocation,
+                staked_with_validator: None,
+            };
+            allocations.push(data)
+        }
+
+        let schedule = Self {
+            stake_subsidy_fund_mist: supply,
+            allocations,
+        };
+
+        schedule.validate();
+        schedule
+    }
+
     /// Helper to read a TokenDistributionSchedule from a csv file.
     ///
     /// The file is encoded such that the final entry in the CSV file is used to denote the
@@ -563,7 +885,7 @@ impl TokenDistributionSchedule {
         let mut allocations: Vec<TokenAllocation> =
             reader.deserialize().collect::<Result<_, _>>()?;
         assert_eq!(
-            TOTAL_SUPPLY_MIST,
+            TOTAL_SUPPLY_WITH_ALLOCATION_MIST,
             allocations.iter().map(|a| a.amount_mist).sum::<u64>(),
             "Token Distribution Schedule must add up to 10B Sui",
         );
@@ -626,7 +948,7 @@ impl TokenDistributionScheduleBuilder {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            pool: TOTAL_SUPPLY_MIST,
+            pool: TOTAL_SUPPLY_WITH_ALLOCATION_MIST,
             allocations: vec![],
         }
     }

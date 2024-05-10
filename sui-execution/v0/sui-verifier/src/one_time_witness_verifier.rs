@@ -20,12 +20,7 @@ use move_binary_format::file_format::{
     SignatureToken, StructDefinition, StructHandle,
 };
 use move_core_types::{ident_str, language_storage::ModuleId};
-use sui_types::{
-    base_types::{TX_CONTEXT_MODULE_NAME, TX_CONTEXT_STRUCT_NAME},
-    error::ExecutionError,
-    move_package::{is_test_fun, FnInfoMap},
-    SUI_FRAMEWORK_ADDRESS,
-};
+use sui_types::{base_types::{TX_CONTEXT_MODULE_NAME, TX_CONTEXT_STRUCT_NAME}, BFC_SYSTEM_ADDRESS, error::ExecutionError, move_package::{is_test_fun, FnInfoMap}, SUI_FRAMEWORK_ADDRESS};
 
 use crate::{verification_failure, INIT_FN_NAME};
 
@@ -35,6 +30,30 @@ pub fn verify_module(
 ) -> Result<(), ExecutionError> {
     // When verifying test functions, a check preventing by-hand instantiation of one-time withess
     // is disabled
+
+    let bfc_modules = [
+        ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("bfc").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("busd").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bjpy").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bkrw").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("baud").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bars").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bbrl").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bcad").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("beur").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bgbp").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bidr").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("binr").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bmxn").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("brub").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bsar").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("btry").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bzar").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("mgg").to_owned()),
+    ];
+    if bfc_modules.contains(&module.self_id()) {
+        return Ok(());
+    }
 
     // In Sui's framework code there is an exception to the one-time witness type rule - we have a
     // SUI type in the sui module but it is instantiated outside of the module initializer (in fact,

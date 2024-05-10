@@ -27,6 +27,8 @@ module sui::object {
     /// The hardcoded ID for the singleton Sui System State Object.
     const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
 
+    const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
+
     /// The hardcoded ID for the singleton Clock Object.
     const SUI_CLOCK_OBJECT_ID: address = @0x6;
 
@@ -97,6 +99,16 @@ module sui::object {
         assert!(ctx.sender() == @0x0, ENotSystemAddress);
         UID {
             id: ID { bytes: SUI_SYSTEM_STATE_OBJECT_ID },
+        }
+    }
+
+    #[allow(unused_function)]
+    /// Create the `UID` for the singleton `SuiSystemState` object.
+    /// This should only be called once from `sui_system`.
+    public fun bfc_system_state(ctx: &TxContext): UID {
+        assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
+        UID {
+            id: ID { bytes: BFC_SYSTEM_STATE_OBJECT_ID },
         }
     }
 
@@ -216,7 +228,31 @@ module sui::object {
     #[test_only]
     /// Return the most recent created object ID.
     public fun last_created(ctx: &TxContext): ID {
-        ID { bytes: ctx.last_created_object_id() }
+        ID { bytes: tx_context::last_created_object_id(ctx) }
     }
+
+    #[test_only]
+    public fun bfc_system_state_for_test(): UID {
+        UID {
+            id: ID { bytes: BFC_SYSTEM_STATE_OBJECT_ID },
+        }
+    }
+
+    // === Prover support (to avoid circular dependency ===
+
+    #[verify_only]
+    /// Ownership information for a given object (stored at the object's address)
+    struct Ownership has key {
+        owner: address, // only matters if status == OWNED
+        status: u64,
+    }
+
+    #[verify_only]
+    /// List of fields with a given name type of an object containing fields (stored at the
+    /// containing object's address)
+    struct DynamicFields<K: copy + drop + store> has key {
+        names: vector<K>,
+    }
+
 
 }

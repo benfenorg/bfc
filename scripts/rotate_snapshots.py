@@ -4,8 +4,8 @@
 
 """
 Script to be used for deleting old snapshots on a host. Given a root dir,
-for example, /opt/sui, it assumes snapshots are staged in /opt/sui/snapshots,
-and all symlinks to said snapshots are contained under /opt/sui/instances. It will delete all snapshots that are not
+for example, /opt/bfc, it assumes snapshots are staged in /opt/bfc/snapshots,
+and all symlinks to said snapshots are contained under /opt/bfc/instances. It will delete all snapshots that are not
 referenced, except for the newest. If there is only onle snaopshot on the host,
 it does nothing.
 """

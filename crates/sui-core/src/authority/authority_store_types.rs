@@ -10,6 +10,8 @@ use sui_types::coin::Coin;
 use sui_types::crypto::{default_hash, Signable};
 use sui_types::error::SuiError;
 use sui_types::move_package::MovePackage;
+use sui_types::object::{Data, MoveObject, Object, Owner};
+use sui_types::stable_coin::stable::checked::STABLE;
 use sui_types::object::{Data, MoveObject, Object, ObjectInner, Owner};
 use sui_types::storage::ObjectKey;
 
@@ -107,6 +109,7 @@ pub enum StoreData {
     Package(MovePackage),
     IndirectObject(IndirectObjectMetadata),
     Coin(u64),
+    StableCoin(u8, u64),
 }
 
 /// Metadata of stored moved object
@@ -223,6 +226,14 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                         .balance
                         .value(),
                 )
+            }else if move_obj.type_().is_stable_gas_coin() {
+                StoreData::StableCoin(
+                    STABLE::from(move_obj.type_().get_stable_gas_tag()).get_index(),
+                    Coin::from_bcs_bytes(move_obj.contents())
+                        .expect("failed to deserialize coin")
+                        .balance
+                        .value(),
+                )
             } else {
                 StoreData::Move(move_obj)
             }
@@ -260,7 +271,16 @@ pub(crate) fn try_construct_object(
         },
         (StoreData::Coin(balance), None) => unsafe {
             Data::Move(MoveObject::new_from_execution_with_limit(
-                MoveObjectType::gas_coin(),
+                MoveObjectType::default_gas_coin(),
+                true,
+                object_key.1,
+                bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),
+                u64::MAX,
+            )?)
+        },
+        (StoreData::StableCoin(index, balance), None) => unsafe {
+            Data::Move(MoveObject::new_from_execution_with_limit(
+                MoveObjectType::stable_gas_coin(index),
                 true,
                 object_key.1,
                 bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),

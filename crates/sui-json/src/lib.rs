@@ -31,6 +31,7 @@ use sui_types::base_types::{
     RESOLVED_STD_OPTION, RESOLVED_UTF8_STR, STD_ASCII_MODULE_NAME, STD_ASCII_STRUCT_NAME,
     STD_OPTION_MODULE_NAME, STD_OPTION_STRUCT_NAME, STD_UTF8_MODULE_NAME, STD_UTF8_STRUCT_NAME,
 };
+use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 use sui_types::id::{ID, RESOLVED_SUI_ID};
 use sui_types::move_package::MovePackage;
 use sui_types::object::bounded_visitor::BoundedVisitor;
@@ -38,6 +39,8 @@ use sui_types::transfer::RESOLVED_RECEIVING_STRUCT;
 use sui_types::MOVE_STDLIB_ADDRESS;
 
 const HEX_PREFIX: &str = "0x";
+const BFC_PREFIX_UPPER: &str = "BFC";
+const BFC_PREFIX_LOWER: &str = "bfc";
 
 #[cfg(test)]
 mod tests;
@@ -368,7 +371,11 @@ impl Debug for SuiJsonValue {
 fn json_value_to_sui_address(value: &JsonValue) -> anyhow::Result<SuiAddress> {
     match value {
         JsonValue::String(s) => {
-            let s = s.trim().to_lowercase();
+            let mut s = s.trim().to_lowercase();
+
+            if s.starts_with(BFC_PREFIX_UPPER) || s.starts_with(BFC_PREFIX_LOWER) {
+                s = convert_to_evm_address(s.clone());
+            }
             if !s.starts_with(HEX_PREFIX) {
                 bail!("Address hex string must start with 0x.",);
             }
@@ -656,7 +663,11 @@ fn resolve_object_arg(idx: usize, arg: &JsonValue) -> Result<ObjectID, anyhow::E
     // Every elem has to be a string convertible to a ObjectID
     match arg {
         JsonValue::String(s) => {
-            let s = s.trim().to_lowercase();
+            let mut s = s.trim().to_lowercase();
+
+            if s.starts_with(BFC_PREFIX_UPPER) || s.starts_with(BFC_PREFIX_LOWER) {
+                s = convert_to_evm_address(s.clone());
+            }
             if !s.starts_with(HEX_PREFIX) {
                 bail!("ObjectID hex string must start with 0x.",);
             }

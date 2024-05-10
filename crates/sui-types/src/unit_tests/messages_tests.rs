@@ -1015,23 +1015,28 @@ fn verify_sender_signature_correctly_with_flag() {
 
 #[test]
 fn test_change_epoch_transaction() {
-    let tx = VerifiedTransaction::new_change_epoch(1, ProtocolVersion::MIN, 0, 0, 0, 0, 0, vec![]);
+    let tx = VerifiedTransaction::new_change_epoch(1, ProtocolVersion::MIN, 0, 0, 0, 0, HashMap::new(),0,vec![]);
     assert!(tx.contains_shared_object());
-    assert_eq!(
-        tx.shared_input_objects().next().unwrap(),
-        SharedInputObject::SUI_SYSTEM_OBJ
-    );
+
+    assert!( tx.shared_input_objects().next().unwrap() == SharedInputObject::SUI_SYSTEM_OBJ ||
+       tx.shared_input_objects().next().unwrap() == SharedInputObject::BFC_SYSTEM_OBJ);
+
     assert!(tx.is_system_tx());
+
+    let objects_length = tx.data()
+        .intent_message()
+        .value
+        .input_objects()
+        .unwrap()
+        .len();
+
+    //0x05, 0x06, 0xc0[201]
     assert_eq!(
-        tx.data()
-            .intent_message()
-            .value
-            .input_objects()
-            .unwrap()
-            .len(),
-        1
+        objects_length,
+        3
     );
 }
+
 
 #[test]
 fn test_consensus_commit_prologue_transaction() {

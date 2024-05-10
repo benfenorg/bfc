@@ -38,7 +38,7 @@ pub enum FireDrill {
 
 #[derive(Parser)]
 pub struct MetadataRotation {
-    /// Path to sui node config.
+    /// Path to bfc node config.
     #[clap(long = "sui-node-config-path")]
     sui_node_config_path: PathBuf,
     /// Path to account key file.
@@ -67,7 +67,7 @@ async fn run_metadata_rotation(metadata_rotation: MetadataRotation) -> anyhow::R
     let account_key = read_keypair_from_file(&account_key_path)?;
     let config: NodeConfig = PersistedConfig::read(&sui_node_config_path).map_err(|err| {
         err.context(format!(
-            "Cannot open Sui Node Config file at {:?}",
+            "Cannot open Bfc Node Config file at {:?}",
             sui_node_config_path
         ))
     })?;
@@ -92,7 +92,7 @@ async fn run_metadata_rotation(metadata_rotation: MetadataRotation) -> anyhow::R
 
     // Replace new config
     std::fs::rename(new_config_path, sui_node_config_path)?;
-    info!("Updated Sui Node config.");
+    info!("Updated Bfc Node config.");
 
     Ok(())
 }
@@ -105,12 +105,12 @@ pub async fn get_gas_obj_ref(
 ) -> anyhow::Result<ObjectRef> {
     let coins = sui_client
         .coin_read_api()
-        .get_coins(sui_address, Some("0x2::sui::SUI".into()), None, None)
+        .get_coins(sui_address, Some("0x2::bfc::BFC".into()), None, None)
         .await?
         .data;
     let gas_obj = coins.iter().find(|c| c.balance >= minimal_gas_balance);
     if gas_obj.is_none() {
-        bail!("Validator doesn't have enough Sui coins to cover transaction fees.");
+        bail!("Validator doesn't have enough Bfc coins to cover transaction fees.");
     }
     Ok(gas_obj.unwrap().object_ref())
 }

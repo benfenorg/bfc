@@ -51,6 +51,7 @@ tokio = { workspace = true, features = ["full", "tracing", "test-util"] }
 tokio-retry.workspace = true
 tokio-stream.workspace = true
 tracing.workspace = true
+sha2 = "0.9.5"
 twox-hash.workspace = true
 
 anemo.workspace = true
@@ -144,3 +145,4 @@ harness = false
 
 [features]
 test-utils = []
+bfc_skip_dao_update = []

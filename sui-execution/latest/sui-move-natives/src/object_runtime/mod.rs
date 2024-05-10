@@ -28,6 +28,7 @@ use std::{
     sync::Arc,
 };
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
+<<<<<<< HEAD
 use sui_types::{
     base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
     committee::EpochId,
@@ -40,6 +41,9 @@ use sui_types::{
     SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID,
     SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID,
 };
+=======
+use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::LoadedChildObjectMetadata, id::UID, metrics::LimitsMetrics, BFC_SYSTEM_STATE_OBJECT_ID, object::{MoveObject, Owner}, storage::ChildObjectResolver, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
+>>>>>>> develop_v.1.1.5
 
 pub enum ObjectEvent {
     /// Transfer to a new address or object. Or make it shared or immutable.
@@ -92,7 +96,56 @@ pub(crate) struct ObjectRuntimeState {
     events: Vec<(Type, StructTag, Value)>,
     // total size of events emitted so far
     total_events_size: u64,
+<<<<<<< HEAD
     received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
+=======
+}
+
+#[derive(Clone)]
+pub(crate) struct LocalProtocolConfig {
+    pub(crate) max_num_deleted_move_object_ids: u64,
+    pub(crate) max_num_deleted_move_object_ids_system_tx: u64,
+    pub(crate) max_num_event_emit: u64,
+    pub(crate) max_num_new_move_object_ids: u64,
+    pub(crate) max_num_new_move_object_ids_system_tx: u64,
+    pub(crate) max_num_transferred_move_object_ids: u64,
+    pub(crate) max_num_transferred_move_object_ids_system_tx: u64,
+    pub(crate) max_event_emit_size: u64,
+    pub(crate) max_event_emit_size_total: Option<u64>,
+    pub(crate) object_runtime_max_num_cached_objects: u64,
+    pub(crate) object_runtime_max_num_cached_objects_system_tx: u64,
+    pub(crate) object_runtime_max_num_store_entries: u64,
+    pub(crate) object_runtime_max_num_store_entries_system_tx: u64,
+    pub(crate) loaded_child_object_format: bool,
+    pub(crate) loaded_child_object_format_type: bool,
+}
+
+impl LocalProtocolConfig {
+    fn new(config: &ProtocolConfig) -> Self {
+        Self {
+            max_num_deleted_move_object_ids: config.max_num_deleted_move_object_ids(),
+            max_num_event_emit: config.max_num_event_emit(),
+            max_num_new_move_object_ids: config.max_num_new_move_object_ids(),
+            max_num_transferred_move_object_ids: config.max_num_transferred_move_object_ids(),
+            max_event_emit_size: config.max_event_emit_size(),
+            max_event_emit_size_total: config.max_event_emit_size_total_as_option(),
+            max_num_deleted_move_object_ids_system_tx: config
+                .max_num_deleted_move_object_ids_system_tx(),
+            max_num_new_move_object_ids_system_tx: config.max_num_new_move_object_ids_system_tx(),
+            max_num_transferred_move_object_ids_system_tx: config
+                .max_num_transferred_move_object_ids_system_tx(),
+
+            object_runtime_max_num_cached_objects: config.object_runtime_max_num_cached_objects(),
+            object_runtime_max_num_cached_objects_system_tx: config
+                .object_runtime_max_num_cached_objects_system_tx(),
+            object_runtime_max_num_store_entries: config.object_runtime_max_num_store_entries(),
+            object_runtime_max_num_store_entries_system_tx: config
+                .object_runtime_max_num_store_entries_system_tx(),
+            loaded_child_object_format: config.loaded_child_object_format(),
+            loaded_child_object_format_type: config.loaded_child_object_format_type(),
+        }
+    }
+>>>>>>> develop_v.1.1.5
 }
 
 #[derive(Tid)]
@@ -250,6 +303,7 @@ impl<'a> ObjectRuntime<'a> {
         // - Otherwise, check the input objects for the previous owner
         // - If it was not in the input objects, it must have been wrapped or must have been a
         //   child object
+<<<<<<< HEAD
         let is_framework_obj = [
             SUI_SYSTEM_STATE_OBJECT_ID,
             SUI_CLOCK_OBJECT_ID,
@@ -264,6 +318,10 @@ impl<'a> ObjectRuntime<'a> {
             // framework objects are always created when they are transferred, but the id is
             // hard-coded so it is not yet in new_ids
             self.state.new_ids.insert(id);
+=======
+        let is_framework_obj = [SUI_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_ID].contains(&id);
+        let transfer_result = if self.state.new_ids.contains_key(&id) || is_framework_obj {
+>>>>>>> develop_v.1.1.5
             TransferResult::New
         } else if let Some(prev_owner) = self.state.input_objects.get(&id) {
             match (&owner, prev_owner) {
@@ -555,6 +613,7 @@ impl ObjectRuntimeState {
         let written_objects: IndexMap<_, _> = transfers
             .into_iter()
             .map(|(id, (owner, type_, value))| {
+                //todo: warning!!!
                 if let Some(loaded_child) = loaded_child_objects.get_mut(&id) {
                     loaded_child.is_modified = true;
                 }

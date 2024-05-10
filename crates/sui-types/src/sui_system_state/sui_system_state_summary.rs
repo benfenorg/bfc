@@ -5,7 +5,7 @@ use crate::base_types::{AuthorityName, ObjectID, SuiAddress};
 use crate::committee::{Committee, CommitteeWithNetworkMetadata, NetworkMetadata};
 use crate::dynamic_field::get_dynamic_field_from_store;
 use crate::error::SuiError;
-use crate::id::ID;
+use crate::id::{ID, UID};
 use crate::multiaddr::Multiaddr;
 use crate::storage::ObjectStore;
 use crate::sui_serde::BigInt;
@@ -209,6 +209,14 @@ impl SuiSystemStateSummary {
     }
 }
 
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct BagSummary {
+    pub id: UID,
+    pub size: u64,
+}
+
 /// This is the JSON-RPC type for the SUI validator. It flattens all inner structures
 /// to top-level fields so that they are decoupled from the internal definitions.
 #[serde_as]
@@ -277,6 +285,11 @@ pub struct SuiValidatorSummary {
     // Staking pool information
     /// ID of the staking pool object.
     pub staking_pool_id: ObjectID,
+
+    // Multiple coin of staking pool information
+    /// ID of the multiple staking pool object.
+    pub stable_pools: Option<BagSummary>,
+
     /// The epoch at which this pool became active.
     #[schemars(with = "Option<BigInt<u64>>")]
     #[serde_as(as = "Option<Readable<BigInt<u64>, _>>")]
@@ -375,6 +388,7 @@ impl Default for SuiValidatorSummary {
             project_url: String::new(),
             net_address: String::new(),
             p2p_address: String::new(),
+            stable_pools: None,
             primary_address: String::new(),
             worker_address: String::new(),
             next_epoch_protocol_pubkey_bytes: None,

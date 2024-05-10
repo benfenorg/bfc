@@ -12,10 +12,11 @@ use sui_json_rpc_types::{
 use sui_json_rpc_types::{ProtocolConfigResponse, SuiLoadedChildObjectsResponse};
 use sui_open_rpc_macros::open_rpc;
 use sui_types::base_types::{ObjectID, SequenceNumber, TransactionDigest};
+use sui_types::dao::DaoRPC;
 use sui_types::sui_serde::BigInt;
 
-#[open_rpc(namespace = "sui", tag = "Read API")]
-#[rpc(server, client, namespace = "sui")]
+#[open_rpc(namespace = "bfc", tag = "Read API")]
+#[rpc(server, client, namespace = "bfc")]
 pub trait ReadApi {
     /// Return the transaction response object.
     #[method(name = "getTransactionBlock")]
@@ -148,6 +149,11 @@ pub trait ReadApi {
         /// An optional protocol version specifier. If omitted, the latest protocol config table for the node will be returned.
         version: Option<BigInt<u64>>,
     ) -> RpcResult<ProtocolConfigResponse>;
+
+    #[method(name = "getInnerDaoInfo")]
+    async fn get_inner_dao_info(
+        &self,
+    ) -> RpcResult<DaoRPC>;
 
     /// Return the first four bytes of the chain's genesis checkpoint digest.
     #[method(name = "getChainIdentifier")]

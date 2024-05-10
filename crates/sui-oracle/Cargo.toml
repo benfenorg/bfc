@@ -35,3 +35,7 @@ shared-crypto = { path = "../shared-crypto" }
 bcs = "0.1.5"
 rand = "0.8.5"
 dirs = "4.0.0"
+
+[[bin]]
+name = "bfc-oracle"
+path = "src/main.rs"

@@ -1,19 +1,19 @@
----
-title: Wallet Standard
-description: The Wallet Standard defines how wallets can automatically be discovered and interacted with from dApps.
----
+# Wallet Standard
 
-Browser extension wallets built for Sui are defined using the [Wallet Standard](https://github.com/wallet-standard/wallet-standard/). This is a cross-chain standard that defines how wallets can automatically be discovered and interacted with from dApps.
+Browser extension wallets built for Sui are defined using the
+[Wallet Standard](https://github.com/wallet-standard/wallet-standard/). This is a cross-chain
+standard that defines how wallets can automatically be discovered and interacted with from dApps.
 
-If you are building a wallet, we publish a helper library `@mysten/wallet-standard` which provides types and utilities that make it simple to get started.
+If you are building a wallet, we publish a helper library `@benfen/wallet-standard` which provides
+types and utilities that make it simple to get started.
 
 ### Creating a wallet interface
 
 You need to create a class that represents your wallet. You can use the `Wallet` interface from
-`@mysten/wallet-standard` to help ensure your class adheres to the standard.
+`@benfen/wallet-standard` to help ensure your class adheres to the standard.
 
 ```tsx
-import { SUI_DEVNET_CHAIN, Wallet } from '@mysten/wallet-standard';
+import { Wallet, SUI_DEVNET_CHAIN } from '@benfen/wallet-standard';
 
 class YourWallet implements Wallet {
 	get version() {
@@ -42,9 +42,9 @@ wallet adapter, you must implement the following features in your wallet:
 - `standard:events` - Used to listen for changes that happen within the wallet, such as accounts
   being added or removed.
 - `sui:signPersonalMessage` - Used to prompt the user to sign a personal message, and return the
-  message signature back to the dApp. This can be used to verify the user’s public key.
+  message signature back to the dapp. This can be used to verify the user’s public key.
 - `sui:signTransactionBlock` - Used to prompt the user to sign a transaction block, and return the
-  serialized transaction block and signature back to the dApp. This method does not submit the
+  serialized transaction block and signature back to the dapp. This method does not submit the
   transaction block for execution.
 - `sui:signAndExecuteTransactionBlock` - Used to prompt the user to sign a transaction, then submit
   it for execution to the blockchain.
@@ -61,7 +61,7 @@ import {
   SuiSignPersonalMessageMethod,
   SuiSignTransactionBlockMethod,
   SuiSignAndExecuteTransactionBlockMethod
-} from "@mysten/wallet-standard";
+} from "@benfen/wallet-standard";
 
 class YourWallet implements Wallet {
 	/* ... existing code from above ... */
@@ -115,7 +115,7 @@ class YourWallet implements Wallet {
 
 ### Exposing accounts
 
-The last requirement of the wallet interface is to expose an `accounts` interface. This should
+The last requirement of the wallet interface is to expose an `acccounts` interface. This should
 expose all of the accounts that a connected dApp has access to. It can be empty prior to initiating
 a connection through the `standard:connect` feature.
 
@@ -123,7 +123,7 @@ The accounts can use the `ReadonlyWalletAccount` class to easily construct an ac
 required interface.
 
 ```tsx
-import { ReadonlyWalletAccount } from '@mysten/wallet-standard';
+import { ReadonlyWalletAccount } from '@benfen/wallet-standard';
 
 class YourWallet implements Wallet {
 	get accounts() {
@@ -155,7 +155,7 @@ Once you have a compatible interface for your wallet, you register it using the 
 function.
 
 ```tsx
-import { registerWallet } from '@mysten/wallet-standard';
+import { registerWallet } from '@benfen/wallet-standard';
 
 registerWallet(new YourWallet());
 ```

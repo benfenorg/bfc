@@ -46,5 +46,5 @@ async-recursion.workspace = true
 test-cluster.workspace = true
 
 [[bin]]
-name = "sui-faucet"
+name = "bfc-faucet"
 path = "src/main.rs"

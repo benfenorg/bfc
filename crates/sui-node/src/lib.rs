@@ -1,6 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
+=======
+use std::collections::HashMap;
+use std::fmt;
+use std::path::PathBuf;
+use std::str::FromStr;
+#[cfg(msim)]
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::time::Duration;
+
+>>>>>>> develop_v.1.1.5
 use anemo::Network;
 use anemo_tower::callback::CallbackLayer;
 use anemo_tower::trace::DefaultMakeSpan;
@@ -120,9 +132,7 @@ use sui_types::base_types::{AuthorityName, EpochId};
 use sui_types::committee::Committee;
 use sui_types::crypto::KeypairTraits;
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::messages_consensus::{
-    check_total_jwk_size, AuthorityCapabilities, ConsensusTransaction,
-};
+use sui_types::messages_consensus::{AuthorityCapabilities, ConsensusTransaction};
 use sui_types::quorum_driver_types::QuorumDriverEffectsQueueResult;
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemState;
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
@@ -252,8 +262,6 @@ impl fmt::Debug for SuiNode {
     }
 }
 
-static MAX_JWK_KEYS_PER_FETCH: usize = 100;
-
 impl SuiNode {
     pub async fn start(
         config: NodeConfig,
@@ -263,6 +271,7 @@ impl SuiNode {
         Self::start_async(config, registry_service, custom_rpc_runtime, "unknown").await
     }
 
+<<<<<<< HEAD
     fn start_jwk_updater(
         config: &NodeConfig,
         metrics: Arc<SuiNodeMetrics>,
@@ -351,13 +360,32 @@ impl SuiNode {
                         info!("fetching JWK for provider {:?}", p);
                         metrics.jwk_requests.with_label_values(&[&provider_str]).inc();
                         match Self::fetch_jwks(authority, &p).await {
+=======
+    fn start_jwk_updater(epoch_store: Arc<AuthorityPerEpochStore>) {
+        let epoch = epoch_store.epoch();
+        tokio::task::spawn(
+            async move {
+                info!("Starting JWK updater task");
+                loop {
+                    let epoch_store_ = epoch_store.clone();
+                    let supported_providers = epoch_store
+                        .protocol_config()
+                        .zklogin_supported_providers()
+                        .iter()
+                        .map(|s| OIDCProvider::from_str(s).expect("Invalid provider string"))
+                        .collect::<Vec<_>>();
+                    let fetch_and_sleep = async move {
+                        // Update the JWK value in the authority server
+                        info!("fetching new JWKs");
+                        match Self::fetch_jwks(&supported_providers).await {
+>>>>>>> develop_v.1.1.5
                             Err(e) => {
                                 metrics.jwk_request_errors.with_label_values(&[&provider_str]).inc();
                                 warn!("Error when fetching JWK for provider {:?} {:?}", p, e);
                                 // Retry in 30 seconds
                                 tokio::time::sleep(Duration::from_secs(30)).await;
-                                continue;
                             }
+<<<<<<< HEAD
                             Ok(mut keys) => {
                                 metrics.total_jwks
                                     .with_label_values(&[&provider_str])
@@ -391,13 +419,60 @@ impl SuiNode {
                             }
                         }
                         tokio::time::sleep(fetch_interval).await;
+=======
+                            Ok(keys) => {
+                                for (jwk_id, jwk) in keys {
+                                    epoch_store_.insert_oauth_jwk(&jwk_id, &jwk);
+                                }
+                            }
+                        }
+                        // Sleep for 1 hour
+                        tokio::time::sleep(Duration::from_secs(3600)).await;
+                    };
+
+                    tokio::select! {
+                        _ = fetch_and_sleep => {}
+                        _ = epoch_store.wait_epoch_terminated() => {
+                            break;
+                        }
+>>>>>>> develop_v.1.1.5
                     }
                 }
-                .instrument(error_span!("jwk_updater_task", epoch)),
-            ));
-        }
+                info!("JWK updater task terminated");
+            }
+            .instrument(error_span!("jwk_updater_task", epoch)),
+        );
     }
 
+<<<<<<< HEAD
+=======
+    #[cfg(not(msim))]
+    async fn fetch_jwks(supported_providers: &[OIDCProvider]) -> SuiResult<Vec<(JwkId, JWK)>> {
+        use fastcrypto_zkp::bn254::zk_login::fetch_jwks;
+        let mut res = Vec::new();
+        let client = reqwest::Client::new();
+        for p in supported_providers {
+            let jwks = fetch_jwks(p, &client)
+                .await
+                .map_err(|_| SuiError::JWKRetrievalError)?;
+            res.extend(jwks);
+        }
+        Ok(res)
+    }
+
+    #[cfg(msim)]
+    #[allow(unused_variables)]
+    async fn fetch_jwks(supported_providers: &[OIDCProvider]) -> SuiResult<Vec<(JwkId, JWK)>> {
+        use fastcrypto_zkp::bn254::zk_login::parse_jwks;
+        // Just load a default Twitch jwk for testing.
+        parse_jwks(
+            sui_types::zk_login_util::DEFAULT_JWK_BYTES,
+            &OIDCProvider::Twitch,
+        )
+        .map_err(|_| SuiError::JWKRetrievalError)
+    }
+
+>>>>>>> develop_v.1.1.5
     pub async fn start_async(
         config: NodeConfig,
         registry_service: RegistryService,
@@ -420,7 +495,7 @@ impl SuiNode {
         let prometheus_registry = registry_service.default_registry();
 
         info!(node =? config.protocol_public_key(),
-            "Initializing sui-node listening on {}", config.network_address
+            "Initializing bfc-node listening on {}", config.network_address
         );
 
         // Initialize metrics to track db usage before creating any stores
@@ -483,11 +558,17 @@ impl SuiNode {
             ChainIdentifier::from(*genesis.checkpoint().digest()),
         );
 
+<<<<<<< HEAD
         replay_log!(
             "Beginning replay run. Epoch: {:?}, Protocol config: {:?}",
             epoch_store.epoch(),
             epoch_store.protocol_config()
         );
+=======
+        if epoch_store.protocol_config().zklogin_auth() {
+            Self::start_jwk_updater(epoch_store.clone());
+        }
+>>>>>>> develop_v.1.1.5
 
         // the database is empty at genesis time
         if is_genesis {
@@ -769,7 +850,7 @@ impl SuiNode {
             shutdown_channel_tx: shutdown_channel,
         };
 
-        info!("SuiNode started!");
+        info!("BFCNode started!");
         let node = Arc::new(node);
         let node_copy = node.clone();
         spawn_monitored_task!(async move {
@@ -1045,6 +1126,7 @@ impl SuiNode {
             anemo_config.quic = Some(quic_config);
 
             let server_name = format!("sui-{}", chain_identifier);
+
             let network = Network::bind(config.p2p_config.listen_address)
                 .server_name(&server_name)
                 .private_key(config.network_key_pair().copy().private().0.to_bytes())
@@ -1056,6 +1138,25 @@ impl SuiNode {
                 "P2p network started on {}",
                 network.local_addr()
             );
+
+            /*
+            let p2p_port = config.p2p_config.listen_address.port();
+            let network = Network::bind(anemo::types::Address::HostAndPort {
+                host: "0.0.0.0".into(),
+                port: p2p_port,
+            })
+                .server_name(&server_name)
+                .private_key(config.network_key_pair().copy().private().0.to_bytes())
+                .config(anemo_config)
+                .outbound_request_layer(outbound_layer)
+                .start(service)?;
+            info!(
+                server_name = server_name,
+                "P2p network started on {}",
+                network.local_addr()
+            );
+
+             */
 
             network
         };
@@ -1237,7 +1338,7 @@ impl SuiNode {
                 epoch_store.clone(),
                 consensus_handler_initializer,
                 SuiTxValidator::new(
-                    epoch_store.clone(),
+                    epoch_store,
                     checkpoint_service.clone(),
                     state.transaction_manager().clone(),
                     sui_tx_validator_metrics.clone(),
@@ -1245,6 +1346,7 @@ impl SuiNode {
             )
             .await;
 
+<<<<<<< HEAD
         if epoch_store.authenticator_state_enabled() {
             Self::start_jwk_updater(
                 config,
@@ -1255,6 +1357,8 @@ impl SuiNode {
             );
         }
 
+=======
+>>>>>>> develop_v.1.1.5
         Ok(ValidatorComponents {
             validator_server_handle,
             validator_overload_monitor_handle,
@@ -1316,6 +1420,30 @@ impl SuiNode {
         )
     }
 
+<<<<<<< HEAD
+=======
+    fn construct_narwhal_manager(
+        config: &NodeConfig,
+        consensus_config: &ConsensusConfig,
+        registry_service: &RegistryService,
+    ) -> Result<NarwhalManager> {
+        let narwhal_config = NarwhalConfiguration {
+            primary_keypair: config.protocol_key_pair().copy(),
+            network_keypair: config.network_key_pair().copy(),
+            worker_ids_and_keypairs: vec![(0, config.worker_key_pair().copy())],
+            storage_base_path: consensus_config.db_path().to_path_buf(),
+            parameters: consensus_config.narwhal_config().to_owned(),
+            registry_service: registry_service.clone(),
+        };
+
+        info!("=============Narwhal config: {:?}", narwhal_config.storage_base_path);
+
+        let metrics = NarwhalManagerMetrics::new(&registry_service.default_registry());
+
+        Ok(NarwhalManager::new(narwhal_config, metrics))
+    }
+
+>>>>>>> develop_v.1.1.5
     fn construct_consensus_adapter(
         committee: &Committee,
         consensus_config: &ConsensusConfig,
@@ -1561,9 +1689,17 @@ impl SuiNode {
                     )
                     .await;
 
+<<<<<<< HEAD
                 consensus_epoch_data_remover
                     .remove_old_data(next_epoch - 1)
                     .await;
+=======
+                if next_epoch > 3 {
+                    narwhal_epoch_data_remover
+                        .remove_old_data(next_epoch - 3)
+                        .await;
+                }
+>>>>>>> develop_v.1.1.5
 
                 if self.state.is_validator(&new_epoch_store) {
                     // Only restart Narwhal if this node is still a validator in the new epoch.
@@ -1701,6 +1837,7 @@ impl SuiNode {
             new_epoch_store.epoch_start_config().flags(),
         );
 
+        Self::start_jwk_updater(new_epoch_store.clone());
         new_epoch_store
     }
 

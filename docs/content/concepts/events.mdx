@@ -1,15 +1,10 @@
----
-title: Events
-description: Events are the main way to track actions on chain.
----
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
 
-Events are the main way to track actions on chain. The following example includes comments to document the logic of the code. The example extends the donut example used elsewhere in the documentation to include events that are emitted when someone purchases a donut and when the `DonutShop` collects coins from that sale. You could then set up subscriptions to listen for these events, then trigger logic when those events fire. 
-
-```move
 /// Extended example of a shared object. Now with addition of events!
 module examples::donuts_with_events {
     use sui::transfer;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::object::{Self, ID, UID};
     use sui::balance::{Self, Balance};
@@ -30,7 +25,7 @@ module examples::donuts_with_events {
     struct DonutShop has key {
         id: UID,
         price: u64,
-        balance: Balance<SUI>
+        balance: Balance<BFC>
     }
 
     // ====== Events ======
@@ -47,6 +42,7 @@ module examples::donuts_with_events {
 
     // ====== Functions ======
 
+    #[allow(unused_function)]
     fun init(ctx: &mut TxContext) {
         transfer::transfer(ShopOwnerCap {
             id: object::new(ctx)
@@ -60,11 +56,9 @@ module examples::donuts_with_events {
     }
 
     /// Buy a donut.
-    public fun buy_donut(
-        shop: &mut DonutShop,
-        payment: &mut Coin<SUI>,
-        ctx: &mut TxContext,
-    ): Donut {
+    public entry fun buy_donut(
+        shop: &mut DonutShop, payment: &mut Coin<BFC>, ctx: &mut TxContext
+    ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 
         let coin_balance = coin::balance_mut(payment);
@@ -75,33 +69,26 @@ module examples::donuts_with_events {
 
         // Emit the event using future object's ID.
         event::emit(DonutBought { id: object::uid_to_inner(&id) });
-       Donut { id }
+        transfer::transfer(Donut { id }, tx_context::sender(ctx))
     }
 
     /// Consume donut and get nothing...
-    public fun eat_donut(d: Donut) {
+    public entry fun eat_donut(d: Donut) {
         let Donut { id } = d;
         object::delete(id);
     }
 
     /// Take coin from `DonutShop` and transfer it to tx sender.
     /// Requires authorization with `ShopOwnerCap`.
-    public fun collect_profits(
-        _: &ShopOwnerCap,
-        shop: &mut DonutShop,
-        ctx: &mut TxContext,
-    ): Coin<SUI> {
+    public entry fun collect_profits(
+        _: &ShopOwnerCap, shop: &mut DonutShop, ctx: &mut TxContext
+    ) {
         let amount = balance::value(&shop.balance);
         let profits = coin::take(&mut shop.balance, amount, ctx);
 
         // simply create new type instance and emit it
         event::emit(ProfitsCollected { amount });
 
-        profits
+        transfer::public_transfer(profits, tx_context::sender(ctx))
     }
 }
-```
-
-## Related links
-
-- [Using Events](/guides/developer/sui-101/using-events.mdx): A guide to leveraging Sui events in your smart contracts.

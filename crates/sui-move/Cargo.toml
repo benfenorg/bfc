@@ -67,3 +67,7 @@ prove = []
 unit_test = ["build", "dep:once_cell"]
 calibrate = []
 all = ["build", "coverage", "disassemble", "prove", "unit_test", "calibrate"]
+
+[[bin]]
+name = "bfc-move"
+path = "src/main.rs"

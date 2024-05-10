@@ -1,34 +1,29 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-	useCurrentAccount,
-	useSignTransactionBlock,
-	useSuiClient,
-	useSuiClientContext,
-} from '@mysten/dapp-kit';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { useMutation } from '@tanstack/react-query';
-import { AlertCircle, Terminal } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
 import { ConnectWallet } from '@/components/connect';
-import { EffectsPreview } from '@/components/preview-effects/EffectsPreview';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import {
+	Connection,
+	JsonRpcProvider,
+	TransactionBlock,
+	devnetConnection,
+	mainnetConnection,
+	testnetConnection,
+} from '@benfen/bfc.js';
+import { useWalletKit } from '@benfen/wallet-kit';
+import { AlertCircle, Terminal } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export default function OfflineSigner() {
-	const currentAccount = useCurrentAccount();
-
-	const client = useSuiClient();
-	const { selectNetwork } = useSuiClientContext();
-
-	const { mutateAsync: signTransactionBlock } = useSignTransactionBlock();
+	const { currentAccount, signTransactionBlock } = useWalletKit();
 	const [tab, setTab] = useState<'transaction' | 'signature'>('transaction');
 	const [bytes, setBytes] = useState('');
-	const { mutate, data, isPending } = useMutation({
+	const { mutate, data, isLoading } = useMutation({
 		mutationKey: ['sign'],
 		mutationFn: async () => {
 			const transactionBlock = TransactionBlock.from(bytes);
@@ -39,25 +34,29 @@ export default function OfflineSigner() {
 		},
 	});
 
-	useEffect(() => {
-		if (!currentAccount?.chains[0]) return;
-
-		selectNetwork(currentAccount?.chains[0]);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [currentAccount]);
+	// supported connections.
+	const connections: Record<`${string}:${string}`, Connection> = {
+		'sui:testnet': testnetConnection,
+		'sui:mainnet': mainnetConnection,
+		'sui:devnet': devnetConnection,
+	};
 
 	// runs a dry-run for the transaction based on the connected wallet.
 	const {
 		mutate: dryRun,
 		data: dryRunData,
-		isPending: dryRunLoading,
+		isLoading: dryRunLoading,
 		error,
+		reset,
 	} = useMutation({
 		mutationKey: ['dry-run'],
 		mutationFn: async () => {
-			if (!client) throw new Error('No chain detected for the account.');
+			if (!currentAccount?.chains[0]) throw new Error('No chain detected for the account.');
+			const provider = new JsonRpcProvider(
+				connections[currentAccount?.chains.filter((x) => x.startsWith('sui'))[0]],
+			);
 
-			return await client.dryRunTransactionBlock({
+			return await provider.dryRunTransactionBlock({
 				transactionBlock: bytes,
 			});
 		},
@@ -96,10 +95,10 @@ export default function OfflineSigner() {
 
 				<TabsContent value="transaction">
 					<div className="flex flex-col items-start gap-4">
-						<Textarea value={bytes} onChange={(e) => setBytes(e.target.value.trim())} />
-						<div className="flex flex-wrap gap-4 mb-3">
+						<Textarea value={bytes} onChange={(e) => setBytes(e.target.value)} />
+						<div className="flex gap-4">
 							<ConnectWallet />
-							<Button disabled={!currentAccount || !bytes || isPending} onClick={() => mutate()}>
+							<Button disabled={!currentAccount || !bytes || isLoading} onClick={() => mutate()}>
 								Sign Transaction
 							</Button>
 							<Button
@@ -112,7 +111,10 @@ export default function OfflineSigner() {
 						</div>
 						{dryRunData && (
 							<>
-								<EffectsPreview output={dryRunData} />
+								<Button variant="link" size="sm" onClick={() => reset()}>
+									Hide
+								</Button>
+								<Textarea value={JSON.stringify(dryRunData, null, 4)} rows={20} />
 							</>
 						)}
 					</div>

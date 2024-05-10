@@ -7,11 +7,13 @@ use jsonrpsee::proc_macros::rpc;
 use sui_json_rpc_types::{DelegatedStake, SuiCommittee, ValidatorApys};
 use sui_open_rpc_macros::open_rpc;
 use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_types::dynamic_field::DynamicFieldInfo;
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
+use sui_types::proposal::Proposal;
 
-#[open_rpc(namespace = "suix", tag = "Governance Read API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Governance Read API")]
+#[rpc(server, client, namespace = "bfcx")]
 pub trait GovernanceReadApi {
     /// Return one or more [DelegatedStake]. If a Stake was withdrawn its status will be Unstaked.
     #[method(name = "getStakesByIds")]
@@ -43,4 +45,10 @@ pub trait GovernanceReadApi {
     /// Return the validator APY
     #[method(name = "getValidatorsApy")]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys>;
+
+    #[method(name = "getProposal")]
+    async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
+
+    #[method(name = "getStablePools")]
+    async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>>;
 }

@@ -143,6 +143,17 @@ impl AccountAddress {
     pub fn abstract_size_for_gas_metering(&self) -> AbstractMemorySize {
         AbstractMemorySize::new(Self::LENGTH as u64)
     }
+
+
+    pub fn to_hex_with_hex_head(&self) -> String {
+        format!("0x{:x}", self)
+    }
+    pub fn to_bfc_address(&self) -> String {
+        let evm_address =  self.to_hex_with_hex_head();
+        let bfc_address =  account_address_util::convert_to_bfc_address(&evm_address);
+        bfc_address
+    }
+
 }
 
 impl AsRef<[u8]> for AccountAddress {
@@ -479,4 +490,58 @@ mod tests {
             prop_assert_eq!(addr, addr2);
         }
     }
+}
+
+
+
+pub mod  account_address_util {
+    //use std::collections::hash_map::DefaultHasher;
+    use sha2::{Digest, Sha256};
+
+    pub fn sha256_string(input: &str) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(input.as_bytes());
+        let result = hasher.finalize();
+        format!("{:x}", result)
+    }
+
+    pub fn convert_to_evm_address(ob_address: String) -> String {
+        if ob_address.len() == 0 {
+            return String::from("");
+        }
+
+        let mut address = ob_address[3..].to_string();
+        let evm_prefix = String::from("0x");
+        address.insert_str(0, evm_prefix.as_str());
+        address.truncate(address.len() - 4);
+
+        let result = sha256_string(&address[2..]);
+        let check_sum = result.get(0..4).unwrap();
+
+        let verify_code = ob_address[ob_address.len() - 4..].to_string();
+
+        return if verify_code == check_sum {
+            address
+        } else {
+            println!("verify_code: {}, check_sum: {}", verify_code, check_sum);
+            String::from("")
+        };
+
+        //return address.to_string();
+    }
+
+    pub fn convert_to_bfc_address( evm_address: &str) -> String {
+        let prefix = "BFC";
+        //let mut address = evm_address.to_string();
+        assert!(evm_address.starts_with("0x") || evm_address.starts_with("0X"));
+        let result = sha256_string(&evm_address[2..]);
+        let check_sum = result.get(0..4).unwrap();
+
+        let mut address = prefix.to_string();
+        address.push_str(&evm_address[2..]);
+        address.push_str(check_sum);
+
+        return address;
+    }
+
 }

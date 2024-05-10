@@ -31,6 +31,7 @@ use crate::multisig::MultiSigPublicKey;
 use crate::object::{Object, Owner};
 use crate::parse_sui_struct_tag;
 use crate::signature::GenericSignature;
+use crate::sui_serde::HexBFCAddress;
 use crate::sui_serde::Readable;
 use crate::sui_serde::{to_sui_struct_tag_string, HexAccountAddress};
 use crate::transaction::Transaction;
@@ -65,7 +66,10 @@ use std::cmp::max;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
-
+use tracing::{error, info};
+use crate::stable_coin::{StableCoin};
+use crate::base_types_bfc::bfc_address_util::{convert_to_evm_address};
+use crate::stable_coin::stable::checked::{STABLE};
 #[cfg(test)]
 #[cfg(feature = "test-utils")]
 #[path = "unit_tests/base_types_tests.rs"]
@@ -136,7 +140,6 @@ pub struct ObjectID(
 pub type VersionDigest = (SequenceNumber, ObjectDigest);
 
 pub type ObjectRef = (ObjectID, SequenceNumber, ObjectDigest);
-
 pub fn random_object_ref() -> ObjectRef {
     (
         ObjectID::random(),
@@ -168,7 +171,7 @@ pub enum MoveObjectType_ {
     /// A type that is not `0x2::coin::Coin<T>`
     Other(StructTag),
     /// A SUI coin (i.e., `0x2::coin::Coin<0x2::sui::SUI>`)
-    GasCoin,
+    GasCoin(TypeTag),
     /// A record of a staked SUI coin (i.e., `0x3::staking_pool::StakedSui`)
     StakedSui,
     /// A non-SUI coin type (i.e., `0x2::coin::Coin<T> where T != 0x2::sui::SUI`)
@@ -179,17 +182,27 @@ pub enum MoveObjectType_ {
 }
 
 impl MoveObjectType {
-    pub fn gas_coin() -> Self {
-        Self(MoveObjectType_::GasCoin)
+
+    pub fn default_gas_coin() -> Self {
+        Self(MoveObjectType_::GasCoin(GAS::type_tag()))
     }
 
+    pub fn stable_gas_coin(index: u8) -> Self {
+        Self(MoveObjectType_::GasCoin(STABLE::from_index(index).type_tag()))
+    }
+
+    pub fn gas_coin(tag: TypeTag) -> Self {
+        Self(MoveObjectType_::GasCoin(tag))
+    }
+
+    // pub fn default
     pub fn staked_sui() -> Self {
         Self(MoveObjectType_::StakedSui)
     }
 
     pub fn address(&self) -> AccountAddress {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => SUI_FRAMEWORK_ADDRESS,
+            MoveObjectType_::GasCoin(_)| MoveObjectType_::Coin(_) => SUI_FRAMEWORK_ADDRESS,
             MoveObjectType_::StakedSui => SUI_SYSTEM_ADDRESS,
             MoveObjectType_::Other(s) => s.address,
         }
@@ -197,7 +210,7 @@ impl MoveObjectType {
 
     pub fn module(&self) -> &IdentStr {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => COIN_MODULE_NAME,
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::Coin(_) => COIN_MODULE_NAME,
             MoveObjectType_::StakedSui => STAKING_POOL_MODULE_NAME,
             MoveObjectType_::Other(s) => &s.module,
         }
@@ -205,7 +218,7 @@ impl MoveObjectType {
 
     pub fn name(&self) -> &IdentStr {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => COIN_STRUCT_NAME,
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::Coin(_) => COIN_STRUCT_NAME,
             MoveObjectType_::StakedSui => STAKED_SUI_STRUCT_NAME,
             MoveObjectType_::Other(s) => &s.name,
         }
@@ -213,7 +226,13 @@ impl MoveObjectType {
 
     pub fn type_params(&self) -> Vec<TypeTag> {
         match &self.0 {
-            MoveObjectType_::GasCoin => vec![GAS::type_tag()],
+            MoveObjectType_::GasCoin(tag) => {
+                if GAS::is_gas_type(tag) {
+                    vec![GAS::type_tag()]
+                }else {
+                    vec![STABLE::from(tag.clone()).type_().into()]
+                }
+            },
             MoveObjectType_::StakedSui => vec![],
             MoveObjectType_::Coin(inner) => vec![inner.clone()],
             MoveObjectType_::Other(s) => s.type_params.clone(),
@@ -222,7 +241,13 @@ impl MoveObjectType {
 
     pub fn into_type_params(self) -> Vec<TypeTag> {
         match self.0 {
-            MoveObjectType_::GasCoin => vec![GAS::type_tag()],
+            MoveObjectType_::GasCoin(tag) => {
+                if GAS::is_gas_type(&tag) {
+                    vec![GAS::type_tag()]
+                }else {
+                    vec![tag]
+                }
+            },
             MoveObjectType_::StakedSui => vec![],
             MoveObjectType_::Coin(inner) => vec![inner],
             MoveObjectType_::Other(s) => s.type_params,
@@ -231,7 +256,9 @@ impl MoveObjectType {
 
     pub fn coin_type_maybe(&self) -> Option<TypeTag> {
         match &self.0 {
-            MoveObjectType_::GasCoin => Some(GAS::type_tag()),
+            MoveObjectType_::GasCoin(tag) => {
+                Some(tag.clone())
+            },
             MoveObjectType_::Coin(inner) => Some(inner.clone()),
             MoveObjectType_::StakedSui => None,
             MoveObjectType_::Other(_) => None,
@@ -245,7 +272,7 @@ impl MoveObjectType {
     pub fn size_for_gas_metering(&self) -> usize {
         // unwraps safe because a `StructTag` cannot fail to serialize
         match &self.0 {
-            MoveObjectType_::GasCoin => 1,
+            MoveObjectType_::GasCoin(_) => 1,
             MoveObjectType_::StakedSui => 1,
             MoveObjectType_::Coin(inner) => bcs::serialized_size(inner).unwrap() + 1,
             MoveObjectType_::Other(s) => bcs::serialized_size(s).unwrap() + 1,
@@ -255,7 +282,7 @@ impl MoveObjectType {
     /// Return true if `self` is `0x2::coin::Coin<T>` for some T (note: T can be SUI)
     pub fn is_coin(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) => true,
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::Coin(_) => true,
             MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => false,
         }
     }
@@ -263,9 +290,35 @@ impl MoveObjectType {
     /// Return true if `self` is 0x2::coin::Coin<0x2::sui::SUI>
     pub fn is_gas_coin(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin => true,
+            MoveObjectType_::GasCoin(tag) => GAS::is_gas_type(tag),
             MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
+            }
+        }
+    }
+    pub fn is_stable_gas_coin(&self) -> bool {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
+            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+                false
+            }
+        }
+    }
+
+    pub fn get_stable_gas_tag(&self) -> TypeTag {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => tag.clone(),
+            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+                panic!("not stable gas coin")
+            }
+        }
+    }
+
+    pub fn get_gas_coin_name(&self) -> String {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => tag.to_canonical_string(),
+            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+                "".to_string()
             }
         }
     }
@@ -273,7 +326,11 @@ impl MoveObjectType {
     /// Return true if `self` is `0x2::coin::Coin<t>`
     pub fn is_coin_t(&self, t: &TypeTag) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin => GAS::is_gas_type(t),
+            MoveObjectType_::GasCoin(tag) => if GAS::is_gas_type(tag) {
+                true
+            } else {
+                STABLE::is_gas_type(tag)
+            },
             MoveObjectType_::Coin(c) => t == c,
             MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => false,
         }
@@ -282,7 +339,7 @@ impl MoveObjectType {
     pub fn is_staked_sui(&self) -> bool {
         match &self.0 {
             MoveObjectType_::StakedSui => true,
-            MoveObjectType_::GasCoin | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
                 false
             }
         }
@@ -290,7 +347,7 @@ impl MoveObjectType {
 
     pub fn is_coin_metadata(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
                 false
             }
             MoveObjectType_::Other(s) => CoinMetadata::is_coin_metadata(s),
@@ -326,7 +383,7 @@ impl MoveObjectType {
 
     pub fn is_dynamic_field(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
                 false
             }
             MoveObjectType_::Other(s) => DynamicFieldInfo::is_dynamic_field(s),
@@ -335,7 +392,7 @@ impl MoveObjectType {
 
     pub fn try_extract_field_name(&self, type_: &DynamicFieldType) -> SuiResult<TypeTag> {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
                 Err(SuiError::ObjectDeserializationError {
                     error: "Error extracting dynamic object name from Coin object".to_string(),
                 })
@@ -357,7 +414,7 @@ impl MoveObjectType {
 
     pub fn is(&self, s: &StructTag) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin => GasCoin::is_gas_coin(s),
+            MoveObjectType_::GasCoin(_) => GasCoin::is_gas_coin(s) || StableCoin::is_gas_coin(s),
             MoveObjectType_::StakedSui => StakedSui::is_staked_sui(s),
             MoveObjectType_::Coin(inner) => {
                 Coin::is_coin(s) && s.type_params.len() == 1 && inner == &s.type_params[0]
@@ -374,8 +431,8 @@ impl MoveObjectType {
 
 impl From<StructTag> for MoveObjectType {
     fn from(mut s: StructTag) -> Self {
-        Self(if GasCoin::is_gas_coin(&s) {
-            MoveObjectType_::GasCoin
+        Self(if GasCoin::is_gas_coin(&s) || StableCoin::is_gas_coin(&s) {
+            MoveObjectType_::GasCoin(s.type_params.pop().unwrap())
         } else if Coin::is_coin(&s) {
             // unwrap safe because a coin has exactly one type parameter
             MoveObjectType_::Coin(s.type_params.pop().unwrap())
@@ -390,7 +447,11 @@ impl From<StructTag> for MoveObjectType {
 impl From<MoveObjectType> for StructTag {
     fn from(t: MoveObjectType) -> Self {
         match t.0 {
-            MoveObjectType_::GasCoin => GasCoin::type_(),
+            MoveObjectType_::GasCoin(inner) => if inner == GAS::type_tag() {
+                GasCoin::type_()
+            }else {
+                StableCoin::type_with_tag(inner)
+            },
             MoveObjectType_::StakedSui => StakedSui::type_(),
             MoveObjectType_::Coin(inner) => Coin::type_(inner),
             MoveObjectType_::Other(s) => s,
@@ -539,7 +600,7 @@ pub const SUI_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
 pub struct SuiAddress(
     #[schemars(with = "Hex")]
-    #[serde_as(as = "Readable<Hex, _>")]
+    #[serde_as(as = "Readable<HexBFCAddress, _>")]
     [u8; SUI_ADDRESS_LENGTH],
 );
 
@@ -581,6 +642,8 @@ impl SuiAddress {
         D: serde::de::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
+
+        info!("optional_address_from_hex address from hex: {}", s);
         let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
         Ok(Some(value))
     }
@@ -592,6 +655,9 @@ impl SuiAddress {
 
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
+        //let byte_string = String::from_utf8(bytes.as_ref().to_vec()).unwrap();
+        info!("suiAddress from_bytes");
+
         <[u8; SUI_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
             .map_err(|_| SuiError::InvalidAddress)
             .map(SuiAddress)
@@ -630,18 +696,20 @@ impl From<AccountAddress> for SuiAddress {
 
 impl TryFrom<&[u8]> for SuiAddress {
     type Error = SuiError;
-
     /// Tries to convert the provided byte array into a SuiAddress.
     fn try_from(bytes: &[u8]) -> Result<Self, SuiError> {
+        //error!("tryFrom u8 for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
 
 impl TryFrom<Vec<u8>> for SuiAddress {
+
     type Error = SuiError;
 
     /// Tries to convert the provided byte buffer into a SuiAddress.
     fn try_from(bytes: Vec<u8>) -> Result<Self, SuiError> {
+        //error!("tryFrom Vec<u8> for SuiAddress");
         Self::from_bytes(bytes)
     }
 }
@@ -654,8 +722,16 @@ impl AsRef<[u8]> for SuiAddress {
 
 impl FromStr for SuiAddress {
     type Err = anyhow::Error;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        decode_bytes_hex(s).map_err(|e| anyhow!(e))
+        //todo, convert BFC address to sui address
+        if s.starts_with("bfc") || s.starts_with("BFC") {
+            let evm_str = convert_to_evm_address(s.to_string());
+            decode_bytes_hex(evm_str.as_str()).map_err(|e| anyhow!(e))
+
+        }else {
+            decode_bytes_hex(s).map_err(|e| anyhow!(e))
+        }
     }
 }
 
@@ -671,6 +747,7 @@ impl<T: SuiPublicKey> From<&T> for SuiAddress {
 
 impl From<&PublicKey> for SuiAddress {
     fn from(pk: &PublicKey) -> Self {
+        //info!("From<&PublicKey> for SuiAddress");
         let mut hasher = DefaultHash::default();
         hasher.update([pk.flag()]);
         hasher.update(pk);
@@ -1127,7 +1204,11 @@ impl ObjectID {
     /// Convert from hex string to ObjectID where the string is prefixed with 0x
     /// Padding 0s if the string is too short.
     pub fn from_hex_literal(literal: &str) -> Result<Self, ObjectIDParseError> {
-        if !literal.starts_with("0x") {
+        if literal.starts_with("bfc") || literal.starts_with("BFC") {
+            let bfc_str = convert_to_evm_address(literal.to_string());
+            return Self::from_hex_literal(bfc_str.as_str());
+        }
+        if !literal.starts_with("0x")  {
             return Err(ObjectIDParseError::HexLiteralPrefixMissing);
         }
 
@@ -1246,6 +1327,8 @@ impl From<AccountAddress> for ObjectID {
 
 impl fmt::Display for ObjectID {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        //let bfc_address = objects_id_to_bfc_address(self.clone());
+        //write!(f, "{}", bfc_address)
         write!(f, "0x{}", Hex::encode(self.0))
     }
 }

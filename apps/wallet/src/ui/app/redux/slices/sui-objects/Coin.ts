@@ -1,19 +1,20 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiMoveObject, SuiObjectData } from '@mysten/sui.js/client';
+import { getObjectType } from '@benfen/bfc.js';
+
+import type { SuiObjectData, SuiMoveObject } from '@benfen/bfc.js';
 
 const COIN_TYPE = '0x2::coin::Coin';
 const COIN_TYPE_ARG_REGEX = /^0x2::coin::Coin<(.+)>$/;
 
-export const GAS_TYPE_ARG = '0x2::sui::SUI';
-export const GAS_SYMBOL = 'SUI';
+export const GAS_TYPE_ARG = '0x2::bfc::BFC';
+export const GAS_SYMBOL = 'BFC';
 
 // TODO use sdk
 export class Coin {
 	public static isCoin(obj: SuiObjectData) {
-		const type = obj?.content?.dataType === 'package' ? 'package' : obj?.content?.type;
-		return type?.startsWith(COIN_TYPE) ?? false;
+		return getObjectType(obj)?.startsWith(COIN_TYPE) ?? false;
 	}
 
 	public static getCoinTypeArg(obj: SuiMoveObject) {
@@ -23,7 +24,7 @@ export class Coin {
 
 	public static isSUI(obj: SuiMoveObject) {
 		const arg = Coin.getCoinTypeArg(obj);
-		return arg ? Coin.getCoinSymbol(arg) === 'SUI' : false;
+		return arg ? Coin.getCoinSymbol(arg) === 'BFC' : false;
 	}
 
 	public static getCoinSymbol(coinTypeArg: string) {
@@ -31,11 +32,11 @@ export class Coin {
 	}
 
 	public static getBalance(obj: SuiMoveObject): bigint {
-		return BigInt((obj.fields as { balance: string }).balance);
+		return BigInt(obj.fields.balance);
 	}
 
 	public static getID(obj: SuiMoveObject): string {
-		return (obj.fields as { id: { id: string } }).id.id;
+		return obj.fields.id.id;
 	}
 
 	public static getCoinTypeFromArg(coinTypeArg: string) {

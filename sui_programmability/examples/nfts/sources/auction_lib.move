@@ -6,21 +6,29 @@
 /// one using single-owner objects only and the other using shared
 /// objects.
 module nfts::auction_lib {
+    use std::option::{Self, Option};
+
     use sui::coin;
     use sui::balance::{Self, Balance};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
+    use sui::object::{Self, UID};
+    use sui::transfer;
+    use sui::tx_context::{Self,TxContext};
+
+    friend nfts::auction;
+    friend nfts::shared_auction;
 
     /// Stores information about an auction bid.
-    public struct BidData has store {
+    struct BidData has store {
         /// Coin representing the current (highest) bid.
-        funds: Balance<SUI>,
+        funds: Balance<BFC>,
         /// Address of the highest bidder.
         highest_bidder: address,
     }
 
     /// Maintains the state of the auction owned by a trusted
     /// auctioneer.
-    public struct Auction<T:  key + store> has key {
+    struct Auction<T:  key + store> has key {
         id: UID,
         /// Item to be sold. It only really needs to be wrapped in
         /// Option if Auction represents a shared object but we do it
@@ -32,13 +40,13 @@ module nfts::auction_lib {
         bid_data: Option<BidData>,
     }
 
-    public(package) fun auction_owner<T: key + store>(auction: &Auction<T>): address {
+    public(friend) fun auction_owner<T: key + store>(auction: &Auction<T>): address {
         auction.owner
     }
 
     /// Creates an auction. This is executed by the owner of the asset to be
     /// auctioned.
-    public(package) fun create_auction<T: key + store>(
+    public(friend) fun create_auction<T: key + store>(
         to_sell: T, ctx: &mut TxContext
     ): Auction<T> {
         // A question one might asked is how do we know that to_sell
@@ -58,7 +66,7 @@ module nfts::auction_lib {
     public fun update_auction<T: key + store>(
         auction: &mut Auction<T>,
         bidder: address,
-        funds: Balance<SUI>,
+        funds: Balance<BFC>,
         ctx: &mut TxContext,
     ) {
         if (option::is_none(&auction.bid_data)) {
@@ -124,7 +132,7 @@ module nfts::auction_lib {
     public fun end_and_destroy_auction<T: key + store>(
         auction: Auction<T>, ctx: &mut TxContext
     ) {
-        let Auction { id, mut to_sell, owner, mut bid_data } = auction;
+        let Auction { id, to_sell, owner, bid_data } = auction;
         object::delete(id);
 
         end_auction(&mut to_sell, owner, &mut bid_data, ctx);
@@ -143,7 +151,7 @@ module nfts::auction_lib {
     }
 
     /// Helper for the most common operation - wrapping a balance and sending it
-    fun send_balance(balance: Balance<SUI>, to: address, ctx: &mut TxContext) {
+    fun send_balance(balance: Balance<BFC>, to: address, ctx: &mut TxContext) {
         transfer::public_transfer(coin::from_balance(balance, ctx), to)
     }
 
@@ -152,7 +160,6 @@ module nfts::auction_lib {
         transfer::transfer(obj, recipient)
     }
 
-    #[allow(lint(share_owned))]
     public fun share_object<T: key + store>(obj: Auction<T>) {
         transfer::share_object(obj)
     }

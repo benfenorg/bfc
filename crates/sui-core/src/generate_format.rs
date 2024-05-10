@@ -12,6 +12,9 @@ use serde_reflection::{Registry, Result, Samples, Tracer, TracerConfig};
 use shared_crypto::intent::{Intent, IntentMessage, PersonalMessage};
 use std::str::FromStr;
 use std::{fs::File, io::Write};
+use move_core_types::account_address::AccountAddress;
+use move_core_types::identifier::Identifier;
+use move_core_types::language_storage::StructTag;
 use sui_types::execution_status::{
     CommandArgumentError, ExecutionFailureStatus, ExecutionStatus, PackageUpgradeError,
     TypeArgumentError,
@@ -145,6 +148,16 @@ fn get_registry() -> Result<Registry> {
 
     let ccd = CheckpointDigest::random();
     tracer.trace_value(&mut samples, &ccd)?;
+
+
+
+    //
+    tracer.trace_value::<StructTag>(&mut samples, &StructTag {
+        address: AccountAddress::random(),
+        module: Identifier::new("module").unwrap(),
+        name: Identifier::new("name").unwrap(),
+        type_params: vec![TypeTag::Bool],
+    })?;
 
     // 2. Trace the main entry point(s) + every enum separately.
     tracer.trace_type::<Owner>(&samples)?;

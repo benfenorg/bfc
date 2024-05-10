@@ -1,7 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+<<<<<<< HEAD
 use crate::key_identity::{get_identity_address_from_keystore, KeyIdentity};
 use crate::zklogin_commands_util::{perform_zk_login_test_tx, read_cli_line};
+=======
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+>>>>>>> develop_v.1.1.5
 use anyhow::anyhow;
 use bip32::DerivationPath;
 use clap::*;
@@ -32,6 +37,7 @@ use shared_crypto::intent::{Intent, IntentMessage, IntentScope, PersonalMessage}
 use std::fmt::{Debug, Display, Formatter};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use sui_keys::key_derive::generate_new_key;
 use sui_keys::keypair_file::{
     read_authority_keypair_from_file, read_keypair_from_file, write_authority_keypair_to_file,
@@ -48,6 +54,7 @@ use sui_types::crypto::{DefaultHash, PublicKey};
 use sui_types::error::SuiResult;
 use sui_types::multisig::{MultiSig, MultiSigPublicKey, ThresholdUnit, WeightUnit};
 use sui_types::multisig_legacy::{MultiSigLegacy, MultiSigPublicKeyLegacy};
+<<<<<<< HEAD
 use sui_types::signature::{GenericSignature, VerifyParams};
 use sui_types::transaction::{TransactionData, TransactionDataAPI};
 use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
@@ -55,6 +62,22 @@ use tabled::builder::Builder;
 use tabled::settings::Rotate;
 use tabled::settings::{object::Rows, Modify, Width};
 use tracing::info;
+=======
+use sui_types::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
+use sui_types::transaction::TransactionData;
+use tracing::info;
+
+use rand::Rng;
+use sui_types::base_types_bfc::bfc_address_util::{convert_to_evm_address, sui_address_to_bfc_address};
+use tabled::builder::Builder;
+use tabled::settings::Rotate;
+use tabled::settings::{object::Rows, Modify, Width};
+use sui_json_rpc_types::TransactionBlockBytes;
+use sui_types::transaction::SenderSignedData;
+
+use crate::zklogin_commands_util::{perform_zk_login_test_tx, read_cli_line};
+
+>>>>>>> develop_v.1.1.5
 #[cfg(test)]
 #[path = "unit_tests/keytool_tests.rs"]
 mod keytool_tests;
@@ -63,6 +86,7 @@ mod keytool_tests;
 #[derive(Subcommand)]
 #[clap(rename_all = "kebab-case")]
 pub enum KeyToolCommand {
+<<<<<<< HEAD
     /// Update an old alias to a new one.
     /// If a new alias is not provided, a random one will be generated.
     #[clap(name = "update-alias")]
@@ -76,6 +100,10 @@ pub enum KeyToolCommand {
     /// Hex private key format import and export are both deprecated in
     /// Sui Wallet and Sui CLI Keystore. Use `sui keytool import` if you
     /// wish to import a key to Sui Keystore.
+=======
+    /// Convert private key from wallet format (hex of 32 byte private key) to bfc.keystore format
+    /// (base64 of 33 byte flag || private key) or vice versa.
+>>>>>>> develop_v.1.1.5
     Convert { value: String },
     /// Given a Base64 encoded transaction bytes, decode its components. If a signature is provided,
     /// verify the signature against the transaction and output the result.
@@ -86,6 +114,11 @@ pub enum KeyToolCommand {
         sig: Option<GenericSignature>,
         #[clap(long, default_value = "0")]
         cur_epoch: u64,
+    },
+
+    DecodeRawTransaction {
+        #[clap(long)]
+        tx_bytes: String,
     },
     /// Given a Base64 encoded MultiSig signature, decode its components.
     /// If tx_bytes is passed in, verify the multisig.
@@ -104,21 +137,40 @@ pub enum KeyToolCommand {
     /// if not specified.
     ///
     /// The keypair file is output to the current directory. The content of the file is
+<<<<<<< HEAD
     /// a Base64 encoded string of 33-byte `flag || privkey`.
     ///
     /// Use `sui client new-address` if you want to generate and save the key into sui.keystore.
+=======
+    /// a Base64 encoded string of 33-byte `flag || privkey`. Note: To generate and add keypair
+    /// to bfc.keystore, use `bfc client new-address`).
+>>>>>>> develop_v.1.1.5
     Generate {
         key_scheme: SignatureScheme,
         derivation_path: Option<DerivationPath>,
         word_length: Option<String>,
     },
 
+<<<<<<< HEAD
     /// Add a new key to Sui CLI Keystore using either the input mnemonic phrase or a Bech32 encoded 33-byte
     /// `flag || privkey` starting with "suiprivkey", the key scheme flag {ed25519 | secp256k1 | secp256r1}
     /// and an optional derivation path, default to m/44'/784'/0'/0'/0' for ed25519 or m/54'/784'/0'/0/0
     /// for secp256k1 or m/74'/784'/0'/0/0 for secp256r1. Supports mnemonic phrase of word length 12, 15,
     /// 18, 21, 24. Set an alias for the key with the --alias flag. If no alias is provided, the tool will
     /// automatically generate one.
+=======
+    GenerateWithName {
+        key_scheme: SignatureScheme,
+        name: String,
+        word_length: Option<String>,
+        derivation_path: Option<DerivationPath>,
+    },
+
+    /// Add a new key to bfc.keystore using either the input mnemonic phrase or a private key (from the Wallet),
+    /// the key scheme flag {ed25519 | secp256k1 | secp256r1} and an optional derivation path,
+    /// default to m/44'/784'/0'/0'/0' for ed25519 or m/54'/784'/0'/0/0 for secp256k1
+    /// or m/74'/784'/0'/0/0 for secp256r1. Supports mnemonic phrase of word length 12, 15, 18`, 21, 24.
+>>>>>>> develop_v.1.1.5
     Import {
         /// Sets an alias for this address. The alias must start with a letter and can contain only letters, digits, hyphens (-), or underscores (_).
         #[clap(long)]
@@ -127,6 +179,7 @@ pub enum KeyToolCommand {
         key_scheme: SignatureScheme,
         derivation_path: Option<DerivationPath>,
     },
+<<<<<<< HEAD
     /// Output the private key of the given key identity in Sui CLI Keystore as Bech32
     /// encoded string starting with `suiprivkey`.
     Export {
@@ -140,12 +193,17 @@ pub enum KeyToolCommand {
         #[clap(long, short = 's')]
         sort_by_alias: bool,
     },
+=======
+    /// List all keys by its Bfc address, Base64 encoded public key, key scheme name in
+    /// bfc.keystore.
+    List,
+>>>>>>> develop_v.1.1.5
     /// This reads the content at the provided file path. The accepted format can be
     /// [enum SuiKeyPair] (Base64 encoded of 33-byte `flag || privkey`) or `type AuthorityKeyPair`
     /// (Base64 encoded `privkey`). This prints out the account keypair as Base64 encoded `flag || privkey`,
     /// the network keypair, worker keypair, protocol keypair as Base64 encoded `privkey`.
     LoadKeypair { file: PathBuf },
-    /// To MultiSig Sui Address. Pass in a list of all public keys `flag || pk` in Base64.
+    /// To MultiSig Bfc Address. Pass in a list of all public keys `flag || pk` in Base64.
     /// See `keytool list` for example public keys.
     MultiSigAddress {
         #[clap(long)]
@@ -158,7 +216,7 @@ pub enum KeyToolCommand {
     /// Provides a list of participating signatures (`flag || sig || pk` encoded in Base64),
     /// threshold, a list of all public keys and a list of their weights that define the
     /// MultiSig address. Returns a valid MultiSig signature and its sender address. The
-    /// result can be used as signature field for `sui client execute-signed-tx`. The sum
+    /// result can be used as signature field for `bfc client execute-signed-tx`. The sum
     /// of weights of all signatures must be >= the threshold.
     ///
     /// The order of `sigs` must be the same as the order of `pks`.
@@ -189,13 +247,23 @@ pub enum KeyToolCommand {
     /// [enum SuiKeyPair] (Base64 encoded of 33-byte `flag || privkey`) or `type AuthorityKeyPair`
     /// (Base64 encoded `privkey`). It prints its Base64 encoded public key and the key scheme flag.
     Show { file: PathBuf },
+<<<<<<< HEAD
     /// Create signature using the private key for for the given address (or its alias) in sui keystore.
+=======
+    /// Create signature using the private key for for the given address in bfc keystore.
+>>>>>>> develop_v.1.1.5
     /// Any signature commits to a [struct IntentMessage] consisting of the Base64 encoded
     /// of the BCS serialized transaction bytes itself and its intent. If intent is absent,
     /// default will be used.
     Sign {
+<<<<<<< HEAD
         #[clap(long)]
         address: KeyIdentity,
+=======
+        //#[clap(long, value_parser = decode_bytes_hex::<SuiAddress>)]
+        #[clap(long)]
+        address: String,
+>>>>>>> develop_v.1.1.5
         #[clap(long)]
         data: String,
         #[clap(long)]
@@ -219,7 +287,7 @@ pub enum KeyToolCommand {
     },
     /// This takes [enum SuiKeyPair] of Base64 encoded of 33-byte `flag || privkey`). It
     /// outputs the keypair into a file at the current directory where the address is the filename,
-    /// and prints out its Sui address, Base64 encoded public key, the key scheme, and the key scheme flag.
+    /// and prints out its Bfc address, Base64 encoded public key, the key scheme, and the key scheme flag.
     Unpack { keypair: String },
 
     /// Given the max_epoch, generate an OAuth url, ask user to paste the redirect with id_token, call salt server, then call the prover server,
@@ -419,7 +487,7 @@ pub struct SignData {
     // Base64 encoded blake2b hash of the intent message, this is what the signature commits to.
     digest: String,
     // Base64 encoded `flag || signature || pubkey` for a complete
-    // serialized Sui signature to be send for executing the transaction.
+    // serialized Bfc signature to be send for executing the transaction.
     sui_signature: String,
 }
 
@@ -455,6 +523,11 @@ pub enum CommandOutput {
     DecodeOrVerifyTx(DecodeOrVerifyTxOutput),
     Error(String),
     Generate(Key),
+<<<<<<< HEAD
+=======
+    GenerateWithName(Key),
+    GenerateZkLoginAddress(SuiAddress, AddressParams),
+>>>>>>> develop_v.1.1.5
     Import(Key),
     Export(ExportedKey),
     List(Vec<Key>),
@@ -467,8 +540,12 @@ pub enum CommandOutput {
     Sign(SignData),
     SignKMS(SerializedSig),
     ZkLoginSignAndExecuteTx(ZkLoginSignAndExecuteTx),
+<<<<<<< HEAD
     ZkLoginInsecureSignPersonalMessage(ZkLoginInsecureSignPersonalMessage),
     ZkLoginSigVerify(ZkLoginSigVerifyResponse),
+=======
+    DecodeRawTransaction(Base64),
+>>>>>>> develop_v.1.1.5
 }
 
 impl KeyToolCommand {
@@ -546,11 +623,24 @@ impl KeyToolCommand {
                 CommandOutput::DecodeMultiSig(output)
             }
 
+<<<<<<< HEAD
             KeyToolCommand::DecodeOrVerifyTx {
                 tx_bytes,
                 sig,
                 cur_epoch,
             } => {
+=======
+            KeyToolCommand::DecodeRawTransaction { tx_bytes } => {
+                let tx_bytes = Base64::decode(&tx_bytes)
+                    .map_err(|e| anyhow!("Invalid base64 key: {:?}", e))?;
+                let orig_tx: SenderSignedData = bcs::from_bytes(&tx_bytes).unwrap();
+                let tx_block_bytes = TransactionBlockBytes::from_data(orig_tx.transaction_data().clone()).unwrap();
+                CommandOutput::DecodeRawTransaction(tx_block_bytes.tx_bytes)
+            }
+
+
+            KeyToolCommand::DecodeTxBytes { tx_bytes } => {
+>>>>>>> develop_v.1.1.5
                 let tx_bytes = Base64::decode(&tx_bytes)
                     .map_err(|e| anyhow!("Invalid base64 key: {:?}", e))?;
                 let tx_data: TransactionData = bcs::from_bytes(&tx_bytes)?;
@@ -603,12 +693,43 @@ impl KeyToolCommand {
                 }
             },
 
+            KeyToolCommand::GenerateWithName {
+                key_scheme,
+                name,
+                derivation_path,
+                word_length,
+            } => match key_scheme {
+                SignatureScheme::BLS12381 => {
+                    let (sui_address, kp) = get_authority_key_pair();
+                    let file_name = format!("{name}.key");
+                    write_authority_keypair_to_file(&kp, file_name)?;
+                    CommandOutput::Generate(Key {
+                        sui_address,
+                        public_base64_key: kp.public().encode_base64(),
+                        key_scheme: key_scheme.to_string(),
+                        flag: SignatureScheme::BLS12381.flag(),
+                        mnemonic: None,
+                        peer_id: None,
+                    })
+                }
+                _ => {
+                    let (_, skp, _scheme, phrase) =
+                        generate_new_key(key_scheme, derivation_path, word_length)?;
+                    let file = format!("{name}.key");
+                    write_keypair_to_file(&skp, file)?;
+                    let mut key = Key::from(&skp);
+                    key.mnemonic = Some(phrase);
+                    CommandOutput::Generate(key)
+                }
+            },
+
             KeyToolCommand::Import {
                 alias,
                 input_string,
                 key_scheme,
                 derivation_path,
             } => {
+<<<<<<< HEAD
                 if Hex::decode(&input_string).is_ok() {
                     return Err(anyhow!(
                         "Sui Keystore and Sui Wallet no longer support importing 
@@ -636,6 +757,34 @@ impl KeyToolCommand {
                         let key = Key::from(skp);
                         CommandOutput::Import(key)
                     }
+=======
+                // check if input is a private key -- should start with 0x
+                if input_string.starts_with("0x") {
+                    let bytes = Hex::decode(&input_string).map_err(|_| {
+                        anyhow!("Private key is malformed. Importing private key failed.")
+                    })?;
+                    match key_scheme {
+                        SignatureScheme::ED25519 => {
+                            let kp = Ed25519KeyPair::from_bytes(&bytes).map_err(|_| anyhow!("Cannot decode ed25519 keypair from the private key. Importing private key failed."))?;
+                            let skp = SuiKeyPair::Ed25519(kp);
+                            let key = Key::from(&skp);
+                            keystore.add_key(skp)?;
+                            CommandOutput::Import(key)
+                        }
+                        _ => return Err(anyhow!(
+                                "Only ed25519 signature scheme is supported for importing private keys at the moment."
+                            ))
+                    }
+                } else {
+                    let sui_address = keystore.import_from_mnemonic(
+                        &input_string,
+                        key_scheme,
+                        derivation_path,
+                    )?;
+                    let skp = keystore.get_key(&sui_address)?;
+                    let key = Key::from(skp);
+                    CommandOutput::Import(key)
+>>>>>>> develop_v.1.1.5
                 }
             }
             KeyToolCommand::Export { key_identity } => {
@@ -799,7 +948,16 @@ impl KeyToolCommand {
                 data,
                 intent,
             } => {
+<<<<<<< HEAD
                 let address = get_identity_address_from_keystore(address, keystore)?;
+=======
+                let mut evm_address = address.clone();
+                if address.as_str().starts_with("bfc") || address.as_str().starts_with("BFC") {
+                    evm_address = convert_to_evm_address(address.clone());
+                }
+                let sui_address = SuiAddress::from_str(evm_address.as_str()).unwrap_or_else(|_e| panic!("Incorrect sui_address"));
+
+>>>>>>> develop_v.1.1.5
                 let intent = intent.unwrap_or_else(Intent::sui_transaction);
                 let intent_clone = intent.clone();
                 let msg: TransactionData =
@@ -812,9 +970,11 @@ impl KeyToolCommand {
                 hasher.update(bcs::to_bytes(&intent_msg)?);
                 let digest = hasher.finalize().digest;
                 let sui_signature =
-                    keystore.sign_secure(&address, &intent_msg.value, intent_msg.intent)?;
+                    keystore.sign_secure(&sui_address, &intent_msg.value, intent_msg.intent)?;
+
+
                 CommandOutput::Sign(SignData {
-                    sui_address: address,
+                    sui_address,
                     raw_tx_data: data,
                     intent: intent_clone,
                     raw_intent_msg,
@@ -1085,7 +1245,7 @@ impl KeyToolCommand {
                     test_multisig,
                     sign_with_sk,
                 )
-                .await?;
+                    .await?;
                 CommandOutput::ZkLoginSignAndExecuteTx(ZkLoginSignAndExecuteTx { tx_digest })
             }
             KeyToolCommand::ZkLoginEnterToken {
@@ -1109,7 +1269,7 @@ impl KeyToolCommand {
                     test_multisig,
                     sign_with_sk,
                 )
-                .await?;
+                    .await?;
                 CommandOutput::ZkLoginSignAndExecuteTx(ZkLoginSignAndExecuteTx { tx_digest })
             }
 
@@ -1237,6 +1397,7 @@ impl Display for CommandOutput {
                     .to_string();
 
                 let mut builder = Builder::default();
+                let bfc_address = sui_address_to_bfc_address(data.sui_address);
                 builder
                     .set_header([
                         "suiSignature",
@@ -1252,7 +1413,7 @@ impl Display for CommandOutput {
                         &data.raw_intent_msg,
                         &intent_table,
                         &data.raw_tx_data,
-                        &data.sui_address.to_string(),
+                        &bfc_address,
                     ]);
                 let mut table = builder.build();
                 table.with(Rotate::Left);

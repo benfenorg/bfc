@@ -1,9 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import {
-	DryRunTransactionBlockResponse,
 	type SuiTransactionBlockResponse,
-} from '@mysten/sui.js/client';
+	type DryRunTransactionBlockResponse,
+} from '@benfen/bfc.js/client';
+
 import { useMemo } from 'react';
 
 import { getBalanceChangeSummary } from '../utils/transaction/getBalanceChangeSummary';
@@ -72,7 +73,7 @@ export function useTransactionSummary({
 				balanceChanges: balanceChangeSummary,
 			};
 		}
-	}, [transaction, objectChangesWithDisplay, recognizedPackagesList, currentAddress]);
+	}, [transaction, currentAddress, objectChangesWithDisplay, recognizedPackagesList]);
 
 	return summary;
 }

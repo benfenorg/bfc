@@ -95,3 +95,7 @@ default = ["pg_backend", "postgres-feature"]
 postgres-feature = ["diesel/postgres", "diesel/postgres_backend"]
 pg_integration = []
 pg_backend = []
+
+[[bin]]
+name = "bfc-graphql-rpc"
+path = "src/main.rs"

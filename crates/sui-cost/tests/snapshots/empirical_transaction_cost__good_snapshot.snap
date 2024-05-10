@@ -4,56 +4,74 @@ expression: common_costs_actual
 ---
 {
   "MergeCoin": {
-    "computationCost": "1000000",
-    "storageCost": "1976000",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "261440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "Publish": {
-    "computationCost": "1000000",
-    "storageCost": "13505200",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "1382440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "SharedCounterAssertValue": {
-    "computationCost": "1000000",
-    "storageCost": "2591600",
-    "storageRebate": "1587564",
-    "nonRefundableStorageFee": "16036"
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "291080",
+    "storageRebate": "158756",
+    "nonRefundableStorageFee": "1604"
   },
   "SharedCounterCreate": {
-    "computationCost": "1000000",
-    "storageCost": "2591600",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "291080",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "SharedCounterIncrement": {
-    "computationCost": "1000000",
-    "storageCost": "2591600",
-    "storageRebate": "1587564",
-    "nonRefundableStorageFee": "16036"
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "291080",
+    "storageRebate": "158756",
+    "nonRefundableStorageFee": "1604"
   },
   "SplitCoin": {
-    "computationCost": "1000000",
-    "storageCost": "4940000",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "653600",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "TransferPortionSuiCoin": {
-    "computationCost": "1000000",
-    "storageCost": "1976000",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "261440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "TransferWholeCoin": {
-    "computationCost": "1000000",
-    "storageCost": "1976000",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "261440",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   },
   "TransferWholeSuiCoin": {
-    "computationCost": "1000000",
-    "storageCost": "988000",
+    "basePoint": 0,
+    "rate": 1,
+    "computationCost": "100000",
+    "storageCost": "130720",
     "storageRebate": "0",
     "nonRefundableStorageFee": "0"
   }

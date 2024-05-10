@@ -54,3 +54,7 @@ move-vm-profiler.workspace = true
 
 [target.'cfg(msim)'.dependencies]
 sui-simulator.workspace = true
+
+[[bin]]
+name = "bfc-node"
+path = "src/main.rs"

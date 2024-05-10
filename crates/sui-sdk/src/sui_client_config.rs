@@ -11,6 +11,7 @@ use crate::{SuiClient, SuiClientBuilder, SUI_DEVNET_URL, SUI_LOCAL_NETWORK_URL, 
 use sui_config::Config;
 use sui_keys::keystore::{AccountKeystore, Keystore};
 use sui_types::base_types::*;
+use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 
 #[serde_as]
 #[derive(Serialize, Deserialize)]
@@ -136,7 +137,7 @@ impl Display for SuiClientConfig {
         )?;
         write!(writer, "Active address: ")?;
         match self.active_address {
-            Some(r) => writeln!(writer, "{}", r)?,
+            Some(r) => writeln!(writer, "{}", sui_address_to_bfc_address(r))?,
             None => writeln!(writer, "None")?,
         };
         writeln!(writer, "{}", self.keystore)?;

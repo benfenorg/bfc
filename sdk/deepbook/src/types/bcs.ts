@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { bcs } from '@mysten/sui.js/bcs';
+import { bcs } from '@benfen/bfc.js/bcs';
 
 bcs.registerStructType('Order', {
 	orderId: 'u64',

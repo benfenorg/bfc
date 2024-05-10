@@ -1,19 +1,23 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Content, Menu } from '_app/shared/bottom-menu-layout';
+import {
+	useGetValidatorsApy,
+	formatPercentageDisplay,
+	calculateStakeShare,
+	useGetSystemState,
+} from '@mysten/core';
+import { ArrowRight16 } from '@mysten/icons';
+import cl from 'classnames';
+import { useState, useMemo } from 'react';
+
+import { ValidatorListItem } from './ValidatorListItem';
 import { Button } from '_app/shared/ButtonUI';
+import { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Text } from '_app/shared/text';
 import Alert from '_components/alert';
 import LoadingIndicator from '_components/loading/LoadingIndicator';
 import { ampli } from '_src/shared/analytics/ampli';
-import { calculateStakeShare, formatPercentageDisplay, useGetValidatorsApy } from '@mysten/core';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
-import { ArrowRight16 } from '@mysten/icons';
-import cl from 'clsx';
-import { useMemo, useState } from 'react';
-
-import { ValidatorListItem } from './ValidatorListItem';
 
 type SortKeys = 'name' | 'stakeShare' | 'apy';
 const sortKeys: Record<SortKeys, string> = {
@@ -34,7 +38,7 @@ export function SelectValidatorCard() {
 	const [selectedValidator, setSelectedValidator] = useState<Validator | null>(null);
 	const [sortKey, setSortKey] = useState<SortKeys | null>(null);
 	const [sortAscending, setSortAscending] = useState(true);
-	const { data, isPending, isError } = useSuiClientQuery('getLatestSuiSystemState');
+	const { data, isLoading, isError } = useGetSystemState();
 
 	const { data: rollingAverageApys } = useGetValidatorsApy();
 
@@ -92,7 +96,7 @@ export function SelectValidatorCard() {
 		return sortedAsc;
 	}, [validatorsRandomOrder, sortAscending, rollingAverageApys, totalStake, sortKey]);
 
-	if (isPending) {
+	if (isLoading) {
 		return (
 			<div className="p-2 w-full flex justify-center items-center h-full">
 				<LoadingIndicator />
@@ -111,11 +115,11 @@ export function SelectValidatorCard() {
 	}
 
 	return (
-		<div className="flex flex-col w-full h-full -my-5">
+		<div className="flex flex-col w-full">
 			<Content className="flex flex-col w-full items-center">
-				<div className="flex flex-col w-full items-center -top-5 bg-white sticky pt-5 pb-2.5 z-50 mt-0">
+				<div className="flex flex-col w-full items-center bg-white sticky pt-5 pb-2.5 z-50 mt-0">
 					<div className="flex items-start w-full mb-2">
-						<Text variant="subtitle" weight="medium" color="steel-darker">
+						<Text variant="body" weight="normal" color="bfc-text2">
 							Sort by:
 						</Text>
 						<div className="flex items-center ml-2 gap-1.5">
@@ -123,20 +127,20 @@ export function SelectValidatorCard() {
 								return (
 									<button
 										key={key}
-										className="bg-transparent border-0 p-0 flex gap-1 cursor-pointer"
+										className="bg-transparent border-0 p-0 flex items-center gap-1 cursor-pointer"
 										onClick={() => handleSortByKey(key as SortKeys)}
 									>
 										<Text
-											variant="caption"
-											weight="medium"
-											color={sortKey === key ? 'hero' : 'steel-darker'}
+											variant="body"
+											weight="normal"
+											color={sortKey === key ? 'hero' : 'bfc-text1'}
 										>
 											{value}
 										</Text>
 										{sortKey === key && (
 											<ArrowRight16
 												className={cl(
-													'text-captionSmall font-thin text-hero',
+													'text-body font-thin text-hero',
 													sortAscending ? 'rotate-90' : '-rotate-90',
 												)}
 											/>
@@ -147,12 +151,12 @@ export function SelectValidatorCard() {
 						</div>
 					</div>
 					<div className="flex items-start w-full">
-						<Text variant="subtitle" weight="medium" color="steel-darker">
-							Select a validator to start staking SUI.
+						<Text variant="body" weight="normal" color="bfc-text1">
+							Select a validator to start staking BFC.
 						</Text>
 					</div>
 				</div>
-				<div className="flex items-start flex-col w-full mt-1 flex-1">
+				<div className="flex items-start flex-col w-full mt-2.5 flex-1">
 					{data &&
 						validatorList.map((validator) => (
 							<div

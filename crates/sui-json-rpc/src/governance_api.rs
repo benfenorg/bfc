@@ -21,7 +21,7 @@ use sui_json_rpc_types::{SuiCommittee, ValidatorApy, ValidatorApys};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::committee::EpochId;
-use sui_types::dynamic_field::get_dynamic_field_from_store;
+use sui_types::dynamic_field::{DynamicFieldInfo, get_dynamic_field_from_store};
 use sui_types::error::{SuiError, UserInputError};
 use sui_types::governance::StakedSui;
 use sui_types::id::ID;
@@ -31,6 +31,7 @@ use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary
 use sui_types::sui_system_state::PoolTokenExchangeRate;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 use sui_types::sui_system_state::{get_validator_from_table, SuiSystemState};
+use sui_types::proposal::Proposal;
 
 use crate::authority_state::StateRead;
 use crate::error::{Error, RpcInterimResult, SuiRpcInputError};
@@ -59,6 +60,17 @@ impl GovernanceReadApi {
             .get_stake_sui_result_size_total
             .inc_by(result.len() as u64);
         Ok(result)
+    }
+
+    async fn get_proposal(&self, owner: SuiAddress) -> Result<Proposal, Error> {
+        let obj_id = ObjectID::from(owner);
+        let obj = self.state.get_object_read(&obj_id)?.into_object()?;
+        Ok(Proposal::try_from(&obj)?)
+    }
+
+    // todo, add a filter function to filter results if many dynamic_fields in state.
+    async fn get_stable_pools(&self, owner: SuiAddress) -> Result<Vec<(ObjectID, DynamicFieldInfo)>, Error> {
+        Ok(self.state.get_dynamic_fields(ObjectID::from(owner), None, 100).unwrap())
     }
 
     async fn get_stakes_by_ids(
@@ -230,6 +242,7 @@ impl GovernanceReadApiServer for GovernanceReadApi {
     async fn get_committee_info(&self, epoch: Option<BigInt<u64>>) -> RpcResult<SuiCommittee> {
         with_tracing!(async move {
             self.state
+                //.committee_store().get_or_latest_committee(epoch.map(|e| *e))
                 .get_or_latest_committee(epoch)
                 .map(|committee| committee.into())
                 .map_err(Error::from)
@@ -253,6 +266,16 @@ impl GovernanceReadApiServer for GovernanceReadApi {
             let epoch_store = self.state.load_epoch_store_one_call_per_task();
             Ok(epoch_store.reference_gas_price().into())
         })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal> {
+        with_tracing!(async move { self.get_proposal(owner).await })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>> {
+        with_tracing!(async move { self.get_stable_pools(owner).await })
     }
 
     #[instrument(skip(self))]

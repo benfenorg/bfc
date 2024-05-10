@@ -1,16 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiWallet } from '_src/dapp-interface/WalletStandardInterface';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { getWallets, ReadonlyWalletAccount, type Wallet } from '@mysten/wallet-standard';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { ReadonlyWalletAccount, type Wallet, getWallets } from '@benfen/bfc.js/wallet-standard';
 import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
+import { type SuiWallet } from '_src/dapp-interface/WalletStandardInterface';
+
 function getDemoTransaction(address: string) {
 	const txb = new TransactionBlock();
-	const [coin] = txb.splitCoins(txb.gas, [1]);
-	txb.transferObjects([coin], address);
+	const [coin] = txb.splitCoins(txb.gas, [txb.pure(1)]);
+	txb.transferObjects([coin], txb.pure(address));
 	return txb;
 }
 
@@ -30,7 +31,7 @@ function getAccount(account: ReadonlyWalletAccount, useWrongAccount: boolean) {
 }
 
 function findSuiWallet(wallets: readonly Wallet[]) {
-	return (wallets.find((aWallet) => aWallet.name.includes('Sui Wallet')) ||
+	return (wallets.find((aWallet) => aWallet.name.includes('BenFen Wallet')) ||
 		null) as SuiWallet | null;
 }
 
@@ -70,7 +71,7 @@ function App() {
 	}
 	return (
 		<>
-			<h1>Sui Wallet is installed. ({suiWallet.name})</h1>
+			<h1>BenFen Wallet is installed. ({suiWallet.name})</h1>
 			{accounts.length ? (
 				<ul data-testid="accounts-list">
 					{accounts.map((anAccount) => (
@@ -93,10 +94,10 @@ function App() {
 			<button
 				onClick={async () => {
 					setError(null);
-					const txb = getDemoTransaction(accounts[0]?.address || '');
+					const txb = getDemoTransaction(accounts[0]?.address);
 					try {
 						await suiWallet.features[
-							'sui:signAndExecuteTransactionBlock'
+							'bfc:signAndExecuteTransactionBlock'
 						].signAndExecuteTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
@@ -112,9 +113,9 @@ function App() {
 			<button
 				onClick={async () => {
 					setError(null);
-					const txb = getDemoTransaction(accounts[0]?.address || '');
+					const txb = getDemoTransaction(accounts[0]?.address);
 					try {
-						await suiWallet.features['sui:signTransactionBlock'].signTransactionBlock({
+						await suiWallet.features['bfc:signTransactionBlock'].signTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
 							chain: 'sui:unknown',
@@ -130,7 +131,7 @@ function App() {
 				onClick={async () => {
 					setError(null);
 					try {
-						await suiWallet.features['sui:signMessage']?.signMessage({
+						await suiWallet.features['bfc:signMessage']?.signMessage({
 							account: getAccount(accounts[0], useWrongAccounts),
 							message: new TextEncoder().encode('Test message'),
 						});

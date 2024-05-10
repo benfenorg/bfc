@@ -3,8 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{base_types::*, error::*};
+<<<<<<< HEAD
 use crate::authenticator_state::ActiveJwk;
 use crate::committee::{Committee, EpochId, ProtocolVersion};
+=======
+use crate::committee::{EpochId, BfcRoundId, ProtocolVersion};
+>>>>>>> develop_v.1.1.5
 use crate::crypto::{
     default_hash, AuthoritySignInfo, AuthoritySignInfoTrait, AuthoritySignature,
     AuthorityStrongQuorumSignInfo, DefaultHash, Ed25519SuiSignature, EmptySignInfo,
@@ -15,6 +19,7 @@ use crate::digests::{CertificateDigest, SenderSignedDataDigest};
 use crate::execution::SharedInput;
 use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelope};
 use crate::messages_checkpoint::CheckpointTimestamp;
+<<<<<<< HEAD
 use crate::messages_consensus::{ConsensusCommitPrologue, ConsensusCommitPrologueV2};
 use crate::object::{MoveObject, Object, Owner};
 use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
@@ -26,9 +31,18 @@ use crate::{
     SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID,
     SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
 };
+=======
+use crate::messages_consensus::ConsensusCommitPrologue;
+use crate::object::{MoveObject, Object, Owner};
+use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
+use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
+use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
+
+use std::iter;
+>>>>>>> develop_v.1.1.5
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
-use itertools::Either;
+use itertools::{Either, Itertools};
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
 use move_core_types::{identifier::Identifier, language_storage::TypeTag};
@@ -41,13 +55,15 @@ use std::iter::once;
 use std::{
     collections::{BTreeMap, BTreeSet, HashSet},
     hash::Hash,
-    iter,
 };
+use std::collections::HashMap;
 use strum::IntoStaticStr;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
 use tracing::trace;
+use crate::gas::GasCostSummaryAdjusted;
 
+<<<<<<< HEAD
 pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 10_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 50_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_PUBLISH: u64 = 70_000;
@@ -59,10 +75,21 @@ pub const TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN: u64 = 10_000;
 // because the object touched are set up in genesis and carry no storage cost
 // (and thus rebate) on first usage.
 pub const TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE: u64 = 5_000_000;
+=======
+// TODO: The following constants appear to be very large.
+// We should revisit them.
+pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 200_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 10_000_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_PUBLISH: u64 = 25_000_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_STAKING: u64 = 10_000_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_GENERIC: u64 = 5_000_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_VALIDATOR: u64 = 25_000_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN: u64 = 1_000_000;
+>>>>>>> develop_v.1.1.5
 
 pub const GAS_PRICE_FOR_SYSTEM_TX: u64 = 1;
 
-pub const DEFAULT_VALIDATOR_GAS_PRICE: u64 = 1000;
+pub const DEFAULT_VALIDATOR_GAS_PRICE: u64 = 100;
 
 const BLOCKED_MOVE_FUNCTIONS: [(ObjectID, &str, &str); 0] = [];
 
@@ -81,6 +108,8 @@ pub enum CallArg {
 
 impl CallArg {
     pub const SUI_SYSTEM_MUT: Self = Self::Object(ObjectArg::SUI_SYSTEM_MUT);
+    pub const BFC_SYSTEM_MUT: Self = Self::Object(ObjectArg::BFC_SYSTEM_MUT);
+
     pub const CLOCK_IMM: Self = Self::Object(ObjectArg::SharedObject {
         id: SUI_CLOCK_OBJECT_ID,
         initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
@@ -164,13 +193,15 @@ pub struct ChangeEpoch {
     /// The protocol version in effect in the new epoch.
     pub protocol_version: ProtocolVersion,
     /// The total amount of gas charged for storage during the epoch.
-    pub storage_charge: u64,
+    pub bfc_storage_charge: u64,
     /// The total amount of gas charged for computation during the epoch.
-    pub computation_charge: u64,
+    pub bfc_computation_charge: u64,
     /// The amount of storage rebate refunded to the txn senders.
-    pub storage_rebate: u64,
+    pub bfc_storage_rebate: u64,
     /// The non-refundable storage fee.
-    pub non_refundable_storage_fee: u64,
+    pub bfc_non_refundable_storage_fee: u64,
+
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
@@ -179,6 +210,12 @@ pub struct ChangeEpoch {
     /// will be upgraded to, their modules in serialized form (which include their package ID), and
     /// a list of their transitive dependencies.
     pub system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
+}
+
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+pub struct ChangeBfcRound {
+    pub bfc_round: BfcRoundId,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
@@ -274,6 +311,7 @@ pub enum TransactionKind {
     ChangeEpoch(ChangeEpoch),
     Genesis(GenesisTransaction),
     ConsensusCommitPrologue(ConsensusCommitPrologue),
+<<<<<<< HEAD
     AuthenticatorStateUpdate(AuthenticatorStateUpdate),
 
     /// EndOfEpochTransaction replaces ChangeEpoch with a list of transactions that are allowed to
@@ -283,7 +321,10 @@ pub enum TransactionKind {
     RandomnessStateUpdate(RandomnessStateUpdate),
     // V2 ConsensusCommitPrologue also includes the digest of the current consensus output.
     ConsensusCommitPrologueV2(ConsensusCommitPrologueV2),
+=======
+>>>>>>> develop_v.1.1.5
     // .. more transaction types go here
+    ChangeBfcRound(ChangeBfcRound),
 }
 
 /// EndOfEpochTransactionKind
@@ -398,12 +439,16 @@ impl EndOfEpochTransactionKind {
 }
 
 impl VersionedProtocolMessage for TransactionKind {
-    fn check_version_supported(&self, protocol_config: &ProtocolConfig) -> SuiResult {
-        // When adding new cases, they must be guarded by a feature flag and return
-        // UnsupportedFeatureError if the flag is not set.
+    fn check_version_supported(&self, _protocol_config: &ProtocolConfig) -> SuiResult {
+        // This code does nothing right now - it exists to cause a compiler error when new
+        // enumerants are added to TransactionKind.
+        //
+        // When we add new cases here, check that current_protocol_version does not pre-date the
+        // addition of that enumerant.
         match &self {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
+<<<<<<< HEAD
             | TransactionKind::ConsensusCommitPrologue(_) => Ok(()),
             TransactionKind::ProgrammableTransaction(pt) => {
                 // NB: we don't use the `receiving_objects` method here since we don't want to check
@@ -489,6 +534,11 @@ impl VersionedProtocolMessage for TransactionKind {
                     })
                 }
             }
+=======
+            | TransactionKind::ConsensusCommitPrologue(_)
+            | TransactionKind::ProgrammableTransaction(_)
+            | TransactionKind::ChangeBfcRound(_)=> Ok(()),
+>>>>>>> develop_v.1.1.5
         }
     }
 }
@@ -606,6 +656,12 @@ impl ObjectArg {
     pub const SUI_SYSTEM_MUT: Self = Self::SharedObject {
         id: SUI_SYSTEM_STATE_OBJECT_ID,
         initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+        mutable: true,
+    };
+
+    pub const BFC_SYSTEM_MUT: Self = Self::SharedObject {
+        id: BFC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
         mutable: true,
     };
 
@@ -1130,7 +1186,7 @@ impl Display for Command {
 impl Display for ProgrammableTransaction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let ProgrammableTransaction { inputs, commands } = self;
-        writeln!(f, "Inputs: {inputs:?}")?;
+        writeln!(f, "ProgrammableTransaction Inputs: {inputs:?}")?;
         writeln!(f, "Commands: [")?;
         for c in commands {
             writeln!(f, "  {c},")?;
@@ -1150,6 +1206,12 @@ impl SharedInputObject {
     pub const SUI_SYSTEM_OBJ: Self = Self {
         id: SUI_SYSTEM_STATE_OBJECT_ID,
         initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+        mutable: true,
+    };
+
+    pub const BFC_SYSTEM_OBJ: Self = Self {
+        id: BFC_SYSTEM_STATE_OBJECT_ID,
+        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
         mutable: true,
     };
 
@@ -1186,7 +1248,14 @@ impl TransactionKind {
     pub fn is_end_of_epoch_tx(&self) -> bool {
         matches!(
             self,
+<<<<<<< HEAD
             TransactionKind::EndOfEpochTransaction(_) | TransactionKind::ChangeEpoch(_)
+=======
+            TransactionKind::ChangeEpoch(_)
+                | TransactionKind::Genesis(_)
+                | TransactionKind::ConsensusCommitPrologue(_)
+            | TransactionKind::ChangeBfcRound(_)
+>>>>>>> develop_v.1.1.5
         )
     }
 
@@ -1194,6 +1263,7 @@ impl TransactionKind {
     /// TODO: We should use GasCostSummary directly in ChangeEpoch struct, and return that
     /// directly.
     pub fn get_advance_epoch_tx_gas_summary(&self) -> Option<(u64, u64)> {
+<<<<<<< HEAD
         let e = match self {
             Self::ChangeEpoch(e) => e,
             Self::EndOfEpochTransaction(txns) => {
@@ -1204,6 +1274,11 @@ impl TransactionKind {
                 } else {
                     panic!("final end-of-epoch txn must be ChangeEpoch")
                 }
+=======
+        match self {
+            Self::ChangeEpoch(e) => {
+                Some((e.bfc_computation_charge + e.bfc_storage_charge, e.bfc_storage_rebate))
+>>>>>>> develop_v.1.1.5
             }
             _ => return None,
         };
@@ -1220,11 +1295,23 @@ impl TransactionKind {
     pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,
+                                SharedInputObject {
+                        id: SUI_CLOCK_OBJECT_ID,
+                        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                        mutable: true,
+                    }];
+                Either::Left(Either::Left(objs.into_iter()))
             }
+<<<<<<< HEAD
 
             Self::ConsensusCommitPrologue(_) | Self::ConsensusCommitPrologueV2(_) => {
                 Either::Left(Either::Left(iter::once(SharedInputObject {
+=======
+            Self::ConsensusCommitPrologue(_) => {
+                Either::Left(Either::Right(iter::once(SharedInputObject {
+>>>>>>> develop_v.1.1.5
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
@@ -1250,7 +1337,12 @@ impl TransactionKind {
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            _ => Either::Right(Either::Right(iter::empty())),
+            Self::ChangeBfcRound(_) => {
+                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
+                                SharedInputObject::BFC_SYSTEM_OBJ,];
+                Either::Left(Either::Left(objs.into_iter()))
+            }
+            _ => Either::Right(Either::Right(vec![].into_iter())),
         }
     }
 
@@ -1285,6 +1377,14 @@ impl TransactionKind {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
                 }]
             }
             Self::Genesis(_) => {
@@ -1297,10 +1397,25 @@ impl TransactionKind {
                     mutable: true,
                 }]
             }
+<<<<<<< HEAD
             Self::AuthenticatorStateUpdate(update) => {
                 vec![InputObjectKind::SharedMoveObject {
                     id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,
                     initial_shared_version: update.authenticator_obj_initial_shared_version(),
+=======
+            Self::ChangeBfcRound(_)=>{
+                vec![InputObjectKind::SharedMoveObject {
+                    id: SUI_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+>>>>>>> develop_v.1.1.5
                     mutable: true,
                 }]
             }
@@ -1338,6 +1453,7 @@ impl TransactionKind {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
+<<<<<<< HEAD
             | TransactionKind::ConsensusCommitPrologueV2(_) => (),
             TransactionKind::EndOfEpochTransaction(txns) => {
                 // The transaction should have been rejected earlier if the feature is not enabled.
@@ -1356,6 +1472,9 @@ impl TransactionKind {
                 // The transaction should have been rejected earlier if the feature is not enabled.
                 assert!(config.random_beacon());
             }
+=======
+            | TransactionKind::ChangeBfcRound(_) => (),
+>>>>>>> develop_v.1.1.5
         };
         Ok(())
     }
@@ -1390,9 +1509,13 @@ impl TransactionKind {
             Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
             Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
             Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
+<<<<<<< HEAD
             Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
             Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
             Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
+=======
+            Self::ChangeBfcRound(_) => "ChangeBfcRound",
+>>>>>>> develop_v.1.1.5
         }
     }
 }
@@ -1404,13 +1527,16 @@ impl Display for TransactionKind {
             Self::ChangeEpoch(e) => {
                 writeln!(writer, "Transaction Kind : Epoch Change")?;
                 writeln!(writer, "New epoch ID : {}", e.epoch)?;
-                writeln!(writer, "Storage gas reward : {}", e.storage_charge)?;
-                writeln!(writer, "Computation gas reward : {}", e.computation_charge)?;
-                writeln!(writer, "Storage rebate : {}", e.storage_rebate)?;
+                writeln!(writer, "Storage gas reward : {}", e.bfc_storage_charge)?;
+                writeln!(writer, "Computation gas reward : {}", e.bfc_computation_charge)?;
+                writeln!(writer, "Storage rebate : {}", e.bfc_storage_rebate)?;
                 writeln!(writer, "Timestamp : {}", e.epoch_start_timestamp_ms)?;
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis")?;
+            }
+            Self::ChangeBfcRound(_) => {
+                writeln!(writer, "Transaction Kind : ChangeBfcRound")?;
             }
             Self::ConsensusCommitPrologue(p) => {
                 writeln!(writer, "Transaction Kind : Consensus Commit Prologue")?;
@@ -1425,6 +1551,7 @@ impl Display for TransactionKind {
                 writeln!(writer, "Transaction Kind : Programmable")?;
                 write!(writer, "{p}")?;
             }
+<<<<<<< HEAD
             Self::AuthenticatorStateUpdate(_) => {
                 writeln!(writer, "Transaction Kind : Authenticator State Update")?;
             }
@@ -1434,6 +1561,8 @@ impl Display for TransactionKind {
             Self::EndOfEpochTransaction(_) => {
                 writeln!(writer, "Transaction Kind : End of Epoch Transaction")?;
             }
+=======
+>>>>>>> develop_v.1.1.5
         }
         write!(f, "{}", writer)
     }
@@ -1460,6 +1589,21 @@ pub enum TransactionExpiration {
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub enum TransactionData {
     V1(TransactionDataV1),
+}
+
+impl TransactionData {
+    pub fn is_change_bfc_round_tx(&self) -> bool {
+        match self {
+            Self::V1(txn_data) => {
+                match txn_data.kind {
+                    TransactionKind::ChangeBfcRound(_) => true,
+                    _ => {
+                        false
+                    },
+                }
+            }
+        }
+    }
 }
 
 impl VersionedProtocolMessage for TransactionData {
@@ -1674,6 +1818,25 @@ impl TransactionData {
         )
     }
 
+    pub fn new_transfer_sui_with_gas_coins(
+        recipient: SuiAddress,
+        sender: SuiAddress,
+        amount: Option<u64>,
+        gas_payment: Vec<ObjectRef>,
+        gas_budget: u64,
+        gas_price: u64,
+    ) -> Self {
+        Self::new_transfer_sui_allow_sponsor_with_gas_coins(
+            recipient,
+            sender,
+            amount,
+            gas_payment,
+            gas_budget,
+            gas_price,
+            sender,
+        )
+    }
+
     pub fn new_transfer_sui_allow_sponsor(
         recipient: SuiAddress,
         sender: SuiAddress,
@@ -1691,6 +1854,30 @@ impl TransactionData {
         Self::new_programmable_allow_sponsor(
             sender,
             vec![gas_payment],
+            pt,
+            gas_budget,
+            gas_price,
+            gas_sponsor,
+        )
+    }
+
+    pub fn new_transfer_sui_allow_sponsor_with_gas_coins(
+        recipient: SuiAddress,
+        sender: SuiAddress,
+        amount: Option<u64>,
+        gas_payment: Vec<ObjectRef>,
+        gas_budget: u64,
+        gas_price: u64,
+        gas_sponsor: SuiAddress,
+    ) -> Self {
+        let pt = {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            builder.transfer_sui(recipient, amount);
+            builder.finish()
+        };
+        Self::new_programmable_allow_sponsor(
+            sender,
+            gas_payment,
             pt,
             gas_budget,
             gas_price,
@@ -1914,6 +2101,7 @@ pub trait TransactionDataAPI {
     fn move_calls(&self) -> Vec<(&ObjectID, &IdentStr, &IdentStr)>;
 
     fn input_objects(&self) -> UserInputResult<Vec<InputObjectKind>>;
+    fn kind_input_objects(&self) -> UserInputResult<Vec<InputObjectKind>>;
 
     fn receiving_objects(&self) -> Vec<ObjectRef>;
 
@@ -1926,6 +2114,7 @@ pub trait TransactionDataAPI {
 
     fn is_system_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
+    fn is_change_bfc_round_tx(&self) -> bool;
 
     /// returns true if the transaction is one that is specially sequenced to run at the very end
     /// of the epoch
@@ -2016,6 +2205,9 @@ impl TransactionDataAPI for TransactionDataV1 {
         }
         Ok(inputs)
     }
+    fn kind_input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
+        self.kind.input_objects()
+    }
 
     fn receiving_objects(&self) -> Vec<ObjectRef> {
         self.kind.receiving_objects()
@@ -2051,7 +2243,14 @@ impl TransactionDataAPI for TransactionDataV1 {
         if self.gas_owner() == self.sender() {
             return Ok(());
         }
-        if matches!(&self.kind, TransactionKind::ProgrammableTransaction(_)) {
+        let allow_sponsored_tx = match &self.kind {
+            TransactionKind::ProgrammableTransaction(_) => true,
+            TransactionKind::ChangeEpoch(_)
+            | TransactionKind::ConsensusCommitPrologue(_)
+            | TransactionKind::Genesis(_)
+            | TransactionKind::ChangeBfcRound(_) => false,
+        };
+        if allow_sponsored_tx {
             return Ok(());
         }
         Err(UserInputError::UnsupportedSponsoredTransactionKind)
@@ -2062,6 +2261,10 @@ impl TransactionDataAPI for TransactionDataV1 {
             self.kind,
             TransactionKind::ChangeEpoch(_) | TransactionKind::EndOfEpochTransaction(_)
         )
+    }
+
+    fn is_change_bfc_round_tx(&self) -> bool {
+        matches!(self.kind, TransactionKind::ChangeBfcRound(_))
     }
 
     fn is_system_tx(&self) -> bool {
@@ -2315,6 +2518,58 @@ impl Message for SenderSignedData {
     fn digest(&self) -> Self::DigestType {
         TransactionDigest::new(default_hash(&self.intent_message().value))
     }
+<<<<<<< HEAD
+=======
+
+    fn verify_epoch(&self, epoch: EpochId) -> SuiResult {
+        for sig in &self.inner().tx_signatures {
+            sig.verify_user_authenticator_epoch(epoch)?;
+        }
+
+        Ok(())
+    }
+}
+impl AuthenticatedMessage for SenderSignedData {
+    fn verify_message_signature(&self, verify_params: &VerifyParams) -> SuiResult {
+        fp_ensure!(
+            self.0.len() == 1,
+            SuiError::UserInputError {
+                error: UserInputError::Unsupported(
+                    "SenderSignedData must contain exactly one transaction".to_string()
+                )
+            }
+        );
+        if self.intent_message().value.is_system_tx() {
+            return Ok(());
+        }
+
+        // Verify signatures. Steps are ordered in asc complexity order to minimize abuse.
+        let signers = self.intent_message().value.signers();
+        // Signature number needs to match
+        fp_ensure!(
+            self.inner().tx_signatures.len() == signers.len(),
+            SuiError::SignerSignatureNumberMismatch {
+                actual: self.inner().tx_signatures.len(),
+                expected: signers.len()
+            }
+        );
+        // All required signers need to be sign.
+        let present_sigs = self.get_signer_sig_mapping()?;
+        for s in signers {
+            if !present_sigs.contains_key(&s) {
+                return Err(SuiError::SignerSignatureAbsent {
+                    signer: s.to_string(),
+                });
+            }
+        }
+
+        // Verify all present signatures.
+        for (signer, signature) in present_sigs {
+            signature.verify_claims(self.intent_message(), signer, verify_params)?;
+        }
+        Ok(())
+    }
+>>>>>>> develop_v.1.1.5
 }
 
 impl<S> Envelope<SenderSignedData, S> {
@@ -2433,25 +2688,38 @@ impl VerifiedTransaction {
     pub fn new_change_epoch(
         next_epoch: EpochId,
         protocol_version: ProtocolVersion,
-        storage_charge: u64,
-        computation_charge: u64,
-        storage_rebate: u64,
-        non_refundable_storage_fee: u64,
+        bfc_storage_charge: u64,
+        bfc_computation_charge: u64,
+        bfc_storage_rebate: u64,
+        bfc_non_refundable_storage_fee: u64,
+        stable_gas_summary_map:HashMap<TypeTag,GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
+        let stable_gas_summarys = stable_gas_summary_map.iter().map(|(k,v)|(k.clone(),v.clone())).collect_vec();
         ChangeEpoch {
             epoch: next_epoch,
             protocol_version,
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge,
+            bfc_computation_charge,
+            bfc_storage_rebate,
+            bfc_non_refundable_storage_fee,
+            stable_gas_summarys,
             epoch_start_timestamp_ms,
             system_packages,
         }
         .pipe(TransactionKind::ChangeEpoch)
         .pipe(Self::new_system_transaction)
+    }
+
+    pub fn new_change_bfc_round(
+        round_id: BfcRoundId,
+    ) -> Self {
+        ChangeBfcRound {
+            bfc_round:round_id,
+        }
+            .pipe(TransactionKind::ChangeBfcRound)
+            .pipe(Self::new_system_transaction)
     }
 
     pub fn new_genesis_transaction(objects: Vec<GenesisObject>) -> Self {
@@ -2474,6 +2742,7 @@ impl VerifiedTransaction {
         .pipe(Self::new_system_transaction)
     }
 
+<<<<<<< HEAD
     pub fn new_consensus_commit_prologue_v2(
         epoch: u64,
         round: u64,
@@ -2526,6 +2795,8 @@ impl VerifiedTransaction {
         TransactionKind::EndOfEpochTransaction(txns).pipe(Self::new_system_transaction)
     }
 
+=======
+>>>>>>> develop_v.1.1.5
     fn new_system_transaction(system_transaction: TransactionKind) -> Self {
         system_transaction
             .pipe(TransactionData::new_system_transaction)

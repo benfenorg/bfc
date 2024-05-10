@@ -4,7 +4,9 @@
 module sui_system::genesis {
 
     use sui::balance::{Self, Balance};
-    use sui::sui::{Self, SUI};
+    use sui::coin;
+    use sui::object::UID;
+    use sui::bfc::{Self, BFC};
     use sui_system::sui_system;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set;
@@ -78,7 +80,8 @@ module sui_system::genesis {
     /// all the information we need in the system.
     fun create(
         sui_system_state_id: UID,
-        mut sui_supply: Balance<SUI>,
+        bfc_system_state_id: UID,
+        sui_supply: Balance<BFC>,
         genesis_chain_parameters: GenesisChainParameters,
         genesis_validators: vector<GenesisValidatorMetadata>,
         token_distribution_schedule: TokenDistributionSchedule,
@@ -183,6 +186,7 @@ module sui_system::genesis {
 
         sui_system::create(
             sui_system_state_id,
+            bfc_system_state_id,
             validators,
             storage_fund,
             genesis_chain_parameters.protocol_version,
@@ -194,8 +198,8 @@ module sui_system::genesis {
     }
 
     fun allocate_tokens(
-        mut sui_supply: Balance<SUI>,
-        mut allocations: vector<TokenAllocation>,
+        sui_supply: Balance<BFC>,
+        allocations: vector<TokenAllocation>,
         validators: &mut vector<Validator>,
         ctx: &mut TxContext,
     ) {
@@ -218,7 +222,8 @@ module sui_system::genesis {
                     ctx
                 );
             } else {
-                sui::transfer(
+
+                bfc::transfer(
                     allocation_balance.into_coin(ctx),
                     recipient_address,
                 );
@@ -236,9 +241,9 @@ module sui_system::genesis {
         let count = validators.length();
         let mut i = 0;
         while (i < count) {
-            let validator = &mut validators[i];
+            let validator =  &mut validators[i];
             validator.activate(0);
-
+            validator::activate_stable(validator, 0);
             i = i + 1;
         };
 

@@ -11,7 +11,8 @@ use sui_json_rpc_api::{
     CoinReadApiClient, GovernanceReadApiClient, IndexerApiClient, ReadApiClient,
     TransactionBuilderClient, WriteApiClient,
 };
-use sui_json_rpc_types::ObjectChange;
+use sui_json_rpc_types::{ObjectChange, SuiTransactionBlockEffects};
+//use sui_json_rpc_types::ObjectChange;
 use sui_json_rpc_types::ObjectsPage;
 use sui_json_rpc_types::{
     Balance, CoinPage, DelegatedStake, StakeStatus, SuiCoinMetadata, SuiExecutionStatus,
@@ -22,7 +23,7 @@ use sui_macros::sim_test;
 use sui_move_build::BuildConfig;
 use sui_swarm_config::genesis_config::{DEFAULT_GAS_AMOUNT, DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT};
 use sui_types::balance::Supply;
-use sui_types::base_types::ObjectID;
+use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::SequenceNumber;
 use sui_types::coin::{TreasuryCap, COIN_MODULE_NAME};
 use sui_types::digests::ObjectDigest;
@@ -31,6 +32,10 @@ use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, SUI_FRAMEWORK_ADDRESS};
 use test_cluster::TestClusterBuilder;
 use tokio::time::sleep;
+use tracing::info;
+use sui_simulator::telemetry_subscribers;
+use sui_types::dao::DaoRPC;
+use sui_types::proposal::Proposal;
 
 #[sim_test]
 async fn test_get_objects() -> Result<(), anyhow::Error> {
@@ -110,7 +115,7 @@ async fn test_public_transfer_object() -> Result<(), anyhow::Error> {
     let gas = objects.clone().last().unwrap().object().unwrap().object_id;
 
     let transaction_bytes: TransactionBlockBytes = http_client
-        .transfer_object(address, obj, Some(gas), 1_000_000.into(), address)
+        .transfer_object(address, obj, Some(gas), 1000_000_000.into(), address)
         .await?;
 
     let tx = cluster
@@ -360,19 +365,19 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     assert!(!result.has_next_page);
 
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::sui::TestCoin".into()), None, None)
+        .get_coins(address, Some("0x2::bfc::TestCoin".into()), None, None)
         .await?;
     assert_eq!(0, result.data.len());
 
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::sui::SUI".into()), None, None)
+        .get_coins(address, Some("0x2::bfc::BFC".into()), None, None)
         .await?;
     assert_eq!(5, result.data.len());
     assert!(!result.has_next_page);
 
     // Test paging
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::sui::SUI".into()), None, Some(3))
+        .get_coins(address, Some("0x2::bfc::BFC".into()), None, Some(3))
         .await?;
     assert_eq!(3, result.data.len());
     assert!(result.has_next_page);
@@ -380,7 +385,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     let result: CoinPage = http_client
         .get_coins(
             address,
-            Some("0x2::sui::SUI".into()),
+            Some("0x2::bfc::BFC".into()),
             result.next_cursor,
             Some(3),
         )
@@ -391,7 +396,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     let result: CoinPage = http_client
         .get_coins(
             address,
-            Some("0x2::sui::SUI".into()),
+            Some("0x2::bfc::BFC".into()),
             result.next_cursor,
             None,
         )
@@ -409,7 +414,10 @@ async fn test_get_balance() -> Result<(), anyhow::Error> {
     let address = cluster.get_address_0();
 
     let result: Balance = http_client.get_balance(address, None).await?;
-    assert_eq!("0x2::sui::SUI", result.coin_type);
+    assert_eq!(
+        "0x2::sui::SUI" == result.coin_type || "0x2::bfc::BFC" == result.coin_type,
+        true
+    );
     assert_eq!(
         (DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT as u64 * DEFAULT_GAS_AMOUNT) as u128,
         result.total_balance
@@ -423,8 +431,7 @@ async fn test_get_balance() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_get_metadata() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
-
+    //telemetry_subscribers::init_for_testing();
     let cluster = TestClusterBuilder::new().build().await;
 
     let http_client = cluster.rpc_client();
@@ -812,7 +819,7 @@ async fn test_unstaking() -> Result<(), anyhow::Error> {
             address,
             staked_sui_copy[0].stakes[2].staked_sui_id,
             None,
-            1_000_000.into(),
+            100_000_000.into(),
         )
         .await?;
     let tx = cluster
@@ -892,7 +899,7 @@ async fn test_staking_multiple_coins() -> Result<(), anyhow::Error> {
             Some(1000000000.into()),
             validator,
             None,
-            100_000_000.into(),
+            10_000_000.into(),
         )
         .await?;
     let tx = cluster
@@ -950,6 +957,329 @@ async fn test_staking_multiple_coins() -> Result<(), anyhow::Error> {
         .find(|coin| coin.balance > genesis_coin_amount)
         .unwrap();
     assert_eq!((genesis_coin_amount * 3) - 1000000000, new_coin.balance);
+
+    Ok(())
+}
+
+#[sim_test]
+#[ignore]
+async fn test_dao_publish() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    info!("=================");
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(2000)
+        .build()
+        .await;
+
+    let address = cluster.get_address_0();
+    info!("===========address: {}", address);
+
+    let http_client = cluster.rpc_client();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+    //let _coin = &objects[1].object()?;
+
+
+
+    let compiled_package = BuildConfig::new_for_testing()
+        .build(Path::new("../../sui_programmability/examples/hello_world").to_path_buf())?;
+    let compiled_modules_bytes =
+        compiled_package.get_package_base64(/* with_unpublished_deps */ false);
+    let dependencies = compiled_package.get_dependency_original_package_ids();
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .publish(
+            address,
+            compiled_modules_bytes,
+            dependencies,
+            Some(gas.object_id),
+            100_000_00000.into(),
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+
+    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+
+    let package_id = current_effects.created().get(0).unwrap().object_id();
+
+    info!("===========package_id: {}", package_id);
+
+    //sleep for better test result
+    sleep(Duration::from_millis(4000)).await;
+
+    // now do the call
+    let module = "bfc_dao".to_string();
+    let function = "create_dao_test".to_string();
+
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            call_args!(address)?,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let _current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+
+    //let dao_share_id = current_effects.created().get(0).unwrap().object_id();
+
+
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    let count = objects.len();
+    assert_eq!(7, count);
+
+    Ok(())
+}
+
+
+#[ignore]
+#[sim_test]
+async fn test_get_proposal() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    info!("=================");
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(2000)
+        .build()
+        .await;
+    let http_client = cluster.rpc_client();
+
+    let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let gas = objects.first().unwrap().object().unwrap();
+
+
+    let compiled_package = BuildConfig::new_for_testing()
+        .build(Path::new("../../sui_programmability/examples/hello_world").to_path_buf())?;
+    let compiled_modules_bytes =
+        compiled_package.get_package_base64(/* with_unpublished_deps */ false);
+    let dependencies = compiled_package.get_dependency_original_package_ids();
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .publish(
+            address,
+            compiled_modules_bytes,
+            dependencies,
+            Some(gas.object_id),
+            100_000_00000.into(),
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+
+    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+
+    let package_id = current_effects.created().get(0).unwrap().object_id();
+
+    info!("===========package_id: {}", package_id);
+
+    //sleep for better test result
+    sleep(Duration::from_millis(4000)).await;
+
+    // now do the call
+    let module = "bfc_dao".to_string();
+    let function = "create_proposal_for_test".to_string();
+
+
+
+
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            type_args![]?,
+            call_args!(address)?,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let current_effects = tx_response.effects.unwrap() as SuiTransactionBlockEffects;
+
+    let proposal_id = current_effects.created().get(0).unwrap().object_id();
+
+    //sleep for better test result
+    sleep(Duration::from_millis(4000)).await;
+
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+
+    let count = objects.len();
+    assert_eq!(7, count);
+
+    //need the proposal address.
+    let address = SuiAddress::from(proposal_id);
+    info!("===========address: {}", address);
+
+    let http_client = cluster.rpc_client();
+    let result = http_client.get_proposal(address).await?;
+
+    let p = result as Proposal;
+
+
+    assert!( p.proposal.pid > 0);
+
+    Ok(())
+}
+
+
+#[sim_test]
+async fn test_get_dao() -> Result<(), anyhow::Error> {
+    telemetry_subscribers::init_for_testing();
+    info!("=================");
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(3000)
+        .build()
+        .await;
+
+    let address = cluster.get_address_0();
+    info!("===========address: {}", address);
+
+    let http_client = cluster.rpc_client();
+
+    http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new()
+                    .with_type()
+                    .with_owner()
+                    .with_previous_transaction(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+
+    let http_client = cluster.rpc_client();
+    let result = http_client.get_inner_dao_info().await?;
+
+    let dao = result as DaoRPC;
+
+    assert!(dao.info.next_proposal_id>0);
+    assert!(dao.info.next_action_id>0);
+
 
     Ok(())
 }

@@ -28,7 +28,7 @@ def get_current_network_epoch(env='testnet'):
     for i in range(NUM_RETRIES):
         cmd = ['curl', '--location', '--request', 'POST', f'https://explorer-rpc.{env}.sui.io/',
                '--header', 'Content-Type: application/json', '--data-raw',
-               '{"jsonrpc":"2.0", "method":"suix_getCurrentEpoch", "params":[], "id":1}']
+               '{"jsonrpc":"2.0", "method":"bfcx_getCurrentEpoch", "params":[], "id":1}']
         try:
             result = subprocess.check_output(cmd, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
@@ -81,7 +81,7 @@ def get_local_metric(metric: Metric):
 def await_started(start_checkpoint):
     for i in range(STARTUP_TIMEOUT_SEC):
         if get_local_metric(Metric.CHECKPOINT) != start_checkpoint:
-            print(f"sui-node started successfully after {i} seconds")
+            print(f"bfc-node started successfully after {i} seconds")
             return
         print("Awaiting sui-node startup...")
         time.sleep(1)

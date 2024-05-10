@@ -7,7 +7,7 @@ set -e
 DEFAULT_NETWORK="testnet"
 CLEAN=0
 LOG_LEVEL="info"
-SUI_RUN_PATH="/opt/sui"
+SUI_RUN_PATH="/opt/bfc"
 VERBOSE=""
 
 function cleanup {
@@ -100,7 +100,7 @@ if [[ -z $SUI_BIN_PATH ]]; then
 fi
 
 
-echo "Starting suinode..."
+echo "Starting bfcnode..."
 RUST_LOG=$LOG_LEVEL $SUI_BIN_PATH --config-path ${SUI_RUN_PATH}/fullnode.yaml &
 SUI_NODE_PID=$!
 

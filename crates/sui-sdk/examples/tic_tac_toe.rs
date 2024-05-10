@@ -300,7 +300,7 @@ struct TicTacToeOpts {
 
 fn default_keystore_path() -> PathBuf {
     match dirs::home_dir() {
-        Some(v) => v.join(".sui").join("sui_config").join("sui.keystore"),
+        Some(v) => v.join(".bfc").join("sui_config").join("sui.keystore"),
         None => panic!("Cannot obtain home directory path"),
     }
 }

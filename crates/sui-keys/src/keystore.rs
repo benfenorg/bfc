@@ -15,13 +15,16 @@ use std::fmt::Write;
 use std::fmt::{Display, Formatter};
 use std::fs;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use sui_types::base_types::SuiAddress;
+use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 use sui_types::crypto::get_key_pair_from_rng;
 use sui_types::crypto::{
     enum_dispatch, EncodeDecodeBase64, PublicKey, Signature, SignatureScheme, SuiKeyPair,
 };
+use crate::aes_utils::{default_des_128_decode, default_des_128_encode};
+
 
 #[derive(Serialize, Deserialize)]
 #[enum_dispatch(AccountKeystore)]
@@ -197,7 +200,7 @@ impl AccountKeystore for FileBasedKeystore {
         Ok(Signature::new_hashed(
             msg,
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -213,7 +216,7 @@ impl AccountKeystore for FileBasedKeystore {
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -290,7 +293,7 @@ impl AccountKeystore for FileBasedKeystore {
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error> {
         match self.keys.get(address) {
             Some(key) => Ok(key),
-            None => Err(anyhow!("Cannot find key for address: [{address}]")),
+            None => Err(anyhow!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone()))),
         }
     }
 
@@ -310,6 +313,7 @@ impl AccountKeystore for FileBasedKeystore {
 impl FileBasedKeystore {
     pub fn new(path: &PathBuf) -> Result<Self, anyhow::Error> {
         let keys = if path.exists() {
+<<<<<<< HEAD
             let reader =
                 BufReader::new(File::open(path).with_context(|| {
                     format!("Cannot open the keystore file: {}", path.display())
@@ -317,6 +321,31 @@ impl FileBasedKeystore {
             let kp_strings: Vec<String> = serde_json::from_reader(reader).with_context(|| {
                 format!("Cannot deserialize the keystore file: {}", path.display(),)
             })?;
+=======
+            let mut reader = BufReader::new(
+                File::open(path)
+                    .map_err(|e| anyhow!("Can't open FileBasedKeystore from {:?}: {e}", path))?,
+            );
+            //add aes-128-cbc default decryption if the file is encrypted
+
+            let mut contents = String::new();
+            reader.read_to_string(&mut contents).expect("Can not read keytore file content.");
+
+
+            let mut kp_strings: Vec<String> = Vec::new();
+            if contents.starts_with("[") {
+                kp_strings = serde_json::from_str(&*contents)
+                    .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
+
+            }else {
+                let decode_data = default_des_128_decode(contents);
+                kp_strings = serde_json::from_str(&*decode_data)
+                    .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
+            }
+
+
+
+>>>>>>> develop_v.1.1.5
             kp_strings
                 .iter()
                 .map(|kpstr| {
@@ -435,8 +464,16 @@ impl FileBasedKeystore {
                     .map(|k| k.encode_base64())
                     .collect::<Vec<_>>(),
             )
+<<<<<<< HEAD
             .with_context(|| format!("Cannot serialize keystore to file: {}", path.display()))?;
             fs::write(path, store)?;
+=======
+            .unwrap();
+            //add aes-128-cbc default encryption
+            let encode_data = default_des_128_encode(store.as_bytes());
+
+            fs::write(path, encode_data)?
+>>>>>>> develop_v.1.1.5
         }
         Ok(())
     }
@@ -463,7 +500,7 @@ impl AccountKeystore for InMemKeystore {
         Ok(Signature::new_hashed(
             msg,
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -479,7 +516,7 @@ impl AccountKeystore for InMemKeystore {
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
             self.keys.get(address).ok_or_else(|| {
-                signature::Error::from_source(format!("Cannot find key for address: [{address}]"))
+                signature::Error::from_source(format!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone())))
             })?,
         ))
     }
@@ -522,7 +559,7 @@ impl AccountKeystore for InMemKeystore {
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error> {
         match self.keys.get(address) {
             Some(key) => Ok(key),
-            None => Err(anyhow!("Cannot find key for address: [{address}]")),
+            None => Err(anyhow!("Cannot find key for address: [{}]", sui_address_to_bfc_address(address.clone()))),
         }
     }
 

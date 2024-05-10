@@ -6,19 +6,23 @@
 //# publish --sender A
 
 module test::coin_in_vec {
+    use std::vector;
     use sui::coin::Coin;
-    use sui::sui::SUI;
+    use sui::object::{Self, UID};
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
 
-    public struct Wrapper has key {
+    struct Wrapper has key {
         id: UID,
-        coins: vector<Coin<SUI>>,
+        coins: vector<Coin<BFC>>,
     }
 
     fun init(ctx: &mut TxContext) {
         transfer::transfer(Wrapper { id: object::new(ctx), coins: vector[] }, tx_context::sender(ctx));
     }
 
-    public fun deposit(wrapper: &mut Wrapper, c: Coin<SUI>) {
+    public fun deposit(wrapper: &mut Wrapper, c: Coin<BFC>) {
         vector::push_back(&mut wrapper.coins, c)
     }
 

@@ -31,13 +31,16 @@ use tracing::{info, warn};
 use uuid::Uuid;
 
 const CONCURRENCY_LIMIT: usize = 30;
+const DEFAULT_AMOUNT: u64 = 1000 * 1_000_000_000;
 
 struct AppState<F = Arc<SimpleFaucet>> {
     faucet: F,
     config: FaucetConfig,
 }
 
-const PROM_PORT_ADDR: &str = "0.0.0.0:9184";
+//const PROM_PORT_ADDR: &str = "0.0.0.0:9184";
+
+const PROM_PORT_ADDR: &str = "0.0.0.0:9185";
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -52,7 +55,7 @@ async fn main() -> Result<(), anyhow::Error> {
     };
     info!("Max concurrency: {max_concurrency}.");
 
-    let config: FaucetConfig = FaucetConfig::parse();
+    let mut config: FaucetConfig = FaucetConfig::parse();
     let FaucetConfig {
         port,
         host_ip,
@@ -63,6 +66,8 @@ async fn main() -> Result<(), anyhow::Error> {
         wal_retry_interval,
         ..
     } = config;
+    config.amount = DEFAULT_AMOUNT;
+    let context = create_wallet_context(wallet_client_timeout_secs).await?;
 
     let context = create_wallet_context(wallet_client_timeout_secs)?;
 
@@ -92,6 +97,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .route("/", get(health))
         .route("/gas", post(request_gas))
         .route("/v1/gas", post(batch_request_gas))
+        .route("/v1/status", post(request_status))
         .route("/v1/status/:task_id", get(request_status))
         .layer(
             ServiceBuilder::new()

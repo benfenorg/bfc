@@ -40,13 +40,13 @@ impl CertificateStoreCacheMetrics {
                 "The number of hits in the cache",
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
             miss: register_int_counter_with_registry!(
                 "certificate_store_cache_miss",
                 "The number of miss in the cache",
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
         }
     }
 
@@ -75,7 +75,7 @@ pub trait Cache {
     /// Checks existence of one or more digests.
     fn contains(&self, digest: &CertificateDigest) -> bool;
     fn multi_contains<'a>(&self, digests: impl Iterator<Item = &'a CertificateDigest>)
-        -> Vec<bool>;
+                          -> Vec<bool>;
 
     fn remove(&self, digest: &CertificateDigest);
     fn remove_all(&self, digests: Vec<CertificateDigest>);
@@ -796,7 +796,7 @@ mod test {
                 CERTIFICATE_ID_BY_ORIGIN_CF,
             ],
         )
-        .expect("Cannot open database");
+            .expect("Cannot open database");
 
         reopen!(&rocksdb,
             CERTIFICATES_CF;<CertificateDigest, Certificate>,

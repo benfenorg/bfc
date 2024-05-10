@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { beforeAll, describe, expect, it } from 'vitest';
-
-import { SuiObjectData } from '../../src/client';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
+import { SuiObjectData, bfc2SuiAddress } from '../../src';
 
 describe('Dynamic Fields Reading API', () => {
 	let toolbox: TestToolbox;
@@ -62,8 +61,12 @@ describe('Dynamic Fields Reading API', () => {
 		for (const data of dynamicFields.data) {
 			const objName = data.name;
 
+			if (objName.type === '0x2::object::ID') {
+				objName.value = bfc2SuiAddress(objName.value as string);
+			}
+
 			const object = await toolbox.client.getDynamicFieldObject({
-				parentId: parentObjectId,
+				parentId: bfc2SuiAddress(parentObjectId),
 				name: objName,
 			});
 

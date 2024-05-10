@@ -9,9 +9,7 @@ use crate::error::SuiError;
 use crate::storage::ObjectStore;
 use crate::sui_system_state::epoch_start_sui_system_state::EpochStartSystemState;
 use crate::sui_system_state::get_validators_from_table_vec;
-use crate::sui_system_state::sui_system_state_inner_v1::{
-    StakeSubsidyV1, StorageFundV1, ValidatorSetV1,
-};
+use crate::sui_system_state::sui_system_state_inner_v1::{StakeSubsidyV1, StorageFundV1, ValidatorSetV1};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -210,6 +208,11 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                             id: staking_pool_mappings_id,
                             size: staking_pool_mappings_size,
                         },
+                    stable_pool_mappings:
+                    Table {
+                        id: _stable_pool_mappings_id,
+                        size: _stable_pool_mappings_size,
+                    },
                     inactive_validators:
                         Table {
                             id: inactive_pools_id,

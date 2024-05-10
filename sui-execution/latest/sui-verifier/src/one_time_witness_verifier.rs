@@ -25,6 +25,8 @@ use sui_types::{
     base_types::{TX_CONTEXT_MODULE_NAME, TX_CONTEXT_STRUCT_NAME},
     error::ExecutionError,
     move_package::{is_test_fun, FnInfoMap},
+    SUI_FRAMEWORK_ADDRESS,
+    BFC_SYSTEM_ADDRESS,
     BRIDGE_ADDRESS, SUI_FRAMEWORK_ADDRESS,
 };
 
@@ -42,6 +44,27 @@ pub fn verify_module(
     // the module has no initializer). The reason for it is that the SUI coin is only instantiated
     // during genesis. It is easiest to simply special-case this module particularly that this is
     // framework code and thus deemed correct.
+    let bfc_modules = [
+        ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("bfc").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("busd").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bjpy").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bkrw").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("baud").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bars").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bbrl").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bcad").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("beur").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bgbp").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bidr").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("binr").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bmxn").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("brub").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bsar").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("btry").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("bzar").to_owned()),
+        ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("mgg").to_owned()),
+    ];
+    if bfc_modules.contains(&module.self_id()) {
     let self_id = module.self_id();
 
     if ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("sui").to_owned()) == self_id {

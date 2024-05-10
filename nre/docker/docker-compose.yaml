@@ -19,15 +19,15 @@ services:
       - "9184:9184"
     network_mode: "host"
     volumes:
-      - ./validator.yaml:/opt/sui/config/validator.yaml:ro
-      - ./genesis.blob:/opt/sui/config/genesis.blob:ro
-      - ../genesis/key-pairs:/opt/sui/key-pairs/:ro
-      - /opt/sui/db:/opt/sui/db:rw
+      - ./validator.yaml:/opt/bfc/config/validator.yaml:ro
+      - ./genesis.blob:/opt/bfc/config/genesis.blob:ro
+      - ../genesis/key-pairs:/opt/bfc/key-pairs/:ro
+      - /opt/bfc/db:/opt/bfc/db:rw
     command:
       [
-        "/opt/sui/bin/sui-node",
+        "/opt/bfc/bin/sui-node",
         "--config-path",
-        "/opt/sui/config/validator.yaml",
+        "/opt/bfc/config/validator.yaml",
       ]
     restart: on-failure
     logging:

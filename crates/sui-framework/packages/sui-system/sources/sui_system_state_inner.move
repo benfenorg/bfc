@@ -2,10 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module sui_system::sui_system_state_inner {
+    use std::ascii;
+    use std::ascii::String;
     use sui::balance::{Self, Balance};
+<<<<<<< HEAD
     use sui::coin::Coin;
     use sui_system::staking_pool::{stake_activation_epoch, StakedSui};
     use sui::sui::SUI;
+=======
+    use sui::coin::{Self, Coin};
+    use sui::object::{ID};
+    use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
+>>>>>>> develop_v.1.1.5
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -18,6 +29,8 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::StakedStable;
 
     // same as in validator_set
     const ACTIVE_VALIDATOR_ONLY: u8 = 1;
@@ -130,8 +143,8 @@ module sui_system::sui_system_state_inner {
         /// when advance_epoch_safe_mode is executed. They will eventually be processed once we
         /// are out of safe mode.
         safe_mode: bool,
-        safe_mode_storage_rewards: Balance<SUI>,
-        safe_mode_computation_rewards: Balance<SUI>,
+        safe_mode_storage_rewards: Balance<BFC>,
+        safe_mode_computation_rewards: Balance<BFC>,
         safe_mode_storage_rebates: u64,
         safe_mode_non_refundable_storage_fee: u64,
 
@@ -178,8 +191,8 @@ module sui_system::sui_system_state_inner {
         /// when advance_epoch_safe_mode is executed. They will eventually be processed once we
         /// are out of safe mode.
         safe_mode: bool,
-        safe_mode_storage_rewards: Balance<SUI>,
-        safe_mode_computation_rewards: Balance<SUI>,
+        safe_mode_storage_rewards: Balance<BFC>,
+        safe_mode_computation_rewards: Balance<BFC>,
         safe_mode_storage_rebates: u64,
         safe_mode_non_refundable_storage_fee: u64,
 
@@ -204,6 +217,7 @@ module sui_system::sui_system_state_inner {
         total_gas_fees: u64,
         total_stake_rewards_distributed: u64,
         leftover_storage_fund_inflow: u64,
+        stable_rate: VecMap<String, u64>,
     }
 
     // Errors
@@ -226,7 +240,7 @@ module sui_system::sui_system_state_inner {
     /// This function will be called only once in genesis.
     public(package) fun create(
         validators: vector<Validator>,
-        initial_storage_fund: Balance<SUI>,
+        initial_storage_fund: Balance<BFC>,
         protocol_version: u64,
         epoch_start_timestamp_ms: u64,
         parameters: SystemParameters,
@@ -236,12 +250,13 @@ module sui_system::sui_system_state_inner {
         let validators = validator_set::new(validators, ctx);
         let reference_gas_price = validators.derive_reference_gas_price();
         // This type is fixed as it's created at genesis. It should not be updated during type upgrade.
+        let init_coin = coin::from_balance(initial_storage_fund, ctx);
         let system_state = SuiSystemStateInner {
             epoch: 0,
             protocol_version,
             system_state_version: genesis_system_state_version(),
             validators,
-            storage_fund: storage_fund::new(initial_storage_fund),
+            storage_fund: storage_fund::new(coin::into_balance(init_coin)),
             parameters,
             reference_gas_price,
             validator_report_records: vec_map::empty(),
@@ -487,13 +502,34 @@ module sui_system::sui_system_state_inner {
     /// Add stake to a validator's staking pool.
     public(package) fun request_add_stake(
         self: &mut SuiSystemStateInnerV2,
-        stake: Coin<SUI>,
+        stake: Coin<BFC>,
         validator_address: address,
         ctx: &mut TxContext,
+<<<<<<< HEAD
     ) : StakedSui {
         self.validators.request_add_stake(
+=======
+    ) : StakedBfc {
+        validator_set::request_add_stake(
+            &mut self.validators,
+>>>>>>> develop_v.1.1.5
             validator_address,
             stake.into_balance(),
+            ctx,
+        )
+    }
+
+    /// Add stake to a validator's stable pool.
+    public(friend) fun request_add_stable_stake<STABLE>(
+        self: &mut SuiSystemStateInnerV2,
+        stake: Coin<STABLE>,
+        validator_address: address,
+        ctx: &mut TxContext,
+    ) : StakedStable<STABLE> {
+        validator_set::request_add_stable_stake(
+            &mut self.validators,
+            validator_address,
+            coin::into_balance(stake),
             ctx,
         )
     }
@@ -501,11 +537,11 @@ module sui_system::sui_system_state_inner {
     /// Add stake to a validator's staking pool using multiple coins.
     public(package) fun request_add_stake_mul_coin(
         self: &mut SuiSystemStateInnerV2,
-        stakes: vector<Coin<SUI>>,
+        stakes: vector<Coin<BFC>>,
         stake_amount: option::Option<u64>,
         validator_address: address,
         ctx: &mut TxContext,
-    ) : StakedSui {
+    ) : StakedBfc {
         let balance = extract_coin_balance(stakes, stake_amount, ctx);
         self.validators.request_add_stake(validator_address, balance, ctx)
     }
@@ -513,14 +549,34 @@ module sui_system::sui_system_state_inner {
     /// Withdraw some portion of a stake from a validator's staking pool.
     public(package) fun request_withdraw_stake(
         self: &mut SuiSystemStateInnerV2,
+<<<<<<< HEAD
         staked_sui: StakedSui,
         ctx: &TxContext,
     ) : Balance<SUI> {
+=======
+        staked_sui: StakedBfc,
+        ctx: &mut TxContext,
+    ) : Balance<BFC> {
+>>>>>>> develop_v.1.1.5
         assert!(
             stake_activation_epoch(&staked_sui) <= ctx.epoch(),
             EStakeWithdrawBeforeActivation
         );
         self.validators.request_withdraw_stake(staked_sui, ctx)
+    }
+
+    public(friend) fun request_withdraw_stable_stake<STABLE>(
+        self: &mut SuiSystemStateInnerV2,
+        staked_sui: StakedStable<STABLE>,
+        ctx: &mut TxContext,
+    ) : Balance<STABLE> {
+        assert!(
+            stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
+            EStakeWithdrawBeforeActivation
+        );
+        validator_set::request_withdraw_stable_stake(
+            &mut self.validators, staked_sui, ctx,
+        )
     }
 
     /// Report a validator as a bad or non-performant actor in the system.
@@ -812,16 +868,24 @@ module sui_system::sui_system_state_inner {
         self: &mut SuiSystemStateInnerV2,
         new_epoch: u64,
         next_protocol_version: u64,
+<<<<<<< HEAD
         mut storage_reward: Balance<SUI>,
         mut computation_reward: Balance<SUI>,
         mut storage_rebate_amount: u64,
         mut non_refundable_storage_fee_amount: u64,
+=======
+        storage_reward: Balance<BFC>,
+        computation_reward: Balance<BFC>,
+        storage_rebate_amount: u64,
+        non_refundable_storage_fee_amount: u64,
+>>>>>>> develop_v.1.1.5
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
                                          // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
+        stable_rate: VecMap<ascii::String, u64>,
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         let prev_epoch_start_timestamp = self.epoch_start_timestamp_ms;
         self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
 
@@ -896,6 +960,7 @@ module sui_system::sui_system_state_inner {
             self.parameters.validator_low_stake_threshold,
             self.parameters.validator_very_low_stake_threshold,
             self.parameters.validator_low_stake_grace_period,
+            stable_rate,
             ctx,
         );
 
@@ -940,6 +1005,7 @@ module sui_system::sui_system_state_inner {
                 total_gas_fees: computation_charge,
                 total_stake_rewards_distributed: computation_reward_distributed + storage_fund_reward_distributed,
                 leftover_storage_fund_inflow,
+                stable_rate,
             }
         );
         self.safe_mode = false;
@@ -984,6 +1050,14 @@ module sui_system::sui_system_state_inner {
         self.validators.validator_total_stake_amount(validator_addr)
     }
 
+    public(friend) fun validator_stake_amount_with_stable(
+        self: &SuiSystemStateInnerV2,
+        validator_addr: address,
+        stable_rate: VecMap<ascii::String, u64>
+    ): u64 {
+        validator_set::validator_total_stake_amount_with_stable(&self.validators, validator_addr, stable_rate)
+    }
+
     /// Returns the staking pool id of a given validator.
     /// Aborts if `validator_addr` is not an active validator.
     public(package) fun validator_staking_pool_id(self: &SuiSystemStateInnerV2, validator_addr: address): ID {
@@ -991,10 +1065,21 @@ module sui_system::sui_system_state_inner {
         self.validators.validator_staking_pool_id(validator_addr)
     }
 
+    public(friend) fun validator_stable_pool_id<STABLE>(self: &SuiSystemStateInnerV2, validator_addr: address): ID {
+
+        validator_set::validator_stable_pool_id<STABLE>(&self.validators, validator_addr)
+    }
+
     /// Returns reference to the staking pool mappings that map pool ids to active validator addresses
     public(package) fun validator_staking_pool_mappings(self: &SuiSystemStateInnerV2): &Table<ID, address> {
 
         self.validators.staking_pool_mappings()
+    }
+
+    /// Returns reference to the stable staking pool mappings that map pool ids to active validator addresses
+    public(friend) fun validator_stable_staking_pool_mappings(self: &SuiSystemStateInnerV2): &Table<ID, address> {
+
+        validator_set::stalbe_staking_pool_mappings(&self.validators)
     }
 
     /// Returns all the validators who are currently reporting `addr`
@@ -1030,9 +1115,15 @@ module sui_system::sui_system_state_inner {
 
     #[allow(lint(self_transfer))]
     /// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
+<<<<<<< HEAD
     fun extract_coin_balance(mut coins: vector<Coin<SUI>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<SUI> {
         let mut merged_coin = coins.pop_back();
         merged_coin.join_vec(coins);
+=======
+    fun extract_coin_balance(coins: vector<Coin<BFC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<BFC> {
+        let merged_coin = vector::pop_back(&mut coins);
+        pay::join_vec(&mut merged_coin, coins);
+>>>>>>> develop_v.1.1.5
 
         let mut total_balance = merged_coin.into_balance();
         // return the full amount if amount is not specified

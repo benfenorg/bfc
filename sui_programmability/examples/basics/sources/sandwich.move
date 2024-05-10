@@ -6,29 +6,32 @@
 module basics::sandwich {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::object::{Self, UID};
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
 
-    public struct Ham has key, store {
+    struct Ham has key, store {
         id: UID
     }
 
-    public struct Bread has key, store {
+    struct Bread has key, store {
         id: UID
     }
 
-    public struct Sandwich has key, store {
+    struct Sandwich has key, store {
         id: UID,
     }
 
     // This Capability allows the owner to withdraw profits
-    public struct GroceryOwnerCapability has key {
+    struct GroceryOwnerCapability has key {
         id: UID
     }
 
     // Grocery is created on module init
-    public struct Grocery has key {
+    struct Grocery has key {
         id: UID,
-        profits: Balance<SUI>
+        profits: Balance<BFC>
     }
 
     /// Price for ham
@@ -46,7 +49,7 @@ module basics::sandwich {
     fun init(ctx: &mut TxContext) {
         transfer::share_object(Grocery {
             id: object::new(ctx),
-            profits: balance::zero<SUI>()
+            profits: balance::zero<BFC>()
         });
 
         transfer::transfer(GroceryOwnerCapability {
@@ -57,7 +60,7 @@ module basics::sandwich {
     /// Exchange `c` for some ham
     public fun buy_ham(
         grocery: &mut Grocery,
-        c: Coin<SUI>,
+        c: Coin<BFC>,
         ctx: &mut TxContext
     ): Ham {
         let b = coin::into_balance(c);
@@ -69,7 +72,7 @@ module basics::sandwich {
     /// Exchange `c` for some bread
     public fun buy_bread(
         grocery: &mut Grocery,
-        c: Coin<SUI>,
+        c: Coin<BFC>,
         ctx: &mut TxContext
     ): Bread {
         let b = coin::into_balance(c);
@@ -95,7 +98,7 @@ module basics::sandwich {
     }
 
     /// Owner of the grocery can collect profits by passing his capability
-    public fun collect_profits(_cap: &GroceryOwnerCapability, grocery: &mut Grocery, ctx: &mut TxContext): Coin<SUI> {
+    public fun collect_profits(_cap: &GroceryOwnerCapability, grocery: &mut Grocery, ctx: &mut TxContext): Coin<BFC> {
         let amount = balance::value(&grocery.profits);
 
         assert!(amount > 0, ENoProfits);
@@ -115,15 +118,17 @@ module basics::test_sandwich {
     use basics::sandwich::{Self, Grocery, GroceryOwnerCapability};
     use sui::test_scenario;
     use sui::coin::{Self};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
+    use sui::transfer;
     use sui::test_utils;
+    use sui::tx_context;
 
     #[test]
     fun test_make_sandwich() {
         let owner = @0x1;
         let the_guy = @0x2;
 
-        let mut scenario_val = test_scenario::begin(owner);
+        let scenario_val = test_scenario::begin(owner);
         let scenario = &mut scenario_val;
         test_scenario::next_tx(scenario, owner);
         {
@@ -132,19 +137,19 @@ module basics::test_sandwich {
 
         test_scenario::next_tx(scenario, the_guy);
         {
-            let mut grocery_val = test_scenario::take_shared<Grocery>(scenario);
+            let grocery_val = test_scenario::take_shared<Grocery>(scenario);
             let grocery = &mut grocery_val;
             let ctx = test_scenario::ctx(scenario);
 
             let ham = sandwich::buy_ham(
                 grocery,
-                coin::mint_for_testing<SUI>(10, ctx),
+                coin::mint_for_testing<BFC>(10, ctx),
                 ctx
             );
 
             let bread = sandwich::buy_bread(
                 grocery,
-                coin::mint_for_testing<SUI>(2, ctx),
+                coin::mint_for_testing<BFC>(2, ctx),
                 ctx
             );
             let sandwich = sandwich::make_sandwich(ham, bread, ctx);
@@ -155,7 +160,7 @@ module basics::test_sandwich {
 
         test_scenario::next_tx(scenario, owner);
         {
-            let mut grocery_val = test_scenario::take_shared<Grocery>(scenario);
+            let grocery_val = test_scenario::take_shared<Grocery>(scenario);
             let grocery = &mut grocery_val;
             let capability = test_scenario::take_from_sender<GroceryOwnerCapability>(scenario);
 

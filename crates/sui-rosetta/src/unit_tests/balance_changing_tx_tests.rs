@@ -456,7 +456,7 @@ async fn test_failed_pay_sui() {
         sender,
         pt,
         vec![coin1, coin2],
-        2000000,
+        200000,
         rgp,
         true,
     )
@@ -611,7 +611,7 @@ async fn test_delegation_parsing() -> Result<(), anyhow::Error> {
             "operation_identifier":{"index":0},
             "type":"Stake",
             "account": { "address" : sender.to_string() },
-            "amount" : { "value": "-100000" , "currency": { "symbol": "SUI", "decimals": 9}},
+            "amount" : { "value": "-100000" , "currency": { "symbol": "BFC", "decimals": 9}},
             "metadata": { "Stake" : {"validator": validator.to_string()} }
         }]
     ))

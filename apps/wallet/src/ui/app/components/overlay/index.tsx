@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { X32 } from '@mysten/icons';
-import cl from 'clsx';
+import cl from 'classnames';
 import { useCallback } from 'react';
-import type { ReactNode } from 'react';
 
 import useAppSelector from '../../hooks/useAppSelector';
 import { AppType } from '../../redux/slices/app/AppType';
 import { Portal } from '../../shared/Portal';
+
+import type { ReactNode } from 'react';
+
 import st from './Overlay.module.scss';
 
 type OverlayProps = {
@@ -18,7 +20,6 @@ type OverlayProps = {
 	closeOverlay?: () => void;
 	closeIcon?: ReactNode | null;
 	setShowModal?: (showModal: boolean) => void;
-	background?: 'bg-sui-lightest';
 };
 
 function Overlay({
@@ -27,8 +28,7 @@ function Overlay({
 	showModal,
 	closeOverlay,
 	setShowModal,
-	closeIcon = <X32 fill="currentColor" className="text-sui-light w-8 h-8" />,
-	background,
+	closeIcon = <X32 fill="currentColor" className="text-white w-6 h-6" />,
 }: OverlayProps) {
 	const closeModal = useCallback(
 		(e: React.MouseEvent<HTMLElement>) => {
@@ -48,19 +48,19 @@ function Overlay({
 				})}
 			>
 				{title && (
-					<div className="bg-gray-40 h-12 w-full">
+					<div className="bg-bfc-card h-12 w-full">
 						<div
 							data-testid="overlay-title"
-							className="text-steel-darker bg-gray-40 flex justify-center h-12 items-center text-heading4 font-semibold"
+							className="text-bfc-text3 flex justify-center h-12 items-center text-heading4 font-semibold"
 						>
 							{title}
 						</div>
 					</div>
 				)}
 				<div
-					className={cl(st.content, background)}
+					className={st.content}
 					style={{
-						height: title ? 'calc(100% - 128px)' : 'calc(100% - 80px)',
+						height: title ? 'calc(100% - 108px)' : 'calc(100% - 60px)',
 					}}
 				>
 					{children}

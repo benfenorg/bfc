@@ -42,7 +42,9 @@ async fn do_upgraded_multisig_test() -> SuiResult {
 }
 
 #[sim_test]
-async fn test_upgraded_multisig_feature_deny() {
+async fn sim_test_upgraded_multisig_feature_deny() {
+    use sui_protocol_config::ProtocolConfig;
+
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_upgraded_multisig_for_testing(false);
         config
@@ -55,6 +57,8 @@ async fn test_upgraded_multisig_feature_deny() {
 
 #[sim_test]
 async fn test_upgraded_multisig_feature_allow() {
+    use sui_protocol_config::ProtocolConfig;
+
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_upgraded_multisig_for_testing(true);
         config

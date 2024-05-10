@@ -6,14 +6,17 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 pub mod checked {
-
     use crate::sui_types::gas::SuiGasStatusAPI;
-    use crate::temporary_store::TemporaryStore;
     use sui_protocol_config::ProtocolConfig;
+<<<<<<< HEAD
     use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
     use sui_types::gas_model::gas_predicates::{
         charge_upgrades, dont_charge_budget_on_storage_oog,
     };
+=======
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
+    use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
+>>>>>>> develop_v.1.1.5
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
         digests::TransactionDigest,
@@ -22,7 +25,8 @@ pub mod checked {
         is_system_package,
         object::Data,
     };
-    use tracing::trace;
+    use tracing::{trace};
+    use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
     /// This is the main entry point for gas accounting.
@@ -136,6 +140,11 @@ pub mod checked {
             if gas_coin_count == 1 {
                 return;
             }
+<<<<<<< HEAD
+=======
+            let gas_coin_obj = temporary_store.objects().get(&gas_coin_id).unwrap();
+            let gas_coin_type = gas_coin_obj.coin_type_maybe().unwrap();
+>>>>>>> develop_v.1.1.5
 
             // sum the value of all gas coins
             let new_balance = self
@@ -143,12 +152,26 @@ pub mod checked {
                 .iter()
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
+
+                    if obj.coin_type_maybe().unwrap() != gas_coin_type {
+                        return Err(ExecutionError::invariant_violation(
+                            "Invariant violation: gas coins with different types!"
+                        ));
+                    }
                     let Data::Move(move_obj) = &obj.data else {
+<<<<<<< HEAD
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
                     };
                     if !move_obj.type_().is_gas_coin() {
+=======
+                    return Err(ExecutionError::invariant_violation(
+                        "Provided non-gas coin object as input for gas!"
+                    ));
+                };
+                    if !move_obj.type_().is_gas_coin() && !move_obj.type_().is_stable_gas_coin(){
+>>>>>>> develop_v.1.1.5
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
@@ -304,11 +327,25 @@ pub mod checked {
                     self.handle_storage_and_rebate_v1(temporary_store, execution_result)
                 }
 
-                let cost_summary = self.gas_status.summary();
+                let mut cost_summary = self.gas_status.summary();
+                cost_summary.rate = 1;
+                cost_summary.base_point = 0;
+
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
-                deduct_gas(&mut gas_object, gas_used);
+                if gas_object.is_stable_gas_coin() {
+                    let coin_name = gas_object.get_gas_coin_name();
+                    //read rate
+                    let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
+                    cost_summary.rate = rate;
+                    cost_summary.base_point = base_point;
+                    let stable_gas_used= calculate_stable_net_used_with_base_point(cost_summary.clone());
+                    deduct_gas(&mut gas_object, stable_gas_used);
+                }else {
+                    deduct_gas(&mut gas_object, gas_used);
+                }
+
                 #[skip_checked_arithmetic]
                 trace!(gas_used, gas_obj_id =? gas_object.id(), gas_obj_ver =? gas_object.version(), "Updated gas object");
 

@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { CheckFill16, XFill16 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui.js/utils';
 import { cva, cx, type VariantProps } from 'class-variance-authority';
 import { useEffect, useRef } from 'react';
 
@@ -24,11 +24,6 @@ const styles = cva('transition flex flex-row flex-nowrap items-center gap-3 py-2
 		},
 	},
 	compoundVariants: [
-		{
-			mode: 'select',
-			disabled: false,
-			className: 'hover:text-steel-dark',
-		},
 		{ mode: 'select', selected: true, className: 'text-steel-darker' },
 		{ mode: 'select', selected: false, className: 'text-steel-dark' },
 		{
@@ -81,19 +76,17 @@ export function WalletListSelectItem({
 			{isSelect ? (
 				<CheckFill16
 					className={cx(
-						selected ? 'text-success' : 'text-gray-50',
-						'transition text-base font-bold',
+						selected ? 'text-bfc-text1' : 'text-bfc-text3',
+						'transition text-body font-bold',
 					)}
 				/>
 			) : null}
-			{isDisconnect && selected ? (
-				<XFill16 className="text-issue-dark text-base font-bold" />
-			) : null}
-			<Text mono variant="body" weight="semibold">
+			{isDisconnect && selected ? <XFill16 className="text-bfc-red text-base font-bold" /> : null}
+			<Text mono variant="body" weight="medium">
 				{formatAddress(address)}
 			</Text>
 			{isDisconnect && !selected ? (
-				<div className="flex flex-1 justify-end text-issue-dark">
+				<div className="flex flex-1 justify-end text-bfc-red">
 					<Text variant="subtitle" weight="normal">
 						Disconnect
 					</Text>
@@ -101,7 +94,7 @@ export function WalletListSelectItem({
 			) : null}
 			{isSelect && isNew ? (
 				<div className="flex-1 flex justify-end">
-					<Text variant="subtitleSmall" color="steel">
+					<Text variant="body" color="bfc-text2">
 						NEW
 					</Text>
 				</div>

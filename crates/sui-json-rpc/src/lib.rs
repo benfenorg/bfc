@@ -48,10 +48,22 @@ pub mod read_api;
 mod routing_layer;
 pub mod transaction_builder_api;
 pub mod transaction_execution_api;
+//pub mod gas_exchange_inner_api;
+pub const CLIENT_SDK_TYPE_HEADER: &str = "client-sdk-type";
+/// The version number of the SDK itself. This can be different from the API version.
+pub const CLIENT_SDK_VERSION_HEADER: &str = "client-sdk-version";
+/// The RPC API version that the client is targeting. Different SDK versions may target the same
+/// API version.
+pub const CLIENT_TARGET_API_VERSION_HEADER: &str = "client-target-api-version";
 
 pub const APP_NAME_HEADER: &str = "app-name";
 
 pub const MAX_REQUEST_SIZE: u32 = 2 << 30;
+// #[cfg(test)]
+// #[path = "unit_tests/bfc_base_types_tests.rs"]
+// mod bfc_base_types_tests;
+
+
 
 pub struct JsonRpcServerBuilder {
     module: RpcModule<()>,
@@ -64,13 +76,13 @@ pub struct JsonRpcServerBuilder {
 pub fn sui_rpc_doc(version: &str) -> Project {
     Project::new(
         version,
-        "Sui JSON-RPC",
-        "Sui JSON-RPC API for interaction with Sui Full node. Make RPC calls using https://fullnode.NETWORK.sui.io:443, where NETWORK is the network you want to use (testnet, devnet, mainnet). By default, local networks use port 9000.",
-        "Mysten Labs",
-        "https://mystenlabs.com",
-        "build@mystenlabs.com",
+        "Bfc JSON-RPC",
+        "Bfc JSON-RPC API for interaction with Bfc Full node. Make RPC calls using https://NETWORK.benfen.org:443, where NETWORK is the network you want to use (testnet, devnet, mainnet). By default, local networks use port 9000.",
+        "Benfen Labs",
+        "https://www.benfen.org",
+        "admin@benfen.org",
         "Apache-2.0",
-        "https://raw.githubusercontent.com/MystenLabs/sui/main/LICENSE",
+        "https://www.benfen.org/",
     )
 }
 
@@ -252,6 +264,7 @@ impl JsonRpcServerBuilder {
 
         Ok(app)
     }
+
 
     pub async fn start(
         self,

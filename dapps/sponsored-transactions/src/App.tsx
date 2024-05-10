@@ -1,16 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-	ConnectButton,
-	useCurrentAccount,
-	useSignTransactionBlock,
-	useSuiClient,
-} from '@mysten/dapp-kit';
-import { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SignedTransaction } from '@benfen/bfc.js';
+import { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { ConnectButton, useWalletKit } from '@benfen/wallet-kit';
 import { ComponentProps, ReactNode, useMemo, useState } from 'react';
-
+import { provider } from './utils/rpc';
 import { sponsorTransaction } from './utils/sponsorTransaction';
 
 const Button = (props: ComponentProps<'button'>) => (
@@ -39,16 +35,10 @@ const CodePanel = ({
 );
 
 export function App() {
-	const client = useSuiClient();
-	const currentAccount = useCurrentAccount();
-	const { mutateAsync: signTransactionBlock } = useSignTransactionBlock();
+	const { currentAccount, signTransactionBlock } = useWalletKit();
 	const [loading, setLoading] = useState(false);
-	const [sponsoredTx, setSponsoredTx] = useState<Awaited<
-		ReturnType<typeof sponsorTransaction>
-	> | null>(null);
-	const [signedTx, setSignedTx] = useState<Awaited<ReturnType<typeof signTransactionBlock>> | null>(
-		null,
-	);
+	const [sponsoredTx, setSponsoredTx] = useState<SignedTransaction | null>(null);
+	const [signedTx, setSignedTx] = useState<SignedTransaction | null>(null);
 	const [executedTx, setExecutedTx] = useState<SuiTransactionBlockResponse | null>(null);
 
 	const tx = useMemo(() => {
@@ -78,7 +68,7 @@ export function App() {
 								setLoading(true);
 								try {
 									const bytes = await tx!.build({
-										client,
+										provider,
 										onlyTransactionKind: true,
 									});
 									const sponsoredBytes = await sponsorTransaction(currentAccount!.address, bytes);
@@ -103,7 +93,7 @@ export function App() {
 								setLoading(true);
 								try {
 									const signed = await signTransactionBlock({
-										transactionBlock: TransactionBlock.from(sponsoredTx!.bytes),
+										transactionBlock: TransactionBlock.from(sponsoredTx!.transactionBlockBytes),
 									});
 									setSignedTx(signed);
 								} finally {
@@ -124,7 +114,7 @@ export function App() {
 							onClick={async () => {
 								setLoading(true);
 								try {
-									const executed = await client.executeTransactionBlock({
+									const executed = await provider.executeTransactionBlock({
 										transactionBlock: signedTx!.transactionBlockBytes,
 										signature: [signedTx!.signature, sponsoredTx!.signature],
 										options: {

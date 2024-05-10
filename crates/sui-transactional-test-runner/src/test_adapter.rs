@@ -60,6 +60,7 @@ use sui_protocol_config::{Chain, ProtocolConfig};
 use sui_storage::{
     key_value_store::TransactionKeyValueStore, key_value_store_metrics::KeyValueStoreMetrics,
 };
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID};
 use sui_swarm_config::genesis_config::AccountConfig;
 use sui_types::base_types::{SequenceNumber, VersionNumber};
 use sui_types::crypto::{get_authority_key_pair, RandomnessRound};
@@ -83,6 +84,8 @@ use sui_types::{
     transaction::{Transaction, TransactionData, TransactionDataAPI, VerifiedTransaction},
     MOVE_STDLIB_ADDRESS, SUI_CLOCK_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_STATE_OBJECT_ID,
 };
+use sui_types::{clock::Clock, SUI_SYSTEM_ADDRESS,BFC_SYSTEM_ADDRESS};
+use sui_types::{crypto::get_authority_key_pair, storage::ObjectStore};
 use sui_types::{execution_status::ExecutionStatus, transaction::TransactionKind};
 use sui_types::{gas::GasCostSummary, object::GAS_VALUE_FOR_TESTING};
 use sui_types::{
@@ -90,7 +93,7 @@ use sui_types::{
     transaction::{Argument, CallArg},
 };
 use sui_types::{
-    programmable_transaction_builder::ProgrammableTransactionBuilder, SUI_FRAMEWORK_PACKAGE_ID,
+    programmable_transaction_builder::ProgrammableTransactionBuilder, SUI_FRAMEWORK_PACKAGE_ID
 };
 use sui_types::{utils::to_sender_signed_transaction, SUI_SYSTEM_PACKAGE_ID};
 use sui_types::{DEEPBOOK_ADDRESS, SUI_DENY_LIST_OBJECT_ID};
@@ -112,6 +115,7 @@ const WELL_KNOWN_OBJECTS: &[ObjectID] = &[
     SUI_SYSTEM_PACKAGE_ID,
     SUI_SYSTEM_STATE_OBJECT_ID,
     SUI_CLOCK_OBJECT_ID,
+    BFC_SYSTEM_STATE_OBJECT_ID,
     SUI_DENY_LIST_OBJECT_ID,
     SUI_RANDOMNESS_STATE_OBJECT_ID,
 ];
@@ -1784,7 +1788,7 @@ impl<'a> SuiTestAdapter {
         // we are assuming that all packages depend on Move Stdlib and Sui Framework, so these
         // don't have to be provided explicitly as parameters
         if include_std {
-            dependencies.extend([MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID]);
+            dependencies.extend([MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,BFC_SYSTEM_PACKAGE_ID]);
         }
         Ok(dependencies)
     }
@@ -1842,6 +1846,13 @@ static NAMED_ADDRESSES: Lazy<BTreeMap<String, NumericalAddress>> = Lazy::new(|| 
             move_compiler::shared::NumberFormat::Hex,
         ),
     );
+    map.insert(
+        "bfc_system".to_string(),
+        NumericalAddress::new(
+            BFC_SYSTEM_ADDRESS.into_bytes(),
+            move_compiler::shared::NumberFormat::Hex,
+        ),
+    );
     map
 });
 
@@ -1869,6 +1880,12 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
         buf.extend(["packages", "deepbook", "sources"]);
         buf.to_string_lossy().to_string()
     };
+    let bfc_system_sources = {
+        let mut buf = sui_files.to_path_buf();
+        buf.extend(["packages", "bfc-system", "sources"]);
+        buf.to_string_lossy().to_string()
+    };
+
     let config = PackageConfig {
         edition: Edition::E2024_BETA,
         flavor: Flavor::Sui,
@@ -1876,6 +1893,8 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
     };
     let fully_compiled_res = move_compiler::construct_pre_compiled_lib(
         vec![PackagePaths {
+            name: None,
+            paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps, deepbook_sources],
             name: Some(("sui-framework".into(), config)),
             paths: vec![sui_system_sources, sui_sources, sui_deps, deepbook_sources],
             named_address_map: NAMED_ADDRESSES.clone(),

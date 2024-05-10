@@ -63,7 +63,7 @@ impl TestCaseImpl for NativeTransferTest {
             None::<u64>
         ];
         let data = ctx
-            .build_transaction_remotely("unsafe_transferSui", params)
+            .build_transaction_remotely("unsafe_transferBfc", params)
             .await?;
         let mut response = ctx.sign_and_execute(data, "coin transfer").await;
 
@@ -95,11 +95,11 @@ impl NativeTransferTest {
         }
         BalanceChangeChecker::new()
             .owner(Owner::AddressOwner(recipient))
-            .coin_type("0x2::sui::SUI")
+            .coin_type("0x2::bfc::BFC")
             .check(&balance_changes.remove(0));
         BalanceChangeChecker::new()
             .owner(Owner::AddressOwner(signer))
-            .coin_type("0x2::sui::SUI")
+            .coin_type("0x2::bfc::BFC")
             .check(&balance_changes.remove(0));
         // Verify fullnode observes the txn
         ctx.let_fullnode_sync(vec![response.digest], 5).await;

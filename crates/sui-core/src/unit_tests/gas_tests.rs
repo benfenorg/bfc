@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use fastcrypto::traits::KeyPair;
+use crate::authority::authority_tests::init_state_with_ids_and_objects_basics;
 use super::*;
 
 use super::authority_tests::{init_state_with_ids, send_and_confirm_transaction};
@@ -19,6 +21,8 @@ use sui_types::object::GAS_VALUE_FOR_TESTING;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::utils::to_sender_signed_transaction;
 use sui_types::{base_types::dbg_addr, crypto::get_key_pair};
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
+use sui_types::stable_coin::stable::checked::STABLE::BJPY;
 
 // The cost table is used only to get the max budget available which is not dependent on
 // the gas price
@@ -130,12 +134,15 @@ where
     F: FnOnce(&GasCostSummary, u64, u64) -> SuiResult,
 {
     // initial system with given gas coins
+    const GAS_AMOUNT: u64 = 0;//1_000_000_000;
     let gas_amount: u64 = if budget < 10_000_000_000 {
         10_000_000_000
     } else {
         budget
     };
-    let gas_coins = make_gas_coins(sender, gas_amount, coin_num);
+    GAS_AMOUNT = gas_amount;
+
+    let gas_coins = make_gas_coins(sender, GAS_AMOUNT, coin_num);
     let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
     let authority_state = TestAuthorityBuilder::new().build().await;
     for obj in gas_coins {
@@ -143,7 +150,7 @@ where
     }
 
     let gas_object_id = ObjectID::random();
-    let gas_coin = Object::with_id_owner_gas_for_testing(gas_object_id, sender, gas_amount);
+    let gas_coin = Object::with_id_owner_gas_for_testing(gas_object_id, sender, GAS_AMOUNT);
     authority_state.insert_genesis_object(gas_coin).await;
     // touch gas coins so that `storage_rebate` is set (not 0 as in genesis)
     touch_gas_coins(
@@ -220,7 +227,7 @@ where
     let summary = effects.gas_cost_summary();
 
     // call checker
-    checker(summary, gas_amount, final_value)
+    checker(summary, GAS_AMOUNT, final_value)
 }
 
 // make a `coin_num` coins distributing `gas_amount` across them
@@ -372,7 +379,7 @@ async fn test_oog_computation_oog_storage_final_one_coin() -> SuiResult {
 #[tokio::test]
 async fn test_computation_ok_oog_storage_minimal_ok_one_coin() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
-    const BUDGET: u64 = 1_100_000;
+    const BUDGET: u64 = 110_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
@@ -404,6 +411,7 @@ async fn test_computation_ok_oog_storage_minimal_ok_one_coin() -> SuiResult {
 #[tokio::test]
 async fn test_computation_ok_oog_storage_minimal_ok_multi_coins() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
+    const BUDGET: u64 = 100_200;
     const BUDGET: u64 = 1_100_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
@@ -475,6 +483,78 @@ async fn test_tx_gas_balance_less_than_budget() {
         UserInputError::try_from(result.response.unwrap_err()).unwrap(),
         UserInputError::GasBalanceTooLow { .. }
     ));
+}
+
+#[tokio::test]
+async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
+    // This test does a native transfer with sufficient gas budget and balance.
+    // It's expected to succeed. We check that gas was charged properly.
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let recipient = dbg_addr(2);
+
+    let gas_object_id = ObjectID::random();
+    let gas_object_id_stable = ObjectID::random();
+    let (authority_state, _package_object_ref) =
+        init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+
+    authority_state.insert_genesis_object(stable_gas_object.clone()).await;
+
+    let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET,true,stable_gas_object,gas_object_id_stable,
+                                                            sender,recipient,sender_key.copy(),rgp,authority_state.clone()).await;
+
+    let effects = result
+        .response
+        .unwrap()
+        .into_effects_for_testing()
+        .into_data();
+    let gas_cost = effects.gas_cost_summary();
+    assert!(gas_cost.net_gas_usage() as u64 > *MIN_GAS_BUDGET_PRE_RGP);
+    assert!(gas_cost.computation_cost > 0);
+    assert!(gas_cost.storage_cost > 0);
+    // Removing genesis object does not have rebate.
+    assert_eq!(gas_cost.storage_rebate, 0);
+
+    let gas_object = result
+        .authority_state
+        .get_object(&result.gas_object_id)
+        .await?
+        .unwrap();
+    let stable_gas_used = calculate_bfc_to_stable_cost_with_base_point(gas_cost.gas_used(), gas_cost.rate, gas_cost.base_point);
+    assert_eq!(
+        GasCoin::try_from(&gas_object)?.value(),
+        GAS_VALUE_FOR_TESTING - stable_gas_used
+    );
+
+    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+
+    let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET,true,gas_object,gas_object_id,
+                                                            sender,recipient,sender_key,rgp,authority_state).await;
+
+    let effects = result
+        .response
+        .unwrap()
+        .into_effects_for_testing()
+        .into_data();
+    let gas_cost = effects.gas_cost_summary();
+    assert!(gas_cost.net_gas_usage() as u64 > *MIN_GAS_BUDGET_PRE_RGP);
+    assert!(gas_cost.computation_cost > 0);
+    assert!(gas_cost.storage_cost > 0);
+    // Removing genesis object does not have rebate.
+    assert_eq!(gas_cost.storage_rebate, 0);
+
+    let gas_object = result
+        .authority_state
+        .get_object(&result.gas_object_id)
+        .await?
+        .unwrap();
+    assert_eq!(
+        GasCoin::try_from(&gas_object)?.value(),
+        GAS_VALUE_FOR_TESTING - gas_cost.gas_used()
+    );
+
+    Ok(())
 }
 
 #[tokio::test]
@@ -820,6 +900,237 @@ async fn test_publish_gas() -> anyhow::Result<()> {
         expected_gas_balance,
     );
 
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_move_call_gas_stable_coin() -> SuiResult {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let gas_object_id_stable = ObjectID::random();
+    let (authority_state, package_object_ref) =
+        init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+
+    move_call_with_gas_object(stable_gas_object,gas_object_id_stable,sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
+    move_call_with_gas_object(gas_object,gas_object_id,sender,sender_key,rgp,package_object_ref,authority_state).await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_move_call_with_multiple_stable_coin() -> SuiResult {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let gas_object_id_stable = ObjectID::random();
+    let gas_object_id_stable2 = ObjectID::random();
+    let state = TestAuthorityBuilder::new().build().await;
+    let obj = Object::with_id_owner_for_testing(gas_object_id, sender);
+    let stable_obj = Object::with_stable_id_owner_version_for_testing(gas_object_id_stable, SequenceNumber::new(), sender);
+    let stable_obj2 = Object::with_stable_id_owner_version_for_testing(gas_object_id_stable2, SequenceNumber::new(), sender);
+
+    state.insert_genesis_object(obj).await;
+    state.insert_genesis_object(stable_obj).await;
+    state.insert_genesis_object(stable_obj2).await;
+    let (authority_state, package_object_ref) = authority_tests::publish_object_basics(state).await;
+
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await?.unwrap();
+
+    let result = move_call_with_gas_objects(
+        vec![stable_gas_object.compute_object_reference(), stable_gas_object2.compute_object_reference()],
+        sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
+    assert!(result.status().is_ok());
+    Ok(())
+}
+
+#[tokio::test]
+#[should_panic]
+async fn test_move_call_with_multiple_tags_stable_coin() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let gas_object_id_stable = ObjectID::random();
+    let gas_object_id_stable2 = ObjectID::random();
+    let state = TestAuthorityBuilder::new().build().await;
+    let obj = Object::with_id_owner_for_testing(gas_object_id, sender);
+    let stable_obj = Object::with_stable_id_owner_version_for_testing(gas_object_id_stable, SequenceNumber::new(), sender);
+    let stable_obj2 = Object::with_stable_tag_id_owner_version_for_testing(gas_object_id_stable2, SequenceNumber::new(), sender, BJPY.type_(), 10_000_000_000);
+
+    state.insert_genesis_object(obj).await;
+    state.insert_genesis_object(stable_obj).await;
+    state.insert_genesis_object(stable_obj2).await;
+    let (authority_state, package_object_ref) = authority_tests::publish_object_basics(state).await;
+
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await.unwrap().unwrap();
+    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await.unwrap().unwrap();
+
+    let result = move_call_with_gas_objects(
+        vec![stable_gas_object.compute_object_reference(), stable_gas_object2.compute_object_reference()],
+        sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await.unwrap();
+    assert!(result.status().is_err());
+}
+
+
+
+async fn execute_transfer_with_gas_object_and_price(
+    gas_budget: u64,
+    run_confirm: bool,
+    gas_object: Object, gas_object_id: ObjectID, sender: SuiAddress, recipient: SuiAddress,
+    sender_key: AccountKeyPair, rgp: u64,
+    authority_state: Arc<AuthorityState>) -> TransferResult {
+    let epoch_store = authority_state.load_epoch_store_one_call_per_task();
+    let object_id = ObjectID::random();
+    let obj = Object::with_id_owner_for_testing(object_id, sender);
+    authority_state.insert_genesis_object(obj).await;
+    let object = authority_state
+        .get_object(&object_id)
+        .await
+        .unwrap()
+        .unwrap();
+
+
+    let gas_object_ref = gas_object.compute_object_reference();
+    let pt = {
+        let mut builder = ProgrammableTransactionBuilder::new();
+        builder
+            .transfer_object(recipient, object.compute_object_reference())
+            .unwrap();
+        builder.finish()
+    };
+    let kind = TransactionKind::ProgrammableTransaction(pt);
+    let data = TransactionData::new(kind, sender, gas_object_ref, gas_budget, rgp);
+    let tx = to_sender_signed_transaction(data, &sender_key);
+
+    let response = if run_confirm {
+        send_and_confirm_transaction(&authority_state, tx)
+            .await
+            .map(|(cert, effects)| {
+                TransactionStatus::Executed(
+                    Some(cert.into_sig()),
+                    effects,
+                    TransactionEvents::default(),
+                )
+            })
+    } else {
+        let tx = authority_state.verify_transaction(tx).unwrap();
+
+        authority_state
+            .handle_transaction(&epoch_store, tx)
+            .await
+            .map(|r| r.status)
+    };
+    TransferResult {
+        authority_state,
+        gas_object_id,
+        response,
+        rgp,
+    }
+}
+async fn move_call_with_gas_objects(gas_objects: Vec<ObjectRef>,sender: SuiAddress,
+                                   sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult<TransactionEffects> {
+    let module = ident_str!("object_basics").to_owned();
+    let function = ident_str!("create").to_owned();
+    let args = vec![
+        CallArg::Pure(16u64.to_le_bytes().to_vec()),
+        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+    ];
+    let data = TransactionData::new_move_call_with_gas_coins(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        function.clone(),
+        Vec::new(),
+        gas_objects,
+        args.clone(),
+        *MAX_GAS_BUDGET,
+        rgp,
+    )
+        .unwrap();
+
+    let tx = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    let effects = response.1.into_data();
+    Ok(effects)
+}
+
+async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
+                                   sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
+    let module = ident_str!("object_basics").to_owned();
+    let function = ident_str!("create").to_owned();
+    let args = vec![
+        CallArg::Pure(16u64.to_le_bytes().to_vec()),
+        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+    ];
+    let data = TransactionData::new_move_call(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        function.clone(),
+        Vec::new(),
+        gas_object.compute_object_reference(),
+        args.clone(),
+        *MAX_GAS_BUDGET,
+        rgp,
+    )
+        .unwrap();
+
+    let tx = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    let effects = response.1.into_data();
+    let created_object_ref = effects.created()[0].0;
+    assert!(effects.status().is_ok());
+    let gas_cost = effects.gas_cost_summary();
+    assert!(gas_cost.storage_cost > 0);
+    assert_eq!(gas_cost.storage_rebate, 0);
+    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let gas_used = if !gas_object.is_stable_gas_coin() {
+        gas_cost.net_gas_usage() as u64
+    } else {
+        calculate_bfc_to_stable_cost_with_base_point(gas_cost.net_gas_usage().try_into().unwrap(), gas_cost.rate, gas_cost.base_point) as u64
+    };
+    let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_used;
+    assert_eq!(
+        GasCoin::try_from(&gas_object)?.value(),
+        expected_gas_balance,
+    );
+
+    // This is the total amount of storage cost paid. We will use this
+    // to check if we get back the same amount of rebate latter.
+    let prev_storage_cost = gas_cost.storage_cost;
+
+    // Execute object deletion, and make sure we have storage rebate.
+    let data = TransactionData::new_move_call(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        ident_str!("delete").to_owned(),
+        vec![],
+        gas_object.compute_object_reference(),
+        vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(
+            created_object_ref,
+        ))],
+        *MAX_GAS_BUDGET,
+        rgp,
+    )
+        .unwrap();
+
+    let transaction = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, transaction).await?;
+    let effects = response.1.into_data();
+    assert!(effects.status().is_ok());
+    let gas_cost = effects.gas_cost_summary();
+    // storage_cost should be less than rebate because for object deletion, we only
+    // rebate without charging.
+    assert!(gas_cost.storage_cost > 0 && gas_cost.storage_cost < gas_cost.storage_rebate);
+    // Check that we have storage rebate is less or equal to the previous one + non refundable
+    assert_eq!(
+        gas_cost.storage_rebate + gas_cost.non_refundable_storage_fee,
+        prev_storage_cost
+    );
     Ok(())
 }
 

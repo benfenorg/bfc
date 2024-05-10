@@ -22,7 +22,6 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use sui_config::node::ExpensiveSafetyCheckConfig;
 use sui_types::accumulator::Accumulator;
-use sui_types::authenticator_state::{get_authenticator_state, ActiveJwk};
 use sui_types::base_types::{AuthorityName, EpochId, ObjectID, SequenceNumber, TransactionDigest};
 use sui_types::base_types::{ConciseableName, ObjectRef};
 use sui_types::committee::Committee;
@@ -71,7 +70,7 @@ use crate::execution_cache::{ExecutionCache, ExecutionCacheRead};
 use crate::module_cache_metrics::ResolverMetrics;
 use crate::post_consensus_tx_reorder::PostConsensusTxReorder;
 use crate::signature_verifier::*;
-use crate::stake_aggregator::{GenericMultiStakeAggregator, StakeAggregator};
+use crate::stake_aggregator::StakeAggregator;
 use move_bytecode_utils::module_cache::SyncModuleCache;
 use mysten_common::sync::notify_once::NotifyOnce;
 use mysten_common::sync::notify_read::NotifyRead;
@@ -92,8 +91,12 @@ use sui_types::messages_checkpoint::{
     CheckpointContents, CheckpointSequenceNumber, CheckpointSignatureMessage, CheckpointSummary,
 };
 use sui_types::messages_consensus::{
+<<<<<<< HEAD
     check_total_jwk_size, AuthorityCapabilities, ConsensusTransaction, ConsensusTransactionKey,
     ConsensusTransactionKind,
+=======
+    AuthorityCapabilities, ConsensusTransaction, ConsensusTransactionKey, ConsensusTransactionKind,
+>>>>>>> develop_v.1.1.5
 };
 use sui_types::storage::GetSharedLocks;
 use sui_types::sui_system_state::epoch_start_sui_system_state::{
@@ -125,8 +128,6 @@ impl CertTxGuard {
     pub fn release(self) {}
     pub fn commit_tx(self) {}
 }
-
-type JwkAggregator = GenericMultiStakeAggregator<(JwkId, JWK), true>;
 
 pub enum ConsensusCertificateResult {
     /// The consensus message was ignored (e.g. because it has already been processed).
@@ -298,6 +299,7 @@ pub struct AuthorityPerEpochStore {
 
     /// Chain identifier
     chain_identifier: ChainIdentifier,
+<<<<<<< HEAD
 
     /// aggregator for JWK votes
     jwk_aggregator: Mutex<JwkAggregator>,
@@ -305,6 +307,8 @@ pub struct AuthorityPerEpochStore {
     /// State machine managing randomness DKG and generation.
     randomness_manager: OnceCell<tokio::sync::Mutex<RandomnessManager>>,
     randomness_reporter: OnceCell<RandomnessReporter>,
+=======
+>>>>>>> develop_v.1.1.5
 }
 
 /// AuthorityEpochTables contains tables that contain data that is only valid within an epoch.
@@ -451,9 +455,9 @@ pub struct AuthorityEpochTables {
     pub(crate) executed_transactions_to_checkpoint:
         DBMap<TransactionDigest, CheckpointSequenceNumber>,
 
-    /// This table is no longer used (can be removed when DBMap supports removing tables)
-    #[allow(dead_code)]
+    /// Map from JwkId (iss, kid) to the fetched JWK for that key.
     oauth_provider_jwk: DBMap<JwkId, JWK>,
+<<<<<<< HEAD
 
     /// JWKs that have been voted for by one or more authorities but are not yet active.
     pending_jwks: DBMap<(AuthorityName, JwkId, JWK), ()>,
@@ -656,6 +660,8 @@ enum DeferralReason {
 
     // The list of objects are congested objects.
     SharedObjectCongestion(Vec<ObjectID>),
+=======
+>>>>>>> develop_v.1.1.5
 }
 
 fn signed_transactions_table_default_config() -> DBOptions {
@@ -803,6 +809,14 @@ impl AuthorityEpochTables {
         batch.write()?;
         Ok(())
     }
+
+    fn load_oauth_provider_jwk(&self) -> SuiResult<HashMap<JwkId, Arc<JWK>>> {
+        Ok(self
+            .oauth_provider_jwk
+            .unbounded_iter()
+            .map(|(k, v)| (k, Arc::new(v)))
+            .collect())
+    }
 }
 
 pub(crate) const MUTEX_TABLE_SIZE: usize = 1024;
@@ -861,10 +875,18 @@ impl AuthorityPerEpochStore {
 
         let execution_component = ExecutionComponents::new(
             &protocol_config,
+<<<<<<< HEAD
             execution_cache.clone(),
+=======
+            store,
+>>>>>>> develop_v.1.1.5
             cache_metrics,
             expensive_safety_check_config,
         );
+
+        let oauth_provider_jwk = tables
+            .load_oauth_provider_jwk()
+            .expect("Load oauth provider jwk at initialization cannot fail");
 
         let zklogin_env = match chain_identifier.chain() {
             // Testnet and mainnet are treated the same since it is permanent.
@@ -887,6 +909,7 @@ impl AuthorityPerEpochStore {
             protocol_config.accept_zklogin_in_multisig(),
             protocol_config.zklogin_max_epoch_upper_bound_delta(),
         );
+<<<<<<< HEAD
 
         let authenticator_state_exists = epoch_start_configuration
             .authenticator_obj_initial_shared_version()
@@ -907,6 +930,10 @@ impl AuthorityPerEpochStore {
             }
         } else {
             info!("authenticator_state disabled");
+=======
+        for (jwk_id, jwk) in oauth_provider_jwk.iter() {
+            signature_verifier.insert_oauth_jwk(jwk_id, jwk);
+>>>>>>> develop_v.1.1.5
         }
 
         let is_validator = committee.authority_index(&name).is_some();
@@ -915,15 +942,6 @@ impl AuthorityPerEpochStore {
                 .flags()
                 .contains(&EpochFlag::InMemoryCheckpointRoots));
         }
-
-        let mut jwk_aggregator = JwkAggregator::new(committee.clone());
-
-        for ((authority, id, jwk), _) in tables.pending_jwks.unbounded_iter().seek_to_first() {
-            jwk_aggregator.insert(authority, (id, jwk));
-        }
-
-        let jwk_aggregator = Mutex::new(jwk_aggregator);
-
         let s = Arc::new(Self {
             name,
             committee,
@@ -948,9 +966,12 @@ impl AuthorityPerEpochStore {
             epoch_start_configuration,
             execution_component,
             chain_identifier,
+<<<<<<< HEAD
             jwk_aggregator,
             randomness_manager: OnceCell::new(),
             randomness_reporter: OnceCell::new(),
+=======
+>>>>>>> develop_v.1.1.5
         });
         s.update_buffer_stake_metric();
         s
@@ -2067,6 +2088,7 @@ impl AuthorityPerEpochStore {
         Ok(result?)
     }
 
+<<<<<<< HEAD
     pub fn record_jwk_vote(
         &self,
         batch: &mut DBBatch,
@@ -2158,6 +2180,146 @@ impl AuthorityPerEpochStore {
 
     /// Record when finished processing a transaction from consensus.
     fn record_consensus_message_processed(
+=======
+    /// Caller is responsible to call consensus_message_processed before this method
+    pub async fn record_owned_object_cert_from_consensus(
+        &self,
+        batch: &mut DBBatch,
+        transaction: &SequencedConsensusTransactionKind,
+        certificate: &VerifiedExecutableTransaction,
+        consensus_index: &ExecutionIndicesWithHash,
+    ) -> Result<(), SuiError> {
+        let key = transaction.key();
+        self.finish_consensus_certificate_process(batch, key, certificate, consensus_index)
+    }
+
+    /// Locks a sequence number for the shared objects of the input transaction. Also updates the
+    /// last consensus index, consensus_message_processed and pending_certificates tables.
+    /// This function must only be called from the consensus task (i.e. from handle_consensus_transaction).
+    ///
+    /// Caller is responsible to call consensus_message_processed before this method
+    pub async fn record_shared_object_cert_from_consensus(
+        &self,
+        batch: &mut DBBatch,
+        shared_input_next_versions: &mut HashMap<ObjectID, SequenceNumber>,
+        transaction: &SequencedConsensusTransactionKind,
+        certificate: &VerifiedExecutableTransaction,
+        consensus_index: &ExecutionIndicesWithHash,
+    ) -> Result<(), SuiError> {
+        // Make an iterator to save the certificate.
+        let transaction_digest = *certificate.digest();
+
+        // Make an iterator to update the locks of the transaction's shared objects.
+        let shared_input_objects: Vec<_> = certificate.shared_input_objects().collect();
+
+        let mut input_object_keys = transaction_input_object_keys(certificate)?;
+        let mut assigned_versions = Vec::with_capacity(shared_input_objects.len());
+        let mut is_mutable_input = Vec::with_capacity(shared_input_objects.len());
+        for (SharedInputObject { id, mutable, .. }, version) in shared_input_objects
+            .iter()
+            .map(|obj| (obj, *shared_input_next_versions.get(&obj.id()).unwrap()))
+        {
+            assigned_versions.push((*id, version));
+            input_object_keys.push(ObjectKey(*id, version));
+            is_mutable_input.push(*mutable);
+        }
+
+        let next_version =
+            SequenceNumber::lamport_increment(input_object_keys.iter().map(|obj| obj.1));
+
+        // Update the next version for the shared objects.
+        assigned_versions
+            .iter()
+            .zip(is_mutable_input.into_iter())
+            .filter_map(|((id, _), mutable)| {
+                if mutable {
+                    Some((*id, next_version))
+                } else {
+                    None
+                }
+            })
+            .for_each(|(id, version)| {
+                shared_input_next_versions.insert(id, version);
+            });
+
+        trace!(tx_digest = ?transaction_digest,
+               ?assigned_versions, ?next_version,
+               "locking shared objects");
+
+        self.finish_assign_shared_object_versions(
+            batch,
+            transaction.key(),
+            certificate,
+            consensus_index,
+            assigned_versions,
+        )
+    }
+
+    pub fn record_consensus_transaction_processed(
+        &self,
+        write_batch: &mut DBBatch,
+        transaction: &SequencedConsensusTransactionKind,
+        consensus_index: &ExecutionIndicesWithHash,
+    ) -> Result<(), SuiError> {
+        // executable transactions need to use record_(shared|owned)_object_cert_from_consensus
+        assert!(!transaction.is_executable_transaction());
+        let key = transaction.key();
+        self.finish_consensus_transaction_process_with_batch(write_batch, key, consensus_index)?;
+        Ok(())
+    }
+
+    pub fn finish_consensus_certificate_process(
+        &self,
+        write_batch: &mut DBBatch,
+        key: SequencedConsensusTransactionKey,
+        certificate: &VerifiedExecutableTransaction,
+        consensus_index: &ExecutionIndicesWithHash,
+    ) -> SuiResult {
+        self.finish_consensus_certificate_process_with_batch(
+            write_batch,
+            key,
+            certificate,
+            consensus_index,
+        )?;
+        Ok(())
+    }
+
+    fn finish_assign_shared_object_versions(
+        &self,
+        write_batch: &mut DBBatch,
+        key: SequencedConsensusTransactionKey,
+        certificate: &VerifiedExecutableTransaction,
+        consensus_index: &ExecutionIndicesWithHash,
+        assigned_versions: Vec<(ObjectID, SequenceNumber)>,
+    ) -> SuiResult {
+        let tx_digest = *certificate.digest();
+
+        debug!(
+            ?tx_digest,
+            ?assigned_versions,
+            "finish_assign_shared_object_versions"
+        );
+        write_batch.insert_batch(
+            &self.tables.assigned_shared_object_versions,
+            iter::once((tx_digest, assigned_versions)),
+        )?;
+
+        self.finish_consensus_certificate_process_with_batch(
+            write_batch,
+            key,
+            certificate,
+            consensus_index,
+        )?;
+        Ok(())
+    }
+
+    /// When we finish processing certificate from consensus we record this information.
+    /// Tables updated:
+    ///  * consensus_message_processed - indicate that this certificate was processed by consensus
+    ///  * last_consensus_index - records last processed position in consensus stream
+    /// Self::consensus_message_processed returns true after this call for given certificate
+    fn finish_consensus_transaction_process_with_batch(
+>>>>>>> develop_v.1.1.5
         &self,
         batch: &mut DBBatch,
         key: SequencedConsensusTransactionKey,
@@ -2372,6 +2534,7 @@ impl AuthorityPerEpochStore {
                     return None;
                 }
             }
+<<<<<<< HEAD
             SequencedConsensusTransactionKind::External(ConsensusTransaction {
                 kind: ConsensusTransactionKind::NewJWKFetched(authority, id, jwk),
                 ..
@@ -2421,6 +2584,8 @@ impl AuthorityPerEpochStore {
                     return None;
                 }
             }
+=======
+>>>>>>> develop_v.1.1.5
             SequencedConsensusTransactionKind::System(_) => {}
         }
         Some(VerifiedSequencedConsensusTransaction(transaction))
@@ -3225,11 +3390,16 @@ impl AuthorityPerEpochStore {
                 }
                 Ok(ConsensusCertificateResult::ConsensusMessage)
             }
+<<<<<<< HEAD
             SequencedConsensusTransactionKind::External(ConsensusTransaction {
                 kind: ConsensusTransactionKind::NewJWKFetched(authority, jwk_id, jwk),
                 ..
             }) => {
                 if self
+=======
+            SequencedConsensusTransactionKind::System(system_transaction) => {
+                if !self
+>>>>>>> develop_v.1.1.5
                     .get_reconfig_state_read_lock_guard()
                     .should_accept_consensus_certs()
                 {
@@ -3577,6 +3747,50 @@ impl AuthorityPerEpochStore {
         self.metrics
             .epoch_total_gas_reward
             .set(stats.total_gas_reward as i64);
+
+        self.metrics
+            .epoch_total_stable_gas_reward
+            .set(stats.total_gas_reward as i64);
+
+        //todo change to some for data.
+        let gas_by_bfc = "gas_by_bfc";
+        let computation_cost = "computation_cost";
+        let storage_cost = "storage_cost";
+        let storage_rebate = "storage_rebate";
+        let gas_by_stable = "gas_by_stable";
+
+        for item in stats.total_stable_reward {
+            let type_tag = item.0.to_canonical_string();
+            self.metrics
+                .epoch_stable_gas_reward_vec
+                .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", computation_cost)])
+                .set(item.1.gas_by_bfc.computation_cost as i64);
+
+            self.metrics
+                .epoch_stable_gas_reward_vec
+                .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", storage_cost)])
+                .set(item.1.gas_by_bfc.storage_cost as i64);
+
+            self.metrics
+                .epoch_stable_gas_reward_vec
+                .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", storage_rebate)])
+                .set(item.1.gas_by_bfc.storage_rebate as i64);
+
+            self.metrics
+                .epoch_stable_gas_reward_vec
+                .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_stable), &format!("{:?}", computation_cost)])
+                .set(item.1.gas_by_stable.computation_cost as i64);
+
+            self.metrics
+                .epoch_stable_gas_reward_vec
+                .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_stable), &format!("{:?}", storage_cost)])
+                .set(item.1.gas_by_stable.storage_cost as i64);
+
+            self.metrics
+                .epoch_stable_gas_reward_vec
+                .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_stable), &format!("{:?}", storage_rebate)])
+                .set(item.1.gas_by_stable.storage_rebate as i64);
+        }
     }
 
     pub fn record_epoch_reconfig_start_time_metric(&self) {
@@ -3622,11 +3836,25 @@ impl AuthorityPerEpochStore {
             .set(self.epoch_open_time.elapsed().as_millis() as i64);
     }
 
+<<<<<<< HEAD
     pub(crate) fn update_authenticator_state(&self, update: &AuthenticatorStateUpdate) {
         info!("Updating authenticator state: {:?}", update);
         for active_jwk in &update.new_active_jwks {
             let ActiveJwk { jwk_id, jwk, .. } = active_jwk;
             self.signature_verifier.insert_jwk(jwk_id, jwk);
+=======
+    // TODO: should be pub(crate) when it is inserted only from consensus
+    pub fn insert_oauth_jwk(&self, jwk_id: &JwkId, jwk: &JWK) {
+        if self.signature_verifier.insert_oauth_jwk(jwk_id, jwk) {
+            self.tables
+                .oauth_provider_jwk
+                .insert(jwk_id, jwk)
+                .expect("write to oauth_provider_jwk should not fail");
+            // TODO: Remove old kid -> jwks.
+            info!("Added new JWK with id {:?}: {:?}", jwk_id, jwk);
+        } else {
+            info!("JWK with id {:?} already exists", jwk_id);
+>>>>>>> develop_v.1.1.5
         }
     }
 

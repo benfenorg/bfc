@@ -39,6 +39,7 @@ pub const SUI_SYSTEM_CREATE: Symbol = symbol!("create");
 pub const CLOCK_MODULE_NAME: Symbol = symbol!("clock");
 pub const CLOCK_TYPE_NAME: Symbol = symbol!("Clock");
 pub const SUI_CLOCK_CREATE: Symbol = symbol!("create");
+<<<<<<< HEAD:external-crates/move/crates/move-compiler/src/sui_mode/mod.rs
 pub const AUTHENTICATOR_STATE_MODULE_NAME: Symbol = symbol!("authenticator_state");
 pub const AUTHENTICATOR_STATE_TYPE_NAME: Symbol = symbol!("AuthenticatorState");
 pub const AUTHENTICATOR_STATE_CREATE: Symbol = symbol!("create");
@@ -68,6 +69,12 @@ pub const PRIVATE_TRANSFER_FUNCTIONS: &[Symbol] = &[
     SHARE_FUNCTION_NAME,
     RECEIVE_FUNCTION_NAME,
 ];
+=======
+pub const BFC_SYSTEM_ADDR_NAME: Symbol = symbol!("bfc_system");
+pub const BFC_SYSTEM_MODULE_NAME: Symbol = symbol!("bfc_system");
+pub const BFC_SYSTEM_CREATE: Symbol = symbol!("create");
+
+>>>>>>> develop_v.1.1.5:external-crates/move/move-compiler/src/sui_mode/mod.rs
 
 //**************************************************************************************************
 // Diagnostics

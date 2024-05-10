@@ -19,7 +19,9 @@ use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructT
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use move_core_types::language_storage::TypeTag;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
+use crate::gas::GasCostSummaryAdjusted;
 
 use self::sui_system_state_inner_v1::{SuiSystemStateInnerV1, ValidatorV1};
 use self::sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary};
@@ -61,6 +63,7 @@ pub const SUI_SYSTEM_STATE_SIM_TEST_DEEP_V2: u64 = 18446744073709551607; // u64:
 pub struct SuiSystemStateWrapper {
     pub id: UID,
     pub version: u64,
+    pub bfc_system_id:UID,
 }
 
 impl SuiSystemStateWrapper {
@@ -434,6 +437,13 @@ pub struct AdvanceEpochParams {
     pub storage_fund_reinvest_rate: u64,
     pub reward_slashing_rate: u64,
     pub epoch_start_timestamp_ms: u64,
+}
+
+#[derive(Debug)]
+pub struct ChangeObcRoundParams {
+    pub epoch: u64,
+    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
+    pub bfc_computation_charge: u64
 }
 
 #[cfg(msim)]

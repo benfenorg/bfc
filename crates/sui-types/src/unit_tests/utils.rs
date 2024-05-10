@@ -29,7 +29,7 @@ use rand::rngs::StdRng;
 use rand::SeedableRng;
 use serde::Deserialize;
 use shared_crypto::intent::{Intent, IntentMessage};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Deserialize)]
 pub struct TestData {
@@ -144,6 +144,7 @@ pub fn mock_certified_checkpoint<'a>(
         &contents,
         None,
         GasCostSummary::default(),
+        HashMap::new(),
         None,
         0,
     );

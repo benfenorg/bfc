@@ -219,9 +219,13 @@ impl CoinReadApiServer for CoinReadApi {
         with_tracing!(async move {
             let coin_struct = parse_to_struct_tag(&coin_type)?;
             Ok(if GAS::is_gas(&coin_struct) {
+<<<<<<< HEAD
                 Supply {
                     value: TOTAL_SUPPLY_MIST,
                 }
+=======
+                Supply { value: 10000000000 }
+>>>>>>> develop_v.1.1.5
             } else {
                 let treasury_cap_object = self
                     .internal
@@ -449,6 +453,7 @@ mod tests {
                 &self,
                 digest: TransactionDigest,
             ) -> SuiResult<Option<CheckpointSequenceNumber>>;
+<<<<<<< HEAD
 
             async fn get_object(&self, object_id: ObjectID, version: SequenceNumber) -> SuiResult<Option<Object>>;
 
@@ -456,6 +461,8 @@ mod tests {
                 &self,
                 digests: &[TransactionDigest],
             ) -> SuiResult<Vec<Option<CheckpointSequenceNumber>>>;
+=======
+>>>>>>> develop_v.1.1.5
         }
     }
 
@@ -1233,7 +1240,7 @@ mod tests {
 
             let coin_read_api = CoinReadApi::new_for_tests(Arc::new(mock_state), None);
             let response = coin_read_api
-                .get_coin_metadata("0x2::sui::SUI".to_string())
+                .get_coin_metadata("0x2::bfc::BFC".to_string())
                 .await;
 
             assert!(response.is_ok());
@@ -1285,7 +1292,7 @@ mod tests {
 
         #[tokio::test]
         async fn test_success_response_for_gas_coin() {
-            let coin_type = "0x2::sui::SUI";
+            let coin_type = "0x2::bfc::BFC";
             let mock_internal = MockCoinReadInternal::new();
             let coin_read_api = CoinReadApi {
                 internal: Box::new(mock_internal),
@@ -1294,7 +1301,11 @@ mod tests {
             let response = coin_read_api.get_total_supply(coin_type.to_string()).await;
 
             let supply = response.unwrap();
+<<<<<<< HEAD
             let expected = expect!["10000000000000000000"];
+=======
+            let expected = expect!["10000000000"];
+>>>>>>> develop_v.1.1.5
             expected.assert_eq(&supply.value.to_string());
         }
 

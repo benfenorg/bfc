@@ -10,6 +10,7 @@ edition = "2021"
 [dependencies]
 sui-protocol-config.workspace = true
 sui-types.workspace = true
+tracing.workspace = true
 
 move-binary-format.workspace = true
 move-bytecode-verifier-meter.workspace = true

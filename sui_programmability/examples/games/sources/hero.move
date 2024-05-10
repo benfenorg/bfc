@@ -6,11 +6,15 @@
 module games::hero {
     use sui::coin::{Self, Coin};
     use sui::event;
+    use sui::object::{Self, ID, UID};
     use sui::math;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
+    use std::option::{Self, Option};
 
     /// Our hero!
-    public struct Hero has key, store {
+    struct Hero has key, store {
         id: UID,
         /// Hit points. If they go to zero, the hero can't do anything
         hp: u64,
@@ -23,7 +27,7 @@ module games::hero {
     }
 
     /// The hero's trusty sword
-    public struct Sword has key, store {
+    struct Sword has key, store {
         id: UID,
         /// Constant set at creation. Acts as a multiplier on sword's strength.
         /// Swords with high magic are rarer (because they cost more).
@@ -35,7 +39,7 @@ module games::hero {
     }
 
     /// For healing wounded heroes
-    public struct Potion has key, store {
+    struct Potion has key, store {
         id: UID,
         /// Effectiveness of the potion
         potency: u64,
@@ -44,7 +48,7 @@ module games::hero {
     }
 
     /// A creature that the hero can slay to level up
-    public struct Boar has key {
+    struct Boar has key {
         id: UID,
         /// Hit points before the boar is slain
         hp: u64,
@@ -57,13 +61,13 @@ module games::hero {
     /// An immutable object that contains information about the
     /// game admin. Created only once in the module initializer,
     /// hence it cannot be recreated or falsified.
-    public struct GameInfo has key {
+    struct GameInfo has key {
         id: UID,
         admin: address
     }
 
     /// Capability conveying the authority to create boars and potions
-    public struct GameAdmin has key {
+    struct GameAdmin has key {
         id: UID,
         /// Total number of boars the admin has created
         boars_created: u64,
@@ -74,7 +78,7 @@ module games::hero {
     }
 
     /// Event emitted each time a Hero slays a Boar
-    public struct BoarSlainEvent has copy, drop {
+    struct BoarSlainEvent has copy, drop {
         /// Address of the user that slayed the boar
         slayer_address: address,
         /// ID of the Hero that slayed the boar
@@ -95,6 +99,10 @@ module games::hero {
     // TODO: proper error codes
     /// The boar won the battle
     const EBOAR_WON: u64 = 0;
+    /// The hero is too tired to fight
+    const EHERO_TIRED: u64 = 1;
+    /// Trying to initialize from a non-admin account
+    const ENOT_ADMIN: u64 = 2;
     /// Not enough money to purchase the given item
     const EINSUFFICIENT_FUNDS: u64 = 3;
     /// Trying to remove a sword, but the hero does not have one
@@ -150,8 +158,8 @@ module games::hero {
         check_id(game, boar.game_id);
         let Boar { id: boar_id, strength: boar_strength, hp, game_id: _ } = boar;
         let hero_strength = hero_strength(hero);
-        let mut boar_hp = hp;
-        let mut hero_hp = hero.hp;
+        let boar_hp = hp;
+        let hero_hp = hero.hp;
         // attack the boar with the sword until its HP goes to zero
         while (boar_hp > hero_strength) {
             // first, the hero attacks
@@ -238,7 +246,7 @@ module games::hero {
     /// for it.
     public fun create_sword(
         game: &GameInfo,
-        payment: Coin<SUI>,
+        payment: Coin<BFC>,
         ctx: &mut TxContext
     ): Sword {
         let value = coin::value(&payment);
@@ -259,7 +267,7 @@ module games::hero {
     }
 
     public entry fun acquire_hero(
-        game: &GameInfo, payment: Coin<SUI>, ctx: &mut TxContext
+        game: &GameInfo, payment: Coin<BFC>, ctx: &mut TxContext
     ) {
         let sword = create_sword(game, payment, ctx);
         let hero = create_hero(game, sword, ctx);
@@ -348,12 +356,13 @@ module games::hero {
 
     #[test]
     fun slay_boar_test() {
+        use sui::coin;
         use sui::test_scenario;
 
         let admin = @0xAD014;
         let player = @0x0;
 
-        let mut scenario_val = test_scenario::begin(admin);
+        let scenario_val = test_scenario::begin(admin);
         let scenario = &mut scenario_val;
         // Run the module initializers
         test_scenario::next_tx(scenario, admin);
@@ -374,7 +383,7 @@ module games::hero {
         {
             let game = test_scenario::take_immutable<GameInfo>(scenario);
             let game_ref = &game;
-            let mut admin_cap = test_scenario::take_from_sender<GameAdmin>(scenario);
+            let admin_cap = test_scenario::take_from_sender<GameAdmin>(scenario);
             send_boar(game_ref, &mut admin_cap, 10, 10, player, test_scenario::ctx(scenario));
             test_scenario::return_to_sender(scenario, admin_cap);
             test_scenario::return_immutable(game);
@@ -384,7 +393,7 @@ module games::hero {
         {
             let game = test_scenario::take_immutable<GameInfo>(scenario);
             let game_ref = &game;
-            let mut hero = test_scenario::take_from_sender<Hero>(scenario);
+            let hero = test_scenario::take_from_sender<Hero>(scenario);
             let boar = test_scenario::take_from_sender<Boar>(scenario);
             slay(game_ref, &mut hero, boar, test_scenario::ctx(scenario));
             test_scenario::return_to_sender(scenario, hero);
