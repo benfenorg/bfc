@@ -20,6 +20,8 @@ mod checked {
         InputObjectKind, InputObjects, TransactionData, TransactionDataAPI, TransactionKind,
         VersionedProtocolMessage,
     };
+    use sui_types::base_types_bfc::bfc_address_util::{sui_address_to_bfc_address, objects_id_to_bfc_address};
+
     use sui_types::{
         base_types::{SequenceNumber, SuiAddress},
         error::SuiResult,
@@ -327,7 +329,7 @@ mod checked {
                         fp_ensure!(
                         owner == &actual_owner,
                         UserInputError::IncorrectUserSignature {
-                            error: format!("Object {:?} is owned by account address {:?}, but given owner/signer address is {:?}", object_id, actual_owner, owner),
+                            error: format!("Object {:?} is owned by account address {:?}, but given owner/signer address is {:?}", objects_id_to_bfc_address(object_id), sui_address_to_bfc_address(actual_owner), sui_address_to_bfc_address(owner.clone()))
                         }
                     );
                     }
