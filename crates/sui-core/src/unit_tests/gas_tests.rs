@@ -350,7 +350,7 @@ async fn test_oog_computation_oog_storage() -> SuiResult {
 #[tokio::test]
 async fn test_computation_ok_oog_storage_minimal_ok() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
-    const BUDGET: u64 = 110_000;
+    const BUDGET: u64 = 1_100_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
@@ -365,6 +365,7 @@ async fn test_computation_ok_oog_storage_minimal_ok() -> SuiResult {
         1,
         |summary, initial_value, final_value| {
             let gas_used = summary.net_gas_usage() as u64;
+            println!("{:?}", summary);
             assert!(
                 summary.computation_cost > 0
                     && summary.storage_cost > 0
