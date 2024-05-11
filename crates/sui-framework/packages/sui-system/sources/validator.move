@@ -687,7 +687,8 @@ module sui_system::validator {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let total_option = vec_map::try_get(stable_pool_total, &pool_key);
         if (option::is_some(&total_option)) {
-            reward_count * (*option::borrow(&total_option) / all_total)
+            let reward = (reward_count as u128) * (*option::borrow(&total_option) as u128) / (all_total as u128);
+            (reward as u64)
         }
         else {
             0

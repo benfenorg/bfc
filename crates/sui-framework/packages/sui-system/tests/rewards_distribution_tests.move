@@ -173,10 +173,11 @@ module sui_system::rewards_distribution_tests {
         advance_epoch_with_reward_amounts(0, 120, scenario);
         // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
         assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 200 * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario), 0);
+        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario), 20 * MIST_PER_SUI);
+
         unstake_stable(STAKER_ADDR_2, 0, scenario);
         assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100 * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 0);
+        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 20 * MIST_PER_SUI);
         test_scenario::end(scenario_val);
     }
 
