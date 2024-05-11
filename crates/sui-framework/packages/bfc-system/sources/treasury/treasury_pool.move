@@ -8,14 +8,11 @@ module bfc_system::treasury_pool {
     use sui::math;
     use sui::object;
     use sui::object::UID;
-    use sui::tx_context::{Self, TxContext};
+    use sui::tx_context::{TxContext};
 
     use bfc_system::event;
 
     friend bfc_system::bfc_system_state_inner;
-
-    /// The `withdraw` function only called by 0x0 address.
-    const ERR_NOT_ZERO_ADDRESS: u64 = 900;
 
     struct TreasuryPool has key, store {
         id: UID,
@@ -70,7 +67,6 @@ module bfc_system::treasury_pool {
         ctx: &mut TxContext
     ): Balance<BFC>
     {
-        assert!(tx_context::sender(ctx) == @0x0, ERR_NOT_ZERO_ADDRESS);
         // Take the minimum of the amount and the remaining balance in
         // order to ensure we don't overdraft the remaining balance
         let current_balance = balance::value(&self.balance);

@@ -8,6 +8,7 @@
 -  [Struct `InitTreasuryEvent`](#0xc8_event_InitTreasuryEvent)
 -  [Struct `InitTreasuryPoolEvent`](#0xc8_event_InitTreasuryPoolEvent)
 -  [Struct `CreateVaultEvent`](#0xc8_event_CreateVaultEvent)
+-  [Struct `PauseEvent`](#0xc8_event_PauseEvent)
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
 -  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
 -  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
@@ -17,6 +18,7 @@
 -  [Function `swap`](#0xc8_event_swap)
 -  [Function `deposit`](#0xc8_event_deposit)
 -  [Function `update_state`](#0xc8_event_update_state)
+-  [Function `set_pause`](#0xc8_event_set_pause)
 -  [Module Specification](#@Module_Specification_0)
 
 
@@ -135,6 +137,39 @@
 </dd>
 <dt>
 <code>index: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_PauseEvent"></a>
+
+## Struct `PauseEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_PauseEvent">PauseEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="vault.md#0xc8_vault">vault</a>: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>is_pause: bool</code>
 </dt>
 <dd>
 
@@ -496,6 +531,35 @@
             last_sqrt_price,
             state,
             state_counter,
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_set_pause"></a>
+
+## Function `set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_set_pause">set_pause</a>(vault_id: <a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, is_pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_set_pause">set_pause</a>(vault_id: ID, is_pause: bool) {
+    emit(
+        <a href="event.md#0xc8_event_PauseEvent">PauseEvent</a> {
+            <a href="vault.md#0xc8_vault">vault</a>: vault_id,
+            is_pause
         }
     )
 }

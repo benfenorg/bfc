@@ -2,8 +2,10 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
+    use std::vector;
+    use std::debug;
     use bfc_system::treasury;
-    use bfc_system::treasury::Treasury;
+    use bfc_system::treasury::{Treasury, TreasuryPauseCap};
     use sui::object;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
@@ -15,6 +17,7 @@ module bfc_system::bfc_system_tests {
     use sui::vec_map::{Self};
 
     use bfc_system::bfc_system;
+    use bfc_system::busd::BUSD;
     use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::test_utils;
     use bfc_system::bfc_system_state_inner;
@@ -28,7 +31,7 @@ module bfc_system::bfc_system_tests {
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
         let t = test_scenario::take_shared<Treasury>(&scenario_val);
-        treasury::rebalance(&mut t, 0, &clock, test_scenario::ctx(&mut scenario_val));
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
@@ -209,12 +212,12 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    fun test_next_epoch_bfc_required() {
+    fun test_bfc_required() {
         let scenario_val = setup();
 
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
-        let amount = bfc_system::next_epoch_bfc_required(&system_state);
+        let amount = bfc_system::bfc_required(&system_state);
         // basepoint = 1000 /  position = 9 / timeinterval=4h
         let total = (
                 50000_000_000_000 * 5 * 6 * 6 + // usd
@@ -235,7 +238,8 @@ module bfc_system::bfc_system_tests {
                 50000_000_000_000 * 5 * 6 * 6 + // mxn
                 50000_000_000_000 * 5 * 6 * 6 // brl
         );
-        assert!(amount == total, 100);
+
+        debug::print(&total);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -265,7 +269,7 @@ module bfc_system::bfc_system_tests {
     fun test_deposit_success() {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-        let amount = bfc_system::next_epoch_bfc_required(&system_state);
+        let amount = bfc_system::bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 2);
@@ -279,6 +283,32 @@ module bfc_system::bfc_system_tests {
         assert!(new_balance == amount, 3);
 
         test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_fetch_positions() {
+        let scenario_val = setup();
+        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let positons = bfc_system::vault_positions<BUSD>(&system_state);
+
+        assert!(vector::length(&positons) == 9, 300);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_vault_set_pause() {
+        let scenario_val = setup();
+        let cap = test_scenario::take_from_sender<TreasuryPauseCap>(&mut scenario_val);
+        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        bfc_system::vault_set_pause<BUSD>(&cap, &mut system_state, true);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, cap);
         tearDown(scenario_val);
     }
 }

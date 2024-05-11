@@ -61,6 +61,7 @@ module bfc_system::vault {
 
         /// 0 -- init, equal, 1 -- down, 2 -- up
         state: u8,
+        last_rebalance_state: u8,
         state_counter: u32,
         max_counter_times: u32,
         last_sqrt_price: u128,
@@ -107,6 +108,7 @@ module bfc_system::vault {
         vault_id: ID,
         position_number: u32,
         state: u8,
+        last_rebalance_state: u8,
         state_counter: u32,
         max_counter_times: u32,
         last_sqrt_price: u128,
@@ -150,7 +152,8 @@ module bfc_system::vault {
             id: uid,
             position_number: _position_number,
             state: 0,
-            state_counter: 0,
+            last_rebalance_state: 0,
+            state_counter: _max_counter_times, // init
             last_sqrt_price: current_sqrt_price,
             coin_a: balance::zero<StableCoinType>(),
             coin_b: balance::zero<BFC>(),
@@ -168,6 +171,14 @@ module bfc_system::vault {
             coin_market_cap: 0,
             last_bfc_rebalance_amount: 0,
         }
+    }
+
+    public(friend) fun set_pause<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _pause: bool,
+    ) {
+        _vault.is_pause = _pause;
+        event::set_pause(vault_id(_vault), _pause);
     }
 
     /// open `position_number` positions
@@ -342,12 +353,7 @@ module bfc_system::vault {
             tick_upper,
             _delta_liquidity,
         );
-        let is_in = false;
-        if (i32::lte(tick_lower, _vault.current_tick_index)) {
-            is_in = i32::lt(_vault.current_tick_index, tick_upper);
-        };
-
-        if (is_in) {
+        if (i32::gt(_vault.current_tick_index, tick_lower) && i32::lt(_vault.current_tick_index, tick_upper)) {
             _vault.liquidity = _vault.liquidity - _delta_liquidity;
         };
 
@@ -701,9 +707,8 @@ module bfc_system::vault {
         let swap_result = default_calculated_swap_result();
         let next_score = tick::first_score_for_swap(&_vault.tick_manager, _vault.current_tick_index, _a2b);
         let remaining_amount = _amount;
-        let current_sqrt_price = _vault.current_sqrt_price;
-        swap_result.vault_sqrt_price = current_sqrt_price;
-        while (remaining_amount > 0 && current_sqrt_price != _sqrt_price_limit) {
+        swap_result.vault_sqrt_price = _vault.current_sqrt_price;
+        while (remaining_amount > 0 && _vault.current_sqrt_price != _sqrt_price_limit) {
             assert!(!option_u64::is_none(&next_score), ERR_TICK_INDEX_OPTION_IS_NONE);
             let (tick, tick_score) = tick::borrow_tick_for_swap(
                 &_vault.tick_manager,
@@ -754,7 +759,6 @@ module bfc_system::vault {
                     _vault.current_tick_index = tick_math::get_tick_at_sqrt_price(next_sqrt_price);
                 }
             };
-            current_sqrt_price = _vault.current_sqrt_price;
         };
         swap_result
     }
@@ -829,6 +833,7 @@ module bfc_system::vault {
             vault_id: vault_id(_vault),
             position_number: _vault.position_number,
             state: _vault.state,
+            last_rebalance_state: _vault.last_rebalance_state,
             state_counter: _vault.state_counter,
             max_counter_times: _vault.max_counter_times,
             last_sqrt_price: _vault.last_sqrt_price,
@@ -845,8 +850,9 @@ module bfc_system::vault {
             index: _vault.index,
             base_point: _vault.base_point,
             coin_market_cap: _vault.coin_market_cap,
-            last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount
-        } }
+            last_bfc_rebalance_amount: _vault.last_bfc_rebalance_amount,
+        }
+    }
 
     public fun vault_id<StableCoinType>(_vault: &Vault<StableCoinType>): ID {
         object::id(_vault)
@@ -858,6 +864,10 @@ module bfc_system::vault {
 
     public fun vault_current_tick_index<StableCoinType>(_vault: &Vault<StableCoinType>): I32 {
         _vault.current_tick_index
+    }
+
+    public(friend) fun last_bfc_rebalance_amount<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
+        _vault.last_bfc_rebalance_amount
     }
 
     public fun balances<StableCoinType>(_vault: &Vault<StableCoinType>): (u64, u64) {
@@ -876,8 +886,14 @@ module bfc_system::vault {
         _vault.state
     }
 
-    public fun bfc_required<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
-        ((_vault.position_number as u64) + 1) / 2 * _vault.base_point * 6
+    public fun  get_last_rebalance_vault_state<StableCoinType>(_vault: &Vault<StableCoinType>): u8 {
+        _vault.last_rebalance_state
+    }
+
+    public fun bfc_required<StableCoinType>(_vault: &Vault<StableCoinType>, _treasury_total_bfc_supply: u64): u64 {
+        let curve_dx_q64 = curve_dx((_vault.coin_market_cap as u128), (_treasury_total_bfc_supply as u128));
+        let base_point_amount = (((_vault.base_point as u128) * (Q64 + curve_dx_q64) / Q64) as u64);
+        (_vault.position_number as u64) * base_point_amount
     }
 
     public fun min_liquidity_rate(): u128 {
@@ -902,23 +918,37 @@ module bfc_system::vault {
             if (_vault.state == SHAPE_INCREMENT_SIZE) {
                 _vault.state_counter = _vault.state_counter + 1;
             } else {
-                // reset counter = 0  & set state = down
-                _vault.state_counter = 0;
-                _vault.state = SHAPE_INCREMENT_SIZE;
+                if (_vault.state == SHAPE_EQUAL_SIZE) {
+                    // reset counter = 1  & set state = down
+                    _vault.state_counter = 1;
+                    _vault.state = SHAPE_INCREMENT_SIZE;
+                } else {
+                    _vault.state = SHAPE_EQUAL_SIZE;
+                    _vault.state_counter = if (_vault.last_rebalance_state == SHAPE_DECREMENT_SIZE) {
+                        _vault.max_counter_times
+                    } else {
+                        0
+                    };
+                }
             }
         } else if (price > last_price) {
             // up
             if (_vault.state == SHAPE_DECREMENT_SIZE) {
                 _vault.state_counter = _vault.state_counter + 1;
             } else {
-                // reset counter = 0  & set state = up
-                _vault.state_counter = 0;
-                _vault.state = SHAPE_DECREMENT_SIZE;
+                if (_vault.state == SHAPE_EQUAL_SIZE) {
+                    // reset counter = 1  & set state = up
+                    _vault.state_counter = 1;
+                    _vault.state = SHAPE_DECREMENT_SIZE;
+                } else {
+                    _vault.state = SHAPE_EQUAL_SIZE;
+                    _vault.state_counter = if (_vault.last_rebalance_state == SHAPE_INCREMENT_SIZE) {
+                        _vault.max_counter_times
+                    } else {
+                        0
+                    };
+                }
             }
-        } else {
-            // equal
-            _vault.state = SHAPE_EQUAL_SIZE;
-            _vault.state_counter = 0;
         };
 
         _vault.last_sqrt_price = price;
@@ -936,11 +966,9 @@ module bfc_system::vault {
     ): (Balance<StableCoinType>, Balance<BFC>, vector<vector<I32>>)
     {
         let position_index = 1u64;
-        let position_number = (_vault.position_number as u64);
         let balance0 = balance::zero<StableCoinType>();
         let balance1 = balance::zero<BFC>();
-        let spacing_times = _vault.spacing_times;
-        while (position_index <= position_number) {
+        while (position_index <= (_vault.position_number as u64)) {
             let position = position::borrow_mut_position(&mut _vault.position_manager, position_index);
             let liquidity_delta = position::get_liquidity(position);
             if (liquidity_delta != 0) {
@@ -951,6 +979,8 @@ module bfc_system::vault {
             position::close_position(&mut _vault.position_manager, position_index);
             position_index = position_index + 1;
         };
+        tick::rebuild_ticks(&mut _vault.tick_manager, _ctx);
+        let spacing_times = _vault.spacing_times;
         let ticks = init_positions(_vault, spacing_times, _ctx);
         (balance0, balance1, ticks)
     }
@@ -1054,14 +1084,25 @@ module bfc_system::vault {
         _treasury_total_bfc_supply: u64,
         _ctx: &mut TxContext
     ): u64 {
-        let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
         let shape = SHAPE_EQUAL_SIZE;
         if (_vault.state_counter >= _vault.max_counter_times) {
             shape = _vault.state;
             // reset state counter
             _vault.state_counter = 0;
+        } else {
+            return _vault.last_bfc_rebalance_amount
         };
-        let liquidities = positions_liquidity_size_balance(_vault, &ticks, shape, _treasury_total_bfc_supply);
+        let (
+            balance0,
+            balance1,
+            ticks
+        ) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
+        let liquidities = positions_liquidity_size_balance(
+            _vault,
+            &ticks,
+            shape,
+            _treasury_total_bfc_supply
+        );
         rebalance_internal(
             _vault,
             _bfc_balance,
@@ -1070,6 +1111,7 @@ module bfc_system::vault {
             balance1,
             liquidities
         );
+        _vault.last_rebalance_state = _vault.state;
         _vault.last_bfc_rebalance_amount = balance::value(&_vault.coin_b);
         _vault.last_bfc_rebalance_amount
     }

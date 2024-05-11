@@ -24,7 +24,7 @@
 -  [Function `get_bfc_by_stablecoin`](#0xc8_bfc_system_state_inner_get_bfc_by_stablecoin)
 -  [Function `get_bfc_exchange_rate`](#0xc8_bfc_system_state_inner_get_bfc_exchange_rate)
 -  [Function `get_stablecoin_exchange_rate`](#0xc8_bfc_system_state_inner_get_stablecoin_exchange_rate)
--  [Function `next_epoch_bfc_required`](#0xc8_bfc_system_state_inner_next_epoch_bfc_required)
+-  [Function `bfc_required`](#0xc8_bfc_system_state_inner_bfc_required)
 -  [Function `treasury_balance`](#0xc8_bfc_system_state_inner_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_bfc_system_state_inner_deposit_to_treasury)
 -  [Function `deposit_to_treasury_pool`](#0xc8_bfc_system_state_inner_deposit_to_treasury_pool)
@@ -32,7 +32,10 @@
 -  [Function `request_gas_balance`](#0xc8_bfc_system_state_inner_request_gas_balance)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
+-  [Function `vault_ticks`](#0xc8_bfc_system_state_inner_vault_ticks)
+-  [Function `vault_positions`](#0xc8_bfc_system_state_inner_vault_positions)
 -  [Function `get_total_supply`](#0xc8_bfc_system_state_inner_get_total_supply)
+-  [Function `vault_set_pause`](#0xc8_bfc_system_state_inner_vault_set_pause)
 -  [Function `bfc_system_parameters`](#0xc8_bfc_system_state_inner_bfc_system_parameters)
 -  [Function `bfc_system_treasury_parameters`](#0xc8_bfc_system_state_inner_bfc_system_treasury_parameters)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_state_inner_create_bfcdao_action)
@@ -79,6 +82,8 @@
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
+<b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
+<b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
 <b>use</b> <a href="treasury_pool.md#0xc8_treasury_pool">0xc8::treasury_pool</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
@@ -307,6 +312,34 @@ Default stable base points
 
 
 
+<a name="0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>: <b>address</b> = 0;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT"></a>
+
+Errors
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>: u64 = 1000;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT">INNER_STABLECOIN_TO_BFC_LIMIT</a>: u64 = 1000000000000000000;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_create_inner_state"></a>
 
 ## Function `create_inner_state`
@@ -346,6 +379,7 @@ Default stable base points
 ): <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
 
     <b>let</b> dao = <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">bfc_dao::create_dao</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
+    <a href="treasury.md#0xc8_treasury_create_treasury_pause_cap">treasury::create_treasury_pause_cap</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>, ctx);
     <b>let</b> (t, remain_balance, rate_map) = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(
         bfc_balance,
         usd_supply,
@@ -565,7 +599,7 @@ X treasury  init treasury
 
     <b>let</b> rate_map = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="_String">ascii::String</a>, u64&gt;();
     <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>&lt;BFC&gt;(&bfc_balance) &gt; 0) {
-        <b>let</b> deposit_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> bfc_balance, <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">treasury::next_epoch_bfc_required</a>(&t));
+        <b>let</b> deposit_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> bfc_balance, <a href="treasury.md#0xc8_treasury_bfc_required">treasury::bfc_required</a>(&t));
         <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> t, <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_from_balance">coin::from_balance</a>(deposit_balance, ctx));
         <a href="treasury.md#0xc8_treasury_rebalance_internal">treasury::rebalance_internal</a>(&<b>mut</b> t, <b>false</b>, ctx);
         rate_map = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&t);
@@ -719,6 +753,7 @@ swap stablecoin to bfc
     ctx: &<b>mut</b> TxContext,
 ): Balance&lt;BFC&gt; {
     <b>let</b> amount = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(&coin_sc);
+    <b>assert</b>!(amount &lt;= <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT">INNER_STABLECOIN_TO_BFC_LIMIT</a>, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>);
     <b>let</b> result_balance= <a href="treasury.md#0xc8_treasury_redeem_internal">treasury::redeem_internal</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_sc, amount, ctx);
     <b>if</b> (expected_amount == 0||<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&result_balance) == expected_amount) {
         result_balance
@@ -850,14 +885,14 @@ swap stablecoin to bfc
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_next_epoch_bfc_required"></a>
+<a name="0xc8_bfc_system_state_inner_bfc_required"></a>
 
-## Function `next_epoch_bfc_required`
+## Function `bfc_required`
 
 X-treasury
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_next_epoch_bfc_required">next_epoch_bfc_required</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_bfc_required">bfc_required</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): u64
 </code></pre>
 
 
@@ -866,8 +901,8 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_next_epoch_bfc_required">next_epoch_bfc_required</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): u64 {
-    <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">treasury::next_epoch_bfc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_bfc_required">bfc_required</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): u64 {
+    <a href="treasury.md#0xc8_treasury_bfc_required">treasury::bfc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
 }
 </code></pre>
 
@@ -881,7 +916,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_treasury_balance">treasury_balance</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_treasury_balance">treasury_balance</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): u64
 </code></pre>
 
 
@@ -890,7 +925,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_treasury_balance">treasury_balance</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): u64 {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_treasury_balance">treasury_balance</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): u64 {
     <a href="treasury.md#0xc8_treasury_get_balance">treasury::get_balance</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
 }
 </code></pre>
@@ -967,7 +1002,7 @@ X-treasury
     <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> amount = <a href="treasury.md#0xc8_treasury_next_epoch_bfc_required">treasury::next_epoch_bfc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
+    <b>let</b> amount = <a href="treasury.md#0xc8_treasury_bfc_required">treasury::bfc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <b>if</b> (amount &gt; 0) {
         <b>let</b> withdraw_balance = <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">treasury_pool::withdraw_to_treasury</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, amount, ctx);
         <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&withdraw_balance) &gt; 0) {
@@ -977,7 +1012,7 @@ X-treasury
         };
     };
     <b>let</b> pool_balance = <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">treasury_pool::get_balance</a>(&self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
-    <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+    <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <b>true</b>, <a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
     self.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>
@@ -992,7 +1027,7 @@ X-treasury
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_gas_balance">request_gas_balance</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_gas_balance">request_gas_balance</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, amount: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -1001,7 +1036,7 @@ X-treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_gas_balance">request_gas_balance</a>(
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_gas_balance">request_gas_balance</a>(
     self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
     amount: u64,
     ctx: &<b>mut</b> TxContext,
@@ -1063,6 +1098,54 @@ X-vault
 
 </details>
 
+<a name="0xc8_bfc_system_state_inner_vault_ticks"></a>
+
+## Function `vault_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_ticks">vault_ticks</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_ticks">vault_ticks</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): <a href="">vector</a>&lt;Tick&gt; {
+    <a href="treasury.md#0xc8_treasury_fetch_ticks">treasury::fetch_ticks</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_vault_positions"></a>
+
+## Function `vault_positions`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_positions">vault_positions</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_positions">vault_positions</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): <a href="">vector</a>&lt;Position&gt; {
+   <a href="treasury.md#0xc8_treasury_fetch_positions">treasury::fetch_positions</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_state_inner_get_total_supply"></a>
 
 ## Function `get_total_supply`
@@ -1080,6 +1163,30 @@ X-vault
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_total_supply">get_total_supply</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): u64 {
     <a href="treasury.md#0xc8_treasury_get_total_supply">treasury::get_total_supply</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_vault_set_pause"></a>
+
+## Function `vault_set_pause`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(cap: &<a href="treasury.md#0xc8_treasury_TreasuryPauseCap">treasury::TreasuryPauseCap</a>, self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(cap: &TreasuryPauseCap, self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>, pause: bool) {
+    <a href="treasury.md#0xc8_treasury_vault_set_pause">treasury::vault_set_pause</a>&lt;StableCoinType&gt;(cap, &<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pause)
 }
 </code></pre>
 

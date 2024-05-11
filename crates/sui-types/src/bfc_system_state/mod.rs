@@ -24,11 +24,7 @@ const BFC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("BfcSystemSta
 pub const BFC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round");
 pub const BFC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round_safe_mode");
 pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("bfc_system");
-
-pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas_balance");
-
 pub const STABLE_COIN_TO_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_stablecoin_to_bfc");
-
 pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_pool_no_entry");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
