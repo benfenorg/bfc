@@ -718,8 +718,8 @@ impl GenesisCeremonyParameters {
     pub fn to_bfc_system_parameters(&self) -> BfcSystemParameters {
         BfcSystemParameters {
             chain_start_timestamp_ms: self.chain_start_timestamp_ms,
-            // re-balance time interval, default 4h
-            time_interval: 14400,
+            // re-balance time interval, default 10min
+            time_interval: 600,
             treasury_parameters: TreasuryParameters::to_genesis_treasury_parameters(),
         }
     }

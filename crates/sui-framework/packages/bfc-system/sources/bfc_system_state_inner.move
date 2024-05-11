@@ -7,6 +7,7 @@ module bfc_system::bfc_system_state_inner {
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
+    use sui::tx_context;
     use sui::tx_context::TxContext;
     use sui::vec_map::{Self, VecMap};
 
@@ -29,11 +30,13 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::treasury::{Self, Treasury};
+    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
     use bfc_system::vault::VaultInfo;
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
     use bfc_system::voting_pool::VotingBfc;
 
 
@@ -48,6 +51,12 @@ module bfc_system::bfc_system_state_inner {
     const DEFAULT_STABLE_RATE: u64 = 1_000_000_000;
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
+    const DEFAULT_TREASURY_ADMIN: address = @0x0;
+    const INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000000000_000_000_000;
+
+    /// Errors
+    const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
+    const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
 
     spec module { pragma verify = false; }
 
@@ -102,6 +111,7 @@ module bfc_system::bfc_system_state_inner {
     ): BfcSystemStateInner {
 
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
+        treasury::create_treasury_pause_cap(DEFAULT_TREASURY_ADMIN, ctx);
         let (t, remain_balance, rate_map) = create_treasury(
             bfc_balance,
             usd_supply,
@@ -221,7 +231,7 @@ module bfc_system::bfc_system_state_inner {
 
         let rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
-            let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
+            let deposit_balance = balance::split(&mut bfc_balance, treasury::bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
             treasury::rebalance_internal(&mut t, false, ctx);
             rate_map = treasury::get_exchange_rates(&t);
@@ -275,6 +285,8 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ): Balance<BFC> {
         let amount = coin::value(&coin_sc);
+        assert!(amount <= INNER_STABLECOIN_TO_BFC_LIMIT, ERR_INNER_STABLECOIN_TO_BFC_LIMIT);
+        assert!(tx_context::sender(ctx) == @0x0, ERR_NOT_SYSTEM_ADDRESS);
         let result_balance= treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
         if (expected_amount == 0||balance::value(&result_balance) == expected_amount) {
             result_balance
@@ -322,11 +334,11 @@ module bfc_system::bfc_system_state_inner {
     }
 
     /// X-treasury
-    public fun next_epoch_bfc_required(self: &BfcSystemStateInner): u64 {
-        treasury::next_epoch_bfc_required(&self.treasury)
+    public(friend) fun bfc_required(self: &BfcSystemStateInner): u64 {
+        treasury::bfc_required(&self.treasury)
     }
 
-    public fun treasury_balance(self: &BfcSystemStateInner): u64 {
+    public(friend) fun treasury_balance(self: &BfcSystemStateInner): u64 {
         treasury::get_balance(&self.treasury)
     }
 
@@ -343,7 +355,7 @@ module bfc_system::bfc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let amount = treasury::next_epoch_bfc_required(&self.treasury);
+        let amount = treasury::bfc_required(&self.treasury);
         if (amount > 0) {
             let withdraw_balance = treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
             if (balance::value(&withdraw_balance) > 0) {
@@ -353,11 +365,11 @@ module bfc_system::bfc_system_state_inner {
             };
         };
         let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
-        treasury::rebalance(&mut self.treasury, pool_balance, clock, ctx);
+        treasury::rebalance(&mut self.treasury, pool_balance, true, clock, ctx);
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
-    public(friend) fun request_gas_balance(
+    fun request_gas_balance(
         self: &mut BfcSystemStateInner,
         amount: u64,
         ctx: &mut TxContext,
@@ -374,8 +386,20 @@ module bfc_system::bfc_system_state_inner {
         treasury::vault_info<StableCoinType>(&self.treasury)
     }
 
+    public fun vault_ticks<StableCoinType>(self: &BfcSystemStateInner): vector<Tick> {
+        treasury::fetch_ticks<StableCoinType>(&self.treasury)
+    }
+
+    public fun vault_positions<StableCoinType>(self: &BfcSystemStateInner): vector<Position> {
+       treasury::fetch_positions<StableCoinType>(&self.treasury)
+    }
+
     public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInner): u64 {
         treasury::get_total_supply<StableCoinType>(&self.treasury)
+    }
+
+    public fun vault_set_pause<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInner, pause: bool) {
+        treasury::vault_set_pause<StableCoinType>(cap, &mut self.treasury, pause)
     }
 
     public(friend) fun bfc_system_parameters(

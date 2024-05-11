@@ -8,7 +8,6 @@
 -  [Resource `TreasuryPool`](#0xc8_treasury_pool_TreasuryPool)
 -  [Struct `WithdrawEvent`](#0xc8_treasury_pool_WithdrawEvent)
 -  [Struct `DepositEvent`](#0xc8_treasury_pool_DepositEvent)
--  [Constants](#@Constants_0)
 -  [Function `create_treasury_pool`](#0xc8_treasury_pool_create_treasury_pool)
 -  [Function `deposit_to_treasury_pool`](#0xc8_treasury_pool_deposit_to_treasury_pool)
 -  [Function `withdraw_to_treasury`](#0xc8_treasury_pool_withdraw_to_treasury)
@@ -132,21 +131,6 @@
 
 </details>
 
-<a name="@Constants_0"></a>
-
-## Constants
-
-
-<a name="0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS"></a>
-
-The <code>withdraw</code> function only called by 0x0 address.
-
-
-<pre><code><b>const</b> <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>: u64 = 900;
-</code></pre>
-
-
-
 <a name="0xc8_treasury_pool_create_treasury_pool"></a>
 
 ## Function `create_treasury_pool`
@@ -236,7 +220,6 @@ The <code>withdraw</code> function only called by 0x0 address.
     ctx: &<b>mut</b> TxContext
 ): Balance&lt;BFC&gt;
 {
-    <b>assert</b>!(<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>);
     // Take the minimum of the amount and the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> in
     // order <b>to</b> ensure we don't overdraft the remaining <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>
     <b>let</b> current_balance = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a>);
