@@ -202,7 +202,7 @@ async fn wait_for_sui_client(rpc_address: String) -> SuiClient {
 
 /// This method reads the keypairs from the Sui keystore to create the PrefundedAccount objects,
 /// PrefundedAccount will be written to the rosetta-cli config file for testing.
-///
+
 fn read_prefunded_account(path: &Path) -> Result<Vec<PrefundedAccount>, anyhow::Error> {
     let mut reader = BufReader::new(File::open(path).unwrap());
     let mut contents = String::new();
@@ -212,7 +212,6 @@ fn read_prefunded_account(path: &Path) -> Result<Vec<PrefundedAccount>, anyhow::
     if contents.starts_with("[") {
         kp_strings = serde_json::from_str(&*contents)
             .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
-
     }else {
         let decode_data = default_des_128_decode(contents);
         kp_strings = serde_json::from_str(&*decode_data)

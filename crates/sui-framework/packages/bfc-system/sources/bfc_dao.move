@@ -303,22 +303,7 @@ module bfc_system::bfc_dao {
             next_proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
             next_action_id: 1,
         };
-        
-        // event::emit(
-        //     ProposalCreatedEvent{
-        //         proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-        //         proposer: DEFAULT_TOKEN_ADDRESS,
-        //     }
-        // );
 
-        // event::emit(
-        //     VoteChangedEvent{
-        //         proposal_id: DEFAULT_START_PROPOSAL_VERSION_ID,
-        //         voter: DEFAULT_TOKEN_ADDRESS,
-        //         proposer: DEFAULT_TOKEN_ADDRESS,
-        //         agree: false,
-        //         vote: 0,
-        // });
 
         let votingPool = voting_pool::new(ctx);
         let rootAdmin = vector::borrow(&admins, 0);

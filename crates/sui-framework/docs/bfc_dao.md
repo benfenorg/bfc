@@ -3541,24 +3541,6 @@ remove terminated proposal from proposer
         <b>let</b> _ =  proposal.proposal.action;
     };
 
-    // <b>let</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a> {
-    //     id: uid,
-    //     proposal: <a href="bfc_dao.md#0xc8_bfc_dao_ProposalInfo">ProposalInfo</a>{
-    //         pid: _,
-    //         proposer: _,
-    //         start_time: _,
-    //         end_time: _,
-    //         for_votes: _,
-    //         against_votes: _,
-    //         eta: _,
-    //         action_delay: _,
-    //         quorum_votes: _,
-    //         action: _c
-    //         } ,
-    //     } = proposal;
-    //
-    //  <a href="../../../.././build/Sui/docs/object.md#0x2_object_delete">object::delete</a>(uid);
-    //send_bfc_dao_event(manager_key, b"ProposalDestroyed");
 
 }
 </code></pre>
