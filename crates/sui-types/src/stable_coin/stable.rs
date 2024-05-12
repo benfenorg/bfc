@@ -3,6 +3,7 @@ pub mod checked {
     use move_core_types::ident_str;
     use move_core_types::language_storage::{StructTag, TypeTag};
     use crate::BFC_SYSTEM_ADDRESS;
+    use std::str::FromStr;
 
     pub enum STABLE {
         BUSD,
@@ -52,6 +53,28 @@ pub mod checked {
                 module: module_name.to_owned(),
                 type_params: Vec::new(),
             }
+        }
+
+        pub fn all_stable_coins_type() -> Vec<TypeTag> {
+            vec![
+                TypeTag::from_str("0xc8::busd::BUSD").unwrap(),
+                TypeTag::from_str("0xc8::bjpy::BJPY").unwrap(),
+                TypeTag::from_str("0xc8::beur::BEUR").unwrap(),
+                TypeTag::from_str("0xc8::bars::BARS").unwrap(),
+                TypeTag::from_str("0xc8::baud::BAUD").unwrap(),
+                TypeTag::from_str("0xc8::bbrl::BBRL").unwrap(),
+                TypeTag::from_str("0xc8::bcad::BCAD").unwrap(),
+                TypeTag::from_str("0xc8::bgbp::BGBP").unwrap(),
+                TypeTag::from_str("0xc8::bidr::BIDR").unwrap(),
+                TypeTag::from_str("0xc8::binr::BINR").unwrap(),
+                TypeTag::from_str("0xc8::bkrw::BKRW").unwrap(),
+                TypeTag::from_str("0xc8::bmxn::BMXN").unwrap(),
+                TypeTag::from_str("0xc8::brub::BRUB").unwrap(),
+                TypeTag::from_str("0xc8::bsar::BSAR").unwrap(),
+                TypeTag::from_str("0xc8::btry::BTRY").unwrap(),
+                TypeTag::from_str("0xc8::bzar::BZAR").unwrap(),
+                TypeTag::from_str("0xc8::mgg::MGG").unwrap(),
+            ]
         }
 
         pub fn get_index(&self) -> u8 {
