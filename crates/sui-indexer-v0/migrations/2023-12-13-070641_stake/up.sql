@@ -5,6 +5,7 @@ CREATE TABLE epoch_stake_coins
   coin_type         VARCHAR   NOT NULL,
   coin_balance      BIGINT    NOT NULL,
   bfc_value         BIGINT    NOT NULL,
+  stable_rate       BIGINT,
   CONSTRAINT epoch_stake_coins_pk PRIMARY KEY (epoch, coin_type)
 );
 

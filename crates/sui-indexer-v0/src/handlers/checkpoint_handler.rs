@@ -15,7 +15,7 @@ use futures::FutureExt;
 use itertools::Itertools;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::parser::parse_type_tag;
-use move_core_types::{account_address::AccountAddress, ident_str, parser::parse_struct_tag};
+use move_core_types::{account_address::AccountAddress, ident_str};
 use tokio::sync::{
     mpsc::{self, Receiver, Sender},
     Mutex,
@@ -38,7 +38,7 @@ use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary
 use sui_types::sui_system_state::{
     get_sui_system_state, PoolTokenExchangeRate, SuiSystemStateTrait,
 };
-use sui_types::SUI_SYSTEM_ADDRESS;
+use sui_types::{TypeTag, SUI_SYSTEM_ADDRESS};
 
 use crate::models::address_stake;
 use crate::models::address_stake::AddressStake;
@@ -900,13 +900,14 @@ where
                 "Indexer is updating address stakes {:?} when the epoch ends",
                 stake
             );
-            let stake_coin = parse_struct_tag(&stake.stake_coin)?;
+            let stake_coin = parse_type_tag(&stake.stake_coin)?;
+            let rate = indexed_epoch
+                .last_epoch_stable_rate
+                .get(&stake_coin)
+                .map(|x| x.to_owned())
+                .unwrap_or_default();
             let estimated_reward = self
-                .get_staking_estimated_reward(
-                    indexed_epoch,
-                    stake,
-                    stake_coin != address_stake::native_coin(),
-                )
+                .get_staking_estimated_reward(indexed_epoch, stake, stake_coin, rate)
                 .await?;
             let mut stake = stake.clone();
             stake.estimated_reward = estimated_reward as i64;
@@ -920,8 +921,10 @@ where
         &self,
         indexed_epoch: &TemporaryEpochStore,
         stake: &AddressStake,
-        stable: bool,
+        stake_coin: TypeTag,
+        last_epoch_stable_rate: u64,
     ) -> Result<u64, IndexerError> {
+        let stable = stake_coin != address_stake::native_coin().into();
         let validator_address: SuiAddress =
             AccountAddress::from_hex_literal(&stake.validator_address)
                 .map_err(|err| {
@@ -963,9 +966,16 @@ where
                 "Indexer is getting estimated reward, exchange_rates_id: {:?}, staked_object_id: {}, current_exchange_rates: {:?}",
                 exchange_rates_id, stake.staked_object_id, current_exchange_rates,
             );
-            return self
+            let mut reward_withdraw_amount = self
                 .get_estimated_reward(stake, exchange_rates_id, current_exchange_rates)
-                .await;
+                .await?;
+            if stable {
+                let rate = last_epoch_stable_rate;
+                // See fun withdraw_rewards<STABLE> in stable_pool.move
+                reward_withdraw_amount = ((reward_withdraw_amount as u128) * (rate as u128)
+                    / (1000000000 as u128)) as u64;
+            }
+            return Ok(reward_withdraw_amount);
         }
 
         warn!("No validator matched of stake: {:?}", stake);
@@ -1235,9 +1245,8 @@ where
         if checkpoint.epoch == 0 && checkpoint.sequence_number == 0 {
             // very first epoch
             let system_state = get_sui_system_state(data)?;
-            let validator_stakes = ValidatorSet::from_system_state(&system_state)
-                .parse_stake(self.http_client.clone())
-                .await?;
+            let validator_set = ValidatorSet::from_system_state(&system_state);
+            let validator_stakes = validator_set.parse_stake(self.http_client.clone()).await?;
             let stable_pools = extract_stable_stakes(&validator_stakes);
             let system_state: SuiSystemStateSummary = system_state.into_sui_system_state_summary();
             let validators = system_state
@@ -1258,12 +1267,12 @@ where
                 stable_pools,
                 validators,
                 validator_stakes,
+                last_epoch_stable_rate: validator_set.get_stable_rates(),
             }))
         } else if let Some(end_of_epoch_data) = &checkpoint.end_of_epoch_data {
             let system_state = get_sui_system_state(data)?;
-            let validator_stakes = ValidatorSet::from_system_state(&system_state)
-                .parse_stake(self.http_client.clone())
-                .await?;
+            let validator_set = ValidatorSet::from_system_state(&system_state);
+            let validator_stakes = validator_set.parse_stake(self.http_client.clone()).await?;
             let stable_pools = extract_stable_stakes(&validator_stakes);
             let system_state: SuiSystemStateSummary = system_state.into_sui_system_state_summary();
             let epoch_event = transactions.iter().find_map(|tx| {
@@ -1349,6 +1358,7 @@ where
                 validators,
                 stable_pools,
                 validator_stakes,
+                last_epoch_stable_rate: validator_set.get_stable_rates(),
             }))
         } else {
             Ok(None)

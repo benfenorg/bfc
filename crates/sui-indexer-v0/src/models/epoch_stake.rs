@@ -23,6 +23,7 @@ pub struct EpochStakeCoin {
     pub coin_type: String,
     pub coin_balance: i64,
     pub bfc_value: i64,
+    pub stable_rate: Option<i64>,
 }
 
 impl From<EpochStakeCoin> for StakeCoin {

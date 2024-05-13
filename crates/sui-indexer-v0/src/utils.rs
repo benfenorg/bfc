@@ -212,16 +212,18 @@ pub mod validator_stake {
     use jsonrpsee::http_client::HttpClient;
     use sui_types::{
         base_types::SuiAddress,
+        collection_types::VecMap,
         sui_system_state::{
             sui_system_state_inner_v1::{StakingPoolV1, ValidatorV1},
             PoolTokenExchangeRate, SuiSystemState,
         },
+        TypeTag,
     };
     use tracing::warn;
 
     use crate::errors::IndexerError;
 
-    use super::stable_pool::{self, StablePoolSummary};
+    use super::stable_pool::{self, parse_pool_key, StablePoolSummary};
 
     #[derive(Debug, Clone)]
     pub struct ValidatorStake {
@@ -234,6 +236,7 @@ pub mod validator_stake {
     pub struct ValidatorSet {
         epoch: u64,
         active_validators: Vec<ValidatorV1>,
+        last_epoch_stable_rate: VecMap<String, u64>,
     }
 
     impl ValidatorSet {
@@ -245,6 +248,7 @@ pub mod validator_stake {
             ValidatorSet {
                 epoch,
                 active_validators: validators.active_validators.clone(),
+                last_epoch_stable_rate: validators.last_epoch_stable_rate.clone(),
             }
         }
 
@@ -286,6 +290,14 @@ pub mod validator_stake {
                 })
             }
             Ok(results)
+        }
+
+        pub fn get_stable_rates(&self) -> HashMap<TypeTag, u64> {
+            self.last_epoch_stable_rate
+                .contents
+                .iter()
+                .map(|x| (parse_pool_key(&x.key).unwrap_or(TypeTag::Bool), x.value))
+                .collect()
         }
     }
 

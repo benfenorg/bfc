@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use prometheus::{Histogram, IntCounter};
 
@@ -19,6 +21,7 @@ use sui_types::event::EventID;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::ObjectRead;
 use sui_types::storage::ObjectStore;
+use sui_types::TypeTag;
 
 use crate::errors::IndexerError;
 use crate::metrics::IndexerMetrics;
@@ -389,6 +392,10 @@ pub trait IndexerStore {
 
     async fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError>;
     async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
+    async fn get_last_epoch_stake_coin(
+        &self,
+        coin: TypeTag,
+    ) -> Result<Option<epoch_stake::EpochStakeCoin>, IndexerError>;
     async fn persist_mining_nft_liquidities(
         &self,
         mls: Vec<MiningNFTLiquiditiy>,
@@ -472,6 +479,7 @@ pub struct TemporaryEpochStore {
     pub validators: Vec<DBValidatorSummary>,
     pub stable_pools: Vec<StablePoolSummary>,
     pub validator_stakes: Vec<ValidatorStake>,
+    pub last_epoch_stable_rate: HashMap<TypeTag, u64>,
 }
 
 #[derive(Clone, Debug)]

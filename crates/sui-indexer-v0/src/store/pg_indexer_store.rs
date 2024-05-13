@@ -27,6 +27,7 @@ use sui_json_rpc::{ObjectProvider, ObjectProviderCache};
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_types::effects::ObjectRemoveKind;
 use sui_types::storage::DeleteKind;
+use sui_types::TypeTag;
 use tracing::info;
 
 use sui_json_rpc_types::{
@@ -2137,6 +2138,10 @@ impl PgIndexerStore {
                 coin_type: x.coin_type.to_string(),
                 coin_balance: x.balance as i64,
                 bfc_value: x.bfc_value as i64,
+                stable_rate: data
+                    .last_epoch_stable_rate
+                    .get(&x.coin_type)
+                    .map(|x| x.to_owned() as i64),
             })
             .collect();
         stake_coins.push(epoch_stake::EpochStakeCoin {
@@ -2144,6 +2149,7 @@ impl PgIndexerStore {
             coin_type: native_coin().to_string(),
             coin_balance: data.system_state.total_stake,
             bfc_value: data.system_state.total_stake,
+            stable_rate: None,
         });
         let last_epoch_stake = self.get_last_epoch_stake()?.unwrap_or_default();
         let total_stake = stake_coins.iter().map(|x| x.bfc_value).sum();
@@ -2190,6 +2196,19 @@ impl PgIndexerStore {
             .order(epoch_stakes::epoch.desc())
             .limit(100)
             .load::<epoch_stake::EpochStake>(conn))
+    }
+
+    fn get_last_epoch_stake_coin(
+        &self,
+        coin: TypeTag,
+    ) -> Result<Option<epoch_stake::EpochStakeCoin>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            epoch_stake_coins::table
+                .filter(epoch_stake_coins::dsl::coin_type.eq(coin.to_string()))
+                .order(epoch_stake_coins::epoch.desc())
+                .first::<epoch_stake::EpochStakeCoin>(conn)
+                .optional()
+        })
     }
 
     fn get_stake_metrics(
@@ -3540,6 +3559,14 @@ impl IndexerStore for PgIndexerStore {
     async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError> {
         let data = data.clone();
         self.spawn_blocking(move |this| this.persist_epoch_stake(&data))
+            .await
+    }
+
+    async fn get_last_epoch_stake_coin(
+        &self,
+        coin: TypeTag,
+    ) -> Result<Option<epoch_stake::EpochStakeCoin>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_last_epoch_stake_coin(coin))
             .await
     }
 

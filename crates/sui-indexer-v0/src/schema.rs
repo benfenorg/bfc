@@ -397,6 +397,7 @@ diesel::table! {
         coin_type -> Varchar,
         coin_balance -> Int8,
         bfc_value -> Int8,
+        stable_rate -> Nullable<Int8>,
     }
 }
 
