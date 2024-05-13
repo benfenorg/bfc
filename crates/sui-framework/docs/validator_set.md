@@ -378,6 +378,12 @@ V2 of ValidatorEpochInfoEvent containing more information about the validator.
 
 </dd>
 <dt>
+<code>last_epoch_stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>tallying_rule_reporters: <a href="">vector</a>&lt;<b>address</b>&gt;</code>
 </dt>
 <dd>
@@ -1262,7 +1268,7 @@ It does the following things:
 
     // Emit events after we have processed all the rewards distribution and pending stakes.
     <a href="validator_set.md#0x3_validator_set_emit_validator_epoch_events">emit_validator_epoch_events</a>(new_epoch, &self.active_validators, &adjusted_staking_reward_amounts,
-        &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators);
+        &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators, stable_rate);
 
     // Note that all their staged next epoch metadata will be effectuated below.
     <a href="validator_set.md#0x3_validator_set_process_pending_validators">process_pending_validators</a>(self, new_epoch);
@@ -3017,7 +3023,7 @@ Emit events containing information of each validator for the epoch,
 including stakes, rewards, performance, etc.
 
 
-<pre><code><b>fun</b> <a href="validator_set.md#0x3_validator_set_emit_validator_epoch_events">emit_validator_epoch_events</a>(new_epoch: u64, vs: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, pool_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, storage_fund_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, report_records: &<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;, slashed_validators: &<a href="">vector</a>&lt;<b>address</b>&gt;)
+<pre><code><b>fun</b> <a href="validator_set.md#0x3_validator_set_emit_validator_epoch_events">emit_validator_epoch_events</a>(new_epoch: u64, vs: &<a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, pool_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, storage_fund_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, report_records: &<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;, slashed_validators: &<a href="">vector</a>&lt;<b>address</b>&gt;, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;)
 </code></pre>
 
 
@@ -3033,6 +3039,7 @@ including stakes, rewards, performance, etc.
     storage_fund_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;,
     report_records: &VecMap&lt;<b>address</b>, VecSet&lt;<b>address</b>&gt;&gt;,
     slashed_validators: &<a href="">vector</a>&lt;<b>address</b>&gt;,
+    stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;,
 ) {
     <b>let</b> num_validators = <a href="_length">vector::length</a>(vs);
     <b>let</b> i = 0;
@@ -3054,13 +3061,14 @@ including stakes, rewards, performance, etc.
                 epoch: new_epoch,
                 validator_address,
                 reference_gas_survey_quote: <a href="validator.md#0x3_validator_gas_price">validator::gas_price</a>(v),
-                stake: <a href="validator.md#0x3_validator_total_stake_amount">validator::total_stake_amount</a>(v),
+                stake: <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(v, stable_rate),
                 <a href="voting_power.md#0x3_voting_power">voting_power</a>: <a href="validator.md#0x3_validator_voting_power">validator::voting_power</a>(v),
                 commission_rate: <a href="validator.md#0x3_validator_commission_rate">validator::commission_rate</a>(v),
                 pool_staking_reward: *<a href="_borrow">vector::borrow</a>(pool_staking_reward_amounts, i),
                 storage_fund_staking_reward: *<a href="_borrow">vector::borrow</a>(storage_fund_staking_reward_amounts, i),
                 pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_token_exchange_rate_at_epoch">validator::pool_token_exchange_rate_at_epoch</a>(v, new_epoch),
                 stable_pool_token_exchange_rate: <a href="validator.md#0x3_validator_pool_stable_token_exchange_rate_at_epoch">validator::pool_stable_token_exchange_rate_at_epoch</a>(v, new_epoch),
+                last_epoch_stable_rate: stable_rate,
                 tallying_rule_reporters,
                 tallying_rule_global_score,
             }

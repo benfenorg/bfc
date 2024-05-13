@@ -250,7 +250,7 @@ module sui_system::stable_pool {
         // This may happen when we are withdrawing everything from the pool and
         // the rewards pool balance may be less than reward_withdraw_amount.
         // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
-        let reward_bfc = (reward_withdraw_amount as u128) * (1000000000 as u128) / (rate as u128);
+        let reward_bfc = (reward_withdraw_amount as u128) * (rate as u128) / (1000000000 as u128);
         reward_withdraw_amount = math::min((reward_bfc as u64),  balance::value(&pool.rewards_pool));
         balance::split(&mut pool.rewards_pool, reward_withdraw_amount)
     }
