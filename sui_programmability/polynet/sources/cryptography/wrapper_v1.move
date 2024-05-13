@@ -1,4 +1,3 @@
-#[allow(unused_function)]
 module polynet::wrapper_v1 {
     use sui::bfc::BFC;
     use std::type_name::{Self};
@@ -22,9 +21,6 @@ module polynet::wrapper_v1 {
     friend polynet::controller_test;
    
 
-
-
-
     struct WrapperStore has store{
         fee_collector: address,
         need_fee: bool
@@ -43,15 +39,25 @@ module polynet::wrapper_v1 {
         _new_fee_collector: address, 
         _ctx: &mut TxContext
     ) {
-      
+        let old_collector = _wrapperstore.fee_collector;
         _wrapperstore.fee_collector = _new_fee_collector;
+        let sender = tx_context::sender(_ctx);
+
+        events::update_fee_collector_event(
+            old_collector,
+            _new_fee_collector,
+            sender,
+        );
     }
 
     public(friend) fun update_fee_config(
         _wrapperstore:&mut WrapperStore, 
         _need_fee: bool 
     ) {
+        let old_fee = _wrapperstore.need_fee;
         _wrapperstore.need_fee = _need_fee;
+
+        events::update_fee_event(old_fee,_need_fee);
     }
 
     public(friend) fun need_fee(
@@ -72,7 +78,7 @@ module polynet::wrapper_v1 {
         treasury_ref:&mut Treasury<CoinType>,
         wrapper_store:&mut WrapperStore,
         account: address,
-        fund: Coin<CoinType>, 
+        fund: &mut Coin<CoinType>, 
         amount: u64,
         fee: Coin<BFC>,
         to_chain_id: u64, 
@@ -81,11 +87,11 @@ module polynet::wrapper_v1 {
         ctx: &mut TxContext
     )  {
         // let amount = coin::value(&fund);
-        let fee_amount = 0;
+        let _fee_amount = 0;
 
         //coin::deposit<BFC>(feeCollector(), fee);
         if (wrapper_store.need_fee) {
-            let fee_amount = coin::value(&fee);
+            let _fee_amount = coin::value(&fee);
             let collector = fee_collector(wrapper_store);
             transfer::public_transfer(fee, collector); 
         } else {
@@ -110,7 +116,7 @@ module polynet::wrapper_v1 {
                          to_chain_id,
                          *to_address,
                          amount,
-                         fee_amount
+                         _fee_amount
                         );
     }
 

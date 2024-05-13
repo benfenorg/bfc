@@ -1,4 +1,3 @@
-#[allow(unused_field,unused_assignment,unused_type_parameter)]
 module polynet::lock_proxy {
     use std::ascii::{Self, as_bytes, string, String};
     use std::vector;
@@ -54,8 +53,6 @@ module polynet::lock_proxy {
     const EMIN_UNLOCK_AMOUNT: u64 = 3017;
     const EMIN_LOCK_AMOUNT: u64 = 3018;
 
-    const MAX_AMOUNT: u64 = 100*10000*1000000000; //1 million.
-
     const ONE_DAY : u64 = 24*60*60*1000; //24*60*60*1000
 
     struct AmountLimitManager has  store {
@@ -105,21 +102,19 @@ module polynet::lock_proxy {
             time: start_time,
             amount_record: vec_map::empty()
         };
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+        //todo: change name
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , consts::get_max_amount_per_day());
+        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , consts::get_max_amount_per_day());
 
         let amountUnlockManager = AmountLimitManager{
             time: start_time,
             amount_record: vec_map::empty()
         };
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , MAX_AMOUNT);
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_BTC" , MAX_AMOUNT);
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_ETH" , MAX_AMOUNT);
+         //todo: change name
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , consts::get_max_amount_per_day());
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , consts::get_max_amount_per_day());
 
-        let min_amount = (5 * math::pow(10, consts::get_decimal()) as u64);
+        let min_amount = consts::get_min_amount_per_tx();
 
         let manager = LockProxyManager{
             lock_min_amount: min_amount,
@@ -177,15 +172,14 @@ module polynet::lock_proxy {
         } else {
             abort ETARGET_ASSET_NOT_BIND
         }
-      
-       
     }
 
-    public fun getBalance< CoinType>(treasury_ref: &Treasury<CoinType>): u64  {
-        //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
-        //let treasury_ref = borrow_global<Treasury<CoinType>>(POLY_BRIDGE);
-        return coin::value(&treasury_ref.coin)
-    }
+    // where we need this
+    // public fun get_balance< CoinType>(treasury_ref: &Treasury<CoinType>): u64  {
+    //     //assert!(exists<Treasury<CoinType>>(POLY_BRIDGE), ETREASURY_NOT_EXIST);
+    //     //let treasury_ref = borrow_global<Treasury<CoinType>>(POLY_BRIDGE);
+    //     return coin::value(&treasury_ref.coin)
+    // }
 
     public(friend) fun bind_proxy(
         lpManager: &mut LockProxyManager,
@@ -282,19 +276,18 @@ module polynet::lock_proxy {
             id: object::new(ctx),
             coin: coin::zero<CoinType>(ctx),
         };
-
         treasury
-
     }
 
     public fun lock_proxy_transfer<CoinType>(treasury:Treasury<CoinType>) {
         transfer::share_object(treasury)
     }
 
-    public fun is_treasury_initialzed<CoinType>(): bool {
-        true
-        //exists<Treasury<CoinType>>(POLY_BRIDGE)
-    }
+    //where we need this
+    // public fun is_treasury_initialzed<CoinType>(): bool {
+    //     true
+    //     //exists<Treasury<CoinType>>(POLY_BRIDGE)
+    // }
 
     public fun deposit<CoinType>(treasury_ref: &mut Treasury<CoinType>,  fund: Coin<CoinType>)  {
         coin::join<CoinType>(&mut treasury_ref.coin, fund);
@@ -309,18 +302,19 @@ module polynet::lock_proxy {
         return coin::split(&mut treasury_ref.coin, amount, ctx)
     }
 
-    // license function
+    // license function  
+    //notice: license_account can't be equal to the type_name address
     public fun receive_license(
         lpManager: &mut LockProxyManager,
         license: cross_chain_manager::License
     )   {
-     
-        let (license_account, license_module_name) = cross_chain_manager::get_license_info(&license);
+        
+        //license_account not used now
+        let (_, license_module_name) = cross_chain_manager::get_license_info(&license);
         let this_type = type_name::get<LicenseStore>();
-        let this_account = type_name::get_address(&this_type);
+        // let this_account = type_name::get_address(&this_type);
         let this_module_name = type_name::get_module(&this_type);
 
-        //todo
         let license_module_name_string = ascii::string(license_module_name);
         // let license_account_string = address::to_ascii_string(license_account);
         //assert!(license_account_string == this_account && license_module_name_string == this_module_name, EINVALID_LICENSE_INFO);
@@ -340,9 +334,7 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun output_license_id(lpManager: &LockProxyManager) {
-        //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
-        //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
-        //assert!(option::is_some<cross_chain_manager::License>(license_opt), ELICENSE_NOT_EXIST);
+      
         let (data, licenseInfo) = cross_chain_manager::get_license_id(option::borrow(&lpManager.license_store.license));
         events::license_id(
             data,
@@ -406,7 +398,7 @@ module polynet::lock_proxy {
         lpManager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,
         account: address,
-        fund: Coin<CoinType>,
+        fund: &mut Coin<CoinType>,
         amount: u64,
         toChainId: u64,
         toAddress: &vector<u8>,
@@ -414,21 +406,18 @@ module polynet::lock_proxy {
         ctx: &mut TxContext
     )  {
         // lock fund
-        // let amount = coin::value(&fund);
         assert!(amount >= lpManager.lock_min_amount, EMIN_UNLOCK_AMOUNT);
-        let balance = coin::into_balance<CoinType>(
-            coin::split<CoinType>(&mut fund, amount, ctx)
-        );
+        let deposit_coin = coin::split<CoinType>(fund, amount, ctx);
         
-        deposit(treasury_ref, coin::from_balance(balance, ctx));
-        utils::send_coin(fund,account);
+        deposit(treasury_ref, deposit_coin);
+        // utils::send_coin(fund,account);
         
         // borrow license
         //assert!(exists<LicenseStore>(POLY_BRIDGE), ELICENSE_NOT_EXIST);
         //let license_opt = &borrow_global<LicenseStore>(POLY_BRIDGE).license;
         assert!(option::is_some<cross_chain_manager::License>(&lpManager.license_store.license), ELICENSE_NOT_EXIST);
         let short_name = convert_to_short_key(type_name::borrow_string(&type_name::get<Coin<CoinType>>()));
-        assert!(check_amount_result(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(check_amount_result<CoinType>(amount, lpManager, &short_name, true, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         
         let license_ref = option::borrow(&lpManager.license_store.license);
 
@@ -506,7 +495,7 @@ module polynet::lock_proxy {
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
-        assert!(check_amount_result(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(check_amount_result<CoinType>(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
         //todo need transfer.
@@ -540,7 +529,7 @@ module polynet::lock_proxy {
 
         // unpac args
         let (
-            to_asset,
+            _,
             to_address,
             from_chain_amount
         ) = deserialize_tx_args(&args);
@@ -560,7 +549,7 @@ module polynet::lock_proxy {
         assert!(license_id == target_license_id, EINVALID_TARGET_LICENSE_ID);
         assert!(method == b"unlock", EINVALID_METHOD);
 
-        assert!(check_amount_result(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
+        assert!(check_amount_result<CoinType>(amount,lpManager, &short_name, false, clock), EXCEEDED_MAXIMUM_AMOUNT_LIMIT);
         // unlock fund
         let fund = withdraw<CoinType>(treasury_ref, amount, ctx);
         //todo need transfer.
@@ -576,16 +565,24 @@ module polynet::lock_proxy {
 
     }
 
-   
     //reset max amount per day of lock_proxy_manager
     //check user input amount if bigger than max amount
-    public fun check_amount_result(user_amount: u64, lockProxyManager: &mut LockProxyManager,  key:&vector<u8>, flag: bool, clock:&Clock):bool{
+    public fun check_amount_result<CoinType>(
+        user_amount: u64, 
+        lockProxyManager: &mut LockProxyManager,  
+        key: &vector<u8>, 
+        flag: bool, 
+        clock: &Clock
+    ):bool{
         let current_time = clock::timestamp_ms(clock);
         let amountLimit : &mut AmountLimitManager;
+        let _min_amount = 0;
         if (flag == true) {
             amountLimit = &mut lockProxyManager.amountLockManager;
+            _min_amount = lockProxyManager.lock_min_amount;
         } else {
             amountLimit = &mut lockProxyManager.amountUnlockManager;
+            _min_amount = lockProxyManager.unlock_min_amount;
         };
 
         if(current_time -  amountLimit.time > ONE_DAY){
@@ -597,6 +594,12 @@ module polynet::lock_proxy {
             return false
         }else{
             *amount = *amount - user_amount;
+            events::remaining_amount_change_event(
+                    type_name::get<CoinType>(),
+                    flag,
+                    _min_amount,
+                    *amount
+            );
         };
         return true
     }
@@ -609,34 +612,34 @@ module polynet::lock_proxy {
     }
 
     public(friend) fun reset_amount(amountManager:&mut AmountLimitManager){
+        let amount = consts::get_max_amount_per_day();
         let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
-        *usdt = MAX_AMOUNT;
+        *usdt = amount;
 
         let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDC");
-        *usdc = MAX_AMOUNT;
+        *usdc = amount;
 
-        let btc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_BTC");
-        *btc = MAX_AMOUNT;
+        events::reset_per_day_amount_event(amount);
 
-        let eth = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_ETH");
-        *eth = MAX_AMOUNT;
+
+
     }
    
-
     public fun to_target_chain_amount(amount: u64,local_decimals: u8,  target_decimals: u8): u128 {
         //let source_decimals = coin::decimals<CoinType>();
         (amount as u128) * pow_10(target_decimals) / pow_10(local_decimals)
     }
+
     public fun from_target_chain_amount(from_chain_amount: u128,local_decimals: u8, from_decimals: u8): u64 {
         //let source_decimals = coin::decimals<CoinType>();
         (from_chain_amount * pow_10(local_decimals) / pow_10(from_decimals) as u64)
     }
+
     fun pow_10(decimals: u8): u128 {
         //math128::pow(10, (decimals as u128))
         let data = math::pow(10, decimals);
         (data as u128)
     }
-
 
     // codecs
     public fun serialize_tx_args(to_asset: &vector<u8>, to_address: &vector<u8>, amount: u128): vector<u8> {
@@ -675,13 +678,27 @@ module polynet::lock_proxy {
         _lockProxyManager: &mut LockProxyManager,
         _min_amount: u64
     )  {
+        let old_amount = _lockProxyManager.lock_min_amount;
         _lockProxyManager.lock_min_amount = _min_amount;
+
+        events::update_min_amount_event(
+            true,
+            old_amount,
+            _min_amount
+        );
     }
 
     public(friend) fun update_unlock_min_amount(
         _lockProxyManager: &mut LockProxyManager,
         _min_amount: u64
     )  {
+        let old_amount = _lockProxyManager.lock_min_amount;
         _lockProxyManager.unlock_min_amount = _min_amount;
+
+        events::update_min_amount_event(
+            false,
+            old_amount,
+            _min_amount
+        );
     }
 }

@@ -1,49 +1,50 @@
-#[allow(unused_field)]
 module polynet::cross_chain_utils {
     use std::hash;
     use std::vector;
     use std::option;
-    use sui::event;
     use polynet::secp256k1;
     use polynet::utils as putil;
 
+    #[test_only]
+    use sui::event;
+
     const MERKLE_PROOF_NODE_LEN: u64 = 33;
-    const POLYCHAIN_SIGNATURE_LEN: u64 = 65;
-    const APTOS_SIGNATURE_LEN: u64 = 65;
+    const POLYCHAIN_SIGNATURE_LEN: u64 = 34;
+    const APTOS_SIGNATURE_LEN: u64 = 35;
 
     const EINVALID_POSITION: u64 = 2003;
     const EROOT_NOT_MATCH: u64 = 2004;
     const ENOT_ENOUGH_SIG: u64 = 2005;
 
-    struct Header has copy, drop {
-        version: u64,
-        chainId: u64,
-        timestamp: u64,
-        height: u64,
-        consensusData: u64,
-        prevBlockHash: vector<u8>,
-        transactionsRoot: vector<u8>,
-        crossStatesRoot: vector<u8>,
-        blockRoot: vector<u8>,
-        consensusPayload: vector<u8>,
-        nextBookkeeper: vector<u8>
-    }
+    // struct Header has copy, drop {
+    //     version: u64,
+    //     chainId: u64,
+    //     timestamp: u64,
+    //     height: u64,
+    //     consensusData: u64,
+    //     prevBlockHash: vector<u8>,
+    //     transactionsRoot: vector<u8>,
+    //     crossStatesRoot: vector<u8>,
+    //     blockRoot: vector<u8>,
+    //     consensusPayload: vector<u8>,
+    //     nextBookkeeper: vector<u8>
+    // }
 
-    struct ToMerkleValue has copy, drop {
-        txHash: vector<u8>,
-        fromChainID: u64,
-        makeTxParam: TxParam
-    }
+    // struct ToMerkleValue has copy, drop {
+    //     txHash: vector<u8>,
+    //     fromChainID: u64,
+    //     makeTxParam: TxParam
+    // }
 
-    struct TxParam has copy, drop {
-        txHash: vector<u8>,
-        crossChainId: vector<u8>,
-        fromContract: vector<u8>,
-        toChainId: u64,
-        toContract: vector<u8>,
-        method: vector<u8>,
-        args: vector<u8>
-    }
+    // struct TxParam has copy, drop {
+    //     txHash: vector<u8>,
+    //     crossChainId: vector<u8>,
+    //     fromContract: vector<u8>,
+    //     toChainId: u64,
+    //     toContract: vector<u8>,
+    //     method: vector<u8>,
+    //     args: vector<u8>
+    // }
 
     public fun merkle_prove(auditPath: &vector<u8>, root: &vector<u8>): vector<u8> {
         let offset: u64 = 0;
@@ -104,7 +105,7 @@ module polynet::cross_chain_utils {
         return contain_addresses(keepers, &signers, threshold)
     }
 
-
+    #[test_only]
     struct VerifySigEvent has store, drop, copy {
         length: u64,
         headHash: vector<u8>,

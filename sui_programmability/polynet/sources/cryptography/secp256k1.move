@@ -1,5 +1,4 @@
 /// This module implements ECDSA signatures based on the prime-order secp256k1 ellptic curve (i.e., cofactor is 1).
-
 module polynet::secp256k1 {
     use std::option::Option;
     use std::vector;

@@ -19,7 +19,6 @@ module polynet::cross_chain_manager {
     #[test_only]
     friend polynet::tools_test;
    
-
     // Errors
     const EVERIFY_HEADER_FAILED: u64 = 4001;
     const EVERIFY_HEADER_PROOF_FAILED: u64 = 4002;
@@ -29,9 +28,7 @@ module polynet::cross_chain_manager {
     const EBLACKLISTED_TO: u64 = 4006;
     const EVERIFIER_NOT_RECEIVER: u64 = 4007;
 
-
     struct CrossChainManager has store {
-        paused: bool,
         poly_id: u64,
         book_keepers: vector<vector<u8>>, //special decode pointer
         epoch_start_height: u64,
@@ -64,7 +61,6 @@ module polynet::cross_chain_manager {
     public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
      
         let manager = CrossChainManager{
-            paused: false,
             poly_id: 1200,
             book_keepers: vector::empty<vector<u8>>(),
             epoch_start_height: 0,
@@ -77,8 +73,6 @@ module polynet::cross_chain_manager {
         manager
     }
 
-  
-    //TODO: make sure account is token contract address 
     public(friend) fun issue_license(
         _module_name: vector<u8>,
         _contract: address 
@@ -217,7 +211,6 @@ module polynet::cross_chain_manager {
             certificate.args
         )
     }
-
 
     // verify header and execute tx
     public fun verify_header_and_execute_tx(
@@ -359,7 +352,6 @@ module polynet::cross_chain_manager {
 
     }
 
-
     public(friend) fun get_poly_id(_cross_chain_manager: &CrossChainManager): u64 {
          _cross_chain_manager.poly_id
     }
@@ -416,9 +408,19 @@ module polynet::cross_chain_manager {
         _ctx: &mut TxContext
 
     ) {
+        let old_keepers = _cross_chain_manager.book_keepers;
+        let old_start_height = _cross_chain_manager.epoch_start_height;
         _cross_chain_manager.epoch_start_height = _start_height;
         _cross_chain_manager.book_keepers = _keepers;
 
+        let sender = tx_context::sender(_ctx);
+        events::change_book_keeper_event(
+            old_keepers,
+            old_start_height,
+            _keepers,
+            _start_height,
+            sender
+        );
     }
 
     public(friend) fun set_poly_id(
@@ -475,6 +477,5 @@ module polynet::cross_chain_manager {
             _access_level,
             sender
         );
-    }
-    
+    } 
 }

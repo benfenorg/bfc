@@ -1,9 +1,7 @@
 module polynet::events {
-    // use std::vector;
     use sui::event::{emit, Self};
     use std::type_name::{TypeName};
     use std::ascii::{String};
-
 
     friend polynet::config;
     friend polynet::controller;
@@ -144,6 +142,162 @@ module polynet::events {
         module_name: String,
     }
 
+    struct UpdateFeeConfigEvent has store, drop, copy {
+        old_fee_config: bool,
+        new_fee_config: bool
+    }
+
+    struct PerDayRemainingAmountEvent has store, drop, copy {
+        asset: TypeName,
+        is_lock: bool,
+        min_amount: u64,
+        remaining_amount: u64
+    }
+
+    struct ChangeBookKeeperEvent has store, drop, copy {
+        old_keepers: vector<vector<u8>>,
+        old_start_height: u64,
+        new_keepers: vector<vector<u8>>,
+        new_start_height: u64,
+        sender: address
+    }
+
+    struct UpdateFeeCollectorEvent has store, drop, copy {
+        old_fee_collector: address,
+        new_fee_collector: address,
+        sender: address
+    }
+
+    struct PauseStatusEvent has store, drop, copy {
+        paused: bool
+    }
+
+    struct UpdateRoleEvent has store, drop, copy {
+        add: bool,
+        role: u64,
+        role_address: address
+    }
+
+    struct UpdateMinAmountEvent has store, drop, copy {
+        lock: bool,
+        old_amount: u64,
+        new_amount: u64
+    }
+
+    struct ResetPerDayAmountEvent has store, drop, copy {
+        per_day_amount: u64
+    }
+
+    public(friend) fun reset_per_day_amount_event(
+        _per_day_amount: u64
+    ) {
+        emit(
+            ResetPerDayAmountEvent{
+                    per_day_amount: _per_day_amount
+                }
+        );
+    }
+
+
+    public(friend) fun update_min_amount_event(
+        _lock: bool,
+        _old_amount: u64,
+        _new_amount: u64
+    ) {
+        emit(
+            UpdateMinAmountEvent{
+                    lock: _lock,
+                    old_amount: _old_amount,
+                    new_amount: _new_amount
+                }
+        );
+    }
+
+    public(friend) fun update_role_event(
+        _add: bool,
+        _role: u64,
+        _role_address: address
+    ) {
+        emit(
+            UpdateRoleEvent{
+                    add: _add,
+                    role: _role,
+                    role_address: _role_address
+                }
+        );
+    }
+
+    public(friend) fun update_pause_status_event(
+        _paused: bool
+    ) {
+        emit(
+            PauseStatusEvent{
+                    paused: _paused
+                }
+        );
+    }
+
+    public(friend) fun update_fee_collector_event(
+        _old_fee_collector: address,
+        _new_fee_collector: address,
+        _sender: address
+    ) {
+        emit(
+            UpdateFeeCollectorEvent{
+                    old_fee_collector: _old_fee_collector,
+                    new_fee_collector: _new_fee_collector,
+                    sender: _sender
+                }
+        );
+    }
+
+
+    public(friend) fun change_book_keeper_event(
+        _old_keepers: vector<vector<u8>>,
+        _old_start_height: u64,
+        _new_keepers: vector<vector<u8>>,
+        _new_start_height: u64,
+        _sender: address
+    ) {
+        emit(
+            ChangeBookKeeperEvent{
+                    old_keepers: _old_keepers,
+                    old_start_height: _old_start_height,
+                    new_keepers: _new_keepers,
+                    new_start_height: _new_start_height,
+                    sender: _sender
+                }
+        );
+    }
+
+    public(friend) fun update_fee_event(
+        _old_fee_config: bool,
+        _new_fee_config: bool
+    ) {
+        emit(
+            UpdateFeeConfigEvent{
+                    old_fee_config: _old_fee_config,
+                    new_fee_config: _new_fee_config
+                }
+        );
+    }
+
+    public(friend) fun remaining_amount_change_event(
+        _asset: TypeName,
+        _is_lock: bool,
+        _min_amount: u64,
+        _remaining_amount: u64
+    ) {
+        emit(
+            PerDayRemainingAmountEvent{
+                    asset: _asset,
+                    is_lock: _is_lock,
+                    min_amount: _min_amount,
+                    remaining_amount: _remaining_amount
+                }
+        );
+    }
+
     public(friend) fun license_id(
         _license_id: vector<u8>,
         _account: address,
@@ -282,7 +436,7 @@ module polynet::events {
         );
     }
 
-     public(friend) fun read_asset(
+    public(friend) fun read_asset(
         _to_asset: vector<u8>,
         _from_chain_id: u64,
         _decimals: u8
@@ -311,13 +465,6 @@ module polynet::events {
         )
     }
 
-    // struct UpdateBookKeeperEvent has store, drop, copy {
-    //     height: u64,
-    //     sender: address,
-    //     keepers: vector<vector<u8>>,
-    //     poly_id: u64
-    // }
-
     public(friend) fun update_poly_id_event(
         _poly_id: u64,
         _sender: address
@@ -340,7 +487,7 @@ module polynet::events {
             })
     }
 
-     public(friend) fun update_book_keeper_event(
+    public(friend) fun update_book_keeper_event(
         _height: u64,
         _sender: address,
         _keepers: vector<vector<u8>>,
@@ -355,8 +502,7 @@ module polynet::events {
             })
     }
 
-
-     public(friend) fun lock_event(
+    public(friend) fun lock_event(
         _from_asset: TypeName,
         _from_address: address,
         _to_chain_id: u64,
@@ -377,7 +523,6 @@ module polynet::events {
 
             })
     }
-
 
     public(friend) fun lock_with_fee_event(
         _from_asset: TypeName,
@@ -432,7 +577,6 @@ module polynet::events {
         _startHeight: u64,
         _sender: address
     ) {
-
           event::emit(
             InitBookKeeperEvent{
                 height: _startHeight,
@@ -458,14 +602,4 @@ module polynet::events {
             },
         );
     }
-
-
-
-
-
-
-
-
-
-
 }

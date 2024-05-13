@@ -17,7 +17,9 @@ module polynet::bfc_usdt {
 
         build_usdt(witness, consts::get_decimal(), tx_context::sender(ctx), ctx);
     }
-
+    
+    //todo: change token name and symbol
+    //todo: treasure admin address use config address
     public fun build_usdt<T:drop>(witness: T, decimals: u8, admin: address, ctx: &mut TxContext){
         assert!(acl::is_admin(admin), EINVALID_ADMIN);
 

@@ -9,18 +9,8 @@ module polynet::controller {
     use polynet::cross_chain_manager::{Self};
     use polynet::lock_proxy::{Treasury, Self};
 
-
-    const EINVALID_SYSTEM_IS_PAUSED: u64 = 5000;
-    const ELICENSE_NOT_EXIST: u64 = 5001;
-    const ERR_VERSION_CHECK: u64 = 5002; 
-    const ERR_PAUSE_ROLE: u64 = 5003;
-    const EINVALID_ADMIN_SIGNER: u64 = 5004;
-    const ENOT_CHANGE_KEEPER_ROLE: u64 = 5005;
-    const EVERIFY_HEADER_FAILED: u64 = 5006;
-    const EVERIFY_HEADER_PROOF_FAILED: u64 = 5007;
-    const EVERIFIER_NOT_RECEIVER: u64 = 5008;
-    const EBLACKLISTED_TO: u64 = 5009;
-    const EDEPOSIT_TREASURY_AMOUNT: u64 = 5010;
+    const ERR_VERSION_CHECK: u64 = 5000; 
+    const EDEPOSIT_TREASURY_AMOUNT: u64 = 5001;
 
      // update crosschain_manager
     public entry fun migrate(  
@@ -39,7 +29,7 @@ module polynet::controller {
     ) {
         // sender address
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         config::check_version(_global);
 
         wrapper_v1::set_fee_collector(
@@ -57,7 +47,7 @@ module polynet::controller {
      
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         config::check_version(_global);
 
         wrapper_v1::update_fee_config(
@@ -77,7 +67,7 @@ module polynet::controller {
         config::check_version(_global);
         // sender address
         let sender = tx_context::sender(_ctx);
-        config::check_keeper_role(_global, sender);
+        config::check_operator_role(_global, sender);
 
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
@@ -99,7 +89,7 @@ module polynet::controller {
         config::check_version(_global);
         // sender address
         let sender = tx_context::sender(_ctx);
-        config::check_keeper_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let cc_manager = config::borrow_mut_crosschain_manager(_global);
 
         cross_chain_manager::change_start_height(
@@ -118,7 +108,7 @@ module polynet::controller {
         config::check_version(_global);
         // sender address
         let sender = tx_context::sender(_ctx);
-        config::check_keeper_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
         
         cross_chain_manager::set_poly_id(
@@ -138,7 +128,7 @@ module polynet::controller {
     )  {
 
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         config::check_version(_global);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
@@ -229,7 +219,7 @@ module polynet::controller {
     ) {
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lp_manager = config::borrow_lp_manager(_global);
         lock_proxy::get_to_asset<CoinType>(lp_manager,_to_chain_id);
     }
@@ -237,7 +227,7 @@ module polynet::controller {
     public entry fun lock_and_pay_fee<CoinType>(
         _global:&mut CrossChainGlobalConfig,
         _treasury_ref:&mut Treasury<CoinType>,
-        _fund: Coin<CoinType>,
+        _fund: &mut Coin<CoinType>,
         _amount: u64,
         _fee: Coin<BFC>,
         _to_chain_id: u64, 
@@ -250,7 +240,6 @@ module polynet::controller {
         config::check_pause(_global);
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_assets_role(_global, sender);
         let (lp_manager,wrapper_store,cc_manager) = config::borrow_mut_all(_global);     
         wrapper_v1::lock_and_pay_fee_with_fund<CoinType>(
                         cc_manager,
@@ -275,7 +264,7 @@ module polynet::controller {
     ) {
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
 
         let lpManager = config::borrow_mut_lp_manager(_global);
 
@@ -296,7 +285,7 @@ module polynet::controller {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         
         lock_proxy::bind_proxy(
@@ -315,7 +304,7 @@ module polynet::controller {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
 
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::unbind_proxy(
@@ -335,7 +324,7 @@ module polynet::controller {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lpManager = config::borrow_mut_lp_manager(_global);
       
         lock_proxy::bind_asset<CoinType>(
@@ -355,7 +344,7 @@ module polynet::controller {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
 
         let lpManager = config::borrow_mut_lp_manager(_global);
         lock_proxy::unbind_asset<CoinType>(
@@ -410,7 +399,7 @@ module polynet::controller {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_ca_role(_global,sender);
+        config::check_operator_role(_global,sender);
         let ccManager = config::borrow_mut_crosschain_manager(_global);
 
         cross_chain_manager::set_blacklist(
@@ -429,7 +418,7 @@ module polynet::controller {
         config::check_version(_global);
         config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_ca_role(_global,sender);
+        config::check_operator_role(_global,sender);
         let license = cross_chain_manager::issue_license( b"lock_proxy", _contract);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::receive_license(lp_manager,license);
@@ -439,7 +428,7 @@ module polynet::controller {
 
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_pause_role(_global,sender);
+        config::check_operator_role(_global,sender);
         config::pause(_global);
     }
 
@@ -447,7 +436,7 @@ module polynet::controller {
 
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_pause_role(_global,sender);
+        config::check_operator_role(_global,sender);
         config::unpause(_global);
     }
 
@@ -459,7 +448,7 @@ module polynet::controller {
         config::check_version(_global);
         // config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::update_lock_min_amount(lp_manager,_min_amount);
     }
@@ -472,7 +461,7 @@ module polynet::controller {
         config::check_version(_global);
         // config::check_pause(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         lock_proxy::update_unlock_min_amount(lp_manager,_min_amount);
     }
@@ -481,7 +470,7 @@ module polynet::controller {
         
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         let amount_manager = lock_proxy::borrow_lock_amount_limit_manager(lp_manager);
         lock_proxy::reset_amount(amount_manager);
@@ -491,7 +480,7 @@ module polynet::controller {
         
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
-        config::check_admin_role(_global, sender);
+        config::check_operator_role(_global, sender);
         let lp_manager = config::borrow_mut_lp_manager(_global);
         let amount_manager = lock_proxy::borrow_unlock_amount_limit_manager(lp_manager);
         lock_proxy::reset_amount(amount_manager);
