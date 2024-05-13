@@ -127,6 +127,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward: u64,
         pool_token_exchange_rate: PoolTokenExchangeRate,
         stable_pool_token_exchange_rate: vector<PoolStableTokenExchangeRate>,
+        last_epoch_stable_rate: VecMap<ascii::String, u64>,
         tallying_rule_reporters: vector<address>,
         tallying_rule_global_score: u64,
     }
@@ -541,7 +542,7 @@ module sui_system::validator_set {
 
         // Emit events after we have processed all the rewards distribution and pending stakes.
         emit_validator_epoch_events(new_epoch, &self.active_validators, &adjusted_staking_reward_amounts,
-            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators);
+            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators, stable_rate);
 
         // Note that all their staged next epoch metadata will be effectuated below.
         process_pending_validators(self, new_epoch);
@@ -1365,6 +1366,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward_amounts: &vector<u64>,
         report_records: &VecMap<address, VecSet<address>>,
         slashed_validators: &vector<address>,
+        stable_rate: VecMap<ascii::String, u64>,
     ) {
         let num_validators = vector::length(vs);
         let i = 0;
@@ -1393,6 +1395,7 @@ module sui_system::validator_set {
                     storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
                     pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
                     stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
+                    last_epoch_stable_rate: stable_rate,
                     tallying_rule_reporters,
                     tallying_rule_global_score,
                 }
