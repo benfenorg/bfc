@@ -26,12 +26,9 @@ pub const SUI_CONFIG_DIR: &str = "bfc_config";
 pub const SUI_NETWORK_CONFIG: &str = "network.yaml";
 pub const SUI_FULLNODE_CONFIG: &str = "fullnode.yaml";
 pub const SUI_CLIENT_CONFIG: &str = "client.yaml";
-<<<<<<< HEAD
+pub const SUI_KEYSTORE_FILENAME: &str = "bfc.keystore";
 pub const SUI_KEYSTORE_FILENAME: &str = "sui.keystore";
 pub const SUI_KEYSTORE_ALIASES_FILENAME: &str = "sui.aliases";
-=======
-pub const SUI_KEYSTORE_FILENAME: &str = "bfc.keystore";
->>>>>>> develop_v.1.1.5
 pub const SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME: &str = "benchmark.keystore";
 pub const SUI_GENESIS_FILENAME: &str = "genesis.blob";
 pub const SUI_DEV_NET_URL: &str = "https://testrpc.benfen.org/";
@@ -48,12 +45,12 @@ pub fn sui_config_dir() -> Result<PathBuf, anyhow::Error> {
             None => anyhow::bail!("Cannot obtain home directory path"),
         },
     }
-    .and_then(|dir| {
-        if !dir.exists() {
-            fs::create_dir_all(dir.clone())?;
-        }
-        Ok(dir)
-    })
+        .and_then(|dir| {
+            if !dir.exists() {
+                fs::create_dir_all(dir.clone())?;
+            }
+            Ok(dir)
+        })
 }
 
 pub fn validator_config_file(address: Multiaddr, i: usize) -> String {
@@ -74,8 +71,8 @@ fn multiaddr_to_filename(address: Multiaddr) -> Option<String> {
 }
 
 pub trait Config
-where
-    Self: DeserializeOwned + Serialize,
+    where
+        Self: DeserializeOwned + Serialize,
 {
     fn persisted(self, path: &Path) -> PersistedConfig<Self> {
         PersistedConfig {
@@ -108,8 +105,8 @@ pub struct PersistedConfig<C> {
 }
 
 impl<C> PersistedConfig<C>
-where
-    C: Config,
+    where
+        C: Config,
 {
     pub fn read(path: &Path) -> Result<C, anyhow::Error> {
         Config::load(path)

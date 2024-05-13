@@ -283,10 +283,10 @@ impl RocksDB {
         keys: I,
         readopts: &ReadOptions,
     ) -> Vec<Result<Option<Vec<u8>>, rocksdb::Error>>
-    where
-        K: AsRef<[u8]>,
-        I: IntoIterator<Item = (&'b W, K)>,
-        W: 'b + AsColumnFamilyRef,
+        where
+            K: AsRef<[u8]>,
+            I: IntoIterator<Item = (&'b W, K)>,
+            W: 'b + AsColumnFamilyRef,
     {
         delegate_call!(self.multi_get_cf_opt(keys, readopts))
     }
@@ -298,9 +298,9 @@ impl RocksDB {
         sorted_input: bool,
         readopts: &ReadOptions,
     ) -> Vec<Result<Option<DBPinnableSlice<'_>>, Error>>
-    where
-        I: IntoIterator<Item = K>,
-        K: AsRef<[u8]>,
+        where
+            I: IntoIterator<Item = K>,
+            K: AsRef<[u8]>,
     {
         delegate_call!(self.batched_multi_get_cf_opt(cf, keys, sorted_input, readopts))
     }
@@ -362,9 +362,9 @@ impl RocksDB {
         value: V,
         writeopts: &WriteOptions,
     ) -> Result<(), rocksdb::Error>
-    where
-        K: AsRef<[u8]>,
-        V: AsRef<[u8]>,
+        where
+            K: AsRef<[u8]>,
+            V: AsRef<[u8]>,
     {
         fail_point!("put-cf-before");
         let ret = delegate_call!(self.put_cf_opt(cf, key, value, writeopts));
@@ -594,10 +594,10 @@ impl<'a> RocksDBSnapshot<'a> {
         keys: I,
         readopts: ReadOptions,
     ) -> Vec<Result<Option<Vec<u8>>, rocksdb::Error>>
-    where
-        K: AsRef<[u8]>,
-        I: IntoIterator<Item = (&'b W, K)>,
-        W: 'b + AsColumnFamilyRef,
+        where
+            K: AsRef<[u8]>,
+            I: IntoIterator<Item = (&'b W, K)>,
+            W: 'b + AsColumnFamilyRef,
     {
         match self {
             Self::DBWithThreadMode(s) => s.multi_get_cf_opt(keys, readopts),
@@ -608,10 +608,10 @@ impl<'a> RocksDBSnapshot<'a> {
         &'a self,
         keys: I,
     ) -> Vec<Result<Option<Vec<u8>>, rocksdb::Error>>
-    where
-        K: AsRef<[u8]>,
-        I: IntoIterator<Item = (&'b W, K)>,
-        W: 'b + AsColumnFamilyRef,
+        where
+            K: AsRef<[u8]>,
+            I: IntoIterator<Item = (&'b W, K)>,
+            W: 'b + AsColumnFamilyRef,
     {
         match self {
             Self::DBWithThreadMode(s) => s.multi_get_cf(keys),
@@ -644,17 +644,17 @@ impl RocksDBBatch {
     }
 
     pub fn put_cf<K, V>(&mut self, cf: &impl AsColumnFamilyRef, key: K, value: V)
-    where
-        K: AsRef<[u8]>,
-        V: AsRef<[u8]>,
+        where
+            K: AsRef<[u8]>,
+            V: AsRef<[u8]>,
     {
         delegate_batch_call!(self.put_cf(cf, key, value))
     }
 
     pub fn merge_cf<K, V>(&mut self, cf: &impl AsColumnFamilyRef, key: K, value: V)
-    where
-        K: AsRef<[u8]>,
-        V: AsRef<[u8]>,
+        where
+            K: AsRef<[u8]>,
+            V: AsRef<[u8]>,
     {
         delegate_batch_call!(self.merge_cf(cf, key, value))
     }
@@ -909,9 +909,9 @@ impl<K, V> DBMap<K, V> {
         &self,
         keys: impl IntoIterator<Item = J>,
     ) -> Result<Vec<Option<DBPinnableSlice<'_>>>, TypedStoreError>
-    where
-        J: Borrow<K>,
-        K: Serialize,
+        where
+            J: Borrow<K>,
+            K: Serialize,
     {
         let _timer = self
             .db_metrics
@@ -1190,8 +1190,8 @@ impl<K, V> DBMap<K, V> {
         lower_bound: Option<K>,
         upper_bound: Option<K>,
     ) -> ReadOptions
-    where
-        K: Serialize,
+        where
+            K: Serialize,
     {
         let mut readopts = self.opts.readopts();
         if let Some(lower_bound) = lower_bound {
@@ -1207,8 +1207,8 @@ impl<K, V> DBMap<K, V> {
 
     // Creates a RocksDB read option with lower and upper bounds set corresponding to `range`.
     fn create_read_options_with_range(&self, range: impl RangeBounds<K>) -> ReadOptions
-    where
-        K: Serialize,
+        where
+            K: Serialize,
     {
         let mut readopts = self.opts.readopts();
 
@@ -1741,9 +1741,9 @@ impl<'a> Iterator for RocksDBIter<'a> {
 }
 
 impl<'a, K, V> Map<'a, K, V> for DBMap<K, V>
-where
-    K: Serialize + DeserializeOwned,
-    V: Serialize + DeserializeOwned,
+    where
+        K: Serialize + DeserializeOwned,
+        V: Serialize + DeserializeOwned,
 {
     type Error = TypedStoreError;
     type Iterator = Iter<'a, K, V>;
@@ -1761,10 +1761,10 @@ where
             .rocksdb
             .key_may_exist_cf(&self.cf(), &key_buf, &readopts)
             && self
-                .rocksdb
-                .get_pinned_cf_opt(&self.cf(), &key_buf, &readopts)
-                .map_err(typed_store_err_from_rocks_err)?
-                .is_some())
+            .rocksdb
+            .get_pinned_cf_opt(&self.cf(), &key_buf, &readopts)
+            .map_err(typed_store_err_from_rocks_err)?
+            .is_some())
     }
 
     #[instrument(level = "trace", skip_all, err)]
@@ -1772,8 +1772,8 @@ where
         &self,
         keys: impl IntoIterator<Item = J>,
     ) -> Result<Vec<bool>, Self::Error>
-    where
-        J: Borrow<K>,
+        where
+            J: Borrow<K>,
     {
         let values = self.multi_get_pinned(keys)?;
         Ok(values.into_iter().map(|v| v.is_some()).collect())
@@ -1951,8 +1951,6 @@ where
     /// Returns an unbounded iterator visiting each key-value pair in the map.
     /// This is potentially unsafe as it can perform a full table scan
     fn unbounded_iter(&'a self) -> Self::Iterator {
-<<<<<<< HEAD
-=======
         let _timer = self
             .db_metrics
             .op_metrics
@@ -1974,7 +1972,6 @@ where
         } else {
             None
         };
->>>>>>> develop_v.1.1.5
         let db_iter = self
             .rocksdb
             .raw_iterator_cf(&self.cf(), self.opts.readopts());
@@ -1984,10 +1981,6 @@ where
             db_iter,
             _timer,
             _perf_ctx,
-<<<<<<< HEAD
-            bytes_scanned,
-            keys_scanned,
-=======
             Some(bytes_scanned),
             Some(keys_scanned),
             Some(self.db_metrics.clone()),
@@ -2027,7 +2020,8 @@ where
             _perf_ctx,
             Some(bytes_scanned),
             Some(keys_scanned),
->>>>>>> develop_v.1.1.5
+            bytes_scanned,
+            keys_scanned,
             Some(self.db_metrics.clone()),
         )
     }
@@ -2040,9 +2034,6 @@ where
         lower_bound: Option<K>,
         upper_bound: Option<K>,
     ) -> Self::Iterator {
-<<<<<<< HEAD
-        let readopts = self.create_read_options_with_bounds(lower_bound, upper_bound);
-=======
         let _timer = self
             .db_metrics
             .op_metrics
@@ -2073,7 +2064,7 @@ where
             let key_buf = be_fix_int_ser(&upper_bound).unwrap();
             readopts.set_iterate_upper_bound(key_buf);
         }
->>>>>>> develop_v.1.1.5
+        let readopts = self.create_read_options_with_bounds(lower_bound, upper_bound);
         let db_iter = self.rocksdb.raw_iterator_cf(&self.cf(), readopts);
         let (_timer, bytes_scanned, keys_scanned, _perf_ctx) = self.create_iter_context();
         Iter::new(
@@ -2090,9 +2081,6 @@ where
     /// Similar to `iter_with_bounds` but allows specifying inclusivity/exclusivity of ranges explicitly.
     /// TODO: find better name
     fn range_iter(&'a self, range: impl RangeBounds<K>) -> Self::Iterator {
-<<<<<<< HEAD
-        let readopts = self.create_read_options_with_range(range);
-=======
         // TODO: Change the metrics?
         let _timer = self
             .db_metrics
@@ -2157,7 +2145,7 @@ where
             Bound::Unbounded => (),
         };
 
->>>>>>> develop_v.1.1.5
+        let readopts = self.create_read_options_with_range(range);
         let db_iter = self.rocksdb.raw_iterator_cf(&self.cf(), readopts);
         let (_timer, bytes_scanned, keys_scanned, _perf_ctx) = self.create_iter_context();
         Iter::new(
@@ -2245,8 +2233,8 @@ where
         &self,
         keys: impl IntoIterator<Item = J>,
     ) -> Result<Vec<Option<Vec<u8>>>, TypedStoreError>
-    where
-        J: Borrow<K>,
+        where
+            J: Borrow<K>,
     {
         let results = self
             .multi_get_pinned(keys)?
@@ -2262,8 +2250,8 @@ where
         &self,
         keys: impl IntoIterator<Item = J>,
     ) -> Result<Vec<Option<V>>, TypedStoreError>
-    where
-        J: Borrow<K>,
+        where
+            J: Borrow<K>,
     {
         let results = self.multi_get_pinned(keys)?;
         let values_parsed: Result<Vec<_>, TypedStoreError> = results
@@ -2286,8 +2274,8 @@ where
         keys: impl IntoIterator<Item = J>,
         chunk_size: usize,
     ) -> Result<Vec<Option<V>>, TypedStoreError>
-    where
-        J: Borrow<K>,
+        where
+            J: Borrow<K>,
     {
         let cf = self.cf();
         let keys_bytes = keys
@@ -2321,9 +2309,9 @@ where
         &self,
         key_val_pairs: impl IntoIterator<Item = (J, U)>,
     ) -> Result<(), Self::Error>
-    where
-        J: Borrow<K>,
-        U: Borrow<V>,
+        where
+            J: Borrow<K>,
+            U: Borrow<V>,
     {
         let mut batch = self.batch();
         batch.insert_batch(self, key_val_pairs)?;
@@ -2333,8 +2321,8 @@ where
     /// Convenience method for batch removal
     #[instrument(level = "trace", skip_all, err)]
     fn multi_remove<J>(&self, keys: impl IntoIterator<Item = J>) -> Result<(), Self::Error>
-    where
-        J: Borrow<K>,
+        where
+            J: Borrow<K>,
     {
         let mut batch = self.batch();
         batch.delete_batch(self, keys)?;
@@ -2351,17 +2339,17 @@ where
 }
 
 impl<J, K, U, V> TryExtend<(J, U)> for DBMap<K, V>
-where
-    J: Borrow<K>,
-    U: Borrow<V>,
-    K: Serialize,
-    V: Serialize,
+    where
+        J: Borrow<K>,
+        U: Borrow<V>,
+        K: Serialize,
+        V: Serialize,
 {
     type Error = TypedStoreError;
 
     fn try_extend<T>(&mut self, iter: &mut T) -> Result<(), Self::Error>
-    where
-        T: Iterator<Item = (J, U)>,
+        where
+            T: Iterator<Item = (J, U)>,
     {
         let mut batch = self.batch();
         batch.insert_batch(self, iter)?;
@@ -2801,8 +2789,8 @@ pub fn list_tables(path: std::path::PathBuf) -> eyre::Result<Vec<String>> {
 /// TODO: Good description of why we're doing this : RocksDB stores keys in BE and has a seek operator on iterators, see `https://github.com/facebook/rocksdb/wiki/Iterator#introduction`
 #[inline]
 pub fn be_fix_int_ser<S>(t: &S) -> Result<Vec<u8>, TypedStoreError>
-where
-    S: ?Sized + serde::Serialize,
+    where
+        S: ?Sized + serde::Serialize,
 {
     bincode::DefaultOptions::new()
         .with_big_endian()

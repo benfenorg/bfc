@@ -17,13 +17,10 @@ use std::{collections::BTreeMap, fmt::Debug};
 use strum_macros::{AsRefStr, IntoStaticStr};
 use thiserror::Error;
 use tonic::Status;
-<<<<<<< HEAD
-use typed_store_error::TypedStoreError;
-
-=======
 use typed_store::rocks::TypedStoreError;
 use crate::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
->>>>>>> develop_v.1.1.5
+use typed_store_error::TypedStoreError;
+
 pub const TRANSACTION_NOT_FOUND_MSG_PREFIX: &str = "Could not find the referenced transaction";
 pub const TRANSACTIONS_NOT_FOUND_MSG_PREFIX: &str = "Could not find the referenced transactions";
 
@@ -87,7 +84,7 @@ macro_rules! assert_invariant {
 }
 
 #[derive(
-    Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Error, Hash, AsRefStr, IntoStaticStr,
+Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Error, Hash, AsRefStr, IntoStaticStr,
 )]
 pub enum UserInputError {
     #[error("Mutable object {:?} cannot appear more than one in one transaction.", objects_id_to_bfc_address(*object_id))]
@@ -95,18 +92,18 @@ pub enum UserInputError {
     #[error("Wrong number of parameters for the transaction.")]
     ObjectInputArityViolation,
     #[error(
-        "Could not find the referenced object {:?} at version {:?}.",
-        objects_id_to_bfc_address(*object_id),
-        version
+    "Could not find the referenced object {:?} at version {:?}.",
+    objects_id_to_bfc_address(*object_id),
+    version
     )]
     ObjectNotFound {
         object_id: ObjectID,
         version: Option<SequenceNumber>,
     },
     #[error("Object {} {:?} {:?} is not available for consumption, its current version: {current_version:?}.",
-        objects_id_to_bfc_address(provided_obj_ref.0),
-        provided_obj_ref.1,
-        provided_obj_ref.2
+    objects_id_to_bfc_address(provided_obj_ref.0),
+    provided_obj_ref.1,
+    provided_obj_ref.2
     )]
     ObjectVersionUnavailableForConsumption {
         provided_obj_ref: ObjectRef,
@@ -123,19 +120,19 @@ pub enum UserInputError {
     #[error("Size limit exceeded: {limit} is {value}")]
     SizeLimitExceeded { limit: String, value: String },
     #[error(
-        "Object {:?} is owned by object {:?}. \
+    "Object {:?} is owned by object {:?}. \
         Objects owned by other objects cannot be used as input arguments.",
-        objects_id_to_bfc_address(*child_id),
-        objects_id_to_bfc_address(*parent_id)
+    objects_id_to_bfc_address(*child_id),
+    objects_id_to_bfc_address(*parent_id)
     )]
     InvalidChildObjectArgument {
         child_id: ObjectID,
         parent_id: ObjectID,
     },
     #[error(
-        "Invalid Object digest for object {:?}. Expected digest : {:?}.",
-        objects_id_to_bfc_address(*object_id),
-        expected_digest
+    "Invalid Object digest for object {:?}. Expected digest : {:?}.",
+    objects_id_to_bfc_address(*object_id),
+    expected_digest
     )]
     InvalidObjectDigest {
         object_id: ObjectID,
@@ -168,9 +165,9 @@ pub enum UserInputError {
     GasCoinTypeMismatch { coin_type: String, second_coin_type: String },
 
     #[error(
-        "Balance of gas object {:?} is lower than the needed amount: {:?}.",
-        gas_balance,
-        needed_gas_amount
+    "Balance of gas object {:?} is lower than the needed amount: {:?}.",
+    gas_balance,
+    needed_gas_amount
     )]
     GasBalanceTooLow {
         gas_balance: u128,
@@ -179,9 +176,9 @@ pub enum UserInputError {
     #[error("Transaction kind does not support Sponsored Transaction")]
     UnsupportedSponsoredTransactionKind,
     #[error(
-        "Gas price {:?} under reference gas price (RGP) {:?}",
-        gas_price,
-        reference_gas_price
+    "Gas price {:?} under reference gas price (RGP) {:?}",
+    gas_price,
+    reference_gas_price
     )]
     GasPriceUnderRGP {
         gas_price: u64,
@@ -206,9 +203,9 @@ pub enum UserInputError {
         latest_version: SequenceNumber,
     },
     #[error("Object deleted at reference {} {:?} {:?}.",
-        objects_id_to_bfc_address(object_ref.0),
-        object_ref.1,
-        object_ref.2,
+    objects_id_to_bfc_address(object_ref.0),
+    object_ref.1,
+    object_ref.2,
     )]
     ObjectDeleted { object_ref: ObjectRef },
     #[error("Invalid Batch Transaction: {}", error)]
@@ -229,7 +226,7 @@ pub enum UserInputError {
     TransferObjectWithoutPublicTransferError { object_id: ObjectID },
 
     #[error(
-        "TransferObjects, MergeCoin, and Publish cannot have empty arguments. \
+    "TransferObjects, MergeCoin, and Publish cannot have empty arguments. \
         If MakeMoveVec has empty arguments, it must have a type specified"
     )]
     EmptyCommandInput,
@@ -266,10 +263,13 @@ pub enum UserInputError {
     object_id,
     version
     )]
-<<<<<<< HEAD
+    BFCObjectNotFound {
+        object_id: String,
+        version: Option<SequenceNumber>,
+    },
     InaccessibleSystemObject { object_id: ObjectID },
     #[error(
-        "{max_publish_commands} max publish/upgrade commands allowed, {publish_count} provided"
+    "{max_publish_commands} max publish/upgrade commands allowed, {publish_count} provided"
     )]
     MaxPublishCountExceeded {
         max_publish_commands: u64,
@@ -287,26 +287,20 @@ pub enum UserInputError {
 
     #[error("Commands following a command with Random can only be TransferObjects or MergeCoins")]
     PostRandomCommandRestrictions,
-=======
-    BFCObjectNotFound {
-        object_id: String,
-        version: Option<SequenceNumber>,
-    },
->>>>>>> develop_v.1.1.5
 }
 
 #[derive(
-    Eq,
-    PartialEq,
-    Clone,
-    Debug,
-    Serialize,
-    Deserialize,
-    Hash,
-    AsRefStr,
-    IntoStaticStr,
-    JsonSchema,
-    Error,
+Eq,
+PartialEq,
+Clone,
+Debug,
+Serialize,
+Deserialize,
+Hash,
+AsRefStr,
+IntoStaticStr,
+JsonSchema,
+Error,
 )]
 #[serde(tag = "code", rename = "ObjectResponseError", rename_all = "camelCase")]
 pub enum SuiObjectResponseError {
@@ -317,10 +311,10 @@ pub enum SuiObjectResponseError {
     DynamicFieldNotFound { parent_object_id: ObjectID },
 
     #[error(
-        "Object has been deleted object_id: {:?} at version: {:?} in digest {:?}",
-        objects_id_to_bfc_address(*object_id),
-        version,
-        digest
+    "Object has been deleted object_id: {:?} at version: {:?} in digest {:?}",
+    objects_id_to_bfc_address(*object_id),
+    version,
+    digest
     )]
     Deleted {
         object_id: ObjectID,
@@ -339,7 +333,7 @@ pub enum SuiObjectResponseError {
 
 /// Custom error type for Sui.
 #[derive(
-    Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Error, Hash, AsRefStr, IntoStaticStr,
+Eq, PartialEq, Clone, Debug, Serialize, Deserialize, Error, Hash, AsRefStr, IntoStaticStr,
 )]
 pub enum SuiError {
     #[error("Error checking transaction input objects: {:?}", error)]
@@ -390,9 +384,9 @@ pub enum SuiError {
         committee: Box<Committee>,
     },
     #[error(
-        "Validator {:?} responded multiple signatures for the same message, conflicting: {:?}",
-        signer,
-        conflicting_sig
+    "Validator {:?} responded multiple signatures for the same message, conflicting: {:?}",
+    signer,
+    conflicting_sig
     )]
     StakeAggregatorRepeatedSigner {
         signer: AuthorityName,
@@ -400,14 +394,14 @@ pub enum SuiError {
     },
     // TODO: Used for distinguishing between different occurrences of invalid signatures, to allow retries in some cases.
     #[error(
-        "Signature is not valid, but a retry may result in a valid one: {}",
-        error
+    "Signature is not valid, but a retry may result in a valid one: {}",
+    error
     )]
     PotentiallyTemporarilyInvalidSignature { error: String },
 
     // Certificate verification and execution
     #[error(
-        "Signature or certificate from wrong epoch, expected {expected_epoch}, got {actual_epoch}"
+    "Signature or certificate from wrong epoch, expected {expected_epoch}, got {actual_epoch}"
     )]
     WrongEpoch {
         expected_epoch: EpochId,
@@ -418,13 +412,13 @@ pub enum SuiError {
     #[error("Transaction certificate processing failed: {err}")]
     ErrorWhileProcessingCertificate { err: String },
     #[error(
-        "Failed to get a quorum of signed effects when processing transaction: {effects_map:?}"
+    "Failed to get a quorum of signed effects when processing transaction: {effects_map:?}"
     )]
     QuorumFailedToGetEffectsQuorumWhenProcessingTransaction {
         effects_map: BTreeMap<TransactionEffectsDigest, (Vec<AuthorityName>, StakeUnit)>,
     },
     #[error(
-        "Failed to verify Tx certificate with executed effects, error: {error:?}, validator: {validator_name:?}"
+    "Failed to verify Tx certificate with executed effects, error: {error:?}, validator: {validator_name:?}"
     )]
     FailedToVerifyTxCertWithExecutedEffects {
         validator_name: AuthorityName,
@@ -473,7 +467,7 @@ pub enum SuiError {
     #[error("Attempt to re-initialize a transaction lock for objects {:?}.", refs)]
     ObjectLockAlreadyInitialized { refs: Vec<ObjectRef> },
     #[error(
-        "Object {obj_ref:?} already locked by a different transaction: {pending_transaction:?}"
+    "Object {obj_ref:?} already locked by a different transaction: {pending_transaction:?}"
     )]
     ObjectLockConflict {
         obj_ref: ObjectRef,
@@ -493,8 +487,8 @@ pub enum SuiError {
     #[error("Could not find the referenced transaction events [{digest:?}].")]
     TransactionEventsNotFound { digest: TransactionEventsDigest },
     #[error(
-        "Attempt to move to `Executed` state an transaction that has already been executed: {:?}.",
-        digest
+    "Attempt to move to `Executed` state an transaction that has already been executed: {:?}.",
+    digest
     )]
     TransactionAlreadyExecuted { digest: TransactionDigest },
     #[error("Object ID did not have the expected type")]
@@ -518,7 +512,7 @@ pub enum SuiError {
     #[error("DEPRECATED")]
     DEPRECATED_GenericStorageError,
     #[error(
-        "Attempted to access {:?} through parent {:?}, \
+    "Attempted to access {:?} through parent {:?}, \
         but it's actual parent is {:?}", objects_id_to_bfc_address(*object), given_parent, actual_owner
     )]
     InvalidChildObjectAccess {

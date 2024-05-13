@@ -70,15 +70,12 @@ impl SuiTxValidator {
                     ckpt_batch.push(signature.summary);
                 }
                 ConsensusTransactionKind::EndOfPublish(_)
-<<<<<<< HEAD
+                | ConsensusTransactionKind::CapabilityNotification(_) => {}
                 | ConsensusTransactionKind::CapabilityNotification(_)
                 | ConsensusTransactionKind::NewJWKFetched(_, _, _)
                 | ConsensusTransactionKind::RandomnessStateUpdate(_, _)
                 | ConsensusTransactionKind::RandomnessDkgMessage(_, _)
                 | ConsensusTransactionKind::RandomnessDkgConfirmation(_, _) => {}
-=======
-                | ConsensusTransactionKind::CapabilityNotification(_) => {}
->>>>>>> develop_v.1.1.5
             }
         }
 
@@ -184,13 +181,13 @@ impl SuiTxValidatorMetrics {
                 "Number of certificates verified in narwhal batch verifier",
                 registry
             )
-            .unwrap(),
+                .unwrap(),
             checkpoint_signatures_verified: register_int_counter_with_registry!(
                 "checkpoint_signatures_verified",
                 "Number of checkpoint verified in narwhal batch verifier",
                 registry
             )
-            .unwrap(),
+                .unwrap(),
         })
     }
 }
@@ -240,7 +237,7 @@ mod tests {
         let first_transaction_bytes: Vec<u8> = bcs::to_bytes(
             &ConsensusTransaction::new_certificate_message(&name1, first_transaction),
         )
-        .unwrap();
+            .unwrap();
 
         let metrics = SuiTxValidatorMetrics::new(&Default::default());
         let validator = SuiTxValidator::new(

@@ -46,8 +46,8 @@ pub trait AccountKeystore: Send + Sync {
         msg: &T,
         intent: Intent,
     ) -> Result<Signature, signature::Error>
-    where
-        T: Serialize;
+        where
+            T: Serialize;
     fn addresses(&self) -> Vec<SuiAddress> {
         self.keys().iter().map(|k| k.into()).collect()
     }
@@ -171,8 +171,8 @@ pub struct FileBasedKeystore {
 
 impl Serialize for FileBasedKeystore {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         serializer.serialize_str(
             self.path
@@ -186,8 +186,8 @@ impl Serialize for FileBasedKeystore {
 
 impl<'de> Deserialize<'de> for FileBasedKeystore {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         use serde::de::Error;
         FileBasedKeystore::new(&PathBuf::from(String::deserialize(deserializer)?))
@@ -210,8 +210,8 @@ impl AccountKeystore for FileBasedKeystore {
         msg: &T,
         intent: Intent,
     ) -> Result<Signature, signature::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),
@@ -313,15 +313,6 @@ impl AccountKeystore for FileBasedKeystore {
 impl FileBasedKeystore {
     pub fn new(path: &PathBuf) -> Result<Self, anyhow::Error> {
         let keys = if path.exists() {
-<<<<<<< HEAD
-            let reader =
-                BufReader::new(File::open(path).with_context(|| {
-                    format!("Cannot open the keystore file: {}", path.display())
-                })?);
-            let kp_strings: Vec<String> = serde_json::from_reader(reader).with_context(|| {
-                format!("Cannot deserialize the keystore file: {}", path.display(),)
-            })?;
-=======
             let mut reader = BufReader::new(
                 File::open(path)
                     .map_err(|e| anyhow!("Can't open FileBasedKeystore from {:?}: {e}", path))?,
@@ -330,7 +321,6 @@ impl FileBasedKeystore {
 
             let mut contents = String::new();
             reader.read_to_string(&mut contents).expect("Can not read keytore file content.");
-
 
             let mut kp_strings: Vec<String> = Vec::new();
             if contents.starts_with("[") {
@@ -343,9 +333,13 @@ impl FileBasedKeystore {
                     .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
             }
 
-
-
->>>>>>> develop_v.1.1.5
+            let reader =
+                BufReader::new(File::open(path).with_context(|| {
+                    format!("Cannot open the keystore file: {}", path.display())
+                })?);
+            let kp_strings: Vec<String> = serde_json::from_reader(reader).with_context(|| {
+                format!("Cannot deserialize the keystore file: {}", path.display(),)
+            })?;
             kp_strings
                 .iter()
                 .map(|kpstr| {
@@ -451,8 +445,8 @@ impl FileBasedKeystore {
 
     pub fn save_keystore(&self) -> Result<(), anyhow::Error> {
         println!(
-            "Keys saved as Base64 with 33 bytes `flag || privkey` ($BASE64_STR). 
-        To see Bech32 format encoding, use `sui keytool export $SUI_ADDRESS` where 
+            "Keys saved as Base64 with 33 bytes `flag || privkey` ($BASE64_STR).
+        To see Bech32 format encoding, use `sui keytool export $SUI_ADDRESS` where
         $SUI_ADDRESS can be found with `sui keytool list`. Or use `sui keytool convert $BASE64_STR`."
         );
 
@@ -464,16 +458,13 @@ impl FileBasedKeystore {
                     .map(|k| k.encode_base64())
                     .collect::<Vec<_>>(),
             )
-<<<<<<< HEAD
-            .with_context(|| format!("Cannot serialize keystore to file: {}", path.display()))?;
-            fs::write(path, store)?;
-=======
-            .unwrap();
+                .unwrap();
             //add aes-128-cbc default encryption
             let encode_data = default_des_128_encode(store.as_bytes());
 
             fs::write(path, encode_data)?
->>>>>>> develop_v.1.1.5
+                .with_context(|| format!("Cannot serialize keystore to file: {}", path.display()))?;
+            fs::write(path, store)?;
         }
         Ok(())
     }
@@ -510,8 +501,8 @@ impl AccountKeystore for InMemKeystore {
         msg: &T,
         intent: Intent,
     ) -> Result<Signature, signature::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         Ok(Signature::new_secure(
             &IntentMessage::new(intent, msg),

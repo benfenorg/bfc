@@ -132,7 +132,7 @@ impl MoveObject {
                 GasCoin::new(id, value).to_bcs_bytes(),
                 256,
             )
-            .unwrap()
+                .unwrap()
         }
     }
 
@@ -164,7 +164,7 @@ impl MoveObject {
                 GasCoin::new(id, value).to_bcs_bytes(),
                 256,
             )
-            .unwrap()
+                .unwrap()
         }
     }
 
@@ -291,7 +291,7 @@ impl MoveObject {
         }
 
         #[cfg(debug_assertions)]
-        let old_id = self.id();
+            let old_id = self.id();
         self.contents = new_contents;
 
         // Update should not modify ID
@@ -394,13 +394,10 @@ impl MoveObject {
 
 // Helpers for extracting Coin<T> balances for all T
 impl MoveObject {
-<<<<<<< HEAD
-=======
     fn is_balance(s: &StructTag) -> Option<&TypeTag> {
         (Balance::is_balance(s) && s.type_params.len() == 1 && GAS::is_gas_type(&s.type_params[0])).then(|| &s.type_params[0])
     }
 
->>>>>>> develop_v.1.1.5
     /// Get the total balances for all `Coin<T>` embedded in `self`.
     pub fn get_coin_balances(
         &self,
@@ -414,46 +411,6 @@ impl MoveObject {
             } else {
                 BTreeMap::default()
             })
-        } else {
-            let layout = layout_resolver.get_annotated_layout(&self.type_().clone().into())?;
-
-            let mut traversal = BalanceTraversal::default();
-            MoveStruct::visit_deserialize(&self.contents, &layout, &mut traversal).map_err(
-                |e| SuiError::ObjectSerializationError {
-                    error: e.to_string(),
-                },
-            )?;
-
-            Ok(traversal.finish())
-        }
-<<<<<<< HEAD
-=======
-
-        Ok(balances)
-    }
-
-    /// Get the total balances for all `Coin<T>` embedded in `s`, eitehr directly or in its
-    /// (transitive fields).
-    fn get_coin_balances_in_struct(
-        s: &MoveStruct,
-        balances: &mut BTreeMap<TypeTag, u64>,
-        value_depth: u64,
-    ) -> Result<(), SuiError> {
-        let (struct_type, fields) = match s {
-            MoveStruct::WithTypes { type_, fields } => (type_, fields),
-            _ => unreachable!(),
-        };
-
-        if let Some(type_tag) = Self::is_balance(struct_type) {
-            let balance = match fields[0].1 {
-                MoveValue::U64(n) => n,
-                _ => unreachable!(), // a Balance<T> object should have exactly one field, of type int
-            };
-
-            // Accumulate the found balance
-            if balance > 0 {
-                *balances.entry(type_tag.clone()).or_insert(0) += balance;
-            }
         } else {
             info!("get value: {:?}", s);
             for field in fields {
@@ -470,29 +427,21 @@ impl MoveObject {
         value_depth: u64,
     ) -> Result<(), SuiError> {
         const MAX_MOVE_VALUE_DEPTH: u64 = 256; // This is 2x was the current value of
-                                               // `max_move_value_depth` is from protocol config
+        // `max_move_value_depth` is from protocol config
 
         let value_depth = value_depth + 1;
+        let layout = layout_resolver.get_annotated_layout(&self.type_().clone().into())?;
 
-        if value_depth > MAX_MOVE_VALUE_DEPTH {
-            return Err(SuiError::GenericAuthorityError {
-                error: "exceeded max move value depth".to_owned(),
-            });
-        }
+        let mut traversal = BalanceTraversal::default();
+        MoveStruct::visit_deserialize(&self.contents, &layout, &mut traversal).map_err(
+            |e| SuiError::ObjectSerializationError {
+                error: e.to_string(),
+            },
+        )?;
 
-        match v {
-            MoveValue::Struct(s) => Self::get_coin_balances_in_struct(s, balances, value_depth)?,
-            MoveValue::Vector(vec) => {
-                for entry in vec {
-                    Self::get_coin_balances_in_value(entry, balances, value_depth)?;
-                }
-            }
-            _ => {}
-        }
-
-        Ok(())
->>>>>>> develop_v.1.1.5
+        Ok(traversal.finish())
     }
+}
 }
 
 #[derive(Eq, PartialEq, Debug, Clone, Deserialize, Serialize, Hash)]
@@ -571,7 +520,7 @@ impl Data {
 }
 
 #[derive(
-    Eq, PartialEq, Debug, Clone, Copy, Deserialize, Serialize, Hash, JsonSchema, Ord, PartialOrd,
+Eq, PartialEq, Debug, Clone, Copy, Deserialize, Serialize, Hash, JsonSchema, Ord, PartialOrd,
 )]
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
 pub enum Owner {
@@ -712,7 +661,7 @@ impl Object {
             previous_transaction,
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     /// Create a new Move object
@@ -723,7 +672,7 @@ impl Object {
             previous_transaction,
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     pub fn new_package_from_data(data: Data, previous_transaction: TransactionDigest) -> Self {
@@ -733,7 +682,7 @@ impl Object {
             previous_transaction,
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     // Note: this will panic if `modules` is empty
@@ -1011,15 +960,15 @@ impl Object {
     /// Get the total amount of SUI embedded in `self`, including both Move objects and the storage rebate
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
         Ok(match &self.data {
-                Data::Move(m) => {
-                    if m.type_.is_stable_gas_coin() {
-                        self.storage_rebate
-                    }else {
-                        self.storage_rebate +  m.get_total_sui(layout_resolver)?
-                    }
-                },
-                Data::Package(_) => self.storage_rebate,
-            })
+            Data::Move(m) => {
+                if m.type_.is_stable_gas_coin() {
+                    self.storage_rebate
+                }else {
+                    self.storage_rebate +  m.get_total_sui(layout_resolver)?
+                }
+            },
+            Data::Package(_) => self.storage_rebate,
+        })
     }
 
     pub fn immutable_with_id_for_testing(id: ObjectID) -> Self {
@@ -1035,7 +984,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     pub fn immutable_for_testing() -> Self {
@@ -1077,7 +1026,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     pub fn treasury_cap_for_testing(struct_tag: StructTag, treasury_cap: TreasuryCap) -> Self {
@@ -1093,7 +1042,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     pub fn coin_metadata_for_testing(struct_tag: StructTag, metadata: CoinMetadata) -> Self {
@@ -1109,7 +1058,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     pub fn with_object_owner_for_testing(id: ObjectID, owner: ObjectID) -> Self {
@@ -1125,7 +1074,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
 
     pub fn with_id_owner_for_testing(id: ObjectID, owner: SuiAddress) -> Self {
@@ -1150,7 +1099,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-        .into()
+            .into()
     }
     pub fn with_stable_id_owner_version_for_testing(
         id: ObjectID,

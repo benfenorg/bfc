@@ -40,7 +40,7 @@ use move_package::{
 };
 use move_symbol_pool::Symbol;
 use serde_reflection::Registry;
-<<<<<<< HEAD
+use sui_types::{base_types::ObjectID, error::{SuiError, SuiResult}, is_system_package, move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage}, DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
 use sui_types::{
     base_types::ObjectID,
@@ -49,9 +49,6 @@ use sui_types::{
     move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage},
     DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS,
 };
-=======
-use sui_types::{base_types::ObjectID, error::{SuiError, SuiResult}, is_system_package, move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage}, DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
->>>>>>> develop_v.1.1.5
 use sui_verifier::verifier as sui_bytecode_verifier;
 
 #[cfg(test)]
@@ -96,9 +93,9 @@ impl BuildConfig {
     }
 
     pub fn new_for_testing_replace_addresses<I, S>(dep_original_addresses: I) -> Self
-    where
-        I: IntoIterator<Item = (S, ObjectID)>,
-        S: Into<String>,
+        where
+            I: IntoIterator<Item = (S, ObjectID)>,
+            S: Into<String>,
     {
         let mut build_config = Self::new_for_testing();
         for (addr_name, obj_id) in dep_original_addresses {
@@ -181,9 +178,9 @@ impl BuildConfig {
             self.config
                 .resolution_graph_for_package(path, &mut std::io::sink())
         }
-        .map_err(|err| SuiError::ModuleBuildFailure {
-            error: format!("{:?}", err),
-        })
+            .map_err(|err| SuiError::ModuleBuildFailure {
+                error: format!("{:?}", err),
+            })
     }
 }
 
@@ -696,9 +693,9 @@ pub fn published_at_property(package: &Package) -> Result<ObjectID, PublishedAtE
         .package
         .custom_properties
         .get(&Symbol::from(PUBLISHED_AT_MANIFEST_FIELD))
-    else {
-        return Err(PublishedAtError::NotPresent);
-    };
+        else {
+            return Err(PublishedAtError::NotPresent);
+        };
 
     ObjectID::from_str(value.as_str()).map_err(|_| PublishedAtError::Invalid(value.to_owned()))
 }

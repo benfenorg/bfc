@@ -1,10 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 use crate::base_types::ConciseableName;
-=======
->>>>>>> develop_v.1.1.5
 use crate::base_types::{AuthorityName, ObjectRef, TransactionDigest};
 use crate::digests::ConsensusCommitDigest;
 use crate::messages_checkpoint::{
@@ -12,12 +9,9 @@ use crate::messages_checkpoint::{
 };
 use crate::transaction::CertifiedTransaction;
 use byteorder::{BigEndian, ReadBytesExt};
-<<<<<<< HEAD
 use fastcrypto::groups::bls12381;
 use fastcrypto_tbls::dkg;
 use fastcrypto_zkp::bn254::zk_login::{JwkId, JWK};
-=======
->>>>>>> develop_v.1.1.5
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{Debug, Formatter};
@@ -37,7 +31,6 @@ pub struct ConsensusCommitPrologue {
     pub commit_timestamp_ms: CheckpointTimestamp,
 }
 
-<<<<<<< HEAD
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub struct ConsensusCommitPrologueV2 {
     /// Epoch of the commit prologue transaction
@@ -59,8 +52,6 @@ pub fn check_total_jwk_size(id: &JwkId, jwk: &JWK) -> bool {
         <= MAX_TOTAL_JWK_SIZE
 }
 
-=======
->>>>>>> develop_v.1.1.5
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ConsensusTransaction {
     /// Encodes an u64 unique tracking id to allow us trace a message between Sui and Narwhal.
@@ -75,14 +66,11 @@ pub enum ConsensusTransactionKey {
     CheckpointSignature(AuthorityName, CheckpointSequenceNumber),
     EndOfPublish(AuthorityName),
     CapabilityNotification(AuthorityName, u64 /* generation */),
-<<<<<<< HEAD
     // Key must include both id and jwk, because honest validators could be given multiple jwks for
     // the same id by malfunctioning providers.
     NewJWKFetched(Box<(AuthorityName, JwkId, JWK)>),
     RandomnessDkgMessage(AuthorityName),
     RandomnessDkgConfirmation(AuthorityName),
-=======
->>>>>>> develop_v.1.1.5
 }
 
 impl Debug for ConsensusTransactionKey {
@@ -99,7 +87,6 @@ impl Debug for ConsensusTransactionKey {
                 name.concise(),
                 generation
             ),
-<<<<<<< HEAD
             Self::NewJWKFetched(key) => {
                 let (authority, id, jwk) = &**key;
                 write!(
@@ -116,8 +103,6 @@ impl Debug for ConsensusTransactionKey {
             Self::RandomnessDkgConfirmation(name) => {
                 write!(f, "RandomnessDkgConfirmation({:?})", name.concise())
             }
-=======
->>>>>>> develop_v.1.1.5
         }
     }
 }
@@ -184,7 +169,6 @@ pub enum ConsensusTransactionKind {
     CheckpointSignature(Box<CheckpointSignatureMessage>),
     EndOfPublish(AuthorityName),
     CapabilityNotification(AuthorityCapabilities),
-<<<<<<< HEAD
     NewJWKFetched(AuthorityName, JwkId, JWK),
     RandomnessStateUpdate(u64, Vec<u8>), // deprecated
     // DKG is used to generate keys for use in the random beacon protocol.
@@ -205,8 +189,6 @@ impl ConsensusTransactionKind {
                 | ConsensusTransactionKind::RandomnessDkgConfirmation(_, _)
         )
     }
-=======
->>>>>>> develop_v.1.1.5
 }
 
 impl ConsensusTransaction {
@@ -255,7 +237,6 @@ impl ConsensusTransaction {
         }
     }
 
-<<<<<<< HEAD
     pub fn new_mysticeti_certificate(
         round: u64,
         offset: u64,
@@ -312,8 +293,6 @@ impl ConsensusTransaction {
         }
     }
 
-=======
->>>>>>> develop_v.1.1.5
     pub fn get_tracking_id(&self) -> u64 {
         (&self.tracking_id[..])
             .read_u64::<BigEndian>()
@@ -337,7 +316,6 @@ impl ConsensusTransaction {
             ConsensusTransactionKind::CapabilityNotification(cap) => {
                 ConsensusTransactionKey::CapabilityNotification(cap.authority, cap.generation)
             }
-<<<<<<< HEAD
             ConsensusTransactionKind::NewJWKFetched(authority, id, key) => {
                 ConsensusTransactionKey::NewJWKFetched(Box::new((
                     *authority,
@@ -354,8 +332,6 @@ impl ConsensusTransaction {
             ConsensusTransactionKind::RandomnessDkgConfirmation(authority, _) => {
                 ConsensusTransactionKey::RandomnessDkgConfirmation(*authority)
             }
-=======
->>>>>>> develop_v.1.1.5
         }
     }
 
@@ -366,4 +342,31 @@ impl ConsensusTransaction {
     pub fn is_end_of_publish(&self) -> bool {
         matches!(self.kind, ConsensusTransactionKind::EndOfPublish(_))
     }
+}
+
+#[test]
+fn test_jwk_compatibility() {
+    // Ensure that the JWK and JwkId structs in fastcrypto do not change formats.
+    // If this test breaks DO NOT JUST UPDATE THE EXPECTED BYTES. Instead, add a local JWK or
+    // JwkId struct that mirrors the fastcrypto struct, use it in AuthenticatorStateUpdate, and
+    // add Into/From as necessary.
+    let jwk = JWK {
+        kty: "a".to_string(),
+        e: "b".to_string(),
+        n: "c".to_string(),
+        alg: "d".to_string(),
+    };
+
+    let expected_jwk_bytes = vec![1, 97, 1, 98, 1, 99, 1, 100];
+    let jwk_bcs = bcs::to_bytes(&jwk).unwrap();
+    assert_eq!(jwk_bcs, expected_jwk_bytes);
+
+    let id = JwkId {
+        iss: "abc".to_string(),
+        kid: "def".to_string(),
+    };
+
+    let expected_id_bytes = vec![3, 97, 98, 99, 3, 100, 101, 102];
+    let id_bcs = bcs::to_bytes(&id).unwrap();
+    assert_eq!(id_bcs, expected_id_bytes);
 }

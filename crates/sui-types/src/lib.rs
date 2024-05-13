@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 #![warn(
-    future_incompatible,
-    nonstandard_style,
-    rust_2018_idioms,
-    rust_2021_compatibility
+future_incompatible,
+nonstandard_style,
+rust_2018_idioms,
+rust_2021_compatibility
 )]
 
 use base_types::{SequenceNumber, SuiAddress};
@@ -85,13 +85,10 @@ pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
-<<<<<<< HEAD
-=======
 pub mod base_types_bfc;
 pub mod epoch_data;
 pub mod bfc_system_state;
 mod bfc_base_types;
->>>>>>> develop_v.1.1.5
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
@@ -135,11 +132,6 @@ built_in_ids! {
 
 pub const SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
-<<<<<<< HEAD
-pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
-
-const fn builtin_address(suffix: u16) -> AccountAddress {
-=======
 
 
 /// 0x7: hardcoded object ID for the bfc system.
@@ -150,6 +142,7 @@ pub const BFC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(20
 pub const BFC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_STATE_ADDRESS);
 pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
+pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 /// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries
 /// All new system package ID's must be added here
@@ -165,351 +158,355 @@ pub fn is_system_package(id: ObjectID) -> bool {
 }
 
 const fn address_from_single_byte(b: u8) -> AccountAddress {
->>>>>>> develop_v.1.1.5
     let mut addr = [0u8; AccountAddress::LENGTH];
-    let [hi, lo] = suffix.to_be_bytes();
-    addr[AccountAddress::LENGTH - 2] = hi;
-    addr[AccountAddress::LENGTH - 1] = lo;
+    addr[AccountAddress::LENGTH - 1] = b;
     AccountAddress::new(addr)
 }
 
-pub fn sui_framework_address_concat_string(suffix: &str) -> String {
-    format!("{}{suffix}", SUI_FRAMEWORK_ADDRESS.to_hex_literal())
-}
-
-/// Parses `s` as an address. Valid formats for addresses are:
-///
-/// - A 256bit number, encoded in decimal, or hexadecimal with a leading "0x" prefix.
-/// - One of a number of pre-defined named addresses: std, sui, sui_system, deepbook.
-///
-/// Parsing succeeds if and only if `s` matches one of these formats exactly, with no remaining
-/// suffix. This function is intended for use within the authority codebases.
-pub fn parse_sui_address(s: &str) -> anyhow::Result<SuiAddress> {
-    use move_command_line_common::address::ParsedAddress;
-    Ok(ParsedAddress::parse(s)?
-        .into_account_address(&resolve_address)?
-        .into())
-}
-
-/// Parse `s` as a Module ID: An address (see `parse_sui_address`), followed by `::`, and then a
-/// module name (an identifier). Parsing succeeds if and only if `s` matches this format exactly,
-/// with no remaining input. This function is intended for use within the authority codebases.
-pub fn parse_sui_module_id(s: &str) -> anyhow::Result<ModuleId> {
-    use move_command_line_common::types::ParsedModuleId;
-    ParsedModuleId::parse(s)?.into_module_id(&resolve_address)
-}
-
-/// Parse `s` as a fully-qualified name: A Module ID (see `parse_sui_module_id`), followed by `::`,
-/// and then an identifier (for the module member). Parsing succeeds if and only if `s` matches this
-/// format exactly, with no remaining input. This function is intended for use within the authority
-/// codebases.
-pub fn parse_sui_fq_name(s: &str) -> anyhow::Result<(ModuleId, String)> {
-    use move_command_line_common::types::ParsedFqName;
-    ParsedFqName::parse(s)?.into_fq_name(&resolve_address)
-}
-
-/// Parse `s` as a struct type: A fully-qualified name, optionally followed by a list of type
-/// parameters (types -- see `parse_sui_type_tag`, separated by commas, surrounded by angle
-/// brackets). Parsing succeeds if and only if `s` matches this format exactly, with no remaining
-/// input. This function is intended for use within the authority codebase.
-pub fn parse_sui_struct_tag(s: &str) -> anyhow::Result<StructTag> {
-    use move_command_line_common::types::ParsedStructType;
-    ParsedStructType::parse(s)?.into_struct_tag(&resolve_address)
-}
-
-/// Parse `s` as a type: Either a struct type (see `parse_sui_struct_tag`), a primitive type, or a
-/// vector with a type parameter. Parsing succeeds if and only if `s` matches this format exactly,
-/// with no remaining input. This function is intended for use within the authority codebase.
-pub fn parse_sui_type_tag(s: &str) -> anyhow::Result<TypeTag> {
-    use move_command_line_common::types::ParsedType;
-    ParsedType::parse(s)?.into_type_tag(&resolve_address)
-}
-
-/// Resolve well-known named addresses into numeric addresses.
-pub fn resolve_address(addr: &str) -> Option<AccountAddress> {
-    match addr {
-        "deepbook" => Some(DEEPBOOK_ADDRESS),
-        "std" => Some(MOVE_STDLIB_ADDRESS),
-        "sui" => Some(SUI_FRAMEWORK_ADDRESS),
-        "sui_system" => Some(SUI_SYSTEM_ADDRESS),
-<<<<<<< HEAD
-        "bridge" => Some(BRIDGE_ADDRESS),
-=======
-        "bfc_system" => Some(BFC_SYSTEM_ADDRESS),
->>>>>>> develop_v.1.1.5
-        _ => None,
+/// return 0x0...dee9
+const fn deepbook_addr() -> AccountAddress {
+    const fn builtin_address(suffix: u16) -> AccountAddress {
+        let mut addr = [0u8; AccountAddress::LENGTH];
+        let [hi, lo] = suffix.to_be_bytes();
+        addr[AccountAddress::LENGTH - 2] = hi;
+        addr[AccountAddress::LENGTH - 1] = lo;
+        AccountAddress::new(addr)
     }
-}
 
-pub trait MoveTypeTagTrait {
-    fn get_type_tag() -> TypeTag;
-}
-
-impl MoveTypeTagTrait for u8 {
-    fn get_type_tag() -> TypeTag {
-        TypeTag::U8
+    pub fn sui_framework_address_concat_string(suffix: &str) -> String {
+        format!("{}{suffix}", SUI_FRAMEWORK_ADDRESS.to_hex_literal())
     }
-}
 
-impl MoveTypeTagTrait for u64 {
-    fn get_type_tag() -> TypeTag {
-        TypeTag::U64
+    /// Parses `s` as an address. Valid formats for addresses are:
+    ///
+    /// - A 256bit number, encoded in decimal, or hexadecimal with a leading "0x" prefix.
+    /// - One of a number of pre-defined named addresses: std, sui, sui_system, deepbook.
+    ///
+    /// Parsing succeeds if and only if `s` matches one of these formats exactly, with no remaining
+    /// suffix. This function is intended for use within the authority codebases.
+    pub fn parse_sui_address(s: &str) -> anyhow::Result<SuiAddress> {
+        use move_command_line_common::address::ParsedAddress;
+        Ok(ParsedAddress::parse(s)?
+            .into_account_address(&resolve_address)?
+            .into())
     }
-}
 
-impl MoveTypeTagTrait for ObjectID {
-    fn get_type_tag() -> TypeTag {
-        TypeTag::Address
+    /// Parse `s` as a Module ID: An address (see `parse_sui_address`), followed by `::`, and then a
+    /// module name (an identifier). Parsing succeeds if and only if `s` matches this format exactly,
+    /// with no remaining input. This function is intended for use within the authority codebases.
+    pub fn parse_sui_module_id(s: &str) -> anyhow::Result<ModuleId> {
+        use move_command_line_common::types::ParsedModuleId;
+        ParsedModuleId::parse(s)?.into_module_id(&resolve_address)
     }
-}
 
-impl MoveTypeTagTrait for SuiAddress {
-    fn get_type_tag() -> TypeTag {
-        TypeTag::Address
+    /// Parse `s` as a fully-qualified name: A Module ID (see `parse_sui_module_id`), followed by `::`,
+    /// and then an identifier (for the module member). Parsing succeeds if and only if `s` matches this
+    /// format exactly, with no remaining input. This function is intended for use within the authority
+    /// codebases.
+    pub fn parse_sui_fq_name(s: &str) -> anyhow::Result<(ModuleId, String)> {
+        use move_command_line_common::types::ParsedFqName;
+        ParsedFqName::parse(s)?.into_fq_name(&resolve_address)
     }
-}
 
-impl<T: MoveTypeTagTrait> MoveTypeTagTrait for Vec<T> {
-    fn get_type_tag() -> TypeTag {
-        TypeTag::Vector(Box::new(T::get_type_tag()))
+    /// Parse `s` as a struct type: A fully-qualified name, optionally followed by a list of type
+    /// parameters (types -- see `parse_sui_type_tag`, separated by commas, surrounded by angle
+    /// brackets). Parsing succeeds if and only if `s` matches this format exactly, with no remaining
+    /// input. This function is intended for use within the authority codebase.
+    pub fn parse_sui_struct_tag(s: &str) -> anyhow::Result<StructTag> {
+        use move_command_line_common::types::ParsedStructType;
+        ParsedStructType::parse(s)?.into_struct_tag(&resolve_address)
     }
-}
 
-pub fn is_primitive(
-    view: &CompiledModule,
-    function_type_args: &[AbilitySet],
-    s: &SignatureToken,
-) -> bool {
-    use SignatureToken as S;
-    match s {
-        S::Bool | S::U8 | S::U16 | S::U32 | S::U64 | S::U128 | S::U256 | S::Address => true,
-        S::Signer => false,
-        // optimistic, but no primitive has key
-        S::TypeParameter(idx) => !function_type_args[*idx as usize].has_key(),
-
-        S::Struct(idx) => [RESOLVED_SUI_ID, RESOLVED_ASCII_STR, RESOLVED_UTF8_STR]
-            .contains(&resolve_struct(view, *idx)),
-
-        S::StructInstantiation(s) => {
-            let (idx, targs) = &**s;
-            let resolved_struct = resolve_struct(view, *idx);
-            // option is a primitive
-            resolved_struct == RESOLVED_STD_OPTION
-                && targs.len() == 1
-                && is_primitive(view, function_type_args, &targs[0])
-        }
-
-        S::Vector(inner) => is_primitive(view, function_type_args, inner),
-        S::Reference(_) | S::MutableReference(_) => false,
+    /// Parse `s` as a type: Either a struct type (see `parse_sui_struct_tag`), a primitive type, or a
+    /// vector with a type parameter. Parsing succeeds if and only if `s` matches this format exactly,
+    /// with no remaining input. This function is intended for use within the authority codebase.
+    pub fn parse_sui_type_tag(s: &str) -> anyhow::Result<TypeTag> {
+        use move_command_line_common::types::ParsedType;
+        ParsedType::parse(s)?.into_type_tag(&resolve_address)
     }
-}
 
-pub fn is_object(
-    view: &CompiledModule,
-    function_type_args: &[AbilitySet],
-    t: &SignatureToken,
-) -> Result<bool, String> {
-    use SignatureToken as S;
-    match t {
-        S::Reference(inner) | S::MutableReference(inner) => {
-            is_object(view, function_type_args, inner)
-        }
-        _ => is_object_struct(view, function_type_args, t),
-    }
-}
-
-pub fn is_object_vector(
-    view: &CompiledModule,
-    function_type_args: &[AbilitySet],
-    t: &SignatureToken,
-) -> Result<bool, String> {
-    use SignatureToken as S;
-    match t {
-        S::Vector(inner) => is_object_struct(view, function_type_args, inner),
-        _ => is_object_struct(view, function_type_args, t),
-    }
-}
-
-fn is_object_struct(
-    view: &CompiledModule,
-    function_type_args: &[AbilitySet],
-    s: &SignatureToken,
-) -> Result<bool, String> {
-    use SignatureToken as S;
-    match s {
-        S::Bool
-        | S::U8
-        | S::U16
-        | S::U32
-        | S::U64
-        | S::U128
-        | S::U256
-        | S::Address
-        | S::Signer
-        | S::Vector(_)
-        | S::Reference(_)
-        | S::MutableReference(_) => Ok(false),
-        S::TypeParameter(idx) => Ok(function_type_args
-            .get(*idx as usize)
-            .map(|abs| abs.has_key())
-            .unwrap_or(false)),
-        S::Struct(_) | S::StructInstantiation(_) => {
-            let abilities = view
-                .abilities(s, function_type_args)
-                .map_err(|vm_err| vm_err.to_string())?;
-            Ok(abilities.has_key())
+    /// Resolve well-known named addresses into numeric addresses.
+    pub fn resolve_address(addr: &str) -> Option<AccountAddress> {
+        match addr {
+            "deepbook" => Some(DEEPBOOK_ADDRESS),
+            "std" => Some(MOVE_STDLIB_ADDRESS),
+            "sui" => Some(SUI_FRAMEWORK_ADDRESS),
+            "sui_system" => Some(SUI_SYSTEM_ADDRESS),
+            "bfc_system" => Some(BFC_SYSTEM_ADDRESS),
+            "bridge" => Some(BRIDGE_ADDRESS),
+            _ => None,
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use expect_test::expect;
-
-    #[test]
-    fn test_parse_sui_numeric_address() {
-        let result = parse_sui_address("0x2").expect("should not error");
-
-        let expected =
-            expect!["0x0000000000000000000000000000000000000000000000000000000000000002"];
-        expected.assert_eq(&result.to_string());
+    pub trait MoveTypeTagTrait {
+        fn get_type_tag() -> TypeTag;
     }
 
-    #[test]
-    fn test_parse_sui_named_address() {
-        let result = parse_sui_address("sui").expect("should not error");
-
-        let expected =
-            expect!["0x0000000000000000000000000000000000000000000000000000000000000002"];
-        expected.assert_eq(&result.to_string());
+    impl MoveTypeTagTrait for u8 {
+        fn get_type_tag() -> TypeTag {
+            TypeTag::U8
+        }
     }
 
-    #[test]
-    fn test_parse_sui_module_id() {
-        let result = parse_sui_module_id("0x2::sui").expect("should not error");
-        let expected =
-            expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+    impl MoveTypeTagTrait for u64 {
+        fn get_type_tag() -> TypeTag {
+            TypeTag::U64
+        }
     }
 
-    #[test]
-    fn test_parse_sui_fq_name() {
-        let (module, name) = parse_sui_fq_name("0x2::object::new").expect("should not error");
-        let expected = expect![
+    impl MoveTypeTagTrait for ObjectID {
+        fn get_type_tag() -> TypeTag {
+            TypeTag::Address
+        }
+    }
+
+    impl MoveTypeTagTrait for SuiAddress {
+        fn get_type_tag() -> TypeTag {
+            TypeTag::Address
+        }
+    }
+
+    impl<T: MoveTypeTagTrait> MoveTypeTagTrait for Vec<T> {
+        fn get_type_tag() -> TypeTag {
+            TypeTag::Vector(Box::new(T::get_type_tag()))
+        }
+    }
+
+    pub fn is_primitive(
+        view: &CompiledModule,
+        function_type_args: &[AbilitySet],
+        s: &SignatureToken,
+    ) -> bool {
+        use SignatureToken as S;
+        match s {
+            S::Bool | S::U8 | S::U16 | S::U32 | S::U64 | S::U128 | S::U256 | S::Address => true,
+            S::Signer => false,
+            // optimistic, but no primitive has key
+            S::TypeParameter(idx) => !function_type_args[*idx as usize].has_key(),
+
+            S::Struct(idx) => [RESOLVED_SUI_ID, RESOLVED_ASCII_STR, RESOLVED_UTF8_STR]
+                .contains(&resolve_struct(view, *idx)),
+
+            S::StructInstantiation(s) => {
+                let (idx, targs) = &**s;
+                let resolved_struct = resolve_struct(view, *idx);
+                // option is a primitive
+                resolved_struct == RESOLVED_STD_OPTION
+                    && targs.len() == 1
+                    && is_primitive(view, function_type_args, &targs[0])
+            }
+
+            S::Vector(inner) => is_primitive(view, function_type_args, inner),
+            S::Reference(_) | S::MutableReference(_) => false,
+        }
+    }
+
+    pub fn is_object(
+        view: &CompiledModule,
+        function_type_args: &[AbilitySet],
+        t: &SignatureToken,
+    ) -> Result<bool, String> {
+        use SignatureToken as S;
+        match t {
+            S::Reference(inner) | S::MutableReference(inner) => {
+                is_object(view, function_type_args, inner)
+            }
+            _ => is_object_struct(view, function_type_args, t),
+        }
+    }
+
+    pub fn is_object_vector(
+        view: &CompiledModule,
+        function_type_args: &[AbilitySet],
+        t: &SignatureToken,
+    ) -> Result<bool, String> {
+        use SignatureToken as S;
+        match t {
+            S::Vector(inner) => is_object_struct(view, function_type_args, inner),
+            _ => is_object_struct(view, function_type_args, t),
+        }
+    }
+
+    fn is_object_struct(
+        view: &CompiledModule,
+        function_type_args: &[AbilitySet],
+        s: &SignatureToken,
+    ) -> Result<bool, String> {
+        use SignatureToken as S;
+        match s {
+            S::Bool
+            | S::U8
+            | S::U16
+            | S::U32
+            | S::U64
+            | S::U128
+            | S::U256
+            | S::Address
+            | S::Signer
+            | S::Vector(_)
+            | S::Reference(_)
+            | S::MutableReference(_) => Ok(false),
+            S::TypeParameter(idx) => Ok(function_type_args
+                .get(*idx as usize)
+                .map(|abs| abs.has_key())
+                .unwrap_or(false)),
+            S::Struct(_) | S::StructInstantiation(_) => {
+                let abilities = view
+                    .abilities(s, function_type_args)
+                    .map_err(|vm_err| vm_err.to_string())?;
+                Ok(abilities.has_key())
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use expect_test::expect;
+
+        #[test]
+        fn test_parse_sui_numeric_address() {
+            let result = parse_sui_address("0x2").expect("should not error");
+
+            let expected =
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002"];
+            expected.assert_eq(&result.to_string());
+        }
+
+        #[test]
+        fn test_parse_sui_named_address() {
+            let result = parse_sui_address("sui").expect("should not error");
+
+            let expected =
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002"];
+            expected.assert_eq(&result.to_string());
+        }
+
+        #[test]
+        fn test_parse_sui_module_id() {
+            let result = parse_sui_module_id("0x2::sui").expect("should not error");
+            let expected =
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
+
+        #[test]
+        fn test_parse_sui_fq_name() {
+            let (module, name) = parse_sui_fq_name("0x2::object::new").expect("should not error");
+            let expected = expect![
             "0x0000000000000000000000000000000000000000000000000000000000000002::object::new"
         ];
-        expected.assert_eq(&format!(
-            "{}::{name}",
-            module.to_canonical_display(/* with_prefix */ true)
-        ));
-    }
+            expected.assert_eq(&format!(
+                "{}::{name}",
+                module.to_canonical_display(/* with_prefix */ true)
+            ));
+        }
 
-    #[test]
-    fn test_parse_sui_struct_tag_short_account_addr() {
-        let result = parse_sui_struct_tag("0x2::sui::SUI").expect("should not error");
+        #[test]
+        fn test_parse_sui_struct_tag_short_account_addr() {
+            let result = parse_sui_struct_tag("0x2::sui::SUI").expect("should not error");
 
-        let expected = expect!["0x2::sui::SUI"];
-        expected.assert_eq(&result.to_string());
+            let expected = expect!["0x2::sui::SUI"];
+            expected.assert_eq(&result.to_string());
 
-        let expected =
-            expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
+            let expected =
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
 
-    #[test]
-    fn test_parse_sui_struct_tag_long_account_addr() {
-        let result = parse_sui_struct_tag(
-            "0x00000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
-        )
-        .expect("should not error");
-
-        let expected = expect!["0x2::sui::SUI"];
-        expected.assert_eq(&result.to_string());
-
-        let expected =
-            expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
-
-    #[test]
-    fn test_parse_sui_struct_with_type_param_short_addr() {
-        let result =
-            parse_sui_struct_tag("0x2::coin::COIN<0x2::sui::SUI>").expect("should not error");
-
-        let expected = expect!["0x2::coin::COIN<0x2::sui::SUI>"];
-        expected.assert_eq(&result.to_string());
-
-        let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
-
-    #[test]
-    fn test_parse_sui_struct_with_type_param_long_addr() {
-        let result = parse_sui_struct_tag("0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>")
-            .expect("should not error");
-
-        let expected = expect!["0x2::coin::COIN<0x2::sui::SUI>"];
-        expected.assert_eq(&result.to_string());
-
-        let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
-
-    #[test]
-    fn test_complex_struct_tag_with_short_addr() {
-        let result =
-            parse_sui_struct_tag("0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>")
+        #[test]
+        fn test_parse_sui_struct_tag_long_account_addr() {
+            let result = parse_sui_struct_tag(
+                "0x00000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+            )
                 .expect("should not error");
 
-        let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>"];
-        expected.assert_eq(&result.to_string());
+            let expected = expect!["0x2::sui::SUI"];
+            expected.assert_eq(&result.to_string());
 
-        let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
+            let expected =
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
 
-    #[test]
-    fn test_complex_struct_tag_with_long_addr() {
-        let result = parse_sui_struct_tag("0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>")
-            .expect("should not error");
+        #[test]
+        fn test_parse_sui_struct_with_type_param_short_addr() {
+            let result =
+                parse_sui_struct_tag("0x2::coin::COIN<0x2::sui::SUI>").expect("should not error");
 
-        let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>"];
-        expected.assert_eq(&result.to_string());
+            let expected = expect!["0x2::coin::COIN<0x2::sui::SUI>"];
+            expected.assert_eq(&result.to_string());
 
-        let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
+            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
 
-    #[test]
-    fn test_dynamic_field_short_addr() {
-        let result = parse_sui_struct_tag(
-            "0x2::dynamic_field::Field<address, 0xdee9::custodian_v2::Account<0x234::coin::COIN>>",
-        )
-        .expect("should not error");
+        #[test]
+        fn test_parse_sui_struct_with_type_param_long_addr() {
+            let result = parse_sui_struct_tag("0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>")
+                .expect("should not error");
 
-        let expected = expect![
+            let expected = expect!["0x2::coin::COIN<0x2::sui::SUI>"];
+            expected.assert_eq(&result.to_string());
+
+            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
+
+        #[test]
+        fn test_complex_struct_tag_with_short_addr() {
+            let result =
+                parse_sui_struct_tag("0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>")
+                    .expect("should not error");
+
+            let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>"];
+            expected.assert_eq(&result.to_string());
+
+            let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
+
+        #[test]
+        fn test_complex_struct_tag_with_long_addr() {
+            let result = parse_sui_struct_tag("0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>")
+                .expect("should not error");
+
+            let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>"];
+            expected.assert_eq(&result.to_string());
+
+            let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
+
+        #[test]
+        fn test_dynamic_field_short_addr() {
+            let result = parse_sui_struct_tag(
+                "0x2::dynamic_field::Field<address, 0xdee9::custodian_v2::Account<0x234::coin::COIN>>",
+            )
+                .expect("should not error");
+
+            let expected = expect![
             "0x2::dynamic_field::Field<address, 0xdee9::custodian_v2::Account<0x234::coin::COIN>>"
         ];
-        expected.assert_eq(&result.to_string());
+            expected.assert_eq(&result.to_string());
 
-        let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::dynamic_field::Field<address,0x000000000000000000000000000000000000000000000000000000000000dee9::custodian_v2::Account<0x0000000000000000000000000000000000000000000000000000000000000234::coin::COIN>>"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
-    }
+            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::dynamic_field::Field<address,0x000000000000000000000000000000000000000000000000000000000000dee9::custodian_v2::Account<0x0000000000000000000000000000000000000000000000000000000000000234::coin::COIN>>"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
 
-    #[test]
-    fn test_dynamic_field_long_addr() {
-        let result = parse_sui_struct_tag(
-            "0x2::dynamic_field::Field<address, 0xdee9::custodian_v2::Account<0x234::coin::COIN>>",
-        )
-        .expect("should not error");
+        #[test]
+        fn test_dynamic_field_long_addr() {
+            let result = parse_sui_struct_tag(
+                "0x2::dynamic_field::Field<address, 0xdee9::custodian_v2::Account<0x234::coin::COIN>>",
+            )
+                .expect("should not error");
 
-        let expected = expect![
+            let expected = expect![
             "0x2::dynamic_field::Field<address, 0xdee9::custodian_v2::Account<0x234::coin::COIN>>"
         ];
-        expected.assert_eq(&result.to_string());
+            expected.assert_eq(&result.to_string());
 
-        let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::dynamic_field::Field<address,0x000000000000000000000000000000000000000000000000000000000000dee9::custodian_v2::Account<0x0000000000000000000000000000000000000000000000000000000000000234::coin::COIN>>"];
-        expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::dynamic_field::Field<address,0x000000000000000000000000000000000000000000000000000000000000dee9::custodian_v2::Account<0x0000000000000000000000000000000000000000000000000000000000000234::coin::COIN>>"];
+            expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
+        }
     }
-}

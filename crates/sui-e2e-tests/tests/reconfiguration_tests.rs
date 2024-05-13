@@ -9,21 +9,17 @@ use fastcrypto::encoding::Base64;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-<<<<<<< HEAD
-use sui_core::authority::epoch_start_configuration::EpochFlag;
-use sui_core::consensus_adapter::position_submit_certificate;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
-use sui_macros::{register_fail_point_arg, sim_test};
-=======
 use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use serde::{Deserialize, Serialize};
+use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
->>>>>>> develop_v.1.1.5
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_macros::{register_fail_point_arg, sim_test};
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
@@ -287,7 +283,7 @@ async fn reconfig_with_revert_end_to_end_test() {
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
-<<<<<<< HEAD
+async fn sim_test_passive_reconfig() {
 async fn test_passive_reconfig() {
     do_test_passive_reconfig().await;
 }
@@ -298,9 +294,6 @@ async fn test_passive_reconfig_determinism() {
 }
 
 async fn do_test_passive_reconfig() {
-=======
-async fn sim_test_passive_reconfig() {
->>>>>>> develop_v.1.1.5
     telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
@@ -337,75 +330,6 @@ async fn sim_test_passive_reconfig() {
         });
 }
 
-<<<<<<< HEAD
-// Test for syncing a node to an authority that already has many txes.
-#[sim_test]
-async fn test_expired_locks() {
-    do_test_lock_table_upgrade().await
-}
-
-#[sim_test]
-async fn test_expired_locks_with_lock_table_upgrade() {
-    register_fail_point_arg("initial_epoch_flags", || {
-        Some(vec![
-            EpochFlag::InMemoryCheckpointRoots,
-            EpochFlag::PerEpochFinalizedTransactions,
-        ])
-    });
-    do_test_lock_table_upgrade().await
-}
-
-async fn do_test_lock_table_upgrade() {
-    let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
-        .build()
-        .await;
-
-    let gas_price = test_cluster.wallet.get_reference_gas_price().await.unwrap();
-    let accounts_and_objs = test_cluster
-        .wallet
-        .get_all_accounts_and_gas_objects()
-        .await
-        .unwrap();
-    let sender = accounts_and_objs[0].0;
-    let receiver = accounts_and_objs[1].0;
-    let gas_object = accounts_and_objs[0].1[0];
-
-    let transfer_sui = |amount| {
-        test_cluster.wallet.sign_transaction(
-            &TestTransactionBuilder::new(sender, gas_object, gas_price)
-                .transfer_sui(Some(amount), receiver)
-                .build(),
-        )
-    };
-
-    let t1 = transfer_sui(1);
-    test_cluster
-        .create_certificate(t1.clone(), None)
-        .await
-        .unwrap();
-
-    // attempt to equivocate
-    let t2 = transfer_sui(2);
-    test_cluster
-        .create_certificate(t2.clone(), None)
-        .await
-        .unwrap_err();
-
-    test_cluster.wait_for_epoch_all_nodes(1).await;
-
-    // old locks can be overridden in new epoch
-    test_cluster
-        .create_certificate(t2.clone(), None)
-        .await
-        .unwrap();
-
-    // attempt to equivocate
-    test_cluster
-        .create_certificate(t1.clone(), None)
-        .await
-        .unwrap_err();
-=======
 #[sim_test]
 async fn test_change_bfc_round() {
     telemetry_subscribers::init_for_testing();
@@ -1274,7 +1198,7 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
-    
+
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
@@ -1874,7 +1798,75 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     assert_eq!(dao.config.voting_delay, 888888);
     assert_eq!(dao.config.voting_quorum_rate, 88);
     Ok(())
->>>>>>> develop_v.1.1.5
+}
+
+// Test for syncing a node to an authority that already has many txes.
+#[sim_test]
+async fn test_expired_locks() {
+    do_test_lock_table_upgrade().await
+}
+
+#[sim_test]
+async fn test_expired_locks_with_lock_table_upgrade() {
+    register_fail_point_arg("initial_epoch_flags", || {
+        Some(vec![
+            EpochFlag::InMemoryCheckpointRoots,
+            EpochFlag::PerEpochFinalizedTransactions,
+        ])
+    });
+    do_test_lock_table_upgrade().await
+}
+
+async fn do_test_lock_table_upgrade() {
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(10000)
+        .build()
+        .await;
+
+    let gas_price = test_cluster.wallet.get_reference_gas_price().await.unwrap();
+    let accounts_and_objs = test_cluster
+        .wallet
+        .get_all_accounts_and_gas_objects()
+        .await
+        .unwrap();
+    let sender = accounts_and_objs[0].0;
+    let receiver = accounts_and_objs[1].0;
+    let gas_object = accounts_and_objs[0].1[0];
+
+    let transfer_sui = |amount| {
+        test_cluster.wallet.sign_transaction(
+            &TestTransactionBuilder::new(sender, gas_object, gas_price)
+                .transfer_sui(Some(amount), receiver)
+                .build(),
+        )
+    };
+
+    let t1 = transfer_sui(1);
+    test_cluster
+        .create_certificate(t1.clone(), None)
+        .await
+        .unwrap();
+
+    // attempt to equivocate
+    let t2 = transfer_sui(2);
+    test_cluster
+        .create_certificate(t2.clone(), None)
+        .await
+        .unwrap_err();
+
+    test_cluster.wait_for_epoch_all_nodes(1).await;
+
+    // old locks can be overridden in new epoch
+    test_cluster
+        .create_certificate(t2.clone(), None)
+        .await
+        .unwrap();
+
+    // attempt to equivocate
+    test_cluster
+        .create_certificate(t1.clone(), None)
+        .await
+        .unwrap_err();
 }
 
 // This test just starts up a cluster that reconfigures itself under 0 load.
@@ -2162,7 +2154,7 @@ async fn test_reconfig_with_committee_change_basic() {
 }
 
 #[sim_test]
-<<<<<<< HEAD
+async fn sim_test_reconfig_with_committee_change_stress() {
 async fn test_reconfig_with_committee_change_stress() {
     do_test_reconfig_with_committee_change_stress().await;
 }
@@ -2173,9 +2165,6 @@ async fn test_reconfig_with_committee_change_stress_determinism() {
 }
 
 async fn do_test_reconfig_with_committee_change_stress() {
-=======
-async fn sim_test_reconfig_with_committee_change_stress() {
->>>>>>> develop_v.1.1.5
     let mut candidates = (0..6)
         .map(|_| ValidatorGenesisConfigBuilder::new().build(&mut OsRng))
         .collect::<Vec<_>>();
@@ -3001,7 +2990,7 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
 async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(3000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;

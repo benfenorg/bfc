@@ -104,12 +104,7 @@ pub mod error;
 pub mod json_rpc_error;
 pub mod sui_client_config;
 pub mod wallet_context;
-<<<<<<< HEAD
-
-pub const SUI_COIN_TYPE: &str = "0x2::sui::SUI";
-=======
 pub const SUI_COIN_TYPE: &str = "0x2::bfc::BFC";
->>>>>>> develop_v.1.1.5
 pub const SUI_LOCAL_NETWORK_URL: &str = "http://127.0.0.1:9000";
 pub const SUI_LOCAL_NETWORK_GAS_URL: &str = "http://127.0.0.1:5003/gas";
 pub const SUI_DEVNET_URL: &str = "https://testrpc.benfen.org/";

@@ -13,15 +13,6 @@ module sui_system::storage_fund {
     ///    the non-refundable portion taken out and put into `non_refundable_balance`.
     /// - `non_refundable_balance` contains any remaining inflow of the storage fund that should not
     ///    be taken out of the fund.
-<<<<<<< HEAD
-    public struct StorageFund has store {
-        total_object_storage_rebates: Balance<SUI>,
-        non_refundable_balance: Balance<SUI>,
-    }
-
-    /// Called by `sui_system` at genesis time.
-    public(package) fun new(initial_fund: Balance<SUI>) : StorageFund {
-=======
     struct StorageFund has store {
         total_object_storage_rebates: Balance<BFC>,
         non_refundable_balance: Balance<BFC>,
@@ -29,7 +20,6 @@ module sui_system::storage_fund {
 
     /// Called by `sui_system` at genesis time.
     public(friend) fun new(initial_fund: Balance<BFC>) : StorageFund {
->>>>>>> develop_v.1.1.5
         StorageFund {
             // At the beginning there's no object in the storage yet
             total_object_storage_rebates: balance::zero(),
@@ -38,7 +28,7 @@ module sui_system::storage_fund {
     }
 
     /// Called by `sui_system` at epoch change times to process the inflows and outflows of storage fund.
-    public(package) fun advance_epoch(
+    public(friend) fun advance_epoch(
         self: &mut StorageFund,
         storage_charges: Balance<BFC>,
         storage_fund_reinvestment: Balance<BFC>,
@@ -47,21 +37,21 @@ module sui_system::storage_fund {
         non_refundable_storage_fee_amount: u64,
     ) : Balance<BFC> {
         // Both the reinvestment and leftover rewards are not to be refunded so they go to the non-refundable balance.
-        self.non_refundable_balance.join(storage_fund_reinvestment);
-        self.non_refundable_balance.join(leftover_staking_rewards);
+        balance::join(&mut self.non_refundable_balance, storage_fund_reinvestment);
+        balance::join(&mut self.non_refundable_balance, leftover_staking_rewards);
 
         // The storage charges for the epoch come from the storage rebate of the new objects created
         // and the new storage rebates of the objects modified during the epoch so we put the charges
         // into `total_object_storage_rebates`.
-        self.total_object_storage_rebates.join(storage_charges);
+        balance::join(&mut self.total_object_storage_rebates, storage_charges);
 
         // Split out the non-refundable portion of the storage rebate and put it into the non-refundable balance.
-        let non_refundable_storage_fee = self.total_object_storage_rebates.split(non_refundable_storage_fee_amount);
-        self.non_refundable_balance.join(non_refundable_storage_fee);
+        let non_refundable_storage_fee = balance::split(&mut self.total_object_storage_rebates, non_refundable_storage_fee_amount);
+        balance::join(&mut self.non_refundable_balance, non_refundable_storage_fee);
 
         // `storage_rebates` include the already refunded rebates of deleted objects and old rebates of modified objects and
         // should be taken out of the `total_object_storage_rebates`.
-        let storage_rebate = self.total_object_storage_rebates.split(storage_rebate_amount);
+        let storage_rebate = balance::split(&mut self.total_object_storage_rebates, storage_rebate_amount);
 
         // The storage rebate has already been returned to individual transaction senders' gas coins
         // so we return the balance to be burnt at the very end of epoch change.
@@ -69,10 +59,10 @@ module sui_system::storage_fund {
     }
 
     public fun total_object_storage_rebates(self: &StorageFund): u64 {
-        self.total_object_storage_rebates.value()
+        balance::value(&self.total_object_storage_rebates)
     }
 
     public fun total_balance(self: &StorageFund): u64 {
-        self.total_object_storage_rebates.value() + self.non_refundable_balance.value()
+        balance::value(&self.total_object_storage_rebates) + balance::value(&self.non_refundable_balance)
     }
 }
