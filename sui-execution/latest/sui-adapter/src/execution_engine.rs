@@ -821,6 +821,7 @@ mod checked {
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
 
+        info!("change epoch: {:?}",change_epoch);
         for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
             storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
             non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
