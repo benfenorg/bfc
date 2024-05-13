@@ -29,7 +29,7 @@ Version: 3
 Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}, balance: sui::balance::Balance<sui::bfc::BFC> {value: 10u64}}
 
 task 6 'run'. lines 20-20:
-Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object 0x1072bade492e0fd6d20bb161f633c46bacb3748f5289878ff87574c606f8cc85 is owned by account address 0xd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8b, but given owner/signer address is 0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e" }
+Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object \"BFC1072bade492e0fd6d20bb161f633c46bacb3748f5289878ff87574c606f8cc858206\" is owned by account address \"BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c\", but given owner/signer address is \"BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7\"" }
 
 task 7 'view-object'. lines 22-22:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )

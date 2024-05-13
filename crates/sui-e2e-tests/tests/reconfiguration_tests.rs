@@ -1268,7 +1268,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(10000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
