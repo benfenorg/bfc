@@ -11,6 +11,7 @@ module sui_system::stable_pool {
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
+    use sui::bfc::BFC;
 
     friend sui_system::validator;
     friend sui_system::validator_set;
@@ -51,7 +52,7 @@ module sui_system::stable_pool {
         /// in the `StakedSTABLE` object, updated at epoch boundaries.
         stable_balance: u64,
         /// The epoch stake rewards will be added here at the end of each epoch.
-        rewards_pool: Balance<STABLE>,
+        rewards_pool: Balance<BFC>,
         /// Total number of pool tokens issued by the pool.
         pool_token_balance: u64,
         /// Exchange rate history of previous epochs. Key is the epoch number.
@@ -96,7 +97,7 @@ module sui_system::stable_pool {
             activation_epoch: option::none(),
             deactivation_epoch: option::none(),
             stable_balance: 0,
-            rewards_pool: balance::zero<STABLE>(),
+            rewards_pool: balance::zero<BFC>(),
             pool_token_balance: 0,
             exchange_rates,
             pending_stake: 0,
@@ -134,14 +135,15 @@ module sui_system::stable_pool {
     public(friend) fun request_withdraw_stake<STABLE>(
         pool: &mut StablePool<STABLE>,
         staked_sui: StakedStable<STABLE>,
+        rate: u64,
         ctx: &mut TxContext
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         let (pool_token_withdraw_amount, principal_withdraw) =
             withdraw_from_principal(pool, staked_sui);
         let principal_withdraw_amount = balance::value(&principal_withdraw);
 
         let rewards_withdraw = withdraw_rewards(
-            pool, principal_withdraw_amount, pool_token_withdraw_amount, tx_context::epoch(ctx)
+            pool, principal_withdraw_amount, pool_token_withdraw_amount,tx_context::epoch(ctx), rate
         );
         let total_sui_withdraw_amount = principal_withdraw_amount + balance::value(&rewards_withdraw);
 
@@ -151,9 +153,7 @@ module sui_system::stable_pool {
         // If the pool is inactive, we immediately process the withdrawal.
         if (is_inactive(pool)) process_pending_stake_withdraw(pool);
 
-        // TODO: implement withdraw bonding period here.
-        balance::join(&mut principal_withdraw, rewards_withdraw);
-        principal_withdraw
+        (principal_withdraw, rewards_withdraw)
     }
 
     /// Withdraw the principal SUI stored in the StakedSui object, and calculate the corresponding amount of pool
@@ -191,7 +191,7 @@ module sui_system::stable_pool {
     // ==== functions called at epoch boundaries ===
 
     /// Called at epoch advancement times to add rewards (in SUI) to the stable pool.
-    public(friend) fun deposit_rewards<STABLE>(pool: &mut StablePool<STABLE>, rewards: Balance<STABLE>) {
+    public(friend) fun deposit_rewards<STABLE>(pool: &mut StablePool<STABLE>, rewards: Balance<BFC>) {
         pool.stable_balance = pool.stable_balance + balance::value(&rewards);
         balance::join(&mut pool.rewards_pool, rewards);
     }
@@ -239,7 +239,8 @@ module sui_system::stable_pool {
         principal_withdraw_amount: u64,
         pool_token_withdraw_amount: u64,
         epoch: u64,
-    ) : Balance<STABLE> {
+        rate: u64,
+    ) : Balance<BFC> {
         let exchange_rate = pool_token_exchange_rate_at_epoch(pool, epoch);
         let total_sui_withdraw_amount = get_sui_amount(&exchange_rate, pool_token_withdraw_amount);
         let reward_withdraw_amount =
@@ -249,7 +250,8 @@ module sui_system::stable_pool {
         // This may happen when we are withdrawing everything from the pool and
         // the rewards pool balance may be less than reward_withdraw_amount.
         // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
-        reward_withdraw_amount = math::min(reward_withdraw_amount, balance::value(&pool.rewards_pool));
+        let reward_bfc = (reward_withdraw_amount as u128) * (1000000000 as u128) / (rate as u128);
+        reward_withdraw_amount = math::min((reward_bfc as u64),  balance::value(&pool.rewards_pool));
         balance::split(&mut pool.rewards_pool, reward_withdraw_amount)
     }
 

@@ -23,7 +23,7 @@ use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, 
 use std::iter;
 use enum_dispatch::enum_dispatch;
 use fastcrypto::{encoding::Base64, hash::HashFunction};
-use itertools::{Either, Itertools};
+use itertools::Either;
 use move_core_types::ident_str;
 use move_core_types::identifier::IdentStr;
 use move_core_types::{identifier::Identifier, language_storage::TypeTag};
@@ -41,6 +41,7 @@ use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use tap::Pipe;
 use tracing::trace;
 use crate::gas::GasCostSummaryAdjusted;
+use crate::stable_coin::stable::checked::STABLE;
 
 // TODO: The following constants appear to be very large.
 // We should revisit them.
@@ -2043,7 +2044,14 @@ impl VerifiedTransaction {
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
-        let stable_gas_summarys = stable_gas_summary_map.iter().map(|(k,v)|(k.clone(),v.clone())).collect_vec();
+        let mut stable_gas_summarys= vec![];
+        for type_tag in STABLE::all_stable_coins_type() {
+            let gas_summary = stable_gas_summary_map.get(&type_tag);
+            if let Some(summary) = gas_summary {
+                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
+            }
+        }
+
         ChangeEpoch {
             epoch: next_epoch,
             protocol_version,

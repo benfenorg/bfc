@@ -4,6 +4,7 @@
 module sui_system::validator_set {
     use std::ascii;
     use std::option::{Self, Option};
+    use std::type_name;
     use std::vector;
 
     use sui::balance::{Self, Balance};
@@ -73,8 +74,11 @@ module sui_system::validator_set {
 
         /// Mappings from staking pool's ID to the sui address of a validator.
         staking_pool_mappings: Table<ID, address>,
-
+        /// Mappings from stable staking pool's ID to the sui address of a validator.
         stable_pool_mappings: Table<ID, address>,
+
+        ///The stable rate of ast epoch.
+        last_epoch_stable_rate: VecMap<ascii::String, u64>,
 
         /// Mapping from a staking pool ID to the inactive validator that has that pool as its staking pool.
         /// When a validator is deactivated the validator is removed from `active_validators` it
@@ -123,6 +127,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward: u64,
         pool_token_exchange_rate: PoolTokenExchangeRate,
         stable_pool_token_exchange_rate: vector<PoolStableTokenExchangeRate>,
+        last_epoch_stable_rate: VecMap<ascii::String, u64>,
         tallying_rule_reporters: vector<address>,
         tallying_rule_global_score: u64,
     }
@@ -203,12 +208,12 @@ module sui_system::validator_set {
             pending_removals: vector::empty(),
             staking_pool_mappings,
             stable_pool_mappings,
+            last_epoch_stable_rate: rate_map,
             inactive_validators: table::new(ctx),
             validator_candidates: table::new(ctx),
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
         };
-        let rate_map = rate_vec_map();
         voting_power::set_voting_power(&mut validators.active_validators, rate_map);
         validators
     }
@@ -417,8 +422,13 @@ module sui_system::validator_set {
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         let stable_pool_id = stable_pool_id(&staked_sui);
+        //get stable rate
+        let stable_rate_map = self.last_epoch_stable_rate;
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let rate = vec_map::get(&stable_rate_map, &pool_key);
+
         let validator =
             if (table::contains(&self.stable_pool_mappings, stable_pool_id)) { // This is an active validator.
                 let validator_address = *table::borrow(&self.stable_pool_mappings, stable_pool_id(&staked_sui));
@@ -428,7 +438,8 @@ module sui_system::validator_set {
                 let wrapper = table::borrow_mut(&mut self.inactive_validators, stable_pool_id);
                 validator_wrapper::load_validator_maybe_upgrade(wrapper)
             };
-        validator::request_withdraw_stable_stake(validator, staked_sui, ctx)
+
+        validator::request_withdraw_stable_stake(validator, staked_sui, *rate, ctx)
     }
 
     // ==== validator config setting functions ====
@@ -467,6 +478,9 @@ module sui_system::validator_set {
     ) {
         let new_epoch = tx_context::epoch(ctx) + 1;
         let total_voting_power = voting_power::total_voting_power();
+
+        // Update the stable rate of last epoch.
+        self.last_epoch_stable_rate = stable_rate;
 
         // Compute the reward distribution without taking into account the tallying rule slashing.
         let (unadjusted_staking_reward_amounts, unadjusted_storage_fund_reward_amounts) = compute_unadjusted_reward_distribution(
@@ -518,6 +532,7 @@ module sui_system::validator_set {
             &adjusted_storage_fund_reward_amounts,
             computation_reward,
             storage_fund_reward,
+            stable_rate,
             ctx
         );
 
@@ -527,7 +542,7 @@ module sui_system::validator_set {
 
         // Emit events after we have processed all the rewards distribution and pending stakes.
         emit_validator_epoch_events(new_epoch, &self.active_validators, &adjusted_staking_reward_amounts,
-            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators);
+            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators, stable_rate);
 
         // Note that all their staged next epoch metadata will be effectuated below.
         process_pending_validators(self, new_epoch);
@@ -1307,6 +1322,7 @@ module sui_system::validator_set {
         adjusted_storage_fund_reward_amounts: &vector<u64>,
         staking_rewards: &mut Balance<BFC>,
         storage_fund_reward: &mut Balance<BFC>,
+        stable_rate: VecMap<ascii::String, u64>,
         ctx: &mut TxContext
     ) {
         let length = vector::length(validators);
@@ -1336,7 +1352,7 @@ module sui_system::validator_set {
             };
 
             // Add rewards to stake staking pool to auto compound for stakers.
-            validator::deposit_stake_rewards(validator, staker_reward);
+            validator::deposit_stake_rewards(validator, staker_reward, &stable_rate);
             i = i + 1;
         }
     }
@@ -1350,6 +1366,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward_amounts: &vector<u64>,
         report_records: &VecMap<address, VecSet<address>>,
         slashed_validators: &vector<address>,
+        stable_rate: VecMap<ascii::String, u64>,
     ) {
         let num_validators = vector::length(vs);
         let i = 0;
@@ -1378,6 +1395,7 @@ module sui_system::validator_set {
                     storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
                     pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
                     stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
+                    last_epoch_stable_rate: stable_rate,
                     tallying_rule_reporters,
                     tallying_rule_global_score,
                 }

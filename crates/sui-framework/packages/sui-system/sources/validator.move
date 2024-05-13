@@ -494,16 +494,16 @@ module sui_system::validator {
     public(friend) fun request_withdraw_stable_stake<STABLE>(
         self: &mut Validator,
         staked_sui: StakedStable<STABLE>,
+        rate: u64,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         let principal_amount = stable_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = stable_pool::stake_activation_epoch(&staked_sui);
-        let withdrawn_stake = stable_pool::request_withdraw_stake(
-            pool, staked_sui, ctx);
+        let (withdrawn_stake, reward) = stable_pool::request_withdraw_stake(pool, staked_sui, rate, ctx);
         let withdraw_amount = balance::value(&withdrawn_stake);
-        let reward_amount = withdraw_amount - principal_amount;
+        let reward_amount = balance::value(&reward);
         let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
         if (option::is_some(&next_stable_stake)) {
             let (_, next_stable) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
@@ -520,7 +520,7 @@ module sui_system::validator {
                 reward_amount,
             }
         );
-        withdrawn_stake
+        (withdrawn_stake, reward)
     }
 
     /// Request to set new gas price for the next epoch.
@@ -564,23 +564,176 @@ module sui_system::validator {
     }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>) {
-        self.next_epoch_stake = self.next_epoch_stake + balance::value(&reward);
-        staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
+        let total_reward = balance::value(&reward);
+        let bfc_reward = 0;
+        let stable_total_stake = vec_map::empty();
+        let all_stable_total_stake = get_stable_staking_total(self, &mut stable_total_stake, stable_rate);
+        if (all_stable_total_stake > 0) {
+            //distribute for bfc pool
+            let bfc_total_stake = stake_amount(self);
+            let all_total_stake = all_stable_total_stake + bfc_total_stake;
+            let bfc_dis_reward = (total_reward as u128) * (bfc_total_stake as u128) / (all_total_stake as u128);
+            staking_pool::deposit_rewards(&mut self.staking_pool, balance::split(&mut reward, (bfc_dis_reward as u64)));
+            bfc_reward = (bfc_dis_reward as u64);
+
+            //distribute for stable pool
+            let stable_reward = distribute_stable_pool_reward<BUSD>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if (stable_reward > 0) {
+                deposit_stable_stake_rewards<BUSD>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BARS>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BARS>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BAUD>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BAUD>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BBRL>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BBRL>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BCAD>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BCAD>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BEUR>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BEUR>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BGBP>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BGBP>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BIDR>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BIDR>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BINR>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BINR>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BKRW>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BKRW>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BMXN>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BMXN>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BRUB>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BRUB>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BSAR>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BSAR>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BTRY>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BTRY>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BZAR>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BZAR>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<BJPY>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<BJPY>(self, balance::split(&mut reward, stable_reward));
+            };
+            let stable_reward = distribute_stable_pool_reward<MGG>(&stable_total_stake,
+                total_reward, all_total_stake);
+            if(stable_reward > 0) {
+                deposit_stable_stake_rewards<MGG>(self, balance::split(&mut reward, stable_reward));
+            };
+
+            let remainder = balance::value(&reward);
+            if (remainder > 0) {
+                staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+                bfc_reward = bfc_reward + remainder;
+            } else {
+                balance::destroy_zero(reward);
+            };
+        }else {
+            staking_pool::deposit_rewards(&mut self.staking_pool, reward);
+            bfc_reward = total_reward;
+        };
+
+        self.next_epoch_stake = self.next_epoch_stake + bfc_reward;
+    }
+
+    fun distribute_stable_pool_reward<STABLE>(
+        stable_pool_total: &VecMap<ascii::String, u64>,
+        reward_count: u64,
+        all_total: u64,
+    ): u64 {
+        let pool_key = type_name::into_string(type_name::get<STABLE>());
+        let total_option = vec_map::try_get(stable_pool_total, &pool_key);
+        if (option::is_some(&total_option)) {
+            let reward = (reward_count as u128) * (*option::borrow(&total_option) as u128) / (all_total as u128);
+            (reward as u64)
+        }
+        else {
+            0
+        }
+    }
+
+    fun get_stable_staking_total(
+        self: &Validator,
+        stable_total: &mut VecMap<ascii::String, u64>,
+        stable_rate: &VecMap<ascii::String, u64>
+    ): u64 {
+        let all_pool_total: u64 = 0;
+        all_pool_total = all_pool_total + total_stake_for_reward<BUSD>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BARS>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BAUD>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BBRL>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BCAD>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BEUR>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BGBP>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BIDR>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BINR>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BKRW>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BMXN>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BRUB>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BSAR>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BTRY>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BZAR>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<BJPY>(self, stable_total, stable_rate);
+        all_pool_total = all_pool_total + total_stake_for_reward<MGG>(self, stable_total, stable_rate);
+        all_pool_total
     }
 
     public(friend) fun deposit_stable_stake_rewards<STABLE>(
         self: &mut Validator,
-        reward: Balance<STABLE>,
+        reward: Balance<BFC>,
     ) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
-        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
-        if (option::is_none(&next_stable_stake)) {
+        if (vec_map::contains(&self.next_epoch_stable_stake, &pool_key)) {
+            let next_stake = vec_map::get_mut(&mut self.next_epoch_stable_stake, &pool_key);
+            *next_stake = *next_stake + balance::value(&reward);
+        }else {
             vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward));
-        } else {
-            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward) + *option::borrow(&next_stable_stake));
         };
         let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
+
         stable_pool::deposit_rewards<STABLE>(pool, reward);
     }
 
@@ -768,12 +921,33 @@ module sui_system::validator {
         total_stake
     }
 
+    fun total_stake_for_reward<STABLE>(
+        self: &Validator,
+        stable_stake: &mut VecMap<ascii::String, u64>,
+        stable_rate: &VecMap<ascii::String, u64>
+    ):u64  {
+        let total =  stable_stake_amount<STABLE>(self);
+        if (total > 0) {
+            let pool_key = type_name::into_string(type_name::get<STABLE>());
+            let rate = vec_map::get(stable_rate, &pool_key);
+            let total_stake = (total as u128) * (1000000000 as u128) / (*rate as u128);
+            vec_map::insert(stable_stake, pool_key, (total_stake as u64));
+            (total_stake as u64)
+        }else {
+         0
+        }
+    }
+
     public fun total_stake_of_stable<STABLE>(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
         let stable_stake =  stable_stake_amount<STABLE>(self);
-        let pool_key = type_name::into_string(type_name::get<STABLE>());
-        let rate = vec_map::get(&stable_rate, &pool_key);
-        let total_stake = (stable_stake as u128) * (1000000000 as u128) / (*rate as u128);
-        (total_stake as u64)
+        if (stable_stake > 0) {
+            let pool_key = type_name::into_string(type_name::get<STABLE>());
+            let rate = vec_map::get(&stable_rate, &pool_key);
+            let total_stake = (stable_stake as u128) * (1000000000 as u128) / (*rate as u128);
+            (total_stake as u64)
+        } else {
+            0
+        }
     }
 
     /// Return the voting power of this validator.

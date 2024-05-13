@@ -47,6 +47,7 @@
 <pre><code><b>use</b> <a href="">0x1::option</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">0x2::bag</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/math.md#0x2_math">0x2::math</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/table.md#0x2_table">0x2::table</a>;
@@ -101,7 +102,7 @@ A stable pool embedded in each validator struct in the system state object.
  in the <code>StakedSTABLE</code> object, updated at epoch boundaries.
 </dd>
 <dt>
-<code>rewards_pool: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;</code>
+<code>rewards_pool: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
  The epoch stake rewards will be added here at the end of each epoch.
@@ -439,7 +440,7 @@ Create a new, empty stable pool.
         activation_epoch: <a href="_none">option::none</a>(),
         deactivation_epoch: <a href="_none">option::none</a>(),
         stable_balance: 0,
-        rewards_pool: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;STABLE&gt;(),
+        rewards_pool: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;(),
         pool_token_balance: 0,
         exchange_rates,
         pending_stake: 0,
@@ -503,7 +504,7 @@ Both the principal and corresponding rewards in SUI are withdrawn.
 A proportional amount of pool token withdraw is recorded and processed at epoch change time.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_request_withdraw_stake">request_withdraw_stake</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_request_withdraw_stake">request_withdraw_stake</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, rate: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -515,14 +516,15 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_request_withdraw_stake">request_withdraw_stake</a>&lt;STABLE&gt;(
     pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">StablePool</a>&lt;STABLE&gt;,
     staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">StakedStable</a>&lt;STABLE&gt;,
+    rate: u64,
     ctx: &<b>mut</b> TxContext
-) : Balance&lt;STABLE&gt; {
+) : (Balance&lt;STABLE&gt;, Balance&lt;BFC&gt;) {
     <b>let</b> (pool_token_withdraw_amount, principal_withdraw) =
         <a href="stable_pool.md#0x3_stable_pool_withdraw_from_principal">withdraw_from_principal</a>(pool, staked_sui);
     <b>let</b> principal_withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&principal_withdraw);
 
     <b>let</b> rewards_withdraw = <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>(
-        pool, principal_withdraw_amount, pool_token_withdraw_amount, <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx)
+        pool, principal_withdraw_amount, pool_token_withdraw_amount,<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx), rate
     );
     <b>let</b> total_sui_withdraw_amount = principal_withdraw_amount + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&rewards_withdraw);
 
@@ -532,9 +534,7 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
     // If the pool is inactive, we immediately process the withdrawal.
     <b>if</b> (<a href="stable_pool.md#0x3_stable_pool_is_inactive">is_inactive</a>(pool)) <a href="stable_pool.md#0x3_stable_pool_process_pending_stake_withdraw">process_pending_stake_withdraw</a>(pool);
 
-    // TODO: implement withdraw bonding period here.
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> principal_withdraw, rewards_withdraw);
-    principal_withdraw
+    (principal_withdraw, rewards_withdraw)
 }
 </code></pre>
 
@@ -621,7 +621,7 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
 Called at epoch advancement times to add rewards (in SUI) to the stable pool.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">deposit_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">deposit_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, rewards: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -630,7 +630,7 @@ Called at epoch advancement times to add rewards (in SUI) to the stable pool.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">deposit_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">StablePool</a>&lt;STABLE&gt;, rewards: Balance&lt;STABLE&gt;) {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">deposit_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">StablePool</a>&lt;STABLE&gt;, rewards: Balance&lt;BFC&gt;) {
     pool.stable_balance = pool.stable_balance + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&rewards);
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.rewards_pool, rewards);
 }
@@ -744,7 +744,7 @@ stake we should withdraw.
 portion because the principal portion was already taken out of the staker's self custodied StakedSui.
 
 
-<pre><code><b>fun</b> <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, principal_withdraw_amount: u64, pool_token_withdraw_amount: u64, epoch: u64): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;
+<pre><code><b>fun</b> <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, principal_withdraw_amount: u64, pool_token_withdraw_amount: u64, epoch: u64, rate: u64): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -758,7 +758,8 @@ portion because the principal portion was already taken out of the staker's self
     principal_withdraw_amount: u64,
     pool_token_withdraw_amount: u64,
     epoch: u64,
-) : Balance&lt;STABLE&gt; {
+    rate: u64,
+) : Balance&lt;BFC&gt; {
     <b>let</b> exchange_rate = <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(pool, epoch);
     <b>let</b> total_sui_withdraw_amount = <a href="stable_pool.md#0x3_stable_pool_get_sui_amount">get_sui_amount</a>(&exchange_rate, pool_token_withdraw_amount);
     <b>let</b> reward_withdraw_amount =
@@ -768,7 +769,8 @@ portion because the principal portion was already taken out of the staker's self
     // This may happen when we are withdrawing everything from the pool and
     // the rewards pool <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> may be less than reward_withdraw_amount.
     // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
-    reward_withdraw_amount = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>(reward_withdraw_amount, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&pool.rewards_pool));
+    <b>let</b> reward_bfc = (reward_withdraw_amount <b>as</b> u128) * (1000000000 <b>as</b> u128) / (rate <b>as</b> u128);
+    reward_withdraw_amount = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>((reward_bfc <b>as</b> u64),  <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&pool.rewards_pool));
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> pool.rewards_pool, reward_withdraw_amount)
 }
 </code></pre>

@@ -30,6 +30,8 @@
 -  [Function `request_set_commission_rate`](#0x3_validator_request_set_commission_rate)
 -  [Function `set_candidate_commission_rate`](#0x3_validator_set_candidate_commission_rate)
 -  [Function `deposit_stake_rewards`](#0x3_validator_deposit_stake_rewards)
+-  [Function `distribute_stable_pool_reward`](#0x3_validator_distribute_stable_pool_reward)
+-  [Function `get_stable_staking_total`](#0x3_validator_get_stable_staking_total)
 -  [Function `deposit_stable_stake_rewards`](#0x3_validator_deposit_stable_stake_rewards)
 -  [Function `process_pending_stakes_and_withdraws`](#0x3_validator_process_pending_stakes_and_withdraws)
 -  [Function `process_pending_all_stable_stakes_and_withdraws`](#0x3_validator_process_pending_all_stable_stakes_and_withdraws)
@@ -64,6 +66,7 @@
 -  [Function `stable_stake_amount`](#0x3_validator_stable_stake_amount)
 -  [Function `total_stake`](#0x3_validator_total_stake)
 -  [Function `total_stake_with_all_stable`](#0x3_validator_total_stake_with_all_stable)
+-  [Function `total_stake_for_reward`](#0x3_validator_total_stake_for_reward)
 -  [Function `total_stake_of_stable`](#0x3_validator_total_stake_of_stable)
 -  [Function `voting_power`](#0x3_validator_voting_power)
 -  [Function `set_voting_power`](#0x3_validator_set_voting_power)
@@ -1281,7 +1284,7 @@ Request to withdraw stake from the validator's staking pool, processed at the en
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, rate: u64, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1293,16 +1296,16 @@ Request to withdraw stake from the validator's staking pool, processed at the en
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(
     self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>,
     staked_sui: StakedStable&lt;STABLE&gt;,
+    rate: u64,
     ctx: &<b>mut</b> TxContext,
-) : Balance&lt;STABLE&gt; {
+) : (Balance&lt;STABLE&gt;, Balance&lt;BFC&gt;) {
     <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
     <b>let</b> pool = <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;<a href="_String">ascii::String</a>, StablePool&lt;STABLE&gt;&gt;(&<b>mut</b> self.stable_pools, pool_key);
     <b>let</b> principal_amount = <a href="stable_pool.md#0x3_stable_pool_staked_sui_amount">stable_pool::staked_sui_amount</a>(&staked_sui);
     <b>let</b> stake_activation_epoch = <a href="stable_pool.md#0x3_stable_pool_stake_activation_epoch">stable_pool::stake_activation_epoch</a>(&staked_sui);
-    <b>let</b> withdrawn_stake = <a href="stable_pool.md#0x3_stable_pool_request_withdraw_stake">stable_pool::request_withdraw_stake</a>(
-        pool, staked_sui, ctx);
+    <b>let</b> (withdrawn_stake, reward) = <a href="stable_pool.md#0x3_stable_pool_request_withdraw_stake">stable_pool::request_withdraw_stake</a>(pool, staked_sui, rate, ctx);
     <b>let</b> withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&withdrawn_stake);
-    <b>let</b> reward_amount = withdraw_amount - principal_amount;
+    <b>let</b> reward_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward);
     <b>let</b> next_stable_stake = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_try_get">vec_map::try_get</a>(&<b>mut</b> self.next_epoch_stable_stake, &pool_key);
     <b>if</b> (<a href="_is_some">option::is_some</a>(&next_stable_stake)) {
         <b>let</b> (_, next_stable) = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(&<b>mut</b> self.next_epoch_stable_stake, &pool_key);
@@ -1319,7 +1322,7 @@ Request to withdraw stake from the validator's staking pool, processed at the en
             reward_amount,
         }
     );
-    withdrawn_stake
+    (withdrawn_stake, reward)
 }
 </code></pre>
 
@@ -1454,7 +1457,7 @@ Set new commission rate for the candidate validator.
 Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stake_rewards">deposit_stake_rewards</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stake_rewards">deposit_stake_rewards</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, stable_rate: &<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;)
 </code></pre>
 
 
@@ -1463,9 +1466,201 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stake_rewards">deposit_stake_rewards</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, reward: Balance&lt;BFC&gt;) {
-    self.next_epoch_stake = self.next_epoch_stake + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward);
-    <a href="staking_pool.md#0x3_staking_pool_deposit_rewards">staking_pool::deposit_rewards</a>(&<b>mut</b> self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>, reward);
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stake_rewards">deposit_stake_rewards</a>(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>, reward: Balance&lt;BFC&gt;, stable_rate: &VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;) {
+    <b>let</b> total_reward = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward);
+    <b>let</b> bfc_reward = 0;
+    <b>let</b> stable_total_stake = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>();
+    <b>let</b> all_stable_total_stake = <a href="validator.md#0x3_validator_get_stable_staking_total">get_stable_staking_total</a>(self, &<b>mut</b> stable_total_stake, stable_rate);
+    <b>if</b> (all_stable_total_stake &gt; 0) {
+        //distribute for <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> pool
+        <b>let</b> bfc_total_stake = <a href="validator.md#0x3_validator_stake_amount">stake_amount</a>(self);
+        <b>let</b> all_total_stake = all_stable_total_stake + bfc_total_stake;
+        <b>let</b> bfc_dis_reward = (total_reward <b>as</b> u128) * (bfc_total_stake <b>as</b> u128) / (all_total_stake <b>as</b> u128);
+        <a href="staking_pool.md#0x3_staking_pool_deposit_rewards">staking_pool::deposit_rewards</a>(&<b>mut</b> self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, (bfc_dis_reward <b>as</b> u64)));
+        bfc_reward = (bfc_dis_reward <b>as</b> u64);
+
+        //distribute for stable pool
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BUSD&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b> (stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BUSD&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BARS&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BARS&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BAUD&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BAUD&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BBRL&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BBRL&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BCAD&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BCAD&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BEUR&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BEUR&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BGBP&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BGBP&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BIDR&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BIDR&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BINR&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BINR&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BKRW&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BKRW&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BMXN&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BMXN&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BRUB&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BRUB&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BSAR&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BSAR&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BTRY&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BTRY&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BZAR&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BZAR&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;BJPY&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;BJPY&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+        <b>let</b> stable_reward = <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;MGG&gt;(&stable_total_stake,
+            total_reward, all_total_stake);
+        <b>if</b>(stable_reward &gt; 0) {
+            <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;MGG&gt;(self, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> reward, stable_reward));
+        };
+
+        <b>let</b> remainder = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward);
+        <b>if</b> (remainder &gt; 0) {
+            <a href="staking_pool.md#0x3_staking_pool_deposit_rewards">staking_pool::deposit_rewards</a>(&<b>mut</b> self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>, reward);
+            bfc_reward = bfc_reward + remainder;
+        } <b>else</b> {
+            <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(reward);
+        };
+    }<b>else</b> {
+        <a href="staking_pool.md#0x3_staking_pool_deposit_rewards">staking_pool::deposit_rewards</a>(&<b>mut</b> self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>, reward);
+        bfc_reward = total_reward;
+    };
+
+    self.next_epoch_stake = self.next_epoch_stake + bfc_reward;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_distribute_stable_pool_reward"></a>
+
+## Function `distribute_stable_pool_reward`
+
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;STABLE&gt;(stable_pool_total: &<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, reward_count: u64, all_total: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_distribute_stable_pool_reward">distribute_stable_pool_reward</a>&lt;STABLE&gt;(
+    stable_pool_total: &VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;,
+    reward_count: u64,
+    all_total: u64,
+): u64 {
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <b>let</b> total_option = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_try_get">vec_map::try_get</a>(stable_pool_total, &pool_key);
+    <b>if</b> (<a href="_is_some">option::is_some</a>(&total_option)) {
+        <b>let</b> reward = (reward_count <b>as</b> u128) * (*<a href="_borrow">option::borrow</a>(&total_option) <b>as</b> u128) / (all_total <b>as</b> u128);
+        (reward <b>as</b> u64)
+    }
+    <b>else</b> {
+        0
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_get_stable_staking_total"></a>
+
+## Function `get_stable_staking_total`
+
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_get_stable_staking_total">get_stable_staking_total</a>(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stable_total: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, stable_rate: &<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_get_stable_staking_total">get_stable_staking_total</a>(
+    self: &<a href="validator.md#0x3_validator_Validator">Validator</a>,
+    stable_total: &<b>mut</b> VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;,
+    stable_rate: &VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;
+): u64 {
+    <b>let</b> all_pool_total: u64 = 0;
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BUSD&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BARS&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BAUD&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BBRL&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BCAD&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BEUR&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BGBP&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BIDR&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BINR&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BKRW&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BMXN&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BRUB&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BSAR&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BTRY&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BZAR&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;BJPY&gt;(self, stable_total, stable_rate);
+    all_pool_total = all_pool_total + <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;MGG&gt;(self, stable_total, stable_rate);
+    all_pool_total
 }
 </code></pre>
 
@@ -1479,7 +1674,7 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">validator::Validator</a>, reward: <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1490,16 +1685,17 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_deposit_stable_stake_rewards">deposit_stable_stake_rewards</a>&lt;STABLE&gt;(
     self: &<b>mut</b> <a href="validator.md#0x3_validator_Validator">Validator</a>,
-    reward: Balance&lt;STABLE&gt;,
+    reward: Balance&lt;BFC&gt;,
 ) {
     <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
-    <b>let</b> next_stable_stake = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_try_get">vec_map::try_get</a>(&<b>mut</b> self.next_epoch_stable_stake, &pool_key);
-    <b>if</b> (<a href="_is_none">option::is_none</a>(&next_stable_stake)) {
+    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.next_epoch_stable_stake, &pool_key)) {
+        <b>let</b> next_stake = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.next_epoch_stable_stake, &pool_key);
+        *next_stake = *next_stake + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward);
+    }<b>else</b> {
         <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.next_epoch_stable_stake, pool_key, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward));
-    } <b>else</b> {
-        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.next_epoch_stable_stake, pool_key, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&reward) + *<a href="_borrow">option::borrow</a>(&next_stable_stake));
     };
     <b>let</b> pool = <a href="validator.md#0x3_validator_get_stable_pool_mut">get_stable_pool_mut</a>&lt;STABLE&gt;(&<b>mut</b> self.stable_pools);
+
     <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">stable_pool::deposit_rewards</a>&lt;STABLE&gt;(pool, reward);
 }
 </code></pre>
@@ -2358,6 +2554,43 @@ Return the total amount staked with this validator
 
 </details>
 
+<a name="0x3_validator_total_stake_for_reward"></a>
+
+## Function `total_stake_for_reward`
+
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>, stable_stake: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, stable_rate: &<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="validator.md#0x3_validator_total_stake_for_reward">total_stake_for_reward</a>&lt;STABLE&gt;(
+    self: &<a href="validator.md#0x3_validator_Validator">Validator</a>,
+    stable_stake: &<b>mut</b> VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;,
+    stable_rate: &VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;
+):u64  {
+    <b>let</b> total =  <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self);
+    <b>if</b> (total &gt; 0) {
+        <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+        <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(stable_rate, &pool_key);
+        <b>let</b> total_stake = (total <b>as</b> u128) * (1000000000 <b>as</b> u128) / (*rate <b>as</b> u128);
+        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(stable_stake, pool_key, (total_stake <b>as</b> u64));
+        (total_stake <b>as</b> u64)
+    }<b>else</b> {
+     0
+    }
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_total_stake_of_stable"></a>
 
 ## Function `total_stake_of_stable`
@@ -2375,10 +2608,14 @@ Return the total amount staked with this validator
 
 <pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;): u64 {
     <b>let</b> stable_stake =  <a href="validator.md#0x3_validator_stable_stake_amount">stable_stake_amount</a>&lt;STABLE&gt;(self);
-    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
-    <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, &pool_key);
-    <b>let</b> total_stake = (stable_stake <b>as</b> u128) * (1000000000 <b>as</b> u128) / (*rate <b>as</b> u128);
-    (total_stake <b>as</b> u64)
+    <b>if</b> (stable_stake &gt; 0) {
+        <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+        <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, &pool_key);
+        <b>let</b> total_stake = (stable_stake <b>as</b> u128) * (1000000000 <b>as</b> u128) / (*rate <b>as</b> u128);
+        (total_stake <b>as</b> u64)
+    } <b>else</b> {
+        0
+    }
 }
 </code></pre>
 

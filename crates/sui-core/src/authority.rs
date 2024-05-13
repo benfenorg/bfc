@@ -3973,6 +3973,7 @@ impl AuthorityState {
             storage_cost=?bfc_gas_cost_summary.storage_cost,
             storage_rebate=?bfc_gas_cost_summary.storage_rebate,
             non_refundable_storage_fee=?bfc_gas_cost_summary.non_refundable_storage_fee,
+            stable_gas_cost_summarys=?stable_gas_cost_summarys,
             ?tx_digest,
             "Creating advance epoch transaction"
         );

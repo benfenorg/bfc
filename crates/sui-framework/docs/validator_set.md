@@ -81,6 +81,7 @@
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
 <b>use</b> <a href="">0x1::option</a>;
+<b>use</b> <a href="">0x1::type_name</a>;
 <b>use</b> <a href="">0x1::vector</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">0x2::bag</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
@@ -173,7 +174,13 @@
 <code>stable_pool_mappings: <a href="../../../.././build/Sui/docs/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, <b>address</b>&gt;</code>
 </dt>
 <dd>
-
+ Mappings from stable staking pool's ID to the sui address of a validator.
+</dd>
+<dt>
+<code>last_epoch_stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;</code>
+</dt>
+<dd>
+The stable rate of ast epoch.
 </dd>
 <dt>
 <code>inactive_validators: <a href="../../../.././build/Sui/docs/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../../../.././build/Sui/docs/object.md#0x2_object_ID">object::ID</a>, <a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">validator_wrapper::ValidatorWrapper</a>&gt;</code>
@@ -712,12 +719,12 @@ The epoch value corresponds to the first epoch this change takes place.
         pending_removals: <a href="_empty">vector::empty</a>(),
         staking_pool_mappings,
         stable_pool_mappings,
+        last_epoch_stable_rate: rate_map,
         inactive_validators: <a href="../../../.././build/Sui/docs/table.md#0x2_table_new">table::new</a>(ctx),
         validator_candidates: <a href="../../../.././build/Sui/docs/table.md#0x2_table_new">table::new</a>(ctx),
         at_risk_validators: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         extra_fields: <a href="../../../.././build/Sui/docs/bag.md#0x2_bag_new">bag::new</a>(ctx),
     };
-    <b>let</b> rate_map = rate_vec_map();
     <a href="voting_power.md#0x3_voting_power_set_voting_power">voting_power::set_voting_power</a>(&<b>mut</b> validators.active_validators, rate_map);
     validators
 }
@@ -1087,7 +1094,7 @@ the stake and any rewards corresponding to it will be immediately processed.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator_set.md#0x3_validator_set_request_withdraw_stable_stake">request_withdraw_stable_stake</a>&lt;STABLE&gt;(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, staked_sui: <a href="stable_pool.md#0x3_stable_pool_StakedStable">stable_pool::StakedStable</a>&lt;STABLE&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;STABLE&gt;, <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1100,8 +1107,13 @@ the stake and any rewards corresponding to it will be immediately processed.
     self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>,
     staked_sui: StakedStable&lt;STABLE&gt;,
     ctx: &<b>mut</b> TxContext,
-) : Balance&lt;STABLE&gt; {
+) : (Balance&lt;STABLE&gt;, Balance&lt;BFC&gt;) {
     <b>let</b> stable_pool_id = stable_pool_id(&staked_sui);
+    //get stable rate
+    <b>let</b> stable_rate_map = self.last_epoch_stable_rate;
+    <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
+    <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate_map, &pool_key);
+
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> =
         <b>if</b> (<a href="../../../.././build/Sui/docs/table.md#0x2_table_contains">table::contains</a>(&self.stable_pool_mappings, stable_pool_id)) { // This is an active <a href="validator.md#0x3_validator">validator</a>.
             <b>let</b> validator_address = *<a href="../../../.././build/Sui/docs/table.md#0x2_table_borrow">table::borrow</a>(&self.stable_pool_mappings, stable_pool_id(&staked_sui));
@@ -1111,7 +1123,8 @@ the stake and any rewards corresponding to it will be immediately processed.
             <b>let</b> wrapper = <a href="../../../.././build/Sui/docs/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> self.inactive_validators, stable_pool_id);
             <a href="validator_wrapper.md#0x3_validator_wrapper_load_validator_maybe_upgrade">validator_wrapper::load_validator_maybe_upgrade</a>(wrapper)
         };
-    <a href="validator.md#0x3_validator_request_withdraw_stable_stake">validator::request_withdraw_stable_stake</a>(<a href="validator.md#0x3_validator">validator</a>, staked_sui, ctx)
+
+    <a href="validator.md#0x3_validator_request_withdraw_stable_stake">validator::request_withdraw_stable_stake</a>(<a href="validator.md#0x3_validator">validator</a>, staked_sui, *rate, ctx)
 }
 </code></pre>
 
@@ -1186,6 +1199,9 @@ It does the following things:
     <b>let</b> new_epoch = <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) + 1;
     <b>let</b> total_voting_power = <a href="voting_power.md#0x3_voting_power_total_voting_power">voting_power::total_voting_power</a>();
 
+    // Update the stable rate of last epoch.
+    self.last_epoch_stable_rate = stable_rate;
+
     // Compute the reward distribution without taking into account the tallying rule slashing.
     <b>let</b> (unadjusted_staking_reward_amounts, unadjusted_storage_fund_reward_amounts) = <a href="validator_set.md#0x3_validator_set_compute_unadjusted_reward_distribution">compute_unadjusted_reward_distribution</a>(
         &self.active_validators,
@@ -1236,6 +1252,7 @@ It does the following things:
         &adjusted_storage_fund_reward_amounts,
         computation_reward,
         storage_fund_reward,
+        stable_rate,
         ctx
     );
 
@@ -2937,7 +2954,7 @@ The staking rewards are shared with the stakers while the storage fund ones are 
 
 
 
-<pre><code><b>fun</b> <a href="validator_set.md#0x3_validator_set_distribute_reward">distribute_reward</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, adjusted_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, adjusted_storage_fund_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, staking_rewards: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, storage_fund_reward: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="validator_set.md#0x3_validator_set_distribute_reward">distribute_reward</a>(validators: &<b>mut</b> <a href="">vector</a>&lt;<a href="validator.md#0x3_validator_Validator">validator::Validator</a>&gt;, adjusted_staking_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, adjusted_storage_fund_reward_amounts: &<a href="">vector</a>&lt;u64&gt;, staking_rewards: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, storage_fund_reward: &<b>mut</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2952,6 +2969,7 @@ The staking rewards are shared with the stakers while the storage fund ones are 
     adjusted_storage_fund_reward_amounts: &<a href="">vector</a>&lt;u64&gt;,
     staking_rewards: &<b>mut</b> Balance&lt;BFC&gt;,
     storage_fund_reward: &<b>mut</b> Balance&lt;BFC&gt;,
+    stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> length = <a href="_length">vector::length</a>(validators);
@@ -2981,7 +2999,7 @@ The staking rewards are shared with the stakers while the storage fund ones are 
         };
 
         // Add rewards <b>to</b> stake staking pool <b>to</b> auto compound for stakers.
-        <a href="validator.md#0x3_validator_deposit_stake_rewards">validator::deposit_stake_rewards</a>(<a href="validator.md#0x3_validator">validator</a>, staker_reward);
+        <a href="validator.md#0x3_validator_deposit_stake_rewards">validator::deposit_stake_rewards</a>(<a href="validator.md#0x3_validator">validator</a>, staker_reward, &stable_rate);
         i = i + 1;
     }
 }
