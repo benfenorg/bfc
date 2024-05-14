@@ -19,7 +19,6 @@ slip10_ed25519.workspace = true
 fastcrypto = { workspace = true, features = ["copy_key"] }
 shared-crypto.workspace = true
 sui-types.workspace = true
-workspace-hack = { version = "0.1", path = "../workspace-hack" }
 libaes = "0.7.0"
 regex.workspace = true
 
