@@ -28,7 +28,16 @@ use std::{
     sync::Arc,
 };
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-<<<<<<< HEAD
+use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::LoadedChildObjectMetadata, id::UID, metrics::LimitsMetrics, BFC_SYSTEM_STATE_OBJECT_ID, object::{MoveObject, Owner}, storage::ChildObjectResolver, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
+
+pub(crate) mod object_store;
+
+use object_store::ChildObjectStore;
+use sui_types::base_types::ObjectDigest;
+
+use self::object_store::{ChildObjectEffect, ObjectResult};
+
+use super::get_object_id;
 use sui_types::{
     base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
     committee::EpochId,
@@ -41,9 +50,6 @@ use sui_types::{
     SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID,
     SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID,
 };
-=======
-use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::LoadedChildObjectMetadata, id::UID, metrics::LimitsMetrics, BFC_SYSTEM_STATE_OBJECT_ID, object::{MoveObject, Owner}, storage::ChildObjectResolver, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
->>>>>>> develop_v.1.1.5
 
 pub enum ObjectEvent {
     /// Transfer to a new address or object. Or make it shared or immutable.
@@ -96,9 +102,6 @@ pub(crate) struct ObjectRuntimeState {
     events: Vec<(Type, StructTag, Value)>,
     // total size of events emitted so far
     total_events_size: u64,
-<<<<<<< HEAD
-    received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
-=======
 }
 
 #[derive(Clone)]
@@ -145,7 +148,7 @@ impl LocalProtocolConfig {
             loaded_child_object_format_type: config.loaded_child_object_format_type(),
         }
     }
->>>>>>> develop_v.1.1.5
+    received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
 }
 
 #[derive(Tid)]
@@ -303,7 +306,8 @@ impl<'a> ObjectRuntime<'a> {
         // - Otherwise, check the input objects for the previous owner
         // - If it was not in the input objects, it must have been wrapped or must have been a
         //   child object
-<<<<<<< HEAD
+        let is_framework_obj = [SUI_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_ID].contains(&id);
+        let transfer_result = if self.state.new_ids.contains_key(&id) || is_framework_obj {
         let is_framework_obj = [
             SUI_SYSTEM_STATE_OBJECT_ID,
             SUI_CLOCK_OBJECT_ID,
@@ -318,10 +322,6 @@ impl<'a> ObjectRuntime<'a> {
             // framework objects are always created when they are transferred, but the id is
             // hard-coded so it is not yet in new_ids
             self.state.new_ids.insert(id);
-=======
-        let is_framework_obj = [SUI_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_ID].contains(&id);
-        let transfer_result = if self.state.new_ids.contains_key(&id) || is_framework_obj {
->>>>>>> develop_v.1.1.5
             TransferResult::New
         } else if let Some(prev_owner) = self.state.input_objects.get(&id) {
             match (&owner, prev_owner) {

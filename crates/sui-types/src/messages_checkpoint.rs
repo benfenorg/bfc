@@ -14,15 +14,12 @@ use crate::crypto::{
 use crate::digests::Digest;
 use crate::effects::{TestEffectsBuilder, TransactionEffectsAPI};
 use crate::error::SuiResult;
-<<<<<<< HEAD
-use crate::gas::GasCostSummary;
-use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelope};
-=======
 use crate::gas::{GasCostSummary, GasCostSummaryAdjusted};
 use crate::message_envelope::{
     Envelope, Message, TrustedEnvelope, UnauthenticatedMessage, VerifiedEnvelope,
 };
->>>>>>> develop_v.1.1.5
+use crate::gas::GasCostSummary;
+use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelope};
 use crate::signature::GenericSignature;
 use crate::storage::ReadStore;
 use crate::sui_serde::AsProtocolVersion;
@@ -414,8 +411,8 @@ impl CheckpointContents {
         contents: T,
         user_signatures: Vec<Vec<GenericSignature>>,
     ) -> Self
-    where
-        T: IntoIterator<Item = ExecutionDigests>,
+        where
+            T: IntoIterator<Item = ExecutionDigests>,
     {
         let transactions: Vec<_> = contents.into_iter().collect();
         assert_eq!(transactions.len(), user_signatures.len());
@@ -427,8 +424,8 @@ impl CheckpointContents {
     }
 
     pub fn new_with_causally_ordered_execution_data<'a, T>(contents: T) -> Self
-    where
-        T: IntoIterator<Item = &'a VerifiedExecutionData>,
+        where
+            T: IntoIterator<Item = &'a VerifiedExecutionData>,
     {
         let (transactions, user_signatures): (Vec<_>, Vec<_>) = contents
             .into_iter()
@@ -449,8 +446,8 @@ impl CheckpointContents {
 
     #[cfg(any(test, feature = "test-utils"))]
     pub fn new_with_digests_only_for_tests<T>(contents: T) -> Self
-    where
-        T: IntoIterator<Item = ExecutionDigests>,
+        where
+            T: IntoIterator<Item = ExecutionDigests>,
     {
         let transactions: Vec<_> = contents.into_iter().collect();
         let user_signatures = transactions.iter().map(|_| vec![]).collect();
@@ -536,8 +533,8 @@ pub struct FullCheckpointContents {
 
 impl FullCheckpointContents {
     pub fn new_with_causally_ordered_transactions<T>(contents: T) -> Self
-    where
-        T: IntoIterator<Item = ExecutionData>,
+        where
+            T: IntoIterator<Item = ExecutionData>,
     {
         let (transactions, user_signatures): (Vec<_>, Vec<_>) = contents
             .into_iter()
@@ -566,8 +563,8 @@ impl FullCheckpointContents {
         store: S,
         contents: CheckpointContents,
     ) -> Result<Option<Self>, crate::storage::error::Error>
-    where
-        S: ReadStore,
+        where
+            S: ReadStore,
     {
         let mut transactions = Vec::with_capacity(contents.size());
         for tx in contents.iter() {

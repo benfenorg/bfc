@@ -8,15 +8,12 @@ pub use checked::*;
 pub mod checked {
     use crate::sui_types::gas::SuiGasStatusAPI;
     use sui_protocol_config::ProtocolConfig;
-<<<<<<< HEAD
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
+    use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
     use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
     use sui_types::gas_model::gas_predicates::{
         charge_upgrades, dont_charge_budget_on_storage_oog,
     };
-=======
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
-    use sui_types::gas_model::gas_predicates::dont_charge_budget_on_storage_oog;
->>>>>>> develop_v.1.1.5
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
         digests::TransactionDigest,
@@ -140,11 +137,9 @@ pub mod checked {
             if gas_coin_count == 1 {
                 return;
             }
-<<<<<<< HEAD
-=======
             let gas_coin_obj = temporary_store.objects().get(&gas_coin_id).unwrap();
             let gas_coin_type = gas_coin_obj.coin_type_maybe().unwrap();
->>>>>>> develop_v.1.1.5
+
 
             // sum the value of all gas coins
             let new_balance = self
@@ -159,19 +154,16 @@ pub mod checked {
                         ));
                     }
                     let Data::Move(move_obj) = &obj.data else {
-<<<<<<< HEAD
+                        return Err(ExecutionError::invariant_violation(
+                            "Provided non-gas coin object as input for gas!"
+                        ));
+                    };
+                    if !move_obj.type_().is_gas_coin() && !move_obj.type_().is_stable_gas_coin(){
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
                     };
                     if !move_obj.type_().is_gas_coin() {
-=======
-                    return Err(ExecutionError::invariant_violation(
-                        "Provided non-gas coin object as input for gas!"
-                    ));
-                };
-                    if !move_obj.type_().is_gas_coin() && !move_obj.type_().is_stable_gas_coin(){
->>>>>>> develop_v.1.1.5
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));

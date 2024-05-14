@@ -8,10 +8,6 @@ mod checked {
 
     use move_binary_format::CompiledModule;
     use move_vm_runtime::move_vm::MoveVM;
-<<<<<<< HEAD
-    use std::{collections::HashSet, sync::Arc};
-    use sui_types::balance::{
-=======
     use once_cell::sync::Lazy;
     use std::{
         collections::{BTreeSet, HashSet},
@@ -22,7 +18,8 @@ mod checked {
     use sui_types::gas::calculate_reward_rate;
 
     use sui_types::{balance::{
->>>>>>> develop_v.1.1.5
+    use std::{collections::HashSet, sync::Arc};
+    use sui_types::balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     }, transaction::ChangeBfcRound};
@@ -43,12 +40,9 @@ mod checked {
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
-<<<<<<< HEAD
-    use crate::{gas_charger::GasCharger, temporary_store::TemporaryStore};
-=======
     use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
->>>>>>> develop_v.1.1.5
+    use crate::{gas_charger::GasCharger, temporary_store::TemporaryStore};
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::authenticator_state::{
         AUTHENTICATOR_STATE_CREATE_FUNCTION_NAME, AUTHENTICATOR_STATE_EXPIRE_JWKS_FUNCTION_NAME,
@@ -62,11 +56,8 @@ mod checked {
     use sui_types::execution::is_certificate_denied;
     use sui_types::execution_config_utils::to_binary_config;
     use sui_types::execution_status::ExecutionStatus;
-<<<<<<< HEAD
     use sui_types::gas::GasCostSummary;
     use sui_types::gas::SuiGasStatus;
-=======
->>>>>>> develop_v.1.1.5
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::storage::BackingStore;
     #[cfg(msim)]
@@ -82,13 +73,10 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::{Object, ObjectInner},
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-<<<<<<< HEAD
-        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
-        SUI_SYSTEM_PACKAGE_ID,
-    };
-=======
         bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME},
         SUI_FRAMEWORK_ADDRESS,
+        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
+        SUI_SYSTEM_PACKAGE_ID,
     };
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
@@ -126,7 +114,6 @@ mod checked {
         certificate_deny_set.contains(transaction_digest)
             || get_denied_certificates().contains(transaction_digest)
     }
->>>>>>> develop_v.1.1.5
 
     #[instrument(name = "tx_execute_to_effects", level = "debug", skip_all)]
     pub fn execute_transaction_to_effects<Mode: ExecutionMode>(
@@ -179,12 +166,9 @@ mod checked {
             epoch_timestamp_ms,
         );
 
-<<<<<<< HEAD
-        let is_epoch_change = transaction_kind.is_end_of_epoch_tx();
-=======
         //let is_epoch_change: bool = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
         let is_epoch_change = matches!(transaction_kind, TransactionKind::ChangeEpoch(_));
->>>>>>> develop_v.1.1.5
+        let is_epoch_change = transaction_kind.is_end_of_epoch_tx();
 
         let deny_cert = is_certificate_denied(&transaction_digest, certificate_deny_set);
         let (gas_cost_summary, execution_result) = execute_transaction::<Mode>(
@@ -422,8 +406,6 @@ mod checked {
 
         (cost_summary, result)
     }
-
-
 
     #[instrument(name = "run_conservation_checks", level = "debug", skip_all)]
     fn run_conservation_checks<Mode: ExecutionMode>(
@@ -663,7 +645,17 @@ mod checked {
                     pt,
                 )
             }
-<<<<<<< HEAD
+            TransactionKind::ChangeBfcRound(change_round) => {
+                bfc_round(
+                    change_round,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )?;
+                Ok(Mode::empty_results())
             TransactionKind::EndOfEpochTransaction(txns) => {
                 let mut builder = ProgrammableTransactionBuilder::new();
                 let len = txns.len();
@@ -705,19 +697,6 @@ mod checked {
                     }
                 }
                 unreachable!("EndOfEpochTransactionKind::ChangeEpoch should be the last transaction in the list")
-=======
-            TransactionKind::ChangeBfcRound(change_round) => {
-                bfc_round(
-                    change_round,
-                    temporary_store,
-                    tx_ctx,
-                    move_vm,
-                    gas_charger,
-                    protocol_config,
-                    metrics,
-                )?;
-                Ok(Mode::empty_results())
->>>>>>> develop_v.1.1.5
             }
             TransactionKind::AuthenticatorStateUpdate(auth_state_update) => {
                 setup_authenticator_state_update(
@@ -782,6 +761,32 @@ mod checked {
         (storage_rewards, computation_rewards)
     }
 
+    fn convert_rate_map(rate_map: &VecMap<String, u64>) -> Vec<u64> {
+        let mut temp_map = HashMap::<String, u64>::new();
+        for entity in &rate_map.contents {
+            temp_map.insert((*entity.key).to_string(), entity.value);
+        }
+        let mut rate_vec = Vec::new();
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::baud::BAUD").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bbrl::BBRL").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bcad::BCAD").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bgbp::BGBP").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bidr::BIDR").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::binr::BINR").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bkrw::BKRW").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bmxn::BMXN").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::brub::BRUB").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bsar::BSAR").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::btry::BTRY").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bzar::BZAR").unwrap());
+        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::mgg::MGG").unwrap());
+        rate_vec
+    }
+
     pub fn construct_advance_epoch_pt(
         mut builder: ProgrammableTransactionBuilder,
         params: &AdvanceEpochParams,
@@ -789,9 +794,7 @@ mod checked {
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
-
-        let rate_vec: Vec<_> = rate_map.contents.clone().into_iter().map(|e| (e.value)).collect();
-
+        let rate_vec: Vec<_> = convert_rate_map(rate_map);
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
         let call_arg_arguments = vec![
@@ -891,7 +894,8 @@ mod checked {
         round_id: u64,
         param: ChangeObcRoundParams,
         reward_rate: u64,
-        storage_rebate: u64
+        storage_rebate: u64,
+        epoch_start_time: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         let mut arguments = vec![];
@@ -900,6 +904,7 @@ mod checked {
             CallArg::BFC_SYSTEM_MUT,
             CallArg::CLOCK_IMM,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&epoch_start_time).unwrap()),
         ] .into_iter()
             .map(|a| builder.input(a))
             .collect::<Result<_, _>>();
@@ -1034,12 +1039,12 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
         let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
-        let _rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge=0u64;
         let mut computation_charge =0u64;
 
+        info!("change epoch: {:?}",change_epoch);
         for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
             storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
             non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
@@ -1052,7 +1057,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate, change_epoch.epoch_start_timestamp_ms)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1083,12 +1088,9 @@ mod checked {
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
-<<<<<<< HEAD
-        let advance_epoch_pt = construct_advance_epoch_pt(builder, &params)?;
-=======
 
         let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
->>>>>>> develop_v.1.1.5
+        let advance_epoch_pt = construct_advance_epoch_pt(builder, &params)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1131,11 +1133,8 @@ mod checked {
             }
         }
 
-<<<<<<< HEAD
-        let binary_config = to_binary_config(protocol_config);
-=======
 
->>>>>>> develop_v.1.1.5
+        let binary_config = to_binary_config(protocol_config);
         for (version, modules, dependencies) in change_epoch.system_packages.into_iter() {
             let deserialized_modules: Vec<_> = modules
                 .iter()

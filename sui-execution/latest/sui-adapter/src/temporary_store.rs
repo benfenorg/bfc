@@ -6,13 +6,10 @@ use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::StructTag;
 use move_core_types::resolver::ResourceResolver;
 use parking_lot::RwLock;
-<<<<<<< HEAD
-use std::collections::{BTreeMap, BTreeSet, HashSet};
-=======
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
 use tracing::info;
->>>>>>> develop_v.1.1.5
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
 use sui_types::committee::EpochId;
@@ -26,7 +23,12 @@ use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, PackageObject};
 use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
 use sui_types::type_resolver::LayoutResolver;
-<<<<<<< HEAD
+use sui_types::{base_types::{
+    ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
+}, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
+    BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
+    WriteKind,
+}, transaction::InputObjects};
 use sui_types::{
     base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
     effects::EffectsObjectChange,
@@ -38,14 +40,6 @@ use sui_types::{
     storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
     transaction::InputObjects,
 };
-=======
-use sui_types::{base_types::{
-    ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
-}, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
-    BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
-    WriteKind,
-}, transaction::InputObjects};
->>>>>>> develop_v.1.1.5
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
@@ -384,16 +378,13 @@ impl<'backing> TemporaryStore<'backing> {
     ) {
         #[cfg(debug_assertions)]
         {
-<<<<<<< HEAD
-            for (id, v1) in &loaded_runtime_objects {
-                if let Some(v2) = self.loaded_runtime_objects.get(id) {
-=======
             for (id, v1) in &loaded_child_objects {
                 if let Some(v2) = self.loaded_child_objects.get(id) {
                     if v1!= v2 {
                         info!("id is {:?}",id);
                     }
->>>>>>> develop_v.1.1.5
+            for (id, v1) in &loaded_runtime_objects {
+                if let Some(v2) = self.loaded_runtime_objects.get(id) {
                     assert_eq!(v1, v2);
                 }
             }
@@ -992,16 +983,6 @@ impl<'backing> TemporaryStore<'backing> {
                 })?;
             }
         }
-<<<<<<< HEAD
-        // note: storage_cost flows into the storage_rebate field of the output objects, which is
-        // why it is not accounted for here.
-        // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
-        // gets credited to the gas coin both computation costs and storage rebate inflow are
-        total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-        if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-            total_input_sui += epoch_fees;
-            total_output_sui += epoch_rebates;
-=======
         if do_expensive_checks {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
@@ -1020,7 +1001,36 @@ impl<'backing> TemporaryStore<'backing> {
                 // );
                 //return  Ok(());
             }
->>>>>>> develop_v.1.1.5
+        }
+
+        // all SUI in storage rebate fields of input objects should flow either to the transaction storage rebate, or the non-refundable
+        // storage rebate pool
+        if total_input_rebate != gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee
+        {
+            // TODO: re-enable once we fix the edge case with OOG, gas smashing, and storage rebate
+            /*return Err(ExecutionError::invariant_violation(
+                format!("SUI conservation failed--{} SUI in storage rebate field of input objects, {} SUI in tx storage rebate or tx non-refundable storage rebate",
+                total_input_rebate,
+                gas_summary.non_refundable_storage_fee))
+            );*/
+        }
+
+        // all SUI charged for storage should flow into the storage rebate field of some output object
+        if gas_summary.storage_cost != total_output_rebate {
+            // TODO: re-enable once we fix the edge case with OOG, gas smashing, and storage rebate
+            /*return Err(ExecutionError::invariant_violation(
+                format!("SUI conservation failed--{} SUI charged for storage, {} SUI in storage rebate field of output objects",
+                gas_summary.storage_cost,
+                total_output_rebate))
+            );*/
+        // note: storage_cost flows into the storage_rebate field of the output objects, which is
+        // why it is not accounted for here.
+        // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
+        // gets credited to the gas coin both computation costs and storage rebate inflow are
+        total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+        if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
+            total_input_sui += epoch_fees;
+            total_output_sui += epoch_rebates;
         }
         if total_input_sui != total_output_sui {
             return Err(ExecutionError::invariant_violation(format!(
@@ -1089,11 +1099,6 @@ impl<'backing> Storage for TemporaryStore<'backing> {
         let ExecutionResults::V2(results) = results else {
             panic!("ExecutionResults::V2 expected in sui-execution v1 and above");
         };
-<<<<<<< HEAD
-        // It's important to merge instead of override results because it's
-        // possible to execute PT more than once during tx execution.
-        self.execution_results.merge_results(results);
-=======
         let mut object_changes = BTreeMap::new();
         //info!("results is {:?}",results);
         for (id, object) in results.written_objects {
@@ -1123,11 +1128,9 @@ impl<'backing> Storage for TemporaryStore<'backing> {
         }
         //info!("object_changes is {:?}",object_changes);
         self.apply_object_changes(object_changes);
-
-        for event in results.user_events {
-            self.events.push(event);
-        }
->>>>>>> develop_v.1.1.5
+        // It's important to merge instead of override results because it's
+        // possible to execute PT more than once during tx execution.
+        self.execution_results.merge_results(results);
     }
 
     fn save_loaded_runtime_objects(
