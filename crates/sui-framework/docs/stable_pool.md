@@ -769,7 +769,7 @@ portion because the principal portion was already taken out of the staker's self
     // This may happen when we are withdrawing everything from the pool and
     // the rewards pool <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> may be less than reward_withdraw_amount.
     // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
-    <b>let</b> reward_bfc = (reward_withdraw_amount <b>as</b> u128) * (1000000000 <b>as</b> u128) / (rate <b>as</b> u128);
+    <b>let</b> reward_bfc = (reward_withdraw_amount <b>as</b> u128) * (rate <b>as</b> u128) / (1000000000 <b>as</b> u128);
     reward_withdraw_amount = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>((reward_bfc <b>as</b> u64),  <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&pool.rewards_pool));
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> pool.rewards_pool, reward_withdraw_amount)
 }

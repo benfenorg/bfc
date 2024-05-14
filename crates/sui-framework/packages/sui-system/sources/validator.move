@@ -930,7 +930,7 @@ module sui_system::validator {
         if (total > 0) {
             let pool_key = type_name::into_string(type_name::get<STABLE>());
             let rate = vec_map::get(stable_rate, &pool_key);
-            let total_stake = (total as u128) * (1000000000 as u128) / (*rate as u128);
+            let total_stake = (total as u128) * (*rate as u128) / (1000000000 as u128);
             vec_map::insert(stable_stake, pool_key, (total_stake as u64));
             (total_stake as u64)
         }else {
@@ -943,7 +943,7 @@ module sui_system::validator {
         if (stable_stake > 0) {
             let pool_key = type_name::into_string(type_name::get<STABLE>());
             let rate = vec_map::get(&stable_rate, &pool_key);
-            let total_stake = (stable_stake as u128) * (1000000000 as u128) / (*rate as u128);
+            let total_stake = (stable_stake as u128) *  (*rate as u128) / (1000000000 as u128);
             (total_stake as u64)
         } else {
             0

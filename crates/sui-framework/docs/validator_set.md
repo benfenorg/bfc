@@ -3061,7 +3061,7 @@ including stakes, rewards, performance, etc.
                 epoch: new_epoch,
                 validator_address,
                 reference_gas_survey_quote: <a href="validator.md#0x3_validator_gas_price">validator::gas_price</a>(v),
-                stake: <a href="validator.md#0x3_validator_total_stake_amount">validator::total_stake_amount</a>(v),
+                stake: <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(v, stable_rate),
                 <a href="voting_power.md#0x3_voting_power">voting_power</a>: <a href="validator.md#0x3_validator_voting_power">validator::voting_power</a>(v),
                 commission_rate: <a href="validator.md#0x3_validator_commission_rate">validator::commission_rate</a>(v),
                 pool_staking_reward: *<a href="_borrow">vector::borrow</a>(pool_staking_reward_amounts, i),
