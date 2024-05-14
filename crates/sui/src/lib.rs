@@ -23,8 +23,6 @@ pub mod sui_commands;
 pub mod validator_commands;
 mod verifier_meter;
 pub mod zklogin_commands_util;
-<<<<<<< HEAD
-=======
 
 pub mod genesis_ceremony;
 pub mod genesis_inspector;
@@ -213,4 +211,3 @@ async fn construct_unsigned_system_txn(
         rgp,
     )
 }
->>>>>>> develop_v.1.1.5

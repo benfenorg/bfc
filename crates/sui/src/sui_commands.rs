@@ -37,12 +37,9 @@ use sui_swarm_config::genesis_config::{GenesisConfig, DEFAULT_NUMBER_OF_AUTHORIT
 use sui_swarm_config::network_config::NetworkConfig;
 use sui_swarm_config::network_config_builder::ConfigBuilder;
 use sui_swarm_config::node_config_builder::FullnodeConfigBuilder;
-<<<<<<< HEAD
-use sui_types::crypto::{SignatureScheme, SuiKeyPair};
-=======
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair};
 use sui_types::multiaddr::Multiaddr;
->>>>>>> develop_v.1.1.5
+use sui_types::crypto::{SignatureScheme, SuiKeyPair};
 use tracing::info;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
 
@@ -789,7 +786,7 @@ pub async fn genesis_private(
     let builder1 = Builder::load_private_genesis(&dir, with_genesis)?;
     //loading the validator info from genesis_ceremony committee
 
-      let mut manager = PrivateValidatorKeypairManager::default();
+    let mut manager = PrivateValidatorKeypairManager::default();
     for private_validator_name in private_validator_names {
         init_validator_keypair(private_validator_name, dir.clone(), &mut manager);
     }
@@ -813,16 +810,16 @@ pub async fn genesis_private(
         let account_key_pair_string = manager.account_keypair.get(&name).unwrap().encode_base64();
         let network_key_pair = manager.network_keypair.get(&name).unwrap();
 
-       // let _localhost =  match validator.info.network_address.clone().to_socket_addr().unwrap() {
-       //      SocketAddr::V4(addr) => {
-       //              let ip_string = addr.clone().ip().to_string();
-       //              ip_string
-       //          },
-       //     SocketAddr::V6(addr) => {
-       //           let ip_string = addr.clone().ip().to_string();
-       //           ip_string
-       //     }
-       // };
+        // let _localhost =  match validator.info.network_address.clone().to_socket_addr().unwrap() {
+        //      SocketAddr::V4(addr) => {
+        //              let ip_string = addr.clone().ip().to_string();
+        //              ip_string
+        //          },
+        //     SocketAddr::V6(addr) => {
+        //           let ip_string = addr.clone().ip().to_string();
+        //           ip_string
+        //     }
+        // };
         let tmp =  ValidatorGenesisConfig {
             key_pair: author_key_pair.copy(),
             worker_key_pair: worker_key_pair.copy(),
@@ -1010,11 +1007,8 @@ async fn prompt_if_no_config(
                         String::new()
                     } else {
                         print!(
-<<<<<<< HEAD
-                            "Sui Full node server URL (Defaults to Sui Testnet if not specified) : "
-=======
                             "Bfc Full node server URL (Defaults to Bfc Devnet if not specified) : "
->>>>>>> develop_v.1.1.5
+                            "Sui Full node server URL (Defaults to Sui Testnet if not specified) : "
                         );
                         read_line()?
                     };
@@ -1083,8 +1077,6 @@ fn read_line() -> Result<String, anyhow::Error> {
     io::stdin().read_line(&mut s)?;
     Ok(s.trim_end().to_string())
 }
-<<<<<<< HEAD
-=======
 
 fn multiaddr_to_filename(address: Multiaddr, default: String) -> String {
     if let Some(hostname) = address.hostname() {
@@ -1129,4 +1121,3 @@ fn read_validator_keypair(name : String, dir: Utf8PathBuf, manager: &mut Private
 
     Ok(())
 }
->>>>>>> develop_v.1.1.5

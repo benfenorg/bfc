@@ -8,11 +8,8 @@ use fastcrypto::traits::KeyPair;
 use move_binary_format::CompiledModule;
 use move_core_types::ident_str;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
-<<<<<<< HEAD
-use std::collections::{BTreeMap, HashSet};
-=======
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
->>>>>>> develop_v.1.1.5
+use std::collections::{BTreeMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -47,17 +44,14 @@ use sui_types::metrics::LimitsMetrics;
 use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
-<<<<<<< HEAD
+use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
+use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use tracing::{trace};
 use sui_types::transaction::{
     CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
 use sui_types::{SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::trace;
-=======
-use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
-use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
-use tracing::{trace};
->>>>>>> develop_v.1.1.5
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
 pub mod validator_info;
@@ -511,307 +505,304 @@ impl Builder {
                     .iter()
                     .find(|(_k, (o, s))| {
                         let Owner::AddressOwner(owner) = &o.owner else {
-<<<<<<< HEAD
                             panic!("gas object owner must be address owner");
                         };
-                        *owner == allocation.recipient_address
-                            && s.principal() == allocation.amount_mist
+                        *owner == allocation.recipient_address &&
+                            s.principal() == allocation.amount_mist
                             && s.pool_id() == staking_pool_id
-=======
                         panic!("gas object owner must be address owner");
                     };
-                        *owner == allocation.recipient_address &&
-                        s.principal() == allocation.amount_mist
-                          && s.pool_id() == staking_pool_id
->>>>>>> develop_v.1.1.5
-                    })
-                    .map(|(k, _)| *k)
-                    .expect("all allocations should be present");
-                let staked_sui_object = staked_sui_objects.remove(&staked_sui_object_id).unwrap();
-                assert_eq!(
-                    staked_sui_object.0.owner,
-                    Owner::AddressOwner(allocation.recipient_address)
-                );
-                assert_eq!(staked_sui_object.1.principal(), allocation.amount_mist);
-                assert_eq!(staked_sui_object.1.pool_id(), staking_pool_id);
-                assert_eq!(staked_sui_object.1.activation_epoch(), 0);
-            } else {
-                let gas_object_id = gas_objects
-                    .iter()
-                    .find(|(_k, (o, g))| {
-                        if let Owner::AddressOwner(owner) = &o.owner {
-                            *owner == allocation.recipient_address
-                                && g.value() == allocation.amount_mist
-                        } else {
-                            false
-                        }
-                    })
-                    .map(|(k, _)| *k)
-                    .expect("all allocations should be present");
-                let gas_object = gas_objects.remove(&gas_object_id).unwrap();
-                assert_eq!(
-                    gas_object.0.owner,
-                    Owner::AddressOwner(allocation.recipient_address)
-                );
-                assert_eq!(gas_object.1.value(), allocation.amount_mist,);
-            }
-        }
-
-        // All Gas and staked objects should be accounted for
-        if !self.parameters.allow_insertion_of_extra_objects {
-            assert!(gas_objects.is_empty());
-            assert!(staked_sui_objects.is_empty());
-        }
-
-        let committee = system_state.get_current_epoch_committee().committee;
-        for signature in self.signatures.values() {
-            if self.validators.get(&signature.authority).is_none() {
-                panic!("found signature for unknown validator: {:#?}", signature);
-            }
-
-            signature
-                .verify_secure(
-                    unsigned_genesis.checkpoint(),
-                    Intent::sui_app(IntentScope::CheckpointSummary),
-                    &committee,
-                )
-                .expect("signature should be valid");
-        }
-    }
-
-    pub fn load_private_genesis<P: AsRef<Path>>(path: P, with_genesis: bool) -> anyhow::Result<Self, anyhow::Error> {
-        let path = path.as_ref();
-        let path: &Utf8Path = path.try_into()?;
-        trace!("Reading Genesis Builder from {}", path);
-
-        if !path.is_dir() {
-            bail!("path must be a directory");
-        }
-
-        // Load parameters
-        let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
-        let parameters = serde_yaml::from_slice(
-            &fs::read(parameters_file).context("unable to read genesis parameters file")?,
-        )
-            .context("unable to deserialize genesis parameters")?;
-
-        let token_distribution_schedule_file =
-            path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE);
-        let token_distribution_schedule = if token_distribution_schedule_file.exists() {
-            Some(TokenDistributionSchedule::from_csv(fs::File::open(
-                token_distribution_schedule_file,
-            )?)?)
-        } else {
-            None
-        };
-
-        // Load validator infos
-        let mut committee = BTreeMap::new();
-        for entry in path.join(GENESIS_BUILDER_COMMITTEE_DIR).read_dir_utf8()? {
-            let entry = entry?;
-            if entry.file_name().starts_with('.') {
-                continue;
-            }
-
-            let path = entry.path();
-            let validator_info_bytes = fs::read(path)?;
-            let validator_info: GenesisValidatorInfo =
-                serde_yaml::from_slice(&validator_info_bytes)
-                    .with_context(|| format!("unable to load validator info for {path}"))?;
-            committee.insert(validator_info.info.protocol_key(), validator_info);
-        }
-
-        // Load Signatures
-        let mut signatures = BTreeMap::new();
-        for entry in path.join(GENESIS_BUILDER_SIGNATURE_DIR).read_dir_utf8()? {
-            let entry = entry?;
-            if entry.file_name().starts_with('.') {
-                continue;
-            }
-
-            let path = entry.path();
-            let signature_bytes = fs::read(path)?;
-            let sigs: AuthoritySignInfo = bcs::from_bytes(&signature_bytes)
-                .with_context(|| format!("unable to load validator signatrue for {path}"))?;
-            signatures.insert(sigs.authority, sigs);
-        }
-
-        let mut builder = Self {
-            parameters,
-            token_distribution_schedule,
-            objects: Default::default(),
-            validators: committee,
-            signatures,
-            built_genesis: None, // Leave this as none, will build and compare below
-        };
-
-        let unsigned_genesis_file = path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE);
-        if unsigned_genesis_file.exists() && with_genesis == false {
-            let unsigned_genesis_bytes = fs::read(unsigned_genesis_file)?;
-            let loaded_genesis: UnsignedGenesis = bcs::from_bytes(&unsigned_genesis_bytes)?;
-
-            // If we have a built genesis, then we must have a token_distribution_schedule present
-            // as well.
-            assert!(
-                builder.token_distribution_schedule.is_some(),
-                "If a built genesis is present, then there must also be a token-distribution-schedule present"
-            );
-
-            // Verify loaded genesis matches one build from the constituent parts
-            let built = builder.build_unsigned_genesis_checkpoint();
-            loaded_genesis.checkpoint_contents.digest(); // cache digest before compare
+                *owner == allocation.recipient_address
+                    && s.principal() == allocation.amount_mist
+                    && s.pool_id() == staking_pool_id
+            })
+            .map(|(k, _)| *k)
+                .expect("all allocations should be present");
+            let staked_sui_object = staked_sui_objects.remove(&staked_sui_object_id).unwrap();
             assert_eq!(
-                built, loaded_genesis,
-                "loaded genesis does not match built genesis"
+                staked_sui_object.0.owner,
+                Owner::AddressOwner(allocation.recipient_address)
             );
-
-            // Just to double check that its set after building above
-            assert!(builder.unsigned_genesis_checkpoint().is_some());
+            assert_eq!(staked_sui_object.1.principal(), allocation.amount_mist);
+            assert_eq!(staked_sui_object.1.pool_id(), staking_pool_id);
+            assert_eq!(staked_sui_object.1.activation_epoch(), 0);
+        } else {
+            let gas_object_id = gas_objects
+                .iter()
+                .find(|(_k, (o, g))| {
+                    if let Owner::AddressOwner(owner) = &o.owner {
+                        *owner == allocation.recipient_address
+                            && g.value() == allocation.amount_mist
+                    } else {
+                        false
+                    }
+                })
+                .map(|(k, _)| *k)
+                .expect("all allocations should be present");
+            let gas_object = gas_objects.remove(&gas_object_id).unwrap();
+            assert_eq!(
+                gas_object.0.owner,
+                Owner::AddressOwner(allocation.recipient_address)
+            );
+            assert_eq!(gas_object.1.value(), allocation.amount_mist,);
         }
-
-        Ok(builder)
     }
 
-    pub fn load<P: AsRef<Path>>(path: P) -> anyhow::Result<Self, anyhow::Error> {
-        let path = path.as_ref();
-        let path: &Utf8Path = path.try_into()?;
-        trace!("Reading Genesis Builder from {}", path);
+    // All Gas and staked objects should be accounted for
+    if !self.parameters.allow_insertion_of_extra_objects {
+    assert!(gas_objects.is_empty());
+    assert!(staked_sui_objects.is_empty());
+}
 
-        if !path.is_dir() {
-            bail!("path must be a directory");
-        }
+let committee = system_state.get_current_epoch_committee().committee;
+for signature in self.signatures.values() {
+if self.validators.get(&signature.authority).is_none() {
+panic!("found signature for unknown validator: {:#?}", signature);
+}
 
-        // Load parameters
-        let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
-        let parameters = serde_yaml::from_slice(
-            &fs::read(parameters_file).context("unable to read genesis parameters file")?,
-        )
+signature
+.verify_secure(
+unsigned_genesis.checkpoint(),
+Intent::sui_app(IntentScope::CheckpointSummary),
+&committee,
+)
+.expect("signature should be valid");
+}
+}
+
+pub fn load_private_genesis<P: AsRef<Path>>(path: P, with_genesis: bool) -> anyhow::Result<Self, anyhow::Error> {
+    let path = path.as_ref();
+    let path: &Utf8Path = path.try_into()?;
+    trace!("Reading Genesis Builder from {}", path);
+
+    if !path.is_dir() {
+        bail!("path must be a directory");
+    }
+
+    // Load parameters
+    let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
+    let parameters = serde_yaml::from_slice(
+        &fs::read(parameters_file).context("unable to read genesis parameters file")?,
+    )
         .context("unable to deserialize genesis parameters")?;
 
-        let token_distribution_schedule_file =
-            path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE);
-        let token_distribution_schedule = if token_distribution_schedule_file.exists() {
-            Some(TokenDistributionSchedule::from_csv(fs::File::open(
-                token_distribution_schedule_file,
-            )?)?)
-        } else {
-            None
-        };
+    let token_distribution_schedule_file =
+        path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE);
+    let token_distribution_schedule = if token_distribution_schedule_file.exists() {
+        Some(TokenDistributionSchedule::from_csv(fs::File::open(
+            token_distribution_schedule_file,
+        )?)?)
+    } else {
+        None
+    };
 
-        // Load validator infos
-        let mut committee = BTreeMap::new();
-        for entry in path.join(GENESIS_BUILDER_COMMITTEE_DIR).read_dir_utf8()? {
-            let entry = entry?;
-            if entry.file_name().starts_with('.') {
-                continue;
-            }
-
-            let path = entry.path();
-            let validator_info_bytes = fs::read(path)?;
-            let validator_info: GenesisValidatorInfo =
-                serde_yaml::from_slice(&validator_info_bytes)
-                    .with_context(|| format!("unable to load validator info for {path}"))?;
-            committee.insert(validator_info.info.protocol_key(), validator_info);
+    // Load validator infos
+    let mut committee = BTreeMap::new();
+    for entry in path.join(GENESIS_BUILDER_COMMITTEE_DIR).read_dir_utf8()? {
+        let entry = entry?;
+        if entry.file_name().starts_with('.') {
+            continue;
         }
 
-        // Load Signatures
-        let mut signatures = BTreeMap::new();
-        for entry in path.join(GENESIS_BUILDER_SIGNATURE_DIR).read_dir_utf8()? {
-            let entry = entry?;
-            if entry.file_name().starts_with('.') {
-                continue;
-            }
-
-            let path = entry.path();
-            let signature_bytes = fs::read(path)?;
-            let sigs: AuthoritySignInfo = bcs::from_bytes(&signature_bytes)
-                .with_context(|| format!("unable to load validator signatrue for {path}"))?;
-            signatures.insert(sigs.authority, sigs);
-        }
-
-        let mut builder = Self {
-            parameters,
-            token_distribution_schedule,
-            objects: Default::default(),
-            validators: committee,
-            signatures,
-            built_genesis: None, // Leave this as none, will build and compare below
-        };
-
-        let unsigned_genesis_file = path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE);
-        if unsigned_genesis_file.exists() {
-            let unsigned_genesis_bytes = fs::read(unsigned_genesis_file)?;
-            let loaded_genesis: UnsignedGenesis = bcs::from_bytes(&unsigned_genesis_bytes)?;
-
-            // If we have a built genesis, then we must have a token_distribution_schedule present
-            // as well.
-            assert!(
-                builder.token_distribution_schedule.is_some(),
-                "If a built genesis is present, then there must also be a token-distribution-schedule present"
-            );
-
-            // Verify loaded genesis matches one build from the constituent parts
-            let built = builder.build_unsigned_genesis_checkpoint();
-            loaded_genesis.checkpoint_contents.digest(); // cache digest before compare
-            assert_eq!(
-                built, loaded_genesis,
-                "loaded genesis does not match built genesis"
-            );
-
-            // Just to double check that its set after building above
-            assert!(builder.unsigned_genesis_checkpoint().is_some());
-        }
-
-        Ok(builder)
+        let path = entry.path();
+        let validator_info_bytes = fs::read(path)?;
+        let validator_info: GenesisValidatorInfo =
+            serde_yaml::from_slice(&validator_info_bytes)
+                .with_context(|| format!("unable to load validator info for {path}"))?;
+        committee.insert(validator_info.info.protocol_key(), validator_info);
     }
 
-    pub fn save<P: AsRef<Path>>(self, path: P) -> anyhow::Result<(), anyhow::Error> {
-        let path = path.as_ref();
-        trace!("Writing Genesis Builder to {}", path.display());
-
-        fs::create_dir_all(path)?;
-
-        // Write parameters
-        let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
-        fs::write(parameters_file, serde_yaml::to_string(&self.parameters)?)?;
-
-        if let Some(token_distribution_schedule) = &self.token_distribution_schedule {
-            token_distribution_schedule.to_csv(fs::File::create(
-                path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE),
-            )?)?;
+    // Load Signatures
+    let mut signatures = BTreeMap::new();
+    for entry in path.join(GENESIS_BUILDER_SIGNATURE_DIR).read_dir_utf8()? {
+        let entry = entry?;
+        if entry.file_name().starts_with('.') {
+            continue;
         }
 
-        // Write Signatures
-        let signature_dir = path.join(GENESIS_BUILDER_SIGNATURE_DIR);
-        std::fs::create_dir_all(&signature_dir)?;
-        for (pubkey, sigs) in self.signatures {
-            let sig_bytes = bcs::to_bytes(&sigs)?;
-            let name = self.validators.get(&pubkey).unwrap().info.name();
-            fs::write(signature_dir.join(name), sig_bytes)?;
-        }
-
-        // Write validator infos
-        let committee_dir = path.join(GENESIS_BUILDER_COMMITTEE_DIR);
-        fs::create_dir_all(&committee_dir)?;
-
-        for (_pubkey, validator) in self.validators {
-            let validator_info_bytes = serde_yaml::to_string(&validator)?;
-            fs::write(
-                committee_dir.join(validator.info.name()),
-                validator_info_bytes,
-            )?;
-        }
-
-        if let Some(genesis) = &self.built_genesis {
-            let genesis_bytes = bcs::to_bytes(&genesis)?;
-            fs::write(
-                path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE),
-                genesis_bytes,
-            )?;
-        }
-
-        Ok(())
+        let path = entry.path();
+        let signature_bytes = fs::read(path)?;
+        let sigs: AuthoritySignInfo = bcs::from_bytes(&signature_bytes)
+            .with_context(|| format!("unable to load validator signatrue for {path}"))?;
+        signatures.insert(sigs.authority, sigs);
     }
+
+    let mut builder = Self {
+        parameters,
+        token_distribution_schedule,
+        objects: Default::default(),
+        validators: committee,
+        signatures,
+        built_genesis: None, // Leave this as none, will build and compare below
+    };
+
+    let unsigned_genesis_file = path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE);
+    if unsigned_genesis_file.exists() && with_genesis == false {
+        let unsigned_genesis_bytes = fs::read(unsigned_genesis_file)?;
+        let loaded_genesis: UnsignedGenesis = bcs::from_bytes(&unsigned_genesis_bytes)?;
+
+        // If we have a built genesis, then we must have a token_distribution_schedule present
+        // as well.
+        assert!(
+            builder.token_distribution_schedule.is_some(),
+            "If a built genesis is present, then there must also be a token-distribution-schedule present"
+        );
+
+        // Verify loaded genesis matches one build from the constituent parts
+        let built = builder.build_unsigned_genesis_checkpoint();
+        loaded_genesis.checkpoint_contents.digest(); // cache digest before compare
+        assert_eq!(
+            built, loaded_genesis,
+            "loaded genesis does not match built genesis"
+        );
+
+        // Just to double check that its set after building above
+        assert!(builder.unsigned_genesis_checkpoint().is_some());
+    }
+
+    Ok(builder)
+}
+
+pub fn load<P: AsRef<Path>>(path: P) -> anyhow::Result<Self, anyhow::Error> {
+    let path = path.as_ref();
+    let path: &Utf8Path = path.try_into()?;
+    trace!("Reading Genesis Builder from {}", path);
+
+    if !path.is_dir() {
+        bail!("path must be a directory");
+    }
+
+    // Load parameters
+    let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
+    let parameters = serde_yaml::from_slice(
+        &fs::read(parameters_file).context("unable to read genesis parameters file")?,
+    )
+        .context("unable to deserialize genesis parameters")?;
+
+    let token_distribution_schedule_file =
+        path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE);
+    let token_distribution_schedule = if token_distribution_schedule_file.exists() {
+        Some(TokenDistributionSchedule::from_csv(fs::File::open(
+            token_distribution_schedule_file,
+        )?)?)
+    } else {
+        None
+    };
+
+    // Load validator infos
+    let mut committee = BTreeMap::new();
+    for entry in path.join(GENESIS_BUILDER_COMMITTEE_DIR).read_dir_utf8()? {
+        let entry = entry?;
+        if entry.file_name().starts_with('.') {
+            continue;
+        }
+
+        let path = entry.path();
+        let validator_info_bytes = fs::read(path)?;
+        let validator_info: GenesisValidatorInfo =
+            serde_yaml::from_slice(&validator_info_bytes)
+                .with_context(|| format!("unable to load validator info for {path}"))?;
+        committee.insert(validator_info.info.protocol_key(), validator_info);
+    }
+
+    // Load Signatures
+    let mut signatures = BTreeMap::new();
+    for entry in path.join(GENESIS_BUILDER_SIGNATURE_DIR).read_dir_utf8()? {
+        let entry = entry?;
+        if entry.file_name().starts_with('.') {
+            continue;
+        }
+
+        let path = entry.path();
+        let signature_bytes = fs::read(path)?;
+        let sigs: AuthoritySignInfo = bcs::from_bytes(&signature_bytes)
+            .with_context(|| format!("unable to load validator signatrue for {path}"))?;
+        signatures.insert(sigs.authority, sigs);
+    }
+
+    let mut builder = Self {
+        parameters,
+        token_distribution_schedule,
+        objects: Default::default(),
+        validators: committee,
+        signatures,
+        built_genesis: None, // Leave this as none, will build and compare below
+    };
+
+    let unsigned_genesis_file = path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE);
+    if unsigned_genesis_file.exists() {
+        let unsigned_genesis_bytes = fs::read(unsigned_genesis_file)?;
+        let loaded_genesis: UnsignedGenesis = bcs::from_bytes(&unsigned_genesis_bytes)?;
+
+        // If we have a built genesis, then we must have a token_distribution_schedule present
+        // as well.
+        assert!(
+            builder.token_distribution_schedule.is_some(),
+            "If a built genesis is present, then there must also be a token-distribution-schedule present"
+        );
+
+        // Verify loaded genesis matches one build from the constituent parts
+        let built = builder.build_unsigned_genesis_checkpoint();
+        loaded_genesis.checkpoint_contents.digest(); // cache digest before compare
+        assert_eq!(
+            built, loaded_genesis,
+            "loaded genesis does not match built genesis"
+        );
+
+        // Just to double check that its set after building above
+        assert!(builder.unsigned_genesis_checkpoint().is_some());
+    }
+
+    Ok(builder)
+}
+
+pub fn save<P: AsRef<Path>>(self, path: P) -> anyhow::Result<(), anyhow::Error> {
+    let path = path.as_ref();
+    trace!("Writing Genesis Builder to {}", path.display());
+
+    fs::create_dir_all(path)?;
+
+    // Write parameters
+    let parameters_file = path.join(GENESIS_BUILDER_PARAMETERS_FILE);
+    fs::write(parameters_file, serde_yaml::to_string(&self.parameters)?)?;
+
+    if let Some(token_distribution_schedule) = &self.token_distribution_schedule {
+        token_distribution_schedule.to_csv(fs::File::create(
+            path.join(GENESIS_BUILDER_TOKEN_DISTRIBUTION_SCHEDULE_FILE),
+        )?)?;
+    }
+
+    // Write Signatures
+    let signature_dir = path.join(GENESIS_BUILDER_SIGNATURE_DIR);
+    std::fs::create_dir_all(&signature_dir)?;
+    for (pubkey, sigs) in self.signatures {
+        let sig_bytes = bcs::to_bytes(&sigs)?;
+        let name = self.validators.get(&pubkey).unwrap().info.name();
+        fs::write(signature_dir.join(name), sig_bytes)?;
+    }
+
+    // Write validator infos
+    let committee_dir = path.join(GENESIS_BUILDER_COMMITTEE_DIR);
+    fs::create_dir_all(&committee_dir)?;
+
+    for (_pubkey, validator) in self.validators {
+        let validator_info_bytes = serde_yaml::to_string(&validator)?;
+        fs::write(
+            committee_dir.join(validator.info.name()),
+            validator_info_bytes,
+        )?;
+    }
+
+    if let Some(genesis) = &self.built_genesis {
+        let genesis_bytes = bcs::to_bytes(&genesis)?;
+        fs::write(
+            path.join(GENESIS_BUILDER_UNSIGNED_GENESIS_FILE),
+            genesis_bytes,
+        )?;
+    }
+
+    Ok(())
+}
 }
 
 // Create a Genesis Txn Context to be used when generating genesis objects by hashing all of the
@@ -1020,15 +1011,12 @@ fn create_genesis_transaction(
                 &certificate_deny_set,
                 &epoch_data.epoch_id(),
                 epoch_data.epoch_start_timestamp(),
-<<<<<<< HEAD
-                input_objects,
-=======
                 // temporary_store,
                 // shared_object_refs,
                 // &mut GasCharger::new_unmetered(genesis_digest),
                 InputObjects::new(vec![]),
                 shared_object_refs,
->>>>>>> develop_v.1.1.5
+                input_objects,
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
@@ -1083,7 +1071,7 @@ fn create_genesis_objects(
             &protocol_config,
             metrics.clone(),
         )
-        .unwrap();
+            .unwrap();
     }
 
     {
@@ -1102,7 +1090,7 @@ fn create_genesis_objects(
         token_distribution_schedule,
         metrics,
     )
-    .unwrap();
+        .unwrap();
 
     store.into_inner().into_values().collect()
 }
@@ -1169,10 +1157,6 @@ fn process_package(
         builder.command(Command::Publish(module_bytes, dependencies));
         builder.finish()
     };
-<<<<<<< HEAD
-    let InnerTemporaryStore { written, .. } = executor.update_genesis_state(
-        &*store,
-=======
     // executor.update_genesis_state(
     //     protocol_config,
     //     metrics,
@@ -1190,7 +1174,8 @@ fn process_package(
         written, deleted, ..
     } = executor.update_genesis_state(
         store.clone(),
->>>>>>> develop_v.1.1.5
+    let InnerTemporaryStore { written, .. } = executor.update_genesis_state(
+        &*store,
         protocol_config,
         metrics,
         ctx,
@@ -1217,6 +1202,7 @@ pub fn generate_genesis_system_object(
         ProtocolVersion::new(genesis_chain_parameters.protocol_version),
         ChainIdentifier::default().chain(),
     );
+
     let pt = {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create the SuiSystemState UID
@@ -1284,8 +1270,6 @@ pub fn generate_genesis_system_object(
             vec![],
         );
 
-<<<<<<< HEAD
-=======
         let arguments =  vec![
             sui_supply,
             builder.input(CallArg::Pure(bcs::to_bytes(&TOTAL_SUPPLY_WITH_ALLOCATION_MIST).unwrap()))?
@@ -1299,7 +1283,7 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
->>>>>>> develop_v.1.1.5
+        // Step 5: Run genesis.
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
@@ -1309,9 +1293,9 @@ pub fn generate_genesis_system_object(
             CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),
             CallArg::Pure(bcs::to_bytes(&token_distribution_schedule).unwrap()),
         ]
-        .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<anyhow::Result<_, _>>()?;
+            .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<anyhow::Result<_, _>>()?;
         arguments.append(&mut call_arg_arguments);
         builder.programmable_move_call(
             SUI_SYSTEM_ADDRESS.into(),
@@ -1501,10 +1485,6 @@ pub fn generate_genesis_system_object(
         builder.finish()
     };
 
-<<<<<<< HEAD
-    let InnerTemporaryStore { mut written, .. } = executor.update_genesis_state(
-        &*store,
-=======
     //todo:
     // executor.update_genesis_state(
     //     &protocol_config,
@@ -1519,7 +1499,8 @@ pub fn generate_genesis_system_object(
         written, deleted, ..
     } = executor.update_genesis_state(
         store.clone(),
->>>>>>> develop_v.1.1.5
+    let InnerTemporaryStore { mut written, .. } = executor.update_genesis_state(
+        &*store,
         &protocol_config,
         metrics,
         genesis_ctx,
