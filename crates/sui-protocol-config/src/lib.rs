@@ -1305,8 +1305,8 @@ impl ProtocolConfig {
                         .advance_to_highest_supported_protocol_version = true;
                 }
                 10 => {
-                    cfg.max_verifier_meter_ticks_per_function = Some(16_000_000);
-                    cfg.max_meter_ticks_per_module = Some(16_000_000);
+                    cfg.max_verifier_meter_ticks_per_function = Some(17_000_000);
+                    cfg.max_meter_ticks_per_module = Some(17_000_000);
                 }
                 11 => {
                     cfg.max_move_value_depth = Some(128);
