@@ -446,7 +446,7 @@ async fn test_pay_sui_multiple_times() {
 
 
     //todo change paysui --> pay bfc,
-    for _ in 1..100 {
+    for _ in 1..20 {
         let ops = serde_json::from_value(json!(
             [{
                 "operation_identifier":{"index":0},

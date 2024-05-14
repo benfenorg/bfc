@@ -278,7 +278,7 @@ async fn reconfig_with_revert_end_to_end_test() {
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
 async fn sim_test_passive_reconfig() {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
         config
@@ -316,7 +316,7 @@ async fn sim_test_passive_reconfig() {
 
 #[sim_test]
 async fn sim_test_change_bfc_round() {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
         config
@@ -549,7 +549,7 @@ async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
 
 #[sim_test]
 async fn test_bfc_dao_create_action() -> Result<(), anyhow::Error>{
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
@@ -817,7 +817,7 @@ async fn test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_bfc_dao_create_votingbfc()  -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
@@ -1799,7 +1799,7 @@ async fn test_create_advance_epoch_tx_race() {
     use tokio::sync::broadcast;
     use tracing::info;
 
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     sui_protocol_config::ProtocolConfig::poison_get_for_min_version();
 
     // panic if we enter safe mode. If you remove the check for `is_tx_already_executed` in
@@ -2317,7 +2317,7 @@ async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_vali
 
 #[sim_test]
 async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
         config
@@ -2473,7 +2473,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
 
 #[sim_test]
 async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
         .with_num_validators(5)
@@ -2506,7 +2506,7 @@ async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Er
 
 #[sim_test]
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
@@ -2541,7 +2541,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 
 #[sim_test]
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(3000)
         .with_num_validators(5)
@@ -2597,7 +2597,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 
 #[sim_test]
 async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
         .with_num_validators(5)
@@ -2628,7 +2628,7 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
         .with_num_validators(5)
@@ -2654,7 +2654,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
         .with_num_validators(5)
@@ -2804,7 +2804,7 @@ async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) ->
 }
 #[sim_test]
 async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
@@ -2830,7 +2830,7 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
 
 #[sim_test]
 async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
@@ -2900,7 +2900,7 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
         .with_num_validators(5)
@@ -2997,7 +2997,7 @@ fn get_staked_stable(object_change: Vec<ObjectChange>, stable_tag: TypeTag) ->Op
 
 #[sim_test]
 async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
@@ -3045,7 +3045,7 @@ async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTran
 
 #[sim_test]
 async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
@@ -3070,7 +3070,7 @@ async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> 
 
 #[sim_test]
 async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
@@ -3095,7 +3095,7 @@ async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::
 
 #[sim_test]
 async fn test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
         .with_num_validators(5)
