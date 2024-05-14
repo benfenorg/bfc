@@ -11,7 +11,6 @@ use crate::authority::authority_store_types::{
     get_store_object_pair, ObjectContentDigest, StoreObject, StoreObjectPair, StoreObjectWrapper,
 };
 use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfiguration};
-<<<<<<< HEAD
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use either::Either;
@@ -40,9 +39,8 @@ use typed_store::{
     rocks::{DBBatch, DBMap},
     TypedStoreError,
 };
-=======
+use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfiguration};
 use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
->>>>>>> develop_v.1.1.5
 
 use super::authority_store_tables::LiveObject;
 use super::{authority_store_tables::AuthorityPerpetualTables, *};
@@ -595,6 +593,133 @@ impl AuthorityStore {
         Ok(result)
     }
 
+    pub fn check_input_objects(
+        &self,
+        objects: &[InputObjectKind],
+        protocol_config: &ProtocolConfig,
+    ) -> Result<Vec<Object>, SuiError> {
+        let mut result = Vec::new();
+
+        fp_ensure!(
+            objects.len() <= protocol_config.max_input_objects() as usize,
+            UserInputError::SizeLimitExceeded {
+                limit: "maximum input objects in a transaction".to_string(),
+                value: protocol_config.max_input_objects().to_string()
+            }
+            .into()
+        );
+
+        for kind in objects {
+            let obj = match kind {
+                InputObjectKind::MovePackage(id) | InputObjectKind::SharedMoveObject { id, .. } => {
+                    self.get_object(id)?
+                }
+                InputObjectKind::ImmOrOwnedMoveObject(objref) => {
+                    self.get_object_by_key(&objref.0, objref.1)?
+                }
+            }
+            .ok_or_else(|| SuiError::from(UserInputError::BFCObjectNotFound {
+                object_id: objects_id_to_bfc_address(kind.object_id()),
+                version: None,
+            }))?;
+            result.push(obj);
+        }
+        Ok(result)
+    }
+
+    /// Gets the input object keys and lock modes from input object kinds, by determining the
+    /// versions and types of owned, shared and package objects.
+    /// When making changes, please see if check_sequenced_input_objects() below needs
+    /// similar changes as well.
+    pub fn get_input_object_locks(
+        &self,
+        digest: &TransactionDigest,
+        objects: &[InputObjectKind],
+        epoch_store: &AuthorityPerEpochStore,
+    ) -> BTreeMap<InputKey, LockMode> {
+        let mut shared_locks = HashMap::<ObjectID, SequenceNumber>::new();
+        objects
+            .iter()
+            .map(|kind| {
+                match kind {
+                    InputObjectKind::SharedMoveObject { id, initial_shared_version: _, mutable } => {
+                        if shared_locks.is_empty() {
+                            shared_locks = epoch_store
+                                .get_shared_locks(digest)
+                                .expect("Read from storage should not fail!")
+                                .into_iter()
+                                .collect();
+                        }
+                        // If we can't find the locked version, it means
+                        // 1. either we have a bug that skips shared object version assignment
+                        // 2. or we have some DB corruption
+                        let Some(version) = shared_locks.get(id) else {
+                            panic!(
+                                "Shared object locks should have been set. tx_digset: {digest:?}, obj \
+                                id: {id:?}",
+                            )
+                        };
+                        let lock_mode = if *mutable {
+                            LockMode::Default
+                        } else {
+                            LockMode::ReadOnly
+                        };
+                        (InputKey(*id, Some(*version)), lock_mode)
+                    }
+                    // TODO: use ReadOnly lock?
+                    InputObjectKind::MovePackage(id) => (InputKey(*id, None), LockMode::Default),
+                    // Cannot use ReadOnly lock because we do not know if the object is immutable.
+                    InputObjectKind::ImmOrOwnedMoveObject(objref) => (InputKey(objref.0, Some(objref.1)), LockMode::Default),
+                }
+            })
+            .collect()
+    }
+
+    /// Checks if the input object identified by the InputKey exists, with support for non-system
+    /// packages i.e. when version is None.
+    pub fn multi_input_objects_exist(
+        &self,
+        keys: impl Iterator<Item = InputKey> + Clone,
+    ) -> Result<Vec<bool>, SuiError> {
+        let (keys_with_version, keys_without_version): (Vec<_>, Vec<_>) =
+            keys.enumerate().partition(|(_, key)| key.1.is_some());
+
+        let versioned_results = keys_with_version.iter().map(|(idx, _)| *idx).zip(
+            self.perpetual_tables
+                .objects
+                .multi_get(
+                    keys_with_version
+                        .iter()
+                        .map(|(_, k)| ObjectKey(k.0, k.1.unwrap())),
+                )?
+                .into_iter()
+                .map(|o| o.is_some()),
+        );
+
+        let unversioned_results = keys_without_version.into_iter().map(|(idx, key)| {
+            (
+                idx,
+                match self
+                    .get_latest_object_ref_or_tombstone(key.0)
+                    .expect("read cannot fail")
+                {
+                    None => false,
+                    Some(entry) => entry.2.is_alive(),
+                },
+            )
+        });
+
+        let mut results = versioned_results
+            .chain(unversioned_results)
+            .collect::<Vec<_>>();
+        results.sort_by_key(|(idx, _)| *idx);
+        Ok(results.into_iter().map(|(_, result)| result).collect())
+    }
+
+    /// Attempts to acquire execution lock for an executable transaction.
+    /// Returns the lock if the transaction is matching current executed epoch
+    /// Returns None otherwise
+    pub async fn execution_lock_for_executable_transaction(
     pub fn have_deleted_owned_object_at_version_or_after(
         &self,
         object_id: &ObjectID,
@@ -622,27 +747,7 @@ impl AuthorityStore {
                 let mark_data_ok = marker == MarkerValue::OwnedDeleted;
                 Ok(object_data_ok && epoch_data_ok && mark_data_ok)
             }
-<<<<<<< HEAD
             None => Ok(false),
-=======
-            .into()
-        );
-
-        for kind in objects {
-            let obj = match kind {
-                InputObjectKind::MovePackage(id) | InputObjectKind::SharedMoveObject { id, .. } => {
-                    self.get_object(id)?
-                }
-                InputObjectKind::ImmOrOwnedMoveObject(objref) => {
-                    self.get_object_by_key(&objref.0, objref.1)?
-                }
-            }
-            .ok_or_else(|| SuiError::from(UserInputError::BFCObjectNotFound {
-                object_id: objects_id_to_bfc_address(kind.object_id()),
-                version: None,
-            }))?;
-            result.push(obj);
->>>>>>> develop_v.1.1.5
         }
     }
 
@@ -912,13 +1017,10 @@ impl AuthorityStore {
         // Insert each output object into the stores
         let (new_objects, new_indirect_move_objects): (Vec<_>, Vec<_>) = written
             .iter()
-<<<<<<< HEAD
+            .map(|(_, (obj_ref, new_object, _))| {
             .map(|(id, new_object)| {
                 let version = new_object.version();
                 debug!(?id, ?version, "writing object");
-=======
-            .map(|(_, (obj_ref, new_object, _))| {
->>>>>>> develop_v.1.1.5
                 let StoreObjectPair(store_object, indirect_object) =
                     get_store_object_pair(new_object.clone(), self.indirect_objects_threshold);
                 (
@@ -1664,9 +1766,6 @@ impl AuthorityStore {
         get_sui_system_state(self.perpetual_tables.as_ref())
     }
 
-<<<<<<< HEAD
-    pub fn expensive_check_sui_conservation<T>(
-=======
     pub fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         get_bfc_system_state(self.perpetual_tables.as_ref())
     }
@@ -1680,7 +1779,7 @@ impl AuthorityStore {
     }
 
     pub fn expensive_check_sui_conservation(
->>>>>>> develop_v.1.1.5
+    pub fn expensive_check_sui_conservation<T>(
         self: &Arc<Self>,
         type_layout_store: T,
         old_epoch_store: &AuthorityPerEpochStore,
@@ -2098,8 +2197,6 @@ impl ObjectStore for AuthorityStore {
     }
 }
 
-<<<<<<< HEAD
-=======
 impl ChildObjectResolver for AuthorityStore {
     fn read_child_object(
         &self,
@@ -2164,7 +2261,6 @@ impl GetModule for AuthorityStore {
 
 
 
->>>>>>> develop_v.1.1.5
 /// A wrapper to make Orphan Rule happy
 pub struct ResolverWrapper<T: BackingPackageStore> {
     pub resolver: Arc<T>,

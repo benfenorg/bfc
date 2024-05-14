@@ -13,11 +13,8 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-<<<<<<< HEAD
-const MAX_PROTOCOL_VERSION: u64 = 44;
-=======
 const MAX_PROTOCOL_VERSION: u64 = 23;
->>>>>>> develop_v.1.1.5
+const MAX_PROTOCOL_VERSION: u64 = 44;
 
 // Record history of protocol version allocations here:
 //
@@ -76,7 +73,6 @@ const MAX_PROTOCOL_VERSION: u64 = 23;
 // Version 23: Enabling the flag `narwhal_new_leader_election_schedule` for the new narwhal leader
 //             schedule algorithm for enhanced fault tolerance and sets the bad node stake threshold
 //             value for mainnet.
-<<<<<<< HEAD
 // Version 24: Re-enable simple gas conservation checks.
 //             Package publish/upgrade number in a single transaction limited.
 //             JWK / authenticator state flags.
@@ -125,8 +121,6 @@ const MAX_PROTOCOL_VERSION: u64 = 23;
 //             Introduce an explicit parameter for the tick limit per package (previously this was
 //             represented by the parameter for the tick limit per module).
 // Version 44: Enable consensus fork detection on mainnet.
-=======
->>>>>>> develop_v.1.1.5
 
 #[derive(Copy, Clone, Debug, Hash, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ProtocolVersion(u64);
@@ -328,9 +322,7 @@ struct FeatureFlags {
     #[serde(skip_serializing_if = "is_false")]
     loaded_child_object_format: bool,
 
-    // If true, use the new child object format type logging
     #[serde(skip_serializing_if = "is_false")]
-<<<<<<< HEAD
     enable_jwk_consensus_updates: bool,
 
     #[serde(skip_serializing_if = "is_false")]
@@ -424,9 +416,6 @@ struct FeatureFlags {
     // Set the upper bound allowed for max_epoch in zklogin signature.
     #[serde(skip_serializing_if = "Option::is_none")]
     zklogin_max_epoch_upper_bound_delta: Option<u64>,
-=======
-    loaded_child_object_format_type: bool,
->>>>>>> develop_v.1.1.5
 }
 
 fn is_false(b: &bool) -> bool {
@@ -1022,7 +1011,6 @@ pub struct ProtocolConfig {
     // swapped when creating the consensus schedule. The values should be of the range [0 - 33]. Anything
     // above 33 (f) will not be allowed.
     consensus_bad_nodes_stake_threshold: Option<u64>,
-<<<<<<< HEAD
 
     max_jwk_votes_per_validator_per_epoch: Option<u64>,
     // The maximum age of a JWK in epochs before it is removed from the AuthenticatorState object.
@@ -1053,8 +1041,6 @@ pub struct ProtocolConfig {
     // The max accumulated txn execution cost per object in a checkpoint. Transactions
     // in a checkpoint will be deferred once their touch shared objects hit this limit.
     max_accumulated_txn_cost_per_object_in_checkpoint: Option<u64>,
-=======
->>>>>>> develop_v.1.1.5
 }
 
 // feature flags
@@ -1189,7 +1175,6 @@ impl ProtocolConfig {
         self.feature_flags.loaded_child_object_format
     }
 
-<<<<<<< HEAD
     pub fn enable_jwk_consensus_updates(&self) -> bool {
         let ret = self.feature_flags.enable_jwk_consensus_updates;
         if ret {
@@ -1292,10 +1277,6 @@ impl ProtocolConfig {
 
     pub fn consensus_network(&self) -> ConsensusNetwork {
         self.feature_flags.consensus_network
-=======
-    pub fn loaded_child_object_format_type(&self) -> bool {
-        self.feature_flags.loaded_child_object_format_type
->>>>>>> develop_v.1.1.5
     }
 }
 
@@ -1412,12 +1393,13 @@ impl ProtocolConfig {
 
         // IMPORTANT: Never modify the value of any constant for a pre-existing protocol version.
         // To change the values here you must create a new protocol version with the new values!
-        let mut cfg = Self {
-            // will be overwritten before being returned
-            version,
+        match version.0 {
+            1 => Self {
+                // will be overwritten before being returned
+                version,
 
-            // All flags are disabled in V1
-            feature_flags: Default::default(),
+                // All flags are disabled in V1
+                feature_flags: Default::default(),
 
             max_tx_size_bytes: Some(128 * 1024),
             // We need this number to be at least 100x less than `max_serialized_tx_effects_size_bytes`otherwise effects can be huge
@@ -1426,17 +1408,51 @@ impl ProtocolConfig {
             max_serialized_tx_effects_size_bytes_system_tx: Some(512 * 1024 * 16),
             max_gas_payment_objects: Some(256),
             max_modules_in_publish: Some(128),
-<<<<<<< HEAD
-            max_package_dependencies: None,
-=======
->>>>>>> develop_v.1.1.5
             max_arguments: Some(512),
             max_type_arguments: Some(16),
             max_type_argument_depth: Some(16),
             max_pure_argument_size: Some(16 * 1024),
             max_programmable_tx_commands: Some(1024),
             move_binary_format_version: Some(6),
-<<<<<<< HEAD
+            max_move_object_size: Some(250 * 1024),
+            max_move_package_size: Some(100 * 1024),
+            max_tx_gas: Some(100_000_000),
+            max_gas_price: Some(10_000),
+            max_gas_computation_bucket: Some(500_000),
+            max_loop_depth: Some(5),
+            max_generic_instantiation_length: Some(32),
+            max_function_parameters: Some(128),
+            max_basic_blocks: Some(1024),
+            max_value_stack_size: Some(1024),
+            max_type_nodes: Some(256),
+            max_push_size: Some(10000),
+            max_struct_definitions: Some(200),
+            max_function_definitions: Some(1000),
+            max_fields_in_struct: Some(32),
+            max_dependency_depth: Some(100),
+            max_num_event_emit: Some(256),
+            max_num_new_move_object_ids: Some(2048),
+            max_num_new_move_object_ids_system_tx: Some(2048 * 16),
+            max_num_deleted_move_object_ids: Some(2048),
+            max_num_deleted_move_object_ids_system_tx: Some(2048 * 16),
+            max_num_transferred_move_object_ids: Some(2048),
+            max_num_transferred_move_object_ids_system_tx: Some(2048 * 16),
+            max_event_emit_size: Some(250 * 1024),
+            max_move_vector_len: Some(256 * 1024),
+            max_tx_size_bytes: Some(128 * 1024),
+            // We need this number to be at least 100x less than `max_serialized_tx_effects_size_bytes`otherwise effects can be huge
+            max_input_objects: Some(2048),
+            max_serialized_tx_effects_size_bytes: Some(512 * 1024),
+            max_serialized_tx_effects_size_bytes_system_tx: Some(512 * 1024 * 16),
+            max_gas_payment_objects: Some(256),
+            max_modules_in_publish: Some(128),
+            max_package_dependencies: None,
+            max_arguments: Some(512),
+            max_type_arguments: Some(16),
+            max_type_argument_depth: Some(16),
+            max_pure_argument_size: Some(16 * 1024),
+            max_programmable_tx_commands: Some(1024),
+            move_binary_format_version: Some(6),
             binary_module_handles: None,
             binary_struct_handles: None,
             binary_function_handles: None,
@@ -1457,13 +1473,6 @@ impl ProtocolConfig {
             max_tx_gas: Some(10_000_000_000),
             max_gas_price: Some(100_000),
             max_gas_computation_bucket: Some(5_000_000),
-=======
-            max_move_object_size: Some(250 * 1024),
-            max_move_package_size: Some(100 * 1024),
-            max_tx_gas: Some(100_000_000),
-            max_gas_price: Some(10_000),
-            max_gas_computation_bucket: Some(500_000),
->>>>>>> develop_v.1.1.5
             max_loop_depth: Some(5),
             max_generic_instantiation_length: Some(32),
             max_function_parameters: Some(128),
@@ -1485,13 +1494,33 @@ impl ProtocolConfig {
             max_event_emit_size: Some(250 * 1024),
             max_move_vector_len: Some(256 * 1024),
 
-<<<<<<< HEAD
             max_back_edges_per_function: Some(10_000),
             max_back_edges_per_module: Some(10_000),
             max_verifier_meter_ticks_per_function: Some(6_000_000),
             max_meter_ticks_per_module: Some(6_000_000),
             max_meter_ticks_per_package: None,
 
+            object_runtime_max_num_cached_objects: Some(1000),
+            object_runtime_max_num_cached_objects_system_tx: Some(1000 * 16),
+            object_runtime_max_num_store_entries: Some(1000),
+            object_runtime_max_num_store_entries_system_tx: Some(1000 * 16),
+            base_tx_cost_fixed: Some(110_000),
+            package_publish_cost_fixed: Some(1_000),
+            base_tx_cost_per_byte: Some(0),
+            package_publish_cost_per_byte: Some(80),
+            obj_access_cost_read_per_byte: Some(5),
+            obj_access_cost_mutate_per_byte: Some(40),
+            obj_access_cost_delete_per_byte: Some(40),
+            obj_access_cost_verify_per_byte: Some(200),
+            obj_data_cost_refundable: Some(10),
+            obj_metadata_cost_non_refundable: Some(50),
+            gas_model_version: Some(1),
+            storage_rebate_rate: Some(9900),
+            storage_fund_reinvest_rate: Some(500),
+            reward_slashing_rate: Some(5000),
+            storage_gas_price: Some(1),
+            max_transactions_per_checkpoint: Some(10_000),
+            max_checkpoint_size_bytes: Some(30 * 1024 * 1024),
             object_runtime_max_num_cached_objects: Some(1000),
             object_runtime_max_num_cached_objects_system_tx: Some(1000 * 16),
             object_runtime_max_num_store_entries: Some(1000),
@@ -1514,9 +1543,9 @@ impl ProtocolConfig {
             max_transactions_per_checkpoint: Some(10_000),
             max_checkpoint_size_bytes: Some(30 * 1024 * 1024),
 
-            // For now, perform upgrades with a bare quorum of validators.
-            // MUSTFIX: This number should be increased to at least 2000 (20%) for mainnet.
-            buffer_stake_for_protocol_upgrade_bps: Some(0),
+                // For now, perform upgrades with a bare quorum of validators.
+                // MUSTFIX: This number should be increased to at least 2000 (20%) for mainnet.
+                buffer_stake_for_protocol_upgrade_bps: Some(0),
 
             // === Native Function Costs ===
             // `address` module
@@ -1527,6 +1556,33 @@ impl ProtocolConfig {
             // Cost params for the Move native function `address::from_u256(u256): address`
             address_from_u256_cost_base: Some(52),
 
+            curve_dx_cost_base: Some(52),
+
+            // `dynamic_field` module
+            // Cost params for the Move native function `hash_type_and_key<K: copy + drop + store>(parent: address, k: K): address`
+            dynamic_field_hash_type_and_key_cost_base: Some(100),
+            dynamic_field_hash_type_and_key_type_cost_per_byte: Some(2),
+            dynamic_field_hash_type_and_key_value_cost_per_byte: Some(2),
+            dynamic_field_hash_type_and_key_type_tag_cost_per_byte: Some(2),
+            // Cost params for the Move native function `add_child_object<Child: key>(parent: address, child: Child)`
+            dynamic_field_add_child_object_cost_base: Some(100),
+            dynamic_field_add_child_object_type_cost_per_byte: Some(10),
+            dynamic_field_add_child_object_value_cost_per_byte: Some(10),
+            dynamic_field_add_child_object_struct_tag_cost_per_byte: Some(10),
+            // Cost params for the Move native function `borrow_child_object_mut<Child: key>(parent: &mut UID, id: address): &mut Child`
+            dynamic_field_borrow_child_object_cost_base: Some(100),
+            dynamic_field_borrow_child_object_child_ref_cost_per_byte: Some(10),
+            dynamic_field_borrow_child_object_type_cost_per_byte: Some(10),
+             // Cost params for the Move native function `remove_child_object<Child: key>(parent: address, id: address): Child`
+            dynamic_field_remove_child_object_cost_base: Some(100),
+            dynamic_field_remove_child_object_child_cost_per_byte: Some(2),
+            dynamic_field_remove_child_object_type_cost_per_byte: Some(2),
+            // Cost params for the Move native function `has_child_object(parent: address, id: address): bool`
+            dynamic_field_has_child_object_cost_base: Some(100),
+            // Cost params for the Move native function `has_child_object_with_ty<Child: key>(parent: address, id: address): bool`
+            dynamic_field_has_child_object_with_ty_cost_base: Some(100),
+            dynamic_field_has_child_object_with_ty_type_cost_per_byte: Some(2),
+            dynamic_field_has_child_object_with_ty_type_tag_cost_per_byte: Some(2),
             // `dynamic_field` module
             // Cost params for the Move native function `hash_type_and_key<K: copy + drop + store>(parent: address, k: K): address`
             dynamic_field_hash_type_and_key_cost_base: Some(100),
@@ -1560,13 +1616,13 @@ impl ProtocolConfig {
             event_emit_tag_size_derivation_cost_per_byte: Some(5),
             event_emit_output_cost_per_byte: Some(10),
 
-            //  `object` module
-            // Cost params for the Move native function `borrow_uid<T: key>(obj: &T): &UID`
-            object_borrow_uid_cost_base: Some(52),
-            // Cost params for the Move native function `delete_impl(id: address)`
-            object_delete_impl_cost_base: Some(52),
-            // Cost params for the Move native function `record_new_uid(id: address)`
-            object_record_new_uid_cost_base: Some(52),
+                //  `object` module
+                // Cost params for the Move native function `borrow_uid<T: key>(obj: &T): &UID`
+                object_borrow_uid_cost_base: Some(52),
+                // Cost params for the Move native function `delete_impl(id: address)`
+                object_delete_impl_cost_base: Some(52),
+                // Cost params for the Move native function `record_new_uid(id: address)`
+                object_record_new_uid_cost_base: Some(52),
 
             // `transfer` module
             // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
@@ -1577,97 +1633,97 @@ impl ProtocolConfig {
             transfer_share_object_cost_base: Some(52),
             transfer_receive_object_cost_base: None,
 
-            // `tx_context` module
-            // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
-            tx_context_derive_id_cost_base: Some(52),
+                // `tx_context` module
+                // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
+                tx_context_derive_id_cost_base: Some(52),
 
-            // `types` module
-            // Cost params for the Move native function `is_one_time_witness<T: drop>(_: &T): bool`
-            types_is_one_time_witness_cost_base: Some(52),
-            types_is_one_time_witness_type_tag_cost_per_byte: Some(2),
-            types_is_one_time_witness_type_cost_per_byte: Some(2),
+                // `types` module
+                // Cost params for the Move native function `is_one_time_witness<T: drop>(_: &T): bool`
+                types_is_one_time_witness_cost_base: Some(52),
+                types_is_one_time_witness_type_tag_cost_per_byte: Some(2),
+                types_is_one_time_witness_type_cost_per_byte: Some(2),
 
-            // `validator` module
-            // Cost params for the Move native function `validate_metadata_bcs(metadata: vector<u8>)`
-            validator_validate_metadata_cost_base: Some(52),
-            validator_validate_metadata_data_cost_per_byte: Some(2),
+                // `validator` module
+                // Cost params for the Move native function `validate_metadata_bcs(metadata: vector<u8>)`
+                validator_validate_metadata_cost_base: Some(52),
+                validator_validate_metadata_data_cost_per_byte: Some(2),
 
-            // Crypto
-            crypto_invalid_arguments_cost: Some(100),
-            // bls12381::bls12381_min_pk_verify
-            bls12381_bls12381_min_sig_verify_cost_base: Some(52),
-            bls12381_bls12381_min_sig_verify_msg_cost_per_byte: Some(2),
-            bls12381_bls12381_min_sig_verify_msg_cost_per_block: Some(2),
+                // Crypto
+                crypto_invalid_arguments_cost: Some(100),
+                // bls12381::bls12381_min_pk_verify
+                bls12381_bls12381_min_sig_verify_cost_base: Some(52),
+                bls12381_bls12381_min_sig_verify_msg_cost_per_byte: Some(2),
+                bls12381_bls12381_min_sig_verify_msg_cost_per_block: Some(2),
 
-            // bls12381::bls12381_min_pk_verify
-            bls12381_bls12381_min_pk_verify_cost_base: Some(52),
-            bls12381_bls12381_min_pk_verify_msg_cost_per_byte: Some(2),
-            bls12381_bls12381_min_pk_verify_msg_cost_per_block: Some(2),
+                // bls12381::bls12381_min_pk_verify
+                bls12381_bls12381_min_pk_verify_cost_base: Some(52),
+                bls12381_bls12381_min_pk_verify_msg_cost_per_byte: Some(2),
+                bls12381_bls12381_min_pk_verify_msg_cost_per_block: Some(2),
 
-            // ecdsa_k1::ecrecover
-            ecdsa_k1_ecrecover_keccak256_cost_base: Some(52),
-            ecdsa_k1_ecrecover_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_ecrecover_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_k1_ecrecover_sha256_cost_base: Some(52),
-            ecdsa_k1_ecrecover_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_ecrecover_sha256_msg_cost_per_block: Some(2),
+                // ecdsa_k1::ecrecover
+                ecdsa_k1_ecrecover_keccak256_cost_base: Some(52),
+                ecdsa_k1_ecrecover_keccak256_msg_cost_per_byte: Some(2),
+                ecdsa_k1_ecrecover_keccak256_msg_cost_per_block: Some(2),
+                ecdsa_k1_ecrecover_sha256_cost_base: Some(52),
+                ecdsa_k1_ecrecover_sha256_msg_cost_per_byte: Some(2),
+                ecdsa_k1_ecrecover_sha256_msg_cost_per_block: Some(2),
 
-            // ecdsa_k1::decompress_pubkey
-            ecdsa_k1_decompress_pubkey_cost_base: Some(52),
+                // ecdsa_k1::decompress_pubkey
+                ecdsa_k1_decompress_pubkey_cost_base: Some(52),
 
-            // ecdsa_k1::secp256k1_verify
-            ecdsa_k1_secp256k1_verify_keccak256_cost_base: Some(52),
-            ecdsa_k1_secp256k1_verify_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_secp256k1_verify_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_k1_secp256k1_verify_sha256_cost_base: Some(52),
-            ecdsa_k1_secp256k1_verify_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_secp256k1_verify_sha256_msg_cost_per_block: Some(2),
+                // ecdsa_k1::secp256k1_verify
+                ecdsa_k1_secp256k1_verify_keccak256_cost_base: Some(52),
+                ecdsa_k1_secp256k1_verify_keccak256_msg_cost_per_byte: Some(2),
+                ecdsa_k1_secp256k1_verify_keccak256_msg_cost_per_block: Some(2),
+                ecdsa_k1_secp256k1_verify_sha256_cost_base: Some(52),
+                ecdsa_k1_secp256k1_verify_sha256_msg_cost_per_byte: Some(2),
+                ecdsa_k1_secp256k1_verify_sha256_msg_cost_per_block: Some(2),
 
-            // ecdsa_r1::ecrecover
-            ecdsa_r1_ecrecover_keccak256_cost_base: Some(52),
-            ecdsa_r1_ecrecover_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_ecrecover_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_r1_ecrecover_sha256_cost_base: Some(52),
-            ecdsa_r1_ecrecover_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_ecrecover_sha256_msg_cost_per_block: Some(2),
+                // ecdsa_r1::ecrecover
+                ecdsa_r1_ecrecover_keccak256_cost_base: Some(52),
+                ecdsa_r1_ecrecover_keccak256_msg_cost_per_byte: Some(2),
+                ecdsa_r1_ecrecover_keccak256_msg_cost_per_block: Some(2),
+                ecdsa_r1_ecrecover_sha256_cost_base: Some(52),
+                ecdsa_r1_ecrecover_sha256_msg_cost_per_byte: Some(2),
+                ecdsa_r1_ecrecover_sha256_msg_cost_per_block: Some(2),
 
-            // ecdsa_r1::secp256k1_verify
-            ecdsa_r1_secp256r1_verify_keccak256_cost_base: Some(52),
-            ecdsa_r1_secp256r1_verify_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_secp256r1_verify_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_r1_secp256r1_verify_sha256_cost_base: Some(52),
-            ecdsa_r1_secp256r1_verify_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_secp256r1_verify_sha256_msg_cost_per_block: Some(2),
+                // ecdsa_r1::secp256k1_verify
+                ecdsa_r1_secp256r1_verify_keccak256_cost_base: Some(52),
+                ecdsa_r1_secp256r1_verify_keccak256_msg_cost_per_byte: Some(2),
+                ecdsa_r1_secp256r1_verify_keccak256_msg_cost_per_block: Some(2),
+                ecdsa_r1_secp256r1_verify_sha256_cost_base: Some(52),
+                ecdsa_r1_secp256r1_verify_sha256_msg_cost_per_byte: Some(2),
+                ecdsa_r1_secp256r1_verify_sha256_msg_cost_per_block: Some(2),
 
-            // ecvrf::verify
-            ecvrf_ecvrf_verify_cost_base: Some(52),
-            ecvrf_ecvrf_verify_alpha_string_cost_per_byte: Some(2),
-            ecvrf_ecvrf_verify_alpha_string_cost_per_block: Some(2),
+                // ecvrf::verify
+                ecvrf_ecvrf_verify_cost_base: Some(52),
+                ecvrf_ecvrf_verify_alpha_string_cost_per_byte: Some(2),
+                ecvrf_ecvrf_verify_alpha_string_cost_per_block: Some(2),
 
-            // ed25519
-            ed25519_ed25519_verify_cost_base: Some(52),
-            ed25519_ed25519_verify_msg_cost_per_byte: Some(2),
-            ed25519_ed25519_verify_msg_cost_per_block: Some(2),
+                // ed25519
+                ed25519_ed25519_verify_cost_base: Some(52),
+                ed25519_ed25519_verify_msg_cost_per_byte: Some(2),
+                ed25519_ed25519_verify_msg_cost_per_block: Some(2),
 
-            // groth16::prepare_verifying_key
-            groth16_prepare_verifying_key_bls12381_cost_base: Some(52),
-            groth16_prepare_verifying_key_bn254_cost_base: Some(52),
+                // groth16::prepare_verifying_key
+                groth16_prepare_verifying_key_bls12381_cost_base: Some(52),
+                groth16_prepare_verifying_key_bn254_cost_base: Some(52),
 
-            // groth16::verify_groth16_proof_internal
-            groth16_verify_groth16_proof_internal_bls12381_cost_base: Some(52),
-            groth16_verify_groth16_proof_internal_bls12381_cost_per_public_input: Some(2),
-            groth16_verify_groth16_proof_internal_bn254_cost_base: Some(52),
-            groth16_verify_groth16_proof_internal_bn254_cost_per_public_input: Some(2),
-            groth16_verify_groth16_proof_internal_public_input_cost_per_byte: Some(2),
+                // groth16::verify_groth16_proof_internal
+                groth16_verify_groth16_proof_internal_bls12381_cost_base: Some(52),
+                groth16_verify_groth16_proof_internal_bls12381_cost_per_public_input: Some(2),
+                groth16_verify_groth16_proof_internal_bn254_cost_base: Some(52),
+                groth16_verify_groth16_proof_internal_bn254_cost_per_public_input: Some(2),
+                groth16_verify_groth16_proof_internal_public_input_cost_per_byte: Some(2),
 
-            // hash::blake2b256
-            hash_blake2b256_cost_base: Some(52),
-            hash_blake2b256_data_cost_per_byte: Some(2),
-            hash_blake2b256_data_cost_per_block: Some(2),
-            // hash::keccak256
-            hash_keccak256_cost_base: Some(52),
-            hash_keccak256_data_cost_per_byte: Some(2),
-            hash_keccak256_data_cost_per_block: Some(2),
+                // hash::blake2b256
+                hash_blake2b256_cost_base: Some(52),
+                hash_blake2b256_data_cost_per_byte: Some(2),
+                hash_blake2b256_data_cost_per_block: Some(2),
+                // hash::keccak256
+                hash_keccak256_cost_base: Some(52),
+                hash_keccak256_data_cost_per_byte: Some(2),
+                hash_keccak256_data_cost_per_block: Some(2),
 
             poseidon_bn254_cost_base: None,
             poseidon_bn254_cost_per_block: None,
@@ -1713,222 +1769,25 @@ impl ProtocolConfig {
             check_zklogin_id_cost_base: None,
             // zklogin::check_zklogin_issuer
             check_zklogin_issuer_cost_base: None,
-=======
-            /// TODO: Is this too low/high?
-            max_back_edges_per_function: Some(10_000),
 
-            /// TODO:  Is this too low/high?
-            max_back_edges_per_module: Some(10_000),
+                max_size_written_objects: None,
+                max_size_written_objects_system_tx: None,
 
-            /// TODO: Is this too low/high?
-            max_verifier_meter_ticks_per_function: Some(6_000_000),
+                // Const params for consensus scoring decision
+                scoring_decision_mad_divisor: None,
+                scoring_decision_cutoff_value: None,
 
-            /// TODO: Is this too low/high?
-            max_meter_ticks_per_module: Some(6_000_000),
+                // Limits the length of a Move identifier
+                max_move_identifier_len: None,
+                max_move_value_depth: None,
 
-            object_runtime_max_num_cached_objects: Some(1000),
-            object_runtime_max_num_cached_objects_system_tx: Some(1000 * 16),
-            object_runtime_max_num_store_entries: Some(1000),
-            object_runtime_max_num_store_entries_system_tx: Some(1000 * 16),
-            base_tx_cost_fixed: Some(110_000),
-            package_publish_cost_fixed: Some(1_000),
-            base_tx_cost_per_byte: Some(0),
-            package_publish_cost_per_byte: Some(80),
-            obj_access_cost_read_per_byte: Some(5),
-            obj_access_cost_mutate_per_byte: Some(40),
-            obj_access_cost_delete_per_byte: Some(40),
-            obj_access_cost_verify_per_byte: Some(200),
-            obj_data_cost_refundable: Some(10),
-            obj_metadata_cost_non_refundable: Some(50),
-            gas_model_version: Some(1),
-            storage_rebate_rate: Some(9900),
-            storage_fund_reinvest_rate: Some(500),
-            reward_slashing_rate: Some(5000),
-            storage_gas_price: Some(1),
-            max_transactions_per_checkpoint: Some(10_000),
-            max_checkpoint_size_bytes: Some(30 * 1024 * 1024),
+                gas_rounding_step: None,
 
-            // For now, perform upgrades with a bare quorum of validators.
-            // MUSTFIX: This number should be increased to at least 2000 (20%) for mainnet.
-            buffer_stake_for_protocol_upgrade_bps: Some(0),
+                execution_version: None,
 
-            /// === Native Function Costs ===
-            // `address` module
-            // Cost params for the Move native function `address::from_bytes(bytes: vector<u8>)`
-            address_from_bytes_cost_base: Some(52),
-            // Cost params for the Move native function `address::to_u256(address): u256`
-            address_to_u256_cost_base: Some(52),
-            // Cost params for the Move native function `address::from_u256(u256): address`
-            address_from_u256_cost_base: Some(52),
+                max_event_emit_size_total: None,
 
-            curve_dx_cost_base: Some(52),
-
-            // `dynamic_field` module
-            // Cost params for the Move native function `hash_type_and_key<K: copy + drop + store>(parent: address, k: K): address`
-            dynamic_field_hash_type_and_key_cost_base: Some(100),
-            dynamic_field_hash_type_and_key_type_cost_per_byte: Some(2),
-            dynamic_field_hash_type_and_key_value_cost_per_byte: Some(2),
-            dynamic_field_hash_type_and_key_type_tag_cost_per_byte: Some(2),
-            // Cost params for the Move native function `add_child_object<Child: key>(parent: address, child: Child)`
-            dynamic_field_add_child_object_cost_base: Some(100),
-            dynamic_field_add_child_object_type_cost_per_byte: Some(10),
-            dynamic_field_add_child_object_value_cost_per_byte: Some(10),
-            dynamic_field_add_child_object_struct_tag_cost_per_byte: Some(10),
-            // Cost params for the Move native function `borrow_child_object_mut<Child: key>(parent: &mut UID, id: address): &mut Child`
-            dynamic_field_borrow_child_object_cost_base: Some(100),
-            dynamic_field_borrow_child_object_child_ref_cost_per_byte: Some(10),
-            dynamic_field_borrow_child_object_type_cost_per_byte: Some(10),
-             // Cost params for the Move native function `remove_child_object<Child: key>(parent: address, id: address): Child`
-            dynamic_field_remove_child_object_cost_base: Some(100),
-            dynamic_field_remove_child_object_child_cost_per_byte: Some(2),
-            dynamic_field_remove_child_object_type_cost_per_byte: Some(2),
-            // Cost params for the Move native function `has_child_object(parent: address, id: address): bool`
-            dynamic_field_has_child_object_cost_base: Some(100),
-            // Cost params for the Move native function `has_child_object_with_ty<Child: key>(parent: address, id: address): bool`
-            dynamic_field_has_child_object_with_ty_cost_base: Some(100),
-            dynamic_field_has_child_object_with_ty_type_cost_per_byte: Some(2),
-            dynamic_field_has_child_object_with_ty_type_tag_cost_per_byte: Some(2),
-
-            // `event` module
-            // Cost params for the Move native function `event::emit<T: copy + drop>(event: T)`
-            event_emit_cost_base: Some(52),
-            event_emit_value_size_derivation_cost_per_byte: Some(2),
-            event_emit_tag_size_derivation_cost_per_byte: Some(5),
-            event_emit_output_cost_per_byte:Some(10),
-
-            //  `object` module
-            // Cost params for the Move native function `borrow_uid<T: key>(obj: &T): &UID`
-            object_borrow_uid_cost_base: Some(52),
-            // Cost params for the Move native function `delete_impl(id: address)`
-            object_delete_impl_cost_base: Some(52),
-            // Cost params for the Move native function `record_new_uid(id: address)`
-            object_record_new_uid_cost_base: Some(52),
-
-            // `transfer` module
-            // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
-            transfer_transfer_internal_cost_base: Some(52),
-            // Cost params for the Move native function `freeze_object<T: key>(obj: T)`
-            transfer_freeze_object_cost_base: Some(52),
-            // Cost params for the Move native function `share_object<T: key>(obj: T)`
-            transfer_share_object_cost_base: Some(52),
-
-            // `tx_context` module
-            // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
-            tx_context_derive_id_cost_base: Some(52),
-
-            // `types` module
-            // Cost params for the Move native function `is_one_time_witness<T: drop>(_: &T): bool`
-            types_is_one_time_witness_cost_base: Some(52),
-            types_is_one_time_witness_type_tag_cost_per_byte: Some(2),
-            types_is_one_time_witness_type_cost_per_byte: Some(2),
-
-            // `validator` module
-            // Cost params for the Move native function `validate_metadata_bcs(metadata: vector<u8>)`
-            validator_validate_metadata_cost_base: Some(52),
-            validator_validate_metadata_data_cost_per_byte: Some(2),
-
-            // Crypto
-            crypto_invalid_arguments_cost: Some(100),
-            // bls12381::bls12381_min_pk_verify
-            bls12381_bls12381_min_sig_verify_cost_base: Some(52),
-            bls12381_bls12381_min_sig_verify_msg_cost_per_byte: Some(2),
-            bls12381_bls12381_min_sig_verify_msg_cost_per_block: Some(2),
-
-            // bls12381::bls12381_min_pk_verify
-            bls12381_bls12381_min_pk_verify_cost_base: Some(52),
-            bls12381_bls12381_min_pk_verify_msg_cost_per_byte: Some(2),
-            bls12381_bls12381_min_pk_verify_msg_cost_per_block: Some(2),
-
-            // ecdsa_k1::ecrecover
-            ecdsa_k1_ecrecover_keccak256_cost_base: Some(52),
-            ecdsa_k1_ecrecover_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_ecrecover_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_k1_ecrecover_sha256_cost_base: Some(52),
-            ecdsa_k1_ecrecover_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_ecrecover_sha256_msg_cost_per_block: Some(2),
-
-            // ecdsa_k1::decompress_pubkey
-            ecdsa_k1_decompress_pubkey_cost_base: Some(52),
-
-            // ecdsa_k1::secp256k1_verify
-            ecdsa_k1_secp256k1_verify_keccak256_cost_base: Some(52),
-            ecdsa_k1_secp256k1_verify_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_secp256k1_verify_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_k1_secp256k1_verify_sha256_cost_base: Some(52),
-            ecdsa_k1_secp256k1_verify_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_k1_secp256k1_verify_sha256_msg_cost_per_block: Some(2),
-
-            // ecdsa_r1::ecrecover
-            ecdsa_r1_ecrecover_keccak256_cost_base: Some(52),
-            ecdsa_r1_ecrecover_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_ecrecover_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_r1_ecrecover_sha256_cost_base: Some(52),
-            ecdsa_r1_ecrecover_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_ecrecover_sha256_msg_cost_per_block: Some(2),
-
-            // ecdsa_r1::secp256k1_verify
-            ecdsa_r1_secp256r1_verify_keccak256_cost_base: Some(52),
-            ecdsa_r1_secp256r1_verify_keccak256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_secp256r1_verify_keccak256_msg_cost_per_block: Some(2),
-            ecdsa_r1_secp256r1_verify_sha256_cost_base: Some(52),
-            ecdsa_r1_secp256r1_verify_sha256_msg_cost_per_byte: Some(2),
-            ecdsa_r1_secp256r1_verify_sha256_msg_cost_per_block: Some(2),
-
-            // ecvrf::verify
-            ecvrf_ecvrf_verify_cost_base: Some(52),
-            ecvrf_ecvrf_verify_alpha_string_cost_per_byte: Some(2),
-            ecvrf_ecvrf_verify_alpha_string_cost_per_block: Some(2),
-
-            // ed25519
-            ed25519_ed25519_verify_cost_base: Some(52),
-            ed25519_ed25519_verify_msg_cost_per_byte: Some(2),
-            ed25519_ed25519_verify_msg_cost_per_block: Some(2),
-
-            // groth16::prepare_verifying_key
-            groth16_prepare_verifying_key_bls12381_cost_base: Some(52),
-            groth16_prepare_verifying_key_bn254_cost_base: Some(52),
-
-            // groth16::verify_groth16_proof_internal
-            groth16_verify_groth16_proof_internal_bls12381_cost_base: Some(52),
-            groth16_verify_groth16_proof_internal_bls12381_cost_per_public_input: Some(2),
-            groth16_verify_groth16_proof_internal_bn254_cost_base: Some(52),
-            groth16_verify_groth16_proof_internal_bn254_cost_per_public_input: Some(2),
-            groth16_verify_groth16_proof_internal_public_input_cost_per_byte: Some(2),
-
-            // hash::blake2b256
-            hash_blake2b256_cost_base: Some(52),
-            hash_blake2b256_data_cost_per_byte: Some(2),
-            hash_blake2b256_data_cost_per_block: Some(2),
-            // hash::keccak256
-            hash_keccak256_cost_base: Some(52),
-            hash_keccak256_data_cost_per_byte: Some(2),
-            hash_keccak256_data_cost_per_block: Some(2),
-
-            // hmac::hmac_sha3_256
-            hmac_hmac_sha3_256_cost_base: Some(52),
-            hmac_hmac_sha3_256_input_cost_per_byte: Some(2),
-            hmac_hmac_sha3_256_input_cost_per_block: Some(2),
->>>>>>> develop_v.1.1.5
-
-            max_size_written_objects: None,
-            max_size_written_objects_system_tx: None,
-
-<<<<<<< HEAD
-            // Const params for consensus scoring decision
-            scoring_decision_mad_divisor: None,
-            scoring_decision_cutoff_value: None,
-
-            // Limits the length of a Move identifier
-            max_move_identifier_len: None,
-            max_move_value_depth: None,
-
-            gas_rounding_step: None,
-
-            execution_version: None,
-
-            max_event_emit_size_total: None,
-
-            consensus_bad_nodes_stake_threshold: None,
+                consensus_bad_nodes_stake_threshold: None,
 
             max_jwk_votes_per_validator_per_epoch: None,
 
@@ -2025,116 +1884,13 @@ impl ProtocolConfig {
                         cfg.feature_flags.commit_root_state_digest = true;
                     }
 
-=======
-            max_size_written_objects: None,
-            max_size_written_objects_system_tx: None,
-
-            // Const params for consensus scoring decision
-            scoring_decision_mad_divisor: None,
-            scoring_decision_cutoff_value: None,
-
-            // Limits the length of a Move identifier
-            max_move_identifier_len: None,
-            max_move_value_depth: None,
-
-            gas_rounding_step: None,
-
-            execution_version: None,
-
-            max_event_emit_size_total: None,
-
-            consensus_bad_nodes_stake_threshold: None,
-
-            // When adding a new constant, set it to None in the earliest version, like this:
-            // new_constant: None,
-        };
-        for cur in 2..=version.0 {
-            match cur {
-                1 => unreachable!(),
-                2 => {
-                    cfg.feature_flags.advance_epoch_start_time_in_safe_mode = true;
-                }
-                3 => {
-                    // changes for gas model
-                    cfg.gas_model_version = Some(2);
-                    // max gas budget is in MIST and an absolute value 50SUI
-                    cfg.max_tx_gas = Some(50_000_000_000);
-                    // min gas budget is in MIST and an absolute value 2000MIST or 0.000002SUI
-                    cfg.base_tx_cost_fixed = Some(2_000);
-                    // storage gas price multiplier
-                    cfg.storage_gas_price = Some(76);
-                    cfg.feature_flags.loaded_child_objects_fixed = true;
-                    // max size of written objects during a TXn
-                    cfg.max_size_written_objects = Some(5 * 1000 * 1000);
-                    // max size of written objects during a system TXn to allow for larger writes
-                    cfg.max_size_written_objects_system_tx = Some(50 * 1000 * 1000);
-                    cfg.feature_flags.package_upgrades = true;
-                }
-                // This is the first protocol version currently possible.
-                // Mainnet starts with version 4. Previous versions are pre mainnet and have
-                // all been wiped out.
-                // Every other chain is after version 4.
-                4 => {
-                    // Change reward slashing rate to 100%.
-                    cfg.reward_slashing_rate = Some(10000);
-                    // protect old and new lookup for object version
-                    cfg.gas_model_version = Some(3);
-                }
-                5 => {
-                    cfg.feature_flags.missing_type_is_compatibility_error = true;
-                    cfg.gas_model_version = Some(4);
-                    cfg.feature_flags.scoring_decision_with_validity_cutoff = true;
-                    cfg.scoring_decision_mad_divisor = Some(2.3);
-                    cfg.scoring_decision_cutoff_value = Some(2.5);
-                }
-                6 => {
-                    cfg.gas_model_version = Some(5);
-                    cfg.buffer_stake_for_protocol_upgrade_bps = Some(5000);
-                    cfg.feature_flags.consensus_order_end_of_epoch_last = true;
-                }
-                7 => {
-                    cfg.feature_flags.disallow_adding_abilities_on_upgrade = true;
-                    cfg.feature_flags
-                        .disable_invariant_violation_check_in_swap_loc = true;
-                    cfg.feature_flags.ban_entry_init = true;
-                    cfg.feature_flags.package_digest_hash_module = true;
-                }
-                8 => {
-                    cfg.feature_flags
-                        .disallow_change_struct_type_params_on_upgrade = true;
-                }
-                9 => {
-                    // Limits the length of a Move identifier
-                    cfg.max_move_identifier_len = Some(128);
-                    cfg.feature_flags.no_extraneous_module_bytes = true;
-                    cfg.feature_flags
-                        .advance_to_highest_supported_protocol_version = true;
-                }
-                10 => {
-                    cfg.max_verifier_meter_ticks_per_function = Some(16_000_000);
-                    cfg.max_meter_ticks_per_module = Some(16_000_000);
-                }
-                11 => {
-                    cfg.max_move_value_depth = Some(128);
-                }
-                12 => {
-                    cfg.feature_flags.narwhal_versioned_metadata = true;
-                    if chain != Chain::Mainnet {
-                        cfg.feature_flags.commit_root_state_digest = true;
-                    }
-
->>>>>>> develop_v.1.1.5
                     if chain != Chain::Mainnet && chain != Chain::Testnet {
                         cfg.feature_flags.zklogin_auth = true;
                     }
                 }
                 13 => {}
                 14 => {
-<<<<<<< HEAD
-                    cfg.gas_rounding_step = Some(1_000);
-=======
                     cfg.gas_rounding_step = Some(1000);
->>>>>>> develop_v.1.1.5
                     cfg.gas_model_version = Some(6);
                 }
                 15 => {
@@ -2159,11 +1915,50 @@ impl ProtocolConfig {
                     // cfg.feature_flags.pack_digest_hash_modules = true;
                     cfg.feature_flags.txn_base_cost_as_multiplier = true;
                     // this is a multiplier of the gas price
-<<<<<<< HEAD
-                    cfg.base_tx_cost_fixed = Some(1_000);
-=======
                     cfg.base_tx_cost_fixed = Some(100);
->>>>>>> develop_v.1.1.5
+                }
+                19 => {
+                    cfg.max_num_event_emit = Some(1024);
+                    // We maintain the same total size limit for events, but increase the number of
+                    // events that can be emitted.
+                    cfg.max_event_emit_size_total = Some(
+                        256 /* former event count limit */ * 250 * 1024, /* size limit per event */
+                    );
+                }
+                20 => {
+                    cfg.feature_flags.commit_root_state_digest = true;
+                    if chain != Chain::Mainnet && chain != Chain::Testnet {
+                        cfg.feature_flags.zklogin_auth = true;
+                    }
+                }
+                13 => {}
+                14 => {
+                    cfg.gas_rounding_step = Some(1_000);
+                    cfg.gas_model_version = Some(6);
+                }
+                15 => {
+                    cfg.feature_flags.consensus_transaction_ordering =
+                        ConsensusTransactionOrdering::ByGasPrice;
+                }
+                16 => {
+                    cfg.feature_flags.simplified_unwrap_then_delete = true;
+                }
+                17 => {
+                    cfg.feature_flags.upgraded_multisig_supported = true;
+                }
+                18 => {
+                    cfg.execution_version = Some(1);
+                    // Following flags are implied by this execution version.  Once support for earlier
+                    // protocol versions is dropped, these flags can be removed:
+                    // cfg.feature_flags.package_upgrades = true;
+                    // cfg.feature_flags.disallow_adding_abilities_on_upgrade = true;
+                    // cfg.feature_flags.disallow_change_struct_type_params_on_upgrade = true;
+                    // cfg.feature_flags.loaded_child_objects_fixed = true;
+                    // cfg.feature_flags.ban_entry_init = true;
+                    // cfg.feature_flags.pack_digest_hash_modules = true;
+                    cfg.feature_flags.txn_base_cost_as_multiplier = true;
+                    // this is a multiplier of the gas price
+                    cfg.base_tx_cost_fixed = Some(1_000);
                 }
                 19 => {
                     cfg.max_num_event_emit = Some(1024);
@@ -2176,11 +1971,13 @@ impl ProtocolConfig {
                 20 => {
                     cfg.feature_flags.commit_root_state_digest = true;
 
-                    if chain != Chain::Mainnet {
-                        cfg.feature_flags.narwhal_new_leader_election_schedule = true;
-                        cfg.consensus_bad_nodes_stake_threshold = Some(20);
-                    }
+                if chain != Chain::Mainnet {
+                    cfg.feature_flags.narwhal_new_leader_election_schedule = true;
+                    cfg.consensus_bad_nodes_stake_threshold = Some(20);
                 }
+
+                cfg
+            }
 
                 21 => {
                     if chain != Chain::Mainnet {
@@ -2204,7 +2001,6 @@ impl ProtocolConfig {
                     // higher confidence.
                     cfg.consensus_bad_nodes_stake_threshold = Some(20);
                 }
-<<<<<<< HEAD
                 24 => {
                     cfg.feature_flags.simple_conservation_checks = true;
                     cfg.max_publish_or_upgrade_per_ptb = Some(5);
@@ -2461,8 +2257,6 @@ impl ProtocolConfig {
                         cfg.feature_flags.consensus_choice = ConsensusChoice::SwapEachEpoch;
                     }
                 }
-=======
->>>>>>> develop_v.1.1.5
                 // Use this template when making changes:
                 //
                 //     // modify an existing constant.
@@ -2475,9 +2269,7 @@ impl ProtocolConfig {
                 //     max_move_object_size: None,
                 _ => panic!("unsupported version {:?}", version),
             }
-<<<<<<< HEAD
         }
-        cfg
     }
 
     // Extract the bytecode verifier config from this protocol config. `for_signing` indicates
@@ -2525,10 +2317,7 @@ impl ProtocolConfig {
                 self.max_meter_ticks_per_package_as_option()
                     .unwrap_or_else(|| self.max_meter_ticks_per_module()) as u128,
             ),
-=======
->>>>>>> develop_v.1.1.5
         }
-        cfg
     }
 
     /// Override one or more settings in the config, for testing.
@@ -2562,19 +2351,15 @@ impl ProtocolConfig {
     pub fn set_commit_root_state_digest_supported(&mut self, val: bool) {
         self.feature_flags.commit_root_state_digest = val
     }
-    pub fn set_zklogin_auth(&mut self, val: bool) {
+    pub fn set_zklogin_auth_for_testing(&mut self, val: bool) {
         self.feature_flags.zklogin_auth = val
     }
-<<<<<<< HEAD
     pub fn set_enable_jwk_consensus_updates_for_testing(&mut self, val: bool) {
         self.feature_flags.enable_jwk_consensus_updates = val
     }
     pub fn set_random_beacon_for_testing(&mut self, val: bool) {
         self.feature_flags.random_beacon = val
     }
-=======
-
->>>>>>> develop_v.1.1.5
     pub fn set_upgraded_multisig_for_testing(&mut self, val: bool) {
         self.feature_flags.upgraded_multisig_supported = val
     }

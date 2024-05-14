@@ -106,6 +106,10 @@ impl<S: Clone + Eq, const STRENGTH: bool> StakeAggregator<S, STRENGTH> {
         self.total_votes
     }
 
+    pub fn has_quorum(&self) -> bool {
+        self.total_votes >= self.committee.threshold::<STRENGTH>()
+    }
+
     pub fn validator_sig_count(&self) -> usize {
         self.data.len()
     }
@@ -242,9 +246,9 @@ impl<K, V, const STRENGTH: bool> MultiStakeAggregator<K, V, STRENGTH> {
 }
 
 impl<K, V, const STRENGTH: bool> MultiStakeAggregator<K, V, STRENGTH>
-where
-    K: Hash + Eq,
-    V: Message + Serialize + Clone,
+    where
+        K: Hash + Eq,
+        V: Message + Serialize + Clone,
 {
     pub fn insert(
         &mut self,
@@ -267,8 +271,8 @@ where
 }
 
 impl<K, V, const STRENGTH: bool> MultiStakeAggregator<K, V, STRENGTH>
-where
-    K: Clone + Ord,
+    where
+        K: Clone + Ord,
 {
     pub fn get_all_unique_values(&self) -> BTreeMap<K, (Vec<AuthorityName>, StakeUnit)> {
         self.stake_maps
@@ -277,11 +281,10 @@ where
             .collect()
     }
 }
-<<<<<<< HEAD
 
 impl<K, V, const STRENGTH: bool> MultiStakeAggregator<K, V, STRENGTH>
-where
-    K: Hash + Eq,
+    where
+        K: Hash + Eq,
 {
     #[allow(dead_code)]
     pub fn authorities_for_key(&self, k: &K) -> Option<impl Iterator<Item = &AuthorityName>> {
@@ -318,8 +321,8 @@ pub struct GenericMultiStakeAggregator<K, const STRENGTH: bool> {
 }
 
 impl<K, const STRENGTH: bool> GenericMultiStakeAggregator<K, STRENGTH>
-where
-    K: Hash + Eq,
+    where
+        K: Hash + Eq,
 {
     pub fn new(committee: Arc<Committee>) -> Self {
         Self {
@@ -396,5 +399,3 @@ fn test_votes_per_authority() {
     agg.insert(authority1, key3);
     assert_eq!(agg.votes_for_authority(authority1), 2);
 }
-=======
->>>>>>> develop_v.1.1.5
