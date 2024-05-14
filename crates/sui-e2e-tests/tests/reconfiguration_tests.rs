@@ -1174,17 +1174,16 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
     Ok(())
 }
 
-
 #[sim_test]
 async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(30000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
-    
+
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
@@ -1210,6 +1209,7 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
+
     // modify voting quorum
     let function = "set_voting_quorum_rate".to_string();
     let arg = vec![
@@ -1219,24 +1219,19 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-    // set voting delay
-    let function = "set_min_action_delay".to_string();
-    let arg = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::from_str(&manager_obj.to_string())?,
-        SuiJsonValue::new(json!("1"))?,
-    ];
-    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-    create_active_proposal(http_client, gas, address, &cluster).await?;
-    //create votingBfc
-    // now do the call
+    let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas1 = bfc_objects.first().unwrap().object().unwrap();
+
+    create_active_proposal(http_client, gas1, address, &cluster).await?;
+    // //create votingBfc
+    // // now do the call
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
     assert!(objects.len() > 0);
 
-    let _ = sleep(Duration::from_secs(60)).await;
+
 
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -1250,25 +1245,34 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     ];
 
     let queue_proposal_action_function = "queue_proposal_action".to_string();
-    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), queue_proposal_action_function, arg).await?;
+    let _ = sleep(Duration::from_secs(60)).await;
+
+    do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
+    let _ = sleep(Duration::from_secs(60)).await;
+
 
     let destroy_terminated_proposal_function = "destroy_terminated_proposal".to_string();
+    let module = "bfc_system".to_string();
+
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&manager_obj.to_string())?,
         SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
+    let _ = sleep(Duration::from_secs(60)).await;
+
     do_move_call(http_client, gas, address, &cluster, package_id, module, destroy_terminated_proposal_function, arg).await?;
     Ok(())
 }
 
 #[sim_test]
 async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
+    telemetry_subscribers::init_for_testing();
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(30000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -1308,22 +1312,10 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-    let objects1 = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
 
-    let gas1 = objects1.first().unwrap().object().unwrap();
+    let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas1 = bfc_objects.first().unwrap().object().unwrap();
+
     create_active_proposal(http_client, gas1, address, &cluster).await?;
     // //create votingBfc
     // // now do the call
@@ -1331,6 +1323,8 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
     assert!(objects.len() > 0);
+
+
 
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -1348,7 +1342,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
 
-     Ok(())
+    Ok(())
 }
 
 #[sim_test]
