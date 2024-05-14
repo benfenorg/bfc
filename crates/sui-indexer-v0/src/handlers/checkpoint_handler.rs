@@ -963,8 +963,8 @@ where
                 )
             };
             info!(
-                "Indexer is getting estimated reward, exchange_rates_id: {:?}, staked_object_id: {}, current_exchange_rates: {:?}",
-                exchange_rates_id, stake.staked_object_id, current_exchange_rates,
+                "Indexer is getting estimated reward, exchange_rates_id: {:?}, staked_object_id: {}, current_exchange_rates: {:?}, last_epoch_stable_rate: {}, stake_coin: {:?}",
+                exchange_rates_id, stake.staked_object_id, current_exchange_rates, last_epoch_stable_rate, stake_coin,
             );
             let mut reward_withdraw_amount = self
                 .get_estimated_reward(stake, exchange_rates_id, current_exchange_rates)
@@ -1009,6 +1009,7 @@ where
             "Indexer got rates from exchange_rates: {:?}, current_rate: {:?}, stake_rate({}): {:?}",
             exchange_rates_id, current_rate, stake.stake_activation_epoch, stake_rate,
         );
+        // copied from crates/sui-json-rpc/src/governance_api.rs
         let estimated_reward =
             ((stake_rate.rate() / current_rate.rate()) - 1.0) * stake.principal_amount as f64;
         return Ok(max(0, estimated_reward.round() as u64));
