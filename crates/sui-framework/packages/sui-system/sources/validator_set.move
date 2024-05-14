@@ -1388,7 +1388,7 @@ module sui_system::validator_set {
                     epoch: new_epoch,
                     validator_address,
                     reference_gas_survey_quote: validator::gas_price(v),
-                    stake: validator::total_stake_amount(v),
+                    stake: validator::total_stake_with_all_stable(v, stable_rate),
                     voting_power: validator::voting_power(v),
                     commission_rate: validator::commission_rate(v),
                     pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),

@@ -2578,7 +2578,7 @@ Return the total amount staked with this validator
     <b>if</b> (total &gt; 0) {
         <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
         <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(stable_rate, &pool_key);
-        <b>let</b> total_stake = (total <b>as</b> u128) * (1000000000 <b>as</b> u128) / (*rate <b>as</b> u128);
+        <b>let</b> total_stake = (total <b>as</b> u128) * (*rate <b>as</b> u128) / (1000000000 <b>as</b> u128);
         <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(stable_stake, pool_key, (total_stake <b>as</b> u64));
         (total_stake <b>as</b> u64)
     }<b>else</b> {
@@ -2611,7 +2611,7 @@ Return the total amount staked with this validator
     <b>if</b> (stable_stake &gt; 0) {
         <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
         <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, &pool_key);
-        <b>let</b> total_stake = (stable_stake <b>as</b> u128) * (1000000000 <b>as</b> u128) / (*rate <b>as</b> u128);
+        <b>let</b> total_stake = (stable_stake <b>as</b> u128) *  (*rate <b>as</b> u128) / (1000000000 <b>as</b> u128);
         (total_stake <b>as</b> u64)
     } <b>else</b> {
         0
