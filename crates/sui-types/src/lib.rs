@@ -86,9 +86,8 @@ pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
 pub mod base_types_bfc;
-pub mod epoch_data;
 pub mod bfc_system_state;
-mod bfc_base_types;
+//mod bfc_base_types;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
@@ -510,3 +509,4 @@ const fn deepbook_addr() -> AccountAddress {
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
     }
+}

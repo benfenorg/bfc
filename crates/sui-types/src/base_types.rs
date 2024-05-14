@@ -356,7 +356,7 @@ impl MoveObjectType {
 
     pub fn is_treasury_cap(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
                 false
             }
             MoveObjectType_::Other(s) => TreasuryCap::is_treasury_type(s),
@@ -403,7 +403,7 @@ impl MoveObjectType {
 
     pub fn try_extract_field_value(&self) -> SuiResult<TypeTag> {
         match &self.0 {
-            MoveObjectType_::GasCoin | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
+            MoveObjectType_::GasCoin(_) | MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) => {
                 Err(SuiError::ObjectDeserializationError {
                     error: "Error extracting dynamic object value from Coin object".to_string(),
                 })

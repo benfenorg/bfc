@@ -412,7 +412,7 @@ impl MoveObject {
                 BTreeMap::default()
             })
         } else {
-            info!("get value: {:?}", s);
+            //info!("get value: {:?}", s);
             for field in fields {
                 Self::get_coin_balances_in_value(&field.1, balances, value_depth)?;
             }
@@ -442,7 +442,7 @@ impl MoveObject {
         Ok(traversal.finish())
     }
 }
-}
+
 
 #[derive(Eq, PartialEq, Debug, Clone, Deserialize, Serialize, Hash)]
 #[allow(clippy::large_enum_variant)]

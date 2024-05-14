@@ -18,8 +18,6 @@ use crate::gas::{GasCostSummary, GasCostSummaryAdjusted};
 use crate::message_envelope::{
     Envelope, Message, TrustedEnvelope, UnauthenticatedMessage, VerifiedEnvelope,
 };
-use crate::gas::GasCostSummary;
-use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelope};
 use crate::signature::GenericSignature;
 use crate::storage::ReadStore;
 use crate::sui_serde::AsProtocolVersion;

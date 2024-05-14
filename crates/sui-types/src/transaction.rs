@@ -5,7 +5,7 @@
 use super::{base_types::*, error::*};
 use crate::committee::{EpochId, BfcRoundId, ProtocolVersion};
 use crate::authenticator_state::ActiveJwk;
-use crate::committee::{Committee, EpochId, ProtocolVersion};
+use crate::committee::{Committee};
 use crate::crypto::{
     default_hash, AuthoritySignInfo, AuthoritySignInfoTrait, AuthoritySignature,
     AuthorityStrongQuorumSignInfo, DefaultHash, Ed25519SuiSignature, EmptySignInfo,
@@ -16,15 +16,13 @@ use crate::digests::{CertificateDigest, SenderSignedDataDigest};
 use crate::execution::SharedInput;
 use crate::message_envelope::{Envelope, Message, TrustedEnvelope, VerifiedEnvelope};
 use crate::messages_checkpoint::CheckpointTimestamp;
-use crate::messages_consensus::ConsensusCommitPrologue;
 use crate::messages_consensus::{ConsensusCommitPrologue, ConsensusCommitPrologueV2};
 use crate::object::{MoveObject, Object, Owner};
 use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
-use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, SUI_CLOCK_OBJECT_ID, SUI_CLOCK_OBJECT_SHARED_VERSION, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION};
+use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 
 use std::iter;
-use crate::signature::{GenericSignature, VerifyParams};
 use crate::signature_verification::verify_sender_signed_data_message_signatures;
 use crate::{
     SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION,
@@ -65,12 +63,7 @@ pub const TEST_ONLY_GAS_UNIT_FOR_STAKING: u64 = 10_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_GENERIC: u64 = 5_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_VALIDATOR: u64 = 25_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN: u64 = 1_000_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 10_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 50_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_PUBLISH: u64 = 70_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_STAKING: u64 = 50_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_GENERIC: u64 = 50_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN: u64 = 10_000;
+
 // For some transactions we may either perform heavy operations or touch
 // objects that are storage expensive. That may happen (and often is the case)
 // because the object touched are set up in genesis and carry no storage cost
@@ -105,11 +98,7 @@ impl CallArg {
         initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
         mutable: false,
     });
-    pub const CLOCK_MUT: Self = Self::Object(ObjectArg::SharedObject {
-        id: SUI_CLOCK_OBJECT_ID,
-        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-        mutable: true,
-    });
+
     pub const AUTHENTICATOR_MUT: Self = Self::Object(ObjectArg::SharedObject {
         id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,
         initial_shared_version: SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION,
@@ -426,7 +415,7 @@ impl EndOfEpochTransactionKind {
 }
 
 impl VersionedProtocolMessage for TransactionKind {
-    fn check_version_supported(&self, _protocol_config: &ProtocolConfig) -> SuiResult {
+    fn check_version_supported(&self, protocol_config: &ProtocolConfig) -> SuiResult {
         // This code does nothing right now - it exists to cause a compiler error when new
         // enumerants are added to TransactionKind.
         //
@@ -1219,8 +1208,8 @@ impl TransactionKind {
         // Keep this as an exhaustive match so that we can't forget to update it.
         match self {
             TransactionKind::ChangeEpoch(_)
-                | TransactionKind::Genesis(_)
-                | TransactionKind::ConsensusCommitPrologue(_)
+            | TransactionKind::Genesis(_)
+            | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
@@ -1272,21 +1261,18 @@ impl TransactionKind {
 
     /// Returns an iterator of all shared input objects used by this transaction.
     /// It covers both Call and ChangeEpoch transaction kind, because both makes Move calls.
-    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
                 let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
                                 SharedInputObject::BFC_SYSTEM_OBJ,
                                 SharedInputObject {
-                        id: SUI_CLOCK_OBJECT_ID,
-                        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                        mutable: true,
-                    }];
+                                    id: SUI_CLOCK_OBJECT_ID,
+                                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                                    mutable: true,
+                                }];
                 Either::Left(Either::Left(objs.into_iter()))
             }
-            Self::ConsensusCommitPrologue(_) => {
-                Either::Left(Either::Right(iter::once(SharedInputObject {
-
             Self::ConsensusCommitPrologue(_) | Self::ConsensusCommitPrologueV2(_) => {
                 Either::Left(Either::Left(iter::once(SharedInputObject {
                     id: SUI_CLOCK_OBJECT_ID,
@@ -1294,6 +1280,7 @@ impl TransactionKind {
                     mutable: true,
                 })))
             }
+
             Self::AuthenticatorStateUpdate(update) => {
                 Either::Left(Either::Left(iter::once(SharedInputObject {
                     id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,
@@ -1316,7 +1303,7 @@ impl TransactionKind {
             }
             Self::ChangeBfcRound(_) => {
                 let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
-                                SharedInputObject::BFC_SYSTEM_OBJ,];
+                                SharedInputObject::BFC_SYSTEM_OBJ, ];
                 Either::Left(Either::Left(objs.into_iter()))
             }
             _ => Either::Right(Either::Right(vec![].into_iter())),
@@ -1347,18 +1334,18 @@ impl TransactionKind {
     /// For a Move object, we attach the object reference;
     /// for a Move package, we provide the object id only since they never change on chain.
     /// TODO: use an iterator over references here instead of a Vec to avoid allocations.
-    pub fn input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
+       pub fn input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
         let input_objects = match &self {
             Self::ChangeEpoch(_) => {
                 vec![InputObjectKind::SharedMoveObject {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },InputObjectKind::SharedMoveObject {
+                }, InputObjectKind::SharedMoveObject {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },InputObjectKind::SharedMoveObject {
+                }, InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
@@ -1375,7 +1362,6 @@ impl TransactionKind {
                 }]
             }
             Self::ChangeBfcRound(_)=>{
-            Self::AuthenticatorStateUpdate(update) => {
                 vec![InputObjectKind::SharedMoveObject {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
@@ -1387,107 +1373,113 @@ impl TransactionKind {
                 },InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                }]
+            }
+            Self::AuthenticatorStateUpdate(update) => {
+                vec![InputObjectKind::SharedMoveObject {
                     id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,
                     initial_shared_version: update.authenticator_obj_initial_shared_version(),
                     mutable: true,
                 }]
             }
             Self::RandomnessStateUpdate(update) => {
-                vec![InputObjectKind::SharedMoveObject {
-                    id: SUI_RANDOMNESS_STATE_OBJECT_ID,
-                    initial_shared_version: update.randomness_obj_initial_shared_version(),
-                    mutable: true,
-                }]
-            }
-            Self::EndOfEpochTransaction(txns) => {
-                txns.iter().flat_map(|txn| txn.input_objects()).collect()
-            }
-            Self::ProgrammableTransaction(p) => return p.input_objects(),
-        };
-        // Ensure that there are no duplicate inputs. This cannot be removed because:
-        // In [`AuthorityState::check_locks`], we check that there are no duplicate mutable
-        // input objects, which would have made this check here unnecessary. However we
-        // do plan to allow shared objects show up more than once in multiple single
-        // transactions down the line. Once we have that, we need check here to make sure
-        // the same shared object doesn't show up more than once in the same single
-        // transaction.
-        let mut used = HashSet::new();
-        if !input_objects.iter().all(|o| used.insert(o.object_id())) {
-            return Err(UserInputError::DuplicateObjectRefInput);
-        }
-        Ok(input_objects)
-    }
-
-    pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
-        match self {
-            TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
-            // All transactiond kinds below are assumed to be system,
-            // and no validity or limit checks are performed.
-            TransactionKind::ChangeEpoch(_)
-            | TransactionKind::Genesis(_)
-            | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeBfcRound(_) => (),
-            | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ConsensusCommitPrologueV2(_) => (),
-            TransactionKind::EndOfEpochTransaction(txns) => {
-                // The transaction should have been rejected earlier if the feature is not enabled.
-                assert!(config.end_of_epoch_transaction_supported());
-
-                for tx in txns {
-                    tx.validity_check(config)?;
+                    vec![InputObjectKind::SharedMoveObject {
+                        id: SUI_RANDOMNESS_STATE_OBJECT_ID,
+                        initial_shared_version: update.randomness_obj_initial_shared_version(),
+                        mutable: true,
+                    }]
                 }
+            Self::EndOfEpochTransaction(txns) => {
+                    txns.iter().flat_map(|txn| txn.input_objects()).collect()
+                }
+            Self::ProgrammableTransaction(p) => return p.input_objects(),
+            };
+            // Ensure that there are no duplicate inputs. This cannot be removed because:
+            // In [`AuthorityState::check_locks`], we check that there are no duplicate mutable
+            // input objects, which would have made this check here unnecessary. However we
+            // do plan to allow shared objects show up more than once in multiple single
+            // transactions down the line. Once we have that, we need check here to make sure
+            // the same shared object doesn't show up more than once in the same single
+            // transaction.
+            let mut used = HashSet::new();
+            if ! input_objects.iter().all(| o | used.insert(o.object_id())) {
+                return Err(UserInputError::DuplicateObjectRefInput);
             }
+            Ok(input_objects)
+        }
 
-            TransactionKind::AuthenticatorStateUpdate(_) => {
-                // The transaction should have been rejected earlier if the feature is not enabled.
-                assert!(config.enable_jwk_consensus_updates());
+
+        pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
+            match self {
+                TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
+                // All transactiond kinds below are assumed to be system,
+                // and no validity or limit checks are performed.
+                TransactionKind::ChangeEpoch(_)
+                | TransactionKind::Genesis(_)
+                | TransactionKind::ConsensusCommitPrologue(_)
+                | TransactionKind::ChangeBfcRound(_) => (),
+                | TransactionKind::ConsensusCommitPrologue(_)
+                | TransactionKind::ConsensusCommitPrologueV2(_) => (),
+                TransactionKind::EndOfEpochTransaction(txns) => {
+                    // The transaction should have been rejected earlier if the feature is not enabled.
+                    assert!(config.end_of_epoch_transaction_supported());
+
+                    for tx in txns {
+                        tx.validity_check(config)?;
+                    }
+                }
+
+                TransactionKind::AuthenticatorStateUpdate(_) => {
+                    // The transaction should have been rejected earlier if the feature is not enabled.
+                    assert!(config.enable_jwk_consensus_updates());
+                }
+                TransactionKind::RandomnessStateUpdate(_) => {
+                    // The transaction should have been rejected earlier if the feature is not enabled.
+                    assert!(config.random_beacon());
+                }
+            };
+            Ok(())
+        }
+
+        /// number of commands, or 0 if it is a system transaction
+        pub fn num_commands(&self) -> usize {
+            match self {
+                TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
+                _ => 0,
             }
-            TransactionKind::RandomnessStateUpdate(_) => {
-                // The transaction should have been rejected earlier if the feature is not enabled.
-                assert!(config.random_beacon());
+        }
+
+        pub fn iter_commands(&self) -> impl Iterator<Item=&Command> {
+            match self {
+                TransactionKind::ProgrammableTransaction(pt) => pt.commands.iter(),
+                _ => [].iter(),
             }
-        };
-        Ok(())
-    }
-
-    /// number of commands, or 0 if it is a system transaction
-    pub fn num_commands(&self) -> usize {
-        match self {
-            TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
-            _ => 0,
         }
-    }
 
-    pub fn iter_commands(&self) -> impl Iterator<Item = &Command> {
-        match self {
-            TransactionKind::ProgrammableTransaction(pt) => pt.commands.iter(),
-            _ => [].iter(),
+        /// number of transactions, or 1 if it is a system transaction
+        pub fn tx_count(&self) -> usize {
+            match self {
+                TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
+                _ => 1,
+            }
         }
-    }
 
-    /// number of transactions, or 1 if it is a system transaction
-    pub fn tx_count(&self) -> usize {
-        match self {
-            TransactionKind::ProgrammableTransaction(pt) => pt.commands.len(),
-            _ => 1,
+        pub fn name(&self) -> &'static str {
+            match self {
+                Self::ChangeEpoch(_) => "ChangeEpoch",
+                Self::Genesis(_) => "Genesis",
+                Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
+                Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
+                Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
+                Self::ChangeBfcRound(_) => "ChangeBfcRound",
+                Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
+                Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
+                Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
+            }
         }
-    }
 
-    pub fn name(&self) -> &'static str {
-        match self {
-            Self::ChangeEpoch(_) => "ChangeEpoch",
-            Self::Genesis(_) => "Genesis",
-            Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
-            Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
-            Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
-            Self::ChangeBfcRound(_) => "ChangeBfcRound",
-            Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
-            Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
-            Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
-        }
-    }
 }
-
 impl Display for TransactionKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut writer = String::new();
