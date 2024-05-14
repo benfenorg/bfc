@@ -3,8 +3,6 @@
 
 use crate::{
     address::{convert_to_evm_address, NumericalAddress, ParsedAddress},
-    types::{ParsedStructType, ParsedType, TypeToken},
-    address::{NumericalAddress, ParsedAddress},
     types::{ParsedFqName, ParsedModuleId, ParsedStructType, ParsedType, TypeToken},
     values::{ParsableValue, ParsedValue, ValueToken},
 };
@@ -15,7 +13,6 @@ use move_core_types::{
 };
 use num_bigint::BigUint;
 use std::{borrow::Cow, collections::BTreeMap, fmt::Display, iter::Peekable, num::ParseIntError};
-use std::{fmt::Display, iter::Peekable, num::ParseIntError};
 
 const MAX_TYPE_DEPTH: u64 = 128;
 const MAX_TYPE_NODE_COUNT: u64 = 256;

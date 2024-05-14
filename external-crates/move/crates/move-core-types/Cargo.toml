@@ -29,6 +29,7 @@ move-proc-macros.workspace = true
 bcs.workspace = true
 leb128.workspace = true
 thiserror.workspace = true
+sha2 = "0.9.3"
 
 [dev-dependencies]
 proptest.workspace = true

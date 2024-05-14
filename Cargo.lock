@@ -6895,6 +6895,7 @@ dependencies = [
  "ref-cast",
  "serde",
  "serde_bytes",
+ "sha2 0.9.9",
  "thiserror",
  "uint",
 ]

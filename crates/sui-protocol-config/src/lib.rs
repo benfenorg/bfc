@@ -1806,10 +1806,8 @@ impl ProtocolConfig {
             max_accumulated_txn_cost_per_object_in_checkpoint: None,
             // When adding a new constant, set it to None in the earliest version, like this:
             // new_constant: None,
-        };
-        for cur in 2..=version.0 {
-            match cur {
-                1 => unreachable!(),
+        }
+
                 2 => {
                     cfg.feature_flags.advance_epoch_start_time_in_safe_mode = true;
                 }
@@ -1976,8 +1974,8 @@ impl ProtocolConfig {
                     cfg.consensus_bad_nodes_stake_threshold = Some(20);
                 }
 
-                cfg
-            }
+                //cfg
+               }
 
                 21 => {
                     if chain != Chain::Mainnet {
