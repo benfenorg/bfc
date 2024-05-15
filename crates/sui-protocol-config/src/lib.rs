@@ -13,7 +13,6 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-//const MAX_PROTOCOL_VERSION: u64 = 23;
 const MAX_PROTOCOL_VERSION: u64 = 44;
 
 // Record history of protocol version allocations here:
@@ -323,6 +322,7 @@ struct FeatureFlags {
     loaded_child_object_format: bool,
 
     #[serde(skip_serializing_if = "is_false")]
+    loaded_child_object_format_type: bool,
     enable_jwk_consensus_updates: bool,
 
     #[serde(skip_serializing_if = "is_false")]
@@ -1393,13 +1393,52 @@ impl ProtocolConfig {
 
         // IMPORTANT: Never modify the value of any constant for a pre-existing protocol version.
         // To change the values here you must create a new protocol version with the new values!
-        let mut cfg = Self {
-            // will be overwritten before being returned
-            version,
+        match version.0 {
+            1 => Self {
+                // will be overwritten before being returned
+                version,
 
-            // All flags are disabled in V1
-            feature_flags: Default::default(),
+                // All flags are disabled in V1
+                feature_flags: Default::default(),
 
+            max_tx_size_bytes: Some(128 * 1024),
+            // We need this number to be at least 100x less than `max_serialized_tx_effects_size_bytes`otherwise effects can be huge
+            max_input_objects: Some(2048),
+            max_serialized_tx_effects_size_bytes: Some(512 * 1024),
+            max_serialized_tx_effects_size_bytes_system_tx: Some(512 * 1024 * 16),
+            max_gas_payment_objects: Some(256),
+            max_modules_in_publish: Some(128),
+            max_arguments: Some(512),
+            max_type_arguments: Some(16),
+            max_type_argument_depth: Some(16),
+            max_pure_argument_size: Some(16 * 1024),
+            max_programmable_tx_commands: Some(1024),
+            move_binary_format_version: Some(6),
+            max_move_object_size: Some(250 * 1024),
+            max_move_package_size: Some(100 * 1024),
+            max_tx_gas: Some(100_000_000),
+            max_gas_price: Some(10_000),
+            max_gas_computation_bucket: Some(500_000),
+            max_loop_depth: Some(5),
+            max_generic_instantiation_length: Some(32),
+            max_function_parameters: Some(128),
+            max_basic_blocks: Some(1024),
+            max_value_stack_size: Some(1024),
+            max_type_nodes: Some(256),
+            max_push_size: Some(10000),
+            max_struct_definitions: Some(200),
+            max_function_definitions: Some(1000),
+            max_fields_in_struct: Some(32),
+            max_dependency_depth: Some(100),
+            max_num_event_emit: Some(256),
+            max_num_new_move_object_ids: Some(2048),
+            max_num_new_move_object_ids_system_tx: Some(2048 * 16),
+            max_num_deleted_move_object_ids: Some(2048),
+            max_num_deleted_move_object_ids_system_tx: Some(2048 * 16),
+            max_num_transferred_move_object_ids: Some(2048),
+            max_num_transferred_move_object_ids_system_tx: Some(2048 * 16),
+            max_event_emit_size: Some(250 * 1024),
+            max_move_vector_len: Some(256 * 1024),
             max_tx_size_bytes: Some(128 * 1024),
             // We need this number to be at least 100x less than `max_serialized_tx_effects_size_bytes`otherwise effects can be huge
             max_input_objects: Some(2048),
@@ -1431,9 +1470,9 @@ impl ProtocolConfig {
             max_move_object_size: Some(250 * 1024),
             max_move_package_size: Some(100 * 1024),
             max_publish_or_upgrade_per_ptb: None,
-            max_tx_gas: Some(100_000_000),
-            max_gas_price: Some(10_000),
-            max_gas_computation_bucket: Some(500_000),
+            max_tx_gas: Some(10_000_000_000),
+            max_gas_price: Some(100_000),
+            max_gas_computation_bucket: Some(5_000_000),
             max_loop_depth: Some(5),
             max_generic_instantiation_length: Some(32),
             max_function_parameters: Some(128),
@@ -1455,6 +1494,17 @@ impl ProtocolConfig {
             max_event_emit_size: Some(250 * 1024),
             max_move_vector_len: Some(256 * 1024),
 
+            /// TODO: Is this too low/high?
+            max_back_edges_per_function: Some(10_000),
+
+            /// TODO:  Is this too low/high?
+            max_back_edges_per_module: Some(10_000),
+
+            /// TODO: Is this too low/high?
+            max_verifier_meter_ticks_per_function: Some(6_000_000),
+
+            /// TODO: Is this too low/high?
+            max_meter_ticks_per_module: Some(6_000_000),
             max_back_edges_per_function: Some(10_000),
             max_back_edges_per_module: Some(10_000),
             max_verifier_meter_ticks_per_function: Some(6_000_000),
@@ -1482,11 +1532,40 @@ impl ProtocolConfig {
             storage_gas_price: Some(1),
             max_transactions_per_checkpoint: Some(10_000),
             max_checkpoint_size_bytes: Some(30 * 1024 * 1024),
+            object_runtime_max_num_cached_objects: Some(1000),
+            object_runtime_max_num_cached_objects_system_tx: Some(1000 * 16),
+            object_runtime_max_num_store_entries: Some(1000),
+            object_runtime_max_num_store_entries_system_tx: Some(1000 * 16),
+            base_tx_cost_fixed: Some(110_000),
+            package_publish_cost_fixed: Some(1_000),
+            base_tx_cost_per_byte: Some(0),
+            package_publish_cost_per_byte: Some(80),
+            obj_access_cost_read_per_byte: Some(15),
+            obj_access_cost_mutate_per_byte: Some(40),
+            obj_access_cost_delete_per_byte: Some(40),
+            obj_access_cost_verify_per_byte: Some(200),
+            obj_data_cost_refundable: Some(100),
+            obj_metadata_cost_non_refundable: Some(50),
+            gas_model_version: Some(1),
+            storage_rebate_rate: Some(9900),
+            storage_fund_reinvest_rate: Some(500),
+            reward_slashing_rate: Some(5000),
+            storage_gas_price: Some(1),
+            max_transactions_per_checkpoint: Some(10_000),
+            max_checkpoint_size_bytes: Some(30 * 1024 * 1024),
 
             // For now, perform upgrades with a bare quorum of validators.
             // MUSTFIX: This number should be increased to at least 2000 (20%) for mainnet.
             buffer_stake_for_protocol_upgrade_bps: Some(0),
 
+            /// === Native Function Costs ===
+            // `address` module
+            // Cost params for the Move native function `address::from_bytes(bytes: vector<u8>)`
+            address_from_bytes_cost_base: Some(52),
+            // Cost params for the Move native function `address::to_u256(address): u256`
+            address_to_u256_cost_base: Some(52),
+            // Cost params for the Move native function `address::from_u256(u256): address`
+            address_from_u256_cost_base: Some(52),
             // === Native Function Costs ===
             // `address` module
             // Cost params for the Move native function `address::from_bytes(bytes: vector<u8>)`
@@ -1498,6 +1577,31 @@ impl ProtocolConfig {
 
             curve_dx_cost_base: Some(52),
 
+            // `dynamic_field` module
+            // Cost params for the Move native function `hash_type_and_key<K: copy + drop + store>(parent: address, k: K): address`
+            dynamic_field_hash_type_and_key_cost_base: Some(100),
+            dynamic_field_hash_type_and_key_type_cost_per_byte: Some(2),
+            dynamic_field_hash_type_and_key_value_cost_per_byte: Some(2),
+            dynamic_field_hash_type_and_key_type_tag_cost_per_byte: Some(2),
+            // Cost params for the Move native function `add_child_object<Child: key>(parent: address, child: Child)`
+            dynamic_field_add_child_object_cost_base: Some(100),
+            dynamic_field_add_child_object_type_cost_per_byte: Some(10),
+            dynamic_field_add_child_object_value_cost_per_byte: Some(10),
+            dynamic_field_add_child_object_struct_tag_cost_per_byte: Some(10),
+            // Cost params for the Move native function `borrow_child_object_mut<Child: key>(parent: &mut UID, id: address): &mut Child`
+            dynamic_field_borrow_child_object_cost_base: Some(100),
+            dynamic_field_borrow_child_object_child_ref_cost_per_byte: Some(10),
+            dynamic_field_borrow_child_object_type_cost_per_byte: Some(10),
+             // Cost params for the Move native function `remove_child_object<Child: key>(parent: address, id: address): Child`
+            dynamic_field_remove_child_object_cost_base: Some(100),
+            dynamic_field_remove_child_object_child_cost_per_byte: Some(2),
+            dynamic_field_remove_child_object_type_cost_per_byte: Some(2),
+            // Cost params for the Move native function `has_child_object(parent: address, id: address): bool`
+            dynamic_field_has_child_object_cost_base: Some(100),
+            // Cost params for the Move native function `has_child_object_with_ty<Child: key>(parent: address, id: address): bool`
+            dynamic_field_has_child_object_with_ty_cost_base: Some(100),
+            dynamic_field_has_child_object_with_ty_type_cost_per_byte: Some(2),
+            dynamic_field_has_child_object_with_ty_type_tag_cost_per_byte: Some(2),
             // `dynamic_field` module
             // Cost params for the Move native function `hash_type_and_key<K: copy + drop + store>(parent: address, k: K): address`
             dynamic_field_hash_type_and_key_cost_base: Some(100),
@@ -1529,6 +1633,12 @@ impl ProtocolConfig {
             event_emit_cost_base: Some(52),
             event_emit_value_size_derivation_cost_per_byte: Some(2),
             event_emit_tag_size_derivation_cost_per_byte: Some(5),
+            event_emit_output_cost_per_byte:Some(10),
+            // `event` module
+            // Cost params for the Move native function `event::emit<T: copy + drop>(event: T)`
+            event_emit_cost_base: Some(52),
+            event_emit_value_size_derivation_cost_per_byte: Some(2),
+            event_emit_tag_size_derivation_cost_per_byte: Some(5),
             event_emit_output_cost_per_byte: Some(10),
 
             //  `object` module
@@ -1539,6 +1649,13 @@ impl ProtocolConfig {
             // Cost params for the Move native function `record_new_uid(id: address)`
             object_record_new_uid_cost_base: Some(52),
 
+            // `transfer` module
+            // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
+            transfer_transfer_internal_cost_base: Some(52),
+            // Cost params for the Move native function `freeze_object<T: key>(obj: T)`
+            transfer_freeze_object_cost_base: Some(52),
+            // Cost params for the Move native function `share_object<T: key>(obj: T)`
+            transfer_share_object_cost_base: Some(52),
             // `transfer` module
             // Cost params for the Move native function `transfer_impl<T: key>(obj: T, recipient: address)`
             transfer_transfer_internal_cost_base: Some(52),
@@ -1640,6 +1757,10 @@ impl ProtocolConfig {
             hash_keccak256_data_cost_per_byte: Some(2),
             hash_keccak256_data_cost_per_block: Some(2),
 
+            // hmac::hmac_sha3_256
+            hmac_hmac_sha3_256_cost_base: Some(52),
+            hmac_hmac_sha3_256_input_cost_per_byte: Some(2),
+            hmac_hmac_sha3_256_input_cost_per_block: Some(2),
             poseidon_bn254_cost_base: None,
             poseidon_bn254_cost_per_block: None,
 
@@ -1704,6 +1825,83 @@ impl ProtocolConfig {
 
             consensus_bad_nodes_stake_threshold: None,
 
+            // When adding a new constant, set it to None in the earliest version, like this:
+            // new_constant: None,
+        };
+        for cur in 2..=version.0 {
+            match cur {
+                1 => unreachable!(),
+                2 => {
+                    cfg.feature_flags.advance_epoch_start_time_in_safe_mode = true;
+                }
+                3 => {
+                    // changes for gas model
+                    cfg.gas_model_version = Some(2);
+                    // max gas budget is in MIST and an absolute value 50SUI
+                    cfg.max_tx_gas = Some(50_000_000_000);
+                    // min gas budget is in MIST and an absolute value 2000MIST or 0.000002SUI
+                    cfg.base_tx_cost_fixed = Some(2_000);
+                    // storage gas price multiplier
+                    cfg.storage_gas_price = Some(76);
+                    cfg.feature_flags.loaded_child_objects_fixed = true;
+                    // max size of written objects during a TXn
+                    cfg.max_size_written_objects = Some(5 * 1000 * 1000);
+                    // max size of written objects during a system TXn to allow for larger writes
+                    cfg.max_size_written_objects_system_tx = Some(50 * 1000 * 1000);
+                    cfg.feature_flags.package_upgrades = true;
+                }
+                // This is the first protocol version currently possible.
+                // Mainnet starts with version 4. Previous versions are pre mainnet and have
+                // all been wiped out.
+                // Every other chain is after version 4.
+                4 => {
+                    // Change reward slashing rate to 100%.
+                    cfg.reward_slashing_rate = Some(10000);
+                    // protect old and new lookup for object version
+                    cfg.gas_model_version = Some(3);
+                }
+                5 => {
+                    cfg.feature_flags.missing_type_is_compatibility_error = true;
+                    cfg.gas_model_version = Some(4);
+                    cfg.feature_flags.scoring_decision_with_validity_cutoff = true;
+                    cfg.scoring_decision_mad_divisor = Some(2.3);
+                    cfg.scoring_decision_cutoff_value = Some(2.5);
+                }
+                6 => {
+                    cfg.gas_model_version = Some(5);
+                    cfg.buffer_stake_for_protocol_upgrade_bps = Some(5000);
+                    cfg.feature_flags.consensus_order_end_of_epoch_last = true;
+                }
+                7 => {
+                    cfg.feature_flags.disallow_adding_abilities_on_upgrade = true;
+                    cfg.feature_flags
+                        .disable_invariant_violation_check_in_swap_loc = true;
+                    cfg.feature_flags.ban_entry_init = true;
+                    cfg.feature_flags.package_digest_hash_module = true;
+                }
+                8 => {
+                    cfg.feature_flags
+                        .disallow_change_struct_type_params_on_upgrade = true;
+                }
+                9 => {
+                    // Limits the length of a Move identifier
+                    cfg.max_move_identifier_len = Some(128);
+                    cfg.feature_flags.no_extraneous_module_bytes = true;
+                    cfg.feature_flags
+                        .advance_to_highest_supported_protocol_version = true;
+                }
+                10 => {
+                    cfg.max_verifier_meter_ticks_per_function = Some(17_000_000);
+                    cfg.max_meter_ticks_per_module = Some(17_000_000);
+                }
+                11 => {
+                    cfg.max_move_value_depth = Some(128);
+                }
+                12 => {
+                    cfg.feature_flags.narwhal_versioned_metadata = true;
+                    if chain != Chain::Mainnet {
+                        cfg.feature_flags.commit_root_state_digest = true;
+                    }
             max_jwk_votes_per_validator_per_epoch: None,
 
             max_age_of_jwk_in_epochs: None,
@@ -1787,8 +1985,8 @@ impl ProtocolConfig {
                         .advance_to_highest_supported_protocol_version = true;
                 }
                 10 => {
-                    cfg.max_verifier_meter_ticks_per_function = Some(17_000_000);
-                    cfg.max_meter_ticks_per_module = Some(17_000_000);
+                    cfg.max_verifier_meter_ticks_per_function = Some(16_000_000);
+                    cfg.max_meter_ticks_per_module = Some(16_000_000);
                 }
                 11 => {
                     cfg.max_move_value_depth = Some(128);
@@ -1799,6 +1997,49 @@ impl ProtocolConfig {
                         cfg.feature_flags.commit_root_state_digest = true;
                     }
 
+                    if chain != Chain::Mainnet && chain != Chain::Testnet {
+                        cfg.feature_flags.zklogin_auth = true;
+                    }
+                }
+                13 => {}
+                14 => {
+                    cfg.gas_rounding_step = Some(1000);
+                    cfg.gas_model_version = Some(6);
+                }
+                15 => {
+                    cfg.feature_flags.consensus_transaction_ordering =
+                        ConsensusTransactionOrdering::ByGasPrice;
+                }
+                16 => {
+                    cfg.feature_flags.simplified_unwrap_then_delete = true;
+                }
+                17 => {
+                    cfg.feature_flags.upgraded_multisig_supported = true;
+                }
+                18 => {
+                    cfg.execution_version = Some(1);
+                    // Following flags are implied by this execution version.  Once support for earlier
+                    // protocol versions is dropped, these flags can be removed:
+                    // cfg.feature_flags.package_upgrades = true;
+                    // cfg.feature_flags.disallow_adding_abilities_on_upgrade = true;
+                    // cfg.feature_flags.disallow_change_struct_type_params_on_upgrade = true;
+                    // cfg.feature_flags.loaded_child_objects_fixed = true;
+                    // cfg.feature_flags.ban_entry_init = true;
+                    // cfg.feature_flags.pack_digest_hash_modules = true;
+                    cfg.feature_flags.txn_base_cost_as_multiplier = true;
+                    // this is a multiplier of the gas price
+                    cfg.base_tx_cost_fixed = Some(100);
+                }
+                19 => {
+                    cfg.max_num_event_emit = Some(1024);
+                    // We maintain the same total size limit for events, but increase the number of
+                    // events that can be emitted.
+                    cfg.max_event_emit_size_total = Some(
+                        256 /* former event count limit */ * 250 * 1024, /* size limit per event */
+                    );
+                }
+                20 => {
+                    cfg.feature_flags.commit_root_state_digest = true;
                     if chain != Chain::Mainnet && chain != Chain::Testnet {
                         cfg.feature_flags.zklogin_auth = true;
                     }
@@ -1849,6 +2090,40 @@ impl ProtocolConfig {
                     }
                 }
 
+                21 => {
+                    if chain != Chain::Mainnet {
+                        cfg.feature_flags.zklogin_supported_providers = BTreeSet::from([
+                            "Google".to_string(),
+                            "Facebook".to_string(),
+                            "Twitch".to_string(),
+                        ]);
+                    }
+                }
+                22 => {
+                    cfg.feature_flags.loaded_child_object_format = true;
+                }
+                23 => {
+                    cfg.feature_flags.loaded_child_object_format_type = true;
+                    cfg.feature_flags.narwhal_new_leader_election_schedule = true;
+                    // Taking a baby step approach, we consider only 20% by stake as bad nodes so we
+                    // have a 80% by stake of nodes participating in the leader committee. That allow
+                    // us for more redundancy in case we have validators under performing - since the
+                    // responsibility is shared amongst more nodes. We can increase that once we do have
+                    // higher confidence.
+                    cfg.consensus_bad_nodes_stake_threshold = Some(20);
+                }
+                // Use this template when making changes:
+                //
+                //     // modify an existing constant.
+                //     move_binary_format_version: Some(7),
+                //
+                //     // Add a new constant (which is set to None in prior versions).
+                //     new_constant: Some(new_value),
+                //
+                //     // Remove a constant (ensure that it is never accessed during this version).
+                //     max_move_object_size: None,
+                _ => panic!("unsupported version {:?}", version),
+            }
                 21 => {
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.zklogin_supported_providers = BTreeSet::from([
@@ -2191,7 +2466,6 @@ impl ProtocolConfig {
         }
     }
 
-
     /// Override one or more settings in the config, for testing.
     /// This must be called at the beginning of the test, before get_for_(min|max)_version is
     /// called, since those functions cache their return value.
@@ -2223,9 +2497,10 @@ impl ProtocolConfig {
     pub fn set_commit_root_state_digest_supported(&mut self, val: bool) {
         self.feature_flags.commit_root_state_digest = val
     }
-    pub fn set_zklogin_auth_for_testing(&mut self, val: bool) {
+    pub fn set_zklogin_auth(&mut self, val: bool) {
         self.feature_flags.zklogin_auth = val
     }
+
     pub fn set_enable_jwk_consensus_updates_for_testing(&mut self, val: bool) {
         self.feature_flags.enable_jwk_consensus_updates = val
     }
