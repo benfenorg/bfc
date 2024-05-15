@@ -60,7 +60,7 @@ pub struct ConsensusTransaction {
     pub kind: ConsensusTransactionKind,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub enum ConsensusTransactionKey {
     Certificate(TransactionDigest),
     CheckpointSignature(AuthorityName, CheckpointSequenceNumber),

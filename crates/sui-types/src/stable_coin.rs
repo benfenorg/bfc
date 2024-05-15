@@ -21,7 +21,7 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use move_core_types::language_storage::{StructTag, TypeTag};
-    use move_core_types::value::MoveStructLayout;
+    use move_core_types::annotated_value::MoveStructLayout;
     use crate::balance::Balance;
     use crate::base_types::ObjectID;
     use super::*;

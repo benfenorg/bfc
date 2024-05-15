@@ -32,7 +32,7 @@ pub struct MockCheckpointBuilder {
 impl MockCheckpointBuilder {
     pub fn new(previous_checkpoint: VerifiedCheckpoint) -> Self {
         let epoch_rolling_gas_cost_summary =
-            previous_checkpoint.epoch_rolling_gas_cost_summary.clone();
+            previous_checkpoint.epoch_rolling_bfc_gas_cost_summary.clone();
         let epoch = previous_checkpoint.epoch;
 
         Self {
@@ -144,7 +144,8 @@ impl MockCheckpointBuilder {
                 + contents.size() as u64,
             content_digest: *contents.digest(),
             previous_digest: Some(*self.previous_checkpoint.digest()),
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary: epoch_rolling_gas_cost_summary,
+            epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
             end_of_epoch_data,
             timestamp_ms,
             version_specific_data: Vec::new(),

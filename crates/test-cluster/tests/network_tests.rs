@@ -58,7 +58,7 @@ async fn test_package_override() {
 
         let package_override = Object::new_package_for_testing(
             &framework_modules,
-            TransactionDigest::genesis(),
+            TransactionDigest::genesis_marker(),
             BuiltInFramework::genesis_move_packages(),
             TransactionDigest::genesis_marker(),
             [

@@ -16,7 +16,7 @@ use crate::effects::{TestEffectsBuilder, TransactionEffectsAPI};
 use crate::error::SuiResult;
 use crate::gas::{GasCostSummary, GasCostSummaryAdjusted};
 use crate::message_envelope::{
-    Envelope, Message, TrustedEnvelope, UnauthenticatedMessage, VerifiedEnvelope,
+    Envelope, Message, TrustedEnvelope, VerifiedEnvelope,
 };
 use crate::signature::GenericSignature;
 use crate::storage::ReadStore;

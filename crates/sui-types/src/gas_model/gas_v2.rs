@@ -324,12 +324,14 @@ mod checked {
 
             //4. Gas Coin type should be same type for all gas objects
             if gas_objs.len() >1 {
-                let gas_coin_type = gas_objs[0].coin_type_maybe().unwrap();
+                let obj1 = gas_objs[0].as_object().unwrap();
+                let gas_coin_type = obj1.coin_type_maybe().unwrap();
                 for gas_object in gas_objs {
-                    if gas_object.coin_type_maybe().unwrap() != gas_coin_type {
+                    let obj2 = gas_object.as_object().unwrap();
+                    if obj2.coin_type_maybe().unwrap() != gas_coin_type {
                         return Err(UserInputError::GasCoinTypeMismatch {
-                            coin_type: gas_object.coin_type_maybe().unwrap().to_canonical_string(),
-                            second_coin_type: gas_coin_type.to_canonical_string(),
+                            coin_type: obj1.coin_type_maybe().unwrap().to_canonical_string(true),
+                            second_coin_type: obj2.coin_type_maybe().unwrap().to_canonical_string(true),
                         });
                     }
                 }

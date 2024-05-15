@@ -29,6 +29,7 @@ use crate::is_system_package;
 use crate::move_package::MovePackage;
 use crate::type_resolver::LayoutResolver;
 use crate::{
+    balance::Balance,
     base_types::{
         ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
     },
@@ -398,6 +399,7 @@ impl MoveObject {
         (Balance::is_balance(s) && s.type_params.len() == 1 && GAS::is_gas_type(&s.type_params[0])).then(|| &s.type_params[0])
     }
 
+
     /// Get the total balances for all `Coin<T>` embedded in `self`.
     pub fn get_coin_balances(
         &self,
@@ -412,35 +414,20 @@ impl MoveObject {
                 BTreeMap::default()
             })
         } else {
-            //info!("get value: {:?}", s);
-            for field in fields {
-                Self::get_coin_balances_in_value(&field.1, balances, value_depth)?;
-            }
+            let layout = layout_resolver.get_annotated_layout(&self.type_().clone().into())?;
+
+            let mut traversal = BalanceTraversal::default();
+            MoveStruct::visit_deserialize(&self.contents, &layout, &mut traversal).map_err(
+                |e| SuiError::ObjectSerializationError {
+                    error: e.to_string(),
+                },
+            )?;
+
+            Ok(traversal.finish())
         }
-
-        Ok(())
     }
 
-    fn get_coin_balances_in_value(
-        v: &MoveValue,
-        balances: &mut BTreeMap<TypeTag, u64>,
-        value_depth: u64,
-    ) -> Result<(), SuiError> {
-        const MAX_MOVE_VALUE_DEPTH: u64 = 256; // This is 2x was the current value of
-        // `max_move_value_depth` is from protocol config
 
-        let value_depth = value_depth + 1;
-        let layout = layout_resolver.get_annotated_layout(&self.type_().clone().into())?;
-
-        let mut traversal = BalanceTraversal::default();
-        MoveStruct::visit_deserialize(&self.contents, &layout, &mut traversal).map_err(
-            |e| SuiError::ObjectSerializationError {
-                error: e.to_string(),
-            },
-        )?;
-
-        Ok(traversal.finish())
-    }
 }
 
 
@@ -1115,7 +1102,7 @@ impl Object {
         Self {
             owner: Owner::AddressOwner(owner),
             data,
-            previous_transaction: TransactionDigest::genesis(),
+            previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
     }
@@ -1136,7 +1123,7 @@ impl Object {
         Self {
             owner: Owner::AddressOwner(owner),
             data,
-            previous_transaction: TransactionDigest::genesis(),
+            previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
     }

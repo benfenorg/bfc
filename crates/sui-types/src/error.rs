@@ -17,7 +17,6 @@ use std::{collections::BTreeMap, fmt::Debug};
 use strum_macros::{AsRefStr, IntoStaticStr};
 use thiserror::Error;
 use tonic::Status;
-use typed_store::rocks::TypedStoreError;
 use crate::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 use typed_store_error::TypedStoreError;
 

@@ -2032,36 +2032,12 @@ impl<'a, K, V> Map<'a, K, V> for DBMap<K, V>
         lower_bound: Option<K>,
         upper_bound: Option<K>,
     ) -> Self::Iterator {
-        let _timer = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_latency_seconds
-            .with_label_values(&[&self.cf])
-            .start_timer();
-        let bytes_scanned = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_bytes
-            .with_label_values(&[&self.cf]);
-        let keys_scanned = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_keys
-            .with_label_values(&[&self.cf]);
+
         let _perf_ctx = if self.iter_sample_interval.sample() {
             Some(RocksDBPerfContext)
         } else {
             None
         };
-        let mut readopts = self.opts.readopts();
-        if let Some(lower_bound) = lower_bound {
-            let key_buf = be_fix_int_ser(&lower_bound).unwrap();
-            readopts.set_iterate_lower_bound(key_buf);
-        }
-        if let Some(upper_bound) = upper_bound {
-            let key_buf = be_fix_int_ser(&upper_bound).unwrap();
-            readopts.set_iterate_upper_bound(key_buf);
-        }
         let readopts = self.create_read_options_with_bounds(lower_bound, upper_bound);
         let db_iter = self.rocksdb.raw_iterator_cf(&self.cf(), readopts);
         let (_timer, bytes_scanned, keys_scanned, _perf_ctx) = self.create_iter_context();

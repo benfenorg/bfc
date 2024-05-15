@@ -27,6 +27,7 @@ use crate::{base_types::RESOLVED_STD_OPTION, id::RESOLVED_SUI_ID};
 pub mod error;
 
 pub mod accumulator;
+pub mod authenticator_state;
 pub mod balance;
 pub mod base_types;
 pub mod bridge;
@@ -102,13 +103,22 @@ macro_rules! built_in_ids {
     }
 }
 
+// macro_rules! built_in_pkgs {
+//     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
+//         built_in_ids! { $($addr / $id = $init;)* }
+//         pub const SYSTEM_PACKAGE_ADDRESSES: &[AccountAddress] = &[$($addr),*];
+//         pub fn is_system_package(addr: impl Into<AccountAddress>) -> bool {
+//             matches!(addr.into(), $($addr)|*)
+//         }
+//     }
+// }
+
+//v1.2.0 todo: change add in is_system_package
 macro_rules! built_in_pkgs {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
         built_in_ids! { $($addr / $id = $init;)* }
         pub const SYSTEM_PACKAGE_ADDRESSES: &[AccountAddress] = &[$($addr),*];
-        pub fn is_system_package(addr: impl Into<AccountAddress>) -> bool {
-            matches!(addr.into(), $($addr)|*)
-        }
+
     }
 }
 
@@ -163,14 +173,15 @@ const fn address_from_single_byte(b: u8) -> AccountAddress {
 }
 
 /// return 0x0...dee9
-const fn deepbook_addr() -> AccountAddress {
-    const fn builtin_address(suffix: u16) -> AccountAddress {
-        let mut addr = [0u8; AccountAddress::LENGTH];
-        let [hi, lo] = suffix.to_be_bytes();
-        addr[AccountAddress::LENGTH - 2] = hi;
-        addr[AccountAddress::LENGTH - 1] = lo;
-        AccountAddress::new(addr)
-    }
+//const fn deepbook_addr() -> AccountAddress {
+
+const fn builtin_address(suffix: u16) -> AccountAddress {
+    let mut addr = [0u8; AccountAddress::LENGTH];
+    let [hi, lo] = suffix.to_be_bytes();
+    addr[AccountAddress::LENGTH - 2] = hi;
+    addr[AccountAddress::LENGTH - 1] = lo;
+    AccountAddress::new(addr)
+}
 
     pub fn sui_framework_address_concat_string(suffix: &str) -> String {
         format!("{}{suffix}", SUI_FRAMEWORK_ADDRESS.to_hex_literal())
@@ -509,4 +520,3 @@ const fn deepbook_addr() -> AccountAddress {
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
     }
-}
