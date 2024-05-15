@@ -1220,7 +1220,7 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
 
-    let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas1 = bfc_objects.first().unwrap().object().unwrap();
 
     create_active_proposal(http_client, gas1, address, &cluster).await?;
@@ -1313,7 +1313,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
 
-    let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas1 = bfc_objects.first().unwrap().object().unwrap();
 
     create_active_proposal(http_client, gas1, address, &cluster).await?;
@@ -2537,7 +2537,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(3000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2553,9 +2553,10 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
         .await
         .effects
         .unwrap();
+    let _ = sleep(Duration::from_secs(2)).await;
 
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
-    let _ = sleep(Duration::from_secs(10)).await;
+    let _ = sleep(Duration::from_secs(4)).await;
 
     let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
 
@@ -2576,14 +2577,14 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
         .effects
         .unwrap();
 
-    let _ = sleep(Duration::from_secs(10)).await;
+    let _ = sleep(Duration::from_secs(4)).await;
 
     let gas_object_info = http_client.get_object(busd_data.object_id,Some(SuiObjectDataOptions::new().
         with_owner().with_type().with_display().with_content())).await?;
 
     let busd_balance_after = get_busd_balance(gas_object_info.data.as_ref().unwrap());
 
-    let _ = sleep(Duration::from_secs(10)).await;
+    let _ = sleep(Duration::from_secs(4)).await;
 
     assert!(busd_balance_after < busd_balance_before);
     Ok(())
@@ -2640,6 +2641,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
         .await
         .effects
         .unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::busd::BUSD".to_string()).await?;
 
@@ -2666,6 +2668,7 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
         .await
         .effects
         .unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
 
