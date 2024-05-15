@@ -208,7 +208,7 @@ fn read_prefunded_account(path: &Path) -> Result<Vec<PrefundedAccount>, anyhow::
     let mut contents = String::new();
     reader.read_to_string(&mut contents).expect("Can not read keytore file content.");
 
-    let mut kp_strings: Vec<String> = Vec::new();
+    let kp_strings: Vec<String> ;
     if contents.starts_with("[") {
         kp_strings = serde_json::from_str(&*contents)
             .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
