@@ -52,7 +52,6 @@
 -  [Function `bfc_required`](#0xc8_vault_bfc_required)
 -  [Function `min_liquidity_rate`](#0xc8_vault_min_liquidity_rate)
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
--  [Function `base_liquidity_rate`](#0xc8_vault_base_liquidity_rate)
 -  [Function `update_state`](#0xc8_vault_update_state)
 -  [Function `rebuild_positions_after_clean_liquidities`](#0xc8_vault_rebuild_positions_after_clean_liquidities)
 -  [Function `get_liquidity_from_base_point`](#0xc8_vault_get_liquidity_from_base_point)
@@ -1140,7 +1139,7 @@ open <code>position_number</code> positions
         tick_upper,
         _delta_liquidity,
     );
-    <b>if</b> (<a href="i32.md#0xc8_i32_gt">i32::gt</a>(_vault.current_tick_index, tick_lower) && <a href="i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper)) {
+    <b>if</b> (<a href="i32.md#0xc8_i32_gte">i32::gte</a>(_vault.current_tick_index, tick_lower) && <a href="i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper)) {
         _vault.liquidity = _vault.liquidity - _delta_liquidity;
     };
 
@@ -2322,30 +2321,6 @@ vault info
 
 </details>
 
-<a name="0xc8_vault_base_liquidity_rate"></a>
-
-## Function `base_liquidity_rate`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>(): u128
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>(): u128 {
-    10
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_vault_update_state"></a>
 
 ## Function `update_state`
@@ -2540,16 +2515,18 @@ State checker
     } <b>else</b> <b>if</b> (_shape == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
         index = <a href="vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>();
         length = <a href="vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>();
+        <b>let</b> base_liquidity_rate = index + (_vault.position_number <b>as</b> u128) / 2;
         <b>while</b> (index &lt;= length) {
-            <a href="_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>());
+            <a href="_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / base_liquidity_rate);
             index = index + 1;
         };
     } <b>else</b> {
         <b>assert</b>!(_shape == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>, <a href="vault.md#0xc8_vault_ERR_INVALID_SHAPE_KINDS">ERR_INVALID_SHAPE_KINDS</a>);
         index = <a href="vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>();
         length = <a href="vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>();
+        <b>let</b> base_liquidity_rate = index - (_vault.position_number <b>as</b> u128) / 2;
         <b>while</b> (index &gt;= length) {
-            <a href="_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>());
+            <a href="_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / base_liquidity_rate);
             index = index - 1;
         };
     };

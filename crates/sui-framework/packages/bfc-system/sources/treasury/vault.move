@@ -353,7 +353,7 @@ module bfc_system::vault {
             tick_upper,
             _delta_liquidity,
         );
-        if (i32::gt(_vault.current_tick_index, tick_lower) && i32::lt(_vault.current_tick_index, tick_upper)) {
+        if (i32::gte(_vault.current_tick_index, tick_lower) && i32::lt(_vault.current_tick_index, tick_upper)) {
             _vault.liquidity = _vault.liquidity - _delta_liquidity;
         };
 
@@ -904,10 +904,6 @@ module bfc_system::vault {
         14
     }
 
-    public fun base_liquidity_rate(): u128 {
-        10
-    }
-
     /// Rebalance
     /// State checker
     public(friend) fun update_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
@@ -1027,16 +1023,18 @@ module bfc_system::vault {
         } else if (_shape == SHAPE_INCREMENT_SIZE) {
             index = min_liquidity_rate();
             length = max_liquidity_rate();
+            let base_liquidity_rate = index + (_vault.position_number as u128) / 2;
             while (index <= length) {
-                vector::push_back(&mut liquidities, liquidity * index / base_liquidity_rate());
+                vector::push_back(&mut liquidities, liquidity * index / base_liquidity_rate);
                 index = index + 1;
             };
         } else {
             assert!(_shape == SHAPE_DECREMENT_SIZE, ERR_INVALID_SHAPE_KINDS);
             index = max_liquidity_rate();
             length = min_liquidity_rate();
+            let base_liquidity_rate = index - (_vault.position_number as u128) / 2;
             while (index >= length) {
-                vector::push_back(&mut liquidities, liquidity * index / base_liquidity_rate());
+                vector::push_back(&mut liquidities, liquidity * index / base_liquidity_rate);
                 index = index - 1;
             };
         };
