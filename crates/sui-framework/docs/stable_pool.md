@@ -523,10 +523,10 @@ A proportional amount of pool token withdraw is recorded and processed at epoch 
         <a href="stable_pool.md#0x3_stable_pool_withdraw_from_principal">withdraw_from_principal</a>(pool, staked_sui);
     <b>let</b> principal_withdraw_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&principal_withdraw);
 
-    <b>let</b> rewards_withdraw = <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>(
+    <b>let</b> (rewards_withdraw, stable_reward_amount) = <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>(
         pool, principal_withdraw_amount, pool_token_withdraw_amount,<a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx), rate
     );
-    <b>let</b> total_sui_withdraw_amount = principal_withdraw_amount + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&rewards_withdraw);
+    <b>let</b> total_sui_withdraw_amount = principal_withdraw_amount + stable_reward_amount;
 
     pool.pending_total_sui_withdraw = pool.pending_total_sui_withdraw + total_sui_withdraw_amount;
     pool.pending_pool_token_withdraw = pool.pending_pool_token_withdraw + pool_token_withdraw_amount;
@@ -744,7 +744,7 @@ stake we should withdraw.
 portion because the principal portion was already taken out of the staker's self custodied StakedSui.
 
 
-<pre><code><b>fun</b> <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, principal_withdraw_amount: u64, pool_token_withdraw_amount: u64, epoch: u64, rate: u64): <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>fun</b> <a href="stable_pool.md#0x3_stable_pool_withdraw_rewards">withdraw_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;, principal_withdraw_amount: u64, pool_token_withdraw_amount: u64, epoch: u64, rate: u64): (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, u64)
 </code></pre>
 
 
@@ -759,7 +759,7 @@ portion because the principal portion was already taken out of the staker's self
     pool_token_withdraw_amount: u64,
     epoch: u64,
     rate: u64,
-) : Balance&lt;BFC&gt; {
+) : (Balance&lt;BFC&gt;, u64) {
     <b>let</b> exchange_rate = <a href="stable_pool.md#0x3_stable_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(pool, epoch);
     <b>let</b> total_sui_withdraw_amount = <a href="stable_pool.md#0x3_stable_pool_get_sui_amount">get_sui_amount</a>(&exchange_rate, pool_token_withdraw_amount);
     <b>let</b> reward_withdraw_amount =
@@ -769,9 +769,11 @@ portion because the principal portion was already taken out of the staker's self
     // This may happen when we are withdrawing everything from the pool and
     // the rewards pool <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">balance</a> may be less than reward_withdraw_amount.
     // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
+    <b>let</b> stable_reward_amount = reward_withdraw_amount;
+
     <b>let</b> reward_bfc = (reward_withdraw_amount <b>as</b> u128) * (rate <b>as</b> u128) / (1000000000 <b>as</b> u128);
     reward_withdraw_amount = <a href="../../../.././build/Sui/docs/math.md#0x2_math_min">math::min</a>((reward_bfc <b>as</b> u64),  <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&pool.rewards_pool));
-    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> pool.rewards_pool, reward_withdraw_amount)
+    (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> pool.rewards_pool, reward_withdraw_amount), stable_reward_amount)
 }
 </code></pre>
 

@@ -142,10 +142,10 @@ module sui_system::stable_pool {
             withdraw_from_principal(pool, staked_sui);
         let principal_withdraw_amount = balance::value(&principal_withdraw);
 
-        let rewards_withdraw = withdraw_rewards(
+        let (rewards_withdraw, stable_reward_amount) = withdraw_rewards(
             pool, principal_withdraw_amount, pool_token_withdraw_amount,tx_context::epoch(ctx), rate
         );
-        let total_sui_withdraw_amount = principal_withdraw_amount + balance::value(&rewards_withdraw);
+        let total_sui_withdraw_amount = principal_withdraw_amount + stable_reward_amount;
 
         pool.pending_total_sui_withdraw = pool.pending_total_sui_withdraw + total_sui_withdraw_amount;
         pool.pending_pool_token_withdraw = pool.pending_pool_token_withdraw + pool_token_withdraw_amount;
@@ -240,7 +240,7 @@ module sui_system::stable_pool {
         pool_token_withdraw_amount: u64,
         epoch: u64,
         rate: u64,
-    ) : Balance<BFC> {
+    ) : (Balance<BFC>, u64) {
         let exchange_rate = pool_token_exchange_rate_at_epoch(pool, epoch);
         let total_sui_withdraw_amount = get_sui_amount(&exchange_rate, pool_token_withdraw_amount);
         let reward_withdraw_amount =
@@ -250,9 +250,11 @@ module sui_system::stable_pool {
         // This may happen when we are withdrawing everything from the pool and
         // the rewards pool balance may be less than reward_withdraw_amount.
         // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
+        let stable_reward_amount = reward_withdraw_amount;
+
         let reward_bfc = (reward_withdraw_amount as u128) * (rate as u128) / (1000000000 as u128);
         reward_withdraw_amount = math::min((reward_bfc as u64),  balance::value(&pool.rewards_pool));
-        balance::split(&mut pool.rewards_pool, reward_withdraw_amount)
+        (balance::split(&mut pool.rewards_pool, reward_withdraw_amount), stable_reward_amount)
     }
 
     // ==== preactive pool related ====

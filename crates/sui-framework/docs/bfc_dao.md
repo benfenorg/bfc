@@ -1443,21 +1443,6 @@ Error codes
         next_action_id: 1,
     };
 
-    // <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
-    //     <a href="bfc_dao.md#0xc8_bfc_dao_ProposalCreatedEvent">ProposalCreatedEvent</a>{
-    //         proposal_id: <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
-    //         proposer: DEFAULT_TOKEN_ADDRESS,
-    //     }
-    // );
-
-    // <a href="../../../.././build/Sui/docs/event.md#0x2_event_emit">event::emit</a>(
-    //     <a href="bfc_dao.md#0xc8_bfc_dao_VoteChangedEvent">VoteChangedEvent</a>{
-    //         proposal_id: <a href="bfc_dao.md#0xc8_bfc_dao_DEFAULT_START_PROPOSAL_VERSION_ID">DEFAULT_START_PROPOSAL_VERSION_ID</a>,
-    //         voter: DEFAULT_TOKEN_ADDRESS,
-    //         proposer: DEFAULT_TOKEN_ADDRESS,
-    //         agree: <b>false</b>,
-    //         vote: 0,
-    // });
 
     <b>let</b> votingPool = <a href="bfc_dao_voting_pool.md#0xc8_voting_pool_new">voting_pool::new</a>(ctx);
     <b>let</b> rootAdmin = <a href="_borrow">vector::borrow</a>(&admins, 0);
