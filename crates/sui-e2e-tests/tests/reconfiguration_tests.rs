@@ -986,7 +986,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 #[sim_test]
 async fn sim_test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(20000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1348,7 +1348,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 #[sim_test]
 async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(20000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1398,7 +1398,7 @@ async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
 #[sim_test]
 async fn sim_test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(20000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1447,7 +1447,7 @@ async fn sim_test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
 #[sim_test]
 async fn sim_test_bfc_dao_cast_voting() -> Result<(), anyhow::Error> {
 
-    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(5000).build().await;
+    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(20000).build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
     let objects = http_client
