@@ -244,6 +244,14 @@ pub mod validator_stake {
             let (epoch, validators) = match state {
                 SuiSystemState::V1(v1) => (v1.epoch, &v1.validators),
                 SuiSystemState::V2(v2) => (v2.epoch, &v2.validators),
+                #[cfg(msim)]
+                _ => {
+                    return Self {
+                        epoch: 0u64,
+                        active_validators: vec![],
+                        last_epoch_stable_rate: VecMap { contents: vec![] },
+                    };
+                }
             };
             ValidatorSet {
                 epoch,

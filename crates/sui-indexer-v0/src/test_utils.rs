@@ -146,7 +146,7 @@ mod test_stable_pool {
             .unwrap()
     }
 
-    // #[ignore]
+    #[ignore]
     #[tokio::test]
     async fn test_stable_pool() {
         let http_client = create_http_client();
