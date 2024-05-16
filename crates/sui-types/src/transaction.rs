@@ -1332,6 +1332,7 @@ impl TransactionKind {
     pub fn receiving_objects(&self) -> Vec<ObjectRef> {
         match &self {
             TransactionKind::ChangeEpoch(_)
+            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ConsensusCommitPrologueV2(_)
@@ -2212,14 +2213,7 @@ impl TransactionDataAPI for TransactionDataV1 {
         if self.gas_owner() == self.sender() {
             return Ok(());
         }
-        let allow_sponsored_tx = match &self.kind {
-            TransactionKind::ProgrammableTransaction(_) => true,
-            TransactionKind::ChangeEpoch(_)
-            | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeBfcRound(_) => false,
-        };
-        if allow_sponsored_tx {
+        if matches!(&self.kind, TransactionKind::ProgrammableTransaction(_)) {
             return Ok(());
         }
         Err(UserInputError::UnsupportedSponsoredTransactionKind)

@@ -968,53 +968,11 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                     events_digest: effect.events_digest().copied(),
                     dependencies: effect.dependencies().to_vec(),
                 },
-            )),
-
-            _ => Err(SuiError::UnexpectedVersion(format!(
-                "Support for TransactionEffects version {} not implemented",
-                message_version
-            ))),
+            ))
         }
     }
-    Ok(SuiTransactionBlockEffects::V1(
-    SuiTransactionBlockEffectsV1 {
-    status: effect.status().clone().into(),
-    executed_epoch: effect.executed_epoch(),
-    modified_at_versions: effect
-    .modified_at_versions()
-    .into_iter()
-    .map(|(object_id, sequence_number)| {
-    SuiTransactionBlockEffectsModifiedAtVersions {
-    object_id,
-    sequence_number,
-    }
-    })
-    .collect(),
-    gas_used: effect.gas_cost_summary().clone(),
-    shared_objects: to_sui_object_ref(
-    effect
-    .input_shared_objects()
-    .into_iter()
-    .map(|kind| kind.object_ref())
-    .collect(),
-    ),
-    transaction_digest: *effect.transaction_digest(),
-    created: to_owned_ref(effect.created()),
-    mutated: to_owned_ref(effect.mutated().to_vec()),
-    unwrapped: to_owned_ref(effect.unwrapped().to_vec()),
-    deleted: to_sui_object_ref(effect.deleted().to_vec()),
-    unwrapped_then_deleted: to_sui_object_ref(effect.unwrapped_then_deleted().to_vec()),
-    wrapped: to_sui_object_ref(effect.wrapped().to_vec()),
-    gas_object: OwnedObjectRef {
-    owner: effect.gas_object().1,
-    reference: effect.gas_object().0.into(),
-},
-events_digest: effect.events_digest().copied(),
-dependencies: effect.dependencies().to_vec(),
-},
-))
 }
-}
+
 
 fn owned_objref_string(obj: &OwnedObjectRef) -> String {
     format!(

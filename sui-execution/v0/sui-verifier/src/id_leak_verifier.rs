@@ -88,6 +88,8 @@ const SUI_CLOCK_CREATE: FunctionIdent = (
 const BFC_SYSTEM_CREATE: FunctionIdent = (
     &BFC_SYSTEM_ADDRESS,
     BFC_SYSTEM_MODULE_NAME,
+    ident_str!("create"),
+);
 // Note: the authenticator/randomness objects should never exist when v0 execution is being used.
 // However, object_deletion_tests.rs forcibly sets the execution version to 0, so we need
 // to handle this case. Since that test only runs in the simulator we can special case it with
