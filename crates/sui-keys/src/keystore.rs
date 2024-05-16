@@ -463,8 +463,9 @@ impl FileBasedKeystore {
             let encode_data = default_des_128_encode(store.as_bytes());
 
             fs::write(path, encode_data)?
-                .with_context(|| format!("Cannot serialize keystore to file: {}", path.display()))?;
-            fs::write(path, store)?;
+
+            //.with_context(|| format!("Cannot serialize keystore to file: {}", path.display()))?;
+            //fs::write(path, store)?;
         }
         Ok(())
     }

@@ -306,17 +306,15 @@ impl<'a> ObjectRuntime<'a> {
         // - Otherwise, check the input objects for the previous owner
         // - If it was not in the input objects, it must have been wrapped or must have been a
         //   child object
-        let is_framework_obj = [SUI_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_ID].contains(&id);
-        let transfer_result = if self.state.new_ids.contains_key(&id) || is_framework_obj {
-        let is_framework_obj = [
-            SUI_SYSTEM_STATE_OBJECT_ID,
+        let is_framework_obj = [SUI_SYSTEM_STATE_OBJECT_ID,
             SUI_CLOCK_OBJECT_ID,
+            BFC_SYSTEM_STATE_OBJECT_ID,
             SUI_AUTHENTICATOR_STATE_OBJECT_ID,
             SUI_RANDOMNESS_STATE_OBJECT_ID,
             SUI_DENY_LIST_OBJECT_ID,
-        ]
-        .contains(&id);
-        let transfer_result = if self.state.new_ids.contains(&id) {
+        ].contains(&id);
+
+        let transfer_result = if self.state.new_ids.contains(&id) || is_framework_obj {
             TransferResult::New
         } else if is_framework_obj {
             // framework objects are always created when they are transferred, but the id is
