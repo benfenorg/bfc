@@ -986,7 +986,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 #[sim_test]
 async fn sim_test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(30000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1348,7 +1348,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 #[sim_test]
 async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(30000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1398,31 +1398,18 @@ async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
 #[sim_test]
 async fn sim_test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(30000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas1 = bfc_objects.first().unwrap().object().unwrap();
 
-    let gas = objects.first().unwrap().object().unwrap();
-    create_proposal(http_client, gas, address, &cluster).await?;
+    create_proposal(http_client, gas1, address, &cluster).await?;
     //create votingBfc
     // now do the call
-    let vote_id = case_vote(http_client, gas, address, &cluster).await?;
-    assert!(objects.len() > 0);
+    let vote_id = case_vote(http_client, gas1, address, &cluster).await?;
+    //assert!(objects.len() > 0);
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
@@ -1439,7 +1426,7 @@ async fn sim_test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
     ];
     let change_vote_function = "change_vote".to_string();
 
-    do_move_call(http_client, gas, address, &cluster, package_id, module, change_vote_function, arg).await?;
+    do_move_call(http_client, gas1, address, &cluster, package_id, module, change_vote_function, arg).await?;
 
     Ok(())
 }
@@ -1447,28 +1434,17 @@ async fn sim_test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
 #[sim_test]
 async fn sim_test_bfc_dao_cast_voting() -> Result<(), anyhow::Error> {
 
-    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(20000).build().await;
+    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(30000).build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
 
-    let gas = objects.first().unwrap().object().unwrap();
-    create_proposal(http_client, gas, address, &cluster).await?;
 
-    case_vote(http_client, gas, address, &cluster).await?;
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas1 = bfc_objects.first().unwrap().object().unwrap();
+
+    create_proposal(http_client, gas1, address, &cluster).await?;
+
+    case_vote(http_client, gas1, address, &cluster).await?;
     Ok(())
 }
 
