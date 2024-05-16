@@ -508,22 +508,9 @@ async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
-    let gas = objects.first().unwrap().object().unwrap();
 
     // now do the call
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -555,25 +542,11 @@ async fn test_bfc_dao_create_action() -> Result<(), anyhow::Error>{
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     //let manager_obj = add_cluster_admin(http_client, gas, address, &cluster).await?;
-    let payment = objects.get(2).unwrap().object().unwrap();
+    let payment = bfc_objects.get(2).unwrap().object().unwrap();
     // now do the call
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
@@ -788,22 +761,9 @@ async fn test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
-    let gas = objects.first().unwrap().object().unwrap();
     create_proposal(http_client, gas, address, &cluster).await.unwrap();
     let result = http_client.get_inner_dao_info().await?;
 
@@ -823,24 +783,8 @@ async fn test_bfc_dao_create_votingbfc()  -> Result<(), anyhow::Error> {
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    info!("============finish get owned objects {}", objects.len());
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     let amount  = 1_000_000_000u64* 100;
     let tx = make_transfer_sui_transaction(&cluster.wallet,
@@ -990,22 +934,10 @@ async fn sim_test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
 
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
+
     create_proposal(http_client, gas, address, &cluster).await?;
     //create votingbfc
     // now do the call
@@ -1078,22 +1010,8 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     //test_cluster.wait_for_all_nodes_upgrade_to(19u64).await;
     let manager_obj = create_stake_manager_key(http_client, gas, address, &test_cluster).await?;
@@ -1126,7 +1044,7 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error>{
 
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
-    assert!(objects.len() > 0);
+    //assert!(objects.len() > 0);
 
     let _ = sleep(Duration::from_secs(60)).await;
 
@@ -1186,22 +1104,8 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
 
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     // now do the call
     // modify voting period
@@ -1229,7 +1133,7 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
-    assert!(objects.len() > 0);
+    //assert!(objects.len() > 0);
 
 
 
@@ -1279,22 +1183,9 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
 
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     // now do the call
     // modify voting period
@@ -1322,7 +1213,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
-    assert!(objects.len() > 0);
+    //assert!(objects.len() > 0);
 
 
 
@@ -1352,28 +1243,14 @@ async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     create_active_proposal(http_client, gas, address, &cluster).await?;
     //create votingBfc
     // now do the call
     let vote_id = case_vote(http_client, gas, address, &cluster).await?;
-    assert!(objects.len() > 0);
+    //assert!(objects.len() > 0);
 
 
     let result = http_client.get_inner_dao_info().await?;
@@ -1520,25 +1397,8 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error>{
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    info!("============finish get owned objects {}", objects.len());
-    assert!(objects.len() > 0);
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     let amount  = 1_000_000_000u64* 100;
     let tx = make_transfer_sui_transaction(&cluster.wallet,
@@ -1666,22 +1526,8 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let gas = objects.first().unwrap().object().unwrap();
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
 
     let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
@@ -2570,7 +2416,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(10000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2601,7 +2447,7 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(10000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2628,7 +2474,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
+        .with_epoch_duration_ms(20000)
         .with_num_validators(5)
         .build()
         .await;
