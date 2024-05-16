@@ -12,7 +12,7 @@ use move_core_types::{
     u256::{U256FromStrError, U256},
 };
 use num_bigint::BigUint;
-use std::{borrow::Cow, collections::BTreeMap, fmt::Display, iter::Peekable, num::ParseIntError};
+use std::{borrow::Cow, fmt::Display, iter::Peekable, num::ParseIntError};
 
 const MAX_TYPE_DEPTH: u64 = 128;
 const MAX_TYPE_NODE_COUNT: u64 = 256;

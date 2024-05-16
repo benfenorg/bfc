@@ -20,7 +20,7 @@ use crate::messages_checkpoint::CheckpointTimestamp;
 use crate::messages_consensus::{ConsensusCommitPrologue, ConsensusCommitPrologueV2};
 use crate::object::{MoveObject, Object, Owner};
 use crate::programmable_transaction_builder::ProgrammableTransactionBuilder;
-use crate::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
+use crate::signature::{GenericSignature, VerifyParams};
 use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 
 use std::iter;

@@ -1459,7 +1459,7 @@ impl Display for SuiTransactionBlockData {
                 writeln!(f)?;
                 writeln!(f, "Gas Owner: {}", sui_address_to_bfc_address(data.gas_data.owner))?;
                 writeln!(f, "Gas Price: {}", data.gas_data.price)?;
-                writeln!(f, "Gas Budget: {}", data.gas_data.budget)
+                writeln!(f, "Gas Budget: {}", data.gas_data.budget);
                 writeln!(f, "Sender: {}", data.sender)?;
                 writeln!(f, "{}", self.gas_data())?;
                 writeln!(f, "{}", data.transaction)
