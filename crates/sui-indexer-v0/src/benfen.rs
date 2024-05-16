@@ -48,6 +48,7 @@ pub struct VaultInfo {
     pub vault_id: ID,
     pub position_number: u32,
     pub state: u8,
+    pub last_rebalance_state: u8,
     pub state_counter: u32,
     pub max_counter_times: u32,
     pub last_sqrt_price: u128,
@@ -63,7 +64,7 @@ pub struct VaultInfo {
     pub is_pause: bool,
     pub index: u64,
     pub base_point: u64,
-    pub bfc_accrued_consume: u64,
+    pub coin_market_cap: u64,
     pub last_bfc_rebalance_amount: u64,
 }
 
@@ -89,7 +90,12 @@ pub async fn get_bfc_price_in_stable_coin(
     http_client: HttpClient,
 ) -> Result<f64, IndexerError> {
     let tx = &build_vault_info_tx(coin.clone())?;
-    let val: VaultInfo = dev_inspect_tx(http_client, tx).await?;
+    let val: VaultInfo = dev_inspect_tx(http_client, tx).await.map_err(|err| {
+        IndexerError::FullNodeReadingError(format!(
+            "Failed to read VaultInfo with error: {:?}",
+            err
+        ))
+    })?;
     return calculate_price(val.current_sqrt_price);
 }
 
