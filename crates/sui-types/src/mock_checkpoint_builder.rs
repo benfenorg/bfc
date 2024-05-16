@@ -13,6 +13,7 @@ use crate::messages_checkpoint::{
 use crate::transaction::VerifiedTransaction;
 use fastcrypto::traits::Signer;
 use std::mem;
+use std::collections::{HashMap};
 
 pub trait ValidatorKeypairProvider {
     fn get_validator_key(&self, name: &AuthorityName) -> &dyn Signer<AuthoritySignature>;

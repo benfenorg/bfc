@@ -1099,12 +1099,13 @@ impl Object {
             version,
             contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
         });
-        Self {
+        ObjectInner {
             owner: Owner::AddressOwner(owner),
             data,
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
+            .into()
     }
 
     pub fn with_stable_tag_id_owner_version_for_testing(
@@ -1120,12 +1121,13 @@ impl Object {
             version,
             contents: StableCoin::new(id, amount).to_bcs_bytes(),
         });
-        Self {
+        ObjectInner {
             owner: Owner::AddressOwner(owner),
             data,
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
+            .into()
     }
 
     pub fn with_owner_for_testing(owner: SuiAddress) -> Self {

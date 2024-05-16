@@ -322,16 +322,26 @@ impl EndOfEpochTransactionKind {
         computation_charge: u64,
         storage_rebate: u64,
         non_refundable_storage_fee: u64,
+        stable_gas_summary_map : HashMap<TypeTag,GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
+        let mut stable_gas_summarys= vec![];
+        for type_tag in STABLE::all_stable_coins_type() {
+            let gas_summary = stable_gas_summary_map.get(&type_tag);
+            if let Some(summary) = gas_summary {
+                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
+            }
+        }
+
         Self::ChangeEpoch(ChangeEpoch {
             epoch: next_epoch,
             protocol_version,
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge: storage_charge,
+            bfc_computation_charge: computation_charge,
+            bfc_storage_rebate: storage_rebate,
+            bfc_non_refundable_storage_fee: non_refundable_storage_fee,
+            stable_gas_summarys,
             epoch_start_timestamp_ms,
             system_packages,
         })
@@ -1233,14 +1243,11 @@ impl TransactionKind {
     /// TODO: We should use GasCostSummary directly in ChangeEpoch struct, and return that
     /// directly.
     pub fn get_advance_epoch_tx_gas_summary(&self) -> Option<(u64, u64)> {
-        match self {
-            Self::ChangeEpoch(e) => {
-                Some((e.bfc_computation_charge + e.bfc_storage_charge, e.bfc_storage_rebate))
-            }
-            _ => None,
-        }
+
         let e = match self {
-            Self::ChangeEpoch(e) => e,
+            Self::ChangeEpoch(e) => {
+                e
+            },
             Self::EndOfEpochTransaction(txns) => {
                 if let EndOfEpochTransactionKind::ChangeEpoch(e) =
                     txns.last().expect("at least one end-of-epoch txn required")
@@ -1253,7 +1260,7 @@ impl TransactionKind {
             _ => return None,
         };
 
-        Some((e.computation_charge + e.storage_charge, e.storage_rebate))
+        Some((e.bfc_computation_charge + e.bfc_storage_charge, e.bfc_storage_rebate))
     }
 
     pub fn contains_shared_object(&self) -> bool {
