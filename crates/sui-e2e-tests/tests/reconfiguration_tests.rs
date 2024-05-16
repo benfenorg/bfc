@@ -45,6 +45,7 @@ use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
+use move_core_types::parser::parse_struct_tag;
 
 
 #[sim_test]
@@ -2168,8 +2169,10 @@ async fn swap_bfc_to_stablecoin(test_cluster: &TestCluster, http_client: &HttpCl
 
 async fn swap_bfc_to_stablecoin_with_tag(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, type_tag: SuiTypeTag) -> Result<(), anyhow::Error> {
     let objects = http_client
-        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
-            SuiObjectDataOptions::full_content()
+        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_filter(
+            SuiObjectDataFilter::StructType(
+                parse_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap(),
+            )
         )), None, None).await?.data;
     let gas = objects.last().unwrap().object().unwrap();
     let coin = objects.first().unwrap().object().unwrap();
