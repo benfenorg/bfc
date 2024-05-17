@@ -282,7 +282,7 @@ pub async fn get_nft_staking_overview(
     let mut nft_future_profit_rates = vec![];
     let mut rewarded: u64 = 0;
     let mut overall_reward: u64 = 0;
-    let max_count_per_day: u64 = 20;
+    let max_count_per_day: u64 = 1000;
     for d in 0..180 {
         let new_suply = (d + 1) * max_count_per_day;
         let dp = timestamp + d * 86_400;
@@ -304,7 +304,7 @@ pub async fn get_nft_staking_overview(
             overall_profits.push(SuiOwnedMiningNFTProfit {
                 mint_bfc: latest_profit.mint_bfc + overall_reward,
                 mint_usd: 0,
-                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 5)),
+                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 250)),
                 dt_timestamp_ms: dp * 1_000,
             })
         }
@@ -342,8 +342,9 @@ fn nth_day(begin_at: u64, now: u64) -> u64 {
 
 fn calculate_nft_cost(n: u64) -> u64 {
     let m: u64 = 0;
-    let l = 12960f64;
-    (((1 + 180 / (n + m)) as f64).ln() * l) as u64 * MIST_PER_SUI
+    let l = 259_200f64 / 1_000f64;
+    let t = if n < 180 { 60f64 } else { 180f64 };
+    ((1f64 + t / (n as f64 + m as f64)).ln() * l) as u64 * MIST_PER_SUI
 }
 
 const NFT_SHARED_GLOBAL_STAKING_FIELD: &'static str = "4";
@@ -767,6 +768,15 @@ mod test_benfen {
 
     #[test]
     fn test_calculate_nft_cost() {
-        println!("{}", super::calculate_nft_cost(1));
+        assert_eq!(super::calculate_nft_cost(1), 1_065_000_000_000);
+        assert_eq!(super::calculate_nft_cost(10), 504_000_000_000);
+        assert_eq!(super::calculate_nft_cost(30), 284_000_000_000);
+        assert_eq!(super::calculate_nft_cost(60), 179_000_000_000);
+        assert_eq!(super::calculate_nft_cost(90), 132_000_000_000);
+        assert_eq!(super::calculate_nft_cost(179), 74_000_000_000);
+
+        assert_eq!(super::calculate_nft_cost(180), 179_000_000_000);
+        assert_eq!(super::calculate_nft_cost(270), 132_000_000_000);
+        assert_eq!(super::calculate_nft_cost(360), 105_000_000_000);
     }
 }
