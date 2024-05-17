@@ -7,8 +7,8 @@ pub use checked::*;
 mod checked {
 
     use move_binary_format::CompiledModule;
+
     use move_vm_runtime::move_vm::MoveVM;
-    use once_cell::sync::Lazy;
     use std::{
         collections::{BTreeSet, HashSet},
         sync::Arc,
@@ -16,16 +16,16 @@ mod checked {
     use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
     use sui_types::gas::calculate_reward_rate;
+    use sui_types::gas_coin::GAS;
 
-    use std::{collections::HashSet, sync::Arc};
     use sui_types::balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
-    }, transaction::ChangeBfcRound};
+    };
+    use sui_types::transaction::ChangeBfcRound;
 
 
     use sui_types::execution_mode::{self, ExecutionMode};
-    use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
@@ -39,9 +39,8 @@ mod checked {
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
-    use crate::{gas_charger::GasCharger};
     use move_binary_format::access::ModuleAccess;
-    use crate::{gas_charger::GasCharger, temporary_store::TemporaryStore};
+    use crate::{gas_charger::GasCharger};
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::authenticator_state::{
         AUTHENTICATOR_STATE_CREATE_FUNCTION_NAME, AUTHENTICATOR_STATE_EXPIRE_JWKS_FUNCTION_NAME,
@@ -73,15 +72,13 @@ mod checked {
         object::{Object, ObjectInner},
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
         bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME},
-        SUI_FRAMEWORK_ADDRESS,
-        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
-        SUI_SYSTEM_PACKAGE_ID,
+        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS,
+        SUI_SYSTEM_PACKAGE_ID,SUI_FRAMEWORK_PACKAGE_ID
     };
 
-    use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
+    use sui_types::{BFC_SYSTEM_PACKAGE_ID};
     use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
     use sui_types::collection_types::VecMap;
-    use sui_types::gas::GasCostSummary;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -100,19 +97,19 @@ mod checked {
     /// 5. Unfortunately, we can't remove the transaction digest from this list, because if we do so, any future
     /// node that sync from genesis will fork on this transaction. We may be able to remove it once
     /// we have stable snapshots and the binary has a minimum supported protocol version past the epoch.
-    pub fn get_denied_certificates() -> &'static HashSet<TransactionDigest> {
-        static DENIED_CERTIFICATES: Lazy<HashSet<TransactionDigest>> =
-            Lazy::new(|| HashSet::from([]));
-        Lazy::force(&DENIED_CERTIFICATES)
-    }
-
-    fn is_certificate_denied(
-        transaction_digest: &TransactionDigest,
-        certificate_deny_set: &HashSet<TransactionDigest>,
-    ) -> bool {
-        certificate_deny_set.contains(transaction_digest)
-            || get_denied_certificates().contains(transaction_digest)
-    }
+    // pub fn get_denied_certificates() -> &'static HashSet<TransactionDigest> {
+    //     static DENIED_CERTIFICATES: Lazy<HashSet<TransactionDigest>> =
+    //         Lazy::new(|| HashSet::from([]));
+    //     Lazy::force(&DENIED_CERTIFICATES)
+    // }
+    //
+    // fn is_certificate_denied(
+    //     transaction_digest: &TransactionDigest,
+    //     certificate_deny_set: &HashSet<TransactionDigest>,
+    // ) -> bool {
+    //     certificate_deny_set.contains(transaction_digest)
+    //         || get_denied_certificates().contains(transaction_digest)
+    // }
 
     #[instrument(name = "tx_execute_to_effects", level = "debug", skip_all)]
     pub fn execute_transaction_to_effects<Mode: ExecutionMode>(
@@ -655,6 +652,7 @@ mod checked {
                     metrics,
                 )?;
                 Ok(Mode::empty_results())
+            }
             TransactionKind::EndOfEpochTransaction(txns) => {
                 let mut builder = ProgrammableTransactionBuilder::new();
                 let len = txns.len();
@@ -1088,8 +1086,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
-        let advance_epoch_pt = construct_advance_epoch_pt(builder, &params)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(builder, &params, &rate_map)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),

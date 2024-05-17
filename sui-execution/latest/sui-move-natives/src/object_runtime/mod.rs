@@ -102,52 +102,52 @@ pub(crate) struct ObjectRuntimeState {
 
 }
 
-#[derive(Clone)]
-pub(crate) struct LocalProtocolConfig {
-    pub(crate) max_num_deleted_move_object_ids: u64,
-    pub(crate) max_num_deleted_move_object_ids_system_tx: u64,
-    pub(crate) max_num_event_emit: u64,
-    pub(crate) max_num_new_move_object_ids: u64,
-    pub(crate) max_num_new_move_object_ids_system_tx: u64,
-    pub(crate) max_num_transferred_move_object_ids: u64,
-    pub(crate) max_num_transferred_move_object_ids_system_tx: u64,
-    pub(crate) max_event_emit_size: u64,
-    pub(crate) max_event_emit_size_total: Option<u64>,
-    pub(crate) object_runtime_max_num_cached_objects: u64,
-    pub(crate) object_runtime_max_num_cached_objects_system_tx: u64,
-    pub(crate) object_runtime_max_num_store_entries: u64,
-    pub(crate) object_runtime_max_num_store_entries_system_tx: u64,
-    pub(crate) loaded_child_object_format: bool,
-    pub(crate) loaded_child_object_format_type: bool,
-}
-
-impl LocalProtocolConfig {
-    fn new(config: &ProtocolConfig) -> Self {
-        Self {
-            max_num_deleted_move_object_ids: config.max_num_deleted_move_object_ids(),
-            max_num_event_emit: config.max_num_event_emit(),
-            max_num_new_move_object_ids: config.max_num_new_move_object_ids(),
-            max_num_transferred_move_object_ids: config.max_num_transferred_move_object_ids(),
-            max_event_emit_size: config.max_event_emit_size(),
-            max_event_emit_size_total: config.max_event_emit_size_total_as_option(),
-            max_num_deleted_move_object_ids_system_tx: config
-                .max_num_deleted_move_object_ids_system_tx(),
-            max_num_new_move_object_ids_system_tx: config.max_num_new_move_object_ids_system_tx(),
-            max_num_transferred_move_object_ids_system_tx: config
-                .max_num_transferred_move_object_ids_system_tx(),
-
-            object_runtime_max_num_cached_objects: config.object_runtime_max_num_cached_objects(),
-            object_runtime_max_num_cached_objects_system_tx: config
-                .object_runtime_max_num_cached_objects_system_tx(),
-            object_runtime_max_num_store_entries: config.object_runtime_max_num_store_entries(),
-            object_runtime_max_num_store_entries_system_tx: config
-                .object_runtime_max_num_store_entries_system_tx(),
-            loaded_child_object_format: config.loaded_child_object_format(),
-            loaded_child_object_format_type: config.loaded_child_object_format_type(),
-        }
-    }
-    //received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
-}
+// #[derive(Clone)]
+// pub(crate) struct LocalProtocolConfig {
+//     pub(crate) max_num_deleted_move_object_ids: u64,
+//     pub(crate) max_num_deleted_move_object_ids_system_tx: u64,
+//     pub(crate) max_num_event_emit: u64,
+//     pub(crate) max_num_new_move_object_ids: u64,
+//     pub(crate) max_num_new_move_object_ids_system_tx: u64,
+//     pub(crate) max_num_transferred_move_object_ids: u64,
+//     pub(crate) max_num_transferred_move_object_ids_system_tx: u64,
+//     pub(crate) max_event_emit_size: u64,
+//     pub(crate) max_event_emit_size_total: Option<u64>,
+//     pub(crate) object_runtime_max_num_cached_objects: u64,
+//     pub(crate) object_runtime_max_num_cached_objects_system_tx: u64,
+//     pub(crate) object_runtime_max_num_store_entries: u64,
+//     pub(crate) object_runtime_max_num_store_entries_system_tx: u64,
+//     pub(crate) loaded_child_object_format: bool,
+//     pub(crate) loaded_child_object_format_type: bool,
+// }
+//
+// impl LocalProtocolConfig {
+//     fn new(config: &ProtocolConfig) -> Self {
+//         Self {
+//             max_num_deleted_move_object_ids: config.max_num_deleted_move_object_ids(),
+//             max_num_event_emit: config.max_num_event_emit(),
+//             max_num_new_move_object_ids: config.max_num_new_move_object_ids(),
+//             max_num_transferred_move_object_ids: config.max_num_transferred_move_object_ids(),
+//             max_event_emit_size: config.max_event_emit_size(),
+//             max_event_emit_size_total: config.max_event_emit_size_total_as_option(),
+//             max_num_deleted_move_object_ids_system_tx: config
+//                 .max_num_deleted_move_object_ids_system_tx(),
+//             max_num_new_move_object_ids_system_tx: config.max_num_new_move_object_ids_system_tx(),
+//             max_num_transferred_move_object_ids_system_tx: config
+//                 .max_num_transferred_move_object_ids_system_tx(),
+//
+//             object_runtime_max_num_cached_objects: config.object_runtime_max_num_cached_objects(),
+//             object_runtime_max_num_cached_objects_system_tx: config
+//                 .object_runtime_max_num_cached_objects_system_tx(),
+//             object_runtime_max_num_store_entries: config.object_runtime_max_num_store_entries(),
+//             object_runtime_max_num_store_entries_system_tx: config
+//                 .object_runtime_max_num_store_entries_system_tx(),
+//             loaded_child_object_format: config.loaded_child_object_format(),
+//             loaded_child_object_format_type: config.loaded_child_object_format_type(),
+//         }
+//     }
+//     //received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
+// }
 
 #[derive(Tid)]
 pub struct ObjectRuntime<'a> {

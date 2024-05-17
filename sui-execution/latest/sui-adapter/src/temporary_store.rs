@@ -6,8 +6,6 @@ use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::StructTag;
 use move_core_types::resolver::ResourceResolver;
 use parking_lot::RwLock;
-use std::collections::{BTreeMap, HashSet};
-use std::sync::Arc;
 use tracing::info;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
@@ -17,6 +15,7 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::execution::{
     DynamicallyLoadedObjectMetadata, ExecutionResults, ExecutionResultsV2, SharedInput,
 };
+use sui_types::storage::DeleteKindWithOldVersion;
 use sui_types::execution_config_utils::to_binary_config;
 use sui_types::execution_status::ExecutionStatus;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
@@ -25,20 +24,15 @@ use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochPara
 use sui_types::type_resolver::LayoutResolver;
 use sui_types::{base_types::{
     ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
-}, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
+}, error::{ExecutionError, SuiError, SuiResult},
+                event::Event, fp_bail, gas::GasCostSummary, object::Owner,
+                object::{Data, Object},
+                storage::{
     BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
     WriteKind,
 }, transaction::InputObjects};
 use sui_types::{
-    base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
     effects::EffectsObjectChange,
-    error::{ExecutionError, SuiError, SuiResult},
-    fp_bail,
-    gas::GasCostSummary,
-    object::Owner,
-    object::{Data, Object},
-    storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
-    transaction::InputObjects,
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
@@ -350,6 +344,37 @@ impl<'backing> TemporaryStore<'backing> {
         self.execution_results.written_objects.insert(id, object);
     }
 
+
+    pub fn write_object(&mut self, mut object: Object, kind: WriteKind) {
+        // there should be no write after delete
+        debug_assert!(self.deleted.get(&object.id()).is_none());
+        // Check it is not read-only
+        #[cfg(test)] // Movevm should ensure this
+        if let Some(existing_object) = self.read_object(&object.id()) {
+            if existing_object.is_immutable() {
+                // This is an internal invariant violation. Move only allows us to
+                // mutate objects if they are &mut so they cannot be read-only.
+                panic!("Internal invariant violation: Mutating a read-only object.")
+            }
+        }
+
+        // Created mutable objects' versions are set to the store's lamport timestamp when it is
+        // committed to effects. Creating an object at a non-zero version risks violating the
+        // lamport timestamp invariant (that a transaction's lamport timestamp is strictly greater
+        // than all versions witnessed by the transaction).
+        debug_assert!(
+            kind != WriteKind::Create
+                || object.is_immutable()
+                || object.version() == SequenceNumber::MIN,
+            "Created mutable objects should not have a version set",
+        );
+
+        // The adapter is not very disciplined at filling in the correct
+        // previous transaction digest, so we ensure it is correct here.
+        object.previous_transaction = self.tx_digest;
+        self.written.insert(object.id(), (object, kind));
+    }
+
     /// Delete a mutable input object. This is used to delete input objects outside of PT execution.
     pub fn delete_input_object(&mut self, id: &ObjectID) {
         // there should be no deletion after write
@@ -372,17 +397,20 @@ impl<'backing> TemporaryStore<'backing> {
             .or_else(|| self.input_objects.get(id))
     }
 
+
+    pub fn estimate_effects_size_upperbound(&self) -> usize {
+        TransactionEffects::estimate_effects_size_upperbound_v2(
+            self.execution_results.written_objects.len(),
+            self.execution_results.modified_objects.len(),
+            self.input_objects.len(),
+        )
+    }
     pub fn save_loaded_runtime_objects(
         &mut self,
         loaded_runtime_objects: BTreeMap<ObjectID, DynamicallyLoadedObjectMetadata>,
     ) {
         #[cfg(debug_assertions)]
         {
-            for (id, v1) in &loaded_child_objects {
-                if let Some(v2) = self.loaded_child_objects.get(id) {
-                    if v1!= v2 {
-                        info!("id is {:?}",id);
-                    }
             for (id, v1) in &loaded_runtime_objects {
                 if let Some(v2) = self.loaded_runtime_objects.get(id) {
                     assert_eq!(v1, v2);
@@ -422,14 +450,6 @@ impl<'backing> TemporaryStore<'backing> {
             .extend(wrapped_object_containers);
     }
 
-    pub fn estimate_effects_size_upperbound(&self) -> usize {
-        TransactionEffects::estimate_effects_size_upperbound_v2(
-            self.execution_results.written_objects.len(),
-            self.execution_results.modified_objects.len(),
-            self.input_objects.len(),
-        )
-    }
-
     pub fn written_objects_size(&self) -> usize {
         self.execution_results
             .written_objects
@@ -440,28 +460,28 @@ impl<'backing> TemporaryStore<'backing> {
     /// If there are unmetered storage rebate (due to system transaction), we put them into
     /// the storage rebate of 0x5 object.
     /// TODO: This will not work for potential future new system transactions if 0x5 is not in the input.
-    /// We should fix this.
+            /// We should fix this.
     pub fn conserve_unmetered_storage_rebate(&mut self, unmetered_storage_rebate: u64) {
-        if unmetered_storage_rebate == 0 {
-            // If unmetered_storage_rebate is 0, we are most likely executing the genesis transaction.
-            // And in that case we cannot mutate the 0x5 object because it's newly created.
-            // And there is no storage rebate that needs distribution anyway.
-            return;
-        }
-        tracing::debug!(
+                if unmetered_storage_rebate == 0 {
+                    // If unmetered_storage_rebate is 0, we are most likely executing the genesis transaction.
+                    // And in that case we cannot mutate the 0x5 object because it's newly created.
+                    // And there is no storage rebate that needs distribution anyway.
+                    return;
+                }
+                tracing::debug!(
             "Amount of unmetered storage rebate from system tx: {:?}",
             unmetered_storage_rebate
         );
-        let mut system_state_wrapper = self
-            .read_object(&SUI_SYSTEM_STATE_OBJECT_ID)
-            .expect("0x5 object must be mutated in system tx with unmetered storage rebate")
-            .clone();
-        // In unmetered execution, storage_rebate field of mutated object must be 0.
-        // If not, we would be dropping SUI on the floor by overriding it.
-        assert_eq!(system_state_wrapper.storage_rebate, 0);
-        system_state_wrapper.storage_rebate = unmetered_storage_rebate;
-        self.mutate_input_object(system_state_wrapper);
-    }
+                let mut system_state_wrapper = self
+                    .read_object(&SUI_SYSTEM_STATE_OBJECT_ID)
+                    .expect("0x5 object must be mutated in system tx with unmetered storage rebate")
+                    .clone();
+                // In unmetered execution, storage_rebate field of mutated object must be 0.
+                // If not, we would be dropping SUI on the floor by overriding it.
+                assert_eq!(system_state_wrapper.storage_rebate, 0);
+                system_state_wrapper.storage_rebate = unmetered_storage_rebate;
+                self.mutate_input_object(system_state_wrapper);
+            }
 
     /// Given an object ID, if it's not modified, returns None.
     /// Otherwise returns its metadata, including version, digest, owner and storage rebate.
@@ -507,6 +527,7 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 }
+
 
 impl<'backing> TemporaryStore<'backing> {
     // check that every object read is owned directly or indirectly by sender, sponsor,
@@ -794,7 +815,6 @@ type ModifiedObjectInfo<'a> = (
 );
 
 impl<'backing> TemporaryStore<'backing> {
-
     fn get_input_sui(
         &self,
         id: &ObjectID,
@@ -911,8 +931,8 @@ impl<'backing> TemporaryStore<'backing> {
             // then input and output must be the same value
             if total_input_rebate
                 != total_output_rebate
-                    + gas_summary.storage_rebate
-                    + gas_summary.non_refundable_storage_fee
+                + gas_summary.storage_rebate
+                + gas_summary.non_refundable_storage_fee
             {
                 return Err(ExecutionError::invariant_violation(format!(
                     "SUI conservation failed -- no storage charges in gas summary \
@@ -983,7 +1003,8 @@ impl<'backing> TemporaryStore<'backing> {
                 })?;
             }
         }
-        if do_expensive_checks {
+
+        {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
             // both computation costs and storage rebate inflow are
@@ -1023,23 +1044,24 @@ impl<'backing> TemporaryStore<'backing> {
                 gas_summary.storage_cost,
                 total_output_rebate))
             );*/
-        // note: storage_cost flows into the storage_rebate field of the output objects, which is
-        // why it is not accounted for here.
-        // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
-        // gets credited to the gas coin both computation costs and storage rebate inflow are
-        total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-        if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-            total_input_sui += epoch_fees;
-            total_output_sui += epoch_rebates;
-        }
-        if total_input_sui != total_output_sui {
-            return Err(ExecutionError::invariant_violation(format!(
-                "SUI conservation failed: input={}, output={}, \
+            // note: storage_cost flows into the storage_rebate field of the output objects, which is
+            // why it is not accounted for here.
+            // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
+            // gets credited to the gas coin both computation costs and storage rebate inflow are
+            total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+            if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
+                total_input_sui += epoch_fees;
+                total_output_sui += epoch_rebates;
+            }
+            if total_input_sui != total_output_sui {
+                return Err(ExecutionError::invariant_violation(format!(
+                    "SUI conservation failed: input={}, output={}, \
                     this transaction either mints or burns SUI",
-                total_input_sui, total_output_sui,
-            )));
+                    total_input_sui, total_output_sui,
+                )));
+            }
+            Ok(())
         }
-        Ok(())
     }
 }
 
@@ -1227,4 +1249,5 @@ impl<'backing> ParentSync for TemporaryStore<'backing> {
     ) -> SuiResult<Option<ObjectRef>> {
         unreachable!("Never called in newer protocol versions")
     }
+
 }

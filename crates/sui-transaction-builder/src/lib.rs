@@ -13,7 +13,6 @@ use move_binary_format::binary_config::BinaryConfig;
 use move_binary_format::file_format::SignatureToken;
 use move_core_types::ident_str;
 use move_binary_format::CompiledModule;
-use move_core_types::ident_str;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{StructTag, TypeTag};
 use sui_json::{is_receiving_argument, resolve_move_function_args, ResolvedCallArg, SuiJsonValue};

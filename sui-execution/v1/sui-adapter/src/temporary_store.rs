@@ -9,6 +9,7 @@ use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
+
 use sui_types::committee::EpochId;
 use sui_types::digests::ObjectDigest;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
@@ -33,6 +34,8 @@ use sui_types::{
     transaction::InputObjects,
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
+use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
+use sui_types::collection_types::VecMap;
 
 pub struct TemporaryStore<'backing> {
     // The backing store for retrieving Move packages onchain.
@@ -812,6 +815,11 @@ impl<'backing> TemporaryStore<'backing> {
         let (old_object, new_object) =
             wrapper.advance_epoch_safe_mode(params, self.store.as_object_store(), protocol_config);
         self.mutate_child_object(old_object, new_object);
+    }
+    pub fn get_stable_rate_map_and_reward_rate(&self) -> (VecMap<String, u64>, u64) {
+        let (wrapper, reward_rate) = get_stable_rate_and_reward_rate(self.store.as_object_store())
+            .expect("System stable rate map must exist");
+        (wrapper, reward_rate)
     }
 }
 
