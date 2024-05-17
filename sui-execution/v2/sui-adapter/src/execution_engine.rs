@@ -13,6 +13,9 @@ mod checked {
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     };
+
+    use sui_types::transaction::ChangeBfcRound;
+
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
@@ -520,6 +523,18 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<Mode::ExecutionResults, ExecutionError> {
         let result = match transaction_kind {
+            TransactionKind::ChangeBfcRound(change_round) => {
+                bfc_round(
+                    change_round,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )?;
+                Ok(Mode::empty_results())
+            }
             TransactionKind::ChangeEpoch(change_epoch) => {
                 let builder = ProgrammableTransactionBuilder::new();
                 advance_epoch(
@@ -810,10 +825,10 @@ mod checked {
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.storage_charge,
-            computation_charge: change_epoch.computation_charge,
-            storage_rebate: change_epoch.storage_rebate,
-            non_refundable_storage_fee: change_epoch.non_refundable_storage_fee,
+            storage_charge: change_epoch.bfc_storage_charge,
+            computation_charge: change_epoch.bfc_computation_charge,
+            storage_rebate: change_epoch.bfc_storage_rebate,
+            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
@@ -1029,6 +1044,18 @@ mod checked {
             gas_charger,
             pt,
         )
+    }
+    fn bfc_round(
+        _change_round: ChangeBfcRound,
+        _temporary_store: &mut TemporaryStore<'_>,
+        _tx_ctx: &mut TxContext,
+        _move_vm: &Arc<MoveVM>,
+        _gas_charger: &mut GasCharger,
+        _protocol_config: &ProtocolConfig,
+        _metrics: Arc<LimitsMetrics>,
+    ) -> Result<(), ExecutionError>{
+
+        Ok(())
     }
 
     fn setup_authenticator_state_expire(

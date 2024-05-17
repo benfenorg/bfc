@@ -23,8 +23,6 @@ mod checked {
     };
 
     use sui_types::{balance::{
-        use std::{collections::HashSet, sync::Arc};
-        use sui_types::balance::{
             BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
             BALANCE_MODULE_NAME,
         } , transaction::ChangeBfcRound};

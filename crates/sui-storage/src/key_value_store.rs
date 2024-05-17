@@ -402,14 +402,6 @@ impl TransactionKeyValueStore {
             .await
     }
 
-    pub async fn deprecated_get_transaction_checkpoint(
-        &self,
-        digest: TransactionDigest,
-    ) -> SuiResult<Option<CheckpointSequenceNumber>> {
-        self.inner
-            .deprecated_get_transaction_checkpoint(digest)
-            .await
-    }
 
     pub async fn get_object(
         &self,
@@ -453,10 +445,6 @@ pub trait TransactionKeyValueStoreTrait {
         digest: TransactionDigest,
     ) -> SuiResult<Option<CheckpointSequenceNumber>>;
 
-    async fn deprecated_get_transaction_checkpoint(
-        &self,
-        digest: TransactionDigest,
-    ) -> SuiResult<Option<CheckpointSequenceNumber>>;
 
     async fn get_object(
         &self,
@@ -588,22 +576,7 @@ impl TransactionKeyValueStoreTrait for FallbackTransactionKVStore {
         Ok((res.0, res.1, res.2, res.3))
     }
 
-    async fn deprecated_get_transaction_checkpoint(
-        &self,
-        digest: TransactionDigest,
-    ) -> SuiResult<Option<CheckpointSequenceNumber>> {
-        let mut res = self
-            .primary
-            .deprecated_get_transaction_checkpoint(digest)
-            .await?;
-        if res.is_none() {
-            res = self
-                .fallback
-                .deprecated_get_transaction_checkpoint(digest)
-                .await?;
-        }
-        Ok(res)
-    }
+
 
     #[instrument(level = "trace", skip_all)]
     async fn deprecated_get_transaction_checkpoint(

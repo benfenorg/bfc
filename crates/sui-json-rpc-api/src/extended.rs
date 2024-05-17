@@ -9,7 +9,6 @@ use sui_json_rpc_types::{
     MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, QueryObjectsPage,
     SuiDaoProposal, SuiMiningNFT, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
     SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
-    CheckpointedObjectID, EpochInfo, EpochPage, QueryObjectsPage, SuiObjectResponseQuery,
 };
 use sui_open_rpc_macros::open_rpc;
 use sui_types::{base_types::SuiAddress, sui_serde::BigInt};

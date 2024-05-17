@@ -99,6 +99,11 @@ impl CallArg {
         initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
         mutable: false,
     });
+    pub const CLOCK_MUT: Self = Self::Object(ObjectArg::SharedObject {
+        id: SUI_CLOCK_OBJECT_ID,
+        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+        mutable: true,
+    });
 
     pub const AUTHENTICATOR_MUT: Self = Self::Object(ObjectArg::SharedObject {
         id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,

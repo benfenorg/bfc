@@ -35,7 +35,7 @@ use sui_types::transaction::{
 };
 use sui_types::{coin, fp_ensure, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID};
 use tracing::info;
-use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
+//use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 
 #[async_trait]
 pub trait DataReader {

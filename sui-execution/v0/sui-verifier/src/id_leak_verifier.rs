@@ -28,15 +28,11 @@ use move_core_types::{
     account_address::AccountAddress, ident_str, identifier::IdentStr, vm_status::StatusCode,
 };
 use std::{collections::BTreeMap, error::Error, num::NonZeroU64};
-use sui_types::{clock::CLOCK_MODULE_NAME, error::{ExecutionError, VMMVerifierErrorSubStatusCode}, id::OBJECT_MODULE_NAME, sui_system_state::SUI_SYSTEM_MODULE_NAME, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+use sui_types::{clock::CLOCK_MODULE_NAME,
+                error::{ExecutionError, VMMVerifierErrorSubStatusCode},
+                id::OBJECT_MODULE_NAME, sui_system_state::SUI_SYSTEM_MODULE_NAME,
+                SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
-use sui_types::{
-    clock::CLOCK_MODULE_NAME,
-    error::{ExecutionError, VMMVerifierErrorSubStatusCode},
-    id::OBJECT_MODULE_NAME,
-    sui_system_state::SUI_SYSTEM_MODULE_NAME,
-    SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS,
-};
 
 #[cfg(msim)]
 use sui_types::{
@@ -114,9 +110,10 @@ const SUI_DENY_LIST_OBJECT_CREATE: FunctionIdent = (
 );
 
 const FRESH_ID_FUNCTIONS: &[FunctionIdent] = &[OBJECT_NEW, OBJECT_NEW_UID_FROM_HASH, TS_NEW_OBJECT];
-const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE, BFC_SYSTEM_CREATE];
+
+//const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE, BFC_SYSTEM_CREATE];
 #[cfg(not(msim))]
-const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE];
+const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[SUI_SYSTEM_CREATE, SUI_CLOCK_CREATE, BFC_SYSTEM_CREATE];
 
 #[cfg(msim)]
 const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[
@@ -125,6 +122,7 @@ const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[
     SUI_AUTHENTICATOR_STATE_CREATE,
     SUI_RANDOMNESS_STATE_CREATE,
     SUI_DENY_LIST_OBJECT_CREATE,
+    BFC_SYSTEM_CREATE,
 ];
 
 impl AbstractValue {

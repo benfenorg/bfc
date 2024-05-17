@@ -40,15 +40,12 @@ use move_package::{
 };
 use move_symbol_pool::Symbol;
 use serde_reflection::Registry;
-use sui_types::{base_types::ObjectID, error::{SuiError, SuiResult}, is_system_package, move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage}, DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+use sui_types::{base_types::ObjectID,
+                error::{SuiError, SuiResult}, is_system_package,
+                move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage},
+                DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS,
+                SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
-use sui_types::{
-    base_types::ObjectID,
-    error::{SuiError, SuiResult},
-    is_system_package,
-    move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage},
-    DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS,
-};
 use sui_verifier::verifier as sui_bytecode_verifier;
 
 #[cfg(test)]

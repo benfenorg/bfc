@@ -17,7 +17,6 @@ mod checked {
     use crate::{temporary_store::TemporaryStore};
     use sui_types::gas::calculate_reward_rate;
 
-    use sui_types::{balance::{
     use std::{collections::HashSet, sync::Arc};
     use sui_types::balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,

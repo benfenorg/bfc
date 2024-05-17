@@ -28,15 +28,13 @@ use move_core_types::{
     account_address::AccountAddress, ident_str, identifier::IdentStr, vm_status::StatusCode,
 };
 use std::{collections::BTreeMap, error::Error, num::NonZeroU64};
-use sui_types::{clock::CLOCK_MODULE_NAME, error::{ExecutionError, VMMVerifierErrorSubStatusCode}, id::OBJECT_MODULE_NAME, sui_system_state::SUI_SYSTEM_MODULE_NAME, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+use sui_types::{clock::CLOCK_MODULE_NAME,
+                error::{ExecutionError, VMMVerifierErrorSubStatusCode},
+                id::OBJECT_MODULE_NAME, sui_system_state::SUI_SYSTEM_MODULE_NAME,
+                SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 use sui_types::{
     authenticator_state::AUTHENTICATOR_STATE_MODULE_NAME,
-    clock::CLOCK_MODULE_NAME,
-    error::{ExecutionError, VMMVerifierErrorSubStatusCode},
-    id::OBJECT_MODULE_NAME,
-    sui_system_state::SUI_SYSTEM_MODULE_NAME,
-    SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS,
 };
 
 use crate::{
