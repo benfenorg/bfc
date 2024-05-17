@@ -11,14 +11,12 @@ module sui::bfc {
     /// Sender is not @0x0 the system address.
     const ENotSystemAddress: u64 = 1;
 
-    #[allow(unused_const)]
-    /// The amount of Mist per Sui token based on the fact that mist is
+    /// The amount of Mist per Sui token based on the the fact that mist is
     /// 10^-9 of a Sui token
-    const MIST_PER_SUI: u64 = 1_000_000_000;
+    //const MIST_PER_SUI: u64 = 1_000_000_000;
 
-    #[allow(unused_const)]
     /// The total supply of Sui denominated in whole Sui tokens (10 Billion)
-    const TOTAL_SUPPLY_SUI: u64 = 1_000_000_000;
+    //const TOTAL_SUPPLY_SUI: u64 = 1_000_000_000;
 
     /// The total supply of Sui denominated in Mist (10 Billion * 10^9)
     const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;

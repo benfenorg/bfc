@@ -26,6 +26,8 @@ module sui::object {
 
     /// The hardcoded ID for the singleton Sui System State Object.
     const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
+    
+    const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
 
     /// The hardcoded ID for the singleton Clock Object.
     const SUI_CLOCK_OBJECT_ID: address = @0x6;
