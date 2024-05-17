@@ -130,7 +130,7 @@ module bfc_system::vault {
         pragma opaque;
     }
     // === Create vault ====
-    public(friend) fun create_vault<StableCoinType>(
+    public(package) fun create_vault<StableCoinType>(
         _index: u64,
         _tick_spacing: u32,
         _spacing_times: u32,
@@ -171,7 +171,7 @@ module bfc_system::vault {
     }
 
     /// open `position_number` positions
-    public(friend) fun init_positions<StableCoinType>(
+    public(package) fun init_positions<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _spacing_times: u32,
         _ctx: &mut TxContext
@@ -197,7 +197,7 @@ module bfc_system::vault {
         ticks
     }
 
-    public(friend) fun open_position<StableCoinType>(
+    public(package) fun open_position<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _tick_lower: I32,
         _tick_upper: I32,
@@ -213,7 +213,7 @@ module bfc_system::vault {
         );
     }
 
-    public(friend) fun close_position<StableCoinType>(
+    public(package) fun close_position<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64
     )
@@ -299,7 +299,7 @@ module bfc_system::vault {
         }
     }
 
-    public(friend) fun add_liquidity<StableCoinType>(
+    public(package) fun add_liquidity<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64,
         _delta_liquidity: u128
@@ -320,7 +320,7 @@ module bfc_system::vault {
         pragma opaque;
     }
 
-    public(friend) fun remove_liquidity<StableCoinType>(
+    public(package) fun remove_liquidity<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64,
         _delta_liquidity: u128
@@ -364,7 +364,7 @@ module bfc_system::vault {
         (balance_a, balance_b)
     }
 
-    public(friend) fun add_liquidity_fix_coin<StableCoinType>(
+    public(package) fun add_liquidity_fix_coin<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64,
         _amount: u64,
@@ -381,7 +381,7 @@ module bfc_system::vault {
         )
     }
 
-    public(friend) fun repay_add_liquidity<StableCoinType>(
+    public(package) fun repay_add_liquidity<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _balance_a: Balance<StableCoinType>,
         _balance_b: Balance<BFC>,
@@ -440,7 +440,7 @@ module bfc_system::vault {
         &_calculatedSwapResult.step_results
     }
 
-    public(friend) fun default_calculated_swap_result(): CalculatedSwapResult {
+    public(package) fun default_calculated_swap_result(): CalculatedSwapResult {
         CalculatedSwapResult {
             amount_in: 0,
             amount_out: 0,
@@ -550,7 +550,7 @@ module bfc_system::vault {
         pay_amount: u64,
     }
 
-    public(friend) fun swap<StableCoinType>(
+    public(package) fun swap<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _coin_a: Coin<StableCoinType>,
         _coin_b: Coin<BFC>,
@@ -894,7 +894,7 @@ module bfc_system::vault {
 
     /// Rebalance
     /// State checker
-    public(friend) fun update_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
+    public(package) fun update_state<StableCoinType>(_vault: &mut Vault<StableCoinType>) {
         let price = _vault.current_sqrt_price;
         let last_price = _vault.last_sqrt_price;
         if (price < last_price) {
@@ -974,7 +974,7 @@ module bfc_system::vault {
         liquidity
     }
 
-    public(friend) fun positions_liquidity_size_balance<StableCoinType>(
+    public(package) fun positions_liquidity_size_balance<StableCoinType>(
         _vault: &Vault<StableCoinType>,
         _ticks: &vector<vector<I32>>,
         _shape: u8,
@@ -1047,7 +1047,7 @@ module bfc_system::vault {
         };
     }
 
-    public(friend) fun rebalance<StableCoinType>(
+    public(package) fun rebalance<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _bfc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,

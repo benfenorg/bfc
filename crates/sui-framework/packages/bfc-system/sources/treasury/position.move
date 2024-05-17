@@ -51,7 +51,7 @@ module bfc_system::position {
     }
 
     /// create PositionManager
-    public(friend) fun create_position_manager(
+    public(package) fun create_position_manager(
         vault_id: ID,
         _tick_spacing: u32,
         _ctx: &mut TxContext,
@@ -102,14 +102,14 @@ module bfc_system::position {
         )
     }
 
-    public(friend) fun borrow_mut_position(
+    public(package) fun borrow_mut_position(
         _manager: &mut PositionManager,
         _index: u64
     ): &mut Position {
         linked_table::borrow_mut(&mut _manager.positions, _index)
     }
 
-    public(friend) fun borrow_position(
+    public(package) fun borrow_position(
         _manager: &PositionManager,
         _index: u64
     ): &Position {
@@ -127,7 +127,7 @@ module bfc_system::position {
     }
 
     /// open / close position
-    public(friend) fun open_position<StableCoinType>(
+    public(package) fun open_position<StableCoinType>(
         _position_manager: &mut PositionManager,
         _vault_index: u64,
         _tick_lower: I32,
@@ -152,7 +152,7 @@ module bfc_system::position {
         position.index
     }
 
-    public(friend) fun close_position(
+    public(package) fun close_position(
         _manager: &mut PositionManager,
         _index: u64
     )
@@ -164,7 +164,7 @@ module bfc_system::position {
     }
 
     /// add/remove liquidity
-    public(friend) fun increase_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
+    public(package) fun increase_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
         assert!(math_u128::add_check(_liquidity_delta, position.liquidity), ERR_U128_ADD_CHECK_FAILED);
         position.liquidity = position.liquidity + _liquidity_delta;
         position.liquidity
@@ -173,7 +173,7 @@ module bfc_system::position {
     spec increase_liquidity {
         pragma opaque;
     }
-    public(friend) fun decrease_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
+    public(package) fun decrease_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
         assert!(!is_empty(position), ERR_POSITION_INFO_EMPTY);
         if (_liquidity_delta == 0) {
             return position.liquidity

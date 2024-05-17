@@ -70,7 +70,7 @@ module bfc_system::treasury {
     //spec module { pragma verify = false; }
 
     // call in bfc_system
-    public(friend) fun create_treasury(time_interval: u32, total_bfc_supply: u64, ctx: &mut TxContext): Treasury {
+    public(package) fun create_treasury(time_interval: u32, total_bfc_supply: u64, ctx: &mut TxContext): Treasury {
         let treasury = Treasury {
             id: object::new(ctx),
             bfc_balance: balance::zero<BFC>(),
@@ -108,7 +108,7 @@ module bfc_system::treasury {
         type_name::into_string(type_name::get<StableCoinType>())
     }
 
-    public(friend) fun borrow_vault<StableCoinType>(
+    public(package) fun borrow_vault<StableCoinType>(
         _treasury: &Treasury,
         _vault_key: String
     ): &Vault<StableCoinType> {
@@ -116,7 +116,7 @@ module bfc_system::treasury {
         dynamic_field::borrow<String, Vault<StableCoinType>>(&_treasury.id, _vault_key)
     }
 
-    public(friend) fun borrow_mut_vault<StableCoinType>(
+    public(package) fun borrow_mut_vault<StableCoinType>(
         _treasury: &mut Treasury,
         _vault_key: String
     ): &mut Vault<StableCoinType> {
@@ -130,7 +130,7 @@ module bfc_system::treasury {
         )
     }
 
-    public(friend) fun create_vault<StableCoinType>(
+    public(package) fun create_vault<StableCoinType>(
         _treasury: &mut Treasury,
         _supply: Supply<StableCoinType>,
         _position_number: u32,
@@ -156,7 +156,7 @@ module bfc_system::treasury {
         );
     }
 
-    public(friend) fun init_vault_with_positions<StableCoinType>(
+    public(package) fun init_vault_with_positions<StableCoinType>(
         _treasury: &mut Treasury,
         _supply: Supply<StableCoinType>,
         _initialize_price: u128,
@@ -248,7 +248,7 @@ module bfc_system::treasury {
         transfer_or_delete(balance_a, _ctx);
     }
 
-    public(friend) fun mint_internal<StableCoinType>(
+    public(package) fun mint_internal<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_bfc: Coin<BFC>,
         _amount: u64,
@@ -290,7 +290,7 @@ module bfc_system::treasury {
         transfer_or_delete(balance_b, _ctx);
     }
 
-    public(friend) fun redeem_internal<StableCoinType>(
+    public(package) fun redeem_internal<StableCoinType>(
         _treasury: &mut Treasury,
         _coin_sc: Coin<StableCoinType>,
         _amount: u64,
@@ -358,7 +358,7 @@ module bfc_system::treasury {
         )
     }
 
-    public(friend) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
+    public(package) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
         let min_amount = next_epoch_bfc_required(_treasury);
         let input = coin::into_balance(_coin_bfc);
         let input_amount = balance::value(&input);
@@ -371,7 +371,7 @@ module bfc_system::treasury {
     }
 
     /// Rebalance
-    public(friend) fun next_epoch_bfc_required(_treasury: &Treasury): u64 {
+    public(package) fun next_epoch_bfc_required(_treasury: &Treasury): u64 {
         let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
 
         let total = one_coin_next_epoch_bfc_required<BUSD>(_treasury, times_per_day) +
@@ -400,7 +400,7 @@ module bfc_system::treasury {
         }
     }
 
-    public(friend) fun rebalance(
+    public(package) fun rebalance(
         _treasury: &mut Treasury,
         _pool_balance: u64,
         clock: &Clock,
@@ -423,7 +423,7 @@ module bfc_system::treasury {
         _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + balance::value(&_treasury.bfc_balance);
     }
 
-    public(friend) fun rebalance_internal(
+    public(package) fun rebalance_internal(
         _treasury: &mut Treasury,
         _update: bool,
         _ctx: &mut TxContext
@@ -450,7 +450,7 @@ module bfc_system::treasury {
     }
 
 
-    public(friend) fun get_exchange_rates(
+    public(package) fun get_exchange_rates(
         _treasury: &Treasury,
     ): VecMap<String, u64> {
         let rate_map = vec_map::empty<String, u64>();
@@ -477,7 +477,7 @@ module bfc_system::treasury {
         rate_map
     }
 
-    public(friend) fun get_total_supply<StableCoinType>(
+    public(package) fun get_total_supply<StableCoinType>(
         _self: &Treasury
     ): u64
     {

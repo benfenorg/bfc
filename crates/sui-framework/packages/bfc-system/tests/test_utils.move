@@ -46,7 +46,7 @@ module bfc_system::test_utils {
         transfer::public_share_object(t);
     }
 
-    public(friend) fun setup_without_parameters(
+    public(package) fun setup_without_parameters(
         scenario_val: &mut Scenario,
         owner: address
     )
@@ -65,7 +65,7 @@ module bfc_system::test_utils {
         );
     }
 
-    public(friend) fun setup_with_parameters(
+    public(package) fun setup_with_parameters(
         time_interval: u32,
         initialize_price: u128,
         base_point: u64,
@@ -105,7 +105,7 @@ module bfc_system::test_utils {
         test_scenario::next_tx(scenario_val, owner);
     }
 
-    public(friend) fun test_rebalance_first_init(
+    public(package) fun test_rebalance_first_init(
         scenario_val: &mut Scenario,
     ) {
         let t = test_scenario::take_shared<Treasury>(scenario_val);
@@ -113,7 +113,7 @@ module bfc_system::test_utils {
         test_scenario::return_shared(t);
     }
 
-    public(friend) fun test_rebalance(
+    public(package) fun test_rebalance(
         scenario_val: &mut Scenario,
     ) {
         let c = clock::create_for_testing(test_scenario::ctx(scenario_val));

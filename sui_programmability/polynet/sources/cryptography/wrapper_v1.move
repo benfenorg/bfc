@@ -30,7 +30,7 @@ module polynet::wrapper_v1 {
         need_fee: bool
     }
 
-    public(friend) fun new(_ctx: &mut TxContext): WrapperStore {
+    public(package) fun new(_ctx: &mut TxContext): WrapperStore {
 
         WrapperStore{
             fee_collector:tx_context::sender(_ctx), //maybe should set at config file
@@ -38,7 +38,7 @@ module polynet::wrapper_v1 {
         }
     }
 
-    public(friend) fun set_fee_collector(
+    public(package) fun set_fee_collector(
         _wrapperstore:&mut WrapperStore, 
         _new_fee_collector: address, 
         _ctx: &mut TxContext
@@ -47,14 +47,14 @@ module polynet::wrapper_v1 {
         _wrapperstore.fee_collector = _new_fee_collector;
     }
 
-    public(friend) fun update_fee_config(
+    public(package) fun update_fee_config(
         _wrapperstore:&mut WrapperStore, 
         _need_fee: bool 
     ) {
         _wrapperstore.need_fee = _need_fee;
     }
 
-    public(friend) fun need_fee(
+    public(package) fun need_fee(
         _wrapperstore: &WrapperStore
     ):bool {
         _wrapperstore.need_fee
@@ -66,7 +66,7 @@ module polynet::wrapper_v1 {
     }
     
 
-    public(friend) fun lock_and_pay_fee_with_fund<CoinType>(
+    public(package) fun lock_and_pay_fee_with_fund<CoinType>(
         cc_manager:&mut CrossChainManager,
         lp_manager: &mut LockProxyManager,
         treasury_ref:&mut Treasury<CoinType>,

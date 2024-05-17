@@ -48,7 +48,7 @@ module polynet::bfc_usdc {
 
     }
 
-    public(friend) fun mint_treasury<T>(
+    public(package) fun mint_treasury<T>(
        _cap: &mut TreasuryCap<T>,
        _amount: u64,
        _ctx: &mut TxContext

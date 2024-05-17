@@ -30,7 +30,7 @@ module bfc_system::bfc_dao_manager {
         pragma verify;
     }
     /// Create a new key.
-    public(friend) fun new(sender: address, ctx: &mut TxContext)  {
+    public(package) fun new(sender: address, ctx: &mut TxContext)  {
         let key = BFCDaoManageKey {
             id: object::new(ctx),
             key_type: FREE_KEY,
@@ -46,7 +46,7 @@ module bfc_system::bfc_dao_manager {
     }
 
     //create stake key
-    public(friend) fun create_stake_key(sender: address,
+    public(package) fun create_stake_key(sender: address,
                                         payment: Balance<BFC>,
                                         ctx: &mut TxContext)  {
         let key = BFCDaoManageKey {
@@ -66,7 +66,7 @@ module bfc_system::bfc_dao_manager {
 
     }
 
-    public (friend) fun unstake_key(key:BFCDaoManageKey, token: ManagerKeyBfc, ctx: &mut TxContext){
+    public (package) fun unstake_key(key:BFCDaoManageKey, token: ManagerKeyBfc, ctx: &mut TxContext){
 
         assert!(key.key_type == STAKE_KEY, ERROR_KEY_TYPE);
         assert!(key.amount == balance::value(&token.principal), ERROR_KEY_NOT_MATCH);
@@ -97,7 +97,7 @@ module bfc_system::bfc_dao_manager {
         aborts_if ctx.ids_created + 1 > MAX_U64;
     }
 
-    public(friend) fun getKeyAddress(key: &BFCDaoManageKey) : address {
+    public(package) fun getKeyAddress(key: &BFCDaoManageKey) : address {
         object::uid_to_address(&key.id)
     }
 

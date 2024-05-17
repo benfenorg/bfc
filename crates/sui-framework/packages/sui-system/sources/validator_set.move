@@ -158,7 +158,7 @@ module sui_system::validator_set {
 
     // ==== initialization at genesis ====
 
-    public(friend) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
+    public(package) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
         //add init stable rate
         let rate_map = rate_vec_map();
         let total_stake = calculate_total_stakes(&init_active_validators, rate_map);
@@ -372,7 +372,7 @@ module sui_system::validator_set {
         validator.request_add_stake(stake, ctx.sender(), ctx)
     }
 
-    public(friend) fun request_add_stable_stake<STABLE>(
+    public(package) fun request_add_stable_stake<STABLE>(
         self: &mut ValidatorSet,
         validator_address: address,
         stake: Balance<STABLE>,
@@ -411,7 +411,7 @@ module sui_system::validator_set {
         validator.request_withdraw_stake(staked_sui, ctx)
     }
 
-    public(friend) fun request_withdraw_stable_stake<STABLE>(
+    public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
@@ -684,7 +684,7 @@ module sui_system::validator_set {
         &self.stable_pool_mappings
     }
 
-    public(friend) fun pool_exchange_rates(
+    public(package) fun pool_exchange_rates(
     public(package) fun pool_exchange_rates(
         self: &mut ValidatorSet, pool_id: &ID
     ) : &Table<u64, PoolTokenExchangeRate> {

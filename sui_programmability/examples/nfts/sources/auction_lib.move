@@ -40,13 +40,13 @@ module nfts::auction_lib {
         bid_data: Option<BidData>,
     }
 
-    public(friend) fun auction_owner<T: key + store>(auction: &Auction<T>): address {
+    public(package) fun auction_owner<T: key + store>(auction: &Auction<T>): address {
         auction.owner
     }
 
     /// Creates an auction. This is executed by the owner of the asset to be
     /// auctioned.
-    public(friend) fun create_auction<T: key + store>(
+    public(package) fun create_auction<T: key + store>(
         to_sell: T, ctx: &mut TxContext
     ): Auction<T> {
         // A question one might asked is how do we know that to_sell

@@ -317,11 +317,11 @@ module sui_system::validator {
     }
 
     /// Deactivate this validator's staking pool
-    public(friend) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
+    public(package) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
         staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch);
     }
 
-    public(friend) fun deactivate_stable<STABLE>(self: &mut Validator, deactivation_epoch: u64) {
+    public(package) fun deactivate_stable<STABLE>(self: &mut Validator, deactivation_epoch: u64) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         stable_pool::deactivate_stable_pool(pool, deactivation_epoch);
@@ -333,7 +333,7 @@ module sui_system::validator {
         self.staking_pool.activate_staking_pool(activation_epoch);
     }
 
-    public(friend) fun activate_stable(self: &mut Validator, activation_epoch: u64) {
+    public(package) fun activate_stable(self: &mut Validator, activation_epoch: u64) {
         activate_stable_<BUSD>(self, activation_epoch);
         activate_stable_<BARS>(self, activation_epoch);
         activate_stable_<BAUD>(self, activation_epoch);
@@ -402,12 +402,12 @@ module sui_system::validator {
         bag::borrow_mut<ascii::String, StablePool<STABLE>>(bag, pool_key)
     }
 
-    public(friend) fun get_stable_pool<STABLE>(bag: &Bag) :&StablePool<STABLE> {
+    public(package) fun get_stable_pool<STABLE>(bag: &Bag) :&StablePool<STABLE> {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         bag::borrow<ascii::String, StablePool<STABLE>>(bag, pool_key)
     }
 
-    public(friend) fun request_add_stable_stake<STABLE>(
+    public(package) fun request_add_stable_stake<STABLE>(
         self: &mut Validator,
         stake: Balance<STABLE>,
         staker_address: address,
@@ -445,7 +445,7 @@ module sui_system::validator {
     }
 
     /// Request to add stake to the validator's staking pool at genesis
-    public(friend) fun request_add_stake_at_genesis(
+    public(package) fun request_add_stake_at_genesis(
         self: &mut Validator,
         stake: Balance<BFC>,
         staker_address: address,
@@ -495,7 +495,7 @@ module sui_system::validator {
         withdrawn_stake
     }
 
-    public(friend) fun request_withdraw_stable_stake<STABLE>(
+    public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut Validator,
         staked_sui: StakedStable<STABLE>,
         rate: u64,
@@ -568,7 +568,7 @@ module sui_system::validator {
     }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-    public(friend) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
+    public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
         let total_reward = balance::value(&reward);
         let bfc_reward = 0;
         let stable_total_stake = vec_map::empty();
@@ -725,7 +725,7 @@ module sui_system::validator {
         all_pool_total
     }
 
-    public(friend) fun deposit_stable_stake_rewards<STABLE>(
+    public(package) fun deposit_stable_stake_rewards<STABLE>(
         self: &mut Validator,
         reward: Balance<BFC>,
     ) {
@@ -750,7 +750,7 @@ module sui_system::validator {
         assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
     }
 
-    public(friend) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
+    public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
         process_pending_stable_stakes_and_withdraws<BUSD>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BARS>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BAUD>(self, ctx);
@@ -770,7 +770,7 @@ module sui_system::validator {
         process_pending_stable_stakes_and_withdraws<MGG>(self, ctx);
     }
 
-    public(friend) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &mut TxContext) {
+    public(package) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &mut TxContext) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         stable_pool::process_pending_stakes_and_withdraws<STABLE>(pool, ctx);
@@ -1392,7 +1392,7 @@ module sui_system::validator {
     // Note: `proof_of_possession` MUST be a valid signature using sui_address and
     // protocol_pubkey_bytes. To produce a valid PoP, run [fn test_proof_of_possession].
     #[test_only]
-    public(friend) fun new_for_testing(
+    public(package) fun new_for_testing(
         sui_address: address,
         protocol_pubkey_bytes: vector<u8>,
         network_pubkey_bytes: vector<u8>,
@@ -1453,7 +1453,7 @@ module sui_system::validator {
         validator
     }
 
-    public(friend) fun rate_vec_map() : VecMap<ascii::String, u64> {
+    public(package) fun rate_vec_map() : VecMap<ascii::String, u64> {
         let rate_map = vec_map::empty<ascii::String, u64>();
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1000000000);
         vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BARS>()), 1000000000);

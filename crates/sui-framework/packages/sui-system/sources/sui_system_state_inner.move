@@ -514,7 +514,7 @@ module sui_system::sui_system_state_inner {
         }
 
         /// Add stake to a validator's stable pool.
-        public(friend) fun request_add_stable_stake<STABLE>(
+        public(package) fun request_add_stable_stake<STABLE>(
             self: &mut SuiSystemStateInnerV2,
         stake: Coin<STABLE>,
         validator_address: address,
@@ -553,7 +553,7 @@ module sui_system::sui_system_state_inner {
             self.validators.request_withdraw_stake(staked_sui, ctx)
         }
 
-        public(friend) fun request_withdraw_stable_stake<STABLE>(
+        public(package) fun request_withdraw_stable_stake<STABLE>(
             self: &mut SuiSystemStateInnerV2,
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
@@ -1035,7 +1035,7 @@ module sui_system::sui_system_state_inner {
         self.validators.validator_total_stake_amount(validator_addr)
     }
 
-    public(friend) fun validator_stake_amount_with_stable(
+    public(package) fun validator_stake_amount_with_stable(
         self: &SuiSystemStateInnerV2,
         validator_addr: address,
         stable_rate: VecMap<ascii::String, u64>
@@ -1050,7 +1050,7 @@ module sui_system::sui_system_state_inner {
         self.validators.validator_staking_pool_id(validator_addr)
     }
 
-    public(friend) fun validator_stable_pool_id<STABLE>(self: &SuiSystemStateInnerV2, validator_addr: address): ID {
+    public(package) fun validator_stable_pool_id<STABLE>(self: &SuiSystemStateInnerV2, validator_addr: address): ID {
 
         validator_set::validator_stable_pool_id<STABLE>(&self.validators, validator_addr)
     }
@@ -1062,7 +1062,7 @@ module sui_system::sui_system_state_inner {
     }
 
     /// Returns reference to the stable staking pool mappings that map pool ids to active validator addresses
-    public(friend) fun validator_stable_staking_pool_mappings(self: &SuiSystemStateInnerV2): &Table<ID, address> {
+    public(package) fun validator_stable_staking_pool_mappings(self: &SuiSystemStateInnerV2): &Table<ID, address> {
 
         validator_set::stalbe_staking_pool_mappings(&self.validators)
     }

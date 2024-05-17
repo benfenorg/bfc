@@ -34,7 +34,7 @@ module sui_system::stake_subsidy {
 
     const ESubsidyDecreaseRateTooLarge: u64 = 0;
 
-    public(friend) fun create(
+    public(package) fun create(
         balance: Balance<BFC>,
     public(package) fun create(
         balance: Balance<SUI>,

@@ -48,7 +48,7 @@ module bfc_system::tick {
 
     spec module { pragma verify = false; }
 
-    public(friend) fun create_tick_manager(
+    public(package) fun create_tick_manager(
         _tick_spacing: u32,
         _ts: u64,
         _ctx: &mut TxContext,
@@ -94,7 +94,7 @@ module bfc_system::tick {
         ticks
     }
 
-    public(friend) fun borrow_tick_for_swap(
+    public(package) fun borrow_tick_for_swap(
         _tick_manager: &TickManager,
         _score: u64,
         _is_x2y: bool
@@ -179,7 +179,7 @@ module bfc_system::tick {
     }
 
     /// add/remove liquidity
-    public(friend) fun increase_liquidity(
+    public(package) fun increase_liquidity(
         _tick_manager: &mut TickManager,
         _current_tick_index: I32,
         _tick_lower_index: I32,
@@ -218,7 +218,7 @@ module bfc_system::tick {
         );
     }
 
-    public(friend) fun decrease_liquidity(
+    public(package) fun decrease_liquidity(
         _tick_manager: &mut TickManager,
         _current_tick_index: I32,
         _tick_lower_index: I32,
@@ -262,7 +262,7 @@ module bfc_system::tick {
         };
     }
 
-    public(friend) fun cross_by_tick(
+    public(package) fun cross_by_tick(
         _tick: &Tick,
         _is_x2y: bool,
         _liquidity: u128
@@ -283,7 +283,7 @@ module bfc_system::tick {
         }
     }
 
-    public(friend) fun cross_by_swap(
+    public(package) fun cross_by_swap(
         _tick_manager: &TickManager,
         _tick_index: I32,
         _is_x2y: bool,
@@ -294,7 +294,7 @@ module bfc_system::tick {
         cross_by_tick(tick, _is_x2y, _liquidity)
     }
 
-    public(friend) fun first_score_for_swap(
+    public(package) fun first_score_for_swap(
         _tick_manager: &TickManager,
         _tick_index: I32,
         _is_x2y: bool,
@@ -317,7 +317,7 @@ module bfc_system::tick {
         }
     }
 
-    public(friend) fun get_ticks(
+    public(package) fun get_ticks(
         _tick_manager: &TickManager,
         _tick_index: I32,
         _spacing_times: u32,

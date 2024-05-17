@@ -36,7 +36,7 @@ module bfc_system::treasury_pool {
         deposit_amount: u64
     }
 
-    public(friend) fun create_treasury_pool(
+    public(package) fun create_treasury_pool(
         balance: Balance<BFC>,
         ctx: &mut TxContext
     ): TreasuryPool
@@ -50,7 +50,7 @@ module bfc_system::treasury_pool {
         treasury_pool
     }
 
-    public(friend) fun deposit_to_treasury_pool(
+    public(package) fun deposit_to_treasury_pool(
         self: &mut TreasuryPool,
         bfc_coin: Coin<BFC>
     )
@@ -64,7 +64,7 @@ module bfc_system::treasury_pool {
         });
     }
 
-    public(friend) fun withdraw_to_treasury(
+    public(package) fun withdraw_to_treasury(
         self: &mut TreasuryPool,
         amount: u64,
         ctx: &mut TxContext

@@ -65,7 +65,7 @@ module bfc_system::voting_pool {
     // ==== initializer ====
 
     /// Create a new, empty voting pool.
-    public(friend) fun new(ctx: &mut TxContext) : VotingPool {
+    public(package) fun new(ctx: &mut TxContext) : VotingPool {
         VotingPool {
             id: object::new(ctx),
             bfc_balance: 0,
@@ -77,7 +77,7 @@ module bfc_system::voting_pool {
     // ==== voting requests ====
 
     /// Request to voting to a staking pool. The voting starts counting at the beginning of the next epoch,
-    public(friend) fun request_add_voting(
+    public(package) fun request_add_voting(
         pool: &VotingPool,
         voting: Balance<BFC>,
         clock: &Clock,
@@ -97,7 +97,7 @@ module bfc_system::voting_pool {
     /// Request to withdraw the given voting plus rewards from a staking pool.
     /// Both the principal and corresponding rewards in BFC are withdrawn.
     /// A proportional amount of pool token withdraw is recorded and processed at epoch change time.
-    public(friend) fun request_withdraw_voting(
+    public(package) fun request_withdraw_voting(
         pool: &VotingPool,
         voting_bfc: VotingBfc,
         clock: &Clock,
@@ -110,7 +110,7 @@ module bfc_system::voting_pool {
     /// Withdraw the principal BFC stored in the votingdBfc object, and calculate the corresponding amount of pool
     /// tokens using exchange rate at staking epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of BFC.
-    public(friend) fun withdraw_from_principal(
+    public(package) fun withdraw_from_principal(
         pool: &VotingPool,
         voting_bfc: VotingBfc,
         clock: &Clock,
@@ -133,7 +133,7 @@ module bfc_system::voting_pool {
 
 
 
-    public(friend) fun unwrap_voting_bfc(voting_bfc: VotingBfc): Balance<BFC> {
+    public(package) fun unwrap_voting_bfc(voting_bfc: VotingBfc): Balance<BFC> {
         let VotingBfc {
             id,
             pool_id: _,
@@ -146,11 +146,11 @@ module bfc_system::voting_pool {
 
     // ==== getters and misc utility functions ====
 
-    public(friend) fun bfc_balance(pool: &VotingPool): u64 { pool.bfc_balance }
+    public(package) fun bfc_balance(pool: &VotingPool): u64 { pool.bfc_balance }
 
-    public(friend) fun pool_id(voting_bfc: &VotingBfc): ID { voting_bfc.pool_id }
+    public(package) fun pool_id(voting_bfc: &VotingBfc): ID { voting_bfc.pool_id }
 
-    public(friend) fun voting_bfc_amount(voting_bfc: &VotingBfc): u64 { balance::value(&voting_bfc.principal) }
+    public(package) fun voting_bfc_amount(voting_bfc: &VotingBfc): u64 { balance::value(&voting_bfc.principal) }
 
 
 
@@ -158,7 +158,7 @@ module bfc_system::voting_pool {
     /// Split votingBfc `self` to two parts, one with principal `split_amount`,
     /// and the remaining principal is left in `self`.
     /// All the other parameters of the votingBfc like `voting` or `pool_id` remain the same.
-    public(friend) fun split(self: &mut VotingBfc, split_amount: u64, ctx: &mut TxContext): VotingBfc {
+    public(package) fun split(self: &mut VotingBfc, split_amount: u64, ctx: &mut TxContext): VotingBfc {
         let original_amount = balance::value(&self.principal);
         assert!(split_amount <= original_amount, EInsufficientBfcTokenBalance);
         let remaining_amount = original_amount - split_amount;
@@ -200,23 +200,23 @@ module bfc_system::voting_pool {
     }
 
     /// Returns true if all the staking parameters of the voting bfc except the principal are identical
-    public(friend) fun is_equal_staking_metadata(self: &VotingBfc, other: &VotingBfc): bool {
+    public(package) fun is_equal_staking_metadata(self: &VotingBfc, other: &VotingBfc): bool {
         (self.pool_id == other.pool_id)
     }
 
 
-    public(friend) fun pool_token_exchange_rate_at_epoch(): PoolTokenExchangeRate {
+    public(package) fun pool_token_exchange_rate_at_epoch(): PoolTokenExchangeRate {
         initial_exchange_rate()
     }
 
 
 
 
-    public(friend) fun bfc_amount(exchange_rate: &PoolTokenExchangeRate): u64 {
+    public(package) fun bfc_amount(exchange_rate: &PoolTokenExchangeRate): u64 {
         exchange_rate.bfc_amount
     }
 
-    public(friend) fun pool_token_amount(exchange_rate: &PoolTokenExchangeRate): u64 {
+    public(package) fun pool_token_amount(exchange_rate: &PoolTokenExchangeRate): u64 {
         exchange_rate.pool_token_amount
     }
 

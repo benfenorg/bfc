@@ -59,15 +59,15 @@ module bfc_system::event {
         state_counter: u32,
     }
 
-    public(friend) fun init_treasury(vaults_id: ID) {
+    public(package) fun init_treasury(vaults_id: ID) {
         emit(InitTreasuryEvent { vaults_id })
     }
 
-    public(friend) fun init_treasury_pool(treasury_pool_id: ID) {
+    public(package) fun init_treasury_pool(treasury_pool_id: ID) {
         emit(InitTreasuryPoolEvent { treasury_pool_id })
     }
 
-    public(friend) fun create_vault(
+    public(package) fun create_vault(
         vault_id: ID,
         vault_key: String,
         coin_type_a: String,
@@ -89,7 +89,7 @@ module bfc_system::event {
 
 
 
-    public(friend) fun swap(
+    public(package) fun swap(
         vault_id: ID,
         atob: bool, // true a->b false b->a
         coin_type_in: String,
@@ -119,7 +119,7 @@ module bfc_system::event {
         )
     }
 
-    public(friend) fun deposit(amount: u64) {
+    public(package) fun deposit(amount: u64) {
         emit(
             DepositEvent {
                 amount
@@ -127,7 +127,7 @@ module bfc_system::event {
         )
     }
 
-    public(friend) fun update_state(
+    public(package) fun update_state(
         current_sqrt_price: u128,
         last_sqrt_price: u128,
         state: u8,

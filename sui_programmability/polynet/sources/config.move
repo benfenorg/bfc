@@ -112,7 +112,7 @@ module polynet::config {
 
     }
 
-    public(friend) fun init_cc_config(_ctx: &mut TxContext){
+    public(package) fun init_cc_config(_ctx: &mut TxContext){
 
         let sender = tx_context::sender(_ctx);
 
@@ -159,7 +159,7 @@ module polynet::config {
         transfer::share_object(config);
     }
 
-    public(friend) fun migrate(
+    public(package) fun migrate(
         _global: &mut CrossChainGlobalConfig,
         _ctx: &mut TxContext 
     ) {
@@ -169,36 +169,36 @@ module polynet::config {
         events::migrate(tx_context::sender(_ctx));
     }
 
-    public(friend) fun check_version(_global: &CrossChainGlobalConfig) {
+    public(package) fun check_version(_global: &CrossChainGlobalConfig) {
         assert!(_global.version == VERSION,ERR_VERSION_CHECK);
 
     }
 
-    public(friend) fun borrow_wrapper_store(_global: &CrossChainGlobalConfig): &WrapperStore {
+    public(package) fun borrow_wrapper_store(_global: &CrossChainGlobalConfig): &WrapperStore {
         &_global.wrapper_store
     }
 
-    public(friend) fun borrow_mut_wrapper_store(_global: &mut CrossChainGlobalConfig): &mut WrapperStore {
+    public(package) fun borrow_mut_wrapper_store(_global: &mut CrossChainGlobalConfig): &mut WrapperStore {
         &mut _global.wrapper_store
     }
 
-    public(friend) fun borrow_mut_crosschain_manager(_global: &mut CrossChainGlobalConfig): &mut CrossChainManager {
+    public(package) fun borrow_mut_crosschain_manager(_global: &mut CrossChainGlobalConfig): &mut CrossChainManager {
         &mut _global.cross_chain_manager
     }
 
-    public(friend) fun borrow_crosschain_manager(_global: &mut CrossChainGlobalConfig): &CrossChainManager {
+    public(package) fun borrow_crosschain_manager(_global: &mut CrossChainGlobalConfig): &CrossChainManager {
         &_global.cross_chain_manager
     }
 
-    public(friend) fun borrow_mut_lp_manager(_global: &mut CrossChainGlobalConfig): &mut LockProxyManager {
+    public(package) fun borrow_mut_lp_manager(_global: &mut CrossChainGlobalConfig): &mut LockProxyManager {
         &mut _global.lock_proxy_manager
     }
 
-    public(friend) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): &LockProxyManager {
+    public(package) fun borrow_lp_manager(_global: &mut CrossChainGlobalConfig): &LockProxyManager {
         &_global.lock_proxy_manager
     }
 
-    public(friend) fun borrow_mut_all(
+    public(package) fun borrow_mut_all(
         _global: &mut CrossChainGlobalConfig
     ): (
         &mut LockProxyManager,
@@ -208,7 +208,7 @@ module polynet::config {
         (&mut _global.lock_proxy_manager, &mut _global.wrapper_store,&mut _global.cross_chain_manager )
     }
 
-    public(friend) fun borrow_mut_lp_and_cc_managers(
+    public(package) fun borrow_mut_lp_and_cc_managers(
         _global: &mut CrossChainGlobalConfig
     ): (
         &mut LockProxyManager,
@@ -223,25 +223,25 @@ module polynet::config {
        _global.paused
     }
 
-    public(friend) fun check_pause(_global:&CrossChainGlobalConfig){
+    public(package) fun check_pause(_global:&CrossChainGlobalConfig){
 
         assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
       
     }
 
-    public(friend) fun pause(_global:&mut CrossChainGlobalConfig){
+    public(package) fun pause(_global:&mut CrossChainGlobalConfig){
 
         assert!(!paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = true;
     }
 
-    public(friend) fun unpause(_global:&mut CrossChainGlobalConfig)  {
+    public(package) fun unpause(_global:&mut CrossChainGlobalConfig)  {
 
         assert!(paused(_global),ERR_CHECK_CONFIG_PAUSED);
         _global.paused = false;
     }
 
-    public(friend) fun has_role(_config: &CrossChainGlobalConfig, _role: u64, _account: address): bool  {
+    public(package) fun has_role(_config: &CrossChainGlobalConfig, _role: u64, _account: address): bool  {
         //let acl_store_ref = borrow_global<ACLStore>(@poly);
 
         if (table::contains(&_config.acl_store.role_acls, _role)) {
@@ -252,7 +252,7 @@ module polynet::config {
         }
     }
 
-    public(friend) fun grant_role(
+    public(package) fun grant_role(
         _config:&mut CrossChainGlobalConfig, 
         _role: u64, 
         _account: address, 
@@ -274,7 +274,7 @@ module polynet::config {
         }
     }
 
-    public(friend) fun revoke_role(
+    public(package) fun revoke_role(
         _config: &mut CrossChainGlobalConfig, 
         _role: u64, 
         _account: address, 
@@ -289,34 +289,34 @@ module polynet::config {
         acl::remove(role_acl, _account);
     }
 
-    public(friend) fun check_keeper_role(
+    public(package) fun check_keeper_role(
          _config: &CrossChainGlobalConfig,
          _sender: address
     ) {
         assert!(has_role(_config, CHANGE_KEEPER_ROLE, (_sender)), ENOT_CHANGE_KEEPER_ROLE);
     }
 
-    public(friend) fun check_pause_role(
+    public(package) fun check_pause_role(
          _config: &CrossChainGlobalConfig,
          _sender: address
     ) {
         assert!(has_role(_config, PAUSE_ROLE, (_sender)), ENOT_PAUSE_ROLE);
     }
 
-    public(friend) fun check_ca_role (
+    public(package) fun check_ca_role (
          _config: &CrossChainGlobalConfig,
          _sender: address
     ) {
           assert!(has_role(_config, CA_ROLE, _sender), ENOT_CA_ROLE);
     }
-    public(friend) fun check_admin_role (
+    public(package) fun check_admin_role (
          _config: &CrossChainGlobalConfig,
          _sender: address
     ) {
           assert!(has_role(_config, ADMIN_ROLE, _sender), ENOT_ADMIN);
     }
 
-    public(friend) fun check_assets_role (
+    public(package) fun check_assets_role (
          _config: &CrossChainGlobalConfig,
          _sender: address
 
@@ -324,7 +324,7 @@ module polynet::config {
           assert!(has_role(_config, ASSETS_ROLE, _sender), ENOT_ASSETS_ROLE);
     }
 
-    public(friend) fun check_treasury_role (
+    public(package) fun check_treasury_role (
          _config: &CrossChainGlobalConfig,
          _sender: address
 

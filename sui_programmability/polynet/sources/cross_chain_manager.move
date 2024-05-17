@@ -61,7 +61,7 @@ module polynet::cross_chain_manager {
         args: vector<u8>
     }
 
-    public(friend) fun new(_ctx: &mut TxContext): CrossChainManager {
+    public(package) fun new(_ctx: &mut TxContext): CrossChainManager {
      
         let manager = CrossChainManager{
             paused: false,
@@ -79,7 +79,7 @@ module polynet::cross_chain_manager {
 
   
     //TODO: make sure account is token contract address 
-    public(friend) fun issue_license(
+    public(package) fun issue_license(
         _module_name: vector<u8>,
         _contract: address 
     ): License {
@@ -342,7 +342,7 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public(friend) fun new_certificate(
+    public(package) fun new_certificate(
         _from_contract: vector<u8>,
         _from_chain_id: u64,
         _target_license_id: vector<u8>,
@@ -360,7 +360,7 @@ module polynet::cross_chain_manager {
     }
 
 
-    public(friend) fun get_poly_id(_cross_chain_manager: &CrossChainManager): u64 {
+    public(package) fun get_poly_id(_cross_chain_manager: &CrossChainManager): u64 {
          _cross_chain_manager.poly_id
     }
 
@@ -368,12 +368,12 @@ module polynet::cross_chain_manager {
         _cross_chain_manager.epoch_start_height
     }
 
-    public(friend) fun get_cur_book_keeper(_cross_chain_manager: &CrossChainManager): vector<vector<u8>> {
+    public(package) fun get_cur_book_keeper(_cross_chain_manager: &CrossChainManager): vector<vector<u8>> {
         _cross_chain_manager.book_keepers
 
     }
 
-    public(friend) fun update_cross_chain_manager_config(
+    public(package) fun update_cross_chain_manager_config(
         _cross_chain_manager: &mut CrossChainManager,
         _keepers: vector<vector<u8>>,
         _start_height: u64,
@@ -395,7 +395,7 @@ module polynet::cross_chain_manager {
 
     }
 
-    public(friend) fun change_start_height(
+    public(package) fun change_start_height(
         _cross_chain_manager: &mut CrossChainManager,
         _start_height: u64,
         _ctx: &mut TxContext
@@ -409,7 +409,7 @@ module polynet::cross_chain_manager {
         );
     }
 
-    public(friend) fun change_book_keeper(
+    public(package) fun change_book_keeper(
         _cross_chain_manager: &mut CrossChainManager,
         _keepers: vector<vector<u8>>,
         _start_height: u64,
@@ -421,7 +421,7 @@ module polynet::cross_chain_manager {
 
     }
 
-    public(friend) fun set_poly_id(
+    public(package) fun set_poly_id(
         _cross_chain_manager: &mut CrossChainManager,
         _poly_id: u64,
         _ctx: &mut TxContext
@@ -457,7 +457,7 @@ module polynet::cross_chain_manager {
         }
     }
 
-    public(friend) fun set_blacklist(
+    public(package) fun set_blacklist(
         _cc_manager:&mut CrossChainManager,
         _license_id: vector<u8>,
         _access_level: u8, 

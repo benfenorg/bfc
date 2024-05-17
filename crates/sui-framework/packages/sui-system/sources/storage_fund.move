@@ -19,7 +19,7 @@ module sui_system::storage_fund {
     }
 
     /// Called by `sui_system` at genesis time.
-    public(friend) fun new(initial_fund: Balance<BFC>) : StorageFund {
+    public(package) fun new(initial_fund: Balance<BFC>) : StorageFund {
         StorageFund {
             // At the beginning there's no object in the storage yet
             total_object_storage_rebates: balance::zero(),
@@ -28,7 +28,7 @@ module sui_system::storage_fund {
     }
 
     /// Called by `sui_system` at epoch change times to process the inflows and outflows of storage fund.
-    public(friend) fun advance_epoch(
+    public(package) fun advance_epoch(
         self: &mut StorageFund,
         storage_charges: Balance<BFC>,
         storage_fund_reinvestment: Balance<BFC>,

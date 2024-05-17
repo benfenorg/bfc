@@ -144,7 +144,7 @@ module polynet::events {
         module_name: String,
     }
 
-    public(friend) fun license_id(
+    public(package) fun license_id(
         _license_id: vector<u8>,
         _account: address,
         _module_name: String,
@@ -158,7 +158,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun unlock(
+    public(package) fun unlock(
         _to_asset: TypeName,
         _to_address: address,
         _amount: u64,
@@ -174,7 +174,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun unbind_asset(
+    public(package) fun unbind_asset(
         _from_asset: TypeName,
         _to_chain_id: u64,
         _to_asset_hash: vector<u8>,
@@ -190,7 +190,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun bind_asset(
+    public(package) fun bind_asset(
         _from_asset: TypeName,
         _to_chain_id: u64,
         _to_asset_hash: vector<u8>,
@@ -206,7 +206,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun bind_proxy(
+    public(package) fun bind_proxy(
         _to_chain_id: u64,
         _target_proxy_hash: vector<u8>
     ) {
@@ -218,7 +218,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun unbind_proxy(
+    public(package) fun unbind_proxy(
         _to_chain_id: u64,
         _target_proxy_hash: vector<u8>
     ) {
@@ -230,7 +230,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun cross_chain(
+    public(package) fun cross_chain(
         _sender: address,
         _tx_id: vector<u8>,
         _proxy_or_asset_contract: vector<u8>,
@@ -250,7 +250,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun issue_license(
+    public(package) fun issue_license(
         _module_name: vector<u8>,
         _contract: address,
         _license_id: vector<u8>
@@ -264,7 +264,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun read_certificate(
+    public(package) fun read_certificate(
         _from_contract: vector<u8>,
         _from_chain_id: u64,
         _target_license_id: vector<u8>,
@@ -282,7 +282,7 @@ module polynet::events {
         );
     }
 
-     public(friend) fun read_asset(
+     public(package) fun read_asset(
         _to_asset: vector<u8>,
         _from_chain_id: u64,
         _decimals: u8
@@ -297,7 +297,7 @@ module polynet::events {
 
     }
 
-    public(friend) fun set_blacklist_event(
+    public(package) fun set_blacklist_event(
         _license_id: vector<u8>,
         _access_level: u8, 
         _sender: address
@@ -318,7 +318,7 @@ module polynet::events {
     //     poly_id: u64
     // }
 
-    public(friend) fun update_poly_id_event(
+    public(package) fun update_poly_id_event(
         _poly_id: u64,
         _sender: address
     ) {
@@ -329,7 +329,7 @@ module polynet::events {
             })
     }
 
-    public(friend) fun update_start_height_event(
+    public(package) fun update_start_height_event(
         _height: u64,
         _sender: address
     ) {
@@ -340,7 +340,7 @@ module polynet::events {
             })
     }
 
-     public(friend) fun update_book_keeper_event(
+     public(package) fun update_book_keeper_event(
         _height: u64,
         _sender: address,
         _keepers: vector<vector<u8>>,
@@ -356,7 +356,7 @@ module polynet::events {
     }
 
 
-     public(friend) fun lock_event(
+     public(package) fun lock_event(
         _from_asset: TypeName,
         _from_address: address,
         _to_chain_id: u64,
@@ -379,7 +379,7 @@ module polynet::events {
     }
 
 
-    public(friend) fun lock_with_fee_event(
+    public(package) fun lock_with_fee_event(
         _from_asset: TypeName,
         _from_address: address,
         _to_chain_id: u64,
@@ -401,7 +401,7 @@ module polynet::events {
     }
 
 
-    public(friend) fun migrate(
+    public(package) fun migrate(
         _sender: address
     ) {
         emit(
@@ -410,7 +410,7 @@ module polynet::events {
             })
     }
 
-    public(friend) fun migrate_book_keeper_event(
+    public(package) fun migrate_book_keeper_event(
         _keepers: vector<vector<u8>>,
         _startHeight: u64,
         _polyId: u64,
@@ -427,7 +427,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun init_book_keeper_event(
+    public(package) fun init_book_keeper_event(
         _keepers: vector<vector<u8>>,
         _startHeight: u64,
         _sender: address
@@ -442,7 +442,7 @@ module polynet::events {
         );
     }
 
-    public(friend) fun verify_header_and_execute_tx_event(
+    public(package) fun verify_header_and_execute_tx_event(
         _from_chain_id: u64,
         _to_contract: vector<u8>,
         _cross_chain_tx_hash: vector<u8>,

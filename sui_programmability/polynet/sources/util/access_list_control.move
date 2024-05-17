@@ -49,7 +49,7 @@ module polynet::acl {
         vector::contains(&acl.list, &addr)
     }
 
-    public(friend) fun add_all(_acl: &mut AccessControlManager, _addrs: vector<address>){
+    public(package) fun add_all(_acl: &mut AccessControlManager, _addrs: vector<address>){
         let size = vector::length(&_addrs);
         assert!(size > 0,ERROR_EMPTY_ADDRESS) ;
         
@@ -61,7 +61,7 @@ module polynet::acl {
         };
     }
     
-    public(friend) fun add(_acl: &mut AccessControlManager, _addr: address){
+    public(package) fun add(_acl: &mut AccessControlManager, _addr: address){
 
         if (vector::length(&_acl.list) > 0 ) {
              assert!(!vector::contains(&_acl.list, &_addr), ECONTAIN);
@@ -71,7 +71,7 @@ module polynet::acl {
     }
 
 
-    public(friend) fun remove(acl: &mut AccessControlManager, addr: address){
+    public(package) fun remove(acl: &mut AccessControlManager, addr: address){
         let (found, index) = vector::index_of(&mut acl.list, &addr);
         assert!(found, (ENOT_CONTAIN));
         vector::remove(&mut acl.list, index);
@@ -82,25 +82,25 @@ module polynet::acl {
         return result
     }
 
-    public(friend) fun is_assets_admin(a: address): bool {
+    public(package) fun is_assets_admin(a: address): bool {
         let result = vector::contains(&ASSETS_ADMIN, &a);
         return result
     }
 
-    public(friend) fun get_default_admin_address(): vector<address> {
+    public(package) fun get_default_admin_address(): vector<address> {
         ADMINS
     }
 
-    public(friend) fun get_default_assets_admin_address(): vector<address> {
+    public(package) fun get_default_assets_admin_address(): vector<address> {
         ASSETS_ADMIN
     }
 
-    public(friend) fun get_default_treasury_admin_address(): vector<address> {
+    public(package) fun get_default_treasury_admin_address(): vector<address> {
         TREASURY_ADMIN
     }
 
 
-    public(friend) fun default_admin_address(): address {
+    public(package) fun default_admin_address(): address {
         let account = vector::borrow<address>(&ADMINS, 0);
         *account
     }

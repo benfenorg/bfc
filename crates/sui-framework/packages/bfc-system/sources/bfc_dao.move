@@ -185,11 +185,11 @@ module bfc_system::bfc_dao {
         status: bool,
     }
 
-    public(friend) fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
+    public(package) fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
         dao.proposal_record
     }
 
-    public(friend) fun get_bfcdao_actionid(bfcDaoAction: BFCDaoAction): u64 {
+    public(package) fun get_bfcdao_actionid(bfcDaoAction: BFCDaoAction): u64 {
         bfcDaoAction.action_id
     }
 
@@ -241,7 +241,7 @@ module bfc_system::bfc_dao {
     }
 
     //functions
-    public(friend) fun create_bfcdao_action(
+    public(package) fun create_bfcdao_action(
         dao: &mut Dao,
         payment: &mut Coin<BFC>,
         actionName:vector<u8>,
@@ -284,7 +284,7 @@ module bfc_system::bfc_dao {
     }
 
     // Part 3: transfer the BFC Dao object to the sender
-    public(friend) fun create_dao(
+    public(package) fun create_dao(
                                     admins: vector<address>,
                                   ctx: &mut TxContext ) : Dao {
 
@@ -402,7 +402,7 @@ module bfc_system::bfc_dao {
     /// propose a proposal.
     /// `action`: the actual action to execute.
     /// `action_delay`: the delay to execute after the proposal is agreed
-    public(friend) fun propose (
+    public(package) fun propose (
         dao: &mut Dao,
         version_id: u64,
         payment: &mut Coin<BFC>,
@@ -484,7 +484,7 @@ module bfc_system::bfc_dao {
     /// User can only vote once, then the vote is locked,
     /// which can only be un vote by user after the proposal is expired, or cancelled, or executed.
     /// So think twice before casting vote.
-    public(friend) fun cast_vote(
+    public(package) fun cast_vote(
         dao:  &mut Dao,
         proposal: &mut Proposal,
         coin: VotingBfc,
@@ -545,7 +545,7 @@ module bfc_system::bfc_dao {
 
 
     /// Let user change their vote during the voting time.
-    public(friend) fun change_vote(
+    public(package) fun change_vote(
         dao:  &mut Dao,
         my_vote: &mut Vote,
         proposal: &mut Proposal,
@@ -606,7 +606,7 @@ module bfc_system::bfc_dao {
     }
 
     /// Revoke some voting powers from vote on `proposal_id` of `proposer_address`.
-    public(friend) fun revoke_vote(
+    public(package) fun revoke_vote(
         dao:  &mut Dao,
         proposal: &mut Proposal,
         my_vote:  Vote,
@@ -694,7 +694,7 @@ module bfc_system::bfc_dao {
     }
 
     /// Retrieve back my voted token voted for a proposal.
-    public(friend) fun unvote_votes(
+    public(package) fun unvote_votes(
         proposal: & Proposal,
         vote: Vote,
         clock: & Clock,
@@ -734,7 +734,7 @@ module bfc_system::bfc_dao {
         agree: bool,
         vote: u64,
     }
-    public(friend) fun vote_of(
+    public(package) fun vote_of(
         vote: &Vote,
         proposal: & Proposal,
         ctx: &mut TxContext,
@@ -756,7 +756,7 @@ module bfc_system::bfc_dao {
 
     /// Check whether voter has voted on proposal with `proposal_id` of `proposer_address`.
 
-    public(friend) fun has_vote(
+    public(package) fun has_vote(
         vote: &Vote,
         proposal: &Proposal,
     ): bool  {
@@ -769,7 +769,7 @@ module bfc_system::bfc_dao {
 
 
     /// queue agreed proposal to execute.
-    public(friend) fun queue_proposal_action(
+    public(package) fun queue_proposal_action(
         dao:  &mut Dao,
         _: &BFCDaoManageKey,
         proposal: &mut Proposal,
@@ -792,7 +792,7 @@ module bfc_system::bfc_dao {
     }
 
     /// extract proposal action to execute.
-    public(friend) fun extract_proposal_action(
+    public(package) fun extract_proposal_action(
         proposal: &mut Proposal,
         clock: & Clock,
     ): BFCDaoAction  {
@@ -806,7 +806,7 @@ module bfc_system::bfc_dao {
     }
 
     /// check whether a proposal exists in `proposer_address` with id `proposal_id`.
-    public(friend) fun proposal_exists (
+    public(package) fun proposal_exists (
         dao : &mut Dao,
         proposal: &Proposal,
     ): bool {
@@ -815,7 +815,7 @@ module bfc_system::bfc_dao {
     }
 
     /// Get the proposal state.
-    public(friend) fun proposal_state(
+    public(package) fun proposal_state(
         proposal: &Proposal,
         clock: & Clock,
     ): u8  {
@@ -832,7 +832,7 @@ module bfc_system::bfc_dao {
         status
     }
 
-    public(friend) fun judge_proposal_state(
+    public(package) fun judge_proposal_state(
         proposal: &ProposalInfo,
         current_time: u64,
     ): u8 {
@@ -869,7 +869,7 @@ module bfc_system::bfc_dao {
         against_votes: u64,
     }
 
-    public(friend) fun proposal_info(
+    public(package) fun proposal_info(
         proposal: &Proposal,
     ) : (u64, u64) {
         event::emit(
@@ -914,23 +914,23 @@ module bfc_system::bfc_dao {
         supply * rate / 100
     }
     /// get default voting delay of the DAO.
-    public(friend) fun voting_delay(dao: &mut Dao): u64 {
+    public(package) fun voting_delay(dao: &mut Dao): u64 {
         get_config(dao).voting_delay
     }
 
     /// get the default voting period of the DAO.
-    public(friend) fun voting_period(dao: &mut Dao): u64 {
+    public(package) fun voting_period(dao: &mut Dao): u64 {
         get_config(dao).voting_period
     }
 
     /// Get the quorum rate in percent.
-    public(friend) fun voting_quorum_rate(dao: &mut Dao): u8 {
+    public(package) fun voting_quorum_rate(dao: &mut Dao): u8 {
         get_config(dao).voting_quorum_rate
     }
 
 
     /// Get the min_action_delay of the DAO.
-    public(friend) fun min_action_delay(dao: &mut Dao): u64 {
+    public(package) fun min_action_delay(dao: &mut Dao): u64 {
         get_config(dao).min_action_delay
     }
 
@@ -940,7 +940,7 @@ module bfc_system::bfc_dao {
 
     /// update function, modify dao config.
     /// if any param is 0, it means no change to that param.
-    public(friend) fun modify_dao_config(
+    public(package) fun modify_dao_config(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         voting_delay: u64,
@@ -974,7 +974,7 @@ module bfc_system::bfc_dao {
     }
 
     /// set voting delay
-    public(friend) fun set_voting_delay(
+    public(package) fun set_voting_delay(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         value: u64,
@@ -990,7 +990,7 @@ module bfc_system::bfc_dao {
 
 
     /// set voting period
-    public(friend) fun set_voting_period(
+    public(package) fun set_voting_period(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         value: u64,
@@ -1006,7 +1006,7 @@ module bfc_system::bfc_dao {
     }
 
     /// set voting quorum rate: .
-    public(friend) fun set_voting_quorum_rate(
+    public(package) fun set_voting_quorum_rate(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         value: u8,
@@ -1020,7 +1020,7 @@ module bfc_system::bfc_dao {
 
 
     /// set min action delay
-    public(friend) fun set_min_action_delay(
+    public(package) fun set_min_action_delay(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         value: u64,
@@ -1052,7 +1052,7 @@ module bfc_system::bfc_dao {
     }
 
 
-    public(friend) fun create_stake_manager_key( payment: Coin<BFC>,
+    public(package) fun create_stake_manager_key( payment: Coin<BFC>,
                                   ctx: &mut TxContext){
 
         //convert proposal payment to voting_bfc
@@ -1063,7 +1063,7 @@ module bfc_system::bfc_dao {
         assert!(value >= MIN_STAKE_MANAGER_KEY_COST, ERR_EINSUFFICIENT_FUNDS);
         bfc_dao_manager::create_stake_key(sender,balance, ctx);
     }
-    public(friend) fun unstake_manager_key(key: BFCDaoManageKey,
+    public(package) fun unstake_manager_key(key: BFCDaoManageKey,
                             token: ManagerKeyBfc,
                             ctx: &mut TxContext){
         bfc_dao_manager::unstake_key(key,token, ctx);
@@ -1077,7 +1077,7 @@ module bfc_system::bfc_dao {
     // }
 
 
-    public(friend) fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
+    public(package) fun modify_proposal_obj(dao: &mut Dao, proposal_obj: &mut Proposal, index : u8, clock: &Clock) {
         //let proposal = proposal_obj.proposal;
         if (index == 1) {
             // Pending
@@ -1129,7 +1129,7 @@ module bfc_system::bfc_dao {
     }
 
 
-    public(friend) fun create_voting_bfc(dao: &mut Dao,
+    public(package) fun create_voting_bfc(dao: &mut Dao,
                                        coin: Coin<BFC>,
                                         clock: & Clock,
                                        ctx: &mut TxContext) {
@@ -1141,7 +1141,7 @@ module bfc_system::bfc_dao {
         transfer::public_transfer(voting_bfc, sender);
     }
 
-    public(friend) fun withdraw_voting(  dao: &mut Dao,
+    public(package) fun withdraw_voting(  dao: &mut Dao,
                                        voting_bfc: VotingBfc,
                                         clock: & Clock,
                                        ctx: &mut TxContext ,) {
@@ -1154,7 +1154,7 @@ module bfc_system::bfc_dao {
     }
 
     /// remove terminated proposal from proposer
-    public(friend) fun destroy_terminated_proposal(
+    public(package) fun destroy_terminated_proposal(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
         proposal:  &mut Proposal,
@@ -1197,7 +1197,7 @@ module bfc_system::bfc_dao {
 
     }
 
-    public(friend) fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
+    public(package) fun set_current_status_into_dao(dao: &mut Dao, proposalInfo : &ProposalInfo, curProposalStatus: u8) {
         let flag = vec_map::contains(&dao.current_proposal_status, &proposalInfo.pid);
         if (flag) {
             vec_map::remove(&mut dao.current_proposal_status, &proposalInfo.pid);

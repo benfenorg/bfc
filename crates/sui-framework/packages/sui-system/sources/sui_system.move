@@ -105,7 +105,7 @@ module sui_system::sui_system {
 
     /// Create a new SuiSystemState object and make it shared.
     /// This function will be called only once in genesis.
-    public(friend) fun create(
+    public(package) fun create(
         id: UID,
         bfc_system_id: UID,
         validators: vector<Validator>,
