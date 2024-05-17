@@ -10,7 +10,7 @@ use std::{
     env, fs,
     path::{Path, PathBuf},
 };
-
+use std::thread::Builder;
 use sui_move_build::{BuildConfig, SuiPackageHooks};
 
 const DOCS_DIR: &str = "docs";
@@ -47,12 +47,12 @@ fn main() {
         .unwrap()
         .join()
         .unwrap();
-    build_packages(
-        deepbook_path_clone,
-        sui_system_path_clone,
-        sui_framework_path_clone,
-        out_dir,
-    );
+    // build_packages(
+    //     deepbook_path_clone,
+    //     sui_system_path_clone,
+    //     sui_framework_path_clone,
+    //     out_dir,
+    // );
 
     println!("cargo:rerun-if-changed=build.rs");
     println!(
@@ -159,7 +159,6 @@ fn build_packages_with_move_config(
     sui_framework_path: PathBuf,
     bfc_system_path: PathBuf,
     out_dir: PathBuf,
-
     deepbook_dir: &str,
     system_dir: &str,
     framework_dir: &str,
@@ -180,7 +179,7 @@ fn build_packages_with_move_config(
         config:config.clone(),
         run_bytecode_verifier: true,
         print_diags_to_stderr: false,
-        lint: false,
+        //lint: false,
     }
         .build(bfc_system_path)
         .unwrap();
@@ -207,11 +206,11 @@ fn build_packages_with_move_config(
     let move_stdlib = framework_pkg.get_stdlib_modules();
     let bfc_system = bfc_system_pkg.get_bfc_system_modules();
 
-    serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
-    serialize_modules_to_file(sui_framework, &out_dir.join(framework_dir)).unwrap();
-    serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
-    serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
-    serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
+    // serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
+    // serialize_modules_to_file(sui_framework, &out_dir.join(framework_dir)).unwrap();
+    // serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
+    // serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
+    // serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
 
     let sui_system_members =
         serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
@@ -304,11 +303,11 @@ fn relocate_docs(prefix: &str, files: &[(String, String)], output: &mut BTreeMap
                 .to_string()
         });
     }
-    for (fname, doc) in bfc_system_pkg.package.compiled_docs.unwrap() {
-        let mut dst_path = PathBuf::from(DOCS_DIR);
-        dst_path.push(fname);
-        fs::write(dst_path, doc).unwrap();
-    }
+    // for (fname, doc) in bfc_system_pkg.package.compiled_docs.unwrap() {
+    //     let mut dst_path = PathBuf::from(DOCS_DIR);
+    //     dst_path.push(fname);
+    //     fs::write(dst_path, doc).unwrap();
+    // }
 }
 
 fn serialize_modules_to_file<'a>(
