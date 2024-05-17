@@ -4,10 +4,7 @@
 /// Coin<BFC> is the token used to pay for gas in Sui.
 /// It has 9 decimals, and the smallest unit (10^-9) is called "mist".
 module sui::bfc {
-    use std::option;
-    use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};
-    use sui::transfer;
     use sui::coin;
 
     const EAlreadyMinted: u64 = 0;
@@ -27,7 +24,7 @@ module sui::bfc {
     const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;
 
     /// Name of the coin
-    struct BFC has drop {}
+    public struct BFC has drop {}
 
     #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
