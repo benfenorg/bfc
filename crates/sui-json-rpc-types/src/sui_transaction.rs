@@ -21,7 +21,6 @@ use move_core_types::annotated_value::MoveTypeLayout;
 use move_core_types::identifier::IdentStr;
 use move_core_types::language_storage::{ModuleId, StructTag, TypeTag};
 use mysten_metrics::monitored_scope;
-use schemars::JsonSchema;
 //use serde::{Deserialize, Serialize};
 use sui_json::{primitive_type, SuiJsonValue};
 use sui_types::base_types::{
@@ -58,6 +57,7 @@ use crate::balance_changes::BalanceChange;
 use crate::object_changes::ObjectChange;
 use crate::sui_transaction::GenericSignature::Signature;
 use crate::{Filter, Page, SuiEvent, SuiObjectRef};
+use sui_types::authenticator_state::ActiveJwk;
 
 // similar to EpochId of sui-types but BigInt
 pub type SuiEpochId = BigInt<u64>;
@@ -551,6 +551,11 @@ impl SuiTransactionBlockKind {
     ) -> Result<Self, anyhow::Error> {
         Ok(match tx {
             TransactionKind::ChangeEpoch(e) => Self::ChangeEpoch(e.into()),
+            TransactionKind::ChangeBfcRound(o) => {
+                Self::ChangeBfcRound(SuiChangeBfcRound {
+                    round:o.bfc_round,
+                })
+            },
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),
             }),
@@ -678,9 +683,9 @@ impl From<ChangeEpoch> for SuiChangeEpoch {
     fn from(e: ChangeEpoch) -> Self {
         Self {
             epoch: e.epoch,
-            storage_charge: e.storage_charge,
-            computation_charge: e.computation_charge,
-            storage_rebate: e.storage_rebate,
+            storage_charge: e.bfc_storage_charge,
+            computation_charge: e.bfc_computation_charge,
+            storage_rebate: e.bfc_storage_rebate,
             epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
         }
     }
@@ -922,12 +927,7 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
     type Error = SuiError;
 
     fn try_from(effect: TransactionEffects) -> Result<Self, Self::Error> {
-        let message_version = effect
-            .message_version()
-            .expect("TransactionEffects defines message_version()");
-
-        match message_version {
-            1 => Ok(SuiTransactionBlockEffects::V1(
+        Ok(SuiTransactionBlockEffects::V1(
                 SuiTransactionBlockEffectsV1 {
                     status: effect.status().clone().into(),
                     executed_epoch: effect.executed_epoch(),
@@ -946,7 +946,7 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                         effect
                             .input_shared_objects()
                             .into_iter()
-                            .map(|(obj_ref, _)| obj_ref)
+                            .map(|kind| kind.object_ref())
                             .collect(),
                     ),
                     transaction_digest: *effect.transaction_digest(),
@@ -967,7 +967,7 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                 },
             ))
         }
-    }
+
 }
 
 
@@ -1829,6 +1829,10 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
                 }
             }
 
+        }
+
+        _ => {
+            write!(writer, "todo. other SuiCallArg: {:?} ", input)?;
         }
 
 

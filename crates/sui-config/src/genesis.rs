@@ -9,7 +9,6 @@ use fastcrypto::hash::HashFunction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use tracing::trace;
 
-use std::{fs, path::Path};
 use sui_types::authenticator_state::{get_authenticator_state, AuthenticatorStateInner};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::clock::Clock;

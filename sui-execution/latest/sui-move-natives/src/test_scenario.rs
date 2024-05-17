@@ -187,8 +187,6 @@ pub fn end_transaction(
                     .or_default()
                     .entry(ty)
                     .or_default()
-                    .insert(id, ());
-                    .or_default()
                     .insert(id);
             }
             Owner::ObjectOwner(_) => (),
@@ -197,16 +195,12 @@ pub fn end_transaction(
                     .shared_inventory
                     .entry(ty)
                     .or_default()
-                    .insert(id, ());
-                    .or_default()
                     .insert(id);
             }
             Owner::Immutable => {
                 inventories
                     .immutable_inventory
                     .entry(ty)
-                    .or_default()
-                    .insert(id, ());
                     .or_default()
                     .insert(id);
             }

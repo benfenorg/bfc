@@ -19,7 +19,7 @@ use std::{
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
 use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
                 error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode},
-                execution::LoadedChildObjectMetadata, id::UID, metrics::LimitsMetrics,
+                id::UID, metrics::LimitsMetrics,
                 BFC_SYSTEM_PACKAGE_ID, object::{MoveObject, Owner},
                 storage::{ChildObjectResolver, DeleteKind, WriteKind},
                 SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
@@ -77,6 +77,10 @@ pub(crate) struct ObjectRuntimeState {
     // TODO these struct tags can be removed if type_to_type_tag was exposed in the session
     transfers: LinkedHashMap<ObjectID, (Owner, Type, Value)>,
     events: Vec<(Type, StructTag, Value)>,
+    // total size of events emitted so far
+    //total_events_size: u64,
+    //received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
+
 }
 
 #[derive(Clone)]

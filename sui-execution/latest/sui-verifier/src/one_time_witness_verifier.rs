@@ -27,7 +27,7 @@ use sui_types::{
     move_package::{is_test_fun, FnInfoMap},
     SUI_FRAMEWORK_ADDRESS,
     BFC_SYSTEM_ADDRESS,
-    BRIDGE_ADDRESS, SUI_FRAMEWORK_ADDRESS,
+    BRIDGE_ADDRESS,
 };
 
 use crate::{verification_failure, INIT_FN_NAME};
@@ -65,25 +65,27 @@ pub fn verify_module(
         ModuleId::new(BFC_SYSTEM_ADDRESS, ident_str!("mgg").to_owned()),
     ];
     if bfc_modules.contains(&module.self_id()) {
-        let self_id = module.self_id();
+        return Ok(());
+    }
+    let self_id = module.self_id();
 
-        if ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("sui").to_owned()) == self_id {
-            return Ok(());
-        }
+    if ModuleId::new(SUI_FRAMEWORK_ADDRESS, ident_str!("sui").to_owned()) == self_id {
+        return Ok(());
+    }
 
-        if BRIDGE_SUPPORTED_ASSET
-            .iter()
-            .any(|token| ModuleId::new(BRIDGE_ADDRESS, ident_str!(token).to_owned()) == self_id)
-        {
-            return Ok(());
-        }
+    if BRIDGE_SUPPORTED_ASSET
+        .iter()
+        .any(|token| ModuleId::new(BRIDGE_ADDRESS, ident_str!(token).to_owned()) == self_id)
+    {
+        return Ok(());
+    }
 
-        let mod_handle = module.module_handle_at(module.self_module_handle_idx);
-        let mod_name = module.identifier_at(mod_handle.name).as_str();
-        let struct_defs = &module.struct_defs;
-        let mut one_time_witness_candidate = None;
-        // find structs that can potentially represent a one-time witness type
-        for def in struct_defs {
+    let mod_handle = module.module_handle_at(module.self_module_handle_idx);
+    let mod_name = module.identifier_at(mod_handle.name).as_str();
+    let struct_defs = &module.struct_defs;
+    let mut one_time_witness_candidate = None;
+    // find structs that can potentially represent a one-time witness type
+    for def in struct_defs {
             let struct_handle = module.struct_handle_at(def.struct_handle);
             let struct_name = module.identifier_at(struct_handle.name).as_str();
             if mod_name.to_ascii_uppercase() == struct_name {
@@ -106,7 +108,7 @@ pub fn verify_module(
                 }
             }
         }
-        for fn_def in &module.function_defs {
+    for fn_def in &module.function_defs {
             let fn_handle = module.function_handle_at(fn_def.function);
             let fn_name = module.identifier_at(fn_handle.name);
             if fn_name == INIT_FN_NAME {
@@ -133,7 +135,8 @@ pub fn verify_module(
         }
 
         Ok(())
-    }
+
+
 }
 
 // Verifies all required properties of a one-time witness type candidate (that is a type whose name

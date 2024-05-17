@@ -86,6 +86,11 @@ const BFC_SYSTEM_CREATE: FunctionIdent = (
     BFC_SYSTEM_MODULE_NAME,
     ident_str!("create"),
 );
+const SUI_AUTHENTICATOR_STATE_CREATE: FunctionIdent = (
+    &SUI_FRAMEWORK_ADDRESS,
+    AUTHENTICATOR_STATE_MODULE_NAME,
+    ident_str!("create"),
+);
 
 const SUI_RANDOMNESS_STATE_CREATE: FunctionIdent = (
     &SUI_FRAMEWORK_ADDRESS,

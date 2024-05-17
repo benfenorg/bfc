@@ -22,33 +22,29 @@ use move_vm_types::{
     loaded_data::runtime_types::Type,
     values::{GlobalValue, Value},
 };
-use object_store::ChildObjectStore;
 use std::{
     collections::{BTreeMap, BTreeSet},
     sync::Arc,
 };
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::LoadedChildObjectMetadata, id::UID, metrics::LimitsMetrics, BFC_SYSTEM_STATE_OBJECT_ID, object::{MoveObject, Owner}, storage::ChildObjectResolver, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
+use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
+                error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode},
+                id::UID, metrics::LimitsMetrics, BFC_SYSTEM_STATE_OBJECT_ID,
+                object::{MoveObject, Owner}, storage::ChildObjectResolver,
+                SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
 
-pub(crate) mod object_store;
 
 use object_store::ChildObjectStore;
 use sui_types::base_types::ObjectDigest;
 
-use self::object_store::{ChildObjectEffect, ObjectResult};
+//use self::object_store::{ChildObjectEffect, ObjectResult};
 
-use super::get_object_id;
 use sui_types::{
-    base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
     committee::EpochId,
-    error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode},
     execution::DynamicallyLoadedObjectMetadata,
-    id::UID,
-    metrics::LimitsMetrics,
-    object::{MoveObject, Owner},
-    storage::ChildObjectResolver,
-    SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID,
-    SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID,
+    SUI_AUTHENTICATOR_STATE_OBJECT_ID,
+    SUI_DENY_LIST_OBJECT_ID,
+    SUI_RANDOMNESS_STATE_OBJECT_ID,
 };
 
 pub enum ObjectEvent {
@@ -102,6 +98,8 @@ pub(crate) struct ObjectRuntimeState {
     events: Vec<(Type, StructTag, Value)>,
     // total size of events emitted so far
     total_events_size: u64,
+    received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
+
 }
 
 #[derive(Clone)]
@@ -148,7 +146,7 @@ impl LocalProtocolConfig {
             loaded_child_object_format_type: config.loaded_child_object_format_type(),
         }
     }
-    received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
+    //received: IndexMap<ObjectID, DynamicallyLoadedObjectMetadata>,
 }
 
 #[derive(Tid)]
