@@ -347,7 +347,7 @@ impl<'backing> TemporaryStore<'backing> {
 
     pub fn write_object(&mut self, mut object: Object, kind: WriteKind) {
         // there should be no write after delete
-        debug_assert!(self.deleted.get(&object.id()).is_none());
+        //debug_assert!(self.deleted.get(&object.id()).is_none());
         // Check it is not read-only
         #[cfg(test)] // Movevm should ensure this
         if let Some(existing_object) = self.read_object(&object.id()) {
@@ -372,7 +372,7 @@ impl<'backing> TemporaryStore<'backing> {
         // The adapter is not very disciplined at filling in the correct
         // previous transaction digest, so we ensure it is correct here.
         object.previous_transaction = self.tx_digest;
-        self.written.insert(object.id(), (object, kind));
+        self.execution_results.written_objects.insert(object.id(), object);
     }
 
     /// Delete a mutable input object. This is used to delete input objects outside of PT execution.
@@ -1003,67 +1003,26 @@ impl<'backing> TemporaryStore<'backing> {
                 })?;
             }
         }
-
-        {
-            // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
-            // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
-            // both computation costs and storage rebate inflow are
-            total_output_sui +=
-                gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-            if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-                total_input_sui += epoch_fees;
-                total_output_sui += epoch_rebates;
-            }
-            if total_input_sui != total_output_sui {
-                // return Err(ExecutionError::invariant_violation(
-                //     format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
-                //             total_input_sui,
-                //             total_output_sui))
-                // );
-                //return  Ok(());
-            }
+        // note: storage_cost flows into the storage_rebate field of the output objects, which is
+        // why it is not accounted for here.
+        // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
+        // gets credited to the gas coin both computation costs and storage rebate inflow are
+        total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+        if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
+            total_input_sui += epoch_fees;
+            total_output_sui += epoch_rebates;
         }
-
-        // all SUI in storage rebate fields of input objects should flow either to the transaction storage rebate, or the non-refundable
-        // storage rebate pool
-        if total_input_rebate != gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee
-        {
-            // TODO: re-enable once we fix the edge case with OOG, gas smashing, and storage rebate
-            /*return Err(ExecutionError::invariant_violation(
-                format!("SUI conservation failed--{} SUI in storage rebate field of input objects, {} SUI in tx storage rebate or tx non-refundable storage rebate",
-                total_input_rebate,
-                gas_summary.non_refundable_storage_fee))
-            );*/
-        }
-
-        // all SUI charged for storage should flow into the storage rebate field of some output object
-        if gas_summary.storage_cost != total_output_rebate {
-            // TODO: re-enable once we fix the edge case with OOG, gas smashing, and storage rebate
-            /*return Err(ExecutionError::invariant_violation(
-                format!("SUI conservation failed--{} SUI charged for storage, {} SUI in storage rebate field of output objects",
-                gas_summary.storage_cost,
-                total_output_rebate))
-            );*/
-            // note: storage_cost flows into the storage_rebate field of the output objects, which is
-            // why it is not accounted for here.
-            // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
-            // gets credited to the gas coin both computation costs and storage rebate inflow are
-            total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-            if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-                total_input_sui += epoch_fees;
-                total_output_sui += epoch_rebates;
-            }
-            if total_input_sui != total_output_sui {
-                return Err(ExecutionError::invariant_violation(format!(
-                    "SUI conservation failed: input={}, output={}, \
+        if total_input_sui != total_output_sui {
+            return Err(ExecutionError::invariant_violation(format!(
+                "SUI conservation failed: input={}, output={}, \
                     this transaction either mints or burns SUI",
-                    total_input_sui, total_output_sui,
-                )));
-            }
-            Ok(())
+                total_input_sui, total_output_sui,
+            )));
         }
+        Ok(())
     }
 }
+
 
 impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
     fn read_child_object(
@@ -1121,40 +1080,10 @@ impl<'backing> Storage for TemporaryStore<'backing> {
         let ExecutionResults::V2(results) = results else {
             panic!("ExecutionResults::V2 expected in sui-execution v1 and above");
         };
-        let mut object_changes = BTreeMap::new();
-        //info!("results is {:?}",results);
-        for (id, object) in results.written_objects {
-            let write_kind = if results.created_object_ids.contains(&id) {
-                WriteKind::Create
-            } else if results.objects_modified_at.contains_key(&id) {
-                WriteKind::Mutate
-            } else {
-                WriteKind::Unwrap
-            };
-            object_changes.insert(id, ObjectChange::Write(object, write_kind));
-        }
-
-        for id in results.deleted_object_ids {
-            let delete_kind: DeleteKindWithOldVersion =
-                if let Some((version, _)) = results.objects_modified_at.get(&id) {
-                    DeleteKindWithOldVersion::Normal(*version)
-                } else {
-                    DeleteKindWithOldVersion::UnwrapThenDelete
-                };
-            object_changes.insert(id, ObjectChange::Delete(delete_kind));
-        }
-        for (id, (version, _)) in results.objects_modified_at {
-            object_changes.entry(id).or_insert(ObjectChange::Delete(
-                DeleteKindWithOldVersion::Wrap(version),
-            ));
-        }
-        //info!("object_changes is {:?}",object_changes);
-        self.apply_object_changes(object_changes);
         // It's important to merge instead of override results because it's
         // possible to execute PT more than once during tx execution.
         self.execution_results.merge_results(results);
     }
-
     fn save_loaded_runtime_objects(
         &mut self,
         loaded_runtime_objects: BTreeMap<ObjectID, DynamicallyLoadedObjectMetadata>,

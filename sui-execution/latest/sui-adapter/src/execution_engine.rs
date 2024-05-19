@@ -39,7 +39,7 @@ mod checked {
 
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
-    use move_binary_format::access::ModuleAccess;
+    //use move_binary_format::access::ModuleAccess;
     use crate::{gas_charger::GasCharger};
     use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
     use sui_types::authenticator_state::{
