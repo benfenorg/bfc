@@ -31,6 +31,7 @@ pub const ID_TYPE_NAME: Symbol = symbol!("ID");
 pub const TX_CONTEXT_MODULE_NAME: Symbol = symbol!("tx_context");
 pub const TX_CONTEXT_TYPE_NAME: Symbol = symbol!("TxContext");
 pub const SUI_MODULE_NAME: Symbol = symbol!("sui");
+pub const BFC_MODULE_NAME: Symbol = symbol!("bfc");
 pub const SUI_OTW_NAME: Symbol = symbol!("SUI");
 
 pub const SUI_SYSTEM_ADDR_NAME: Symbol = symbol!("sui_system");

@@ -994,13 +994,23 @@ fn exp(context: &mut Context, e: &T::Exp) {
 }
 
 fn otw_special_cases(context: &Context) -> bool {
-    BRIDGE_SUPPORTED_ASSET
+    let bSui = BRIDGE_SUPPORTED_ASSET
         .iter()
         .any(|token| context.current_module().value.is(BRIDGE_ADDR_NAME, token))
         || context
             .current_module()
             .value
-            .is(SUI_ADDR_NAME, SUI_MODULE_NAME)
+            .is(SUI_ADDR_NAME, SUI_MODULE_NAME);
+
+    let bBfc = BRIDGE_SUPPORTED_ASSET
+        .iter()
+        .any(|token| context.current_module().value.is(BRIDGE_ADDR_NAME, token))
+        || context
+        .current_module()
+        .value
+        .is(SUI_ADDR_NAME, BFC_MODULE_NAME);
+
+    return bSui || bBfc;
 }
 
 fn check_event_emit(context: &mut Context, loc: Loc, mcall: &ModuleCall) {
