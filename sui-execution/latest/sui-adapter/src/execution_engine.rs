@@ -705,7 +705,6 @@ mod checked {
 
         let args = vec![
             CallArg::BFC_SYSTEM_MUT,
-            CallArg::CLOCK_IMM,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
             CallArg::Pure(bcs::to_bytes(&epoch_start_time).unwrap()),
         ] .into_iter()

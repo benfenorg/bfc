@@ -2614,9 +2614,7 @@ State checker
     _treasury_total_bfc_supply: u64,
     _ctx: &<b>mut</b> TxContext
 ): u64 {
-    <b>let</b> shape = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
     <b>if</b> (_vault.state_counter &gt;= _vault.max_counter_times) {
-        shape = _vault.state;
         // reset state counter
         _vault.state_counter = 0;
     } <b>else</b> {
@@ -2627,6 +2625,7 @@ State checker
         balance1,
         ticks
     ) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
+    <b>let</b> shape = _vault.state;
     <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(
         _vault,
         &ticks,
