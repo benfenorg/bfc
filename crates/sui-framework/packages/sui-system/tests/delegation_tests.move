@@ -6,7 +6,7 @@ module sui_system::stake_tests {
     use sui::coin;
     use sui::test_scenario;
     use sui_system::sui_system::{Self, SuiSystemState};
-    use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate};
+    use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate, PoolTokenExchangeRate};
     use sui::test_utils::assert_eq;
     use sui_system::validator_set;
     use sui::test_utils;
