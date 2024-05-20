@@ -12,7 +12,7 @@ module sui_system::sui_system_state_inner {
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
     use sui::coin::Coin;
-    use sui_system::staking_pool::{stake_activation_epoch, StakedSui};
+    use sui_system::staking_pool::{stake_activation_epoch,StakedBfc};
     use sui::sui::SUI;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
@@ -505,7 +505,7 @@ module sui_system::sui_system_state_inner {
     ) : StakedBfc {
         validator_set::request_add_stake(
             &mut self.validators,
-        ) : StakedSui {
+        ) :StakedBfc {
             self.validators.request_add_stake(
             validator_address,
             stake.into_balance(),

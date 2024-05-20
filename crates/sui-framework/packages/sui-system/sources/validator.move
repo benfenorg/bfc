@@ -34,7 +34,7 @@ module sui_system::validator {
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
     use sui::transfer;
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedSui, StakingPool};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate,StakedBfc, StakingPool};
     use std::string::String;
     use sui::url::Url;
     use sui::url;
@@ -45,24 +45,24 @@ module sui_system::validator {
     use sui::vec_map::VecMap;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StablePool, StakedStable, PoolStableTokenExchangeRate};
-    friend sui_system::genesis;
-    friend sui_system::sui_system_state_inner;
-    friend sui_system::validator_wrapper;
-    friend sui_system::validator_set;
-    friend sui_system::voting_power;
-
-    #[test_only]
-    friend sui_system::validator_tests;
-    #[test_only]
-    friend sui_system::validator_set_tests;
-    #[test_only]
-    friend sui_system::sui_system_tests;
-    #[test_only]
-    friend sui_system::governance_test_utils;
-    #[test_only]
-    friend sui_system::voting_power_tests;
-    #[test_only]
-    friend sui_system::sui_system;
+    // friend sui_system::genesis;
+    // friend sui_system::sui_system_state_inner;
+    // friend sui_system::validator_wrapper;
+    // friend sui_system::validator_set;
+    // friend sui_system::voting_power;
+    //
+    // #[test_only]
+    // friend sui_system::validator_tests;
+    // #[test_only]
+    // friend sui_system::validator_set_tests;
+    // #[test_only]
+    // friend sui_system::sui_system_tests;
+    // #[test_only]
+    // friend sui_system::governance_test_utils;
+    // #[test_only]
+    // friend sui_system::voting_power_tests;
+    // #[test_only]
+    // friend sui_system::sui_system;
 
     const MAX_U64: u128 = 18446744073709551615;
     /// Invalid proof_of_possession field in ValidatorMetadata

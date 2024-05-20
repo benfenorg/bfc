@@ -11,11 +11,7 @@ module sui_system::stable_pool {
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
-
-    friend sui_system::validator;
-    friend sui_system::validator_set;
-
-    /// StakedSui objects cannot be split to below this amount.
+    ///StakedBfc objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
     const EInsufficientPoolTokenBalance: u64 = 0;
@@ -156,7 +152,7 @@ module sui_system::stable_pool {
         principal_withdraw
     }
 
-    /// Withdraw the principal SUI stored in the StakedSui object, and calculate the corresponding amount of pool
+    /// Withdraw the principal SUI stored in theStakedBfc object, and calculate the corresponding amount of pool
     /// tokens using exchange rate at stable epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal<STABLE>(
@@ -233,7 +229,7 @@ module sui_system::stable_pool {
     ///     2. Using the above number and the given `principal_withdraw_amount`, calculates the rewards portion of the
     ///        stake we should withdraw.
     ///     3. Withdraws the rewards portion from the rewards pool at the current exchange rate. We only withdraw the rewards
-    ///        portion because the principal portion was already taken out of the staker's self custodied StakedSui.
+    ///        portion because the principal portion was already taken out of the staker's self custodiedStakedBfc.
     fun withdraw_rewards<STABLE>(
         pool: &mut StablePool<STABLE>,
         principal_withdraw_amount: u64,
@@ -303,9 +299,9 @@ module sui_system::stable_pool {
         option::is_some(&pool.deactivation_epoch)
     }
 
-    /// Split StakedSui `self` to two parts, one with principal `split_amount`,
+    /// SplitStakedBfc `self` to two parts, one with principal `split_amount`,
     /// and the remaining principal is left in `self`.
-    /// All the other parameters of the StakedSui like `stake_activation_epoch` or `pool_id` remain the same.
+    /// All the other parameters of theStakedBfc like `stake_activation_epoch` or `pool_id` remain the same.
     public fun split<STABLE>(self: &mut StakedStable<STABLE>, split_amount: u64, ctx: &mut TxContext): StakedStable<STABLE> {
         let original_amount = balance::value(&self.principal);
         assert!(split_amount <= original_amount, EInsufficientSuiTokenBalance);
@@ -321,7 +317,7 @@ module sui_system::stable_pool {
         }
     }
 
-    /// Split the given StakedSui to the two parts, one with principal `split_amount`,
+    /// Split the givenStakedBfc to the two parts, one with principal `split_amount`,
     /// transfer the newly split part to the sender address.
     public entry fun split_staked_sui<STABLE>(stake: &mut StakedStable<STABLE>, split_amount: u64, ctx: &mut TxContext) {
         transfer::transfer(split(stake, split_amount, ctx), tx_context::sender(ctx));
