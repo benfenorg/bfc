@@ -441,7 +441,6 @@ impl VersionedProtocolMessage for TransactionKind {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ProgrammableTransaction(_)
             | TransactionKind::ChangeBfcRound(_)=> Ok(()),
             | TransactionKind::ConsensusCommitPrologue(_) => Ok(()),
             TransactionKind::ProgrammableTransaction(pt) => {

@@ -1,5 +1,4 @@
-#[allow(unused_const)]
-#[allow(unused_variable)]
+#[allow(unused_const, unused_variable)]
 module bfc_system::bfc_dao {
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
@@ -607,7 +606,7 @@ module bfc_system::bfc_dao {
     public(package) fun revoke_vote(
         dao:  &mut Dao,
         proposal: &mut Proposal,
-        my_vote:  &mut Vote,
+        my_vote: Vote,
         voting_power: u64,
         clock: & Clock,
         ctx: &mut TxContext,
