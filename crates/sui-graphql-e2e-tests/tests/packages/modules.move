@@ -13,7 +13,7 @@ module pkg::m {
         coin::value(c) + x
     }
 
-    public fun bar(c: &Coin<SUI>): u64 {
+    public fun bar(c: &Coin<BFC>): u64 {
         foo(42, c) * foo(43, c)
     }
 }

@@ -61,13 +61,13 @@ module examples::dummy_rule {
     /// Receipt is a Rule Witness, so there's no way to create
     /// it anywhere else but in this module.
     ///
-    /// This example also illustrates that Rules can add Coin<SUI>
+    /// This example also illustrates that Rules can add Coin<BFC>
     /// to the balance of the TransferPolicy allowing creators to
     /// collect fees.
     public fun pay<T>(
         policy: &mut TransferPolicy<T>,
         request: &mut TransferRequest<T>,
-        payment: Coin<SUI>
+        payment: Coin<BFC>
     ) {
         policy::add_to_balance(Rule {}, policy, payment);
         policy::add_receipt(Rule {}, request);
@@ -75,7 +75,7 @@ module examples::dummy_rule {
 }
 ```
 
-This module contains no configuration and requires a `Coin<SUI>` of any value (even "0"), so it's easy to imagine that every buyer would create a zero Coin and pass it to get the Receipt. The only thing this Rule module is good for is illustration and a skeleton. Goes without saying but *this code should never be used in production*.
+This module contains no configuration and requires a `Coin<BFC>` of any value (even "0"), so it's easy to imagine that every buyer would create a zero Coin and pass it to get the Receipt. The only thing this Rule module is good for is illustration and a skeleton. Goes without saying but *this code should never be used in production*.
 
 ## Reading the Request: Royalty
 
@@ -114,7 +114,7 @@ module examples::royalty_rule {
     public fun pay<T>(
         policy: &mut TransferPolicy<T>,
         request: &mut TransferRequest<T>,
-        payment: &mut Coin<SUI>,
+        payment: &mut Coin<BFC>,
         ctx: &mut TxContext
     ) {
         // using the getter to read the paid amount

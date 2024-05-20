@@ -52,7 +52,7 @@ module examples::donuts {
     ) {
         assert!(coin::value(payment) >= shop.price, ENotEnough);
 
-        // Take amount = `shop.price` from Coin<SUI>
+        // Take amount = `shop.price` from Coin<BFC>
         let coin_balance = coin::balance_mut(payment);
         let paid = balance::split(coin_balance, shop.price);
 

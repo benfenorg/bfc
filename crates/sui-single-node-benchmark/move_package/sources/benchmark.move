@@ -9,7 +9,7 @@ module move_benchmark::benchmark {
     use sui::sui::SUI;
 
     #[allow(lint(self_transfer))]
-    public fun transfer_coin(coin: Coin<SUI>, ctx: &TxContext) {
+    public fun transfer_coin(coin: Coin<BFC>, ctx: &TxContext) {
         transfer::public_transfer(coin, tx_context::sender(ctx));
     }
 

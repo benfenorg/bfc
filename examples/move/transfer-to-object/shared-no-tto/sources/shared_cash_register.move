@@ -83,7 +83,7 @@ module shared_no_tto::shared_cash_register {
     /// Process a payment that has been made, removing it from the register and
     /// returning the coin that can then be combined or sent elsewhere by the authorized individual.
     /// Payments can only be processed by either an account in the / `authorized_individuals` set or by the owner of the cash register.
-    public fun process_payment(register: &mut CashRegister, payment_id: u64, ctx: &TxContext): Coin<SUI> {
+    public fun process_payment(register: &mut CashRegister, payment_id: u64, ctx: &TxContext): Coin<BFC> {
         let sender = tx_context::sender(ctx);
         assert!(vec_set::contains(&register.authorized_individuals, &sender) || sender == register.register_owner, ENotAuthorized);
         assert!(dynamic_field::exists_(&register.id, payment_id), EInvalidPaymentID);
@@ -94,7 +94,7 @@ module shared_no_tto::shared_cash_register {
 
     /// Make a payment to the cash register -- this is the function that the
     /// customer will use to make a payment to the cash register.
-    public fun pay(register: &mut CashRegister, payment_id: u64, coin: Coin<SUI>, ctx: &mut TxContext) {
+    public fun pay(register: &mut CashRegister, payment_id: u64, coin: Coin<BFC>, ctx: &mut TxContext) {
         identified_payment::make_shared_payment(&mut register.id, payment_id, coin, ctx);
     }
 }

@@ -21,7 +21,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     // Get coins for this address. Coins can be filtered by `coin_type`
     // (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC) or
-    // use `None` for the default `Coin<SUI>` which is represented as
+    // use `None` for the default `Coin<BFC>` which is represented as
     // "0x2::sui::SUI"
     let coin_type = Some("0x2::sui::SUI".to_string());
     let coins = sui
@@ -68,7 +68,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     // Balance
     // Returns the balance for the specified coin type for this address,
-    // or if None is passed, it will use Coin<SUI> as the coin type
+    // or if None is passed, it will use Coin<BFC> as the coin type
     let balance = sui
         .coin_read_api()
         .get_balance(active_address, None)
@@ -82,7 +82,7 @@ async fn main() -> Result<(), anyhow::Error> {
     println!("Total Balance: {:?}", total_balance);
     println!(" *** Balance + Total Balance ***\n ");
 
-    // Return the coin metadata for the Coin<SUI>
+    // Return the coin metadata for the Coin<BFC>
     let coin_metadata = sui
         .coin_read_api()
         .get_coin_metadata("0x2::sui::SUI".to_string())

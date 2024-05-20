@@ -21,7 +21,7 @@ Gas smashing is an important feature - and a key concept to understand - to have
 
 ## Generic coins
 
-Gas smashing works well for `Coin<Sui>` objects, which is the only coin type that can be used for gas payment.
+Gas smashing works well for `Coin<BFC>` objects, which is the only coin type that can be used for gas payment.
 
 Any other coin type requires explicit management from users. PTBs offer a `mergeCoins` command that you can use to combine multiple coins into a single one. And a `splitCoins` as the complementary operation to break them up.
 
@@ -29,9 +29,9 @@ From a cost perspective, those are very cheap transactions, however they require
 
 ## Concurrency
 
-Merging coins, and particularly `Coin<Sui>`, into a single coin or a very small number of coins might prove problematic in scenarios where heavy or high concurrency is required.
+Merging coins, and particularly `Coin<BFC>`, into a single coin or a very small number of coins might prove problematic in scenarios where heavy or high concurrency is required.
 
-If you merge all `Coin<Sui>` into a single one, you would need to sequentially submit every transaction. The coin - being an owned object - would have to be provided with a version and it would be locked by the system when signing a transaction, effectively making it impossible to use it in any other transaction until the one that locked it was executed. Moreover, an attempt to sign multiple transactions with the same coin might result in equivocation and the coin being unusable and locked until the end of the epoch.
+If you merge all `Coin<BFC>` into a single one, you would need to sequentially submit every transaction. The coin - being an owned object - would have to be provided with a version and it would be locked by the system when signing a transaction, effectively making it impossible to use it in any other transaction until the one that locked it was executed. Moreover, an attempt to sign multiple transactions with the same coin might result in equivocation and the coin being unusable and locked until the end of the epoch.
 
 So when you require heavy concurrency, you should first split a coin into as many coins as the number of transactions to execute concurrently. Alternatively, you could provide multiple and different coins (gas smashing) to the different transactions. It is critically important that the set of coins you use in the different transactions has no intersection at all.
 

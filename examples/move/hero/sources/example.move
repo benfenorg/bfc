@@ -59,7 +59,7 @@ module hero::example {
     /// payments for player actions for the admin to collect.
     public struct Game has key {
         id: UID,
-        payments: Balance<SUI>,
+        payments: Balance<BFC>,
     }
 
     /// Capability conveying the authority to create boars and potions, and take
@@ -127,7 +127,7 @@ module hero::example {
     /// you pay for it.
     public fun new_sword(
         game: &mut Game,
-        payment: Coin<SUI>,
+        payment: Coin<BFC>,
         ctx: &mut TxContext
     ): Sword {
         let value = coin::value(&payment);
@@ -312,7 +312,7 @@ module hero::example {
         admin: &Admin,
         game: &mut Game,
         ctx: &mut TxContext,
-    ): Coin<SUI> {
+    ): Coin<BFC> {
         assert!(admin.game_id == object::id(game), ENotAdmin);
         coin::from_balance(balance::withdraw_all(&mut game.payments), ctx)
     }

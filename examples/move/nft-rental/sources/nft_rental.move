@@ -79,7 +79,7 @@ module nft_rental::rentables_ext {
     /// Defines the royalties the creator will receive from each rent invocation.
     public struct RentalPolicy<phantom T> has key, store {
         id: UID,
-        balance: Balance<SUI>,
+        balance: Balance<BFC>,
         /// Note: Move does not support float numbers.
         ///
         /// If you need to represent a float, you need to determine the desired
@@ -133,7 +133,7 @@ module nft_rental::rentables_ext {
 
         let rental_policy = RentalPolicy<T> {
             id: object::new(ctx),
-            balance: balance::zero<SUI>(),
+            balance: balance::zero<BFC>(),
             amount_bp,
         };
 
@@ -159,7 +159,7 @@ module nft_rental::rentables_ext {
         kiosk.set_owner(cap, ctx);
         kiosk.list<T>(cap, item_id, 0);
 
-        let coin = coin::zero<SUI>(ctx);
+        let coin = coin::zero<BFC>(ctx);
         let (object, request) = kiosk.purchase<T>(item_id, coin);
 
         let (_item, _paid, _from) = protected_tp.transfer_policy.confirm_request(request);
@@ -217,7 +217,7 @@ module nft_rental::rentables_ext {
         borrower_kiosk: &mut Kiosk,
         rental_policy: &mut RentalPolicy<T>,
         item_id: ID,
-        mut coin: Coin<SUI>,
+        mut coin: Coin<BFC>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {

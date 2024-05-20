@@ -100,8 +100,8 @@ module escrow::lock {
     #[test_only] use sui::test_scenario::{Self as ts, Scenario};
 
     #[test_only]
-    fun test_coin(ts: &mut Scenario): Coin<SUI> {
-        coin::mint_for_testing<SUI>(42, ts.ctx())
+    fun test_coin(ts: &mut Scenario): Coin<BFC> {
+        coin::mint_for_testing<BFC>(42, ts.ctx())
     }
 
     #[test]

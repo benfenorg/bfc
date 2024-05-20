@@ -30,7 +30,7 @@ module games::dice {
   struct GuessedCorrectly has drop { ... };
 
   /// If you guess correctly the output you get a GuessedCorrectly object.
-  public fun play_dice(guess: u8, fee: Coin<SUI>, r: &Random, ctx: &mut TxContext): Option<GuessedCorrectly> {
+  public fun play_dice(guess: u8, fee: Coin<BFC>, r: &Random, ctx: &mut TxContext): Option<GuessedCorrectly> {
     // Pay for the turn
     assert!(coin::value(&fee) == 1000000, EInvalidAmount);
     transfer::public_transfer(fee, CREATOR_ADDRESS);
@@ -60,7 +60,7 @@ The attacker can now call `attack` with a guess, and always revert the fee trans
 To protect against composition attacks in this example, define `play_dice` as a private `entry` function so functions from other modules cannot call it, such as, 
 
 ```move
-entry fun play_dice(guess: u8, fee: Coin<SUI>, r: &Random, ctx: &mut TxContext): Option<GuessedCorrectly> {
+entry fun play_dice(guess: u8, fee: Coin<BFC>, r: &Random, ctx: &mut TxContext): Option<GuessedCorrectly> {
   ...
 }
 ```
@@ -73,7 +73,7 @@ The Move compiler enforces this behavior by rejecting `public` functions with `R
 
 ## Programmable transaction block (PTB) restrictions
 
-A similar attack to the one previously described involves PTBs *even* when `play_dice` is defined as a private `entry` function. For example, consider the `entry play_dice(guess: u8, fee: Coin<SUI>, r: &Random, ctx: &mut TxContext): Option<GuessedCorrectly> { … }` function defined earlier, the attacker can publish the function
+A similar attack to the one previously described involves PTBs *even* when `play_dice` is defined as a private `entry` function. For example, consider the `entry play_dice(guess: u8, fee: Coin<BFC>, r: &Random, ctx: &mut TxContext): Option<GuessedCorrectly> { … }` function defined earlier, the attacker can publish the function
 
 ```move
 public fun attack(output: Option<GuessedCorrectly>): GuessedCorrectly {
@@ -104,7 +104,7 @@ The Move compiler enforces this behavior by rejecting `public` functions with `R
 Developers should be aware that some resources that are available to transactions are limited. If a function that reads `Random` consumes more resources in the unhappy path flow than in the happy path flow, an attacker can use that difference to revert the transaction in the unhappy flow as previously demonstrated. Concretely, gas is such a resource. Consider the following code:
 
 ```move
-entry fun play(r: &Random, payment: Coin<SUI>, ...) {
+entry fun play(r: &Random, payment: Coin<BFC>, ...) {
   ...
   let generator = new_generator(r, ctx);
   let win = random::generate_bool(generator);

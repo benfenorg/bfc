@@ -189,7 +189,7 @@ module flash_lender::example {
         // Admin creates a flash lender with 100 coins and a fee of 1 coin.
         {
             ts::next_tx(&mut ts, ADMIN);
-            let coin = coin::mint_for_testing<SUI>(100, ts::ctx(&mut ts));
+            let coin = coin::mint_for_testing<BFC>(100, ts::ctx(&mut ts));
             let bal = coin::into_balance(coin);
             let cap = new(bal, 1, ts::ctx(&mut ts));
             transfer::public_transfer(cap, ADMIN);
@@ -203,7 +203,7 @@ module flash_lender::example {
             let (loan, receipt) = loan(&mut lender, 10, ts::ctx(&mut ts));
 
             // Simulate Alice making enough profit to repay.
-            let mut profit = coin::mint_for_testing<SUI>(1, ts::ctx(&mut ts));
+            let mut profit = coin::mint_for_testing<BFC>(1, ts::ctx(&mut ts));
             coin::join(&mut profit, loan);
 
             repay(&mut lender, profit, receipt);
@@ -214,7 +214,7 @@ module flash_lender::example {
         {
             ts::next_tx(&mut ts, ADMIN);
             let cap = ts::take_from_sender(&ts);
-            let mut lender: FlashLender<SUI> = ts::take_shared(&ts);
+            let mut lender: FlashLender<BFC> = ts::take_shared(&ts);
 
             // Max loan increased because of the fee payment
             assert!(max_loan(&lender) == 101, 0);

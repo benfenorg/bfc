@@ -2,7 +2,7 @@
 title: Module `0x2::sui`
 ---
 
-Coin<SUI> is the token used to pay for gas in Sui.
+Coin<BFC> is the token used to pay for gas in Sui.
 It has 9 decimals, and the smallest unit (10^-9) is called "mist".
 
 

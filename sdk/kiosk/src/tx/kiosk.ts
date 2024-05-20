@@ -169,7 +169,7 @@ export function placeAndList(
 }
 
 /**
- * Call the `kiosk::purchase<T>(Kiosk, ID, Coin<SUI>)` function and receive an Item and
+ * Call the `kiosk::purchase<T>(Kiosk, ID, Coin<BFC>)` function and receive an Item and
  * a TransferRequest which needs to be dealt with (via a matching TransferPolicy).
  */
 export function purchase(
@@ -189,7 +189,7 @@ export function purchase(
 }
 
 /**
- * Call the `kiosk::withdraw(Kiosk, KioskOwnerCap, Option<u64>)` function and receive a Coin<SUI>.
+ * Call the `kiosk::withdraw(Kiosk, KioskOwnerCap, Option<u64>)` function and receive a Coin<BFC>.
  * If the amount is null, then the entire balance will be withdrawn.
  */
 export function withdrawFromKiosk(

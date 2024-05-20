@@ -23,7 +23,7 @@ module t2::o2 {
     }
 
     public fun mint_shared_coin(ctx: &mut TxContext) {
-        transfer::public_share_object(coin::zero<SUI>(ctx))
+        transfer::public_share_object(coin::zero<BFC>(ctx))
     }
 
     public fun mint_shared_obj(ctx: &mut TxContext) {
@@ -31,30 +31,30 @@ module t2::o2 {
     }
 
     public fun mint_owned_coin(ctx: &mut TxContext) {
-        transfer::public_transfer(coin::zero<SUI>(ctx), @A)
+        transfer::public_transfer(coin::zero<BFC>(ctx), @A)
     }
 
-    public fun deleter(o2: Coin<SUI>) {
+    public fun deleter(o2: Coin<BFC>) {
         coin::destroy_zero(o2);
     }
 
-    public fun freezer(o2: Coin<SUI>) {
+    public fun freezer(o2: Coin<BFC>) {
         transfer::public_freeze_object(o2);
     }
 
-    public fun dofer(parent: &mut Obj2, o2: Coin<SUI>) {
+    public fun dofer(parent: &mut Obj2, o2: Coin<BFC>) {
         dof::add(&mut parent.id, 0, o2);
     }
 
-    public fun dfer(parent: &mut Obj2, o2: Coin<SUI>) {
+    public fun dfer(parent: &mut Obj2, o2: Coin<BFC>) {
         df::add(&mut parent.id, 0, o2);
     }
 
-    public fun transferer(o2: Coin<SUI>) {
+    public fun transferer(o2: Coin<BFC>) {
         transfer::public_transfer(o2, @0x0);
     }
 
-    public fun sharer(o2: Coin<SUI>) {
+    public fun sharer(o2: Coin<BFC>) {
         transfer::public_share_object(o2);
     }
 }

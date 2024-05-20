@@ -178,8 +178,8 @@ module escrow::shared {
     #[test_only] const DIANE: address = @0xD;
 
     #[test_only]
-    fun test_coin(ts: &mut Scenario): Coin<SUI> {
-        coin::mint_for_testing<SUI>(42, ts.ctx())
+    fun test_coin(ts: &mut Scenario): Coin<BFC> {
+        coin::mint_for_testing<BFC>(42, ts.ctx())
     }
 
     #[test]
@@ -212,9 +212,9 @@ module escrow::shared {
         // return.
         {
             ts.next_tx(BOB);
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let k2: Key = ts.take_from_sender();
-            let l2: Locked<Coin<SUI>> = ts.take_from_sender();
+            let l2: Locked<Coin<BFC>> = ts.take_from_sender();
             let c = escrow.swap(k2, l2, ts.ctx());
 
             transfer::public_transfer(c, BOB);
@@ -225,13 +225,13 @@ module escrow::shared {
 
         // Alice gets the object from Bob
         {
-            let c: Coin<SUI> = ts.take_from_address_by_id(ALICE, i2);
+            let c: Coin<BFC> = ts.take_from_address_by_id(ALICE, i2);
             ts::return_to_address(ALICE, c);
         };
 
         // Bob gets the object from Alice
         {
-            let c: Coin<SUI> = ts.take_from_address_by_id(BOB, i1);
+            let c: Coin<BFC> = ts.take_from_address_by_id(BOB, i1);
             ts::return_to_address(BOB, c);
         };
 
@@ -263,9 +263,9 @@ module escrow::shared {
         // But Diane is the one who attempts the swap
         {
             ts.next_tx(DIANE);
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let k2: Key = ts.take_from_sender();
-            let l2: Locked<Coin<SUI>> = ts.take_from_sender();
+            let l2: Locked<Coin<BFC>> = ts.take_from_sender();
             let c = escrow.swap(k2, l2, ts.ctx());
 
             transfer::public_transfer(c, DIANE);
@@ -301,9 +301,9 @@ module escrow::shared {
         // cannot meet Alice's requirements.
         {
             ts.next_tx(BOB);
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let k2: Key = ts.take_from_sender();
-            let l2: Locked<Coin<SUI>> = ts.take_from_sender();
+            let l2: Locked<Coin<BFC>> = ts.take_from_sender();
             let c = escrow.swap(k2, l2, ts.ctx());
 
             transfer::public_transfer(c, BOB);
@@ -341,12 +341,12 @@ module escrow::shared {
         {
             ts.next_tx(BOB);
             let k: Key = ts.take_from_sender();
-            let l: Locked<Coin<SUI>> = ts.take_from_sender();
+            let l: Locked<Coin<BFC>> = ts.take_from_sender();
             let mut c = lock::unlock(l, k);
 
             let _dust = c.split(1, ts.ctx());
             let (l, k) = lock::lock(c, ts.ctx());
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let c = escrow.swap(k, l, ts.ctx());
 
             transfer::public_transfer(c, BOB);
@@ -372,7 +372,7 @@ module escrow::shared {
         // ...but has a change of heart and takes it back
         {
             ts.next_tx(ALICE);
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let c = escrow.return_to_sender(ts.ctx());
 
             transfer::public_transfer(c, ALICE);
@@ -382,7 +382,7 @@ module escrow::shared {
 
         // Alice can then access it.
         {
-            let c: Coin<SUI> = ts.take_from_address_by_id(ALICE, cid);
+            let c: Coin<BFC> = ts.take_from_address_by_id(ALICE, cid);
             ts::return_to_address(ALICE, c)
         };
 
@@ -416,7 +416,7 @@ module escrow::shared {
         // ...but then has a change of heart
         {
             ts.next_tx(ALICE);
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let c = escrow.return_to_sender(ts.ctx());
             transfer::public_transfer(c, ALICE);
         };
@@ -424,9 +424,9 @@ module escrow::shared {
         // Bob's attempt to complete the swap will now fail.
         {
             ts.next_tx(BOB);
-            let escrow: Escrow<Coin<SUI>> = ts.take_shared();
+            let escrow: Escrow<Coin<BFC>> = ts.take_shared();
             let k2: Key = ts.take_from_sender();
-            let l2: Locked<Coin<SUI>> = ts.take_from_sender();
+            let l2: Locked<Coin<BFC>> = ts.take_from_sender();
             let c = escrow.swap(k2, l2, ts.ctx());
 
             transfer::public_transfer(c, BOB);

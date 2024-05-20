@@ -89,7 +89,7 @@ const EGameDoesNotExist: u64 = 6;
 struct Game has key, store {
     id: UID,
     game_start_epoch: u64,
-    stake: Balance<SUI>,
+    stake: Balance<BFC>,
     player: address,
     // The VRF input used to generate the extended beacon
     vrf_input: vector<u8>,
@@ -119,7 +119,7 @@ struct Outcome has copy, drop {
 // === Public Functions ===
 
 /// Function used to create a new game. The player must provide a Counter NFT and the number of balls.
-public fun start_game(counter: &mut Counter, num_balls: u64, coin: Coin<SUI>, house_data: &mut HouseData, ctx: &mut TxContext): ID {
+public fun start_game(counter: &mut Counter, num_balls: u64, coin: Coin<BFC>, house_data: &mut HouseData, ctx: &mut TxContext): ID {
     let fee_bp = hd::base_fee_in_bp(house_data);
     let (id, new_game) = internal_start_game(counter, num_balls, coin, house_data, fee_bp, ctx);
     dof::add(hd::borrow_mut(house_data), id, new_game);
@@ -170,7 +170,7 @@ public fun finish_game(game_id: ID, bls_sig: vector<u8>, house_data: &mut HouseD
     // Initializes variables for calculating game outcome.
     let trace = vector::empty<u8>();
     // Calculate the stake amount per ball
-    let stake_per_ball = balance::value<SUI>(&stake) / num_balls;
+    let stake_per_ball = balance::value<BFC>(&stake) / num_balls;
     let total_funds_amount: u64 = 0;
 
     // Calculates outcome for each ball based on the extended beacon.
@@ -272,7 +272,7 @@ public fun borrow_game(game_id: ID, house_data: &HouseData): &Game {
 /// Internal helper function used to create a new game. 
 /// The player must provide a guess and a Counter NFT.
 /// Stake is taken from the player's coin and added to the game's stake. 
-fun internal_start_game(counter: &mut Counter, num_balls: u64, coin: Coin<SUI>, house_data: &HouseData, fee_bp: u16, ctx: &mut TxContext): (ID, Game) {
+fun internal_start_game(counter: &mut Counter, num_balls: u64, coin: Coin<BFC>, house_data: &HouseData, fee_bp: u16, ctx: &mut TxContext): (ID, Game) {
     let user_stake = coin::value(&coin);
     // Ensure that the stake is not higher than the max stake.
     assert!(user_stake <= hd::max_stake(house_data), EStakeTooHigh);
@@ -291,7 +291,7 @@ fun internal_start_game(counter: &mut Counter, num_balls: u64, coin: Coin<SUI>, 
     let new_game = Game {
         id,
         game_start_epoch: tx_context::epoch(ctx),
-        stake: coin::into_balance<SUI>(coin),
+        stake: coin::into_balance<BFC>(coin),
         player: tx_context::sender(ctx),
         vrf_input,
         fee_bp
@@ -386,7 +386,7 @@ const EInsufficientBalance: u64 = 1;
 struct HouseData has key {
     id: UID,
     // House's balance which also contains the accrued winnings of the house.
-    balance: Balance<SUI>, 
+    balance: Balance<BFC>,
     // Address of the house or the game operator.
     house: address,
     // Public key used to verify the beacon produced by the back-end.
@@ -396,7 +396,7 @@ struct HouseData has key {
     // Minimum stake amount required to play the game.
     min_stake: u64,
     // The accrued fees from games played.
-    fees: Balance<SUI>, 
+    fees: Balance<BFC>,
     // The default fee in basis points. 1 basis point = 0.01%.
     base_fee_in_bp: u16, 
     // Multipliers used to calculate winnings based on the game outcome.
@@ -429,7 +429,7 @@ fun init(otw: HOUSE_DATA, ctx: &mut TxContext) {
 /// It also sets the max and min stake values, that can later on be updated.
 /// Stores the house address and the base fee in basis points.
 /// This object is involved in all games created by the same instance of this package.
-public fun initialize_house_data(house_cap: HouseCap, coin: Coin<SUI>, public_key: vector<u8>, multiplier: vector<u64>, ctx: &mut TxContext) {
+public fun initialize_house_data(house_cap: HouseCap, coin: Coin<BFC>, public_key: vector<u8>, multiplier: vector<u64>, ctx: &mut TxContext) {
     assert!(coin::value(&coin) > 0, EInsufficientBalance);
 
     let house_data = HouseData {
@@ -466,7 +466,7 @@ public fun update_multiplier_vector(house_data: &mut HouseData, v: vector<u64>, 
 
 /// Function used to top up the house balance. Can be called by anyone.
 /// House can have multiple accounts so giving the treasury balance is not limited.
-public fun top_up(house_data: &mut HouseData, coin: Coin<SUI>, _: &mut TxContext) {
+public fun top_up(house_data: &mut HouseData, coin: Coin<BFC>, _: &mut TxContext) {
     coin::put(&mut house_data.balance, coin)
 }
 
@@ -508,12 +508,12 @@ public fun update_min_stake(house_data: &mut HouseData, min_stake: u64, ctx: &mu
 }
 
 /// Returns a mutable reference to the balance of the house.
-public(friend) fun borrow_balance_mut(house_data: &mut HouseData): &mut Balance<SUI> {
+public(friend) fun borrow_balance_mut(house_data: &mut HouseData): &mut Balance<BFC> {
     &mut house_data.balance
 }
 
 /// Returns a mutable reference to the fees of the house.
-public(friend) fun borrow_fees_mut(house_data: &mut HouseData): &mut Balance<SUI> {
+public(friend) fun borrow_fees_mut(house_data: &mut HouseData): &mut Balance<BFC> {
     &mut house_data.fees
 }
 

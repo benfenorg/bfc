@@ -267,7 +267,7 @@ The inputs include the friend's address, the marketplace object, and the value f
 To walk through this, first look at the memory locations, for the gas object, inputs, and results
 
 ```rust
-Gas Coin: sui::coin::Coin<SUI> { id: gas_coin, balance: sui::balance::Balance<SUI> { value: 1_000_000u64 } }
+Gas Coin: sui::coin::Coin<BFC> { id: gas_coin, balance: sui::balance::Balance<BFC> { value: 1_000_000u64 } }
 Inputs: [
   Pure(/* @0x808 BCS bytes */ ...),
   some_package::some_marketplace::Marketplace { id: market_id, ... },
@@ -285,7 +285,7 @@ Note that while gas is deducted at each command, that aspect of execution is not
 Before execution, remove the gas budget from the gas coin. Assume a gas budget of `500_000` so the gas coin now has a value of `500_000u64`.
 
 ```rust
-Gas Coin: Coin<SUI> { id: gas_coin, ... value: 500_000u64 ... } // The maximum gas is deducted
+Gas Coin: Coin<BFC> { id: gas_coin, ... value: 500_000u64 ... } // The maximum gas is deducted
 Inputs: [
   Pure(/* @0x808 BCS bytes */ ...),
   Marketplace { id: market_id, ... },
@@ -305,14 +305,14 @@ For the result, a new coin object is made.
 This gives us updated memory locations of
 
 ```rust
-Gas Coin: Coin<SUI> { id: gas_coin, ... value: 499_900u64 ... }
+Gas Coin: Coin<BFC> { id: gas_coin, ... value: 499_900u64 ... }
 Inputs: [
   Pure(/* @0x808 BCS bytes */ ...),
   Marketplace { id: market_id, ... },
   Pure(/* 100u64 BCS bytes */ ...),
 ]
 Results: [
-  [Coin<SUI> { id: new_coin, value: 100u64 ... }], // The result of SplitCoins
+  [Coin<BFC> { id: new_coin, value: 100u64 ... }], // The result of SplitCoins
 ],
 ```
 
@@ -323,18 +323,18 @@ Now the command, `MoveCall("some_package", "some_marketplace", "buy_two", [], [I
 ```rust
 entry fun buy_two(
     marketplace: &mut Marketplace,
-    coin: Coin<Sui>,
+    coin: Coin<BFC>,
     ctx: &mut TxContext,
 ): (Item, Item)
 ```
 where `Item` is the type of the two objects being sold.
 
-Since the `marketplace` parameter has type `&mut Marketplace`, use `Input(1)` by mutable reference. Assume some modifications are being made into the value of the `Marketplace` object. However, the `coin` parameter has type `Coin<Sui>`, so use `NestedResult(0, 0)` by value. The `TxContext` input is automatically provided by the runtime.
+Since the `marketplace` parameter has type `&mut Marketplace`, use `Input(1)` by mutable reference. Assume some modifications are being made into the value of the `Marketplace` object. However, the `coin` parameter has type `Coin<BFC>`, so use `NestedResult(0, 0)` by value. The `TxContext` input is automatically provided by the runtime.
 
 This gives updated memory locations, where `_` indicates the object has been moved.
 
 ```rust
-Gas Coin: Coin<SUI> { id: gas_coin, ... value: 499_900u64 ... }
+Gas Coin: Coin<BFC> { id: gas_coin, ... value: 499_900u64 ... }
 Inputs: [
   Pure(/* @0x808 BCS bytes */ ...),
   Marketplace { id: market_id, ...  }, // Any mutations are applied
@@ -346,7 +346,7 @@ Results: [
 ],
 ```
 
-Assume that `buy_two` deletes its `Coin<SUI>` object argument and transfers the `Balance<SUI>` into the `Marketplace` object.
+Assume that `buy_two` deletes its `Coin<BFC>` object argument and transfers the `Balance<BFC>` into the `Marketplace` object.
 
 ### Command 2: `TransferObjects`
 

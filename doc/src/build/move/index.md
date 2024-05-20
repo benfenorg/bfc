@@ -92,7 +92,7 @@ The reason that the `Coin` struct can represent different types of coin is that 
 
 Learn about Move type parameters known as [generics](https://github.com/move-language/move/blob/main/language/documentation/book/src/generics.md) and the optional [phantom keyword](https://github.com/move-language/move/blob/main/language/documentation/book/src/generics.md#phantom-type-parameters) at your leisure.
 
-In particular, one type of custom coin already defined in Sui is `Coin<SUI>`, which represents a token used to pay for Sui
+In particular, one type of custom coin already defined in Sui is `Coin<BFC>`, which represents a token used to pay for Sui
 computations (more generally known as _gas_) - in this case, the concrete type used to parameterize the `Coin` struct is the `SUI` struct in the [SUI module](https://github.com/MystenLabs/sui/tree/main/crates/sui-framework/packages/sui-framework/sources/sui.move):
 
 ``` rust
@@ -126,7 +126,7 @@ The Sui dialect of the Move language also defines _entry functions_. These must 
 One of the basic operations in Sui is a gas object transfer between [addresses](https://github.com/move-language/move/blob/main/language/documentation/book/src/address.md) representing individual users. The gas object transfer implementation in the [SUI module](https://github.com/MystenLabs/sui/tree/main/crates/sui-framework/packages/sui-framework/sources/sui.move) is also an example of the use of an entry function:
 
 ```rust
-public entry fun transfer(c: coin::Coin<SUI>, recipient: address, _ctx: &mut TxContext) {
+public entry fun transfer(c: coin::Coin<BFC>, recipient: address, _ctx: &mut TxContext) {
     ...
 }
 ```

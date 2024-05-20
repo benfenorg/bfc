@@ -1287,9 +1287,9 @@ export class BCS {
 	/**
 	 * Parse a type name and get the type's generics.
 	 * @example
-	 * let { typeName, typeParams } = parseTypeName('Option<Coin<SUI>>');
+	 * let { typeName, typeParams } = parseTypeName('Option<Coin<BFC>>');
 	 * // typeName: Option
-	 * // typeParams: [ 'Coin<SUI>' ]
+	 * // typeParams: [ 'Coin<BFC>' ]
 	 *
 	 * @param name Name of the type to process
 	 * @returns Object with typeName and typeParams listed as Array

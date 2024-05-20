@@ -331,7 +331,7 @@ impl<R, S: store::SimulatorStore> Simulacrum<R, S> {
     /// let address = SuiAddress::generate(simulacrum.rng());
     /// simulacrum.request_gas(address, MIST_PER_SUI).unwrap();
     ///
-    /// // `account` now has a Coin<SUI> object with single SUI in it.
+    /// // `account` now has a Coin<BFC> object with single SUI in it.
     /// // ...
     /// # }
     /// ```

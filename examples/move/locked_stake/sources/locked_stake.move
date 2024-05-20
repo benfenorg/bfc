@@ -18,7 +18,7 @@ module locked_stake::locked_stake {
     public struct LockedStake has key {
         id: UID,
         staked_sui: VecMap<ID, StakedSui>,
-        sui: Balance<SUI>,
+        sui: Balance<BFC>,
         locked_until_epoch: EpochTimeLock,
     }
 
@@ -37,7 +37,7 @@ module locked_stake::locked_stake {
 
     /// Unlocks and returns all the assets stored inside this LockedStake object.
     /// Aborts if the unlock epoch is in the future.
-    public fun unlock(ls: LockedStake, ctx: &TxContext): (VecMap<ID, StakedSui>, Balance<SUI>) {
+    public fun unlock(ls: LockedStake, ctx: &TxContext): (VecMap<ID, StakedSui>, Balance<BFC>) {
         let LockedStake { id, staked_sui, sui, locked_until_epoch } = ls;
         epoch_time_lock::destroy(locked_until_epoch, ctx);
         object::delete(id);
@@ -52,7 +52,7 @@ module locked_stake::locked_stake {
     }
 
     /// Deposit sui balance to the LockedStake object.
-    public fun deposit_sui(ls: &mut LockedStake, sui: Balance<SUI>) {
+    public fun deposit_sui(ls: &mut LockedStake, sui: Balance<BFC>) {
         balance::join(&mut ls.sui, sui);
     }
 

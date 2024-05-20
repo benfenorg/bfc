@@ -48,7 +48,7 @@ module examples::lock_and_key {
 
     /// Lock some content inside a shared object. A Key is created and is
     /// sent to the transaction sender. For example, we could turn the
-    /// lock into a treasure chest by locking some `Coin<SUI>` inside.
+    /// lock into a treasure chest by locking some `Coin<BFC>` inside.
     ///
     /// Sender gets the `Key` to this `Lock`.
     public fun create<T: store + key>(obj: T, ctx: &mut TxContext) {

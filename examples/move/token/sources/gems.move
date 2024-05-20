@@ -62,7 +62,7 @@ module examples::gem {
     public struct GemStore has key {
         id: UID,
         /// Profits from selling Gems.
-        profits: Balance<SUI>,
+        profits: Balance<BFC>,
         /// The Treasury Cap for the in-game currency.
         gem_treasury: TreasuryCap<GEM>,
     }
@@ -101,7 +101,7 @@ module examples::gem {
     /// Purchase Gems from the GemStore. Very silly value matching against module
     /// constants...
     public fun buy_gems(
-        self: &mut GemStore, payment: Coin<SUI>, ctx: &mut TxContext
+        self: &mut GemStore, payment: Coin<BFC>, ctx: &mut TxContext
     ): (Token<GEM>, ActionRequest<GEM>) {
         let amount = coin::value(&payment);
         let purchased = if (amount == SMALL_BUNDLE) {
