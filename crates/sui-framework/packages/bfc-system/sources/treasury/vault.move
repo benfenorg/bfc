@@ -1,3 +1,4 @@
+#[allow(unused_mut_ref)]
 module bfc_system::vault {
     use std::ascii::String;
     use std::type_name;

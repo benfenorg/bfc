@@ -1,4 +1,4 @@
-#[allow(unused_const)]
+#[allow(unused_const,unused_mut_parameter)]
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
@@ -221,7 +221,7 @@ module bfc_system::bfc_system_state_inner {
 
         let mut rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
-            let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
+            let mut deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
             treasury::rebalance_internal(&mut t, false, ctx);
             rate_map = treasury::get_exchange_rates(&t);
@@ -275,7 +275,7 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ): Balance<BFC> {
         let amount = coin::value(&coin_sc);
-        let result_balance= treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
+        let mut result_balance= treasury::redeem_internal<StableCoinType>(&mut self.treasury, coin_sc, amount, ctx);
         if (expected_amount == 0||balance::value(&result_balance) == expected_amount) {
             result_balance
         }

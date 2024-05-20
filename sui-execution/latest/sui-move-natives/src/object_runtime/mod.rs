@@ -35,7 +35,7 @@ use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddres
 
 
 use object_store::ChildObjectStore;
-use sui_types::base_types::ObjectDigest;
+//use sui_types::base_types::ObjectDigest;
 
 //use self::object_store::{ChildObjectEffect, ObjectResult};
 

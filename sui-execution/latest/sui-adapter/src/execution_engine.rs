@@ -10,7 +10,7 @@ mod checked {
 
     use move_vm_runtime::move_vm::MoveVM;
     use std::{
-        collections::{BTreeSet, HashSet},
+        collections::{HashSet},
         sync::Arc,
     };
     use std::collections::HashMap;

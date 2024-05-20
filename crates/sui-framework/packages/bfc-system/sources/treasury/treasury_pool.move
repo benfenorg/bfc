@@ -1,3 +1,4 @@
+#[allow(unused_mut_parameter)]
 module bfc_system::treasury_pool {
     use sui::balance;
     use sui::balance::Balance;

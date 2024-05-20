@@ -6,7 +6,6 @@ use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::StructTag;
 use move_core_types::resolver::ResourceResolver;
 use parking_lot::RwLock;
-use tracing::info;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
@@ -15,7 +14,6 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::execution::{
     DynamicallyLoadedObjectMetadata, ExecutionResults, ExecutionResultsV2, SharedInput,
 };
-use sui_types::storage::DeleteKindWithOldVersion;
 use sui_types::execution_config_utils::to_binary_config;
 use sui_types::execution_status::ExecutionStatus;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
@@ -23,12 +21,12 @@ use sui_types::storage::{BackingStore, PackageObject};
 use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
 use sui_types::type_resolver::LayoutResolver;
 use sui_types::{base_types::{
-    ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
+    ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 }, error::{ExecutionError, SuiError, SuiResult},
-                event::Event, fp_bail, gas::GasCostSummary, object::Owner,
+                 fp_bail, gas::GasCostSummary, object::Owner,
                 object::{Data, Object},
                 storage::{
-    BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
+    BackingPackageStore, ChildObjectResolver, ParentSync, Storage,
     WriteKind,
 }, transaction::InputObjects};
 use sui_types::{

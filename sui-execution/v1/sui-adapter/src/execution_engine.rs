@@ -9,7 +9,7 @@ mod checked {
     use move_vm_runtime::move_vm::MoveVM;
     //use once_cell::sync::Lazy;
     use std::{
-        collections::{BTreeSet, HashSet, HashMap},
+        collections::{HashSet, HashMap},
         sync::Arc,
     };
     use sui_types::gas::calculate_reward_rate;
@@ -47,7 +47,6 @@ mod checked {
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::GasCostSummary;
     use sui_types::messages_consensus::ConsensusCommitPrologue;
-    use sui_types::storage::WriteKind;
     use sui_types::gas::SuiGasStatus;
     use sui_types::storage::BackingStore;
     #[cfg(msim)]

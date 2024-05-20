@@ -1,4 +1,4 @@
-#[allow(unused_const, unused_variable)]
+#[allow(unused_const, unused_variable, unused_mut_parameter)]
 module bfc_system::bfc_dao {
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
