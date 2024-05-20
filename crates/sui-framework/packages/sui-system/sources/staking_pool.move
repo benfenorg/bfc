@@ -459,9 +459,9 @@ module sui_system::staking_pool {
         let total_sui_withdraw_amount = get_sui_amount(&new_epoch_exchange_rate, pool_token_withdraw_amount);
 
         let mut reward_withdraw_amount =
-            if (total_sui_withdraw_amount >= staked_amount)
-                total_sui_withdraw_amount - staked_amount
-            else 0;
+        if (total_sui_withdraw_amount >= staked_amount)
+        total_sui_withdraw_amount - staked_amount
+        else 0;
         reward_withdraw_amount = math::min(reward_withdraw_amount, pool.rewards_pool.value());
 
         staked_amount + reward_withdraw_amount

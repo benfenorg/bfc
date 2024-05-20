@@ -3,6 +3,7 @@
 
 module sui_system::sui_system_state_inner {
     use std::ascii;
+    use std::ascii::String;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
@@ -545,9 +546,7 @@ module sui_system::sui_system_state_inner {
         }
 
         public(package) fun request_withdraw_stable_stake<STABLE>(
-            self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedStable<STABLE>,
-        ctx: &mut TxContext,
+            self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &mut TxContext,
         ) : (Balance<STABLE>, Balance<BFC>) {
             assert!(
                 stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
@@ -845,22 +844,18 @@ module sui_system::sui_system_state_inner {
         /// 4. Update all validators.
         public(package) fun advance_epoch(
             self: &mut SuiSystemStateInnerV2,
-        new_epoch: u64,
-        next_protocol_version: u64,
-        storage_reward: Balance<BFC>,
-        computation_reward: Balance<BFC>,
-        storage_rebate_amount: u64,
-        non_refundable_storage_fee_amount: u64,
-        mut storage_reward: Balance<BFC>,
-        mut computation_reward: Balance<BFC>,
-        mut storage_rebate_amount: u64,
-        mut non_refundable_storage_fee_amount: u64,
-        storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-        // into storage fund, in basis point.
-        reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
-        stable_rate: VecMap<ascii::String, u64>,
-        epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
-        ctx: &mut TxContext,
+            new_epoch: u64,
+            next_protocol_version: u64,
+            mut storage_reward: Balance<BFC>,
+            mut computation_reward: Balance<BFC>,
+            mut storage_rebate_amount: u64,
+            mut non_refundable_storage_fee_amount: u64,
+            storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
+            // into storage fund, in basis point.
+            reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
+            stable_rate: VecMap<ascii::String, u64>,
+            epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
+            ctx: &mut TxContext,
         ) : Balance<BFC> {
             let prev_epoch_start_timestamp = self.epoch_start_timestamp_ms;
             self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
