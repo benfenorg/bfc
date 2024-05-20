@@ -4,17 +4,14 @@
 #[allow(unused_const)]
 module sui_system::validator {
     use std::bcs;
-
+    use std::ascii;
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use sui::tx_context::{Self, TxContext};
     use sui::balance::Balance;
-    use sui::sui::SUI;
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
-    use sui::object::{Self, ID};
     use std::option::{Option, Self};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
-    use std::string::{Self, String};
+    use std::string::{String};
     use std::type_name;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -33,9 +30,6 @@ module sui_system::validator {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use sui::transfer;
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedSui, StakingPool};
-    use std::string::String;
     use sui::url::Url;
     use sui::url;
     use sui::event;
@@ -45,24 +39,6 @@ module sui_system::validator {
     use sui::vec_map::VecMap;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StablePool, StakedStable, PoolStableTokenExchangeRate};
-    friend sui_system::genesis;
-    friend sui_system::sui_system_state_inner;
-    friend sui_system::validator_wrapper;
-    friend sui_system::validator_set;
-    friend sui_system::voting_power;
-
-    #[test_only]
-    friend sui_system::validator_tests;
-    #[test_only]
-    friend sui_system::validator_set_tests;
-    #[test_only]
-    friend sui_system::sui_system_tests;
-    #[test_only]
-    friend sui_system::governance_test_utils;
-    #[test_only]
-    friend sui_system::voting_power_tests;
-    #[test_only]
-    friend sui_system::sui_system;
 
     const MAX_U64: u128 = 18446744073709551615;
     /// Invalid proof_of_possession field in ValidatorMetadata
@@ -739,9 +715,6 @@ module sui_system::validator {
         let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
 
         stable_pool::deposit_rewards<STABLE>(pool, reward);
-    public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<SUI>) {
-        self.next_epoch_stake = self.next_epoch_stake + reward.value();
-        self.staking_pool.deposit_rewards(reward);
     }
 
     /// Process pending stakes and withdraws, called at the end of the epoch.

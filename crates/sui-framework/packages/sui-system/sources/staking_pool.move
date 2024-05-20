@@ -6,9 +6,6 @@ module sui_system::staking_pool {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
     use std::option::{Self, Option};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer;
-    use sui::object::{Self, ID, UID};
     use sui::math;
     use sui::table::{Self, Table};
     use sui::bag::Bag;
@@ -75,8 +72,7 @@ module sui_system::staking_pool {
     }
 
     /// A self-custodial object holding the staked SUI tokens.
-    struct StakedBfc has key, store {
-    public struct StakedSui has key, store {
+    public struct StakedBfc has key, store {
         id: UID,
         /// ID of the staking pool we are staking with.
         pool_id: ID,
@@ -192,7 +188,7 @@ module sui_system::staking_pool {
     }
 
     /// Allows calling `.into_balance()` on `StakedSui` to invoke `unwrap_staked_sui`
-    public use fun unwrap_staked_sui as StakedSui.into_balance;
+    public use fun unwrap_staked_sui as StakedBfc.into_balance;
 
     // ==== functions called at epoch boundaries ===
 
@@ -296,8 +292,8 @@ module sui_system::staking_pool {
     /// Allows calling `.amount()` on `StakedSui` to invoke `staked_sui_amount`
     public use fun staked_sui_amount as StakedSui.amount;
 
-    public fun stake_activation_epoch(staked_sui: &StakedBfc): u64 {
-        staked_sui.stake_activation_epoch
+    public fun stake_activation_epoch(staked_bfc: &StakedBfc): u64 {
+        staked_bfc.stake_activation_epoch
     }
 
     /// Returns true if the input staking pool is preactive.

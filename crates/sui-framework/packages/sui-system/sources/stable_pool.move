@@ -1,19 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
+#[allow(unused_const)]
 module sui_system::stable_pool {
     use sui::balance::{Self, Balance};
-    use std::option::{Self, Option};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer;
-    use sui::object::{Self, ID, UID};
     use sui::math;
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
 
-    friend sui_system::validator;
-    friend sui_system::validator_set;
+    // friend sui_system::validator;
+    // friend sui_system::validator_set;
 
     /// StakedSui objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
@@ -39,7 +35,7 @@ module sui_system::stable_pool {
     const EStakedSuiBelowThreshold: u64 = 18;
 
     /// A stable pool embedded in each validator struct in the system state object.
-    struct StablePool<phantom STABLE> has key, store {
+    public struct StablePool<phantom STABLE> has key, store {
         id: UID,
         /// The epoch at which this pool became active.
         /// The value is `None` if the pool is pre-active and `Some(<epoch_number>)` if active or inactive.
@@ -70,13 +66,13 @@ module sui_system::stable_pool {
     }
 
     /// Struct representing the exchange rate of the stake pool token to SUI.
-    struct PoolStableTokenExchangeRate has store, copy, drop {
+    public struct PoolStableTokenExchangeRate has store, copy, drop {
         sui_amount: u64,
         pool_token_amount: u64,
     }
 
     /// A self-custodial object holding the staked SUI tokens.
-    struct StakedStable<phantom STABLE> has key, store {
+    public struct StakedStable<phantom STABLE> has key, store {
         id: UID,
         /// ID of the stable pool we are stable with.
         pool_id: ID,

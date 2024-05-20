@@ -36,8 +36,6 @@ module sui_system::stake_subsidy {
 
     public(package) fun create(
         balance: Balance<BFC>,
-    public(package) fun create(
-        balance: Balance<SUI>,
         initial_distribution_amount: u64,
         stake_subsidy_period_length: u64,
         stake_subsidy_decrease_rate: u16,

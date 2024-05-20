@@ -6,14 +6,8 @@ module sui_system::sui_system_state_inner {
     use std::ascii::String;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::object::{ID};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
     use sui::bfc::BFC;
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
-    use sui::coin::Coin;
-    use sui_system::staking_pool::{stake_activation_epoch, StakedSui};
-    use sui::sui::SUI;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -503,10 +497,7 @@ module sui_system::sui_system_state_inner {
         validator_address: address,
         ctx: &mut TxContext,
     ) : StakedBfc {
-        validator_set::request_add_stake(
-            &mut self.validators,
-        ) : StakedSui {
-            self.validators.request_add_stake(
+        self.validators.request_add_stake(
             validator_address,
             stake.into_balance(),
             ctx,
@@ -860,8 +851,8 @@ module sui_system::sui_system_state_inner {
         computation_reward: Balance<BFC>,
         storage_rebate_amount: u64,
         non_refundable_storage_fee_amount: u64,
-        mut storage_reward: Balance<SUI>,
-        mut computation_reward: Balance<SUI>,
+        mut storage_reward: Balance<BFC>,
+        mut computation_reward: Balance<BFC>,
         mut storage_rebate_amount: u64,
         mut non_refundable_storage_fee_amount: u64,
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
@@ -1099,13 +1090,10 @@ module sui_system::sui_system_state_inner {
     }
 
     #[allow(lint(self_transfer))]
-    /// Extract required Balance from vector of Coin<SUI>, transfer the remainder back to sender.
+    /// Extract required Balance from vector of Coin<BFC>, transfer the remainder back to sender.
     fun extract_coin_balance(coins: vector<Coin<BFC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<BFC> {
         let merged_coin = vector::pop_back(&mut coins);
         pay::join_vec(&mut merged_coin, coins);
-        fun extract_coin_balance(mut coins: vector<Coin<SUI>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<SUI> {
-        let mut merged_coin = coins.pop_back();
-        merged_coin.join_vec(coins);
 
         let mut total_balance = merged_coin.into_balance();
         // return the full amount if amount is not specified

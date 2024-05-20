@@ -43,24 +43,15 @@ module sui_system::sui_system {
     use sui::balance::Balance;
 
     use sui::coin::{Self, Coin};
-    use sui::object::UID;
     use sui_system::staking_pool::StakedBfc;
     use sui::bfc::BFC;
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
-    use sui::object::ID;
-    use sui::coin::Coin;
-    use sui_system::staking_pool::StakedSui;
-    use sui::sui::SUI;
     use sui::table::Table;
     use sui_system::validator::Validator;
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui_system::sui_system_state_inner::{Self, SystemParameters, SuiSystemStateInner, SuiSystemStateInnerV2};
     use sui_system::stake_subsidy::StakeSubsidy;
     use sui_system::staking_pool::PoolTokenExchangeRate;
-    use std::option;
     use std::type_name;
-    use std::vector;
     use bfc_system::bfc_system;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;

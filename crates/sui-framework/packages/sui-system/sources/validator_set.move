@@ -1,13 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
+#[allow(unused_use)]
 module sui_system::validator_set {
 
     use sui::balance::Balance;
-    use sui::sui::SUI;
     use sui_system::validator::{Validator, staking_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
-    use sui_system::staking_pool::{PoolTokenExchangeRate, StakedSui, pool_id};
+    use sui_system::staking_pool::{PoolTokenExchangeRate, StakedBfc};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::VecSet;
@@ -19,6 +18,7 @@ module sui_system::validator_set {
     use sui_system::validator_wrapper;
     use sui::bag::Bag;
     use sui::bag;
+    use sui::bfc::BFC;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
     use bfc_system::bbrl::BBRL;
@@ -395,7 +395,7 @@ module sui_system::validator_set {
         staked_sui: StakedBfc,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &TxContext,
     ) : Balance<SUI> {
         let staking_pool_id = pool_id(&staked_sui);
