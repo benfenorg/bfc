@@ -539,8 +539,8 @@ module sui_system::sui_system_state_inner {
         ctx: &mut TxContext,
         ) : Balance<BFC> {
             assert!(
-            stake_activation_epoch(&staked_sui) <= ctx.epoch(),
-            EStakeWithdrawBeforeActivation
+                stake_activation_epoch(&staked_sui) <= ctx.epoch(),
+                EStakeWithdrawBeforeActivation
             );
             self.validators.request_withdraw_stake(staked_sui, ctx)
         }

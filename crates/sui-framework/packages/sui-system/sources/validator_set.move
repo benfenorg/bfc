@@ -8,7 +8,9 @@ module sui_system::validator_set {
     use sui_system::validator;
     use std::ascii;
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
-    use sui_system::stable_pool::{pool_id as stable_pool_id, PoolStableTokenExchangeRate, PoolTokenExchangeRate};
+    use sui_system::stable_pool::{pool_id as stable_pool_id,
+        PoolStableTokenExchangeRate};
+    use sui_system::staking_pool::{PoolTokenExchangeRate, pool_id, StakedBfc};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::VecSet;
@@ -359,7 +361,7 @@ module sui_system::validator_set {
         stake: Balance<BFC>,
         ctx: &mut TxContext,
     ) : StakedBfc {
-        let sui_amount = balance::value(&stake);
+        let sui_amount = stake.value();
     ) :StakedBfc {
         let sui_amount = stake.value();
         assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
@@ -373,7 +375,7 @@ module sui_system::validator_set {
         stake: Balance<STABLE>,
         ctx: &mut TxContext,
     ) : StakedStable<STABLE> {
-        let sui_amount = balance::value(&stake);
+        let sui_amount = stake.value();
         assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
         let validator = get_candidate_or_active_validator_mut(self, validator_address);
         validator::request_add_stable_stake(validator, stake, tx_context::sender(ctx), ctx)
@@ -681,7 +683,6 @@ module sui_system::validator_set {
         &self.stable_pool_mappings
     }
 
-    public(package) fun pool_exchange_rates(
     public(package) fun pool_exchange_rates(
         self: &mut ValidatorSet, pool_id: &ID
     ) : &Table<u64, PoolTokenExchangeRate> {
