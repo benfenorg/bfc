@@ -6,7 +6,7 @@ module bfc_system::treasury {
     use sui::balance::{Self, Balance, Supply};
     use sui::bfc::BFC;
     use sui::clock::{Self, Clock};
-    use sui::coin::{Self, Coin, value};
+    use sui::coin::{Self, Coin};
     use sui::dynamic_field;
     use sui::object::{Self, UID};
     use sui::transfer;

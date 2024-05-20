@@ -1082,9 +1082,7 @@ module bfc_system::vault {
         _treasury_total_bfc_supply: u64,
         _ctx: &mut TxContext
     ): u64 {
-        let shape = SHAPE_EQUAL_SIZE;
         if (_vault.state_counter >= _vault.max_counter_times) {
-            shape = _vault.state;
             // reset state counter
             _vault.state_counter = 0;
         } else {
@@ -1095,6 +1093,7 @@ module bfc_system::vault {
             balance1,
             ticks
         ) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
+        let shape = _vault.state;
         let liquidities = positions_liquidity_size_balance(
             _vault,
             &ticks,

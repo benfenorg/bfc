@@ -64,7 +64,7 @@ module bfc_system::treasury_pool {
     public(friend) fun withdraw_to_treasury(
         self: &mut TreasuryPool,
         amount: u64,
-        ctx: &mut TxContext
+        _ctx: &mut TxContext
     ): Balance<BFC>
     {
         // Take the minimum of the amount and the remaining balance in
