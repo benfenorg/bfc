@@ -1,16 +1,14 @@
+#[allow(unused_const)]
+#[allow(unused_variable)]
 module bfc_system::bfc_dao {
-    use std::option;
-    use sui::object::{Self, UID};
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
     use sui::clock::{Self, Clock};
     use std::string;
     use sui::event;
-    use sui::tx_context::TxContext;
     use bfc_system::voting_pool::{VotingBfc, voting_bfc_amount, pool_id};
     use bfc_system::voting_pool;
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
-    use std::vector;
     use bfc_system::bfc_dao_manager;
     use sui::bfc::BFC;
     use sui::balance;
@@ -149,12 +147,14 @@ module bfc_system::bfc_dao {
         /// how long the proposal should wait before it can be executed (in milliseconds).
         min_action_delay: u64,
     }
-    spec DaoConfig {
-        invariant voting_quorum_rate > 0 && voting_quorum_rate <= 100;
-        invariant voting_delay > 0;
-        invariant voting_period > 0;
-        invariant min_action_delay > 0;
-    }
+
+
+    // spec DaoConfig {
+    //     invariant voting_quorum_rate > 0 && voting_quorum_rate <= 100;
+    //     invariant voting_delay > 0;
+    //     invariant voting_period > 0;
+    //     invariant min_action_delay > 0;
+    // }
 
     public struct Dao has key, store {
         id: UID,
@@ -607,7 +607,7 @@ module bfc_system::bfc_dao {
     public(package) fun revoke_vote(
         dao:  &mut Dao,
         proposal: &mut Proposal,
-        my_vote:  Vote,
+        my_vote:  &mut Vote,
         voting_power: u64,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -670,9 +670,9 @@ module bfc_system::bfc_dao {
         to_revoke: u64,
         ctx: &mut TxContext,
     ){
-        spec {
-            assume vote.vote.principal.value >= to_revoke;
-        };
+        // spec {
+        //     assume vote.vote.principal.value >= to_revoke;
+        // };
 
         //todo: unlock vote coin or return...
         //// Token::withdraw(&mut vote.vote, to_revoke);
@@ -683,9 +683,9 @@ module bfc_system::bfc_dao {
         } else {
             proposal.proposal.against_votes = proposal.proposal.against_votes - to_revoke;
         };
-        spec {
-            assert reverted_vote.principal.value == to_revoke;
-        };
+        // spec {
+        //     assert reverted_vote.principal.value == to_revoke;
+        // };
 
         //reverted_vote
         transfer::public_transfer(reverted_vote, tx_context::sender(ctx));
@@ -696,7 +696,7 @@ module bfc_system::bfc_dao {
         proposal: & Proposal,
         vote: Vote,
         clock: & Clock,
-        ctx: &mut TxContext,
+        ctx: &TxContext,
     ) {
         // only check state when proposal exists.
         // because proposal can be destroyed after it ends in DEFEATED or EXTRACTED state.
@@ -1146,7 +1146,7 @@ module bfc_system::bfc_dao {
         // sender address
         let sender = tx_context::sender(ctx);
         assert!(pool_id(&voting_bfc) == object::id(&dao.voting_pool), ERR_WRONG_VOTING_POOL);
-        let voting_bfc = voting_pool::request_withdraw_voting(&mut dao.voting_pool, voting_bfc, clock);
+        let voting_bfc = voting_pool::request_withdraw_voting(&dao.voting_pool, voting_bfc, clock);
         let coin = coin::from_balance(voting_bfc, ctx);
         transfer::public_transfer(coin, sender);
     }
@@ -1155,7 +1155,7 @@ module bfc_system::bfc_dao {
     public(package) fun destroy_terminated_proposal(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
-        proposal:  &mut Proposal,
+        proposal:  &Proposal,
         clock: & Clock,
     )  {
 

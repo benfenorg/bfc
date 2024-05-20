@@ -2,7 +2,6 @@ module bfc_system::event {
     use std::ascii::String;
 
     use sui::event::emit;
-    use sui::object::ID;
 
     //friend bfc_system::treasury;
     //friend bfc_system::treasury_pool;

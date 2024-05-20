@@ -1,9 +1,7 @@
+#[allow(unused_const)]
 module bfc_system::skip_list {
-    use std::vector::{Self, push_back};
 
     use sui::dynamic_field as field;
-    use sui::object::{Self, UID};
-    use sui::tx_context::TxContext;
 
     use bfc_system::option_u64::{Self, is_none, is_some, is_some_and_lte, none, OptionU64, some, swap_or_fill};
     use bfc_system::random::{Self, Random};

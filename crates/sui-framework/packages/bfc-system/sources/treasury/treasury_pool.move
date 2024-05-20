@@ -6,9 +6,6 @@ module bfc_system::treasury_pool {
     use sui::coin::Coin;
     use sui::event::emit;
     use sui::math;
-    use sui::object;
-    use sui::object::UID;
-    use sui::tx_context::{Self, TxContext};
 
     use bfc_system::event;
 

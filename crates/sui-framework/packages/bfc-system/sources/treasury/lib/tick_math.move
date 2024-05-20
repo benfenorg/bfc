@@ -39,9 +39,10 @@ module bfc_system::tick_math {
     public fun tick_bound(): u32 {
         MAX_TICK
     }
-    spec tick_bound {
-        pragma opaque;
-    }
+
+    // spec tick_bound {
+    //     pragma opaque;
+    // }
 
     public fun get_sqrt_price_at_tick(tick: I32): u128 {
         assert!(i32::gte(tick, min_tick()) && i32::lte(tick, max_tick()), EINVALID_TICK);
@@ -122,9 +123,9 @@ module bfc_system::tick_math {
         }
     }
 
-    spec get_tick_at_sqrt_price {
-        pragma opaque;
-    }
+    // spec get_tick_at_sqrt_price {
+    //     pragma opaque;
+    // }
 
 
     fun as_u8(b: bool): u8 {
@@ -202,7 +203,7 @@ module bfc_system::tick_math {
 
     fun get_sqrt_price_at_positive_tick(tick: I32): u128 {
         let abs_tick = i32::as_u32(i32::abs(tick));
-        let ratio = if (abs_tick & 0x1 != 0) {
+        let mut ratio = if (abs_tick & 0x1 != 0) {
             79232123823359799118286999567u128
         } else {
             79228162514264337593543950336u128
@@ -265,7 +266,7 @@ module bfc_system::tick_math {
 
         ratio >> 32
     }
-    spec get_sqrt_price_at_positive_tick { pragma verify = false; }
+    //spec get_sqrt_price_at_positive_tick { pragma verify = false; }
 
     fun get_valid_tick_index(index: I32, tick_spacing: u32, prev: bool): I32 {
         if (is_valid_index(index, tick_spacing)) {

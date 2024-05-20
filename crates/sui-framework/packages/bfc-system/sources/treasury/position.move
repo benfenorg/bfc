@@ -16,7 +16,7 @@ module bfc_system::position {
     //friend bfc_system::vault;
 
     const ERR_TICK_SPACING_INVALID_RANGE: u64 = 300;
-    const ERR_TICK_LOWER_TOO_SMALL: u64 = 301;
+    //const ERR_TICK_LOWER_TOO_SMALL: u64 = 301;
     //const ERR_TICK_UPPER_TOO_LARGE: u64 = 302;
     const ERR_TICK_INVALID_RANGE: u64 = 303;
     const ERR_TICK_INVALID_VALUE: u64 = 304;

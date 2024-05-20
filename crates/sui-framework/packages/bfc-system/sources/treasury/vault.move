@@ -6,7 +6,6 @@ module bfc_system::vault {
     use sui::balance::{Self, Balance, Supply};
     use sui::coin::{Self, Coin};
     use sui::bfc::BFC;
-    use sui::tx_context::TxContext;
 
     use bfc_system::clmm_math;
     use bfc_system::event;
@@ -123,9 +122,9 @@ module bfc_system::vault {
         last_bfc_rebalance_amount: u64,
     }
 
-    spec create_vault {
-        pragma opaque;
-    }
+    // spec create_vault {
+    //     pragma opaque;
+    // }
     // === Create vault ====
     public(package) fun create_vault<StableCoinType>(
         _index: u64,
@@ -313,9 +312,9 @@ module bfc_system::vault {
     }
 
 
-    spec remove_liquidity {
-        pragma opaque;
-    }
+    // spec remove_liquidity {
+    //     pragma opaque;
+    // }
 
     public(package) fun remove_liquidity<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
@@ -462,9 +461,10 @@ module bfc_system::vault {
     }
 
 
-    spec calculate_swap_result {
-        pragma opaque;
-    }
+    // spec calculate_swap_result {
+    //     pragma opaque;
+    // }
+
     // Calculate Swap Result
     public fun calculate_swap_result<StableCoinType>(
         _vault: &Vault<StableCoinType>,
@@ -981,8 +981,8 @@ module bfc_system::vault {
         let curve_dx_q64 = curve_dx((_vault.coin_market_cap as u128), (_treasury_total_bfc_supply as u128));
         let base_point_amount = (((_vault.base_point as u128) * (Q64 + curve_dx_q64) / Q64) as u64);
         let liquidity = get_liquidity_from_base_point(_vault, _ticks, base_point_amount);
-        let liquidities = vector::empty<u128>();
-        let index: u128 ;
+        let mut liquidities = vector::empty<u128>();
+        let mut index: u128 ;
         let length: u128;
         if (_shape == SHAPE_EQUAL_SIZE) {
             index = 0;
@@ -1023,7 +1023,7 @@ module bfc_system::vault {
         balance::join(_bfc_balance, _balance1);
         balance::decrease_supply(_supply, _balance0);
 
-        let index = 0u64;
+        let mut  index = 0u64;
         let length = vector::length(&_liquidities);
         let position_length = position::get_total_positions(&_vault.position_manager);
         assert!(length == position_length, ERR_POSITION_LENGTH_MISMATCH);
@@ -1052,7 +1052,7 @@ module bfc_system::vault {
         _ctx: &mut TxContext
     ): u64 {
         let (balance0, balance1, ticks) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
-        let shape = SHAPE_EQUAL_SIZE;
+        let mut shape = SHAPE_EQUAL_SIZE;
         if (_vault.state_counter >= _vault.max_counter_times) {
             shape = _vault.state;
             // reset state counter

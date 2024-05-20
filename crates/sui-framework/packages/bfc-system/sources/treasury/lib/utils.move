@@ -1,7 +1,6 @@
 module bfc_system::utils {
     use std::ascii::{Self, String};
     use std::type_name::get;
-    use std::vector;
 
     use bfc_system::comparator;
 

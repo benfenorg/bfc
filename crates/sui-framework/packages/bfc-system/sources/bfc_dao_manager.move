@@ -3,8 +3,6 @@ module bfc_system::bfc_dao_manager {
     use sui::balance::Balance;
     use sui::coin;
     use sui::bfc::BFC;
-    use sui::object::UID;
-    use sui::tx_context::TxContext;
 
     // friend bfc_system::bfc_dao;
     // friend bfc_system::voting_pool;

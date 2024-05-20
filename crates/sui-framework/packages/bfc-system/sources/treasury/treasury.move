@@ -1,3 +1,4 @@
+#[allow(unused_const)]
 module bfc_system::treasury {
     use std::ascii::String;
     use std::type_name;
@@ -8,9 +9,6 @@ module bfc_system::treasury {
     use sui::clock::{Self, Clock};
     use sui::coin::{Self, Coin};
     use sui::dynamic_field;
-    use sui::object::{Self, UID};
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
     use sui::vec_map::{Self, VecMap};
 
     use bfc_system::bars::BARS;

@@ -80,9 +80,9 @@ module bfc_system::math_u128 {
     public fun from_lo_hi(lo: u64, hi: u64): u128 {
         ((hi as u128) << 64) + (lo as u128)
     }
-    spec from_lo_hi {
-        pragma verify = false; // By default, do not verify specs in this module ...
-    }
+    // spec from_lo_hi {
+    //     pragma verify = false; // By default, do not verify specs in this module ...
+    // }
 
     public fun checked_div_round(num: u128, denom: u128, round_up: bool): u128 {
         if (denom == 0) {
@@ -116,9 +116,9 @@ module bfc_system::math_u128 {
         (MAX_U128 - num1 >= num2)
     }
 
-    spec add_check {
-        pragma opaque;
-    }
+    // spec add_check {
+    //     pragma opaque;
+    // }
 
     #[test]
     fun test_overflowing_add() {

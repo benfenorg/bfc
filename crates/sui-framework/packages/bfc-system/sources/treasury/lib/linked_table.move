@@ -1,14 +1,8 @@
 module bfc_system::linked_table {
-    use std::option;
-    use std::option::{is_none, is_some, none, Option, some, swap_or_fill};
-    use std::vector;
+    use std::option::{is_none, is_some, none, some, swap_or_fill};
 
     use sui::dynamic_field as field;
 
-    #[test_only]
-    use sui::transfer::transfer;
-    #[test_only]
-    use sui::tx_context;
 
     const EListNotEmpty: u64 = 0;
     const ELimitInvalid: u64 = 1;

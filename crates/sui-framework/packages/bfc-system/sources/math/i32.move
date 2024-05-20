@@ -1,6 +1,5 @@
 module bfc_system::i32 {
     use std::ascii::into_bytes;
-    use std::vector;
 
     use bfc_system::utils;
 
@@ -49,9 +48,11 @@ module bfc_system::i32 {
             bits: v
         }
     }
-    spec from {
-        pragma opaque;
-    }
+
+
+    // spec from {
+    //     pragma opaque;
+    // }
 
 
     public fun neg_from(v: u32): I32 {
@@ -165,9 +166,10 @@ module bfc_system::i32 {
             bits: v.bits >> shift
         }
     }
-    spec shr{
-        pragma verify = false; // By default, do not verify specs in this module ...
-    }
+
+    // spec shr{
+    //     pragma verify = false; // By default, do not verify specs in this module ...
+    // }
 
     public fun mod(v: I32, n: I32): I32 {
         if (sign(v) == 1) {
@@ -181,9 +183,9 @@ module bfc_system::i32 {
        v.bits
     }
 
-    spec as_u32 {
-        pragma opaque;
-    }
+    // spec as_u32 {
+    //     pragma opaque;
+    // }
 
     public fun sign(v: I32): u8 {
         ((v.bits >> 31) as u8)
@@ -206,17 +208,19 @@ module bfc_system::i32 {
             return LT
         }
     }
-    spec cmp{
-        pragma verify = false; // By default, do not verify specs in this module ...
-    }
+
+
+    // spec cmp{
+    //     pragma verify = false; // By default, do not verify specs in this module ...
+    // }
 
     public fun eq(num1: I32, num2: I32): bool {
         num1.bits == num2.bits
     }
 
-    spec eq {
-        pragma opaque;
-    }
+    // spec eq {
+    //     pragma opaque;
+    // }
 
     public fun gt(num1: I32, num2: I32): bool {
         cmp(num1, num2) == GT

@@ -1,7 +1,6 @@
 /// Provides a framework for comparing two elements
 module bfc_system::comparator {
     use std::bcs;
-    use std::vector;
 
     const EQUAL: u8 = 0;
     const SMALLER: u8 = 1;

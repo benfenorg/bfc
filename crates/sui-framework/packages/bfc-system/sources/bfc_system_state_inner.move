@@ -1,3 +1,4 @@
+#[allow(unused_const)]
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
@@ -7,7 +8,6 @@ module bfc_system::bfc_system_state_inner {
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
-    use sui::tx_context::TxContext;
     use sui::vec_map::{Self, VecMap};
 
     use bfc_system::bars::BARS;
