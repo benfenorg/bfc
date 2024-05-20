@@ -7,8 +7,6 @@ module bfc_system::bfc_dao {
     use std::string;
     use sui::event;
     use sui::tx_context::TxContext;
-    use sui::tx_context;
-    use sui::transfer;
     use bfc_system::voting_pool::{VotingBfc, voting_bfc_amount, pool_id};
     use bfc_system::voting_pool;
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
@@ -18,19 +16,19 @@ module bfc_system::bfc_dao {
     use sui::balance;
     //use sui::balance::Balance;
 
-    friend bfc_system::bfc_system;
-    friend bfc_system::bfc_system_state_inner;
+    // friend bfc_system::bfc_system;
+    // friend bfc_system::bfc_system_state_inner;
+    //
+    // #[test_only]
+    // friend bfc_system::bfc_dao_test;
+    //
+    // #[test_only]
+    // friend bfc_system::bfc_dao_voting_pool_test;
 
-    #[test_only]
-    friend bfc_system::bfc_dao_test;
-
-    #[test_only]
-    friend bfc_system::bfc_dao_voting_pool_test;
-
-    spec module{
-        pragma verify;
-        pragma aborts_if_is_strict;
-    }
+    // spec module{
+    //     pragma verify;
+    //     pragma aborts_if_is_strict;
+    // }
 
     const ZERO_ADDRESS: address = @0000000000000000000000000000000000000000000000000000000000000000;
 

@@ -6,16 +6,16 @@ module bfc_system::voting_pool {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::object::{Self, ID, UID};
-    spec module{
-        pragma verify;
-        //pragma aborts_if_is_strict;
-    }
+    // spec module{
+    //     pragma verify;
+    //     //pragma aborts_if_is_strict;
+    // }
 
 
-    friend bfc_system::bfc_dao;
-
-    #[test_only]
-    friend bfc_system::bfc_dao_voting_pool_test;
+    // friend bfc_system::bfc_dao;
+    //
+    // #[test_only]
+    // friend bfc_system::bfc_dao_voting_pool_test;
 
     //friend bfc_system::bfc_dao_voting_pool_test;
     /// votingBfc objects cannot be split to below this amount.

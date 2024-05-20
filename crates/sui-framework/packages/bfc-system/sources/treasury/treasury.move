@@ -34,17 +34,17 @@ module bfc_system::treasury {
     use bfc_system::tick_math;
     use bfc_system::vault::{Self, Vault, VaultInfo};
 
-    friend bfc_system::bfc_system_state_inner;
-    #[test_only]
-    friend bfc_system::treasury_busd_test;
-    #[test_only]
-    friend bfc_system::treasury_beur_test;
-    #[test_only]
-    friend bfc_system::vault_test;
-    #[test_only]
-    friend bfc_system::test_utils;
-    #[test_only]
-    friend bfc_system::bfc_system_tests;
+    // friend bfc_system::bfc_system_state_inner;
+    // #[test_only]
+    // friend bfc_system::treasury_busd_test;
+    // #[test_only]
+    // friend bfc_system::treasury_beur_test;
+    // #[test_only]
+    // friend bfc_system::vault_test;
+    // #[test_only]
+    // friend bfc_system::test_utils;
+    // #[test_only]
+    // friend bfc_system::bfc_system_tests;
 
     // === Errors ===
     const ERR_POOL_HAS_REGISTERED: u64 = 100;

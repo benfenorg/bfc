@@ -1,14 +1,11 @@
 module bfc_system::vault {
     use std::ascii::String;
     use std::type_name;
-    use std::vector;
     use sui::curve::curve_dx;
 
     use sui::balance::{Self, Balance, Supply};
     use sui::coin::{Self, Coin};
     use sui::bfc::BFC;
-    use sui::object;
-    use sui::object::{ID, UID};
     use sui::tx_context::TxContext;
 
     use bfc_system::clmm_math;
@@ -21,16 +18,16 @@ module bfc_system::vault {
     use bfc_system::tick::{Self, Tick, TickManager};
     use bfc_system::tick_math;
 
-    friend bfc_system::treasury;
-    friend bfc_system::bfc_system;
-    friend bfc_system::bfc_system_state_inner;
-    #[test_only]
-    friend bfc_system::treasury_busd_test;
-    #[test_only]
-    friend bfc_system::treasury_beur_test;
-
-    #[test_only]
-    friend bfc_system::vault_test;
+    // friend bfc_system::treasury;
+    // friend bfc_system::bfc_system;
+    // friend bfc_system::bfc_system_state_inner;
+    // #[test_only]
+    // friend bfc_system::treasury_busd_test;
+    // #[test_only]
+    // friend bfc_system::treasury_beur_test;
+    //
+    // #[test_only]
+    // friend bfc_system::vault_test;
 
     const ERR_AMOUNT_INSUFFICIENT: u64 = 200;
     const ERR_MAX_AMOUNT: u64 = 201;
@@ -52,7 +49,7 @@ module bfc_system::vault {
     const SHAPE_INCREMENT_SIZE: u8 = 2;
 
     const Q64: u128 = 18446744073709551616;
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     struct Vault<phantom StableCoinType> has key, store {
         id: UID,
@@ -475,11 +472,11 @@ module bfc_system::vault {
         _by_amount_in: bool,
         _amount: u64,
     ): CalculatedSwapResult {
-        let swap_result = default_calculated_swap_result();
+        let mut swap_result = default_calculated_swap_result();
         swap_result.vault_sqrt_price = _vault.current_sqrt_price;
         swap_result.after_sqrt_price = _vault.current_sqrt_price;
-        let liquidity = _vault.liquidity;
-        let current_sqrt_price = _vault.current_sqrt_price;
+        let mut liquidity = _vault.liquidity;
+        let mut current_sqrt_price = _vault.current_sqrt_price;
         let remainer_amount = _amount;
         let tick_index = _vault.current_tick_index;
         let start_score = tick::first_score_for_swap(

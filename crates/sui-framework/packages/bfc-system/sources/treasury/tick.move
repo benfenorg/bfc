@@ -25,8 +25,8 @@ module bfc_system::tick {
     #[test_only]
     use sui::tx_context;
 
-    friend bfc_system::treasury;
-    friend bfc_system::vault;
+    //friend bfc_system::treasury;
+    //friend bfc_system::vault;
 
     const ERR_TICK_EXCEED_TWICE_MAXIMUM: u64 = 400;
     const ERR_TICK_EXCEED_U128_MAXIMUM: u64 = 401;

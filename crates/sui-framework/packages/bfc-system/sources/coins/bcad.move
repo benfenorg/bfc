@@ -1,17 +1,14 @@
 module bfc_system::bcad {
-    use std::option;
-    use sui::transfer;
     use sui::coin;
     use sui::balance::Supply;
-    use sui::tx_context::{Self, TxContext};
 
-    struct BCAD has drop {}
+    public struct BCAD has drop {}
 
     const EAlreadyMinted: u64 = 0;
     /// Sender is not @0x0 the system address.
     const ENotSystemAddress: u64 = 1;
 
-    spec module { pragma verify = false; }
+    // spec module { pragma verify = false; }
 
 
     #[allow(unused_function)]

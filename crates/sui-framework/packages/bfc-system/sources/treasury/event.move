@@ -4,9 +4,9 @@ module bfc_system::event {
     use sui::event::emit;
     use sui::object::ID;
 
-    friend bfc_system::treasury;
-    friend bfc_system::treasury_pool;
-    friend bfc_system::vault;
+    //friend bfc_system::treasury;
+    //friend bfc_system::treasury_pool;
+    //friend bfc_system::vault;
 
     spec module { pragma verify = false; }
 

@@ -14,8 +14,8 @@ module bfc_system::position {
     use bfc_system::tick_math;
     use bfc_system::utils::to_string;
 
-    friend bfc_system::treasury;
-    friend bfc_system::vault;
+    //friend bfc_system::treasury;
+    //friend bfc_system::vault;
 
     const ERR_TICK_SPACING_INVALID_RANGE: u64 = 300;
     const ERR_TICK_LOWER_TOO_SMALL: u64 = 301;

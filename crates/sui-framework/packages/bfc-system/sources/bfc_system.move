@@ -40,8 +40,8 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
 
-    #[test_only]
-    friend bfc_system::bfc_system_tests;
+    // #[test_only]
+    // friend bfc_system::bfc_system_tests;
 
     struct BfcSystemState has key {
         id: UID,

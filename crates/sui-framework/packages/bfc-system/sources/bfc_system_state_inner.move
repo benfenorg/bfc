@@ -36,10 +36,10 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::vault::VaultInfo;
     use bfc_system::voting_pool::VotingBfc;
 
-
-    friend bfc_system::bfc_system;
-    #[test_only]
-    friend bfc_system::bfc_system_tests;
+    //
+    // friend bfc_system::bfc_system;
+    // #[test_only]
+    // friend bfc_system::bfc_system_tests;
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;

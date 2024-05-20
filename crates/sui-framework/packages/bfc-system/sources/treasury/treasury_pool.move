@@ -12,7 +12,7 @@ module bfc_system::treasury_pool {
 
     use bfc_system::event;
 
-    friend bfc_system::bfc_system_state_inner;
+    //friend bfc_system::bfc_system_state_inner;
 
     /// The `withdraw` function only called by 0x0 address.
     const ERR_NOT_ZERO_ADDRESS: u64 = 900;

@@ -1,17 +1,14 @@
 module bfc_system::bbrl {
-    use std::option;
-    use sui::transfer;
     use sui::coin;
     use sui::balance::Supply;
-    use sui::tx_context::{Self, TxContext};
 
-    struct BBRL has drop {}
+    public struct BBRL has drop {}
 
     const EAlreadyMinted: u64 = 0;
     /// Sender is not @0x0 the system address.
     const ENotSystemAddress: u64 = 1;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
 
     #[allow(unused_function)]

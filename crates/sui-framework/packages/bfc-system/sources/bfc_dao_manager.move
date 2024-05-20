@@ -5,12 +5,9 @@ module bfc_system::bfc_dao_manager {
     use sui::bfc::BFC;
     use sui::object::UID;
     use sui::tx_context::TxContext;
-    use sui::object;
-    use sui::transfer;
-    use sui::tx_context;
 
-    friend bfc_system::bfc_dao;
-    friend bfc_system::voting_pool;
+    // friend bfc_system::bfc_dao;
+    // friend bfc_system::voting_pool;
 
 
     const FREE_KEY : u64 = 0;
@@ -26,9 +23,9 @@ module bfc_system::bfc_dao_manager {
         amount: u64,
     }
 
-    spec module{
-        pragma verify;
-    }
+    // spec module{
+    //     pragma verify;
+    // }
     /// Create a new key.
     public(package) fun new(sender: address, ctx: &mut TxContext)  {
         let key = BFCDaoManageKey {
@@ -40,7 +37,7 @@ module bfc_system::bfc_dao_manager {
     }
 
 
-    struct ManagerKeyBfc has key, store {
+    public struct ManagerKeyBfc has key, store {
         id: UID,
         principal: Balance<BFC>,
     }
@@ -92,10 +89,10 @@ module bfc_system::bfc_dao_manager {
 
 
 
-    spec new {
-        aborts_if false;
-        aborts_if ctx.ids_created + 1 > MAX_U64;
-    }
+    // spec new {
+    //     aborts_if false;
+    //     aborts_if ctx.ids_created + 1 > MAX_U64;
+    // }
 
     public(package) fun getKeyAddress(key: &BFCDaoManageKey) : address {
         object::uid_to_address(&key.id)
