@@ -8,9 +8,7 @@ module sui_system::validator {
     use sui::bfc::BFC;
     use sui::balance::{Self, Balance};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
-    use std::option::{Option, Self};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
-    use std::string::{String};
+    use sui_system::staking_pool::{Self, StakingPool, StakedBfc};
     use std::type_name;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -318,8 +316,6 @@ module sui_system::validator {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         stable_pool::deactivate_stable_pool(pool, deactivation_epoch);
-    public(package) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
-        self.staking_pool.deactivate_staking_pool(deactivation_epoch)
     }
 
     public(package) fun activate(self: &mut Validator, activation_epoch: u64) {
@@ -406,7 +402,7 @@ module sui_system::validator {
         staker_address: address,
         ctx: &mut TxContext,
     ) : StakedStable<STABLE> {
-        let stake_amount = stake.value()
+        let stake_amount = stake.value();
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;
         let pool_key = type_name::into_string(type_name::get<STABLE>());
