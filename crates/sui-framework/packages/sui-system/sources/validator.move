@@ -368,7 +368,7 @@ module sui_system::validator {
         staker_address: address,
         ctx: &mut TxContext,
     ) : StakedBfc {
-        let stake_amount = balance::value(&stake);
+        let stake_amount = stake.value();
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;
         let staked_sui = staking_pool::request_add_stake(
@@ -409,7 +409,7 @@ module sui_system::validator {
         staker_address: address,
         ctx: &mut TxContext,
     ) : StakedStable<STABLE> {
-        let stake_amount = balance::value(&stake);
+        let stake_amount = stake.value()
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;
         let pool_key = type_name::into_string(type_name::get<STABLE>());
@@ -448,7 +448,7 @@ module sui_system::validator {
         ctx: &mut TxContext,
     ) {
         assert!(tx_context::epoch(ctx) == 0, ECalledDuringNonGenesis);
-        let stake_amount = balance::value(&stake);
+        let stake_amount = stake.value();
         assert!(stake_amount > 0, EInvalidStakeAmount);
 
         let staked_sui = self.staking_pool.request_add_stake(
@@ -474,7 +474,7 @@ module sui_system::validator {
         let stake_activation_epoch = staking_pool::stake_activation_epoch(&staked_sui);
         let withdrawn_stake = staking_pool::request_withdraw_stake(
                 &mut self.staking_pool, staked_sui, ctx);
-        let withdraw_amount = balance::value(&withdrawn_stake);
+        let withdraw_amount = withdrawn_stake.value();
         let reward_amount = withdraw_amount - principal_amount;
         self.next_epoch_stake = self.next_epoch_stake - withdraw_amount;
         event::emit(
@@ -502,8 +502,8 @@ module sui_system::validator {
         let principal_amount = stable_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = stable_pool::stake_activation_epoch(&staked_sui);
         let (withdrawn_stake, reward) = stable_pool::request_withdraw_stake(pool, staked_sui, rate, ctx);
-        let withdraw_amount = balance::value(&withdrawn_stake);
-        let reward_amount = balance::value(&reward);
+        let withdraw_amount = withdrawn_stake.value()
+        let reward_amount =reward.value();
         let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
         if (option::is_some(&next_stable_stake)) {
             let (_, next_stable) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
@@ -565,7 +565,7 @@ module sui_system::validator {
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
     public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
-        let total_reward = balance::value(&reward);
+        let total_reward = reward.value();
         let bfc_reward = 0;
         let stable_total_stake = vec_map::empty();
         let all_stable_total_stake = get_stable_staking_total(self, &mut stable_total_stake, stable_rate);
@@ -664,7 +664,7 @@ module sui_system::validator {
                 deposit_stable_stake_rewards<MGG>(self, balance::split(&mut reward, stable_reward));
             };
 
-            let remainder = balance::value(&reward);
+            let remainder = reward.value();
             if (remainder > 0) {
                 staking_pool::deposit_rewards(&mut self.staking_pool, reward);
                 bfc_reward = bfc_reward + remainder;
@@ -728,9 +728,9 @@ module sui_system::validator {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         if (vec_map::contains(&self.next_epoch_stable_stake, &pool_key)) {
             let next_stake = vec_map::get_mut(&mut self.next_epoch_stable_stake, &pool_key);
-            *next_stake = *next_stake + balance::value(&reward);
+            *next_stake = *next_stake + reward.value()
         }else {
-            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, balance::value(&reward));
+            vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, reward.value());
         };
         let pool = get_stable_pool_mut<STABLE>(&mut self.stable_pools);
 
