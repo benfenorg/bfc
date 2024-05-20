@@ -444,6 +444,10 @@ module bfc_system::treasury {
 
         let current_ts = clock::timestamp_ms(_clock) / 1000;
 
+        if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
+            return
+        };
+
         // update updated_at
         _treasury.updated_at = current_ts;
         let bfc_in_vault = rebalance_internal(_treasury, _update, _ctx);
