@@ -207,7 +207,7 @@ module sui_system::sui_system_state_inner {
         total_gas_fees: u64,
         total_stake_rewards_distributed: u64,
         leftover_storage_fund_inflow: u64,
-        stable_rate: VecMap<String, u64>,
+        stable_rate: VecMap<ascii::String, u64>,
     }
 
     // Errors

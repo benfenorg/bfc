@@ -7,6 +7,7 @@ module sui_system::voting_power {
     use sui::math;
     use sui::math::divide_and_round_up;
     use sui::vec_map::VecMap;
+    use sui_system::validator;
 
 
 

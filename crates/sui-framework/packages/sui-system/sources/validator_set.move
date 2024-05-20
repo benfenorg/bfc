@@ -1,10 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-#[allow(unused_use)]
+#[allow(unused_use,unused_const)]
 module sui_system::validator_set {
 
     use sui::balance::Balance;
     use sui_system::validator::{Validator, staking_pool_id, sui_address};
+    use sui_system::validator;
+    use std::ascii;
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::staking_pool::{PoolTokenExchangeRate,StakedBfc, pool_id};
     use sui::priority_queue as pq;
@@ -394,9 +396,6 @@ module sui_system::validator_set {
         self: &mut ValidatorSet,
         staked_sui: StakedBfc,
         ctx: &mut TxContext,
-    ) : Balance<BFC> {
-        staked_sui: StakedBfc,
-        ctx: &TxContext,
     ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
@@ -1124,10 +1123,6 @@ module sui_system::validator_set {
         let stake = 0;
         let length = vector::length(validators);
         let i = 0;
-    fun calculate_total_stakes(validators: &vector<Validator>): u64 {
-        let mut stake = 0;
-        let length = validators.length();
-        let mut i = 0;
         while (i < length) {
             let v = vector::borrow(validators, i);
             stake = stake + validator::total_stake_with_all_stable(v, stable_rate);

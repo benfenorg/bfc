@@ -4,8 +4,6 @@
 module sui_system::genesis {
 
     use sui::balance::{Self, Balance};
-    use sui::coin;
-    use sui::object::UID;
     use sui::bfc::{Self, BFC};
     use sui_system::sui_system;
     use sui_system::validator::{Self, Validator};

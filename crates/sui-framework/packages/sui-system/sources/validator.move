@@ -5,9 +5,8 @@
 module sui_system::validator {
     use std::bcs;
     use std::ascii;
-    use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use sui::balance::Balance;
+    use sui::balance::{Self, Balance};
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
     use std::option::{Option, Self};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
@@ -30,8 +29,6 @@ module sui_system::validator {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate,StakedBfc, StakingPool};
-    use std::string::String;
     use sui::url::Url;
     use sui::url;
     use sui::event;
