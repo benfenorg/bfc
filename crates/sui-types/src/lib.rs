@@ -103,30 +103,31 @@ macro_rules! built_in_ids {
     }
 }
 
-// macro_rules! built_in_pkgs {
-//     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
-//         built_in_ids! { $($addr / $id = $init;)* }
-//         pub const SYSTEM_PACKAGE_ADDRESSES: &[AccountAddress] = &[$($addr),*];
-//         pub fn is_system_package(addr: impl Into<AccountAddress>) -> bool {
-//             matches!(addr.into(), $($addr)|*)
-//         }
-//     }
-// }
-
-//v1.2.0 todo: change add in is_system_package
 macro_rules! built_in_pkgs {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
         built_in_ids! { $($addr / $id = $init;)* }
         pub const SYSTEM_PACKAGE_ADDRESSES: &[AccountAddress] = &[$($addr),*];
-
+        pub fn is_system_package(addr: impl Into<AccountAddress>) -> bool {
+            matches!(addr.into(), $($addr)|*)
+        }
     }
 }
+
+//v1.2.0 todo: change add in is_system_package
+// macro_rules! built_in_pkgs {
+//     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
+//         built_in_ids! { $($addr / $id = $init;)* }
+//         pub const SYSTEM_PACKAGE_ADDRESSES: &[AccountAddress] = &[$($addr),*];
+//
+//     }
+// }
 
 built_in_pkgs! {
     MOVE_STDLIB_ADDRESS / MOVE_STDLIB_PACKAGE_ID = 0x1;
     SUI_FRAMEWORK_ADDRESS / SUI_FRAMEWORK_PACKAGE_ID = 0x2;
     SUI_SYSTEM_ADDRESS / SUI_SYSTEM_PACKAGE_ID = 0x3;
     BRIDGE_ADDRESS / BRIDGE_PACKAGE_ID = 0xb;
+    BFC_SYSTEM_ADDRESS / BFC_SYSTEM_PACKAGE_ID = 0xc8;
     DEEPBOOK_ADDRESS / DEEPBOOK_PACKAGE_ID = 0xdee9;
 }
 
@@ -136,35 +137,35 @@ built_in_ids! {
     SUI_AUTHENTICATOR_STATE_ADDRESS / SUI_AUTHENTICATOR_STATE_OBJECT_ID = 0x7;
     SUI_RANDOMNESS_STATE_ADDRESS / SUI_RANDOMNESS_STATE_OBJECT_ID = 0x8;
     SUI_BRIDGE_ADDRESS / SUI_BRIDGE_OBJECT_ID = 0x9;
+    BFC_SYSTEM_STATE_ADDRESS / BFC_SYSTEM_STATE_OBJECT_ID = 0xc9;
     SUI_DENY_LIST_ADDRESS / SUI_DENY_LIST_OBJECT_ID = 0x403;
 }
 
 pub const SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
 
 /// 0x7: hardcoded object ID for the bfc system.
-pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
-pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_ADDRESS);
+// pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
+// pub const BFC_SYSTEM_PACKAGE_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_ADDRESS);
 
-pub const BFC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
-pub const BFC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_STATE_ADDRESS);
-pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
-
-pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
+// pub const BFC_SYSTEM_STATE_ADDRESS: AccountAddress = address_from_single_byte(201);
+// pub const BFC_SYSTEM_STATE_OBJECT_ID: ObjectID = ObjectID::from_address(BFC_SYSTEM_STATE_ADDRESS);
 
 /// Return `true` if `id` is a special system package that can be upgraded at epoch boundaries
 /// All new system package ID's must be added here
-pub fn is_system_package(id: ObjectID) -> bool {
-    matches!(
-        id,
-        MOVE_STDLIB_PACKAGE_ID
-            | SUI_FRAMEWORK_PACKAGE_ID
-            | SUI_SYSTEM_PACKAGE_ID
-            | DEEPBOOK_PACKAGE_ID
-        |BFC_SYSTEM_PACKAGE_ID
-    )
-}
+// pub fn is_system_package(id: ObjectID) -> bool {
+//     matches!(
+//         id,
+//         MOVE_STDLIB_PACKAGE_ID
+//             | SUI_FRAMEWORK_PACKAGE_ID
+//             | SUI_SYSTEM_PACKAGE_ID
+//             | DEEPBOOK_PACKAGE_ID
+//         |BFC_SYSTEM_PACKAGE_ID
+//     )
+// }
 
 const fn address_from_single_byte(b: u8) -> AccountAddress {
     let mut addr = [0u8; AccountAddress::LENGTH];

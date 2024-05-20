@@ -42,7 +42,7 @@ module sui::bfc {
             ctx
         );
         transfer::public_freeze_object(metadata);
-        let supply = coin::treasury_into_supply(treasury);
+        let mut supply = coin::treasury_into_supply(treasury);
         let total_sui = balance::increase_supply(&mut supply, TOTAL_SUPPLY_MIST);
         balance::destroy_supply(supply);
         total_sui
