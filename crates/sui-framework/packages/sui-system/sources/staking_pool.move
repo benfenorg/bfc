@@ -5,7 +5,6 @@
 module sui_system::staking_pool {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use std::option::{Self, Option};
     use sui::math;
     use sui::table::{Self, Table};
     use sui::bag::Bag;
@@ -290,7 +289,7 @@ module sui_system::staking_pool {
     public fun staked_sui_amount(staked_sui: &StakedBfc): u64 {  staked_sui.principal.value() }
 
     /// Allows calling `.amount()` on `StakedSui` to invoke `staked_sui_amount`
-    public use fun staked_sui_amount asStakedBfc.amount;
+    public use fun staked_sui_amount as StakedBfc.amount;
 
     public fun stake_activation_epoch(staked_bfc: &StakedBfc): u64 {
         staked_bfc.stake_activation_epoch
@@ -326,12 +325,12 @@ module sui_system::staking_pool {
 
     /// Split the givenStakedBfc to the two parts, one with principal `split_amount`,
     /// transfer the newly split part to the sender address.
-    public entry fun split_staked_sui(stake: &mutStakedBfc, split_amount: u64, ctx: &mut TxContext) {
+    public entry fun split_staked_sui(stake: &mut StakedBfc, split_amount: u64, ctx: &mut TxContext) {
         transfer::transfer(split(stake, split_amount, ctx), tx_context::sender(ctx));
     }
 
     /// Allows calling `.split_to_sender()` on `StakedSui` to invoke `split_staked_sui`
-    public use fun split_staked_sui asStakedBfc.split_to_sender;
+    public use fun split_staked_sui as StakedBfc.split_to_sender;
 
     /// Consume the staked sui `other` and add its value to `self`.
     /// Aborts if some of the staking parameters are incompatible (pool id, stake activation epoch, etc.)
@@ -349,7 +348,7 @@ module sui_system::staking_pool {
     }
 
     /// Allows calling `.join()` on `StakedSui` to invoke `join_staked_sui`
-    public use fun join_staked_sui asStakedBfc.join;
+    public use fun join_staked_sui as StakedBfc.join;
 
     /// Returns true if all the staking parameters of the staked sui except the principal are identical
     public fun is_equal_staking_metadata(self: &StakedBfc, other: &StakedBfc): bool {
@@ -460,9 +459,9 @@ module sui_system::staking_pool {
         let total_sui_withdraw_amount = get_sui_amount(&new_epoch_exchange_rate, pool_token_withdraw_amount);
 
         let mut reward_withdraw_amount =
-            if (total_sui_withdraw_amount >= staked_amount)
-                total_sui_withdraw_amount - staked_amount
-            else 0;
+        if (total_sui_withdraw_amount >= staked_amount)
+        total_sui_withdraw_amount - staked_amount
+        else 0;
         reward_withdraw_amount = math::min(reward_withdraw_amount, pool.rewards_pool.value());
 
         staked_amount + reward_withdraw_amount

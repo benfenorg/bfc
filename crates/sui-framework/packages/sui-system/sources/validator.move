@@ -30,7 +30,6 @@ module sui_system::validator {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate,StakedBfc, StakingPool};
     use std::string::String;
     use sui::url::Url;
     use sui::url;
