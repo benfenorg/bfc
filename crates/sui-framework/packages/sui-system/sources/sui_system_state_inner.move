@@ -3,7 +3,6 @@
 
 module sui_system::sui_system_state_inner {
     use std::ascii;
-    use std::ascii::String;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
@@ -497,7 +496,8 @@ module sui_system::sui_system_state_inner {
         validator_address: address,
         ctx: &mut TxContext,
     ) : StakedBfc {
-        self.validators.request_add_stake(
+        validator_set::request_add_stake(
+            &mut self.validators,
             validator_address,
             stake.into_balance(),
             ctx,

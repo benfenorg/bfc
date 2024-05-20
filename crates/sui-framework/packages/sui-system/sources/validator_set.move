@@ -6,7 +6,7 @@ module sui_system::validator_set {
     use sui::balance::Balance;
     use sui_system::validator::{Validator, staking_pool_id, sui_address};
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
-    use sui_system::staking_pool::{PoolTokenExchangeRate, StakedBfc};
+    use sui_system::staking_pool::{PoolTokenExchangeRate,StakedBfc, pool_id};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::VecSet;
@@ -365,7 +365,7 @@ module sui_system::validator_set {
         ctx: &mut TxContext,
     ) : StakedBfc {
         let sui_amount = balance::value(&stake);
-    ) : StakedSui {
+    ) :StakedBfc {
         let sui_amount = stake.value();
         assert!(sui_amount >= MIN_STAKING_THRESHOLD, EStakingBelowThreshold);
         let validator = get_candidate_or_active_validator_mut(self, validator_address);
@@ -397,7 +397,7 @@ module sui_system::validator_set {
     ) : Balance<BFC> {
         staked_sui: StakedBfc,
         ctx: &TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
             if (self.staking_pool_mappings.contains(staking_pool_id)) { // This is an active validator.

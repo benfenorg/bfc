@@ -11,7 +11,7 @@ module sui_system::staking_pool {
     use sui::bag::Bag;
     use sui::bag;
 
-    /// StakedSui objects cannot be split to below this amount.
+    ///StakedBfc objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
     const EInsufficientPoolTokenBalance: u64 = 0;
@@ -152,7 +152,7 @@ module sui_system::staking_pool {
         principal_withdraw
     }
 
-    /// Withdraw the principal SUI stored in the StakedSui object, and calculate the corresponding amount of pool
+    /// Withdraw the principal SUI stored in theStakedBfc object, and calculate the corresponding amount of pool
     /// tokens using exchange rate at staking epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal(
@@ -187,7 +187,7 @@ module sui_system::staking_pool {
         principal
     }
 
-    /// Allows calling `.into_balance()` on `StakedSui` to invoke `unwrap_staked_sui`
+    // Allows calling `.into_balance()` on `StakedSui` to invoke `unwrap_staked_sui`
     public use fun unwrap_staked_sui as StakedBfc.into_balance;
 
     // ==== functions called at epoch boundaries ===
@@ -234,7 +234,7 @@ module sui_system::staking_pool {
     ///     2. Using the above number and the given `principal_withdraw_amount`, calculates the rewards portion of the
     ///        stake we should withdraw.
     ///     3. Withdraws the rewards portion from the rewards pool at the current exchange rate. We only withdraw the rewards
-    ///        portion because the principal portion was already taken out of the staker's self custodied StakedSui.
+    ///        portion because the principal portion was already taken out of the staker's self custodiedStakedBfc.
     fun withdraw_rewards(
         pool: &mut StakingPool,
         principal_withdraw_amount: u64,
@@ -290,7 +290,7 @@ module sui_system::staking_pool {
     public fun staked_sui_amount(staked_sui: &StakedBfc): u64 {  staked_sui.principal.value() }
 
     /// Allows calling `.amount()` on `StakedSui` to invoke `staked_sui_amount`
-    public use fun staked_sui_amount as StakedSui.amount;
+    public use fun staked_sui_amount asStakedBfc.amount;
 
     public fun stake_activation_epoch(staked_bfc: &StakedBfc): u64 {
         staked_bfc.stake_activation_epoch
@@ -306,9 +306,9 @@ module sui_system::staking_pool {
         pool.deactivation_epoch.is_some()
     }
 
-    /// Split StakedSui `self` to two parts, one with principal `split_amount`,
+    /// SplitStakedBfc `self` to two parts, one with principal `split_amount`,
     /// and the remaining principal is left in `self`.
-    /// All the other parameters of the StakedSui like `stake_activation_epoch` or `pool_id` remain the same.
+    /// All the other parameters of theStakedBfc like `stake_activation_epoch` or `pool_id` remain the same.
     public fun split(self: &mut StakedBfc, split_amount: u64, ctx: &mut TxContext): StakedBfc {
         let original_amount = self.principal.value();
         assert!(split_amount <= original_amount, EInsufficientSuiTokenBalance);
@@ -324,14 +324,14 @@ module sui_system::staking_pool {
         }
     }
 
-    /// Split the given StakedSui to the two parts, one with principal `split_amount`,
+    /// Split the givenStakedBfc to the two parts, one with principal `split_amount`,
     /// transfer the newly split part to the sender address.
-    public entry fun split_staked_sui(stake: &mut StakedSui, split_amount: u64, ctx: &mut TxContext) {
+    public entry fun split_staked_sui(stake: &mutStakedBfc, split_amount: u64, ctx: &mut TxContext) {
         transfer::transfer(split(stake, split_amount, ctx), tx_context::sender(ctx));
     }
 
     /// Allows calling `.split_to_sender()` on `StakedSui` to invoke `split_staked_sui`
-    public use fun split_staked_sui as StakedSui.split_to_sender;
+    public use fun split_staked_sui asStakedBfc.split_to_sender;
 
     /// Consume the staked sui `other` and add its value to `self`.
     /// Aborts if some of the staking parameters are incompatible (pool id, stake activation epoch, etc.)
@@ -349,7 +349,7 @@ module sui_system::staking_pool {
     }
 
     /// Allows calling `.join()` on `StakedSui` to invoke `join_staked_sui`
-    public use fun join_staked_sui as StakedSui.join;
+    public use fun join_staked_sui asStakedBfc.join;
 
     /// Returns true if all the staking parameters of the staked sui except the principal are identical
     public fun is_equal_staking_metadata(self: &StakedBfc, other: &StakedBfc): bool {
