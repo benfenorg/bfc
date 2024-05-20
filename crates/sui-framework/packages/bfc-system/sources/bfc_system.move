@@ -10,9 +10,6 @@ module bfc_system::bfc_system {
     use sui::clock::{Self};
 
     use sui::bfc::BFC;
-    use sui::object::UID;
-    use sui::transfer;
-    use sui::tx_context::TxContext;
     use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
@@ -43,7 +40,7 @@ module bfc_system::bfc_system {
     // #[test_only]
     // friend bfc_system::bfc_system_tests;
 
-    struct BfcSystemState has key {
+    public struct BfcSystemState has key {
         id: UID,
         version: u64
     }
@@ -62,7 +59,7 @@ module bfc_system::bfc_system {
 
     const BFC_SYSTEM_STATE_VERSION_V1: u64 = 1;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public fun create(
         id: UID,
@@ -109,7 +106,7 @@ module bfc_system::bfc_system {
             parameters,
             ctx,
         );
-        let self = BfcSystemState {
+        let mut self = BfcSystemState {
             id,
             version: BFC_SYSTEM_STATE_VERSION_V1
         };

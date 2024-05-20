@@ -17,12 +17,12 @@ module bfc_system::treasury_pool {
     /// The `withdraw` function only called by 0x0 address.
     const ERR_NOT_ZERO_ADDRESS: u64 = 900;
 
-    struct TreasuryPool has key, store {
+    public struct TreasuryPool has key, store {
         id: UID,
         balance: Balance<BFC>,
     }
 
-    struct WithdrawEvent has copy, drop {
+    public struct WithdrawEvent has copy, drop {
         // current balance
         balance: u64,
         // request withdraw amount
@@ -31,7 +31,7 @@ module bfc_system::treasury_pool {
         amount: u64,
     }
 
-    struct DepositEvent has copy, drop {
+    public struct DepositEvent has copy, drop {
         balance: u64,
         deposit_amount: u64
     }

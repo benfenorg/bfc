@@ -1,5 +1,5 @@
 module bfc_system::full_math_u64 {
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public fun mul_div_floor(num1: u64, num2: u64, denom: u64): u64 {
         let r = full_mul(num1, num2) / (denom as u128);

@@ -8,11 +8,11 @@ module bfc_system::clmm_math {
     const ETOKEN_AMOUNT_MAX_EXCEEDED: u64 = 1000;
     const ETOKEN_AMOUNT_MIN_SUBCEEDED: u64 = 1001;
     const EMULTIPLICATION_OVERFLOW: u64 = 1002;
-    const EINTEGER_DOWNCAST_OVERFLOW: u64 = 1003;
+    //const EINTEGER_DOWNCAST_OVERFLOW: u64 = 1003;
     const EINVALID_SQRT_PRICE_INPUT: u64 = 1004;
     const EINVALID_FIXED_TOKEN_TYPE: u64 = 1005;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public fun get_liquidity_from_a(
         sqrt_price_0: u128,
@@ -241,9 +241,10 @@ module bfc_system::clmm_math {
         }
     }
 
-    spec compute_swap_step {
-        pragma opaque;
-    }
+    // spec compute_swap_step {
+    //     pragma opaque;
+    // }
+
     public fun compute_swap_step(
         current_sqrt_price: u128,
         target_sqrt_price: u128,
@@ -252,9 +253,9 @@ module bfc_system::clmm_math {
         a2b: bool,
         by_amount_in: bool
     ): (u64, u64, u128) {
-        let next_sqrt_price = target_sqrt_price;
-        let amount_in: u64 = 0;
-        let amount_out: u64 = 0;
+        let mut next_sqrt_price = target_sqrt_price;
+        let mut amount_in: u64 = 0;
+        let mut amount_out: u64 = 0;
         if (liquidity == 0) {
             return (
                 amount_in,
@@ -357,9 +358,9 @@ module bfc_system::clmm_math {
     ): (u128, u64, u64) {
         let lower_price = tick_math::get_sqrt_price_at_tick(lower_index);
         let upper_price = tick_math::get_sqrt_price_at_tick(upper_index);
-        let amount_a: u64 = 0;
-        let amount_b: u64 = 0;
-        let _liquidity: u128 = 0;
+        let mut amount_a: u64 = 0;
+        let mut amount_b: u64 = 0;
+        let mut _liquidity: u128 = 0;
         if (is_fixed_a) {
             amount_a = amount;
             if (i32::lt(current_tick_index, lower_index)) {

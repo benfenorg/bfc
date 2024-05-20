@@ -20,10 +20,10 @@ module bfc_system::skip_list {
     const ESkipListNotEmpty: u64 = 3;
     const ESkipListIsEmpty: u64 = 4;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     /// The skip list.
-    struct SkipList<phantom V: store> has key, store {
+    public struct SkipList<phantom V: store> has key, store {
         /// The id of this skip list.
         id: UID,
         /// The skip list header of each level. i.e. the score of node.
@@ -45,7 +45,7 @@ module bfc_system::skip_list {
     }
 
     /// The node of skip list.
-    struct Node<V: store> has store {
+    public struct Node<V: store> has store {
         /// The score of node.
         score: u64,
         /// The next node score of node's each level.
@@ -301,8 +301,8 @@ module bfc_system::skip_list {
     }
 
     fun rand_level<V: store>(seed: u64, list: &SkipList<V>): u64 {
-        let level = 1;
-        let mod = list.list_p;
+        let mut level = 1;
+        let mut mod = list.list_p;
         while ((seed % mod) == 0) {
             mod = mod * list.list_p;
             level = level + 1;

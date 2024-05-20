@@ -1,7 +1,7 @@
 module bfc_system::math_u256 {
     const MAX_U256: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public fun div_mod(num: u256, denom: u256): (u256, u256) {
         let p = num / denom;

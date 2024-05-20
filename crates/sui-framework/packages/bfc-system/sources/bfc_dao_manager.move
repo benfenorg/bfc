@@ -17,7 +17,7 @@ module bfc_system::bfc_dao_manager {
     const ERROR_KEY_NOT_MATCH: u64 = 1401;
 
 
-    struct BFCDaoManageKey has key, store {
+    public struct BFCDaoManageKey has key, store {
         id: UID,
         key_type: u64,
         amount: u64,

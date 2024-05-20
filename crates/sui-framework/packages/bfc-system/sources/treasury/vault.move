@@ -51,7 +51,7 @@ module bfc_system::vault {
     const Q64: u128 = 18446744073709551616;
     //spec module { pragma verify = false; }
 
-    struct Vault<phantom StableCoinType> has key, store {
+    public struct Vault<phantom StableCoinType> has key, store {
         id: UID,
 
         position_number: u32,
@@ -100,7 +100,7 @@ module bfc_system::vault {
         last_bfc_rebalance_amount: u64,
     }
 
-    struct VaultInfo has copy, drop {
+    public struct VaultInfo has copy, drop {
         vault_id: ID,
         position_number: u32,
         state: u8,
@@ -174,13 +174,13 @@ module bfc_system::vault {
         _ctx: &mut TxContext
     ): vector<vector<I32>> {
         assert!(position::get_total_positions(&_vault.position_manager) == 0, ERR_POSITIONS_IS_NOT_EMPTY);
-        let ticks = tick::get_ticks(
+        let mut ticks = tick::get_ticks(
             &_vault.tick_manager,
             _vault.current_tick_index,
             _spacing_times,
             _vault.position_number,
         );
-        let index = 0;
+        let mut index = 0;
         while (index < vector::length(&ticks)) {
             let current = vector::borrow(&ticks, index);
             open_position(
@@ -223,15 +223,15 @@ module bfc_system::vault {
     }
 
     /// Flash loan resource for add_liquidity
-    struct AddLiquidityReceipt<phantom StableCoinType> {
+    public struct AddLiquidityReceipt<phantom StableCoinType> {
         vault_id: ID,
         amount_a: u64,
         amount_b: u64
     }
 
-    spec add_liquidity_internal {
-        pragma opaque;
-    }
+    // spec add_liquidity_internal {
+    //     pragma opaque;
+    // }
     fun add_liquidity_internal<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _index: u64,
@@ -394,7 +394,7 @@ module bfc_system::vault {
     }
 
     /// The step swap result
-    struct SwapStepResult has copy, drop, store {
+    public struct SwapStepResult has copy, drop, store {
         current_sqrt_price: u128,
         target_sqrt_price: u128,
         current_liquidity: u128,
@@ -405,7 +405,7 @@ module bfc_system::vault {
     }
 
     /// The calculated swap result
-    struct CalculatedSwapResult has copy, drop, store {
+    public struct CalculatedSwapResult has copy, drop, store {
         amount_in: u64,
         amount_out: u64,
         vault_sqrt_price: u128,
@@ -541,7 +541,7 @@ module bfc_system::vault {
     /// There is no way in Move to pass calldata and make dynamic calls, but a resource can be used for this purpose.
     /// To make the execution into a single transaction, the flash loan function must return a resource
     /// that cannot be copied, cannot be saved, cannot be dropped, or cloned.
-    struct FlashSwapReceipt<phantom StableCoinType> {
+    public struct FlashSwapReceipt<phantom StableCoinType> {
         vault_id: ID,
         a2b: bool,
         pay_amount: u64,

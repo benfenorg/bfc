@@ -5,8 +5,6 @@ module bfc_system::position {
     use std::type_name::TypeName;
 
     use sui::bfc::BFC;
-    use sui::object::ID;
-    use sui::tx_context::TxContext;
 
     use bfc_system::i32::{Self, I32};
     use bfc_system::linked_table;
@@ -19,27 +17,27 @@ module bfc_system::position {
 
     const ERR_TICK_SPACING_INVALID_RANGE: u64 = 300;
     const ERR_TICK_LOWER_TOO_SMALL: u64 = 301;
-    const ERR_TICK_UPPER_TOO_LARGE: u64 = 302;
+    //const ERR_TICK_UPPER_TOO_LARGE: u64 = 302;
     const ERR_TICK_INVALID_RANGE: u64 = 303;
     const ERR_TICK_INVALID_VALUE: u64 = 304;
     const ERR_INVALID_LIMIT: u64 = 305;
-    const ERR_INVALID_VECTOR_LENGTH: u64 = 306;
+    //const ERR_INVALID_VECTOR_LENGTH: u64 = 306;
     const ERR_POSITION_INFO_NOT_EMPTY: u64 = 307;
     const ERR_POSITION_INFO_EMPTY: u64 = 308;
     const ERR_POSITION_INSUFFICIENT_LIQUIDITY: u64 = 309;
     const ERR_U128_ADD_CHECK_FAILED: u64 = 310;
 
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
-    struct PositionManager has store {
+    public struct PositionManager has store {
         vault_id: ID,
         tick_spacing: u32,
         position_index: u64,
         positions: linked_table::LinkedTable<u64, Position>,
     }
 
-    struct Position has copy, drop, store {
+    public struct Position has copy, drop, store {
         vault_id: ID,
         index: u64,
         coin_type_a: TypeName,
@@ -170,9 +168,9 @@ module bfc_system::position {
         position.liquidity
     }
 
-    spec increase_liquidity {
-        pragma opaque;
-    }
+    // spec increase_liquidity {
+    //     pragma opaque;
+    // }
     public(package) fun decrease_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
         assert!(!is_empty(position), ERR_POSITION_INFO_EMPTY);
         if (_liquidity_delta == 0) {
@@ -187,7 +185,7 @@ module bfc_system::position {
     fun destory(_position: Position) {}
 
     fun new_position_name(_position_index: u64, _vault_index: u64): String {
-        let lp_name = string::utf8(b"");
+        let mut lp_name = string::utf8(b"");
         string::append_utf8(&mut lp_name, b"OpenBlock LP | Pool");
         string::append_utf8(&mut lp_name, b"-");
         string::append_utf8(&mut lp_name, into_bytes(to_string((_vault_index as u128))));

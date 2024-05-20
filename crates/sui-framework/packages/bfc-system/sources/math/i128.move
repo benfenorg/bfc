@@ -11,9 +11,9 @@ module bfc_system::i128 {
     const EQ: u8 = 1;
     const GT: u8 = 2;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
-    struct I128 has copy, drop, store {
+    public struct I128 has copy, drop, store {
         bits: u128
     }
 
@@ -30,9 +30,9 @@ module bfc_system::i128 {
         }
     }
 
-    spec from {
-        pragma opaque;
-    }
+    // spec from {
+    //     pragma opaque;
+    // }
 
     public fun neg_from(v: u128): I128 {
         assert!(v <= MIN_AS_U128, EOverflow);
@@ -56,8 +56,8 @@ module bfc_system::i128 {
     }
 
     public fun wrapping_add(num1: I128, num2: I128): I128 {
-        let sum = num1.bits ^ num2.bits;
-        let carry = (num1.bits & num2.bits) << 1;
+        let mut sum = num1.bits ^ num2.bits;
+        let mut carry = (num1.bits & num2.bits) << 1;
         while (carry != 0) {
             let a = sum;
             let b = carry;
@@ -68,9 +68,9 @@ module bfc_system::i128 {
             bits: sum
         }
     }
-    spec wrapping_add {
-        pragma opaque;
-    }
+    // spec wrapping_add {
+    //     pragma opaque;
+    // }
 
     public fun add(num1: I128, num2: I128): I128 {
         let sum = wrapping_add(num1, num2);
@@ -170,9 +170,9 @@ module bfc_system::i128 {
         }
     }
 
-    spec shr {
-        pragma opaque;
-    }
+    // spec shr {
+    //     pragma opaque;
+    // }
 
     public fun as_u128(v: I128): u128 {
         v.bits
@@ -197,9 +197,9 @@ module bfc_system::i128 {
     public fun sign(v: I128): u8 {
         ((v.bits >> 127) as u8)
     }
-    spec sign {
-        pragma opaque;
-    }
+    // spec sign {
+    //     pragma opaque;
+    // }
 
     public fun is_neg(v: I128): bool {
         sign(v) == 1

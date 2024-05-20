@@ -49,9 +49,9 @@ module bfc_system::bfc_system_state_inner {
     const BFC_SYSTEM_STATE_START_ROUND: u64 = 0;
     const DEFAULT_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
-    struct BfcSystemStateInner has store {
+    public struct BfcSystemStateInner has store {
         round: u64,
         stable_base_points: u64,
         reward_rate: u64,
@@ -61,7 +61,7 @@ module bfc_system::bfc_system_state_inner {
         stable_rate: VecMap<ascii::String, u64>,
     }
 
-    struct TreasuryParameters has drop, copy {
+    public struct TreasuryParameters has drop, copy {
         position_number: u32,
         tick_spacing: u32,
         spacing_times: u32,
@@ -70,7 +70,7 @@ module bfc_system::bfc_system_state_inner {
         initialize_price: u128,
     }
 
-    struct BfcSystemParameters has drop, copy {
+    public struct BfcSystemParameters has drop, copy {
         chain_start_timestamp_ms: u64,
         time_interval: u32,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
@@ -199,7 +199,7 @@ module bfc_system::bfc_system_state_inner {
         parameters: BfcSystemParameters,
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>, VecMap<ascii::String, u64>) {
-        let t = treasury::create_treasury(parameters.time_interval, balance::value(&bfc_balance), ctx);
+        let mut t = treasury::create_treasury(parameters.time_interval, balance::value(&bfc_balance), ctx);
 
         init_vault_with_positions<BUSD>(&mut t, ascii::string(b"BUSD"), usd_supply, parameters, ctx);
         init_vault_with_positions<BJPY>(&mut t, ascii::string(b"BJPY"), jpy_supply, parameters, ctx);
@@ -471,7 +471,7 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun judge_proposal_state(wrapper: &mut BfcSystemStateInner, current_time: u64) {
         let proposal_record = bfc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
-        let i = 0;
+        let mut i = 0;
         while (i < size) {
             let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, i);
             let cur_status = bfc_dao::judge_proposal_state(proposalInfo, current_time);

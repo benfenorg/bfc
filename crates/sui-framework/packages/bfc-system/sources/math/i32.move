@@ -14,9 +14,9 @@ module bfc_system::i32 {
     const GT: u8 = 2;
 
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
-    struct I32 has copy, drop, store {
+    public struct I32 has copy, drop, store {
         bits: u32
     }
 
@@ -39,9 +39,9 @@ module bfc_system::i32 {
             bits: v
         }
     }
-    spec from_u32 {
-        pragma opaque;
-    }
+    // spec from_u32 {
+    //     pragma opaque;
+    // }
 
     public fun from(v: u32): I32 {
         assert!(v <= MAX_AS_U32, EOverflow);
@@ -72,7 +72,7 @@ module bfc_system::i32 {
 
         let sum = num1.bits ^ num2.bits;
 
-        let carry = (num1.bits & num2.bits) << 1;
+        let mut carry = (num1.bits & num2.bits) << 1;
         while (carry != 0) {
             let a = sum;
             let b = carry;
@@ -83,9 +83,9 @@ module bfc_system::i32 {
             bits: sum
         }
     }
-    spec wrapping_add {
-        pragma opaque;
-    }
+    // spec wrapping_add {
+    //     pragma opaque;
+    // }
 
 
     public fun add(num1: I32, num2: I32): I32 {
@@ -188,9 +188,9 @@ module bfc_system::i32 {
     public fun sign(v: I32): u8 {
         ((v.bits >> 31) as u8)
     }
-    spec sign {
-        pragma opaque;
-    }
+    // spec sign {
+    //     pragma opaque;
+    // }
 
     public fun is_neg(v: I32): bool {
         sign(v) == 1
@@ -247,7 +247,7 @@ module bfc_system::i32 {
     }
 
     public fun get_bytes(num: I32): vector<u8> {
-        let bytes = vector::empty<u8>();
+        let mut bytes = vector::empty<u8>();
         if (is_neg(num)) {
             vector::append(&mut bytes, b"-");
         };

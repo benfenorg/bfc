@@ -1,7 +1,4 @@
 module bfc_system::tick {
-    use std::vector;
-
-    use sui::tx_context::TxContext;
 
     use bfc_system::i128::{Self, I128};
     use bfc_system::i32::{Self, I32};
@@ -33,20 +30,20 @@ module bfc_system::tick {
     const ERR_TICK_LIQUIDITY_INSUFFICIENT: u64 = 402;
     const ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY: u64 = 403;
 
-    struct TickManager has store {
+    public struct TickManager has store {
         tick_spacing: u32,
         ticks: SkipList<Tick>
     }
 
 
-    struct Tick has store, copy, drop {
+    public struct Tick has store, copy, drop {
         index: I32,
         sqrt_price: u128,
         liquidity_net: I128,
         liquidity_gross: u128
     }
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public(package) fun create_tick_manager(
         _tick_spacing: u32,
@@ -78,9 +75,9 @@ module bfc_system::tick {
 
     public fun fetch_ticks(_tick_manager: &TickManager): vector<Tick> {
         let _ticks = &_tick_manager.ticks;
-        let ticks = vector::empty<Tick>();
+        let mut ticks = vector::empty<Tick>();
         if (skip_list::length(_ticks) != 0) {
-            let next_score = &skip_list::head(_ticks);
+            let mut next_score = &skip_list::head(_ticks);
             while (is_some(next_score)) {
                 let score = option_u64::borrow(next_score);
                 let node = skip_list::borrow_node(
@@ -174,9 +171,9 @@ module bfc_system::tick {
         _tick.liquidity_net = liquidity_net;
     }
 
-    spec update_by_liquidity {
-        pragma opaque;
-    }
+    // spec update_by_liquidity {
+    //     pragma opaque;
+    // }
 
     /// add/remove liquidity
     public(package) fun increase_liquidity(
@@ -244,7 +241,7 @@ module bfc_system::tick {
             false,
             false
         );
-        let is_liquidity_changed = lower_tick.liquidity_gross != _liquidity_delta;
+        let mut is_liquidity_changed = lower_tick.liquidity_gross != _liquidity_delta;
         if (is_liquidity_changed && lower_tick.liquidity_gross == 0 && _current_tick_index != _tick_upper_index) {
             skip_list::remove(&mut _tick_manager.ticks, tick_lower_score);
         };
@@ -326,12 +323,12 @@ module bfc_system::tick {
         let gap = i32::from_u32(_spacing_times * _tick_manager.tick_spacing);
         let middle = tick_math::get_prev_valid_tick_index(_tick_index, _tick_manager.tick_spacing);
         let spacing_times = (_total_count - 1) / 2 * _spacing_times + (_spacing_times + 1) / 2;
-        let lower = i32::sub(
+        let mut lower = i32::sub(
             middle,
             i32::from_u32(_tick_manager.tick_spacing * spacing_times),
         );
-        let count = _total_count;
-        let ticks = vector::empty<vector<I32>>();
+        let mut count = _total_count;
+        let mut ticks = vector::empty<vector<I32>>();
         while (count > 0) {
             let upper = i32::add(lower, gap);
             vector::push_back(&mut ticks, vector<I32>[lower, upper]);
@@ -342,7 +339,7 @@ module bfc_system::tick {
     }
 
     #[test_only]
-    struct TestM has key, store {
+    public struct TestM has key, store {
         id: UID,
         m: TickManager,
     }
@@ -416,7 +413,7 @@ module bfc_system::tick {
         if (is_debug) {
             debug::print(&ticks);
         };
-        let i = 0;
+        let mut i = 0;
         while (i < vector::length(&ticks)) {
             let current = vector::borrow(&ticks, i);
 

@@ -8,21 +8,21 @@ module bfc_system::event {
     //friend bfc_system::treasury_pool;
     //friend bfc_system::vault;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
 
-    struct InitTreasuryEvent has copy, drop {
+    public struct InitTreasuryEvent has copy, drop {
         vaults_id: ID
     }
 
-    struct InitTreasuryPoolEvent has copy, drop {
+    public struct InitTreasuryPoolEvent has copy, drop {
         treasury_pool_id: ID
     }
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     // Vault added event
-    struct CreateVaultEvent has copy, drop {
+    public struct CreateVaultEvent has copy, drop {
         vault_id: ID,
         vault_key: String,
         coin_type_a: String,
@@ -33,7 +33,7 @@ module bfc_system::event {
     }
 
     // Swap
-    struct SwapEvent has copy, drop {
+    public struct SwapEvent has copy, drop {
         atob: bool,
         vault: ID,
         coin_type_in: String,
@@ -48,11 +48,11 @@ module bfc_system::event {
     }
 
     // Deposit
-    struct DepositEvent has copy, drop {
+    public struct DepositEvent has copy, drop {
         amount: u64,
     }
 
-    struct UpdateStateEvent has copy, drop {
+    public struct UpdateStateEvent has copy, drop {
         current_sqrt_price: u128,
         last_sqrt_price: u128,
         state: u8,

@@ -54,7 +54,7 @@ module bfc_system::treasury {
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
 
-    struct Treasury has key, store {
+    public struct Treasury has key, store {
         id: UID,
         bfc_balance: Balance<BFC>,
         /// stable coin supplies
@@ -453,7 +453,7 @@ module bfc_system::treasury {
     public(package) fun get_exchange_rates(
         _treasury: &Treasury,
     ): VecMap<String, u64> {
-        let rate_map = vec_map::empty<String, u64>();
+        let mut rate_map = vec_map::empty<String, u64>();
         let amount = 1_000_000_000;
 
         one_coin_exchange_rate<BUSD>(_treasury, &mut rate_map, amount);

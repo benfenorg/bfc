@@ -9,7 +9,7 @@ module bfc_system::math_u128 {
 
     const DIV_BY_ZERO: u64 = 1;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public fun wrapping_add(n1: u128, n2: u128): u128 {
         let (sum, _) = overflowing_add(n1, n2);

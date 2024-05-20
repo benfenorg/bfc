@@ -7,7 +7,7 @@ module bfc_system::comparator {
     const SMALLER: u8 = 1;
     const GREATER: u8 = 2;
 
-    struct Result has drop {
+    public struct Result has drop {
         inner: u8,
     }
 
@@ -102,7 +102,7 @@ module bfc_system::comparator {
     }
 
     #[test_only]
-    struct Complex has drop {
+    public struct Complex has drop {
         value0: vector<u128>,
         value1: u8,
         value2: u64,

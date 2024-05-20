@@ -35,7 +35,7 @@ module bfc_system::voting_pool {
 
 
     /// A staking pool embedded in each validator struct in the system state object.
-    struct VotingPool has key, store {
+    public struct VotingPool has key, store {
         id: UID,
         /// The total number of Bfc tokens in this pool,
         bfc_balance: u64,
@@ -45,13 +45,13 @@ module bfc_system::voting_pool {
     }
 
     /// Struct representing the exchange rate of the voting pool token to BFC.
-    struct PoolTokenExchangeRate has store, copy, drop {
+    public struct PoolTokenExchangeRate has store, copy, drop {
         bfc_amount: u64,
         pool_token_amount: u64,
     }
 
     /// A self-custodial object holding the Voting bfc tokens.
-    struct VotingBfc has key, store {
+    public struct VotingBfc has key, store {
         id: UID,
         /// ID of the staking pool we are staking with.
         pool_id: ID,

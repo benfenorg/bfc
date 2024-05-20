@@ -8,7 +8,7 @@ module bfc_system::utils {
     #[test_only]
     use std::ascii::into_bytes;
 
-    public fun to_string(value: u128): String {
+    public fun to_string(mut value: u128): String {
         if (value == 0) {
             return ascii::string(b"0")
         };

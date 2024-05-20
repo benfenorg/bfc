@@ -1,6 +1,6 @@
 module bfc_system::random {
 
-    struct Random has drop, store, copy {
+    public struct Random has drop, store, copy {
         seed: u64
     }
 
@@ -72,5 +72,5 @@ module bfc_system::random {
         }
     }
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 }

@@ -83,16 +83,16 @@ module bfc_system::bfc_dao {
     const ERR_ACTION_NAME_TOO_LONG: u64 = 1416;
     const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
     #[allow(unused_field)]
-    struct DaoEvent has copy, drop, store {
+    public struct DaoEvent has copy, drop, store {
         name: string::String,
     }
     #[allow(unused_field)]
-    struct DaoManagerEvent has copy, drop, store{
+    public struct DaoManagerEvent has copy, drop, store{
         msg: string::String,
         key: address,
     }
     /// emitted when proposal created.
-    struct ProposalCreatedEvent has copy, drop, store {
+    public struct ProposalCreatedEvent has copy, drop, store {
         /// the proposal id.
         proposal_id: u64,
         /// proposer is the user who create the proposal.
@@ -100,7 +100,7 @@ module bfc_system::bfc_dao {
     }
 
     /// emitted when user vote/revoke_vote.
-    struct VoteChangedEvent has copy, drop, store {
+    public struct VoteChangedEvent has copy, drop, store {
         /// the proposal id.
         proposal_id: u64,
         /// the voter.
@@ -112,23 +112,23 @@ module bfc_system::bfc_dao {
         /// latest vote count of the voter.
         vote: u64,
     }
-    struct  ActionCreateEvent has copy, drop, store{
+    public struct  ActionCreateEvent has copy, drop, store{
         actionId: u64,
         /// Name for the action
         name: string::String,
         creator: address,
     }
 
-    struct ProposalStateEvent has copy, drop, store{
+    public struct ProposalStateEvent has copy, drop, store{
         proposalId: u64,
         state: u8,
     }
-    struct BooleanEvent has copy, drop, store{
+    public struct BooleanEvent has copy, drop, store{
         value: bool,
     }
 
     /// global DAO info of the specified token type `Token`.
-    struct DaoGlobalInfo has store {
+    public struct DaoGlobalInfo has store {
         /// next proposal id.
         next_proposal_id: u64,
 
@@ -137,7 +137,7 @@ module bfc_system::bfc_dao {
     }
 
     /// Configuration of the `Token`'s DAO.
-    struct DaoConfig has copy, drop, store {
+    public struct DaoConfig has copy, drop, store {
         /// after proposal created, how long use should wait before he can vote (in milliseconds)
         voting_delay: u64,
         /// how long the voting window is (in milliseconds).
@@ -156,7 +156,7 @@ module bfc_system::bfc_dao {
         invariant min_action_delay > 0;
     }
 
-    struct Dao has key, store {
+    public struct Dao has key, store {
         id: UID,
         admin: address,
         config: DaoConfig,
@@ -170,12 +170,12 @@ module bfc_system::bfc_dao {
         current_proposal_status:  VecMap<u64, ProposalStatus>,
     }
 
-    struct ProposalStatus has copy, drop, store {
+    public struct ProposalStatus has copy, drop, store {
         version_id : u64,
         status : u8,
     }
 
-    struct BFCDaoAction has copy, drop, store{
+    public struct BFCDaoAction has copy, drop, store{
         action_id: u64,
         /// Name for the action
         name: string::String,
@@ -191,7 +191,7 @@ module bfc_system::bfc_dao {
         bfcDaoAction.action_id
     }
 
-    struct ProposalInfo has store, copy, drop{
+    public struct ProposalInfo has store, copy, drop{
         proposal_uid: address,
         pid: u64,
         /// creator of the proposal
@@ -219,7 +219,7 @@ module bfc_system::bfc_dao {
     }
 
     /// Proposal data struct.
-    struct Proposal has key {
+    public struct Proposal has key {
         /// id of the proposal
         id: UID,
         proposal: ProposalInfo,
@@ -227,7 +227,7 @@ module bfc_system::bfc_dao {
 
 
     /// User vote info.
-    struct Vote has key , store {
+    public struct Vote has key , store {
         id: UID,
         vid: u64,
         /// vote for the proposal under the `proposer`.
@@ -725,7 +725,7 @@ module bfc_system::bfc_dao {
         transfer::public_transfer(vote, sender);
     }
     /// Get voter's vote info on proposal with `proposal_id` of `proposer_address`.
-    struct VoteInfoEvent has copy, drop,store{
+    public struct VoteInfoEvent has copy, drop,store{
         proposal_id: u64,
         voter: address,
         proposer: address,
@@ -859,7 +859,7 @@ module bfc_system::bfc_dao {
 
     /// get proposal's information.
     /// return: (id, start_time, end_time, for_votes, against_votes).
-    struct ProposalInfoEvent has copy, drop,store{
+    public struct ProposalInfoEvent has copy, drop,store{
         proposal_id: u64,
         start_time: u64,
         end_time: u64,
@@ -1040,7 +1040,7 @@ module bfc_system::bfc_dao {
         let count = vector::length(&new_admins);
         assert!(count > 0 && count <= MAX_ADMIN_COUNT, ERR_CONFIG_PARAM_INVALID);
 
-        let i = 0;
+        let mut i = 0;
         while (i < count) {
             let admin = vector::borrow(&new_admins, i);
             bfc_dao_manager::new(*admin, ctx);

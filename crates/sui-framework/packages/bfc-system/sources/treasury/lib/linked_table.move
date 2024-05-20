@@ -4,8 +4,6 @@ module bfc_system::linked_table {
     use std::vector;
 
     use sui::dynamic_field as field;
-    use sui::object::{Self, UID};
-    use sui::tx_context::TxContext;
 
     #[test_only]
     use sui::transfer::transfer;
@@ -15,14 +13,14 @@ module bfc_system::linked_table {
     const EListNotEmpty: u64 = 0;
     const ELimitInvalid: u64 = 1;
 
-    struct LinkedTable<K: store + drop + copy, phantom V: store> has key, store {
+    public struct LinkedTable<K: store + drop + copy, phantom V: store> has key, store {
         id: UID,
         head: Option<K>,
         tail: Option<K>,
         size: u64
     }
 
-    struct Node<K: store + drop + copy, V: store> has store {
+    public struct Node<K: store + drop + copy, V: store> has store {
         prev: Option<K>,
         next: Option<K>,
         value: V
@@ -206,10 +204,10 @@ module bfc_system::linked_table {
         limit: u64
     ): vector<V> {
         assert!(limit > 0, ELimitInvalid);
-        let values = vector::empty<V>();
-        let start = borrow_node<K, V>(table, start_key);
+        let mut values = vector::empty<V>();
+        let mut start = borrow_node<K, V>(table, start_key);
         vector::push_back(&mut values, *borrow_value(start));
-        let idx = 1;
+        let mut idx = 1;
         while (idx < limit) {
             let next_key = next(start);
             if (option::is_some(&next_key)) {

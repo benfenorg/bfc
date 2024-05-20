@@ -18,7 +18,7 @@ module bfc_system::tick_math {
     const EINVALID_TICK: u64 = 0;
     const EINVALID_SQRT_PRICE: u64 = 1;
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
 
     public fun max_tick(): I32 {
         i32::from(MAX_TICK)
@@ -137,7 +137,7 @@ module bfc_system::tick_math {
 
     fun get_sqrt_price_at_negative_tick(tick: I32): u128 {
         let abs_tick = i32::as_u32(i32::abs(tick));
-        let ratio = if (abs_tick & 0x1 != 0) {
+        let mut ratio = if (abs_tick & 0x1 != 0) {
             18445821805675392311u128
         } else {
             18446744073709551616u128
@@ -297,7 +297,7 @@ module bfc_system::tick_math {
         }
     }
 
-    spec module { pragma verify = false; }
+    //spec module { pragma verify = false; }
     #[test]
     fun test_get_sqrt_price_at_tick() {
         // min tick
