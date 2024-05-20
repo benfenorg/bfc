@@ -426,7 +426,7 @@ module bfc_system::treasury {
         _update: bool,
         _ctx: &mut TxContext
     ): u64 {
-        let bfc_in_vault = 0;
+        let mut bfc_in_vault = 0;
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, _ctx);
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, _ctx);
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BJPY>(_treasury, _update, _ctx);

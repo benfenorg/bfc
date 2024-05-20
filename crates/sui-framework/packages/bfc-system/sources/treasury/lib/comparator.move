@@ -35,7 +35,7 @@ module bfc_system::comparator {
         let left_length = vector::length(&left);
         let right_length = vector::length(&right);
 
-        let idx = 0;
+        let mut idx = 0;
 
         while (idx < left_length && idx < right_length) {
             let left_byte = *vector::borrow(&left, idx);

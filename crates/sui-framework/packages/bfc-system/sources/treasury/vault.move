@@ -173,7 +173,7 @@ module bfc_system::vault {
         _ctx: &mut TxContext
     ): vector<vector<I32>> {
         assert!(position::get_total_positions(&_vault.position_manager) == 0, ERR_POSITIONS_IS_NOT_EMPTY);
-        let mut ticks = tick::get_ticks(
+        let ticks = tick::get_ticks(
             &_vault.tick_manager,
             _vault.current_tick_index,
             _spacing_times,
@@ -279,7 +279,7 @@ module bfc_system::vault {
             tick_upper,
             liquidity_delta,
         );
-        let is_in = false;
+        let mut  is_in = false;
         if (i32::gte(_vault.current_tick_index, tick_lower)) {
             is_in = i32::lt(_vault.current_tick_index, tick_upper);
         };
@@ -338,7 +338,7 @@ module bfc_system::vault {
             tick_upper,
             _delta_liquidity,
         );
-        let is_in = false;
+        let mut is_in = false;
         if (i32::lte(tick_lower, _vault.current_tick_index)) {
             is_in = i32::lt(_vault.current_tick_index, tick_upper);
         };
@@ -477,9 +477,9 @@ module bfc_system::vault {
         swap_result.after_sqrt_price = _vault.current_sqrt_price;
         let mut liquidity = _vault.liquidity;
         let mut current_sqrt_price = _vault.current_sqrt_price;
-        let remainer_amount = _amount;
+        let mut remainer_amount = _amount;
         let tick_index = _vault.current_tick_index;
-        let start_score = tick::first_score_for_swap(
+        let mut start_score = tick::first_score_for_swap(
             &_vault.tick_manager,
             tick_index,
             _a2b,
@@ -695,10 +695,10 @@ module bfc_system::vault {
         _amount: u64,
     ): CalculatedSwapResult
     {
-        let swap_result = default_calculated_swap_result();
-        let next_score = tick::first_score_for_swap(&_vault.tick_manager, _vault.current_tick_index, _a2b);
-        let remaining_amount = _amount;
-        let current_sqrt_price = _vault.current_sqrt_price;
+        let mut swap_result = default_calculated_swap_result();
+        let mut next_score = tick::first_score_for_swap(&_vault.tick_manager, _vault.current_tick_index, _a2b);
+        let mut remaining_amount = _amount;
+        let mut current_sqrt_price = _vault.current_sqrt_price;
         swap_result.vault_sqrt_price = current_sqrt_price;
         while (remaining_amount > 0 && current_sqrt_price != _sqrt_price_limit) {
             assert!(!option_u64::is_none(&next_score), ERR_TICK_INDEX_OPTION_IS_NONE);
@@ -932,10 +932,10 @@ module bfc_system::vault {
         _ctx: &mut TxContext
     ): (Balance<StableCoinType>, Balance<BFC>, vector<vector<I32>>)
     {
-        let position_index = 1u64;
+        let mut position_index = 1u64;
         let position_number = (_vault.position_number as u64);
-        let balance0 = balance::zero<StableCoinType>();
-        let balance1 = balance::zero<BFC>();
+        let mut balance0 = balance::zero<StableCoinType>();
+        let mut balance1 = balance::zero<BFC>();
         let spacing_times = _vault.spacing_times;
         while (position_index <= position_number) {
             let position = position::borrow_mut_position(&mut _vault.position_manager, position_index);

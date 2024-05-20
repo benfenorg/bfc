@@ -11,7 +11,7 @@ module bfc_system::utils {
         if (value == 0) {
             return ascii::string(b"0")
         };
-        let buffer = vector::empty<u8>();
+        let mut buffer = vector::empty<u8>();
         while (value != 0) {
             vector::push_back(&mut buffer, ((48 + value % 10) as u8));
             value = value / 10;

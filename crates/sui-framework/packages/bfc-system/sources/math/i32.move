@@ -71,7 +71,7 @@ module bfc_system::i32 {
     public fun wrapping_add(num1: I32, num2: I32): I32 {
 
 
-        let sum = num1.bits ^ num2.bits;
+        let mut sum = num1.bits ^ num2.bits;
 
         let mut carry = (num1.bits & num2.bits) << 1;
         while (carry != 0) {

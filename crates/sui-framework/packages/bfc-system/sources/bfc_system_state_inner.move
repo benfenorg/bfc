@@ -219,7 +219,7 @@ module bfc_system::bfc_system_state_inner {
         init_vault_with_positions<BMXN>(&mut t, ascii::string(b"BMXN"), mxn_supply, parameters, ctx);
         init_vault_with_positions<MGG>(&mut t, ascii::string(b"MGG"), mgg_supply, parameters, ctx);
 
-        let rate_map = vec_map::empty<ascii::String, u64>();
+        let mut rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
             let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
@@ -285,7 +285,7 @@ module bfc_system::bfc_system_state_inner {
             result
         } else {
             let amount = expected_amount - balance::value(&result_balance) ;
-            let result = request_gas_balance(self, amount, ctx);
+            let mut result = request_gas_balance(self, amount, ctx);
             balance::join(&mut result,result_balance);
             result
         }

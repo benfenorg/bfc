@@ -255,7 +255,7 @@ module bfc_system::bfc_dao {
         let burn_bfc=coin::split(payment, MIN_NEW_ACTION_COST, ctx);
         transfer::public_transfer(burn_bfc, ZERO_ADDRESS);
 
-        let nameString = string::try_utf8(actionName);
+        let mut nameString = string::try_utf8(actionName);
         assert!(nameString != option::none(), ERR_INVALID_STRING);
 
         let name_ref = option::extract(&mut nameString);
@@ -431,7 +431,7 @@ module bfc_system::bfc_dao {
         let quorum_votes = quorum_votes(dao);
         let object_id = object::new(ctx);
 
-        let descriptionString = string::try_utf8(description);
+        let mut descriptionString = string::try_utf8(description);
         assert!(descriptionString != option::none(), ERR_INVALID_STRING);
 
         let description_ref = option::extract(&mut descriptionString);

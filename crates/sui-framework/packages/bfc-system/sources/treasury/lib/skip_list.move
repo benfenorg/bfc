@@ -173,11 +173,11 @@ module bfc_system::skip_list {
     /// Insert a score-value into skip list, abort if the score alread exist.
     public fun insert<V: store>(list: &mut SkipList<V>, score: u64, v: V) {
         assert!(!contains(list, score), ENodeAlreadyExist);
-        let (level, new_node) = create_node(list, score, v);
-        let (l, nexts, prev) = (list.level, &mut list.head, none());
-        let opt_l0_next_score = none();
+        let (level, mut new_node) = create_node(list, score, v);
+        let (mut l, mut nexts, mut prev) = (list.level, &mut list.head, none());
+        let mut opt_l0_next_score = none();
         while (l > 0) {
-            let opt_next_score = vector::borrow_mut(nexts, l - 1);
+            let mut opt_next_score = vector::borrow_mut(nexts, l - 1);
             while (is_some_and_lte(opt_next_score, score)) {
                 let node =
                     field::borrow_mut<u64, Node<V>>(&mut list.id, option_u64::borrow(opt_next_score));
@@ -212,10 +212,10 @@ module bfc_system::skip_list {
     /// Remove the score-value from skip list, abort if the score not exist in list.
     public fun remove<V: store>(list: &mut SkipList<V>, score: u64): V {
         assert!(contains(list, score), ENodeDoesNotExist);
-        let (l, nexts) = (list.level, &mut list.head);
+        let (mut l, mut nexts) = (list.level, &mut list.head);
         let node: Node<V> = field::remove(&mut list.id, score);
         while (l > 0) {
-            let opt_next_score = vector::borrow_mut(nexts, l - 1);
+            let mut opt_next_score = vector::borrow_mut(nexts, l - 1);
             while (is_some_and_lte(opt_next_score, score)) {
                 let next_score = option_u64::borrow(opt_next_score);
                 if (next_score == score) {
@@ -276,9 +276,9 @@ module bfc_system::skip_list {
         if (list.size == 0) {
             return none()
         };
-        let (l, nexts, current_score) = (list.level, &list.head, none());
+        let (mut l, mut nexts, mut current_score) = (list.level, &list.head, none());
         while (l > 0) {
-            let opt_next_score = *vector::borrow(nexts, l - 1);
+            let mut opt_next_score = *vector::borrow(nexts, l - 1);
             while (is_some_and_lte(&opt_next_score, score)) {
                 let next_score = option_u64::borrow(&opt_next_score);
                 if (next_score == score) {
@@ -325,7 +325,7 @@ module bfc_system::skip_list {
         // Create a new level for skip list.
         if (level > list.level) {
             list.level = level;
-            push_back(&mut list.head, none());
+            vector::push_back(&mut list.head, none());
         };
 
         (

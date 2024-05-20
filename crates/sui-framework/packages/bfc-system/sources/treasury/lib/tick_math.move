@@ -67,11 +67,11 @@ module bfc_system::tick_math {
 
     public fun get_tick_at_sqrt_price(sqrt_price: u128): I32 {
         assert!(sqrt_price >= MIN_SQRT_PRICE_X64 && sqrt_price <= MAX_SQRT_PRICE_X64, EINVALID_SQRT_PRICE);
-        let r = sqrt_price;
+        let mut r = sqrt_price;
 
-        let msb = 0;
+        let mut msb = 0;
 
-        let f: u8 = as_u8(r >= 0x10000000000000000) << 6; // If r >= 2^64, f = 64 else 0
+        let mut f: u8 = as_u8(r >= 0x10000000000000000) << 6; // If r >= 2^64, f = 64 else 0
         msb = msb | f;
         r = r >> f;
         f = as_u8(r >= 0x100000000) << 5; // 2^32
@@ -92,7 +92,7 @@ module bfc_system::tick_math {
         f = as_u8(r >= 0x2) << 0; // 2^0
         msb = msb | f;
 
-        let log_2_x32 = i128::shl(i128::sub(i128::from((msb as u128)), i128::from(64)), 32);
+        let mut log_2_x32 = i128::shl(i128::sub(i128::from((msb as u128)), i128::from(64)), 32);
 
         r = if (msb >= 64) {
             sqrt_price >> (msb - 63)
@@ -100,7 +100,7 @@ module bfc_system::tick_math {
             sqrt_price << (63 - msb)
         };
 
-        let shift = 31;
+        let mut shift = 31;
         while (shift >= 18) {
             r = ((r * r) >> 63);
             f = ((r >> 64) as u8);
