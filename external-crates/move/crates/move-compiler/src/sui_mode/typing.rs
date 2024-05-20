@@ -994,24 +994,85 @@ fn exp(context: &mut Context, e: &T::Exp) {
 }
 
 fn otw_special_cases(context: &Context) -> bool {
-    let b_sui = BRIDGE_SUPPORTED_ASSET
+    return BRIDGE_SUPPORTED_ASSET
         .iter()
         .any(|token| context.current_module().value.is(BRIDGE_ADDR_NAME, token))
         || context
         .current_module()
         .value
-        .is(SUI_ADDR_NAME, SUI_MODULE_NAME);
-
-    let b_bfc = BRIDGE_SUPPORTED_ASSET
-        .iter()
-        .any(|token| context.current_module().value.is(BRIDGE_ADDR_NAME, token))
+        .is(SUI_ADDR_NAME, SUI_MODULE_NAME)
         || context
         .current_module()
         .value
-        .is(SUI_ADDR_NAME, BFC_MODULE_NAME);
-
-
-    return b_sui || b_bfc;
+        .is(SUI_ADDR_NAME, BFC_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BARS_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BEUR_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BKRW_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BRUB_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BCAD_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BUSD_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BZAR_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BINR_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BSAR_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BJPY_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BIDR_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BMXN_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BBRL_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, MGG_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BGBP_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BTRY_MODULE_NAME)
+        || context
+        .current_module()
+        .value
+        .is(BFC_SYSTEM_ADDR_NAME, BAUD_MODULE_NAME);
 }
 
 fn check_event_emit(context: &mut Context, loc: Loc, mcall: &ModuleCall) {
