@@ -31,7 +31,7 @@ module games::raffle_with_tickets {
         participants: u32,
         end_time: u64,
         winner: Option<u32>,
-        balance: Balance<SUI>,
+        balance: Balance<BFC>,
     }
 
     /// Ticket represents a participant in a single game.
@@ -69,7 +69,7 @@ module games::raffle_with_tickets {
     }
 
     /// Anyone can play and receive a ticket.
-    public fun buy_ticket(game: &mut Game, coin: Coin<SUI>, clock: &Clock, ctx: &mut TxContext): Ticket {
+    public fun buy_ticket(game: &mut Game, coin: Coin<BFC>, clock: &Clock, ctx: &mut TxContext): Ticket {
         assert!(game.end_time > clock::timestamp_ms(clock), EGameAlreadyCompleted);
         assert!(coin::value(&coin) == game.cost_in_sui, EInvalidAmount);
 
@@ -84,7 +84,7 @@ module games::raffle_with_tickets {
     }
 
     /// The winner can take the prize.
-    public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<SUI> {
+    public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<BFC> {
         assert!(object::id(&game) == ticket.game_id, EGameMismatch);
         assert!(option::contains(&game.winner, &ticket.participant_index), ENotWinner);
         destroy_ticket(ticket);
@@ -150,7 +150,7 @@ module games::small_raffle {
         cost_in_sui: u64,
         participants: u32,
         end_time: u64,
-        balance: Balance<SUI>,
+        balance: Balance<BFC>,
         participants_table: Table<u32, address>,
     }
 
@@ -195,7 +195,7 @@ module games::small_raffle {
     }
 
     /// Anyone can play.
-    public fun play(game: &mut Game, coin: Coin<SUI>, clock: &Clock, ctx: &mut TxContext) {
+    public fun play(game: &mut Game, coin: Coin<BFC>, clock: &Clock, ctx: &mut TxContext) {
         assert!(game.end_time > clock::timestamp_ms(clock), EGameAlreadyCompleted);
         assert!(coin::value(&coin) == game.cost_in_sui, EInvalidAmount);
         assert!(game.participants < MaxParticipants, EReachedMaxParticipants);

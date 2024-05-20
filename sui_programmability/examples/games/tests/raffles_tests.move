@@ -13,7 +13,7 @@ module games::raffles_tests {
     use games::raffle_with_tickets;
 
     fun mint(addr: address, amount: u64, scenario: &mut Scenario) {
-        transfer::public_transfer(coin::mint_for_testing<SUI>(amount, test_scenario::ctx(scenario)), addr);
+        transfer::public_transfer(coin::mint_for_testing<BFC>(amount, test_scenario::ctx(scenario)), addr);
         test_scenario::next_tx(scenario, addr);
     }
 
@@ -56,28 +56,28 @@ module games::raffles_tests {
         // Play with 4 users (everything here is deterministic)
         test_scenario::next_tx(scenario, user1);
         mint(user1, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         let t1 = raffle_with_tickets::buy_ticket(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(raffle_with_tickets::get_participants(&game) == 1, 1);
         raffle_with_tickets::destroy_ticket(t1); // loser
 
         test_scenario::next_tx(scenario, user2);
         mint(user2, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         let t2 = raffle_with_tickets::buy_ticket(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(raffle_with_tickets::get_participants(&game) == 2, 1);
         raffle_with_tickets::destroy_ticket(t2); // loser
 
         test_scenario::next_tx(scenario, user3);
         mint(user3, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         let t3 = raffle_with_tickets::buy_ticket(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(raffle_with_tickets::get_participants(&game) == 3, 1);
         raffle_with_tickets::destroy_ticket(t3); // loser
 
         test_scenario::next_tx(scenario, user4);
         mint(user4, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         let t4 = raffle_with_tickets::buy_ticket(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(raffle_with_tickets::get_participants(&game) == 4, 1);
         // this is the winner
@@ -136,25 +136,25 @@ module games::raffles_tests {
         // Play with 4 users (everything here is deterministic)
         test_scenario::next_tx(scenario, user1);
         mint(user1, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         small_raffle::play(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(small_raffle::get_participants(&game) == 1, 1);
 
         test_scenario::next_tx(scenario, user2);
         mint(user2, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         small_raffle::play(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(small_raffle::get_participants(&game) == 2, 1);
 
         test_scenario::next_tx(scenario, user3);
         mint(user3, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         small_raffle::play(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(small_raffle::get_participants(&game) == 3, 1);
 
         test_scenario::next_tx(scenario, user4);
         mint(user4, 10, scenario);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         small_raffle::play(&mut game, coin, &clock, test_scenario::ctx(scenario));
         assert!(small_raffle::get_participants(&game) == 4, 1);
 
@@ -165,7 +165,7 @@ module games::raffles_tests {
 
         // Check that received the reward
         test_scenario::next_tx(scenario, user4);
-        let coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+        let coin = test_scenario::take_from_sender<Coin<BFC>>(scenario);
         assert!(coin::value(&coin) == 40, 1);
         coin::burn_for_testing(coin);
 

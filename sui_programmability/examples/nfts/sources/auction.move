@@ -51,7 +51,7 @@ module nfts::auction {
         /// ID of the Auction object this bid is intended for
         auction_id: ID,
         /// Coin used for bidding.
-        bid: Balance<SUI>
+        bid: Balance<BFC>
     }
 
     // Entry functions.
@@ -73,7 +73,7 @@ module nfts::auction {
     /// Creates a bid a and send it to the auctioneer along with the
     /// ID of the auction. This is executed by a bidder.
     public fun bid(
-        coin: Coin<SUI>, auction_id: ID, auctioneer: address, ctx: &mut TxContext
+        coin: Coin<BFC>, auction_id: ID, auctioneer: address, ctx: &mut TxContext
     ) {
         let bid = Bid {
             id: object::new(ctx),
