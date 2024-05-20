@@ -178,7 +178,7 @@ module bfc_system::bfc_system_state_inner {
 
     /// X treasury  init treasury
     public(package) fun create_treasury(
-        bfc_balance: Balance<BFC>,
+        mut bfc_balance: Balance<BFC>,
         usd_supply: Supply<BUSD>,
         jpy_supply: Supply<BJPY>,
         krw_supply: Supply<BKRW>,
@@ -221,7 +221,7 @@ module bfc_system::bfc_system_state_inner {
 
         let mut rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
-            let mut deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
+            let deposit_balance = balance::split(&mut bfc_balance, treasury::next_epoch_bfc_required(&t));
             treasury::deposit(&mut t, coin::from_balance(deposit_balance, ctx));
             treasury::rebalance_internal(&mut t, false, ctx);
             rate_map = treasury::get_exchange_rates(&t);

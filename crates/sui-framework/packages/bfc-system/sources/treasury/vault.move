@@ -479,7 +479,7 @@ module bfc_system::vault {
         let mut liquidity = _vault.liquidity;
         let mut current_sqrt_price = _vault.current_sqrt_price;
         let mut remainer_amount = _amount;
-        let tick_index = _vault.current_tick_index;
+        let mut tick_index = _vault.current_tick_index;
         let mut start_score = tick::first_score_for_swap(
             &_vault.tick_manager,
             tick_index,
@@ -550,8 +550,8 @@ module bfc_system::vault {
 
     public(package) fun swap<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
-        _coin_a: Coin<StableCoinType>,
-        _coin_b: Coin<BFC>,
+        mut _coin_a: Coin<StableCoinType>,
+        mut _coin_b: Coin<BFC>,
         _a2b: bool,
         _by_amount_in: bool,
         _amount: u64,

@@ -404,7 +404,7 @@ module bfc_system::bfc_dao {
         version_id: u64,
         payment: &mut Coin<BFC>,
         action_id: u64,
-        action_delay: u64,
+        mut action_delay: u64,
         description: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext,
@@ -606,7 +606,7 @@ module bfc_system::bfc_dao {
     public(package) fun revoke_vote(
         dao:  &mut Dao,
         proposal: &mut Proposal,
-        my_vote: Vote,
+        mut my_vote: Vote,
         voting_power: u64,
         clock: & Clock,
         ctx: &mut TxContext,
@@ -1133,7 +1133,7 @@ module bfc_system::bfc_dao {
         // sender address
         let sender = tx_context::sender(ctx);
         let balance = coin::into_balance(coin);
-        let voting_bfc = voting_pool::request_add_voting(&mut dao.voting_pool, balance, clock,  ctx);
+        let voting_bfc = voting_pool::request_add_voting(& dao.voting_pool, balance, clock,  ctx);
 
         transfer::public_transfer(voting_bfc, sender);
     }
