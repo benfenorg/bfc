@@ -311,7 +311,7 @@ module bfc_system::tick_math {
 
     #[test]
     fun test_tick_swap_sqrt_price() {
-        let t = i32::from(401098);
+        let mut t = i32::from(401098);
         while (i32::lte(t, i32::from(401200))) {
             let sqrt_price = get_sqrt_price_at_tick(t);
             let tick = get_tick_at_sqrt_price(sqrt_price);

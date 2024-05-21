@@ -454,7 +454,7 @@ module bfc_system::skip_list {
     #[test]
     fun test_create_node() {
         let ctx = &mut tx_context::dummy();
-        let skip_list = new<u256>(16, 2, 12345, ctx);
+        let mut skip_list = new<u256>(16, 2, 12345, ctx);
         let mut n = 0;
         while (n < 10) {
             let (_, node) = create_node(&mut skip_list, n, 0);
@@ -484,7 +484,7 @@ module bfc_system::skip_list {
     fun new_list_for_test<V: store + copy + drop>(
         max_leveL: u64, list_p: u64, size: u64, seed: u64, value: V, ctx: &mut TxContext
     ): SkipList<V> {
-        let list = new<V>(max_leveL, list_p, seed, ctx);
+        let mut list = new<V>(max_leveL, list_p, seed, ctx);
         add_node_for_test(&mut list, size, seed, value);
         list
     }
@@ -565,7 +565,7 @@ module bfc_system::skip_list {
         let mut random = random::new(12345);
         let mut n = 0;
         while (n < 10) {
-            let score = random::rand_n(&mut random, 1000000);
+            let mut score = random::rand_n(&mut random, 1000000);
             if ((n % 3) == 0) {
                 score = score + 1;
             };

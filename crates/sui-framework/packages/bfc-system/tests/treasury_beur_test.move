@@ -196,7 +196,7 @@ module bfc_system::treasury_beur_test {
         {
             let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
-            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let input_bfc = balance::create_for_testing<BFC>(total_amount_bfc);
             let coin_bfc = coin::from_balance(
                 input_bfc,
@@ -258,7 +258,7 @@ module bfc_system::treasury_beur_test {
         {
             let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
-            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let coin_usd = test_scenario::take_from_sender<Coin<BEUR>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
             let min_amount: u64 = 0;

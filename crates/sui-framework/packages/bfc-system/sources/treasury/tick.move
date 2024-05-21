@@ -348,7 +348,7 @@ module bfc_system::tick {
     #[test]
     fun test_get_ticks() {
         let is_debug = false;
-        let ctx = tx_context::dummy();
+        let mut ctx = tx_context::dummy();
         let tick_spacing: u32 = 60;
         let current_index = tick_math::get_tick_at_sqrt_price(100000000000);
 
@@ -402,7 +402,7 @@ module bfc_system::tick {
     #[test]
     fun test_fetch_ticks() {
         let is_debug = false;
-        let ctx = tx_context::dummy();
+        let mut ctx = tx_context::dummy();
         let tick_spacing: u32 = 30;
         let times = 10;
         let pnumber = 9;

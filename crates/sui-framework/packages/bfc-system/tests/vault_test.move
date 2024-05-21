@@ -269,7 +269,7 @@ module bfc_system::vault_test {
     #[test]
     public fun test_multi_rebalance() {
         let owner = @0x0;
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
         test_utils::setup_with_parameters(
             14400,
             1 << 64,
