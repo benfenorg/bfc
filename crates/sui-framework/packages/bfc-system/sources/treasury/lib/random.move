@@ -40,8 +40,8 @@ module bfc_system::random {
 
     #[test]
     fun test_rand_n_bench() {
-        let random = new(0);
-        let n = 0;
+        let mut random = new(0);
+        let mut n = 0;
         while (n < 100) {
             rand_n(&mut random, 1000000);
             n = n + 1
@@ -50,8 +50,8 @@ module bfc_system::random {
 
     #[test]
     fun test_rand_bench() {
-        let random = new(0);
-        let n = 0;
+        let mut random = new(0);
+        let mut n = 0;
         while (n < 100) {
             rand(&mut random);
             n = n + 1
@@ -60,8 +60,8 @@ module bfc_system::random {
 
     #[test]
     fun test_with_seed_0() {
-        let random = new(0);
-        let n = 0;
+        let mut random = new(0);
+        let mut n = 0;
         while (n < 10) {
             let r1 = rand(&mut random);
             let r2 = rand(&mut random);

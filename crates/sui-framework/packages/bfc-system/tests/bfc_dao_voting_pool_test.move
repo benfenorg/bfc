@@ -1,3 +1,4 @@
+#[allow(unused_mut_ref)]
 module bfc_system::bfc_dao_voting_pool_test {
     #[test_only]
     use std::debug;
@@ -45,7 +46,7 @@ module bfc_system::bfc_dao_voting_pool_test {
         //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -64,7 +65,7 @@ module bfc_system::bfc_dao_voting_pool_test {
         //split bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
+            let mut vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
             let splitBfc =  voting_pool::split(&mut vBfc, 3000000000, test_scenario::ctx(&mut scenario_val));
             let balance =  voting_pool::unwrap_voting_bfc(splitBfc);
             debug::print(&balance::value(&balance));

@@ -226,7 +226,7 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_push_front() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
+        let mut table = new<u64, u256>(ctx);
         push_front(&mut table, 1, 1001);
         assert!(!is_empty(&table), 0);
         assert!((is_some(&table.head) && (*option::borrow(&table.head) == 1)), 0);
@@ -262,7 +262,7 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_push_back() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
+        let mut table = new<u64, u256>(ctx);
         push_back(&mut table, 1, 1001);
         assert!(!is_empty(&table), 0);
         assert!((is_some(&table.head) && (*option::borrow(&table.head) == 1)), 0);
@@ -298,7 +298,7 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_remove() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
+        let mut table = new<u64, u256>(ctx);
         push_back(&mut table, 5, 1005);
         push_back(&mut table, 6, 1006);
         push_back(&mut table, 7, 1007);
@@ -352,7 +352,7 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_insert_before() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
+        let mut table = new<u64, u256>(ctx);
         push_back(&mut table, 2, 1002);
         push_back(&mut table, 4, 1004);
         push_back(&mut table, 6, 1006);
@@ -404,7 +404,7 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_insert_after() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
+        let mut table = new<u64, u256>(ctx);
         push_back(&mut table, 2, 1002);
         push_back(&mut table, 6, 1006);
         push_back(&mut table, 10, 1010);
@@ -449,8 +449,8 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_push_back_bench() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
-        let n = 0;
+        let mut table = new<u64, u256>(ctx);
+        let mut n = 0;
         while (n < 10) {
             push_back(&mut table, n, (n as u256));
             n = n + 1;
@@ -461,8 +461,8 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_push_front_bench() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
-        let n = 0;
+        let mut table = new<u64, u256>(ctx);
+        let mut n = 0;
         while (n < 10) {
             push_front(&mut table, n, (n as u256));
             n = n + 1;
@@ -473,9 +473,9 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_insert_before_bench() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u64>(ctx);
-        let n = 10;
-        let current_key = 20;
+        let mut table = new<u64, u64>(ctx);
+        let mut n = 10;
+        let mut current_key = 20;
         push_back(&mut table, 0, 0);
         push_back(&mut table, current_key, current_key);
         while (n > 0) {
@@ -489,9 +489,9 @@ module bfc_system::linked_table {
     #[test]
     fun test_table_insert_after_bench() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u64>(ctx);
-        let n = 1;
-        let current_key = 0;
+        let mut table = new<u64, u64>(ctx);
+        let mut n = 1;
+        let mut current_key = 0;
         push_back(&mut table, 0, 0);
         push_back(&mut table, 20, 20000);
         while (n <= 10) {
@@ -506,7 +506,7 @@ module bfc_system::linked_table {
     #[test]
     fun test_fetch() {
         let ctx = &mut tx_context::dummy();
-        let table = new<u64, u256>(ctx);
+        let mut table = new<u64, u256>(ctx);
         push_back(&mut table, 2, 1002);
         push_back(&mut table, 4, 1004);
         push_back(&mut table, 6, 1006);

@@ -1,4 +1,5 @@
 #[test_only]
+#[allow(unused_mut_ref)]
 module bfc_system::vault_test {
     use std::ascii::string;
     use std::debug;
@@ -21,7 +22,7 @@ module bfc_system::vault_test {
     #[test]
     public fun test_init_and_rebalance() {
         let owner = @0x0;
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
         test_utils::setup_with_parameters(
             3600 * 4,
             1 << 64,
@@ -34,7 +35,7 @@ module bfc_system::vault_test {
             &mut scenario_val,
             owner
         );
-        let c = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        let mut c = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
         let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
         treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(&mut scenario_val));
@@ -79,7 +80,7 @@ module bfc_system::vault_test {
         );
         let mut c = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
-        let t = test_scenario::take_shared<Treasury>(&scenario);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario);
         treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(&mut scenario));
         let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, type_name::into_string(type_name::get<BUSD>()));
         if (IS_DEBUG) {

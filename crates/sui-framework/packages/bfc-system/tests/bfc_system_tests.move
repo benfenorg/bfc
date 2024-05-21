@@ -1,5 +1,5 @@
 #[test_only]
-#[allow(duplicate_alias)]
+#[allow(duplicate_alias,unused_mut_ref)]
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
@@ -44,16 +44,16 @@ module bfc_system::bfc_system_tests {
         let bfc_addr = @0x0;
         let mut scenario_val = test_scenario::begin(bfc_addr);
         test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
-        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
-        let t = test_scenario::take_shared<Treasury>(&scenario_val);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
         treasury::rebalance(&mut t, 0, &clock, test_scenario::ctx(&mut scenario_val));
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         create_sui_system_state_for_testing(ctx);
         test_scenario::next_tx(scenario, bfc_addr);
-        let system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
         bfc_system::bfc_round(&mut system_state, &clock, 0,test_scenario::ctx(scenario));
 
@@ -64,7 +64,7 @@ module bfc_system::bfc_system_tests {
     }
 
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext) {
-        let treasury_parameters = vec_map::empty<ascii::String, bfc_system_state_inner::TreasuryParameters>();
+        let mut treasury_parameters = vec_map::empty<ascii::String, bfc_system_state_inner::TreasuryParameters>();
         vec_map::insert(
             &mut treasury_parameters,
             ascii::string(b"BUSD"),
@@ -265,8 +265,8 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_INSUFFICIENT)]
     fun test_deposit_with_error() {
-        let scenario_val = setup();
-        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let mut scenario_val = setup();
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let bfc = balance::create_for_testing<BFC>(100);
         let current_balance = bfc_system::treasury_balance(&system_state);
         assert!(current_balance == 0, 1);
@@ -285,7 +285,7 @@ module bfc_system::bfc_system_tests {
     #[test]
     fun test_deposit_success() {
         let mut scenario_val = setup();
-        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);

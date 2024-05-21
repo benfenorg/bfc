@@ -1,4 +1,4 @@
-#[allow(unused_const)]
+#[allow(unused_const,unused_let_mut)]
 module bfc_system::skip_list {
 
     use sui::dynamic_field as field;
@@ -354,7 +354,7 @@ module bfc_system::skip_list {
         if (length(list) == 0) {
             return
         };
-        let next_score = vector::borrow(&list.head, 0);
+        let mut next_score = vector::borrow(&list.head, 0);
         while (is_some(next_score)) {
             let node = borrow_node(list, option_u64::borrow(next_score));
             next_score = vector::borrow(&node.nexts, 0);
@@ -371,11 +371,11 @@ module bfc_system::skip_list {
 
         // Check level 0
         let (
-            size,
-            opt_next_score,
-            tail,
-            prev,
-            current_score,
+            mut size,
+            mut opt_next_score,
+            mut tail,
+            mut prev,
+            mut current_score,
         ) = (
             0,
             vector::borrow(&list.head, 0),
@@ -410,10 +410,10 @@ module bfc_system::skip_list {
         assert!(size == length(list), 0);
 
         // Check indexer levels
-        let l = list.level - 1;
+        let mut l = list.level - 1;
         while (l > 0) {
-            let opt_next_l_score = vector::borrow(&list.head, l);
-            let opt_next_0_score = vector::borrow(&list.head, 0);
+            let mut opt_next_l_score = vector::borrow(&list.head, l);
+            let mut opt_next_0_score = vector::borrow(&list.head, 0);
             while (is_some(opt_next_0_score)) {
                 let next_0_score = option_u64::borrow(opt_next_0_score);
                 let node = borrow_node(list, next_0_score);
@@ -433,7 +433,7 @@ module bfc_system::skip_list {
 
     #[test_only]
     fun get_all_socres<V: store>(list: &SkipList<V>): vector<u64> {
-        let (opt_next_score, scores) = (vector::borrow(&list.head, 0), vector::empty<u64>());
+        let (mut opt_next_score,mut scores) = (vector::borrow(&list.head, 0), vector::empty<u64>());
         while (is_some(opt_next_score)) {
             let next_score = option_u64::borrow(opt_next_score);
             let next_node = borrow_node(list, next_score);
@@ -446,7 +446,7 @@ module bfc_system::skip_list {
     #[test]
     fun test_new() {
         let ctx = &mut tx_context::dummy();
-        let skip_list = new<u256>(16, 2, 12345, ctx);
+        let mut skip_list = new<u256>(16, 2, 12345, ctx);
         check_skip_list(&skip_list);
         transfer::transfer(skip_list, tx_context::sender(ctx));
     }
@@ -455,7 +455,7 @@ module bfc_system::skip_list {
     fun test_create_node() {
         let ctx = &mut tx_context::dummy();
         let skip_list = new<u256>(16, 2, 12345, ctx);
-        let n = 0;
+        let mut n = 0;
         while (n < 10) {
             let (_, node) = create_node(&mut skip_list, n, 0);
             let Node { score: _, value: _, nexts: _, prev: _ } = node;
@@ -467,8 +467,8 @@ module bfc_system::skip_list {
 
     #[test_only]
     fun add_node_for_test<V: store + copy + drop>(list: &mut SkipList<V>, size: u64, seed: u64, value: V) {
-        let random = random::new(seed);
-        let n = 0;
+        let mut random = random::new(seed);
+        let mut n = 0;
         while (n < size) {
             let score = random::rand_n(&mut random, 1000000);
             if (contains(list, score)) {
@@ -499,8 +499,8 @@ module bfc_system::skip_list {
     #[test]
     fun test_insert_bench() {
         let ctx = &mut tx_context::dummy();
-        let list = new<u256>(16, 2, 10, ctx);
-        let n = 0;
+        let mut list = new<u256>(16, 2, 10, ctx);
+        let mut n = 0;
         while (n < 5) {
             insert(&mut list, 0 + n, 0);
             insert(&mut list, 100 - n, 0);
@@ -514,11 +514,11 @@ module bfc_system::skip_list {
     #[test]
     fun test_find() {
         let ctx = &mut tx_context::dummy();
-        let list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
+        let mut list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
         let scores = get_all_socres(&list);
 
         let length = vector::length(&scores);
-        let n = length;
+        let mut n = length;
         while (n > 0) {
             let score = *vector::borrow(&scores, n - 1);
             let finded = find_prev(&list, score, true);
@@ -561,9 +561,9 @@ module bfc_system::skip_list {
     #[test]
     fun test_find_bench() {
         let ctx = &mut tx_context::dummy();
-        let list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
-        let random = random::new(12345);
-        let n = 0;
+        let mut list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
+        let mut random = random::new(12345);
+        let mut n = 0;
         while (n < 10) {
             let score = random::rand_n(&mut random, 1000000);
             if ((n % 3) == 0) {
@@ -579,9 +579,9 @@ module bfc_system::skip_list {
     #[test]
     fun test_find_next_bench() {
         let ctx = &mut tx_context::dummy();
-        let list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
-        let n = 0;
-        let finded = find_next(&list, 9, true);
+        let mut list = new_list_for_test<u256>(16, 2, 10, 12345, 0, ctx);
+        let mut n = 0;
+        let mut finded = find_next(&list, 9, true);
         while (n < 1 && is_some(&finded)) {
             let node = borrow_node(&list, option_u64::borrow(&finded));
             finded = next_score(node);
@@ -593,9 +593,9 @@ module bfc_system::skip_list {
     #[test]
     fun test_remove() {
         let ctx = &mut tx_context::dummy();
-        let list = new_list_for_test<u256>(16, 2, 10, 5678, 0, ctx);
+        let mut list = new_list_for_test<u256>(16, 2, 10, 5678, 0, ctx);
         let scores = get_all_socres(&list);
-        let (n, length) = (0, vector::length(&scores));
+        let (mut n, length) = (0, vector::length(&scores));
         let start = length / 2;
         while (n <= start) {
             let s1 = start - n;
@@ -612,8 +612,8 @@ module bfc_system::skip_list {
 
         add_node_for_test(&mut list, 20, 7890, 0);
         let scores = get_all_socres(&list);
-        let (n, length) = (0, vector::length(&scores));
-        let skip = 0;
+        let (mut n, length) = (0, vector::length(&scores));
+        let mut skip = 0;
         while (n < length) {
             remove(&mut list, *vector::borrow(&scores, n));
             skip = skip + 1;
@@ -627,7 +627,7 @@ module bfc_system::skip_list {
     #[test]
     fun test_find_in_empty_list() {
         let ctx = &mut tx_context::dummy();
-        let list = new<u256>(16, 2, 1234, ctx);
+        let mut list = new<u256>(16, 2, 1234, ctx);
         let opt_score = find(&list, 1000);
         assert!(is_none(&opt_score), 0);
 

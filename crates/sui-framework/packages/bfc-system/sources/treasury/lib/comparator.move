@@ -109,12 +109,12 @@ module bfc_system::comparator {
 
     #[test]
     public fun test_complex() {
-        let value0_0 = vector::empty();
+        let mut value0_0 = vector::empty();
         vector::push_back(&mut value0_0, 10);
         vector::push_back(&mut value0_0, 9);
         vector::push_back(&mut value0_0, 5);
 
-        let value0_1 = vector::empty();
+        let mut value0_1 = vector::empty();
         vector::push_back(&mut value0_1, 10);
         vector::push_back(&mut value0_1, 9);
         vector::push_back(&mut value0_1, 5);

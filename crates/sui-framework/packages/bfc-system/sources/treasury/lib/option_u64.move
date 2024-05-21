@@ -55,7 +55,7 @@ module bfc_system::option_u64 {
     #[test]
     fun test_opt() {
         let a = some(10000u64);
-        let n = 0;
+        let  mut n = 0;
         while (n < 10000) {
             _ = borrow(&a);
             n = n + 1;
@@ -65,7 +65,7 @@ module bfc_system::option_u64 {
     #[test]
     fun test_option_contains() {
         let a = some(100000);
-        let n = 0;
+        let mut n = 0;
         while (n < 10000) {
             contains(&a, 100000);
             n = n + 1;

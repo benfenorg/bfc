@@ -87,7 +87,7 @@ module bfc_system::test_utils {
 
         {
             // let bfc = balance::create_for_testing<BFC>(300000000_000_000_000);
-            let t = test_scenario::take_shared<Treasury>(scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(scenario_val);
             let required_bfc = treasury::next_epoch_bfc_required(&t);
             debug::print(&string(b"require bfc"));
             debug::print(&required_bfc);
@@ -110,7 +110,7 @@ module bfc_system::test_utils {
     public(package) fun test_rebalance(
         scenario_val: &mut Scenario,
     ) {
-        let c = clock::create_for_testing(test_scenario::ctx(scenario_val));
+        let mut c = clock::create_for_testing(test_scenario::ctx(scenario_val));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
 
         let mut t = test_scenario::take_shared<Treasury>(scenario_val);

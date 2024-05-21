@@ -1,4 +1,4 @@
-#[allow(unused_const)]
+#[allow(unused_const,unused_mut_ref)]
 module bfc_system::bfc_dao_test {
     #[test_only]
     use sui::clock;
@@ -49,7 +49,7 @@ module bfc_system::bfc_dao_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
 
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
 
             let old_delay = bfc_dao::voting_delay(&mut dao);
@@ -117,11 +117,11 @@ module bfc_system::bfc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             //let _ = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
-            let action_coin =  coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin =  coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world",  &clock, test_scenario::ctx(&mut scenario_val));
@@ -131,7 +131,7 @@ module bfc_system::bfc_dao_test {
             let actionId = get_bfcdao_actionid(action);
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);
@@ -147,7 +147,7 @@ module bfc_system::bfc_dao_test {
         //get propose info, get propose status
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             bfc_dao::proposal_info(&mut p);
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
@@ -184,7 +184,7 @@ module bfc_system::bfc_dao_test {
         //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -201,14 +201,14 @@ module bfc_system::bfc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
 
-            let action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
@@ -218,7 +218,7 @@ module bfc_system::bfc_dao_test {
 
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);
@@ -233,12 +233,12 @@ module bfc_system::bfc_dao_test {
         //voting for
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
@@ -261,7 +261,7 @@ module bfc_system::bfc_dao_test {
         //create VotingBfc agaist for user1
         test_scenario::next_tx(&mut scenario_val, user1);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let coin =  coin::mint_for_testing<BFC>(100000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -273,7 +273,7 @@ module bfc_system::bfc_dao_test {
         //create VotingBfc agaist for user2
         test_scenario::next_tx(&mut scenario_val, user2);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let coin =  coin::mint_for_testing<BFC>(110000000000, test_scenario::ctx(&mut scenario_val));
 
@@ -289,11 +289,11 @@ module bfc_system::bfc_dao_test {
         //voting against : user1
         test_scenario::next_tx(&mut scenario_val, user1);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
@@ -315,7 +315,7 @@ module bfc_system::bfc_dao_test {
         test_scenario::next_tx(&mut scenario_val, user1);
         {
             let vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let has = bfc_dao::has_vote(&vote, &mut p);
             debug::print(&has);
 
@@ -328,12 +328,12 @@ module bfc_system::bfc_dao_test {
         //create action, create propose, user2
         test_scenario::next_tx(&mut scenario_val, user2);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
-            let action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
@@ -341,7 +341,7 @@ module bfc_system::bfc_dao_test {
             let actionId = get_bfcdao_actionid(action);
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);
@@ -357,7 +357,7 @@ module bfc_system::bfc_dao_test {
         test_scenario::next_tx(&mut scenario_val, user2);
         {
             let vote = test_scenario::take_from_address<Vote>(&mut scenario_val, user1);
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             let has = bfc_dao::has_vote(&vote, &mut p);
             debug::print(&has);
 
@@ -391,7 +391,7 @@ module bfc_system::bfc_dao_test {
         //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -409,14 +409,14 @@ module bfc_system::bfc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
 
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
-            let action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
@@ -425,7 +425,7 @@ module bfc_system::bfc_dao_test {
 
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);
@@ -440,12 +440,12 @@ module bfc_system::bfc_dao_test {
         //voting for
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
             //change status
@@ -469,12 +469,12 @@ module bfc_system::bfc_dao_test {
         //change vote
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
 
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status for proposal obj
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
@@ -527,7 +527,7 @@ module bfc_system::bfc_dao_test {
         //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -544,14 +544,14 @@ module bfc_system::bfc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
 
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
-            let action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(action_coin);
@@ -560,7 +560,7 @@ module bfc_system::bfc_dao_test {
 
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);
@@ -575,12 +575,12 @@ module bfc_system::bfc_dao_test {
         //voting for
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
             modify_proposal_obj(&mut dao,&mut p, ACTIVE, &clock);
@@ -601,13 +601,13 @@ module bfc_system::bfc_dao_test {
         //revoke voting
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
 
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
@@ -651,7 +651,7 @@ module bfc_system::bfc_dao_test {
         //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -668,14 +668,14 @@ module bfc_system::bfc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
 
            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
-            let action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
@@ -683,7 +683,7 @@ module bfc_system::bfc_dao_test {
             let actionId = get_bfcdao_actionid(action);
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);
@@ -698,12 +698,12 @@ module bfc_system::bfc_dao_test {
         //voting for
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vBfc = test_scenario::take_from_sender<VotingBfc>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
             //let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
             //change status
             modify_proposal_obj(&mut dao, &mut p, ACTIVE, &clock);
@@ -723,12 +723,12 @@ module bfc_system::bfc_dao_test {
         //unstake voting
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let vote = test_scenario::take_from_sender<Vote>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
 
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
             //change status
@@ -764,7 +764,7 @@ module bfc_system::bfc_dao_test {
         //create voting bfc
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
             let coin =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -797,7 +797,7 @@ module bfc_system::bfc_dao_test {
 
 
             let min_new_propose_cost: u64 = 200 * 1000000000; // 200 BFC
-            let coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
+            let mut coin =  coin::mint_for_testing<BFC>(min_new_propose_cost, test_scenario::ctx(&mut scenario_val));
 
             bfc_dao::propose(&mut dao, 19,  &mut coin,  actionId, 1000 * 60 * 60 * 24 * 7 + 1000, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
             coin::destroy_zero(coin);

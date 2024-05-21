@@ -1,4 +1,5 @@
 #[test_only]
+#[allow(unused_mut_ref)]
 module bfc_system::treasury_beur_test {
     use sui::test_scenario::{Self};
     use std::debug;
@@ -51,8 +52,8 @@ module bfc_system::treasury_beur_test {
         // create vault
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
             let usd_supply = beur::new(test_scenario::ctx(&mut scenario_val));
             treasury::create_vault<BEUR>(
@@ -74,7 +75,7 @@ module bfc_system::treasury_beur_test {
         // init positions
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let usd_vault_key = treasury::get_vault_key<BEUR>();
             let mut_vault = treasury::borrow_mut_vault<BEUR>(&mut t, usd_vault_key);
             let ticks = vault::init_positions<BEUR>(
@@ -117,7 +118,7 @@ module bfc_system::treasury_beur_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let position_index = 2;
-            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let usd_vault_key = treasury::get_vault_key<BEUR>();
             let usd_mut_vault = treasury::borrow_mut_vault<BEUR>(&mut t, usd_vault_key);
             let upper =  i32::from(1);
@@ -193,7 +194,7 @@ module bfc_system::treasury_beur_test {
         let min_amount = 0;
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let input_bfc = balance::create_for_testing<BFC>(total_amount_bfc);
@@ -255,7 +256,7 @@ module bfc_system::treasury_beur_test {
         // alice swap usd-bfc
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
             let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let coin_usd = test_scenario::take_from_sender<Coin<BEUR>>(&scenario_val);
