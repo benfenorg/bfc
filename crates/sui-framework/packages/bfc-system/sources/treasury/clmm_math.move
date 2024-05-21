@@ -1,3 +1,4 @@
+#[allow(duplicate_alias)]
 module bfc_system::clmm_math {
     use bfc_system::full_math_u128;
     use bfc_system::i32::{Self, I32};

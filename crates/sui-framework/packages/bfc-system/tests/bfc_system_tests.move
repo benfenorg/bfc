@@ -1,4 +1,5 @@
 #[test_only]
+#[allow(duplicate_alias)]
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
@@ -14,6 +15,24 @@ module bfc_system::bfc_system_tests {
     use sui::test_scenario::Scenario;
     use sui::vec_map::{Self};
 
+    use bfc_system::busd;
+    use bfc_system::bjpy;
+    use bfc_system::mgg;
+    use bfc_system::bmxn;
+    use bfc_system::bzar;
+    use bfc_system::btry;
+    use bfc_system::bsar;
+    use bfc_system::brub;
+    use bfc_system::binr;
+    use bfc_system::bidr;
+    use bfc_system::bgbp;
+    use bfc_system::beur;
+    use bfc_system::bcad;
+    use bfc_system::bbrl;
+    use bfc_system::bars;
+    use bfc_system::baud;
+    use bfc_system::bkrw;
+
     use bfc_system::bfc_system;
     use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::test_utils;
@@ -23,7 +42,7 @@ module bfc_system::bfc_system_tests {
     #[test]
     fun test_round() {
         let bfc_addr = @0x0;
-        let scenario_val = test_scenario::begin(bfc_addr);
+        let mut scenario_val = test_scenario::begin(bfc_addr);
         test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
@@ -169,23 +188,23 @@ module bfc_system::bfc_system_tests {
         bfc_system::create(
             object::bfc_system_state_for_test(),
             balance::create_for_testing<BFC>(0),
-            bfc_system::busd::new_for_test(ctx),
-            bfc_system::bjpy::new_for_test(ctx),
-            bfc_system::bkrw::new_for_test(ctx),
-            bfc_system::baud::new_for_test(ctx),
-            bfc_system::bars::new_for_test(ctx),
-            bfc_system::bbrl::new_for_test(ctx),
-            bfc_system::bcad::new_for_test(ctx),
-            bfc_system::beur::new_for_test(ctx),
-            bfc_system::bgbp::new_for_test(ctx),
-            bfc_system::bidr::new_for_test(ctx),
-            bfc_system::binr::new_for_test(ctx),
-            bfc_system::brub::new_for_test(ctx),
-            bfc_system::bsar::new_for_test(ctx),
-            bfc_system::btry::new_for_test(ctx),
-            bfc_system::bzar::new_for_test(ctx),
-            bfc_system::bmxn::new_for_test(ctx),
-            bfc_system::mgg::new_for_test(ctx),
+            busd::new_for_test(ctx),
+            bjpy::new_for_test(ctx),
+            bkrw::new_for_test(ctx),
+            baud::new_for_test(ctx),
+            bars::new_for_test(ctx),
+            bbrl::new_for_test(ctx),
+            bcad::new_for_test(ctx),
+            beur::new_for_test(ctx),
+            bgbp::new_for_test(ctx),
+            bidr::new_for_test(ctx),
+            binr::new_for_test(ctx),
+            brub::new_for_test(ctx),
+            bsar::new_for_test(ctx),
+            btry::new_for_test(ctx),
+            bzar::new_for_test(ctx),
+            bmxn::new_for_test(ctx),
+            mgg::new_for_test(ctx),
             bfc_system_state_inner::bfc_system_parameters(
                 3600 * 4,
                 2000,
@@ -197,7 +216,7 @@ module bfc_system::bfc_system_tests {
 
     fun setup(): Scenario {
         let bfc_addr = @0x0;
-        let scenario_val = test_scenario::begin(bfc_addr);
+        let mut scenario_val = test_scenario::begin(bfc_addr);
 
         create_sui_system_state_for_testing(test_scenario::ctx(&mut scenario_val));
         test_scenario::next_tx(&mut scenario_val, bfc_addr);
@@ -210,7 +229,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_next_epoch_bfc_required() {
-        let scenario_val = setup();
+        let mut scenario_val = setup();
 
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
@@ -241,8 +260,10 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
+    const ERR_INSUFFICIENT: u64 = 103;
+
     #[test]
-    #[expected_failure(abort_code = bfc_system::treasury::ERR_INSUFFICIENT)]
+    #[expected_failure(abort_code = ERR_INSUFFICIENT)]
     fun test_deposit_with_error() {
         let scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
@@ -263,7 +284,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_deposit_success() {
-        let scenario_val = setup();
+        let mut scenario_val = setup();
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);

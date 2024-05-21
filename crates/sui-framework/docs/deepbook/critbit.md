@@ -424,11 +424,11 @@ title: Module `0xdee9::critbit`
     <b>let</b> <b>mut</b> ptr = <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - index;
     <b>let</b> <b>mut</b> parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.leaves, index).parent;
     <b>while</b> (parent != <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a> && <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, parent, ptr)){
-        ptr = parent;
-        parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr).parent;
+    ptr = parent;
+    parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr).parent;
     };
     <b>if</b>(parent == <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
-        <b>return</b> (0, <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>)
+    <b>return</b> (0, <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>)
     };
     index = <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - <a href="critbit.md#0xdee9_critbit_right_most_leaf">right_most_leaf</a>(tree, <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, parent).left_child);
     <b>let</b> key = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.leaves, index).key;
@@ -461,11 +461,11 @@ title: Module `0xdee9::critbit`
     <b>let</b> <b>mut</b> ptr = <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - index;
     <b>let</b> <b>mut</b> parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.leaves, index).parent;
     <b>while</b> (parent != <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a> && !<a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, parent, ptr)){
-        ptr = parent;
-        parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr).parent;
+    ptr = parent;
+    parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr).parent;
     };
     <b>if</b>(parent == <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
-        <b>return</b> (0, <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>)
+    <b>return</b> (0, <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>)
     };
     index = <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - <a href="critbit.md#0xdee9_critbit_left_most_leaf">left_most_leaf</a>(tree, <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, parent).right_child);
     <b>let</b> key = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.leaves, index).key;
@@ -495,7 +495,7 @@ title: Module `0xdee9::critbit`
 <pre><code><b>fun</b> <a href="critbit.md#0xdee9_critbit_left_most_leaf">left_most_leaf</a>&lt;V: store&gt;(tree: &<a href="critbit.md#0xdee9_critbit_CritbitTree">CritbitTree</a>&lt;V&gt;, root: u64): u64 {
     <b>let</b> <b>mut</b> ptr = root;
     <b>while</b> (ptr &lt; <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>){
-        ptr = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(& tree.internal_nodes, ptr).left_child;
+    ptr = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(& tree.internal_nodes, ptr).left_child;
     };
     ptr
 }
@@ -523,7 +523,7 @@ title: Module `0xdee9::critbit`
 <pre><code><b>fun</b> <a href="critbit.md#0xdee9_critbit_right_most_leaf">right_most_leaf</a>&lt;V: store&gt;(tree: &<a href="critbit.md#0xdee9_critbit_CritbitTree">CritbitTree</a>&lt;V&gt;, root: u64): u64 {
     <b>let</b> <b>mut</b> ptr = root;
     <b>while</b> (ptr &lt; <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>){
-        ptr = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(& tree.internal_nodes, ptr).right_child;
+    ptr = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(& tree.internal_nodes, ptr).right_child;
     };
     ptr
 }
@@ -591,27 +591,27 @@ title: Module `0xdee9::critbit`
     <b>let</b> <b>mut</b> new_internal_node_parent_index = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
     // Search position of the new <b>internal</b> node
     <b>while</b> (ptr &lt; <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
-        <b>let</b> internal_node = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr);
-        <b>if</b> (new_mask &gt; internal_node.mask) {
-            <b>break</b>
-        };
-        new_internal_node_parent_index = ptr;
-        <b>if</b> (key & internal_node.mask == 0) {
-            ptr = internal_node.left_child;
-        } <b>else</b> {
-            ptr = internal_node.right_child;
-        };
+    <b>let</b> internal_node = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr);
+    <b>if</b> (new_mask &gt; internal_node.mask) {
+    <b>break</b>
+    };
+    new_internal_node_parent_index = ptr;
+    <b>if</b> (key & internal_node.mask == 0) {
+    ptr = internal_node.left_child;
+    } <b>else</b> {
+    ptr = internal_node.right_child;
+    };
     };
 
     // Update the child info of new <b>internal</b> node's parent
     <b>if</b> (new_internal_node_parent_index == <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>){
-        // <b>if</b> the new <b>internal</b> node is root
-        tree.root = new_internal_node_index;
+    // <b>if</b> the new <b>internal</b> node is root
+    tree.root = new_internal_node_index;
     } <b>else</b>{
-        // In another case, we <b>update</b> the child field of the new <b>internal</b> node's parent
-        // And the parent field of the new <b>internal</b> node
-        <b>let</b> is_left_child = <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, new_internal_node_parent_index, ptr);
-        <a href="critbit.md#0xdee9_critbit_update_child">update_child</a>(tree, new_internal_node_parent_index, new_internal_node_index, is_left_child);
+    // In another case, we <b>update</b> the child field of the new <b>internal</b> node's parent
+    // And the parent field of the new <b>internal</b> node
+    <b>let</b> is_left_child = <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, new_internal_node_parent_index, ptr);
+    <a href="critbit.md#0xdee9_critbit_update_child">update_child</a>(tree, new_internal_node_parent_index, new_internal_node_index, is_left_child);
     };
 
     // Finally, <b>update</b> the child field of the new <b>internal</b> node
@@ -620,10 +620,10 @@ title: Module `0xdee9::critbit`
     <a href="critbit.md#0xdee9_critbit_update_child">update_child</a>(tree, new_internal_node_index, ptr, !is_left_child);
 
     <b>if</b> (<a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.leaves, tree.min_leaf).key &gt; key) {
-        tree.min_leaf = new_leaf_index;
+    tree.min_leaf = new_leaf_index;
     };
     <b>if</b> (<a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.leaves, tree.max_leaf).key &lt; key) {
-        tree.max_leaf = new_leaf_index;
+    tree.max_leaf = new_leaf_index;
     };
     new_leaf_index
 }
@@ -725,39 +725,39 @@ title: Module `0xdee9::critbit`
     <b>let</b> <a href="critbit.md#0xdee9_critbit_Leaf">Leaf</a>&lt;V&gt; {key: _, value, parent: removed_leaf_parent_index} = <a href="../sui-framework/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> tree.leaves, index);
 
     <b>if</b> (<a href="critbit.md#0xdee9_critbit_size">size</a>(tree) == 0) {
-        tree.root = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
-        tree.min_leaf = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
-        tree.max_leaf = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
-        tree.next_internal_node_index = 0;
-        tree.next_leaf_index = 0;
+    tree.root = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
+    tree.min_leaf = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
+    tree.max_leaf = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
+    tree.next_internal_node_index = 0;
+    tree.next_leaf_index = 0;
     } <b>else</b> {
-        <b>assert</b>!(removed_leaf_parent_index != <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>, <a href="critbit.md#0xdee9_critbit_EIndexOutOfRange">EIndexOutOfRange</a>);
-        <b>let</b> removed_leaf_parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, removed_leaf_parent_index);
-        <b>let</b> removed_leaf_grand_parent_index = removed_leaf_parent.parent;
+    <b>assert</b>!(removed_leaf_parent_index != <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>, <a href="critbit.md#0xdee9_critbit_EIndexOutOfRange">EIndexOutOfRange</a>);
+    <b>let</b> removed_leaf_parent = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, removed_leaf_parent_index);
+    <b>let</b> removed_leaf_grand_parent_index = removed_leaf_parent.parent;
 
-        // Note that sibling of the removed leaf can be a leaf or an <b>internal</b> node
-        is_left_child_ = <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, removed_leaf_parent_index, <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - index);
-        <b>let</b> sibling_index = <b>if</b> (is_left_child_) { removed_leaf_parent.right_child }
-        <b>else</b> { removed_leaf_parent.left_child };
+    // Note that sibling of the removed leaf can be a leaf or an <b>internal</b> node
+    is_left_child_ = <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, removed_leaf_parent_index, <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - index);
+    <b>let</b> sibling_index = <b>if</b> (is_left_child_) { removed_leaf_parent.right_child }
+    <b>else</b> { removed_leaf_parent.left_child };
 
-        <b>if</b> (removed_leaf_grand_parent_index == <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
-            // Parent of the removed leaf is the tree root
-            // Update the parent of the sibling node and set sibling <b>as</b> the tree root
-            <b>if</b> (sibling_index &lt; <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
-                // sibling is an <b>internal</b> node
-                <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> tree.internal_nodes, sibling_index).parent = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
-            } <b>else</b>{
-                // sibling is a leaf
-                <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> tree.leaves, <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - sibling_index).parent = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
-            };
-            tree.root = sibling_index;
-        } <b>else</b> {
-            // grand parent of the removed leaf is a <b>internal</b> node
-            // set sibling <b>as</b> the child of the grand parent of the removed leaf
-            is_left_child_ = <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, removed_leaf_grand_parent_index, removed_leaf_parent_index);
-            <a href="critbit.md#0xdee9_critbit_update_child">update_child</a>(tree, removed_leaf_grand_parent_index, sibling_index, is_left_child_);
-        };
-        <a href="../sui-framework/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> tree.internal_nodes, removed_leaf_parent_index);
+    <b>if</b> (removed_leaf_grand_parent_index == <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
+    // Parent of the removed leaf is the tree root
+    // Update the parent of the sibling node and set sibling <b>as</b> the tree root
+    <b>if</b> (sibling_index &lt; <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) {
+    // sibling is an <b>internal</b> node
+    <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> tree.internal_nodes, sibling_index).parent = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
+    } <b>else</b>{
+    // sibling is a leaf
+    <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> tree.leaves, <a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - sibling_index).parent = <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
+    };
+    tree.root = sibling_index;
+    } <b>else</b> {
+    // grand parent of the removed leaf is a <b>internal</b> node
+    // set sibling <b>as</b> the child of the grand parent of the removed leaf
+    is_left_child_ = <a href="critbit.md#0xdee9_critbit_is_left_child">is_left_child</a>(tree, removed_leaf_grand_parent_index, removed_leaf_parent_index);
+    <a href="critbit.md#0xdee9_critbit_update_child">update_child</a>(tree, removed_leaf_grand_parent_index, sibling_index, is_left_child_);
+    };
+    <a href="../sui-framework/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> tree.internal_nodes, removed_leaf_parent_index);
     };
     value
 }
@@ -935,12 +935,12 @@ title: Module `0xdee9::critbit`
     // <b>if</b> tree is empty, <b>return</b> the patrition index
     <b>if</b>(ptr == <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>) <b>return</b> <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>;
     <b>while</b> (ptr &lt; <a href="critbit.md#0xdee9_critbit_PARTITION_INDEX">PARTITION_INDEX</a>){
-        <b>let</b> node = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr);
-        <b>if</b> (key & node.mask == 0){
-            ptr = node.left_child;
-        } <b>else</b> {
-            ptr = node.right_child;
-        }
+    <b>let</b> node = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&tree.internal_nodes, ptr);
+    <b>if</b> (key & node.mask == 0){
+    ptr = node.left_child;
+    } <b>else</b> {
+    ptr = node.right_child;
+    }
     };
     <b>return</b> (<a href="critbit.md#0xdee9_critbit_MAX_U64">MAX_U64</a> - ptr)
 }

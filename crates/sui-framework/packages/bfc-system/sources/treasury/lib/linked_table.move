@@ -256,7 +256,7 @@ module bfc_system::linked_table {
         assert!(is_none(&node_3.prev), 0);
         assert!((is_some(&node_3.next) && (*option::borrow(&node_3.next) == 2)), 0);
 
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -292,7 +292,7 @@ module bfc_system::linked_table {
         assert!((is_some(&node_3.prev) && (*option::borrow(&node_3.prev) == 2)), 0);
         assert!(is_none(&node_3.next), 0);
 
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -346,7 +346,7 @@ module bfc_system::linked_table {
 
         assert!(length(&table) == 6, 0);
 
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -398,7 +398,7 @@ module bfc_system::linked_table {
         assert!(*option::borrow(&table.head) == 1, 0);
         assert!(*option::borrow(&table.tail) == 10, 0);
 
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -443,7 +443,7 @@ module bfc_system::linked_table {
         assert!(*option::borrow(&table.head) == 2, 0);
         assert!(*option::borrow(&table.tail) == 11, 0);
 
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -455,7 +455,7 @@ module bfc_system::linked_table {
             push_back(&mut table, n, (n as u256));
             n = n + 1;
         };
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -467,7 +467,7 @@ module bfc_system::linked_table {
             push_front(&mut table, n, (n as u256));
             n = n + 1;
         };
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -483,7 +483,7 @@ module bfc_system::linked_table {
             current_key = n;
             n = n - 1;
         };
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
     #[test]
@@ -499,7 +499,7 @@ module bfc_system::linked_table {
             current_key = n;
             n = n + 1;
         };
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 
 
@@ -516,6 +516,6 @@ module bfc_system::linked_table {
         assert!(fetch(&table, 6, 1) == vector<u256>[1006], 1000);
         assert!(fetch(&table, 6, 2) == vector<u256>[1006, 1008], 1001);
         assert!(fetch(&table, 6, 10) == vector<u256>[1006, 1008, 1010], 1002);
-        transfer(table, tx_context::sender(ctx));
+        transfer::transfer(table, tx_context::sender(ctx));
     }
 }

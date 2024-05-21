@@ -10,6 +10,7 @@ Sui object identifiers
 -  [Constants](#@Constants_0)
 -  [Function `id_to_bytes`](#0x2_object_id_to_bytes)
 -  [Function `id_to_address`](#0x2_object_id_to_address)
+-  [Function `bfc_system_state`](#0x2_object_bfc_system_state)
 -  [Function `id_from_bytes`](#0x2_object_id_from_bytes)
 -  [Function `id_from_address`](#0x2_object_id_from_address)
 -  [Function `sui_system_state`](#0x2_object_sui_system_state)
@@ -109,6 +110,15 @@ This is a privileged type that can only be derived from a <code>TxContext</code>
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="0x2_object_BFC_SYSTEM_STATE_OBJECT_ID"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui-framework/object.md#0x2_object_BFC_SYSTEM_STATE_OBJECT_ID">BFC_SYSTEM_STATE_OBJECT_ID</a>: <b>address</b> = c9;
+</code></pre>
+
 
 
 <a name="0x2_object_ENotSystemAddress"></a>
@@ -214,6 +224,35 @@ Get the inner bytes of <code>id</code> as an address.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/object.md#0x2_object_id_to_address">id_to_address</a>(id: &<a href="../sui-framework/object.md#0x2_object_ID">ID</a>): <b>address</b> {
     id.bytes
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x2_object_bfc_system_state"></a>
+
+## Function `bfc_system_state`
+
+Create the <code><a href="../sui-framework/object.md#0x2_object_UID">UID</a></code> for the singleton <code>SuiSystemState</code> object.
+This should only be called once from <code>sui_system</code>.
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/object.md#0x2_object_bfc_system_state">bfc_system_state</a>(ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/object.md#0x2_object_bfc_system_state">bfc_system_state</a>(ctx: &TxContext): <a href="../sui-framework/object.md#0x2_object_UID">UID</a> {
+    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../sui-framework/object.md#0x2_object_ENotSystemAddress">ENotSystemAddress</a>);
+    <a href="../sui-framework/object.md#0x2_object_UID">UID</a> {
+        id: <a href="../sui-framework/object.md#0x2_object_ID">ID</a> { bytes: <a href="../sui-framework/object.md#0x2_object_BFC_SYSTEM_STATE_OBJECT_ID">BFC_SYSTEM_STATE_OBJECT_ID</a> },
+    }
 }
 </code></pre>
 

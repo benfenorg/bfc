@@ -89,12 +89,12 @@ title: Module `0xdee9::clob_v2`
 <b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
 <b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../sui-framework/linked_table.md#0x2_linked_table">0x2::linked_table</a>;
 <b>use</b> <a href="../sui-framework/object.md#0x2_object">0x2::object</a>;
-<b>use</b> <a href="../sui-framework/sui.md#0x2_sui">0x2::sui</a>;
 <b>use</b> <a href="../sui-framework/table.md#0x2_table">0x2::table</a>;
 <b>use</b> <a href="../sui-framework/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -866,7 +866,7 @@ Returned as metadata only when a maker order is filled from place order function
 
 </dd>
 <dt>
-<code>creation_fee: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;</code>
+<code>creation_fee: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;</code>
 </dt>
 <dd>
 
@@ -1428,7 +1428,7 @@ Destroy the given <code>pool_owner_cap</code> object
 
 
 
-<pre><code><b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_">create_pool_</a>&lt;BaseAsset, QuoteAsset&gt;(taker_fee_rate: u64, maker_rebate_rate: u64, tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_">create_pool_</a>&lt;BaseAsset, QuoteAsset&gt;(taker_fee_rate: u64, maker_rebate_rate: u64, tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1442,7 +1442,7 @@ Destroy the given <code>pool_owner_cap</code> object
     maker_rebate_rate: u64,
     tick_size: u64,
     lot_size: u64,
-    creation_fee: Balance&lt;SUI&gt;,
+    creation_fee: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> (pool, pool_owner_cap) = <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return_">create_pool_with_return_</a>&lt;BaseAsset, QuoteAsset&gt;(
@@ -1469,7 +1469,7 @@ Destroy the given <code>pool_owner_cap</code> object
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1481,7 +1481,7 @@ Destroy the given <code>pool_owner_cap</code> object
 <pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool">create_pool</a>&lt;BaseAsset, QuoteAsset&gt;(
     tick_size: u64,
     lot_size: u64,
-    creation_fee: Coin&lt;SUI&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool">create_customized_pool</a>&lt;BaseAsset, QuoteAsset&gt;(
@@ -1508,7 +1508,7 @@ The taker_fee_rate should be greater than or equal to the maker_rebate_rate, and
 Taker_fee_rate of 0.25% should be 2_500_000 for example
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool">create_customized_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool">create_customized_pool</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1522,7 +1522,7 @@ Taker_fee_rate of 0.25% should be 2_500_000 for example
     lot_size: u64,
     taker_fee_rate: u64,
     maker_rebate_rate: u64,
-    creation_fee: Coin&lt;SUI&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <a href="clob_v2.md#0xdee9_clob_v2_create_pool_">create_pool_</a>&lt;BaseAsset, QuoteAsset&gt;(
@@ -1547,7 +1547,7 @@ Taker_fee_rate of 0.25% should be 2_500_000 for example
 Helper function that all the create pools now call to create pools.
 
 
-<pre><code><b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return_">create_pool_with_return_</a>&lt;BaseAsset, QuoteAsset&gt;(taker_fee_rate: u64, maker_rebate_rate: u64, tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;, <a href="clob_v2.md#0xdee9_clob_v2_PoolOwnerCap">clob_v2::PoolOwnerCap</a>)
+<pre><code><b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return_">create_pool_with_return_</a>&lt;BaseAsset, QuoteAsset&gt;(taker_fee_rate: u64, maker_rebate_rate: u64, tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;, <a href="clob_v2.md#0xdee9_clob_v2_PoolOwnerCap">clob_v2::PoolOwnerCap</a>)
 </code></pre>
 
 
@@ -1561,7 +1561,7 @@ Helper function that all the create pools now call to create pools.
     maker_rebate_rate: u64,
     tick_size: u64,
     lot_size: u64,
-    creation_fee: Balance&lt;SUI&gt;,
+    creation_fee: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ): (<a href="clob_v2.md#0xdee9_clob_v2_Pool">Pool</a>&lt;BaseAsset, QuoteAsset&gt;, <a href="clob_v2.md#0xdee9_clob_v2_PoolOwnerCap">PoolOwnerCap</a>) {
     <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&creation_fee) == <a href="clob_v2.md#0xdee9_clob_v2_FEE_AMOUNT_FOR_CREATE_POOL">FEE_AMOUNT_FOR_CREATE_POOL</a>, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidFee">EInvalidFee</a>);
@@ -1621,7 +1621,7 @@ Helper function that all the create pools now call to create pools.
 Function for creating an external pool. This API can be used to wrap deepbook pools into other objects.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return">create_pool_with_return</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return">create_pool_with_return</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;
 </code></pre>
 
 
@@ -1633,7 +1633,7 @@ Function for creating an external pool. This API can be used to wrap deepbook po
 <pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return">create_pool_with_return</a>&lt;BaseAsset, QuoteAsset&gt;(
     tick_size: u64,
     lot_size: u64,
-    creation_fee: Coin&lt;SUI&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ): <a href="clob_v2.md#0xdee9_clob_v2_Pool">Pool</a>&lt;BaseAsset, QuoteAsset&gt; {
     <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool_with_return">create_customized_pool_with_return</a>&lt;BaseAsset, QuoteAsset&gt;(
@@ -1660,7 +1660,7 @@ The taker_fee_rate should be greater than or equal to the maker_rebate_rate, and
 Taker_fee_rate of 0.25% should be 2_500_000 for example
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool_with_return">create_customized_pool_with_return</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool_with_return">create_customized_pool_with_return</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;
 </code></pre>
 
 
@@ -1674,7 +1674,7 @@ Taker_fee_rate of 0.25% should be 2_500_000 for example
     lot_size: u64,
     taker_fee_rate: u64,
     maker_rebate_rate: u64,
-    creation_fee: Coin&lt;SUI&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) : <a href="clob_v2.md#0xdee9_clob_v2_Pool">Pool</a>&lt;BaseAsset, QuoteAsset&gt; {
     <b>let</b> (pool, pool_owner_cap) = <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return_">create_pool_with_return_</a>&lt;BaseAsset, QuoteAsset&gt;(
@@ -1703,7 +1703,7 @@ If a user wants to create a pool and then destroy/lock the pool_owner_cap one ca
 so with this function.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool_v2">create_customized_pool_v2</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/sui.md#0x2_sui_SUI">sui::SUI</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;, <a href="clob_v2.md#0xdee9_clob_v2_PoolOwnerCap">clob_v2::PoolOwnerCap</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="clob_v2.md#0xdee9_clob_v2_create_customized_pool_v2">create_customized_pool_v2</a>&lt;BaseAsset, QuoteAsset&gt;(tick_size: u64, lot_size: u64, taker_fee_rate: u64, maker_rebate_rate: u64, creation_fee: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="clob_v2.md#0xdee9_clob_v2_Pool">clob_v2::Pool</a>&lt;BaseAsset, QuoteAsset&gt;, <a href="clob_v2.md#0xdee9_clob_v2_PoolOwnerCap">clob_v2::PoolOwnerCap</a>)
 </code></pre>
 
 
@@ -1717,7 +1717,7 @@ so with this function.
     lot_size: u64,
     taker_fee_rate: u64,
     maker_rebate_rate: u64,
-    creation_fee: Coin&lt;SUI&gt;,
+    creation_fee: Coin&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext,
 ) : (<a href="clob_v2.md#0xdee9_clob_v2_Pool">Pool</a>&lt;BaseAsset, QuoteAsset&gt;, <a href="clob_v2.md#0xdee9_clob_v2_PoolOwnerCap">PoolOwnerCap</a>) {
     <a href="clob_v2.md#0xdee9_clob_v2_create_pool_with_return_">create_pool_with_return_</a>&lt;BaseAsset, QuoteAsset&gt;(
@@ -2102,187 +2102,187 @@ so with this function.
     <b>let</b> all_open_orders = &<b>mut</b> pool.asks;
     <b>let</b> <b>mut</b> matched_order_metadata = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;<a href="clob_v2.md#0xdee9_clob_v2_MatchedOrderMetadata">MatchedOrderMetadata</a>&lt;BaseAsset, QuoteAsset&gt;&gt;();
     <b>if</b> (<a href="critbit.md#0xdee9_critbit_is_empty">critbit::is_empty</a>(all_open_orders)) {
-        <b>return</b> (base_balance_filled, quote_balance_left, <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
+    <b>return</b> (base_balance_filled, quote_balance_left, <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
     };
     <b>let</b> (<b>mut</b> tick_price, <b>mut</b> tick_index) = min_leaf(all_open_orders);
     <b>let</b> <b>mut</b> terminate_loop = <b>false</b>;
     <b>let</b> <b>mut</b> canceled_order_events = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
 
     <b>while</b> (!is_empty&lt;<a href="clob_v2.md#0xdee9_clob_v2_TickLevel">TickLevel</a>&gt;(all_open_orders) && tick_price &lt;= price_limit) {
-        <b>let</b> tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
-        <b>let</b> <b>mut</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(&tick_level.open_orders));
+    <b>let</b> tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
+    <b>let</b> <b>mut</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(&tick_level.open_orders));
 
-        <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
-            <b>let</b> maker_order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, order_id);
-            <b>let</b> <b>mut</b> maker_base_quantity = maker_order.quantity;
-            <b>let</b> <b>mut</b> skip_order = <b>false</b>;
+    <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
+    <b>let</b> maker_order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, order_id);
+    <b>let</b> <b>mut</b> maker_base_quantity = maker_order.quantity;
+    <b>let</b> <b>mut</b> skip_order = <b>false</b>;
 
-            <b>if</b> (maker_order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt;= current_timestamp || account_owner(account_cap) == maker_order.owner) {
-                skip_order = <b>true</b>;
-                <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, maker_order.owner, maker_order.quantity);
-                <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
-                    client_order_id: maker_order.client_order_id,
-                    order_id: maker_order.order_id,
-                    is_bid: maker_order.is_bid,
-                    owner: maker_order.owner,
-                    original_quantity: maker_order.original_quantity,
-                    base_asset_quantity_canceled: maker_order.quantity,
-                    price: maker_order.price
-                };
+    <b>if</b> (maker_order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt;= current_timestamp || account_owner(account_cap) == maker_order.owner) {
+    skip_order = <b>true</b>;
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, maker_order.owner, maker_order.quantity);
+    <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
+    client_order_id: maker_order.client_order_id,
+    order_id: maker_order.order_id,
+    is_bid: maker_order.is_bid,
+    owner: maker_order.owner,
+    original_quantity: maker_order.original_quantity,
+    base_asset_quantity_canceled: maker_order.quantity,
+    price: maker_order.price
+    };
 
-                <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
 
-            } <b>else</b> {
-                // Calculate how much quote asset (maker_quote_quantity) is required, including the commission, <b>to</b> fill the maker order.
-                <b>let</b> maker_quote_quantity_without_commission = clob_math::mul(
-                    maker_base_quantity,
-                    maker_order.price
-                );
-                <b>let</b> (is_round_down, <b>mut</b> taker_commission)  = clob_math::unsafe_mul_round(
-                    maker_quote_quantity_without_commission,
-                    pool.taker_fee_rate
-                );
-                <b>if</b> (is_round_down)  taker_commission = taker_commission + 1;
+    } <b>else</b> {
+    // Calculate how much quote asset (maker_quote_quantity) is required, including the commission, <b>to</b> fill the maker order.
+    <b>let</b> maker_quote_quantity_without_commission = clob_math::mul(
+    maker_base_quantity,
+    maker_order.price
+    );
+    <b>let</b> (is_round_down, <b>mut</b> taker_commission)  = clob_math::unsafe_mul_round(
+    maker_quote_quantity_without_commission,
+    pool.taker_fee_rate
+    );
+    <b>if</b> (is_round_down)  taker_commission = taker_commission + 1;
 
-                <b>let</b> maker_quote_quantity = maker_quote_quantity_without_commission + taker_commission;
+    <b>let</b> maker_quote_quantity = maker_quote_quantity_without_commission + taker_commission;
 
-                // Total base quantity filled.
-                <b>let</b> <b>mut</b> filled_base_quantity: u64;
-                // Total quote quantity filled, excluding commission and rebate.
-                <b>let</b> <b>mut</b> filled_quote_quantity: u64;
-                // Total quote quantity paid by taker.
-                // filled_quote_quantity_without_commission * (<a href="clob_v2.md#0xdee9_clob_v2_FLOAT_SCALING">FLOAT_SCALING</a> + taker_fee_rate) = filled_quote_quantity
-                <b>let</b> <b>mut</b> filled_quote_quantity_without_commission: u64;
-                <b>if</b> (taker_quote_quantity_remaining &gt; maker_quote_quantity) {
-                    filled_quote_quantity = maker_quote_quantity;
-                    filled_quote_quantity_without_commission = maker_quote_quantity_without_commission;
-                    filled_base_quantity = maker_base_quantity;
-                } <b>else</b> {
-                    terminate_loop = <b>true</b>;
-                    // <b>if</b> not enough quote quantity <b>to</b> pay for taker commission, then no quantity will be filled
-                    filled_quote_quantity_without_commission = clob_math::unsafe_div(
-                        taker_quote_quantity_remaining,
-                        <a href="clob_v2.md#0xdee9_clob_v2_FLOAT_SCALING">FLOAT_SCALING</a> + pool.taker_fee_rate
-                    );
-                    // filled_base_quantity = 0 is permitted since filled_quote_quantity_without_commission can be 0
-                    filled_base_quantity = clob_math::unsafe_div(
-                        filled_quote_quantity_without_commission,
-                        maker_order.price
-                    );
-                    <b>let</b> filled_base_lot = filled_base_quantity / pool.lot_size;
-                    filled_base_quantity = filled_base_lot * pool.lot_size;
-                    // filled_quote_quantity_without_commission = 0 is permitted here since filled_base_quantity could be 0
-                    filled_quote_quantity_without_commission = clob_math::unsafe_mul(
-                        filled_base_quantity,
-                        maker_order.price
-                    );
-                    // <b>if</b> taker_commission = 0 due <b>to</b> underflow, round it up <b>to</b> 1
-                    <b>let</b> (round_down, <b>mut</b> taker_commission) = clob_math::unsafe_mul_round(
-                        filled_quote_quantity_without_commission,
-                        pool.taker_fee_rate
-                    );
-                    <b>if</b> (round_down) {
-                        taker_commission = taker_commission + 1;
-                    };
-                    filled_quote_quantity = filled_quote_quantity_without_commission + taker_commission;
-                };
-                // <b>if</b> maker_rebate = 0 due <b>to</b> underflow, maker will not receive a rebate
-                <b>let</b> maker_rebate = clob_math::unsafe_mul(
-                    filled_quote_quantity_without_commission,
-                    pool.maker_rebate_rate
-                );
-                maker_base_quantity = maker_base_quantity - filled_base_quantity;
+    // Total base quantity filled.
+    <b>let</b> <b>mut</b> filled_base_quantity: u64;
+    // Total quote quantity filled, excluding commission and rebate.
+    <b>let</b> <b>mut</b> filled_quote_quantity: u64;
+    // Total quote quantity paid by taker.
+    // filled_quote_quantity_without_commission * (<a href="clob_v2.md#0xdee9_clob_v2_FLOAT_SCALING">FLOAT_SCALING</a> + taker_fee_rate) = filled_quote_quantity
+    <b>let</b> <b>mut</b> filled_quote_quantity_without_commission: u64;
+    <b>if</b> (taker_quote_quantity_remaining &gt; maker_quote_quantity) {
+    filled_quote_quantity = maker_quote_quantity;
+    filled_quote_quantity_without_commission = maker_quote_quantity_without_commission;
+    filled_base_quantity = maker_base_quantity;
+    } <b>else</b> {
+    terminate_loop = <b>true</b>;
+    // <b>if</b> not enough quote quantity <b>to</b> pay for taker commission, then no quantity will be filled
+    filled_quote_quantity_without_commission = clob_math::unsafe_div(
+    taker_quote_quantity_remaining,
+    <a href="clob_v2.md#0xdee9_clob_v2_FLOAT_SCALING">FLOAT_SCALING</a> + pool.taker_fee_rate
+    );
+    // filled_base_quantity = 0 is permitted since filled_quote_quantity_without_commission can be 0
+    filled_base_quantity = clob_math::unsafe_div(
+    filled_quote_quantity_without_commission,
+    maker_order.price
+    );
+    <b>let</b> filled_base_lot = filled_base_quantity / pool.lot_size;
+    filled_base_quantity = filled_base_lot * pool.lot_size;
+    // filled_quote_quantity_without_commission = 0 is permitted here since filled_base_quantity could be 0
+    filled_quote_quantity_without_commission = clob_math::unsafe_mul(
+    filled_base_quantity,
+    maker_order.price
+    );
+    // <b>if</b> taker_commission = 0 due <b>to</b> underflow, round it up <b>to</b> 1
+    <b>let</b> (round_down, <b>mut</b> taker_commission) = clob_math::unsafe_mul_round(
+    filled_quote_quantity_without_commission,
+    pool.taker_fee_rate
+    );
+    <b>if</b> (round_down) {
+    taker_commission = taker_commission + 1;
+    };
+    filled_quote_quantity = filled_quote_quantity_without_commission + taker_commission;
+    };
+    // <b>if</b> maker_rebate = 0 due <b>to</b> underflow, maker will not receive a rebate
+    <b>let</b> maker_rebate = clob_math::unsafe_mul(
+    filled_quote_quantity_without_commission,
+    pool.maker_rebate_rate
+    );
+    maker_base_quantity = maker_base_quantity - filled_base_quantity;
 
-                // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
-                taker_quote_quantity_remaining = taker_quote_quantity_remaining - filled_quote_quantity;
-                <b>let</b> locked_base_balance = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;BaseAsset&gt;(
-                    &<b>mut</b> pool.base_custodian,
-                    maker_order.owner,
-                    filled_base_quantity
-                );
+    // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
+    taker_quote_quantity_remaining = taker_quote_quantity_remaining - filled_quote_quantity;
+    <b>let</b> locked_base_balance = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;BaseAsset&gt;(
+    &<b>mut</b> pool.base_custodian,
+    maker_order.owner,
+    filled_base_quantity
+    );
 
-                <b>let</b> <b>mut</b> quote_balance_filled = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                    &<b>mut</b> quote_balance_left,
-                    filled_quote_quantity,
-                );
-                // Send quote asset including rebate <b>to</b> maker.
-                <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
-                    &<b>mut</b> pool.quote_custodian,
-                    maker_order.owner,
-                    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                        &<b>mut</b> quote_balance_filled,
-                        maker_rebate + filled_quote_quantity_without_commission,
-                    ),
-                );
-                // Send remaining of commission - rebate <b>to</b> the protocol.
-                // commission - rebate = filled_quote_quantity_without_commission - filled_quote_quantity - maker_rebate
-                <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, quote_balance_filled);
-                <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> base_balance_filled, locked_base_balance);
+    <b>let</b> <b>mut</b> quote_balance_filled = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> quote_balance_left,
+    filled_quote_quantity,
+    );
+    // Send quote asset including rebate <b>to</b> maker.
+    <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
+    &<b>mut</b> pool.quote_custodian,
+    maker_order.owner,
+    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> quote_balance_filled,
+    maker_rebate + filled_quote_quantity_without_commission,
+    ),
+    );
+    // Send remaining of commission - rebate <b>to</b> the protocol.
+    // commission - rebate = filled_quote_quantity_without_commission - filled_quote_quantity - maker_rebate
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, quote_balance_filled);
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> base_balance_filled, locked_base_balance);
 
-                <a href="clob_v2.md#0xdee9_clob_v2_emit_order_filled">emit_order_filled</a>&lt;BaseAsset, QuoteAsset&gt;(
-                    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
-                    client_order_id,
-                    account_owner(account_cap),
-                    maker_order,
-                    filled_base_quantity,
-                    // taker_commission = filled_quote_quantity - filled_quote_quantity_without_commission
-                    // This guarantees that the subtraction will not underflow
-                    filled_quote_quantity - filled_quote_quantity_without_commission,
-                    maker_rebate
-                );
-                <b>if</b>(compute_metadata) {
-                    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(
-                        &<b>mut</b> matched_order_metadata,
-                        <a href="clob_v2.md#0xdee9_clob_v2_matched_order_metadata">matched_order_metadata</a>(
-                            *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
-                            account_owner(account_cap),
-                            maker_order,
-                            filled_base_quantity,
-                            // taker_commission = filled_quote_quantity - filled_quote_quantity_without_commission
-                            // This guarantees that the subtraction will not underflow
-                            filled_quote_quantity - filled_quote_quantity_without_commission,
-                            maker_rebate
-                        )
-                    );
-                };
-            };
+    <a href="clob_v2.md#0xdee9_clob_v2_emit_order_filled">emit_order_filled</a>&lt;BaseAsset, QuoteAsset&gt;(
+    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
+    client_order_id,
+    account_owner(account_cap),
+    maker_order,
+    filled_base_quantity,
+    // taker_commission = filled_quote_quantity - filled_quote_quantity_without_commission
+    // This guarantees that the subtraction will not underflow
+    filled_quote_quantity - filled_quote_quantity_without_commission,
+    maker_rebate
+    );
+    <b>if</b>(compute_metadata) {
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(
+    &<b>mut</b> matched_order_metadata,
+    <a href="clob_v2.md#0xdee9_clob_v2_matched_order_metadata">matched_order_metadata</a>(
+    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
+    account_owner(account_cap),
+    maker_order,
+    filled_base_quantity,
+    // taker_commission = filled_quote_quantity - filled_quote_quantity_without_commission
+    // This guarantees that the subtraction will not underflow
+    filled_quote_quantity - filled_quote_quantity_without_commission,
+    maker_rebate
+    )
+    );
+    };
+    };
 
-            <b>if</b> (skip_order || maker_base_quantity == 0) {
-                // Remove the maker order.
-                <b>let</b> old_order_id = order_id;
-                <b>let</b> maybe_order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(&tick_level.open_orders, order_id);
-                <b>if</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(maybe_order_id)) {
-                    order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(maybe_order_id);
-                };
-                <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, maker_order.owner);
-                <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(usr_open_order_ids, old_order_id);
-                <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(&<b>mut</b> tick_level.open_orders, old_order_id);
-            } <b>else</b> {
-                // Update the maker order.
-                <b>let</b> maker_order_mut = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow_mut">linked_table::borrow_mut</a>(
-                    &<b>mut</b> tick_level.open_orders,
-                    order_id);
-                maker_order_mut.quantity = maker_base_quantity;
-            };
-            <b>if</b> (terminate_loop) {
-                <b>break</b>
-            };
-        };
-        <b>if</b> (<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
-            (tick_price, _) = next_leaf(all_open_orders, tick_price);
-            <a href="clob_v2.md#0xdee9_clob_v2_destroy_empty_level">destroy_empty_level</a>(remove_leaf_by_index(all_open_orders, tick_index));
-            (_, tick_index) = find_leaf(all_open_orders, tick_price);
-        };
-        <b>if</b> (terminate_loop) {
-            <b>break</b>
-        };
+    <b>if</b> (skip_order || maker_base_quantity == 0) {
+    // Remove the maker order.
+    <b>let</b> old_order_id = order_id;
+    <b>let</b> maybe_order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(&tick_level.open_orders, order_id);
+    <b>if</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(maybe_order_id)) {
+    order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(maybe_order_id);
+    };
+    <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, maker_order.owner);
+    <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(usr_open_order_ids, old_order_id);
+    <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(&<b>mut</b> tick_level.open_orders, old_order_id);
+    } <b>else</b> {
+    // Update the maker order.
+    <b>let</b> maker_order_mut = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow_mut">linked_table::borrow_mut</a>(
+    &<b>mut</b> tick_level.open_orders,
+    order_id);
+    maker_order_mut.quantity = maker_base_quantity;
+    };
+    <b>if</b> (terminate_loop) {
+    <b>break</b>
+    };
+    };
+    <b>if</b> (<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
+    (tick_price, _) = next_leaf(all_open_orders, tick_price);
+    <a href="clob_v2.md#0xdee9_clob_v2_destroy_empty_level">destroy_empty_level</a>(remove_leaf_by_index(all_open_orders, tick_index));
+    (_, tick_index) = find_leaf(all_open_orders, tick_price);
+    };
+    <b>if</b> (terminate_loop) {
+    <b>break</b>
+    };
     };
 
     <b>if</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&canceled_order_events)) {
-        <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
-            pool_id,
-            orders_canceled: canceled_order_events,
-        });
+    <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
+    pool_id,
+    orders_canceled: canceled_order_events,
+    });
     };
 
     <b>return</b> (base_balance_filled, quote_balance_left, <b>if</b>(compute_metadata) <a href="../move-stdlib/option.md#0x1_option_some">option::some</a>(matched_order_metadata) <b>else</b> <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
@@ -2327,144 +2327,144 @@ so with this function.
     <b>let</b> all_open_orders = &<b>mut</b> pool.asks;
     <b>let</b> <b>mut</b> matched_order_metadata = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;<a href="clob_v2.md#0xdee9_clob_v2_MatchedOrderMetadata">MatchedOrderMetadata</a>&lt;BaseAsset, QuoteAsset&gt;&gt;();
     <b>if</b> (<a href="critbit.md#0xdee9_critbit_is_empty">critbit::is_empty</a>(all_open_orders)) {
-        <b>return</b> (base_balance_filled, quote_balance_left, <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
+    <b>return</b> (base_balance_filled, quote_balance_left, <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
     };
     <b>let</b> (<b>mut</b> tick_price, <b>mut</b> tick_index) = min_leaf(all_open_orders);
     <b>let</b> <b>mut</b> canceled_order_events = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
 
     <b>while</b> (!is_empty&lt;<a href="clob_v2.md#0xdee9_clob_v2_TickLevel">TickLevel</a>&gt;(all_open_orders) && tick_price &lt;= price_limit) {
-        <b>let</b> tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
-        <b>let</b> <b>mut</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(&tick_level.open_orders));
+    <b>let</b> tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
+    <b>let</b> <b>mut</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(&tick_level.open_orders));
 
-        <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
-            <b>let</b> maker_order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, order_id);
-            <b>let</b> <b>mut</b> maker_base_quantity = maker_order.quantity;
-            <b>let</b> <b>mut</b> skip_order = <b>false</b>;
+    <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
+    <b>let</b> maker_order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, order_id);
+    <b>let</b> <b>mut</b> maker_base_quantity = maker_order.quantity;
+    <b>let</b> <b>mut</b> skip_order = <b>false</b>;
 
-            <b>if</b> (maker_order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt;= current_timestamp || account_owner(account_cap) == maker_order.owner) {
-                skip_order = <b>true</b>;
-                <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, maker_order.owner, maker_order.quantity);
-                <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
-                    client_order_id: maker_order.client_order_id,
-                    order_id: maker_order.order_id,
-                    is_bid: maker_order.is_bid,
-                    owner: maker_order.owner,
-                    original_quantity: maker_order.original_quantity,
-                    base_asset_quantity_canceled: maker_order.quantity,
-                    price: maker_order.price
-                };
-                <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
+    <b>if</b> (maker_order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt;= current_timestamp || account_owner(account_cap) == maker_order.owner) {
+    skip_order = <b>true</b>;
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, maker_order.owner, maker_order.quantity);
+    <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
+    client_order_id: maker_order.client_order_id,
+    order_id: maker_order.order_id,
+    is_bid: maker_order.is_bid,
+    owner: maker_order.owner,
+    original_quantity: maker_order.original_quantity,
+    base_asset_quantity_canceled: maker_order.quantity,
+    price: maker_order.price
+    };
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
 
-            } <b>else</b> {
-                <b>let</b> filled_base_quantity =
-                    <b>if</b> (taker_base_quantity_remaining &gt; maker_base_quantity) { maker_base_quantity }
-                    <b>else</b> { taker_base_quantity_remaining };
-                // Note that <b>if</b> a user creates a pool that allows orders that are too small, this will fail since we cannot have a filled
-                // quote quantity of 0.
-                <b>let</b> filled_quote_quantity = clob_math::mul(filled_base_quantity, maker_order.price);
+    } <b>else</b> {
+    <b>let</b> filled_base_quantity =
+    <b>if</b> (taker_base_quantity_remaining &gt; maker_base_quantity) { maker_base_quantity }
+    <b>else</b> { taker_base_quantity_remaining };
+    // Note that <b>if</b> a user creates a pool that allows orders that are too small, this will fail since we cannot have a filled
+    // quote quantity of 0.
+    <b>let</b> filled_quote_quantity = clob_math::mul(filled_base_quantity, maker_order.price);
 
-                // <b>if</b> maker_rebate = 0 due <b>to</b> underflow, maker will not receive a rebate
-                <b>let</b> maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
-                // <b>if</b> taker_commission = 0 due <b>to</b> underflow, round it up <b>to</b> 1
-                <b>let</b> (is_round_down, <b>mut</b> taker_commission) = clob_math::unsafe_mul_round(
-                    filled_quote_quantity,
-                    pool.taker_fee_rate
-                );
-                <b>if</b> (is_round_down) taker_commission = taker_commission + 1;
+    // <b>if</b> maker_rebate = 0 due <b>to</b> underflow, maker will not receive a rebate
+    <b>let</b> maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
+    // <b>if</b> taker_commission = 0 due <b>to</b> underflow, round it up <b>to</b> 1
+    <b>let</b> (is_round_down, <b>mut</b> taker_commission) = clob_math::unsafe_mul_round(
+    filled_quote_quantity,
+    pool.taker_fee_rate
+    );
+    <b>if</b> (is_round_down) taker_commission = taker_commission + 1;
 
-                maker_base_quantity = maker_base_quantity - filled_base_quantity;
+    maker_base_quantity = maker_base_quantity - filled_base_quantity;
 
-                // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
-                taker_base_quantity_remaining = taker_base_quantity_remaining - filled_base_quantity;
-                <b>let</b> locked_base_balance = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;BaseAsset&gt;(
-                    &<b>mut</b> pool.base_custodian,
-                    maker_order.owner,
-                    filled_base_quantity
-                );
-                <b>let</b> <b>mut</b> taker_commission_balance = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                    &<b>mut</b> quote_balance_left,
-                    taker_commission,
-                );
-                <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
-                    &<b>mut</b> pool.quote_custodian,
-                    maker_order.owner,
-                    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                        &<b>mut</b> taker_commission_balance,
-                        maker_rebate,
-                    ),
-                );
-                <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, taker_commission_balance);
-                <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> base_balance_filled, locked_base_balance);
+    // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
+    taker_base_quantity_remaining = taker_base_quantity_remaining - filled_base_quantity;
+    <b>let</b> locked_base_balance = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;BaseAsset&gt;(
+    &<b>mut</b> pool.base_custodian,
+    maker_order.owner,
+    filled_base_quantity
+    );
+    <b>let</b> <b>mut</b> taker_commission_balance = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> quote_balance_left,
+    taker_commission,
+    );
+    <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
+    &<b>mut</b> pool.quote_custodian,
+    maker_order.owner,
+    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> taker_commission_balance,
+    maker_rebate,
+    ),
+    );
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, taker_commission_balance);
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> base_balance_filled, locked_base_balance);
 
-                <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
-                    &<b>mut</b> pool.quote_custodian,
-                    maker_order.owner,
-                    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                        &<b>mut</b> quote_balance_left,
-                        filled_quote_quantity,
-                    ),
-                );
+    <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
+    &<b>mut</b> pool.quote_custodian,
+    maker_order.owner,
+    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> quote_balance_left,
+    filled_quote_quantity,
+    ),
+    );
 
-                <a href="clob_v2.md#0xdee9_clob_v2_emit_order_filled">emit_order_filled</a>&lt;BaseAsset, QuoteAsset&gt;(
-                    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
-                    client_order_id,
-                    account_owner(account_cap),
-                    maker_order,
-                    filled_base_quantity,
-                    taker_commission,
-                    maker_rebate
-                );
-                <b>if</b>(compute_metadata){
-                    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(
-                        &<b>mut</b> matched_order_metadata,
-                        <a href="clob_v2.md#0xdee9_clob_v2_matched_order_metadata">matched_order_metadata</a>(
-                            *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
-                            account_owner(account_cap),
-                            maker_order,
-                            filled_base_quantity,
-                            taker_commission,
-                            maker_rebate
-                        )
-                    );
-                };
-            };
+    <a href="clob_v2.md#0xdee9_clob_v2_emit_order_filled">emit_order_filled</a>&lt;BaseAsset, QuoteAsset&gt;(
+    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
+    client_order_id,
+    account_owner(account_cap),
+    maker_order,
+    filled_base_quantity,
+    taker_commission,
+    maker_rebate
+    );
+    <b>if</b>(compute_metadata){
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(
+    &<b>mut</b> matched_order_metadata,
+    <a href="clob_v2.md#0xdee9_clob_v2_matched_order_metadata">matched_order_metadata</a>(
+    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
+    account_owner(account_cap),
+    maker_order,
+    filled_base_quantity,
+    taker_commission,
+    maker_rebate
+    )
+    );
+    };
+    };
 
-            <b>if</b> (skip_order || maker_base_quantity == 0) {
-                // Remove the maker order.
-                <b>let</b> old_order_id = order_id;
-                <b>let</b> maybe_order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(&tick_level.open_orders, order_id);
-                <b>if</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(maybe_order_id)) {
-                    order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(maybe_order_id);
-                };
-                <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, maker_order.owner);
-                <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(usr_open_order_ids, old_order_id);
-                <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(&<b>mut</b> tick_level.open_orders, old_order_id);
-            } <b>else</b> {
-                // Update the maker order.
-                <b>let</b> maker_order_mut = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow_mut">linked_table::borrow_mut</a>(
-                    &<b>mut</b> tick_level.open_orders,
-                    order_id);
-                maker_order_mut.quantity = maker_base_quantity;
-            };
-            <b>if</b> (taker_base_quantity_remaining == 0) {
-                <b>break</b>
-            };
-        };
-        <b>if</b> (<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
-            (tick_price, _) = next_leaf(all_open_orders, tick_price);
-            <a href="clob_v2.md#0xdee9_clob_v2_destroy_empty_level">destroy_empty_level</a>(remove_leaf_by_index(all_open_orders, tick_index));
-            (_, tick_index) = find_leaf(all_open_orders, tick_price);
-        };
-        <b>if</b> (taker_base_quantity_remaining == 0) {
-            <b>break</b>
-        };
+    <b>if</b> (skip_order || maker_base_quantity == 0) {
+    // Remove the maker order.
+    <b>let</b> old_order_id = order_id;
+    <b>let</b> maybe_order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(&tick_level.open_orders, order_id);
+    <b>if</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(maybe_order_id)) {
+    order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(maybe_order_id);
+    };
+    <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, maker_order.owner);
+    <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(usr_open_order_ids, old_order_id);
+    <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(&<b>mut</b> tick_level.open_orders, old_order_id);
+    } <b>else</b> {
+    // Update the maker order.
+    <b>let</b> maker_order_mut = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow_mut">linked_table::borrow_mut</a>(
+    &<b>mut</b> tick_level.open_orders,
+    order_id);
+    maker_order_mut.quantity = maker_base_quantity;
+    };
+    <b>if</b> (taker_base_quantity_remaining == 0) {
+    <b>break</b>
+    };
+    };
+    <b>if</b> (<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
+    (tick_price, _) = next_leaf(all_open_orders, tick_price);
+    <a href="clob_v2.md#0xdee9_clob_v2_destroy_empty_level">destroy_empty_level</a>(remove_leaf_by_index(all_open_orders, tick_index));
+    (_, tick_index) = find_leaf(all_open_orders, tick_price);
+    };
+    <b>if</b> (taker_base_quantity_remaining == 0) {
+    <b>break</b>
+    };
     };
 
     <b>if</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&canceled_order_events)) {
-        <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
-            pool_id,
-            orders_canceled: canceled_order_events,
-        });
+    <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
+    pool_id,
+    orders_canceled: canceled_order_events,
+    });
     };
     <b>return</b> (base_balance_filled, quote_balance_left, <b>if</b>(compute_metadata) <a href="../move-stdlib/option.md#0x1_option_some">option::some</a>(matched_order_metadata) <b>else</b> <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
 }
@@ -2505,147 +2505,147 @@ so with this function.
     <b>let</b> all_open_orders = &<b>mut</b> pool.bids;
     <b>let</b> <b>mut</b> matched_order_metadata = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;<a href="clob_v2.md#0xdee9_clob_v2_MatchedOrderMetadata">MatchedOrderMetadata</a>&lt;BaseAsset, QuoteAsset&gt;&gt;();
     <b>if</b> (<a href="critbit.md#0xdee9_critbit_is_empty">critbit::is_empty</a>(all_open_orders)) {
-        <b>return</b> (base_balance_left, quote_balance_filled, <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
+    <b>return</b> (base_balance_left, quote_balance_filled, <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
     };
     <b>let</b> (<b>mut</b> tick_price, <b>mut</b> tick_index) = max_leaf(all_open_orders);
     <b>let</b> <b>mut</b> canceled_order_events = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
     <b>while</b> (!is_empty&lt;<a href="clob_v2.md#0xdee9_clob_v2_TickLevel">TickLevel</a>&gt;(all_open_orders) && tick_price &gt;= price_limit) {
-        <b>let</b> tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
-        <b>let</b> <b>mut</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(&tick_level.open_orders));
-        <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
-            <b>let</b> maker_order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, order_id);
-            <b>let</b> <b>mut</b> maker_base_quantity = maker_order.quantity;
-            <b>let</b> <b>mut</b> skip_order = <b>false</b>;
+    <b>let</b> tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
+    <b>let</b> <b>mut</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(&tick_level.open_orders));
+    <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
+    <b>let</b> maker_order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, order_id);
+    <b>let</b> <b>mut</b> maker_base_quantity = maker_order.quantity;
+    <b>let</b> <b>mut</b> skip_order = <b>false</b>;
 
-            <b>if</b> (maker_order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt;= current_timestamp || account_owner(account_cap) == maker_order.owner) {
-                skip_order = <b>true</b>;
-                <b>let</b> maker_quote_quantity = clob_math::mul(maker_order.quantity, maker_order.price);
-                <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, maker_order.owner, maker_quote_quantity);
-                <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
-                    client_order_id: maker_order.client_order_id,
-                    order_id: maker_order.order_id,
-                    is_bid: maker_order.is_bid,
-                    owner: maker_order.owner,
-                    original_quantity: maker_order.original_quantity,
-                    base_asset_quantity_canceled: maker_order.quantity,
-                    price: maker_order.price
-                };
-                <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
-            } <b>else</b> {
-                <b>let</b> taker_base_quantity_remaining = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&base_balance_left);
-                <b>let</b> filled_base_quantity =
-                    <b>if</b> (taker_base_quantity_remaining &gt;= maker_base_quantity) { maker_base_quantity }
-                    <b>else</b> { taker_base_quantity_remaining };
-                // If a bit is rounded down, the pool will take this <b>as</b> a fee.
-                <b>let</b> (is_round_down, filled_quote_quantity) = clob_math::unsafe_mul_round(filled_base_quantity, maker_order.price);
-                <b>if</b> (is_round_down) {
-                    <b>let</b> rounded_down_quantity = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;QuoteAsset&gt;(
-                        &<b>mut</b> pool.quote_custodian,
-                        maker_order.owner,
-                        1
-                    );
-                    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, rounded_down_quantity);
-                };
+    <b>if</b> (maker_order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt;= current_timestamp || account_owner(account_cap) == maker_order.owner) {
+    skip_order = <b>true</b>;
+    <b>let</b> maker_quote_quantity = clob_math::mul(maker_order.quantity, maker_order.price);
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, maker_order.owner, maker_quote_quantity);
+    <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
+    client_order_id: maker_order.client_order_id,
+    order_id: maker_order.order_id,
+    is_bid: maker_order.is_bid,
+    owner: maker_order.owner,
+    original_quantity: maker_order.original_quantity,
+    base_asset_quantity_canceled: maker_order.quantity,
+    price: maker_order.price
+    };
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
+    } <b>else</b> {
+    <b>let</b> taker_base_quantity_remaining = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&base_balance_left);
+    <b>let</b> filled_base_quantity =
+    <b>if</b> (taker_base_quantity_remaining &gt;= maker_base_quantity) { maker_base_quantity }
+    <b>else</b> { taker_base_quantity_remaining };
+    // If a bit is rounded down, the pool will take this <b>as</b> a fee.
+    <b>let</b> (is_round_down, filled_quote_quantity) = clob_math::unsafe_mul_round(filled_base_quantity, maker_order.price);
+    <b>if</b> (is_round_down) {
+    <b>let</b> rounded_down_quantity = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;QuoteAsset&gt;(
+    &<b>mut</b> pool.quote_custodian,
+    maker_order.owner,
+    1
+    );
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, rounded_down_quantity);
+    };
 
-                // <b>if</b> maker_rebate = 0 due <b>to</b> underflow, maker will not receive a rebate
-                <b>let</b> maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
-                // <b>if</b> taker_commission = 0 due <b>to</b> underflow, round it up <b>to</b> 1
-                <b>let</b> (is_round_down, <b>mut</b> taker_commission) = clob_math::unsafe_mul_round(
-                    filled_quote_quantity,
-                    pool.taker_fee_rate
-                );
-                <b>if</b> (is_round_down) taker_commission = taker_commission + 1;
+    // <b>if</b> maker_rebate = 0 due <b>to</b> underflow, maker will not receive a rebate
+    <b>let</b> maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
+    // <b>if</b> taker_commission = 0 due <b>to</b> underflow, round it up <b>to</b> 1
+    <b>let</b> (is_round_down, <b>mut</b> taker_commission) = clob_math::unsafe_mul_round(
+    filled_quote_quantity,
+    pool.taker_fee_rate
+    );
+    <b>if</b> (is_round_down) taker_commission = taker_commission + 1;
 
-                maker_base_quantity = maker_base_quantity - filled_base_quantity;
-                // maker in bid side, decrease maker's locked quote asset, increase maker's available base asset
-                <b>let</b> <b>mut</b> locked_quote_balance = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;QuoteAsset&gt;(
-                    &<b>mut</b> pool.quote_custodian,
-                    maker_order.owner,
-                    filled_quote_quantity
-                );
-                <b>let</b> <b>mut</b> taker_commission_balance = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                    &<b>mut</b> locked_quote_balance,
-                    taker_commission,
-                );
-                <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
-                    &<b>mut</b> pool.quote_custodian,
-                    maker_order.owner,
-                    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                        &<b>mut</b> taker_commission_balance,
-                        maker_rebate,
-                    ),
-                );
-                <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, taker_commission_balance);
-                <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> quote_balance_filled, locked_quote_balance);
+    maker_base_quantity = maker_base_quantity - filled_base_quantity;
+    // maker in bid side, decrease maker's locked quote asset, increase maker's available base asset
+    <b>let</b> <b>mut</b> locked_quote_balance = <a href="custodian.md#0xdee9_custodian_decrease_user_locked_balance">custodian::decrease_user_locked_balance</a>&lt;QuoteAsset&gt;(
+    &<b>mut</b> pool.quote_custodian,
+    maker_order.owner,
+    filled_quote_quantity
+    );
+    <b>let</b> <b>mut</b> taker_commission_balance = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> locked_quote_balance,
+    taker_commission,
+    );
+    <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;QuoteAsset&gt;(
+    &<b>mut</b> pool.quote_custodian,
+    maker_order.owner,
+    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> taker_commission_balance,
+    maker_rebate,
+    ),
+    );
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.quote_asset_trading_fees, taker_commission_balance);
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> quote_balance_filled, locked_quote_balance);
 
-                <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;BaseAsset&gt;(
-                    &<b>mut</b> pool.base_custodian,
-                    maker_order.owner,
-                    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
-                        &<b>mut</b> base_balance_left,
-                        filled_base_quantity,
-                    ),
-                );
-                <a href="clob_v2.md#0xdee9_clob_v2_emit_order_filled">emit_order_filled</a>&lt;BaseAsset, QuoteAsset&gt;(
-                    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
-                    client_order_id,
-                    account_owner(account_cap),
-                    maker_order,
-                    filled_base_quantity,
-                    taker_commission,
-                    maker_rebate
-                );
-                <b>if</b>(compute_metadata) {
-                    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(
-                        &<b>mut</b> matched_order_metadata,
-                        <a href="clob_v2.md#0xdee9_clob_v2_matched_order_metadata">matched_order_metadata</a>(
-                            *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
-                            account_owner(account_cap),
-                            maker_order,
-                            filled_base_quantity,
-                            taker_commission,
-                            maker_rebate
-                        )
-                    );
-                }
-            };
+    <a href="custodian.md#0xdee9_custodian_increase_user_available_balance">custodian::increase_user_available_balance</a>&lt;BaseAsset&gt;(
+    &<b>mut</b> pool.base_custodian,
+    maker_order.owner,
+    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(
+    &<b>mut</b> base_balance_left,
+    filled_base_quantity,
+    ),
+    );
+    <a href="clob_v2.md#0xdee9_clob_v2_emit_order_filled">emit_order_filled</a>&lt;BaseAsset, QuoteAsset&gt;(
+    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
+    client_order_id,
+    account_owner(account_cap),
+    maker_order,
+    filled_base_quantity,
+    taker_commission,
+    maker_rebate
+    );
+    <b>if</b>(compute_metadata) {
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(
+    &<b>mut</b> matched_order_metadata,
+    <a href="clob_v2.md#0xdee9_clob_v2_matched_order_metadata">matched_order_metadata</a>(
+    *<a href="../sui-framework/object.md#0x2_object_uid_as_inner">object::uid_as_inner</a>(&pool.id),
+    account_owner(account_cap),
+    maker_order,
+    filled_base_quantity,
+    taker_commission,
+    maker_rebate
+    )
+    );
+    }
+    };
 
-            <b>if</b> (skip_order || maker_base_quantity == 0) {
-                // Remove the maker order.
-                <b>let</b> old_order_id = order_id;
-                <b>let</b> maybe_order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(&tick_level.open_orders, order_id);
-                <b>if</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(maybe_order_id)) {
-                    order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(maybe_order_id);
-                };
-                <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, maker_order.owner);
-                <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(usr_open_order_ids, old_order_id);
-                <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(&<b>mut</b> tick_level.open_orders, old_order_id);
-            } <b>else</b> {
-                // Update the maker order.
-                <b>let</b> maker_order_mut = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow_mut">linked_table::borrow_mut</a>(
-                    &<b>mut</b> tick_level.open_orders,
-                    order_id);
-                maker_order_mut.quantity = maker_base_quantity;
-            };
-            <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&base_balance_left) == 0) {
-                <b>break</b>
-            };
-        };
-        <b>if</b> (<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
-            (tick_price, _) = previous_leaf(all_open_orders, tick_price);
-            <a href="clob_v2.md#0xdee9_clob_v2_destroy_empty_level">destroy_empty_level</a>(remove_leaf_by_index(all_open_orders, tick_index));
-            (_, tick_index) = find_leaf(all_open_orders, tick_price);
-        };
-        <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&base_balance_left) == 0) {
-            <b>break</b>
-        };
+    <b>if</b> (skip_order || maker_base_quantity == 0) {
+    // Remove the maker order.
+    <b>let</b> old_order_id = order_id;
+    <b>let</b> maybe_order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(&tick_level.open_orders, order_id);
+    <b>if</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(maybe_order_id)) {
+    order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(maybe_order_id);
+    };
+    <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, maker_order.owner);
+    <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(usr_open_order_ids, old_order_id);
+    <a href="../sui-framework/linked_table.md#0x2_linked_table_remove">linked_table::remove</a>(&<b>mut</b> tick_level.open_orders, old_order_id);
+    } <b>else</b> {
+    // Update the maker order.
+    <b>let</b> maker_order_mut = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow_mut">linked_table::borrow_mut</a>(
+    &<b>mut</b> tick_level.open_orders,
+    order_id);
+    maker_order_mut.quantity = maker_base_quantity;
+    };
+    <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&base_balance_left) == 0) {
+    <b>break</b>
+    };
+    };
+    <b>if</b> (<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(&tick_level.open_orders)) {
+    (tick_price, _) = previous_leaf(all_open_orders, tick_price);
+    <a href="clob_v2.md#0xdee9_clob_v2_destroy_empty_level">destroy_empty_level</a>(remove_leaf_by_index(all_open_orders, tick_index));
+    (_, tick_index) = find_leaf(all_open_orders, tick_price);
+    };
+    <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&base_balance_left) == 0) {
+    <b>break</b>
+    };
     };
 
     <b>if</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&canceled_order_events)) {
-        <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
-            pool_id,
-            orders_canceled: canceled_order_events,
-        });
+    <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
+    pool_id,
+    orders_canceled: canceled_order_events,
+    });
     };
 
     <b>return</b> (base_balance_left, quote_balance_filled, <b>if</b>(compute_metadata) <a href="../move-stdlib/option.md#0x1_option_some">option::some</a>(matched_order_metadata) <b>else</b> <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>())
@@ -3435,44 +3435,44 @@ Abort if order_id is invalid or if the order is not submitted by the transaction
     <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> pool.usr_open_orders, owner);
     <b>let</b> <b>mut</b> canceled_order_events = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
     <b>while</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_is_empty">linked_table::is_empty</a>(usr_open_order_ids)) {
-        <b>let</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_back">linked_table::back</a>(usr_open_order_ids));
-        <b>let</b> order_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_order_ids, order_id);
-        <b>let</b> is_bid = <a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(order_id);
-        <b>let</b> open_orders =
-            <b>if</b> (is_bid) { &<b>mut</b> pool.bids }
-            <b>else</b> { &<b>mut</b> pool.asks };
-        <b>let</b> (_, tick_index) = <a href="critbit.md#0xdee9_critbit_find_leaf">critbit::find_leaf</a>(open_orders, order_price);
-        <b>let</b> order = <a href="clob_v2.md#0xdee9_clob_v2_remove_order">remove_order</a>(
-            open_orders,
-            usr_open_order_ids,
-            tick_index,
-            order_id,
-            owner
-        );
-        <b>if</b> (is_bid) {
-            <b>let</b> (_, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
-            <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, owner, balance_locked);
-        } <b>else</b> {
-            <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, owner, order.quantity);
-        };
-        <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
-            client_order_id: order.client_order_id,
-            order_id: order.order_id,
-            is_bid: order.is_bid,
-            owner: order.owner,
-            original_quantity: order.original_quantity,
-            base_asset_quantity_canceled: order.quantity,
-            price: order.price
-        };
+    <b>let</b> order_id = *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(<a href="../sui-framework/linked_table.md#0x2_linked_table_back">linked_table::back</a>(usr_open_order_ids));
+    <b>let</b> order_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_order_ids, order_id);
+    <b>let</b> is_bid = <a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(order_id);
+    <b>let</b> open_orders =
+    <b>if</b> (is_bid) { &<b>mut</b> pool.bids }
+    <b>else</b> { &<b>mut</b> pool.asks };
+    <b>let</b> (_, tick_index) = <a href="critbit.md#0xdee9_critbit_find_leaf">critbit::find_leaf</a>(open_orders, order_price);
+    <b>let</b> order = <a href="clob_v2.md#0xdee9_clob_v2_remove_order">remove_order</a>(
+    open_orders,
+    usr_open_order_ids,
+    tick_index,
+    order_id,
+    owner
+    );
+    <b>if</b> (is_bid) {
+    <b>let</b> (_, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, owner, balance_locked);
+    } <b>else</b> {
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, owner, order.quantity);
+    };
+    <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
+    client_order_id: order.client_order_id,
+    order_id: order.order_id,
+    is_bid: order.is_bid,
+    owner: order.owner,
+    original_quantity: order.original_quantity,
+    base_asset_quantity_canceled: order.quantity,
+    price: order.price
+    };
 
-        <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
     };
 
     <b>if</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&canceled_order_events)) {
-        <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
-            pool_id,
-            orders_canceled: canceled_order_events,
-        });
+    <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
+    pool_id,
+    orders_canceled: canceled_order_events,
+    });
     };
 }
 </code></pre>
@@ -3524,51 +3524,51 @@ Grouping order_ids like [0, 2, 1, 3] would make it the most gas efficient.
     <b>let</b> <b>mut</b> canceled_order_events = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
 
     <b>while</b> (i_order &lt; n_order) {
-        <b>let</b> order_id = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&order_ids, i_order);
-        <b>assert</b>!(<a href="../sui-framework/linked_table.md#0x2_linked_table_contains">linked_table::contains</a>(usr_open_orders, order_id), <a href="clob_v2.md#0xdee9_clob_v2_EInvalidOrderId">EInvalidOrderId</a>);
-        <b>let</b> new_tick_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_orders, order_id);
-        <b>let</b> is_bid = <a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(order_id);
-        <b>if</b> (new_tick_price != tick_price) {
-            tick_price = new_tick_price;
-            <b>let</b> (tick_exists, new_tick_index) = find_leaf(
-                <b>if</b> (is_bid) { &pool.bids } <b>else</b> { &pool.asks },
-                tick_price
-            );
-            <b>assert</b>!(tick_exists, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidTickPrice">EInvalidTickPrice</a>);
-            tick_index = new_tick_index;
-        };
-        <b>let</b> order = <a href="clob_v2.md#0xdee9_clob_v2_remove_order">remove_order</a>(
-            <b>if</b> (is_bid) { &<b>mut</b> pool.bids } <b>else</b> { &<b>mut</b> pool.asks },
-            usr_open_orders,
-            tick_index,
-            order_id,
-            owner
-        );
-        <b>if</b> (is_bid) {
-            <b>let</b> (_is_round_down, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
-            <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, owner, balance_locked);
-        } <b>else</b> {
-            <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, owner, order.quantity);
-        };
-        <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
-            client_order_id: order.client_order_id,
-            order_id: order.order_id,
-            is_bid: order.is_bid,
-            owner: order.owner,
-            original_quantity: order.original_quantity,
-            base_asset_quantity_canceled: order.quantity,
-            price: order.price
-        };
-        <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
+    <b>let</b> order_id = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&order_ids, i_order);
+    <b>assert</b>!(<a href="../sui-framework/linked_table.md#0x2_linked_table_contains">linked_table::contains</a>(usr_open_orders, order_id), <a href="clob_v2.md#0xdee9_clob_v2_EInvalidOrderId">EInvalidOrderId</a>);
+    <b>let</b> new_tick_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_orders, order_id);
+    <b>let</b> is_bid = <a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(order_id);
+    <b>if</b> (new_tick_price != tick_price) {
+    tick_price = new_tick_price;
+    <b>let</b> (tick_exists, new_tick_index) = find_leaf(
+    <b>if</b> (is_bid) { &pool.bids } <b>else</b> { &pool.asks },
+    tick_price
+    );
+    <b>assert</b>!(tick_exists, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidTickPrice">EInvalidTickPrice</a>);
+    tick_index = new_tick_index;
+    };
+    <b>let</b> order = <a href="clob_v2.md#0xdee9_clob_v2_remove_order">remove_order</a>(
+    <b>if</b> (is_bid) { &<b>mut</b> pool.bids } <b>else</b> { &<b>mut</b> pool.asks },
+    usr_open_orders,
+    tick_index,
+    order_id,
+    owner
+    );
+    <b>if</b> (is_bid) {
+    <b>let</b> (_is_round_down, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, owner, balance_locked);
+    } <b>else</b> {
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, owner, order.quantity);
+    };
+    <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
+    client_order_id: order.client_order_id,
+    order_id: order.order_id,
+    is_bid: order.is_bid,
+    owner: order.owner,
+    original_quantity: order.original_quantity,
+    base_asset_quantity_canceled: order.quantity,
+    price: order.price
+    };
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
 
-        i_order = i_order + 1;
+    i_order = i_order + 1;
     };
 
     <b>if</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&canceled_order_events)) {
-        <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
-            pool_id,
-            orders_canceled: canceled_order_events,
-        });
+    <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
+    pool_id,
+    orders_canceled: canceled_order_events,
+    });
     };
 }
 </code></pre>
@@ -3614,50 +3614,50 @@ and they should correspond to the order IDs one by one.
     <b>let</b> <b>mut</b> tick_price: u64 = 0;
     <b>let</b> <b>mut</b> canceled_order_events = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
     <b>while</b> (i_order &lt; n_order) {
-        <b>let</b> order_id = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&order_ids, i_order);
-        <b>let</b> owner = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&order_owners, i_order);
-        <b>if</b> (!<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&pool.usr_open_orders, owner)) { <b>continue</b> };
-        <b>let</b> usr_open_orders = borrow_mut(&<b>mut</b> pool.usr_open_orders, owner);
-        <b>if</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_contains">linked_table::contains</a>(usr_open_orders, order_id)) { <b>continue</b> };
-        <b>let</b> new_tick_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_orders, order_id);
-        <b>let</b> is_bid = <a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(order_id);
-        <b>let</b> open_orders = <b>if</b> (is_bid) { &<b>mut</b> pool.bids } <b>else</b> { &<b>mut</b> pool.asks };
-        <b>if</b> (new_tick_price != tick_price) {
-            tick_price = new_tick_price;
-            <b>let</b> (tick_exists, new_tick_index) = find_leaf(
-                open_orders,
-                tick_price
-            );
-            <b>assert</b>!(tick_exists, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidTickPrice">EInvalidTickPrice</a>);
-            tick_index = new_tick_index;
-        };
-        <b>let</b> order = <a href="clob_v2.md#0xdee9_clob_v2_remove_order">remove_order</a>(open_orders, usr_open_orders, tick_index, order_id, owner);
-        <b>assert</b>!(order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt; now, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidExpireTimestamp">EInvalidExpireTimestamp</a>);
-        <b>if</b> (is_bid) {
-            <b>let</b> (_is_round_down, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
-            <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, owner, balance_locked);
-        } <b>else</b> {
-            <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, owner, order.quantity);
-        };
-        <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
-            client_order_id: order.client_order_id,
-            order_id: order.order_id,
-            is_bid: order.is_bid,
-            owner: order.owner,
-            original_quantity: order.original_quantity,
-            base_asset_quantity_canceled: order.quantity,
-            price: order.price
-        };
-        <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
+    <b>let</b> order_id = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&order_ids, i_order);
+    <b>let</b> owner = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&order_owners, i_order);
+    <b>if</b> (!<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&pool.usr_open_orders, owner)) { <b>continue</b> };
+    <b>let</b> usr_open_orders = borrow_mut(&<b>mut</b> pool.usr_open_orders, owner);
+    <b>if</b> (!<a href="../sui-framework/linked_table.md#0x2_linked_table_contains">linked_table::contains</a>(usr_open_orders, order_id)) { <b>continue</b> };
+    <b>let</b> new_tick_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_orders, order_id);
+    <b>let</b> is_bid = <a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(order_id);
+    <b>let</b> open_orders = <b>if</b> (is_bid) { &<b>mut</b> pool.bids } <b>else</b> { &<b>mut</b> pool.asks };
+    <b>if</b> (new_tick_price != tick_price) {
+    tick_price = new_tick_price;
+    <b>let</b> (tick_exists, new_tick_index) = find_leaf(
+    open_orders,
+    tick_price
+    );
+    <b>assert</b>!(tick_exists, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidTickPrice">EInvalidTickPrice</a>);
+    tick_index = new_tick_index;
+    };
+    <b>let</b> order = <a href="clob_v2.md#0xdee9_clob_v2_remove_order">remove_order</a>(open_orders, usr_open_orders, tick_index, order_id, owner);
+    <b>assert</b>!(order.<a href="clob_v2.md#0xdee9_clob_v2_expire_timestamp">expire_timestamp</a> &lt; now, <a href="clob_v2.md#0xdee9_clob_v2_EInvalidExpireTimestamp">EInvalidExpireTimestamp</a>);
+    <b>if</b> (is_bid) {
+    <b>let</b> (_is_round_down, balance_locked) = clob_math::unsafe_mul_round(order.quantity, order.price);
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.quote_custodian, owner, balance_locked);
+    } <b>else</b> {
+    <a href="custodian.md#0xdee9_custodian_unlock_balance">custodian::unlock_balance</a>(&<b>mut</b> pool.base_custodian, owner, order.quantity);
+    };
+    <b>let</b> canceled_order_event = <a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceledComponent">AllOrdersCanceledComponent</a>&lt;BaseAsset, QuoteAsset&gt; {
+    client_order_id: order.client_order_id,
+    order_id: order.order_id,
+    is_bid: order.is_bid,
+    owner: order.owner,
+    original_quantity: order.original_quantity,
+    base_asset_quantity_canceled: order.quantity,
+    price: order.price
+    };
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> canceled_order_events, canceled_order_event);
 
-        i_order = i_order + 1;
+    i_order = i_order + 1;
     };
 
     <b>if</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&canceled_order_events)) {
-        <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
-            pool_id,
-            orders_canceled: canceled_order_events,
-        });
+    <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(<a href="clob_v2.md#0xdee9_clob_v2_AllOrdersCanceled">AllOrdersCanceled</a>&lt;BaseAsset, QuoteAsset&gt; {
+    pool_id,
+    orders_canceled: canceled_order_events,
+    });
     };
 }
 </code></pre>
@@ -3688,28 +3688,28 @@ and they should correspond to the order IDs one by one.
     <b>let</b> owner = account_owner(account_cap);
     <b>let</b> <b>mut</b> open_orders = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;<a href="clob_v2.md#0xdee9_clob_v2_Order">Order</a>&gt;();
     <b>if</b> (!<a href="clob_v2.md#0xdee9_clob_v2_usr_open_orders_exist">usr_open_orders_exist</a>(pool, owner)) {
-        <b>return</b> open_orders
+    <b>return</b> open_orders
     };
     <b>let</b> usr_open_order_ids = <a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&pool.usr_open_orders, owner);
     <b>let</b> <b>mut</b> order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(usr_open_order_ids);
     <b>while</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(order_id)) {
-        <b>let</b> order_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_order_ids, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
-        <b>let</b> tick_level =
-            <b>if</b> (<a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(*<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id))) borrow_leaf_by_key(&pool.bids, order_price)
-            <b>else</b> borrow_leaf_by_key(&pool.asks, order_price);
-        <b>let</b> order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
-        <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> open_orders, <a href="clob_v2.md#0xdee9_clob_v2_Order">Order</a> {
-            order_id: order.order_id,
-            client_order_id: order.client_order_id,
-            price: order.price,
-            original_quantity: order.original_quantity,
-            quantity: order.quantity,
-            is_bid: order.is_bid,
-            owner: order.owner,
-            expire_timestamp: order.expire_timestamp,
-            self_matching_prevention: order.self_matching_prevention
-        });
-        order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(usr_open_order_ids, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
+    <b>let</b> order_price = *<a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(usr_open_order_ids, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
+    <b>let</b> tick_level =
+    <b>if</b> (<a href="clob_v2.md#0xdee9_clob_v2_order_is_bid">order_is_bid</a>(*<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id))) borrow_leaf_by_key(&pool.bids, order_price)
+    <b>else</b> borrow_leaf_by_key(&pool.asks, order_price);
+    <b>let</b> order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(&tick_level.open_orders, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> open_orders, <a href="clob_v2.md#0xdee9_clob_v2_Order">Order</a> {
+    order_id: order.order_id,
+    client_order_id: order.client_order_id,
+    price: order.price,
+    original_quantity: order.original_quantity,
+    quantity: order.quantity,
+    is_bid: order.is_bid,
+    owner: order.owner,
+    expire_timestamp: order.expire_timestamp,
+    self_matching_prevention: order.self_matching_prevention
+    });
+    order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(usr_open_order_ids, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
     };
     open_orders
 }
@@ -3824,7 +3824,7 @@ The latter is the corresponding depth list
 
     // If price_low is greater than the higest element in the tree, we <b>return</b> empty
     <b>if</b> (price_low &gt; price_high_) {
-        <b>return</b> (price_vec, depth_vec)
+    <b>return</b> (price_vec, depth_vec)
     };
 
     <b>if</b> (price_low &lt; price_low_) price_low = price_low_;
@@ -3832,18 +3832,18 @@ The latter is the corresponding depth list
     price_low = <a href="critbit.md#0xdee9_critbit_find_closest_key">critbit::find_closest_key</a>(&pool.bids, price_low);
     price_high = <a href="critbit.md#0xdee9_critbit_find_closest_key">critbit::find_closest_key</a>(&pool.bids, price_high);
     <b>while</b> (price_low &lt;= price_high) {
-        <b>let</b> depth = <a href="clob_v2.md#0xdee9_clob_v2_get_level2_book_status">get_level2_book_status</a>(
-            &pool.bids,
-            price_low,
-            <a href="../sui-framework/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../sui-framework/clock.md#0x2_clock">clock</a>)
-        );
-        <b>if</b> (depth != 0) {
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> price_vec, price_low);
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> depth_vec, depth);
-        };
-        <b>let</b> (next_price, _) = <a href="critbit.md#0xdee9_critbit_next_leaf">critbit::next_leaf</a>(&pool.bids, price_low);
-        <b>if</b> (next_price == 0) { <b>break</b> }
-        <b>else</b> { price_low = next_price };
+    <b>let</b> depth = <a href="clob_v2.md#0xdee9_clob_v2_get_level2_book_status">get_level2_book_status</a>(
+    &pool.bids,
+    price_low,
+    <a href="../sui-framework/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../sui-framework/clock.md#0x2_clock">clock</a>)
+    );
+    <b>if</b> (depth != 0) {
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> price_vec, price_low);
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> depth_vec, depth);
+    };
+    <b>let</b> (next_price, _) = <a href="critbit.md#0xdee9_critbit_next_leaf">critbit::next_leaf</a>(&pool.bids, price_low);
+    <b>if</b> (next_price == 0) { <b>break</b> }
+    <b>else</b> { price_low = next_price };
     };
     (price_vec, depth_vec)
 }
@@ -3885,7 +3885,7 @@ The latter is the corresponding depth list
 
     // Price_high is less than the lowest leaf in the tree then we <b>return</b> an empty array
     <b>if</b> (price_high &lt; price_low_) {
-        <b>return</b> (price_vec, depth_vec)
+    <b>return</b> (price_vec, depth_vec)
     };
 
     <b>if</b> (price_low &lt; price_low_) price_low = price_low_;
@@ -3894,18 +3894,18 @@ The latter is the corresponding depth list
     price_low = <a href="critbit.md#0xdee9_critbit_find_closest_key">critbit::find_closest_key</a>(&pool.asks, price_low);
     price_high = <a href="critbit.md#0xdee9_critbit_find_closest_key">critbit::find_closest_key</a>(&pool.asks, price_high);
     <b>while</b> (price_low &lt;= price_high) {
-        <b>let</b> depth = <a href="clob_v2.md#0xdee9_clob_v2_get_level2_book_status">get_level2_book_status</a>(
-            &pool.asks,
-            price_low,
-            <a href="../sui-framework/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../sui-framework/clock.md#0x2_clock">clock</a>)
-        );
-        <b>if</b> (depth != 0) {
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> price_vec, price_low);
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> depth_vec, depth);
-        };
-        <b>let</b> (next_price, _) = <a href="critbit.md#0xdee9_critbit_next_leaf">critbit::next_leaf</a>(&pool.asks, price_low);
-        <b>if</b> (next_price == 0) { <b>break</b> }
-        <b>else</b> { price_low = next_price };
+    <b>let</b> depth = <a href="clob_v2.md#0xdee9_clob_v2_get_level2_book_status">get_level2_book_status</a>(
+    &pool.asks,
+    price_low,
+    <a href="../sui-framework/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../sui-framework/clock.md#0x2_clock">clock</a>)
+    );
+    <b>if</b> (depth != 0) {
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> price_vec, price_low);
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> depth_vec, depth);
+    };
+    <b>let</b> (next_price, _) = <a href="critbit.md#0xdee9_critbit_next_leaf">critbit::next_leaf</a>(&pool.asks, price_low);
+    <b>if</b> (next_price == 0) { <b>break</b> }
+    <b>else</b> { price_low = next_price };
     };
     (price_vec, depth_vec)
 }
@@ -3942,9 +3942,9 @@ internal func to retrive single depth of a tick price
     <b>let</b> <b>mut</b> order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_front">linked_table::front</a>(tick_open_orders);
     <b>let</b> <b>mut</b> order: &<a href="clob_v2.md#0xdee9_clob_v2_Order">Order</a>;
     <b>while</b> (!<a href="../move-stdlib/option.md#0x1_option_is_none">option::is_none</a>(order_id)) {
-        order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(tick_open_orders, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
-        <b>if</b> (order.expire_timestamp &gt; time_stamp) depth = depth + order.quantity;
-        order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(tick_open_orders, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
+    order = <a href="../sui-framework/linked_table.md#0x2_linked_table_borrow">linked_table::borrow</a>(tick_open_orders, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
+    <b>if</b> (order.expire_timestamp &gt; time_stamp) depth = depth + order.quantity;
+    order_id = <a href="../sui-framework/linked_table.md#0x2_linked_table_next">linked_table::next</a>(tick_open_orders, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(order_id));
     };
     depth
 }

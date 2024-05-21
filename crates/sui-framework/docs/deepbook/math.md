@@ -257,37 +257,37 @@ scaling setting for float
     } <b>else</b> {
         <b>let</b> <b>mut</b> n: u8 = 0;
         <b>if</b> (x & 0xFFFFFFFFFFFFFFFF0000000000000000 == 0) {
-            // x's higher 64 is all zero, shift the lower part over
-            x = x &lt;&lt; 64;
-            n = n + 64;
+        // x's higher 64 is all zero, shift the lower part over
+        x = x &lt;&lt; 64;
+        n = n + 64;
         };
         <b>if</b> (x & 0xFFFFFFFF000000000000000000000000 == 0) {
-            // x's higher 32 is all zero, shift the lower part over
-            x = x &lt;&lt; 32;
-            n = n + 32;
+        // x's higher 32 is all zero, shift the lower part over
+        x = x &lt;&lt; 32;
+        n = n + 32;
         };
         <b>if</b> (x & 0xFFFF0000000000000000000000000000 == 0) {
-            // x's higher 16 is all zero, shift the lower part over
-            x = x &lt;&lt; 16;
-            n = n + 16;
+        // x's higher 16 is all zero, shift the lower part over
+        x = x &lt;&lt; 16;
+        n = n + 16;
         };
         <b>if</b> (x & 0xFF000000000000000000000000000000 == 0) {
-            // x's higher 8 is all zero, shift the lower part over
-            x = x &lt;&lt; 8;
-            n = n + 8;
+        // x's higher 8 is all zero, shift the lower part over
+        x = x &lt;&lt; 8;
+        n = n + 8;
         };
         <b>if</b> (x & 0xF0000000000000000000000000000000 == 0) {
-            // x's higher 4 is all zero, shift the lower part over
-            x = x &lt;&lt; 4;
-            n = n + 4;
+        // x's higher 4 is all zero, shift the lower part over
+        x = x &lt;&lt; 4;
+        n = n + 4;
         };
         <b>if</b> (x & 0xC0000000000000000000000000000000 == 0) {
-            // x's higher 2 is all zero, shift the lower part over
-            x = x &lt;&lt; 2;
-            n = n + 2;
+        // x's higher 2 is all zero, shift the lower part over
+        x = x &lt;&lt; 2;
+        n = n + 2;
         };
         <b>if</b> (x & 0x80000000000000000000000000000000 == 0) {
-            n = n + 1;
+        n = n + 1;
         };
 
         n

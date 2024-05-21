@@ -2,7 +2,6 @@
 module bfc_system::treasury_busd_test {
     use sui::test_scenario::{Self};
     use std::debug;
-    use std::vector;
     use std::ascii::string;
     use bfc_system::clmm_math;
     use bfc_system::i32;
@@ -10,7 +9,6 @@ module bfc_system::treasury_busd_test {
     use sui::balance;
     use sui::bfc::BFC;
     use sui::clock;
-    use sui::transfer;
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::vault;
     use bfc_system::busd::{Self, BUSD};
@@ -20,7 +18,7 @@ module bfc_system::treasury_busd_test {
     #[test]
     public fun test_treasury() {
         let owner = @0x0;
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create treasury
         test_scenario::next_tx(&mut scenario_val, owner);

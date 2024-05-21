@@ -22,7 +22,7 @@ StakingPool
 PoolTokenExchangeRate
 	public struct
 	0x3::staking_pool
-StakedSui
+StakedBfc
 	public struct
 	0x3::staking_pool
 new
@@ -124,6 +124,114 @@ initial_exchange_rate
 check_balance_invariants
 	fun
 	0x3::staking_pool
+StablePool
+	public struct
+	0x3::stable_pool
+PoolStableTokenExchangeRate
+	public struct
+	0x3::stable_pool
+StakedStable
+	public struct
+	0x3::stable_pool
+new
+	public(package) fun
+	0x3::stable_pool
+request_add_stake
+	public(package) fun
+	0x3::stable_pool
+request_withdraw_stake
+	public(package) fun
+	0x3::stable_pool
+withdraw_from_principal
+	public(package) fun
+	0x3::stable_pool
+unwrap_staked_sui
+	fun
+	0x3::stable_pool
+deposit_rewards
+	public(package) fun
+	0x3::stable_pool
+process_pending_stakes_and_withdraws
+	public(package) fun
+	0x3::stable_pool
+process_pending_stake_withdraw
+	fun
+	0x3::stable_pool
+process_pending_stake
+	public(package) fun
+	0x3::stable_pool
+withdraw_rewards
+	fun
+	0x3::stable_pool
+activate_stable_pool
+	public(package) fun
+	0x3::stable_pool
+deactivate_stable_pool
+	public(package) fun
+	0x3::stable_pool
+stable_balance
+	public fun
+	0x3::stable_pool
+pool_id
+	public fun
+	0x3::stable_pool
+staked_sui_amount
+	public fun
+	0x3::stable_pool
+stake_activation_epoch
+	public fun
+	0x3::stable_pool
+is_preactive
+	public fun
+	0x3::stable_pool
+is_inactive
+	public fun
+	0x3::stable_pool
+split
+	public fun
+	0x3::stable_pool
+split_staked_sui
+	public entry fun
+	0x3::stable_pool
+join_staked_sui
+	public entry fun
+	0x3::stable_pool
+is_equal_staking_metadata
+	public fun
+	0x3::stable_pool
+pool_token_exchange_rate_at_epoch
+	public fun
+	0x3::stable_pool
+pending_stake_amount
+	public fun
+	0x3::stable_pool
+pending_stake_withdraw_amount
+	public fun
+	0x3::stable_pool
+exchange_rates
+	public(package) fun
+	0x3::stable_pool
+sui_amount
+	public fun
+	0x3::stable_pool
+pool_token_amount
+	public fun
+	0x3::stable_pool
+is_preactive_at_epoch
+	fun
+	0x3::stable_pool
+get_sui_amount
+	fun
+	0x3::stable_pool
+get_token_amount
+	fun
+	0x3::stable_pool
+initial_exchange_rate
+	fun
+	0x3::stable_pool
+check_balance_invariants
+	fun
+	0x3::stable_pool
 ValidatorMetadata
 	public struct
 	0x3::validator
@@ -145,8 +253,17 @@ new
 deactivate
 	public(package) fun
 	0x3::validator
+deactivate_stable
+	public(package) fun
+	0x3::validator
 activate
 	public(package) fun
+	0x3::validator
+activate_stable
+	public(package) fun
+	0x3::validator
+activate_stable_
+	fun
 	0x3::validator
 adjust_stake_and_gas_price
 	public(package) fun
@@ -154,10 +271,22 @@ adjust_stake_and_gas_price
 request_add_stake
 	public(package) fun
 	0x3::validator
+get_stable_pool_mut
+	fun
+	0x3::validator
+get_stable_pool
+	public(package) fun
+	0x3::validator
+request_add_stable_stake
+	public(package) fun
+	0x3::validator
 request_add_stake_at_genesis
 	public(package) fun
 	0x3::validator
 request_withdraw_stake
+	public(package) fun
+	0x3::validator
+request_withdraw_stable_stake
 	public(package) fun
 	0x3::validator
 request_set_gas_price
@@ -175,7 +304,22 @@ set_candidate_commission_rate
 deposit_stake_rewards
 	public(package) fun
 	0x3::validator
+distribute_stable_pool_reward
+	fun
+	0x3::validator
+get_stable_staking_total
+	fun
+	0x3::validator
+deposit_stable_stake_rewards
+	public(package) fun
+	0x3::validator
 process_pending_stakes_and_withdraws
+	public(package) fun
+	0x3::validator
+process_pending_all_stable_stakes_and_withdraws
+	public(package) fun
+	0x3::validator
+process_pending_stable_stakes_and_withdraws
 	public(package) fun
 	0x3::validator
 is_preactive
@@ -259,7 +403,19 @@ total_stake_amount
 stake_amount
 	public fun
 	0x3::validator
+stable_stake_amount
+	public fun
+	0x3::validator
 total_stake
+	public fun
+	0x3::validator
+total_stake_with_all_stable
+	public fun
+	0x3::validator
+total_stake_for_reward
+	fun
+	0x3::validator
+total_stake_of_stable
 	public fun
 	0x3::validator
 voting_power
@@ -283,7 +439,16 @@ commission_rate
 pool_token_exchange_rate_at_epoch
 	public fun
 	0x3::validator
+pool_stable_token_exchange_rate_at_epoch
+	public fun
+	0x3::validator
 staking_pool_id
+	public fun
+	0x3::validator
+stable_pool_id
+	public fun
+	0x3::validator
+all_stable_pool_id
 	public fun
 	0x3::validator
 is_duplicate
@@ -366,6 +531,9 @@ get_staking_pool_ref
 	0x3::validator
 new_from_metadata
 	fun
+	0x3::validator
+rate_vec_map
+	public(package) fun
 	0x3::validator
 VotingPowerInfo
 	public struct
@@ -454,7 +622,13 @@ request_remove_validator
 request_add_stake
 	public(package) fun
 	0x3::validator_set
+request_add_stable_stake
+	public(package) fun
+	0x3::validator_set
 request_withdraw_stake
+	public(package) fun
+	0x3::validator_set
+request_withdraw_stable_stake
 	public(package) fun
 	0x3::validator_set
 request_set_commission_rate
@@ -478,13 +652,25 @@ total_stake
 validator_total_stake_amount
 	public fun
 	0x3::validator_set
+validator_total_stake_amount_with_stable
+	public fun
+	0x3::validator_set
 validator_stake_amount
+	public fun
+	0x3::validator_set
+validator_stable_stake_amount
 	public fun
 	0x3::validator_set
 validator_staking_pool_id
 	public fun
 	0x3::validator_set
+validator_stable_pool_id
+	public fun
+	0x3::validator_set
 staking_pool_mappings
+	public fun
+	0x3::validator_set
+stalbe_staking_pool_mappings
 	public fun
 	0x3::validator_set
 pool_exchange_rates
@@ -688,10 +874,16 @@ set_candidate_validator_commission_rate
 request_add_stake
 	public(package) fun
 	0x3::sui_system_state_inner
+request_add_stable_stake
+	public(package) fun
+	0x3::sui_system_state_inner
 request_add_stake_mul_coin
 	public(package) fun
 	0x3::sui_system_state_inner
 request_withdraw_stake
+	public(package) fun
+	0x3::sui_system_state_inner
+request_withdraw_stable_stake
 	public(package) fun
 	0x3::sui_system_state_inner
 report_validator
@@ -784,10 +976,19 @@ epoch_start_timestamp_ms
 validator_stake_amount
 	public(package) fun
 	0x3::sui_system_state_inner
+validator_stake_amount_with_stable
+	public(package) fun
+	0x3::sui_system_state_inner
 validator_staking_pool_id
 	public(package) fun
 	0x3::sui_system_state_inner
+validator_stable_pool_id
+	public(package) fun
+	0x3::sui_system_state_inner
 validator_staking_pool_mappings
+	public(package) fun
+	0x3::sui_system_state_inner
+validator_stable_staking_pool_mappings
 	public(package) fun
 	0x3::sui_system_state_inner
 get_reporters_of
@@ -841,6 +1042,12 @@ set_candidate_validator_commission_rate
 request_add_stake
 	public entry fun
 	0x3::sui_system
+request_add_stable_stake
+	public entry fun
+	0x3::sui_system
+request_add_stable_stake_non_entry
+	public fun
+	0x3::sui_system
 request_add_stake_non_entry
 	public fun
 	0x3::sui_system
@@ -850,7 +1057,13 @@ request_add_stake_mul_coin
 request_withdraw_stake
 	public entry fun
 	0x3::sui_system
+request_withdraw_stable_stake
+	public entry fun
+	0x3::sui_system
 request_withdraw_stake_non_entry
+	public fun
+	0x3::sui_system
+request_withdraw_stable_stake_non_entry
 	public fun
 	0x3::sui_system
 report_validator
@@ -925,6 +1138,9 @@ active_validator_addresses
 advance_epoch
 	fun
 	0x3::sui_system
+get_stable_rate_from_bfc
+	fun
+	0x3::sui_system
 load_system_state
 	fun
 	0x3::sui_system
@@ -955,6 +1171,9 @@ allocate_tokens
 activate_validators
 	fun
 	0x3::genesis
+curve_dx
+	public fun
+	0x2::curve
 secp256k1_ecrecover
 	public fun
 	0x2::ecdsa_k1
@@ -1097,6 +1316,9 @@ id_to_bytes
 	public fun
 	0x2::object
 id_to_address
+	public fun
+	0x2::object
+bfc_system_state
 	public fun
 	0x2::object
 id_from_bytes
@@ -1474,228 +1696,6 @@ peel_option_u64
 peel_option_u128
 	public fun
 	0x2::bcs
-Element
-	public struct
-	0x2::group_ops
-bytes
-	public fun
-	0x2::group_ops
-equal
-	public fun
-	0x2::group_ops
-from_bytes
-	public(package) fun
-	0x2::group_ops
-add
-	public(package) fun
-	0x2::group_ops
-sub
-	public(package) fun
-	0x2::group_ops
-mul
-	public(package) fun
-	0x2::group_ops
-div
-	public(package) fun
-	0x2::group_ops
-hash_to
-	public(package) fun
-	0x2::group_ops
-multi_scalar_multiplication
-	public(package) fun
-	0x2::group_ops
-pairing
-	public(package) fun
-	0x2::group_ops
-internal_validate
-	fun
-	0x2::group_ops
-internal_add
-	fun
-	0x2::group_ops
-internal_sub
-	fun
-	0x2::group_ops
-internal_mul
-	fun
-	0x2::group_ops
-internal_div
-	fun
-	0x2::group_ops
-internal_hash_to
-	fun
-	0x2::group_ops
-internal_multi_scalar_mul
-	fun
-	0x2::group_ops
-internal_pairing
-	fun
-	0x2::group_ops
-set_as_prefix
-	public(package) fun
-	0x2::group_ops
-Scalar
-	public struct
-	0x2::bls12381
-G1
-	public struct
-	0x2::bls12381
-G2
-	public struct
-	0x2::bls12381
-GT
-	public struct
-	0x2::bls12381
-bls12381_min_sig_verify
-	public fun
-	0x2::bls12381
-bls12381_min_pk_verify
-	public fun
-	0x2::bls12381
-scalar_from_bytes
-	public fun
-	0x2::bls12381
-scalar_from_u64
-	public fun
-	0x2::bls12381
-scalar_zero
-	public fun
-	0x2::bls12381
-scalar_one
-	public fun
-	0x2::bls12381
-scalar_add
-	public fun
-	0x2::bls12381
-scalar_sub
-	public fun
-	0x2::bls12381
-scalar_mul
-	public fun
-	0x2::bls12381
-scalar_div
-	public fun
-	0x2::bls12381
-scalar_neg
-	public fun
-	0x2::bls12381
-scalar_inv
-	public fun
-	0x2::bls12381
-g1_from_bytes
-	public fun
-	0x2::bls12381
-g1_identity
-	public fun
-	0x2::bls12381
-g1_generator
-	public fun
-	0x2::bls12381
-g1_add
-	public fun
-	0x2::bls12381
-g1_sub
-	public fun
-	0x2::bls12381
-g1_mul
-	public fun
-	0x2::bls12381
-g1_div
-	public fun
-	0x2::bls12381
-g1_neg
-	public fun
-	0x2::bls12381
-hash_to_g1
-	public fun
-	0x2::bls12381
-g1_multi_scalar_multiplication
-	public fun
-	0x2::bls12381
-g2_from_bytes
-	public fun
-	0x2::bls12381
-g2_identity
-	public fun
-	0x2::bls12381
-g2_generator
-	public fun
-	0x2::bls12381
-g2_add
-	public fun
-	0x2::bls12381
-g2_sub
-	public fun
-	0x2::bls12381
-g2_mul
-	public fun
-	0x2::bls12381
-g2_div
-	public fun
-	0x2::bls12381
-g2_neg
-	public fun
-	0x2::bls12381
-hash_to_g2
-	public fun
-	0x2::bls12381
-g2_multi_scalar_multiplication
-	public fun
-	0x2::bls12381
-gt_identity
-	public fun
-	0x2::bls12381
-gt_generator
-	public fun
-	0x2::bls12381
-gt_add
-	public fun
-	0x2::bls12381
-gt_sub
-	public fun
-	0x2::bls12381
-gt_mul
-	public fun
-	0x2::bls12381
-gt_div
-	public fun
-	0x2::bls12381
-gt_neg
-	public fun
-	0x2::bls12381
-pairing
-	public fun
-	0x2::bls12381
-Referent
-	public struct
-	0x2::borrow
-Borrow
-	public struct
-	0x2::borrow
-new
-	public fun
-	0x2::borrow
-borrow
-	public fun
-	0x2::borrow
-put_back
-	public fun
-	0x2::borrow
-destroy
-	public fun
-	0x2::borrow
-Clock
-	public struct
-	0x2::clock
-timestamp_ms
-	public fun
-	0x2::clock
-create
-	fun
-	0x2::clock
-consensus_commit_prologue
-	fun
-	0x2::clock
 Url
 	public struct
 	0x2::url
@@ -1936,6 +1936,237 @@ get_icon_url
 supply
 	public fun
 	0x2::coin
+BFC
+	public struct
+	0x2::bfc
+new
+	fun
+	0x2::bfc
+transfer
+	public entry fun
+	0x2::bfc
+Element
+	public struct
+	0x2::group_ops
+bytes
+	public fun
+	0x2::group_ops
+equal
+	public fun
+	0x2::group_ops
+from_bytes
+	public(package) fun
+	0x2::group_ops
+add
+	public(package) fun
+	0x2::group_ops
+sub
+	public(package) fun
+	0x2::group_ops
+mul
+	public(package) fun
+	0x2::group_ops
+div
+	public(package) fun
+	0x2::group_ops
+hash_to
+	public(package) fun
+	0x2::group_ops
+multi_scalar_multiplication
+	public(package) fun
+	0x2::group_ops
+pairing
+	public(package) fun
+	0x2::group_ops
+internal_validate
+	fun
+	0x2::group_ops
+internal_add
+	fun
+	0x2::group_ops
+internal_sub
+	fun
+	0x2::group_ops
+internal_mul
+	fun
+	0x2::group_ops
+internal_div
+	fun
+	0x2::group_ops
+internal_hash_to
+	fun
+	0x2::group_ops
+internal_multi_scalar_mul
+	fun
+	0x2::group_ops
+internal_pairing
+	fun
+	0x2::group_ops
+set_as_prefix
+	public(package) fun
+	0x2::group_ops
+Scalar
+	public struct
+	0x2::bls12381
+G1
+	public struct
+	0x2::bls12381
+G2
+	public struct
+	0x2::bls12381
+GT
+	public struct
+	0x2::bls12381
+bls12381_min_sig_verify
+	public fun
+	0x2::bls12381
+bls12381_min_pk_verify
+	public fun
+	0x2::bls12381
+scalar_from_bytes
+	public fun
+	0x2::bls12381
+scalar_from_u64
+	public fun
+	0x2::bls12381
+scalar_zero
+	public fun
+	0x2::bls12381
+scalar_one
+	public fun
+	0x2::bls12381
+scalar_add
+	public fun
+	0x2::bls12381
+scalar_sub
+	public fun
+	0x2::bls12381
+scalar_mul
+	public fun
+	0x2::bls12381
+scalar_div
+	public fun
+	0x2::bls12381
+scalar_neg
+	public fun
+	0x2::bls12381
+scalar_inv
+	public fun
+	0x2::bls12381
+g1_from_bytes
+	public fun
+	0x2::bls12381
+g1_identity
+	public fun
+	0x2::bls12381
+g1_generator
+	public fun
+	0x2::bls12381
+g1_add
+	public fun
+	0x2::bls12381
+g1_sub
+	public fun
+	0x2::bls12381
+g1_mul
+	public fun
+	0x2::bls12381
+g1_div
+	public fun
+	0x2::bls12381
+g1_neg
+	public fun
+	0x2::bls12381
+hash_to_g1
+	public fun
+	0x2::bls12381
+g1_multi_scalar_multiplication
+	public fun
+	0x2::bls12381
+g2_from_bytes
+	public fun
+	0x2::bls12381
+g2_identity
+	public fun
+	0x2::bls12381
+g2_generator
+	public fun
+	0x2::bls12381
+g2_add
+	public fun
+	0x2::bls12381
+g2_sub
+	public fun
+	0x2::bls12381
+g2_mul
+	public fun
+	0x2::bls12381
+g2_div
+	public fun
+	0x2::bls12381
+g2_neg
+	public fun
+	0x2::bls12381
+hash_to_g2
+	public fun
+	0x2::bls12381
+g2_multi_scalar_multiplication
+	public fun
+	0x2::bls12381
+gt_identity
+	public fun
+	0x2::bls12381
+gt_generator
+	public fun
+	0x2::bls12381
+gt_add
+	public fun
+	0x2::bls12381
+gt_sub
+	public fun
+	0x2::bls12381
+gt_mul
+	public fun
+	0x2::bls12381
+gt_div
+	public fun
+	0x2::bls12381
+gt_neg
+	public fun
+	0x2::bls12381
+pairing
+	public fun
+	0x2::bls12381
+Referent
+	public struct
+	0x2::borrow
+Borrow
+	public struct
+	0x2::borrow
+new
+	public fun
+	0x2::borrow
+borrow
+	public fun
+	0x2::borrow
+put_back
+	public fun
+	0x2::borrow
+destroy
+	public fun
+	0x2::borrow
+Clock
+	public struct
+	0x2::clock
+timestamp_ms
+	public fun
+	0x2::clock
+create
+	fun
+	0x2::clock
+consensus_commit_prologue
+	fun
+	0x2::clock
 VecMap
 	public struct
 	0x2::vec_map
@@ -2155,15 +2386,6 @@ exists_with_type
 id
 	public fun
 	0x2::dynamic_object_field
-SUI
-	public struct
-	0x2::sui
-new
-	fun
-	0x2::sui
-transfer
-	public entry fun
-	0x2::sui
 TransferRequest
 	public struct
 	0x2::transfer_policy

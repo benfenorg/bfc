@@ -6,17 +6,11 @@ module bfc_system::test_utils {
     use sui::coin;
     use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
-    use sui::transfer;
     use sui::clock;
-    use sui::tx_context::TxContext;
 
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::busd;
 
-    friend bfc_system::vault_test;
-
-    #[test_only]
-    friend bfc_system::bfc_system_tests;
 
     fun create_treasury_and_init_vault_with_positions(
         time_interval: u32,
@@ -30,7 +24,7 @@ module bfc_system::test_utils {
         ctx: &mut TxContext
     ) {
         let usd_supply = busd::new(ctx);
-        let t = treasury::create_treasury(time_interval, 500000000_000_000_000,ctx);
+        let mut t = treasury::create_treasury(time_interval, 500000000_000_000_000,ctx);
         treasury::init_vault_with_positions(
             &mut t,
             usd_supply,
@@ -108,7 +102,7 @@ module bfc_system::test_utils {
     public(package) fun test_rebalance_first_init(
         scenario_val: &mut Scenario,
     ) {
-        let t = test_scenario::take_shared<Treasury>(scenario_val);
+        let mut t = test_scenario::take_shared<Treasury>(scenario_val);
         treasury::rebalance_internal(&mut t, false, test_scenario::ctx(scenario_val));
         test_scenario::return_shared(t);
     }
@@ -119,7 +113,7 @@ module bfc_system::test_utils {
         let c = clock::create_for_testing(test_scenario::ctx(scenario_val));
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
 
-        let t = test_scenario::take_shared<Treasury>(scenario_val);
+        let mut t = test_scenario::take_shared<Treasury>(scenario_val);
         treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(scenario_val));
 
         clock::destroy_for_testing(c);

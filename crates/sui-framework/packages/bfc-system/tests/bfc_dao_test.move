@@ -1,3 +1,4 @@
+#[allow(unused_const)]
 module bfc_system::bfc_dao_test {
     #[test_only]
     use sui::clock;
@@ -33,7 +34,7 @@ module bfc_system::bfc_dao_test {
         //let user1 = @0xA1;
         //let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -104,7 +105,7 @@ module bfc_system::bfc_dao_test {
         //let user1 = @0xA1;
         //let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -172,7 +173,7 @@ module bfc_system::bfc_dao_test {
         let user1 = @0xA1;
         let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -378,7 +379,7 @@ module bfc_system::bfc_dao_test {
         //let user1 = @0xA1;
         let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -514,7 +515,7 @@ module bfc_system::bfc_dao_test {
         //let user1 = @0xA1;
         let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -638,7 +639,7 @@ module bfc_system::bfc_dao_test {
         //let user1 = @0xA1;
         let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -751,7 +752,7 @@ module bfc_system::bfc_dao_test {
         //let user1 = @0xA1;
         let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -780,14 +781,14 @@ module bfc_system::bfc_dao_test {
         //create action, create propose
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
             //let dao = test_scenario::take_from_sender<Dao>(&mut scenario_val);
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
 
            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
 
             let mint_new_action_cost: u64 = 10 * 1000000000; // 10 BFC
-            let action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
+            let mut action_coin = coin::mint_for_testing<BFC>(mint_new_action_cost, test_scenario::ctx(&mut scenario_val));
 
             let action = bfc_dao::create_bfcdao_action(&mut dao,&mut action_coin, b"hello world", &clock, test_scenario::ctx(&mut scenario_val));
 
@@ -811,12 +812,12 @@ module bfc_system::bfc_dao_test {
         //other proposal action::queue_proposal_action
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
 
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
             modify_proposal_obj(&mut dao, &mut p, AGREED, &clock);
@@ -831,10 +832,10 @@ module bfc_system::bfc_dao_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let key = test_scenario::take_from_sender<BFCDaoManageKey>(&mut scenario_val );
-            let p = test_scenario::take_shared<Proposal>(&mut scenario_val);
-            let dao = test_scenario::take_shared<Dao>(&mut scenario_val);
+            let mut p = test_scenario::take_shared<Proposal>(&mut scenario_val);
+            let mut dao = test_scenario::take_shared<Dao>(&mut scenario_val);
 
-            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::set_for_testing(&mut clock, 1000000000 * 60 );
 
             modify_proposal_obj(&mut dao, &mut p, EXTRACTED, &clock);

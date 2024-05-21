@@ -1,3 +1,4 @@
+#[allow(duplicate_alias)]
 module bfc_system::tick {
 
     use bfc_system::i128::{Self, I128};

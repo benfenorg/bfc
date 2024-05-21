@@ -8,10 +8,6 @@ module bfc_system::skip_list {
 
     #[test_only]
     use std::debug;
-    #[test_only]
-    use sui::transfer;
-    #[test_only]
-    use sui::tx_context;
 
     const ENodeAlreadyExist: u64 = 0;
     const ENodeDoesNotExist: u64 = 1;

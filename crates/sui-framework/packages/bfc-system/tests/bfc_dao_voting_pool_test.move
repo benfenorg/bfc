@@ -30,7 +30,7 @@ module bfc_system::bfc_dao_voting_pool_test {
         //let user1 = @0xA1;
         //let user2 = @0xB1;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
 
         //create dao
         test_scenario::next_tx(&mut scenario_val, owner);
