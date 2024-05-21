@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #[allow(unused_use,unused_const)]
 module sui_system::validator_set {
-
+    use std::type_name;
     use sui::balance::Balance;
     use sui_system::validator::{Validator, staking_pool_id, sui_address,all_stable_pool_id};
     use sui_system::validator;
@@ -406,7 +406,6 @@ module sui_system::validator_set {
     public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
-        rate: u64,
         ctx: &mut TxContext,
     ) : Balance<STABLE> {
         let stable_pool_id = stable_pool_id(&staked_sui);
@@ -1065,9 +1064,6 @@ module sui_system::validator_set {
             let validator = table_vec::pop_back(&mut self.pending_active_validators);
             validator::activate(&mut validator, new_epoch);
             validator::activate_stable(&mut validator, new_epoch);
-        while (!self.pending_active_validators.is_empty()) {
-            let mut validator = self.pending_active_validators.pop_back();
-            validator.activate(new_epoch);
             event::emit(
                 ValidatorJoinEvent {
                     epoch: new_epoch,
@@ -1075,7 +1071,6 @@ module sui_system::validator_set {
                     staking_pool_id: staking_pool_id(&validator),
                 }
             );
-            self.active_validators.push_back(validator);
         }
     }
 
