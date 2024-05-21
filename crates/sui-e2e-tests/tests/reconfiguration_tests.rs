@@ -2477,14 +2477,14 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(6000)
-        .with_num_validators(5)
+        .with_epoch_duration_ms(20000)
+        .with_num_validators(1)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 60;
+    let amount  = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2494,8 +2494,12 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
     test_cluster.wait_for_epoch(Some(2)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
+
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
 
@@ -2509,14 +2513,14 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(4000)
         .with_num_validators(5)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 60;
+    let amount  = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2528,6 +2532,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::busd::BUSD".to_string()).await?;
 
     Ok(())
@@ -2537,14 +2542,14 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(4000)
         .with_num_validators(5)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 60;
+    let amount  = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2556,6 +2561,8 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
 
     Ok(())
@@ -2597,8 +2604,8 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
         busd_balance_before += get_busd_balance(busd_data);
         gas_coins.push(busd_data.object_ref());
         tx = make_transfer_sui_transaction_with_gas_coins(&test_cluster.wallet,
-                                                    Some(receiver_address),
-                                                    Some(amount), address, gas_coins).await;
+                                                          Some(receiver_address),
+                                                          Some(amount), address, gas_coins).await;
     };
 
     if !multi_gas && token_name == another_token_name{
@@ -2630,6 +2637,7 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
 
     Ok(())
 }
+
 
 fn get_busd_balance(busd_data: &SuiObjectData)->u64{
     if let SuiParsedData::MoveObject(move_object)=busd_data.content.clone().unwrap(){
