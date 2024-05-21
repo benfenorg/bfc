@@ -7,7 +7,10 @@ module sui_system::stable_pool {
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
+    use sui::bfc::BFC;
 
+
+    /// StakedSui objects cannot be split to below this amount.
     const MIN_STAKING_THRESHOLD: u64 = 1_000_000_000; // 1 SUI
 
     const EInsufficientPoolTokenBalance: u64 = 0;
@@ -34,20 +37,20 @@ module sui_system::stable_pool {
     public struct StablePool<phantom STABLE> has key, store {
         id: UID,
         /// The epoch at which this pool became active.
-        /// The value is `None` if the pool is pre-active and `Some(<epoch_number>)` if active or inactive.
+        /// The value is None if the pool is pre-active and Some(<epoch_number>) if active or inactive.
         activation_epoch: Option<u64>,
-        /// The epoch at which this stable pool ceased to be active. `None` = {pre-active, active},
-        /// `Some(<epoch_number>)` if in-active, and it was de-activated at epoch `<epoch_number>`.
+        /// The epoch at which this stable pool ceased to be active. None = {pre-active, active},
+        /// Some(<epoch_number>) if in-active, and it was de-activated at epoch <epoch_number>.
         deactivation_epoch: Option<u64>,
         /// The total number of STABLE tokens in this pool, including the SUI in the rewards_pool, as well as in all the principal
-        /// in the `StakedSTABLE` object, updated at epoch boundaries.
+        /// in the StakedSTABLE object, updated at epoch boundaries.
         stable_balance: u64,
         /// The epoch stake rewards will be added here at the end of each epoch.
-        rewards_pool: Balance<STABLE>,
+        rewards_pool: Balance<BFC>,
         /// Total number of pool tokens issued by the pool.
         pool_token_balance: u64,
         /// Exchange rate history of previous epochs. Key is the epoch number.
-        /// The entries start from the `activation_epoch` of this pool and contains exchange rates at the beginning of each epoch,
+        /// The entries start from the activation_epoch of this pool and contains exchange rates at the beginning of each epoch,
         /// i.e., right after the rewards for the previous epoch have been deposited into the pool.
         exchange_rates: Table<u64, PoolStableTokenExchangeRate>,
         /// Pending stake amount for this epoch, emptied at epoch boundaries.
@@ -88,7 +91,7 @@ module sui_system::stable_pool {
             activation_epoch: option::none(),
             deactivation_epoch: option::none(),
             stable_balance: 0,
-            rewards_pool: balance::zero<STABLE>(),
+            rewards_pool: balance::zero<BFC>(),
             pool_token_balance: 0,
             exchange_rates,
             pending_stake: 0,
@@ -126,16 +129,17 @@ module sui_system::stable_pool {
     public(package) fun request_withdraw_stake<STABLE>(
         pool: &mut StablePool<STABLE>,
         staked_sui: StakedStable<STABLE>,
+        rate: u64,
         ctx: &mut TxContext
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         let (pool_token_withdraw_amount, principal_withdraw) =
             withdraw_from_principal(pool, staked_sui);
         let principal_withdraw_amount = balance::value(&principal_withdraw);
 
-        let rewards_withdraw = withdraw_rewards(
-            pool, principal_withdraw_amount, pool_token_withdraw_amount, tx_context::epoch(ctx)
+        let (rewards_withdraw, stable_reward_amount) = withdraw_rewards(
+            pool, principal_withdraw_amount, pool_token_withdraw_amount,tx_context::epoch(ctx), rate
         );
-        let total_sui_withdraw_amount = principal_withdraw_amount + balance::value(&rewards_withdraw);
+        let total_sui_withdraw_amount = principal_withdraw_amount + stable_reward_amount;
 
         pool.pending_total_sui_withdraw = pool.pending_total_sui_withdraw + total_sui_withdraw_amount;
         pool.pending_pool_token_withdraw = pool.pending_pool_token_withdraw + pool_token_withdraw_amount;
@@ -143,12 +147,10 @@ module sui_system::stable_pool {
         // If the pool is inactive, we immediately process the withdrawal.
         if (is_inactive(pool)) process_pending_stake_withdraw(pool);
 
-        // TODO: implement withdraw bonding period here.
-        balance::join(&mut principal_withdraw, rewards_withdraw);
-        principal_withdraw
+        (principal_withdraw, rewards_withdraw)
     }
 
-    /// Withdraw the principal SUI stored in theStakedBfc object, and calculate the corresponding amount of pool
+    /// Withdraw the principal SUI stored in the StakedSui object, and calculate the corresponding amount of pool
     /// tokens using exchange rate at stable epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal<STABLE>(
@@ -183,8 +185,10 @@ module sui_system::stable_pool {
     // ==== functions called at epoch boundaries ===
 
     /// Called at epoch advancement times to add rewards (in SUI) to the stable pool.
-    public(package) fun deposit_rewards<STABLE>(pool: &mut StablePool<STABLE>, rewards: Balance<STABLE>) {
-        pool.stable_balance = pool.stable_balance + balance::value(&rewards);
+    public(package) fun deposit_rewards<STABLE>(pool: &mut StablePool<STABLE>,
+                                                rewards: Balance<BFC>,
+                                                amount: u64) {
+        pool.stable_balance = pool.stable_balance + amount;
         balance::join(&mut pool.rewards_pool, rewards);
     }
 
@@ -222,32 +226,35 @@ module sui_system::stable_pool {
     /// This function does the following:
     ///     1. Calculates the total amount of SUI (including principal and rewards) that the provided pool tokens represent
     ///        at the current exchange rate.
-    ///     2. Using the above number and the given `principal_withdraw_amount`, calculates the rewards portion of the
+    ///     2. Using the above number and the given principal_withdraw_amount, calculates the rewards portion of the
     ///        stake we should withdraw.
     ///     3. Withdraws the rewards portion from the rewards pool at the current exchange rate. We only withdraw the rewards
-    ///        portion because the principal portion was already taken out of the staker's self custodiedStakedBfc.
+    ///        portion because the principal portion was already taken out of the staker's self custodied StakedSui.
     fun withdraw_rewards<STABLE>(
         pool: &mut StablePool<STABLE>,
         principal_withdraw_amount: u64,
         pool_token_withdraw_amount: u64,
         epoch: u64,
-    ) : Balance<STABLE> {
+        rate: u64,
+    ) : (Balance<BFC>, u64) {
         let exchange_rate = pool_token_exchange_rate_at_epoch(pool, epoch);
         let total_sui_withdraw_amount = get_sui_amount(&exchange_rate, pool_token_withdraw_amount);
         let reward_withdraw_amount =
             if (total_sui_withdraw_amount >= principal_withdraw_amount)
                 total_sui_withdraw_amount - principal_withdraw_amount
             else 0;
+        let stable_reward_amount = reward_withdraw_amount;
         // This may happen when we are withdrawing everything from the pool and
         // the rewards pool balance may be less than reward_withdraw_amount.
         // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
-        reward_withdraw_amount = math::min(reward_withdraw_amount, balance::value(&pool.rewards_pool));
-        balance::split(&mut pool.rewards_pool, reward_withdraw_amount)
+        let reward_bfc = (reward_withdraw_amount as u128) * (rate as u128) / (1000000000 as u128);
+        reward_withdraw_amount = math::min((reward_bfc as u64),  balance::value(&pool.rewards_pool));
+        (balance::split(&mut pool.rewards_pool, reward_withdraw_amount), stable_reward_amount)
     }
 
     // ==== preactive pool related ====
 
-    /// Called by `validator` module to activate a stable pool.
+    /// Called by validator module to activate a stable pool.
     public(package) fun activate_stable_pool<STABLE>(pool: &mut StablePool<STABLE>, activation_epoch: u64) {
         // Add the initial exchange rate to the table.
         table::add(
@@ -264,7 +271,7 @@ module sui_system::stable_pool {
 
     // ==== inactive pool related ====
 
-    /// Deactivate a stable pool by setting the `deactivation_epoch`. After
+    /// Deactivate a stable pool by setting the deactivation_epoch. After
     /// this pool deactivation, the pool stops earning rewards. Only stake
     /// withdraws can be made to the pool.
     public(package) fun deactivate_stable_pool<STABLE>(pool: &mut StablePool<STABLE>, deactivation_epoch: u64) {
@@ -295,9 +302,9 @@ module sui_system::stable_pool {
         option::is_some(&pool.deactivation_epoch)
     }
 
-    /// SplitStakedBfc `self` to two parts, one with principal `split_amount`,
-    /// and the remaining principal is left in `self`.
-    /// All the other parameters of theStakedBfc like `stake_activation_epoch` or `pool_id` remain the same.
+    /// Split StakedSui self to two parts, one with principal split_amount,
+    /// and the remaining principal is left in self.
+    /// All the other parameters of the StakedSui like stake_activation_epoch or pool_id remain the same.
     public fun split<STABLE>(self: &mut StakedStable<STABLE>, split_amount: u64, ctx: &mut TxContext): StakedStable<STABLE> {
         let original_amount = balance::value(&self.principal);
         assert!(split_amount <= original_amount, EInsufficientSuiTokenBalance);
@@ -313,13 +320,13 @@ module sui_system::stable_pool {
         }
     }
 
-    /// Split the givenStakedBfc to the two parts, one with principal `split_amount`,
+    /// Split the given StakedSui to the two parts, one with principal split_amount,
     /// transfer the newly split part to the sender address.
     public entry fun split_staked_sui<STABLE>(stake: &mut StakedStable<STABLE>, split_amount: u64, ctx: &mut TxContext) {
         transfer::transfer(split(stake, split_amount, ctx), tx_context::sender(ctx));
     }
 
-    /// Consume the staked sui `other` and add its value to `self`.
+    /// Consume the staked sui other and add its value to self.
     /// Aborts if some of the stable parameters are incompatible (pool id, stake activation epoch, etc.)
     public entry fun join_staked_sui<STABLE>(self: &mut StakedStable<STABLE>, other: StakedStable<STABLE>) {
         assert!(is_equal_staking_metadata(self, &other), EIncompatibleStakedSui);
@@ -337,7 +344,7 @@ module sui_system::stable_pool {
     /// Returns true if all the stable parameters of the staked sui except the principal are identical
     public fun is_equal_staking_metadata<STABLE>(self: &StakedStable<STABLE>, other: &StakedStable<STABLE>): bool {
         (self.pool_id == other.pool_id) &&
-        (self.stake_activation_epoch == other.stake_activation_epoch)
+            (self.stake_activation_epoch == other.stake_activation_epoch)
     }
 
 
@@ -396,8 +403,8 @@ module sui_system::stable_pool {
             return token_amount
         };
         let res = (exchange_rate.sui_amount as u128)
-                * (token_amount as u128)
-                / (exchange_rate.pool_token_amount as u128);
+            * (token_amount as u128)
+            / (exchange_rate.pool_token_amount as u128);
         (res as u64)
     }
 
@@ -408,8 +415,8 @@ module sui_system::stable_pool {
             return sui_amount
         };
         let res = (exchange_rate.pool_token_amount as u128)
-                * (sui_amount as u128)
-                / (exchange_rate.sui_amount as u128);
+            * (sui_amount as u128)
+            / (exchange_rate.sui_amount as u128);
         (res as u64)
     }
 
@@ -427,7 +434,7 @@ module sui_system::stable_pool {
 
     // ==== test-related functions ====
 
-    // Given the `staked_sui` receipt calculate the current rewards (in terms of SUI) for it.
+    // Given the staked_sui receipt calculate the current rewards (in terms of SUI) for it.
     #[test_only]
     public fun calculate_rewards<STABLE>(
         pool: &StablePool<STABLE>,

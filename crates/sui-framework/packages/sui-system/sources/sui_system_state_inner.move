@@ -3,7 +3,6 @@
 
 module sui_system::sui_system_state_inner {
     use std::ascii;
-    use std::ascii::String;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
@@ -530,6 +529,7 @@ module sui_system::sui_system_state_inner {
         ) : StakedBfc {
             let balance = extract_coin_balance(stakes, stake_amount, ctx);
             self.validators.request_add_stake(validator_address, balance, ctx)
+
         }
 
         /// Withdraw some portion of a stake from a validator's staking pool.
@@ -1088,7 +1088,8 @@ module sui_system::sui_system_state_inner {
     /// Extract required Balance from vector of Coin<BFC>, transfer the remainder back to sender.
     fun extract_coin_balance(coins: vector<Coin<BFC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<BFC> {
         let merged_coin = vector::pop_back(&mut coins);
-        pay::join_vec(&mut merged_coin, coins);
+        //pay::join_vec(&mut merged_coin, coins);
+        merged_coin.join_vec(coins);
 
         let mut total_balance = merged_coin.into_balance();
         // return the full amount if amount is not specified

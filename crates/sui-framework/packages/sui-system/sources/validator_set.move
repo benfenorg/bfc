@@ -4,13 +4,13 @@
 module sui_system::validator_set {
 
     use sui::balance::Balance;
-    use sui_system::validator::{Validator, staking_pool_id, sui_address};
+    use sui_system::validator::{Validator, staking_pool_id, sui_address,all_stable_pool_id};
     use sui_system::validator;
     use std::ascii;
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::stable_pool::{pool_id as stable_pool_id, PoolStableTokenExchangeRate};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
-
+    use sui_system::validator::rate_vec_map;
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::VecSet;
@@ -389,7 +389,7 @@ module sui_system::validator_set {
         self: &mut ValidatorSet,
         staked_sui: StakedBfc,
         ctx: &mut TxContext,
-    ) : (Balance<STABLE>, Balance<BFC>) {
+    ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
             if (self.staking_pool_mappings.contains(staking_pool_id)) { // This is an active validator.
@@ -1023,8 +1023,7 @@ module sui_system::validator_set {
         validator::deactivate_stable<BTRY>(&mut validator, new_epoch);
         validator::deactivate_stable<BZAR>(&mut validator, new_epoch);
         validator::deactivate_stable<MGG>(&mut validator, new_epoch);
-        table::add(
-            &mut self.inactive_validators,
+
         validator.deactivate(new_epoch);
         self.inactive_validators.add(
             validator_pool_id,
@@ -1376,13 +1375,6 @@ module sui_system::validator_set {
                 ValidatorEpochInfoEventV2 {
                     epoch: new_epoch,
                     validator_address,
-                    reference_gas_survey_quote: validator::gas_price(v),
-                    stake: validator::total_stake_amount(v),
-                    voting_power: validator::voting_power(v),
-                    commission_rate: validator::commission_rate(v),
-                    pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
-                    storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
-                    pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
                     stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
                     reference_gas_survey_quote: v.gas_price(),
                     stake: v.total_stake_amount(),
