@@ -543,10 +543,10 @@ module sui_system::validator {
     }
 
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
-    public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
+    public(package) fun deposit_stake_rewards(self: &mut Validator, mut reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
         let total_reward = balance::value(&reward);
-        let mut bfc_reward = 0;
-        let stable_total_stake = vec_map::empty();
+        let mut bfc_reward;
+        let mut stable_total_stake = vec_map::empty();
         let all_stable_total_stake = get_stable_staking_total(self, &mut stable_total_stake, stable_rate);
         if (all_stable_total_stake > 0) {
             //distribute for bfc pool
@@ -679,7 +679,7 @@ module sui_system::validator {
         stable_total: &mut VecMap<ascii::String, u64>,
         stable_rate: &VecMap<ascii::String, u64>
     ): u64 {
-        let all_pool_total: u64 = 0;
+        let mut all_pool_total: u64 = 0;
         all_pool_total = all_pool_total + total_stake_for_reward<BUSD>(self, stable_total, stable_rate);
         all_pool_total = all_pool_total + total_stake_for_reward<BARS>(self, stable_total, stable_rate);
         all_pool_total = all_pool_total + total_stake_for_reward<BAUD>(self, stable_total, stable_rate);
@@ -877,7 +877,7 @@ module sui_system::validator {
     }
 
     public fun total_stake_with_all_stable(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
-        let total_stake = total_stake(self);
+        let mut total_stake = total_stake(self);
         total_stake = total_stake + total_stake_of_stable<BUSD>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BARS>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BAUD>(self, stable_rate);
@@ -958,7 +958,7 @@ module sui_system::validator {
     }
 
     public fun pool_stable_token_exchange_rate_at_epoch(self: &Validator, epoch: u64): vector<PoolStableTokenExchangeRate> {
-        let vec_rate = vector::empty<PoolStableTokenExchangeRate>();
+        let mut vec_rate = vector::empty<PoolStableTokenExchangeRate>();
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BUSD>(get_stable_pool(&self.stable_pools), epoch), 0);
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BARS>(get_stable_pool(&self.stable_pools), epoch), 1);
         vector::insert(&mut vec_rate, stable_pool::pool_token_exchange_rate_at_epoch<BAUD>(get_stable_pool(&self.stable_pools), epoch), 2);
@@ -987,7 +987,7 @@ module sui_system::validator {
         object::id(get_stable_pool<STABLE>(&self.stable_pools))
     }
     public fun all_stable_pool_id(self:&Validator): vector<ID> {
-        let id_vec = vector[];
+        let mut id_vec = vector[];
         vector::insert(&mut id_vec ,stable_pool_id<BUSD>(self), 0);
         vector::insert(&mut id_vec ,stable_pool_id<BARS>(self), 1);
         vector::insert(&mut id_vec ,stable_pool_id<BAUD>(self), 2);
@@ -1306,9 +1306,9 @@ module sui_system::validator {
         let sui_address = metadata.sui_address;
 
         let staking_pool = staking_pool::new(ctx);
-        let stable_pools = bag::new(ctx);
+        let mut stable_pools = bag::new(ctx);
 
-        let pool_key = type_name::into_string(type_name::get<BUSD>());
+        let mut pool_key = type_name::into_string(type_name::get<BUSD>());
         bag::add<ascii::String, StablePool<BUSD>>(&mut stable_pools, pool_key,stable_pool::new<BUSD>(ctx));
         pool_key = type_name::into_string(type_name::get<BARS>());
         bag::add<ascii::String, StablePool<BARS>>(&mut stable_pools, pool_key,stable_pool::new<BARS>(ctx));
@@ -1432,24 +1432,24 @@ module sui_system::validator {
     }
 
     public(package) fun rate_vec_map() : VecMap<ascii::String, u64> {
-        let rate_map = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BUSD>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BARS>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BAUD>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BBRL>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BCAD>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BEUR>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BGBP>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BIDR>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BINR>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BJPY>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BKRW>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BMXN>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BRUB>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BSAR>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BTRY>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<BZAR>()), 1000000000);
-        vec_map::insert(&mut rate_map, type_name::into_string(type_name::get<MGG>()), 1000000000);
+        let mut rate_map = vec_map::empty<ascii::String, u64>();
+        rate_map.insert(type_name::into_string(type_name::get<BUSD>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BARS>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BAUD>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BBRL>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BCAD>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BEUR>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BGBP>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BIDR>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BINR>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BJPY>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BKRW>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BMXN>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BRUB>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BSAR>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BTRY>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<BZAR>()), 1000000000);
+        rate_map.insert(type_name::into_string(type_name::get<MGG>()), 1000000000);
         rate_map
     }
 }

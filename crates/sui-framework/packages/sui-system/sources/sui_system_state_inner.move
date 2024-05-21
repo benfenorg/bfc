@@ -536,7 +536,7 @@ module sui_system::sui_system_state_inner {
         public(package) fun request_withdraw_stake(
             self: &mut SuiSystemStateInnerV2,
         staked_sui: StakedBfc,
-        ctx: &mut TxContext,
+        ctx: &TxContext,
         ) : Balance<BFC> {
             assert!(
                 stake_activation_epoch(&staked_sui) <= ctx.epoch(),
@@ -546,7 +546,7 @@ module sui_system::sui_system_state_inner {
         }
 
         public(package) fun request_withdraw_stable_stake<STABLE>(
-            self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &mut TxContext,
+            self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &TxContext,
         ) : (Balance<STABLE>, Balance<BFC>) {
             assert!(
                 stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),
@@ -1086,8 +1086,8 @@ module sui_system::sui_system_state_inner {
 
     #[allow(lint(self_transfer))]
     /// Extract required Balance from vector of Coin<BFC>, transfer the remainder back to sender.
-    fun extract_coin_balance(coins: vector<Coin<BFC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<BFC> {
-        let merged_coin = vector::pop_back(&mut coins);
+    fun extract_coin_balance(mut coins: vector<Coin<BFC>>, amount: option::Option<u64>, ctx: &mut TxContext): Balance<BFC> {
+        let mut merged_coin = vector::pop_back(&mut coins);
         //pay::join_vec(&mut merged_coin, coins);
         merged_coin.join_vec(coins);
 

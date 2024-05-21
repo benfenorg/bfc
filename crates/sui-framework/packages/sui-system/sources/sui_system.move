@@ -622,7 +622,7 @@ module sui_system::sui_system {
     ) : Balance<BFC> {
         // get stable exchange rate from bfc system
         assert!(vector::length(&rate_vec) == 17, EWrongStableRateLength);
-        let stable_rate = vec_map::empty<ascii::String, u64>();
+        let mut stable_rate = vec_map::empty<ascii::String, u64>();
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BUSD>()), *vector::borrow<u64>(&rate_vec,0));
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BARS>()), *vector::borrow<u64>(&rate_vec,1));
         vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BAUD>()), *vector::borrow<u64>(&rate_vec,2));

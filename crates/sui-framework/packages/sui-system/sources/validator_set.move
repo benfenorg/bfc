@@ -170,15 +170,15 @@ module sui_system::validator_set {
         let rate_map = rate_vec_map();
         let total_stake = calculate_total_stakes(&init_active_validators, rate_map);
         let mut staking_pool_mappings = table::new(ctx);
-        let stable_pool_mappings = table::new(ctx);
+        let mut stable_pool_mappings = table::new(ctx);
         let num_validators = vector::length(&init_active_validators);
-        let i = 0;
+        let mut i = 0;
         while (i < num_validators) {
             let validator = vector::borrow(&init_active_validators, i);
             table::add(&mut staking_pool_mappings, staking_pool_id(validator), sui_address(validator));
             let id_vec = all_stable_pool_id(validator);
             let id_len = vector::length(&id_vec);
-            let j = 0;
+            let mut j = 0;
             while (j < id_len) {
                 let id = vector::borrow(&id_vec, j);
                 table::add(&mut stable_pool_mappings, *id, sui_address(validator));
@@ -234,7 +234,7 @@ module sui_system::validator_set {
         //stable staking with this candidate.
         let id_vec = all_stable_pool_id(&validator);
         let id_len = vector::length(&id_vec);
-        let j = 0;
+        let mut j = 0;
         while (j < id_len) {
             let id = vector::borrow(&id_vec, j);
             table::add(&mut self.stable_pool_mappings, *id, sui_address(&validator));
@@ -266,7 +266,7 @@ module sui_system::validator_set {
         // Remove the validator's stable staking pool from mappings.
         let id_vec = all_stable_pool_id(&validator);
         let id_len = vector::length(&id_vec);
-        let j = 0;
+        let mut j = 0;
         while (j < id_len) {
             let id = vector::borrow(&id_vec, j);
             table::remove(&mut self.stable_pool_mappings, *id);
@@ -392,7 +392,7 @@ module sui_system::validator_set {
     public(package) fun request_withdraw_stake(
         self: &mut ValidatorSet,
         staked_sui: StakedBfc,
-        ctx: &mut TxContext,
+        ctx: &TxContext,
     ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
@@ -410,7 +410,7 @@ module sui_system::validator_set {
     public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
-        ctx: &mut TxContext,
+        ctx: &TxContext,
     ) : (Balance<STABLE>, Balance<BFC>) {
         let stable_pool_id = stable_pool_id(&staked_sui);
         let stable_rate_map = self.last_epoch_stable_rate;
@@ -981,7 +981,7 @@ module sui_system::validator_set {
         // Remove the validator's stable staking pool from m our tables.
         let id_vec = all_stable_pool_id(&validator);
         let id_len = vector::length(&id_vec);
-        let j = 0;
+        let mut j = 0;
         while (j < id_len) {
             let id = vector::borrow(&id_vec, j);
             table::remove(&mut self.stable_pool_mappings, *id);
@@ -1116,7 +1116,7 @@ module sui_system::validator_set {
     fun calculate_total_stakes(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
         let stake = 0;
         let length = vector::length(validators);
-        let i = 0;
+        let mut i = 0;
         while (i < length) {
             let v = vector::borrow(validators, i);
             stake = stake + validator::total_stake_with_all_stable(v, stable_rate);
@@ -1340,7 +1340,7 @@ module sui_system::validator_set {
             };
 
             // Add rewards to stake staking pool to auto compound for stakers.
-            validator.deposit_stake_rewards(staker_reward, &stable_rate);
+            validator::deposit_stake_rewards(validator, staker_reward, &stable_rate);
             i = i + 1;
         }
     }

@@ -110,7 +110,7 @@ module sui_system::voting_power {
     /// Insert `new_info` to `info_list` as part of insertion sort, such that `info_list` is always sorted
     /// using stake, in descending order.
     fun insert(info_list: &mut vector<VotingPowerInfoV2>, new_info: VotingPowerInfoV2) {
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(info_list);
         while (i < len && vector::borrow(info_list, i).stake > new_info.stake) {
             i = i + 1;
@@ -119,8 +119,8 @@ module sui_system::voting_power {
     }
 
     /// Distribute remaining_power to validators that are not capped at threshold.
-    fun adjust_voting_power(info_list: &mut vector<VotingPowerInfoV2>, threshold: u64, remaining_power: u64) {
-        let i = 0;
+    fun adjust_voting_power(info_list: &mut vector<VotingPowerInfoV2>, threshold: u64, mut remaining_power: u64) {
+        let mut i = 0;
         let len = vector::length(info_list);
         while (i < len && remaining_power > 0) {
             let v = vector::borrow_mut(info_list, i);
@@ -139,13 +139,13 @@ module sui_system::voting_power {
     }
 
     /// Update validators with the decided voting power.
-    fun update_voting_power(validators: &mut vector<Validator>, info_list: vector<VotingPowerInfoV2>) {
+    fun update_voting_power(validators: &mut vector<Validator>, mut info_list: vector<VotingPowerInfoV2>) {
         while (!vector::is_empty(&info_list)) {
             let VotingPowerInfoV2 {
                 validator_index,
                 voting_power,
                 stake: _,
-            } = vector::pop_back(&mut info_list);
+            } = info_list.pop_back();
             let v = vector::borrow_mut(validators, validator_index);
             validator::set_voting_power(v, voting_power);
         };
@@ -155,9 +155,9 @@ module sui_system::voting_power {
     /// Check a few invariants that must hold after setting the voting power.
     fun check_invariants(v: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>) {
         // First check that the total voting power must be TOTAL_VOTING_POWER.
-        let i = 0;
+        let mut i = 0;
         let len = vector::length(v);
-        let total = 0;
+        let mut total = 0;
         while (i < len) {
             let voting_power = validator::voting_power(vector::borrow(v, i));
             assert!(voting_power > 0, EInvalidVotingPower);
@@ -169,9 +169,9 @@ module sui_system::voting_power {
         // Second check that if validator A's stake is larger than B's stake, A's voting power must be no less
         // than B's voting power; similarly, if A's stake is less than B's stake, A's voting power must be no larger
         // than B's voting power.
-        let a = 0;
+        let mut a = 0;
         while (a < len) {
-            let b = a + 1;
+            let mut b = a + 1;
             while (b < len) {
                 let validator_a = vector::borrow(v, a);
                 let validator_b = vector::borrow(v, b);

@@ -154,7 +154,7 @@ module sui_system::stable_pool {
     /// tokens using exchange rate at stable epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal<STABLE>(
-        pool: &mut StablePool<STABLE>,
+        pool: &StablePool<STABLE>,
         staked_sui: StakedStable<STABLE>,
     ) : (u64, Balance<STABLE>) {
 
@@ -239,7 +239,7 @@ module sui_system::stable_pool {
     ) : (Balance<BFC>, u64) {
         let exchange_rate = pool_token_exchange_rate_at_epoch(pool, epoch);
         let total_sui_withdraw_amount = get_sui_amount(&exchange_rate, pool_token_withdraw_amount);
-        let reward_withdraw_amount =
+        let mut reward_withdraw_amount =
             if (total_sui_withdraw_amount >= principal_withdraw_amount)
                 total_sui_withdraw_amount - principal_withdraw_amount
             else 0;
@@ -354,7 +354,7 @@ module sui_system::stable_pool {
             return initial_exchange_rate()
         };
         let clamped_epoch = option::get_with_default(&pool.deactivation_epoch, epoch);
-        let epoch = math::min(clamped_epoch, epoch);
+        let mut epoch = math::min(clamped_epoch, epoch);
         let activation_epoch = *option::borrow(&pool.activation_epoch);
 
         // Find the latest epoch that's earlier than the given epoch with an entry in the table
