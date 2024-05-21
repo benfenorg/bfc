@@ -1063,8 +1063,8 @@ module sui_system::validator_set {
     fun process_pending_validators(
         self: &mut ValidatorSet, new_epoch: u64,
     ) {
-        while (!table_vec::is_empty(&self.pending_active_validators)) {
-            let validator = table_vec::pop_back(&mut self.pending_active_validators);
+        while (!self.pending_active_validators.is_empty()) {
+            let mut validator = self.pending_active_validators.pop_back();
             validator::activate(&mut validator, new_epoch);
             validator::activate_stable(&mut validator, new_epoch);
             event::emit(
@@ -1074,6 +1074,7 @@ module sui_system::validator_set {
                     staking_pool_id: staking_pool_id(&validator),
                 }
             );
+            vector::push_back(&mut self.active_validators, validator);
         }
     }
 
@@ -1114,7 +1115,7 @@ module sui_system::validator_set {
 
     /// Calculate the total active validator stake.
     fun calculate_total_stakes(validators: &vector<Validator>, stable_rate: VecMap<ascii::String, u64>): u64 {
-        let stake = 0;
+        let mut stake = 0;
         let length = vector::length(validators);
         let mut i = 0;
         while (i < length) {
