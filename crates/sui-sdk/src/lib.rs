@@ -82,7 +82,7 @@ use jsonrpsee::rpc_params;
 use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
 use serde_json::Value;
 
-use move_core_types::language_storage::StructTag;
+use move_core_types::language_storage::{StructTag, TypeTag};
 pub use sui_json as json;
 use sui_json_rpc::{
     CLIENT_SDK_TYPE_HEADER, CLIENT_SDK_VERSION_HEADER, CLIENT_TARGET_API_VERSION_HEADER,
@@ -539,5 +539,9 @@ impl DataReader for ReadApi {
     /// Returns the reference gas price as a u64 or an error otherwise
     async fn get_reference_gas_price(&self) -> Result<u64, anyhow::Error> {
         Ok(self.get_reference_gas_price().await?)
+    }
+
+    async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
+        Ok(self.get_stable_rate(type_tag).await?)
     }
 }

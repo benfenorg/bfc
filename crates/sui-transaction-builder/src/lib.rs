@@ -50,6 +50,8 @@ pub trait DataReader {
     ) -> Result<SuiObjectResponse, anyhow::Error>;
 
     async fn get_reference_gas_price(&self) -> Result<u64, anyhow::Error>;
+    // async fn get_stable_reference_gas_price(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error>;
+    async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error>;
 }
 
 #[derive(Clone)]
@@ -68,12 +70,30 @@ impl TransactionBuilder {
         input_objects: Vec<ObjectID>,
         gas_price: u64,
     ) -> Result<ObjectRef, anyhow::Error> {
-        if budget < gas_price {
-            bail!("Gas budget {budget} is less than the reference gas price {gas_price}. The gas budget must be at least the current reference gas price of {gas_price}.")
-        }
         if let Some(gas) = input_gas {
-            self.get_object_ref(gas).await
+            //get gas object reference and type
+            let (obj_ref, obj_type) = self.get_object_ref_and_type(gas).await?;
+            if obj_type.is_stable_gas_coin() {
+                // check if the gas object is sufficient for the required gas amount
+                let rate = if let ObjectType::Struct(type_) = obj_type {
+                    self.0.get_stable_rate(type_.get_stable_gas_tag()).await?
+                } else {
+                    1u64
+                };
+                let stable_gas_price = (gas_price as u128) * 1000000000u128 / rate as u128;
+                if budget < stable_gas_price as u64 {
+                    bail!("Gas budget {budget} is less than the reference gas price {stable_gas_price}. The gas budget must be at least the current reference gas price of {stable_gas_price}.")
+                }
+            }else {
+                if budget < gas_price {
+                    bail!("Gas budget {budget} is less than the reference gas price {gas_price}. The gas budget must be at least the current reference gas price of {gas_price}.")
+                }
+            }
+            Ok(obj_ref)
         } else {
+            if budget < gas_price {
+                bail!("Gas budget {budget} is less than the reference gas price {gas_price}. The gas budget must be at least the current reference gas price of {gas_price}.")
+            }
             let gas_objs = self.0.get_owned_objects(signer, GasCoin::type_()).await?;
 
             for obj in gas_objs {
