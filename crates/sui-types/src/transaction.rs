@@ -442,7 +442,6 @@ impl VersionedProtocolMessage for TransactionKind {
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ChangeBfcRound(_)=> Ok(()),
-            | TransactionKind::ConsensusCommitPrologue(_) => Ok(()),
             TransactionKind::ProgrammableTransaction(pt) => {
                 // NB: we don't use the `receiving_objects` method here since we don't want to check
                 // for any validity requirements such as duplicate receiving inputs at this point.
@@ -1226,8 +1225,6 @@ impl TransactionKind {
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ChangeBfcRound(_)
-            | TransactionKind::Genesis(_)
-            | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ConsensusCommitPrologueV2(_)
             | TransactionKind::AuthenticatorStateUpdate(_)
             | TransactionKind::RandomnessStateUpdate(_)
@@ -1435,8 +1432,7 @@ impl TransactionKind {
                 TransactionKind::ChangeEpoch(_)
                 | TransactionKind::Genesis(_)
                 | TransactionKind::ConsensusCommitPrologue(_)
-                | TransactionKind::ChangeBfcRound(_) => (),
-                | TransactionKind::ConsensusCommitPrologue(_)
+                | TransactionKind::ChangeBfcRound(_)
                 | TransactionKind::ConsensusCommitPrologueV2(_) => (),
                 TransactionKind::EndOfEpochTransaction(txns) => {
                     // The transaction should have been rejected earlier if the feature is not enabled.
