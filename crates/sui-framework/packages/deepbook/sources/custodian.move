@@ -213,17 +213,17 @@ module deepbook::custodian {
         let mut test = test_scenario::begin(owner);
         test_scenario::next_tx(&mut test, owner);
         {
-            setup_test(&mut test);
-            transfer::public_transfer(mint_account_cap(ctx(&mut test)), bob);
+        setup_test(&mut test);
+        transfer::public_transfer(mint_account_cap(ctx(&mut test)), bob);
         };
         test_scenario::next_tx(&mut test, bob);
         {
-            let custodian = take_shared<Custodian<USD>>(&test);
-            let account_cap = take_from_sender<AccountCap>(&test);
-            let account_cap_user = object::id(&account_cap);
-            let _ = borrow_account_balance(&custodian, account_cap_user);
-            test_scenario::return_to_sender<AccountCap>(&test, account_cap);
-            test_scenario::return_shared(custodian);
+        let custodian = take_shared<Custodian<USD>>(&test);
+        let account_cap = take_from_sender<AccountCap>(&test);
+        let account_cap_user = object::id(&account_cap);
+        let _ = borrow_account_balance(&custodian, account_cap_user);
+        test_scenario::return_to_sender<AccountCap>(&test, account_cap);
+        test_scenario::return_shared(custodian);
 
         };
         test_scenario::end(test);
@@ -236,34 +236,34 @@ module deepbook::custodian {
         let mut test = test_scenario::begin(owner);
         test_scenario::next_tx(&mut test, owner);
         {
-            setup_test(&mut test);
-            transfer::public_transfer(mint_account_cap(ctx(&mut test)), bob);
+        setup_test(&mut test);
+        transfer::public_transfer(mint_account_cap(ctx(&mut test)), bob);
         };
         test_scenario::next_tx(&mut test, bob);
         {
-            let custodian = take_shared<Custodian<USD>>(&test);
-            let account_cap = take_from_sender<AccountCap>(&test);
-            let account_cap_user = object::id(&account_cap);
-            let (asset_available, asset_locked) = account_balance(&custodian, account_cap_user);
-            assert_eq(asset_available, 0);
-            assert_eq(asset_locked, 0);
-            test_scenario::return_to_sender<AccountCap>(&test, account_cap);
-            test_scenario::return_shared(custodian);
+        let custodian = take_shared<Custodian<USD>>(&test);
+        let account_cap = take_from_sender<AccountCap>(&test);
+        let account_cap_user = object::id(&account_cap);
+        let (asset_available, asset_locked) = account_balance(&custodian, account_cap_user);
+        assert_eq(asset_available, 0);
+        assert_eq(asset_locked, 0);
+        test_scenario::return_to_sender<AccountCap>(&test, account_cap);
+        test_scenario::return_shared(custodian);
 
         };
         test_scenario::next_tx(&mut test, bob);
         {
-            let mut custodian = take_shared<Custodian<USD>>(&test);
-            let account_cap = take_from_sender<AccountCap>(&test);
-            let account_cap_user = object::id(&account_cap);
-            deposit(&mut custodian, mint_for_testing<USD>(10000, ctx(&mut test)), account_cap_user);
-            let (asset_available, mut asset_locked) = account_balance(&custodian, account_cap_user);
-            assert_eq(asset_available, 10000);
-            assert_eq(asset_locked, 0);
-            asset_locked = account_locked_balance(&custodian, account_cap_user);
-            assert_eq(asset_locked, 0);
-            test_scenario::return_to_sender<AccountCap>(&test, account_cap);
-            test_scenario::return_shared(custodian);
+        let mut custodian = take_shared<Custodian<USD>>(&test);
+        let account_cap = take_from_sender<AccountCap>(&test);
+        let account_cap_user = object::id(&account_cap);
+        deposit(&mut custodian, mint_for_testing<USD>(10000, ctx(&mut test)), account_cap_user);
+        let (asset_available, mut asset_locked) = account_balance(&custodian, account_cap_user);
+        assert_eq(asset_available, 10000);
+        assert_eq(asset_locked, 0);
+        asset_locked = account_locked_balance(&custodian, account_cap_user);
+        assert_eq(asset_locked, 0);
+        test_scenario::return_to_sender<AccountCap>(&test, account_cap);
+        test_scenario::return_shared(custodian);
         };
         test_scenario::end(test);
     }

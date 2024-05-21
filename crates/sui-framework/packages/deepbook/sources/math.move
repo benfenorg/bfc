@@ -72,37 +72,37 @@ module deepbook::math {
         } else {
             let mut n: u8 = 0;
             if (x & 0xFFFFFFFFFFFFFFFF0000000000000000 == 0) {
-                // x's higher 64 is all zero, shift the lower part over
-                x = x << 64;
-                n = n + 64;
+            // x's higher 64 is all zero, shift the lower part over
+            x = x << 64;
+            n = n + 64;
             };
             if (x & 0xFFFFFFFF000000000000000000000000 == 0) {
-                // x's higher 32 is all zero, shift the lower part over
-                x = x << 32;
-                n = n + 32;
+            // x's higher 32 is all zero, shift the lower part over
+            x = x << 32;
+            n = n + 32;
             };
             if (x & 0xFFFF0000000000000000000000000000 == 0) {
-                // x's higher 16 is all zero, shift the lower part over
-                x = x << 16;
-                n = n + 16;
+            // x's higher 16 is all zero, shift the lower part over
+            x = x << 16;
+            n = n + 16;
             };
             if (x & 0xFF000000000000000000000000000000 == 0) {
-                // x's higher 8 is all zero, shift the lower part over
-                x = x << 8;
-                n = n + 8;
+            // x's higher 8 is all zero, shift the lower part over
+            x = x << 8;
+            n = n + 8;
             };
             if (x & 0xF0000000000000000000000000000000 == 0) {
-                // x's higher 4 is all zero, shift the lower part over
-                x = x << 4;
-                n = n + 4;
+            // x's higher 4 is all zero, shift the lower part over
+            x = x << 4;
+            n = n + 4;
             };
             if (x & 0xC0000000000000000000000000000000 == 0) {
-                // x's higher 2 is all zero, shift the lower part over
-                x = x << 2;
-                n = n + 2;
+            // x's higher 2 is all zero, shift the lower part over
+            x = x << 2;
+            n = n + 2;
             };
             if (x & 0x80000000000000000000000000000000 == 0) {
-                n = n + 1;
+            n = n + 1;
             };
 
             n
@@ -115,13 +115,13 @@ module deepbook::math {
     fun pow(mut base: u128, mut exponent: u8): u128 {
         let mut res: u128 = 1;
         while (exponent >= 1) {
-            if (exponent % 2 == 0) {
-                base = base * base;
-                exponent = exponent / 2;
-            } else {
-                res = res * base;
-                exponent = exponent - 1;
-            }
+        if (exponent % 2 == 0) {
+        base = base * base;
+        exponent = exponent / 2;
+        } else {
+        res = res * base;
+        exponent = exponent - 1;
+        }
         };
         res
     }
@@ -130,13 +130,13 @@ module deepbook::math {
     fun test_count_leading_zeros() {
         let mut i: u8 = 0;
         while (i <= 127) {
-            assert_eq(count_leading_zeros(pow(2, i) as u128), 128 - i - 1);
-            i = i + 1;
+        assert_eq(count_leading_zeros(pow(2, i) as u128), 128 - i - 1);
+        i = i + 1;
         };
 
         while (i <= 127) {
-            assert_eq(count_leading_zeros(pow(2, i) as u128 + 1), 128 - i - 1);
-            i = i + 1;
+        assert_eq(count_leading_zeros(pow(2, i) as u128 + 1), 128 - i - 1);
+        i = i + 1;
         };
         assert_eq(count_leading_zeros(0), 128);
     }
