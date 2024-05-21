@@ -400,7 +400,7 @@ module sui_system::validator {
         if (stable_pool::is_preactive<STABLE>(pool)) {
             stable_pool::process_pending_stake<STABLE>(pool);
         };
-        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        let next_stable_stake = vec_map::try_get(&self.next_epoch_stable_stake, &pool_key);
         if (option::is_none(&next_stable_stake)) {
             vec_map::insert(&mut self.next_epoch_stable_stake, pool_key, stake_amount);
         } else {
@@ -447,7 +447,7 @@ module sui_system::validator {
     public(package) fun request_withdraw_stake(
         self: &mut Validator,
         staked_sui: StakedBfc,
-        ctx: &mut TxContext,
+        ctx: &TxContext,
     ) : Balance<BFC> {
         let principal_amount = staking_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = staking_pool::stake_activation_epoch(&staked_sui);
@@ -474,7 +474,7 @@ module sui_system::validator {
         self: &mut Validator,
         staked_sui: StakedStable<STABLE>,
         rate: u64,
-        ctx: &mut TxContext,
+        ctx: &TxContext,
     ) : (Balance<STABLE>, Balance<BFC>) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
@@ -483,7 +483,7 @@ module sui_system::validator {
         let (withdrawn_stake, reward) = stable_pool::request_withdraw_stake(pool, staked_sui, rate, ctx);
         let withdraw_amount = withdrawn_stake.value();
         let reward_amount =reward.value();
-        let next_stable_stake = vec_map::try_get(&mut self.next_epoch_stable_stake, &pool_key);
+        let next_stable_stake = vec_map::try_get(&self.next_epoch_stable_stake, &pool_key);
         if (option::is_some(&next_stable_stake)) {
             let (_, next_stable) = vec_map::remove(&mut self.next_epoch_stable_stake, &pool_key);
             vec_map::insert(&mut self.next_epoch_stable_stake, pool_key,next_stable - withdraw_amount);
@@ -545,7 +545,7 @@ module sui_system::validator {
     /// Deposit stakes rewards into the validator's staking pool, called at the end of the epoch.
     public(package) fun deposit_stake_rewards(self: &mut Validator, reward: Balance<BFC>, stable_rate: &VecMap<ascii::String, u64>) {
         let total_reward = balance::value(&reward);
-        let bfc_reward = 0;
+        let mut bfc_reward = 0;
         let stable_total_stake = vec_map::empty();
         let all_stable_total_stake = get_stable_staking_total(self, &mut stable_total_stake, stable_rate);
         if (all_stable_total_stake > 0) {
@@ -728,7 +728,7 @@ module sui_system::validator {
         assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
     }
 
-    public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
+    public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
         process_pending_stable_stakes_and_withdraws<BUSD>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BARS>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BAUD>(self, ctx);
@@ -748,7 +748,7 @@ module sui_system::validator {
         process_pending_stable_stakes_and_withdraws<MGG>(self, ctx);
     }
 
-    public(package) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &mut TxContext) {
+    public(package) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &TxContext) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         stable_pool::process_pending_stakes_and_withdraws<STABLE>(pool, ctx);

@@ -79,7 +79,7 @@ module sui_system::genesis {
     fun create(
         sui_system_state_id: UID,
         bfc_system_state_id: UID,
-        sui_supply: Balance<BFC>,
+        mut sui_supply: Balance<BFC>,
         genesis_chain_parameters: GenesisChainParameters,
         genesis_validators: vector<GenesisValidatorMetadata>,
         token_distribution_schedule: TokenDistributionSchedule,
@@ -196,8 +196,8 @@ module sui_system::genesis {
     }
 
     fun allocate_tokens(
-        sui_supply: Balance<BFC>,
-        allocations: vector<TokenAllocation>,
+        mut sui_supply: Balance<BFC>,
+        mut allocations: vector<TokenAllocation>,
         validators: &mut vector<Validator>,
         ctx: &mut TxContext,
     ) {
@@ -220,7 +220,6 @@ module sui_system::genesis {
                     ctx
                 );
             } else {
-
                 bfc::transfer(
                     allocation_balance.into_coin(ctx),
                     recipient_address,

@@ -8,8 +8,8 @@ module sui_system::validator_set {
     use sui_system::validator;
     use std::ascii;
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
-    use sui_system::stable_pool::{pool_id as stable_pool_id, PoolStableTokenExchangeRate};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
+    use sui_system::stable_pool::{ PoolStableTokenExchangeRate, pool_id as stable_pool_id};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc, pool_id};
     use sui_system::validator::rate_vec_map;
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
@@ -61,6 +61,9 @@ module sui_system::validator_set {
         staking_pool_mappings: Table<ID, address>,
 
         stable_pool_mappings: Table<ID, address>,
+
+        ///The stable rate of ast epoch.
+        last_epoch_stable_rate: VecMap<ascii::String, u64>,
 
         /// Mapping from a staking pool ID to the inactive validator that has that pool as its staking pool.
         /// When a validator is deactivated the validator is removed from `active_validators` it
@@ -166,7 +169,7 @@ module sui_system::validator_set {
         //add init stable rate
         let rate_map = rate_vec_map();
         let total_stake = calculate_total_stakes(&init_active_validators, rate_map);
-        let staking_pool_mappings = table::new(ctx);
+        let mut staking_pool_mappings = table::new(ctx);
         let stable_pool_mappings = table::new(ctx);
         let num_validators = vector::length(&init_active_validators);
         let i = 0;
@@ -192,6 +195,7 @@ module sui_system::validator_set {
             pending_removals: vector[],
             staking_pool_mappings,
             stable_pool_mappings,
+            last_epoch_stable_rate: rate_map,
             inactive_validators: table::new(ctx),
             validator_candidates: table::new(ctx),
             at_risk_validators: vec_map::empty(),
@@ -407,7 +411,7 @@ module sui_system::validator_set {
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
         ctx: &mut TxContext,
-    ) : Balance<STABLE> {
+    ) : (Balance<STABLE>, Balance<BFC>) {
         let stable_pool_id = stable_pool_id(&staked_sui);
         let stable_rate_map = self.last_epoch_stable_rate;
         let pool_key = type_name::into_string(type_name::get<STABLE>());
@@ -512,6 +516,7 @@ module sui_system::validator_set {
             &adjusted_storage_fund_reward_amounts,
             computation_reward,
             storage_fund_reward,
+            stable_rate,
             ctx
         );
 
@@ -983,12 +988,10 @@ module sui_system::validator_set {
             j = j + 1;
         };
 
-        if (vec_map::contains(&self.at_risk_validators, &validator_address)) {
-            vec_map::remove(&mut self.at_risk_validators, &validator_address);
-        self.staking_pool_mappings.remove(validator_pool_id);
         if (self.at_risk_validators.contains(&validator_address)) {
             self.at_risk_validators.remove(&validator_address);
         };
+
 
         self.total_stake = self.total_stake - validator.total_stake_amount();
 
@@ -1305,6 +1308,7 @@ module sui_system::validator_set {
         adjusted_storage_fund_reward_amounts: &vector<u64>,
         staking_rewards: &mut Balance<BFC>,
         storage_fund_reward: &mut Balance<BFC>,
+        stable_rate: VecMap<ascii::String, u64>,
         ctx: &mut TxContext
     ) {
         let length = validators.length();
@@ -1336,7 +1340,7 @@ module sui_system::validator_set {
             };
 
             // Add rewards to stake staking pool to auto compound for stakers.
-            validator.deposit_stake_rewards(staker_reward);
+            validator.deposit_stake_rewards(staker_reward, &stable_rate);
             i = i + 1;
         }
     }

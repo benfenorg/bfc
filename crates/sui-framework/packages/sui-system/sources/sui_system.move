@@ -117,7 +117,7 @@ module sui_system::sui_system {
             ctx,
         );
         let version = sui_system_state_inner::genesis_system_state_version();
-        let self = SuiSystemState {
+        let mut self = SuiSystemState {
             id,
             version,
             bfc_system_id,

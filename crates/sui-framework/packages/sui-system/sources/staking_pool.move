@@ -129,9 +129,9 @@ module sui_system::staking_pool {
     public(package) fun request_withdraw_stake(
         pool: &mut StakingPool,
         staked_sui: StakedBfc,
-        ctx: &mut TxContext
+        ctx: &TxContext
     ) : Balance<BFC> {
-        let (pool_token_withdraw_amount, principal_withdraw) =
+        let (pool_token_withdraw_amount, mut principal_withdraw) =
             withdraw_from_principal(pool, staked_sui);
         let principal_withdraw_amount = principal_withdraw.value();
 
@@ -155,7 +155,7 @@ module sui_system::staking_pool {
     /// tokens using exchange rate at staking epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal(
-        pool: &mut StakingPool,
+        pool: &StakingPool,
         staked_sui: StakedBfc,
     ) : (u64, Balance<BFC>) {
 

@@ -130,7 +130,7 @@ module sui_system::stable_pool {
         pool: &mut StablePool<STABLE>,
         staked_sui: StakedStable<STABLE>,
         rate: u64,
-        ctx: &mut TxContext
+        ctx: &TxContext
     ) : (Balance<STABLE>, Balance<BFC>) {
         let (pool_token_withdraw_amount, principal_withdraw) =
             withdraw_from_principal(pool, staked_sui);
@@ -192,7 +192,7 @@ module sui_system::stable_pool {
         balance::join(&mut pool.rewards_pool, rewards);
     }
 
-    public(package) fun process_pending_stakes_and_withdraws<STABLE>(pool: &mut StablePool<STABLE>, ctx: &mut TxContext) {
+    public(package) fun process_pending_stakes_and_withdraws<STABLE>(pool: &mut StablePool<STABLE>, ctx: &TxContext) {
         let new_epoch = tx_context::epoch(ctx) + 1;
         process_pending_stake_withdraw(pool);
         process_pending_stake(pool);
