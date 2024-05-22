@@ -35,26 +35,26 @@ module deepbook::critbit_test {
 
             let internal_nodes_keys = vector<u64>[0, 1, 2];
             let internal_nodes = vector<InternalNode> [
-                    critbit::new_internal_node_for_test(32, PARTITION_INDEX, 1, MAX_U64 - 0),
-                    critbit::new_internal_node_for_test(16, 0, 2, MAX_U64 - 1),
-                    critbit::new_internal_node_for_test(2, 1, MAX_U64 - 2, MAX_U64 - 3),
+            critbit::new_internal_node_for_test(32, PARTITION_INDEX, 1, MAX_U64 - 0),
+            critbit::new_internal_node_for_test(16, 0, 2, MAX_U64 - 1),
+            critbit::new_internal_node_for_test(2, 1, MAX_U64 - 2, MAX_U64 - 3),
             ];
             let leaves_keys = vector<u64>[0, 1, 2, 3];
             let leaves = vector<Leaf<u64>>[
-                    critbit::new_leaf_for_test(48, 48, 0),
-                    critbit::new_leaf_for_test(16, 16, 1),
-                    critbit::new_leaf_for_test(1, 1, 2),
-                    critbit::new_leaf_for_test(3, 3, 2)
+            critbit::new_leaf_for_test(48, 48, 0),
+            critbit::new_leaf_for_test(16, 16, 1),
+            critbit::new_leaf_for_test(1, 1, 2),
+            critbit::new_leaf_for_test(3, 3, 2)
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                0,
-                2,
-                0
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            0,
+            2,
+            0
             );
             assert_eq(is_equal, true);
 
@@ -71,26 +71,26 @@ module deepbook::critbit_test {
 
             let internal_nodes_keys = vector<u64>[0, 1 , 2];
             let internal_nodes = vector<InternalNode> [
-                critbit::new_internal_node_for_test(2, 1, MAX_U64, MAX_U64 - 1),
-                critbit::new_internal_node_for_test(16, 2, 0, MAX_U64 - 2),
-                critbit::new_internal_node_for_test(32, PARTITION_INDEX,  1, MAX_U64 - 3),
+            critbit::new_internal_node_for_test(2, 1, MAX_U64, MAX_U64 - 1),
+            critbit::new_internal_node_for_test(16, 2, 0, MAX_U64 - 2),
+            critbit::new_internal_node_for_test(32, PARTITION_INDEX,  1, MAX_U64 - 3),
             ];
             let leaves_keys = vector<u64>[0, 1, 2, 3];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(1, 1, 0),
-                critbit::new_leaf_for_test(3, 3, 0),
-                critbit::new_leaf_for_test(16, 16, 1),
-                critbit::new_leaf_for_test(48, 48, 2)
+            critbit::new_leaf_for_test(1, 1, 0),
+            critbit::new_leaf_for_test(3, 3, 0),
+            critbit::new_leaf_for_test(16, 16, 1),
+            critbit::new_leaf_for_test(48, 48, 2)
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                2,
-                0,
-                3,
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            2,
+            0,
+            3,
             );
             assert!(is_equal, 0);
             let (res, index) = critbit::find_leaf(&t1 , 48);
@@ -143,28 +143,28 @@ module deepbook::critbit_test {
 
             let internal_nodes_keys = vector<u64>[0, 1 , 2];
             let internal_nodes = vector<InternalNode> [
-                critbit::new_internal_node_for_test(32, 1, MAX_U64, 2),
-                critbit::new_internal_node_for_test(64, PARTITION_INDEX, 0, MAX_U64 - 2),
-                critbit::new_internal_node_for_test(1, 0,  MAX_U64 - 1, MAX_U64 - 3),
+            critbit::new_internal_node_for_test(32, 1, MAX_U64, 2),
+            critbit::new_internal_node_for_test(64, PARTITION_INDEX, 0, MAX_U64 - 2),
+            critbit::new_internal_node_for_test(1, 0,  MAX_U64 - 1, MAX_U64 - 3),
             ];
 
             let leaves_keys = vector<u64>[0, 1, 2, 3];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(128, 128, 0),
-                critbit::new_leaf_for_test(160, 160, 2),
-                critbit::new_leaf_for_test(240, 240, 1),
-                critbit::new_leaf_for_test(161, 161, 2)
+            critbit::new_leaf_for_test(128, 128, 0),
+            critbit::new_leaf_for_test(160, 160, 2),
+            critbit::new_leaf_for_test(240, 240, 1),
+            critbit::new_leaf_for_test(161, 161, 2)
             ];
 
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                1,
-                0,
-                2,
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            1,
+            0,
+            2,
             );
             assert!(is_equal, 0);
 
@@ -341,17 +341,17 @@ module deepbook::critbit_test {
             let internal_nodes = vector<InternalNode> [];
             let leaves_keys = vector<u64>[1];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(16, 16, PARTITION_INDEX),
+            critbit::new_leaf_for_test(16, 16, PARTITION_INDEX),
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                MAX_U64 - 1,
-                1,
-                1
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            MAX_U64 - 1,
+            1,
+            1
             );
             assert_eq(is_equal,true);
 
@@ -369,22 +369,22 @@ module deepbook::critbit_test {
             critbit::remove_leaf_by_index(&mut t1, 0);
             let internal_nodes_keys = vector<u64>[1];
             let internal_nodes = vector<InternalNode> [
-                critbit::new_internal_node_for_test(16, PARTITION_INDEX, MAX_U64 - 2, MAX_U64 - 1)
+            critbit::new_internal_node_for_test(16, PARTITION_INDEX, MAX_U64 - 2, MAX_U64 - 1)
             ];
             let leaves_keys = vector<u64>[1, 2];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(16, 16, 1),
-                critbit::new_leaf_for_test(3, 3, 1)
+            critbit::new_leaf_for_test(16, 16, 1),
+            critbit::new_leaf_for_test(3, 3, 1)
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                1,
-                2,
-                1
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            1,
+            2,
+            1
             );
             assert_eq(is_equal,true);
 
@@ -393,17 +393,17 @@ module deepbook::critbit_test {
             let internal_nodes = vector<InternalNode> [];
             let leaves_keys = vector<u64>[2];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(3, 3, PARTITION_INDEX)
+            critbit::new_leaf_for_test(3, 3, PARTITION_INDEX)
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                MAX_U64 - 2,
-                2,
-                2
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            MAX_U64 - 2,
+            2,
+            2
             );
             assert_eq(is_equal,true);
 
@@ -423,51 +423,51 @@ module deepbook::critbit_test {
 
             let internal_nodes_keys = vector<u64>[0, 1];
             let internal_nodes = vector<InternalNode> [
-                critbit::new_internal_node_for_test(32, 1, MAX_U64, MAX_U64 - 1),
-                critbit::new_internal_node_for_test(64, PARTITION_INDEX, 0, MAX_U64 - 2)
+            critbit::new_internal_node_for_test(32, 1, MAX_U64, MAX_U64 - 1),
+            critbit::new_internal_node_for_test(64, PARTITION_INDEX, 0, MAX_U64 - 2)
             ];
             let leaves_keys = vector<u64>[0, 1, 2];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(128, 128, 0),
-                critbit::new_leaf_for_test(160, 160, 0),
-                critbit::new_leaf_for_test(240, 240, 1)
+            critbit::new_leaf_for_test(128, 128, 0),
+            critbit::new_leaf_for_test(160, 160, 0),
+            critbit::new_leaf_for_test(240, 240, 1)
 
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                1,
-                0,
-                2
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            1,
+            0,
+            2
             );
             assert_eq(is_equal,true);
 
             critbit::insert_leaf(&mut t1, 161, 161);
             let internal_nodes_keys = vector<u64>[0, 1, 3];
             let internal_nodes = vector<InternalNode> [
-                critbit::new_internal_node_for_test(32, 1, MAX_U64, 3),
-                critbit::new_internal_node_for_test(64, PARTITION_INDEX, 0, MAX_U64 - 2),
-                critbit::new_internal_node_for_test(1, 0, MAX_U64 - 1, MAX_U64 - 4)
+            critbit::new_internal_node_for_test(32, 1, MAX_U64, 3),
+            critbit::new_internal_node_for_test(64, PARTITION_INDEX, 0, MAX_U64 - 2),
+            critbit::new_internal_node_for_test(1, 0, MAX_U64 - 1, MAX_U64 - 4)
             ];
             let leaves_keys = vector<u64>[0, 1, 2, 4];
             let leaves = vector<Leaf<u64>>[
-                critbit::new_leaf_for_test(128, 128, 0),
-                critbit::new_leaf_for_test(160, 160, 3),
-                critbit::new_leaf_for_test(240, 240, 1),
-                critbit::new_leaf_for_test(161, 161, 3)
+            critbit::new_leaf_for_test(128, 128, 0),
+            critbit::new_leaf_for_test(160, 160, 3),
+            critbit::new_leaf_for_test(240, 240, 1),
+            critbit::new_leaf_for_test(161, 161, 3)
             ];
             let is_equal = check_tree_struct(
-                &t1,
-                &internal_nodes_keys,
-                &internal_nodes,
-                &leaves_keys,
-                &leaves,
-                1,
-                0,
-                2
+            &t1,
+            &internal_nodes_keys,
+            &internal_nodes,
+            &leaves_keys,
+            &leaves,
+            1,
+            0,
+            2
             );
             assert_eq(is_equal,true);
 

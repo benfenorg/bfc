@@ -43,12 +43,12 @@ module deepbook::order_query_tests {
         assert!(order_query::order_id(last_order) == 100, 0);
 
         let page2 = iter_bids(
-            &pool,
-            order_query::next_tick_level(&page1),
-            order_query::next_order_id(&page1),
-            none(),
-            none(),
-            true
+        &pool,
+        order_query::next_tick_level(&page1),
+        order_query::next_order_id(&page1),
+        none(),
+        none(),
+        true
         );
         assert!(vector::length(order_query::orders(&page2)) == 100, 0);
         assert!(!order_query::has_next_page(&page2), 0);
@@ -81,12 +81,12 @@ module deepbook::order_query_tests {
         assert!(order_query::order_id(last_order) == 101, 0);
 
         let page2 = iter_bids(
-            &pool,
-            order_query::next_tick_level(&page1),
-            order_query::next_order_id(&page1),
-            none(),
-            none(),
-            false
+        &pool,
+        order_query::next_tick_level(&page1),
+        order_query::next_order_id(&page1),
+        none(),
+        none(),
+        false
         );
         assert!(vector::length(order_query::orders(&page2)) == 100, 0);
         assert!(!order_query::has_next_page(&page2), 0);
@@ -118,12 +118,12 @@ module deepbook::order_query_tests {
         assert!(order_query::order_id(last_order) == 150, 0);
 
         let page2 = iter_bids(
-            &pool,
-            order_query::next_tick_level(&page),
-            order_query::next_order_id(&page),
-            none(),
-            none(),
-            true
+        &pool,
+        order_query::next_tick_level(&page),
+        order_query::next_order_id(&page),
+        none(),
+        none(),
+        true
         );
         assert!(vector::length(order_query::orders(&page2)) == 50, 0);
         assert!(!order_query::has_next_page(&page2), 0);
@@ -223,12 +223,12 @@ module deepbook::order_query_tests {
         assert!(order_query::order_id(last_order) == 175, 0);
 
         let page2 = iter_bids(
-            &pool,
-            order_query::next_tick_level(&page1),
-            order_query::next_order_id(&page1),
-            none(),
-            none(),
-            true
+        &pool,
+        order_query::next_tick_level(&page1),
+        order_query::next_order_id(&page1),
+        none(),
+        none(),
+        true
         );
         assert!(vector::length(order_query::orders(&page2)) == 100, 0);
         assert!(!order_query::has_next_page(&page2), 0);
@@ -308,9 +308,9 @@ module deepbook::order_query_tests {
         let (base_custodian, quote_custodian) = clob_v2::borrow_mut_custodian(&mut pool);
         custodian_v2::deposit(base_custodian, mint_for_testing<BFC>(1000000, ctx(&mut scenario)), account_cap_user);
         custodian_v2::deposit(
-            quote_custodian,
-            mint_for_testing<USD>(10000000, ctx(&mut scenario)),
-            account_cap_user
+        quote_custodian,
+        mint_for_testing<USD>(10000000, ctx(&mut scenario)),
+        account_cap_user
         );
         test_scenario::return_shared(pool);
         test_scenario::return_to_sender<AccountCap>(&scenario, account_cap);
@@ -321,33 +321,33 @@ module deepbook::order_query_tests {
     fun add_orders(order_count: u64, timestamp: u64, price: Option<u64>, scenario: &mut Scenario) {
         let mut n = 1;
         while (n <= order_count) {
-            let price = if (option::is_some(&price)) {
-                option::destroy_some(price) * FLOAT_SCALING
-            } else {
-                n * FLOAT_SCALING
-            };
+        let price = if (option::is_some(&price)) {
+        option::destroy_some(price) * FLOAT_SCALING
+        } else {
+        n * FLOAT_SCALING
+        };
 
-            let account_cap = test_scenario::take_from_sender<AccountCap>(scenario);
-            let mut pool = test_scenario::take_shared<Pool<BFC, USD>>(scenario);
-            let clock = test_scenario::take_shared<Clock>(scenario);
-            clob_v2::place_limit_order<BFC, USD>(
-                &mut pool,
-                CLIENT_ID_ALICE,
-                price,
-                200,
-                CANCEL_OLDEST,
-                true,
-                timestamp,
-                0,
-                &clock,
-                &account_cap,
-                ctx(scenario)
-            );
-            n = n + 1;
-            test_scenario::return_shared(clock);
-            test_scenario::return_shared(pool);
-            test_scenario::return_to_address<AccountCap>(ALICE, account_cap);
-            next_tx(scenario, ALICE);
+        let account_cap = test_scenario::take_from_sender<AccountCap>(scenario);
+        let mut pool = test_scenario::take_shared<Pool<BFC, USD>>(scenario);
+        let clock = test_scenario::take_shared<Clock>(scenario);
+        clob_v2::place_limit_order<BFC, USD>(
+        &mut pool,
+        CLIENT_ID_ALICE,
+        price,
+        200,
+        CANCEL_OLDEST,
+        true,
+        timestamp,
+        0,
+        &clock,
+        &account_cap,
+        ctx(scenario)
+        );
+        n = n + 1;
+        test_scenario::return_shared(clock);
+        test_scenario::return_shared(pool);
+        test_scenario::return_to_address<AccountCap>(ALICE, account_cap);
+        next_tx(scenario, ALICE);
         };
     }
 }
