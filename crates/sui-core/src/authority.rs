@@ -1211,13 +1211,11 @@ impl AuthorityState {
                 //shared_object_refs,
                 //&mut gas_charger,
                 input_objects,
-                shared_object_refs,
                 gas,
                 gas_status,
                 kind,
                 signer,
                 tx_digest,
-                transaction_dependencies,
             );
 
         Ok((inner_temp_store, proposal_map, effects, execution_error_opt.err()))
@@ -1320,13 +1318,11 @@ impl AuthorityState {
                     .epoch_data()
                     .epoch_start_timestamp(),
                 input_objects,
-                shared_object_refs,
                 gas_object_refs,
                 gas_status,
                 kind,
                 signer,
                 transaction_digest,
-                transaction_dependencies,
             );
         let tx_digest = *effects.transaction_digest();
 

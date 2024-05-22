@@ -96,13 +96,11 @@ mod checked {
 
     #[instrument(name = "tx_execute_to_effects", level = "debug", skip_all)]
     pub fn execute_transaction_to_effects<Mode: ExecutionMode>(
-        shared_object_refs: Vec<ObjectRef>,
         mut temporary_store: TemporaryStore<'_>,
         transaction_kind: TransactionKind,
         transaction_signer: SuiAddress,
         gas_charger: &mut GasCharger,
         transaction_digest: TransactionDigest,
-        mut transaction_dependencies: BTreeSet<TransactionDigest>,
         move_vm: &Arc<MoveVM>,
         epoch_id: &EpochId,
         epoch_timestamp_ms: u64,
