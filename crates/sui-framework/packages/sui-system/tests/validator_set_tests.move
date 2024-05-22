@@ -171,7 +171,7 @@ module sui_system::validator_set_tests {
     #[test]
     fun test_validator_set_flow_with_other_stable() {
         // Create 1 validator  with stake 100, which is an initial validator.
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         let validator1 = create_validator(@0x1, 1, 1, true, ctx);
@@ -367,7 +367,7 @@ module sui_system::validator_set_tests {
         let ctx = test_scenario::ctx(scenario);
 
         let validator1 = create_validator(@0x1, 1, 1, true, ctx);
-        let validator_set = validator_set::new(vector[validator1], ctx);
+        let mut validator_set = validator_set::new(vector[validator1], ctx);
         assert_eq(validator_set::total_stake(&validator_set), 100 * MIST_PER_SUI);
         test_scenario::end(scenario_val);
 

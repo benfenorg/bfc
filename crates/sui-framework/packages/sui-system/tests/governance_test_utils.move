@@ -117,7 +117,7 @@ module sui_system::governance_test_utils {
     }
 
     public fun set_up_sui_system_state(addrs: vector<address>) {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         let mut validators = vector::empty();
@@ -330,7 +330,7 @@ module sui_system::governance_test_utils {
             let amount = *vector::borrow(&stake_amounts, i);
 
             test_scenario::next_tx(scenario, validator_addr);
-            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let stake_plus_rewards = stake_plus_current_rewards_for_validator(validator_addr, &mut system_state, scenario);
             assert_eq(stake_plus_rewards, amount);
             test_scenario::return_shared(system_state);
@@ -393,7 +393,7 @@ module sui_system::governance_test_utils {
     }
 
     public fun stake_plus_current_rewards(addr: address, staking_pool: &StakingPool, scenario: &mut Scenario): u64 {
-        let sum = 0;
+        let mut sum = 0;
         test_scenario::next_tx(scenario, addr);
         let mut stake_ids = test_scenario::ids_for_sender<StakedBfc>(scenario);
         let current_epoch = tx_context::epoch(test_scenario::ctx(scenario));

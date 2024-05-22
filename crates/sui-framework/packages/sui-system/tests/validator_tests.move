@@ -75,7 +75,7 @@ module sui_system::validator_tests {
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
 
-        let validator = get_test_validator(ctx);
+        let mut validator = get_test_validator(ctx);
         //add stable stake
         let new_stake = coin::into_balance(coin::mint_for_testing(30_000_000_000, ctx));
         let staked = validator::request_add_stable_stake<BUSD>(&mut validator, new_stake, sender, ctx);
@@ -94,7 +94,7 @@ module sui_system::validator_tests {
     #[test]
     fun test_validator_owner_flow() {
         let sender = VALID_ADDRESS;
-        let scenario_val = test_scenario::begin(sender);
+        let mut scenario_val = test_scenario::begin(sender);
         let scenario = &mut scenario_val;
         {
             let ctx = test_scenario::ctx(scenario);
@@ -119,11 +119,11 @@ module sui_system::validator_tests {
     #[test]
     fun test_pending_validator_flow() {
         let sender = VALID_ADDRESS;
-        let scenario_val = test_scenario::begin(sender);
+        let mut scenario_val = test_scenario::begin(sender);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
 
-        let validator = get_test_validator(ctx);
+        let mut validator = get_test_validator(ctx);
         test_scenario::next_tx(scenario, sender);
         {
             let ctx = test_scenario::ctx(scenario);
@@ -171,7 +171,7 @@ module sui_system::validator_tests {
 
     #[test]
     fun test_metadata() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -198,7 +198,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidPubkey)]
     fun test_metadata_invalid_pubkey() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -225,7 +225,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidNetPubkey)]
     fun test_metadata_invalid_net_pubkey() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -252,7 +252,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidWorkerPubkey)]
     fun test_metadata_invalid_worker_pubkey() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -279,7 +279,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidNetAddr)]
     fun test_metadata_invalid_net_addr() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -306,7 +306,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidP2pAddr)]
     fun test_metadata_invalid_p2p_addr() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -333,7 +333,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidPrimaryAddr)]
     fun test_metadata_invalid_consensus_addr() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,
@@ -360,7 +360,7 @@ module sui_system::validator_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidWorkerAddr)]
     fun test_metadata_invalid_worker_addr() {
-        let scenario_val = test_scenario::begin(VALID_ADDRESS);
+        let mut scenario_val = test_scenario::begin(VALID_ADDRESS);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let metadata = validator::new_metadata(
             VALID_ADDRESS,

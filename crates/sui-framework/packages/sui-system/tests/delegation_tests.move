@@ -212,12 +212,12 @@ module sui_system::stake_tests {
     #[test]
     fun test_add_remove_stable_stake_flow() {
         set_up_sui_system_state();
-        let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
         let scenario = &mut scenario_val;
 
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let system_state_mut_ref = &mut system_state;
 
             let ctx = test_scenario::ctx(scenario);
@@ -241,7 +241,7 @@ module sui_system::stake_tests {
             assert!(stable_pool::staked_sui_amount(&staked_sui) == 60 * MIST_PER_SUI, 105);
 
 
-            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let system_state_mut_ref = &mut system_state;
 
             assert!(sui_system::validator_stake_amount_with_stable(system_state_mut_ref, VALIDATOR_ADDR_1) == 160 * MIST_PER_SUI, 103);
@@ -260,7 +260,7 @@ module sui_system::stake_tests {
 
         test_scenario::next_tx(scenario, STAKER_ADDR_1);
         {
-            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             assert!(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 107);
             test_scenario::return_shared(system_state);
         };
@@ -569,9 +569,9 @@ module sui_system::stake_tests {
     #[test]
     fun test_rate_problem() {
         set_up_sui_system_state();
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
-        let i = 0;
+        let mut i = 0;
         while (i < 10) {
             stake_with(@0x42, @0x2, 1, scenario);
             test_scenario::next_tx(scenario, @0x42);

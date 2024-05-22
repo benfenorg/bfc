@@ -172,7 +172,7 @@ module sui_system::sui_system_tests {
         set_gas_price_helper(stakee_address, 888, scenario);
 
         test_scenario::next_tx(scenario, stakee_address);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let validator = sui_system::active_validator_by_address(&mut system_state, @0x1);
         assert!(validator::next_epoch_gas_price(validator) == 888, 0);
         test_scenario::return_shared(system_state);
@@ -299,7 +299,7 @@ module sui_system::sui_system_tests {
         advance_epoch(scenario);
 
         test_scenario::next_tx(scenario, @0x1);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         pool_mappings = sui_system::validator_staking_pool_mappings(&mut system_state);
         // Check that the previous mappings didn't change as well.
         assert_eq(table::length(pool_mappings), 4);
@@ -325,7 +325,7 @@ module sui_system::sui_system_tests {
         let pool_id_2 = sui_system::validator_stable_staking_pool_id<BJPY>(&mut system_state, @0x2);
         let pool_id_3 = sui_system::validator_stable_staking_pool_id<BBRL>(&mut system_state, @0x3);
         let pool_id_4 = sui_system::validator_stable_staking_pool_id<BARS>(&mut system_state, @0x4);
-        let pool_mappings = sui_system::validator_stable_staking_pool_mappings(&mut system_state);
+        let mut pool_mappings = sui_system::validator_stable_staking_pool_mappings(&mut system_state);
         let len = table::length(pool_mappings);
         assert_eq(len, 17 * 4);
         assert_eq(*table::borrow(pool_mappings, pool_id_1), @0x1);
@@ -938,7 +938,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = validator_set::EAlreadyValidatorCandidate)]
     fun test_add_validator_candidate_failure_double_register() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let new_validator_addr = @0x8e3446145b0c7768839d71840df389ffa3b9742d0baaff326a3d453b595f87d7;
         let pubkey = x"99f25ef61f8032b914636460982c5cc6f134ef1ddae76657f2cbfec1ebfc8d097374080df6fcf0dcb8bc4b0d8e0af5d80ebbff2b4c599f54f42d6312dfc314276078c1cc347ebbbec5198be258513f386b930d02c2749a803e2330955ebd1a10";
