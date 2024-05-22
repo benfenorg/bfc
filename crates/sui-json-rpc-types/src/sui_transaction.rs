@@ -464,13 +464,6 @@ impl Display for SuiTransactionBlockKind {
 impl SuiTransactionBlockKind {
     fn try_from(tx: TransactionKind, module_cache: &impl GetModule) -> Result<Self, anyhow::Error> {
         Ok(match tx {
-            TransactionKind::ChangeEpoch(e) => Self::ChangeEpoch(SuiChangeEpoch {
-                epoch: e.epoch,
-                storage_charge: e.bfc_storage_charge,
-                computation_charge: e.bfc_computation_charge,
-                storage_rebate: e.bfc_storage_rebate,
-                epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
-            }),
             TransactionKind::ChangeBfcRound(o) =>  Self::ChangeBfcRound(SuiChangeBfcRound {
                 round:o.bfc_round,
             }),
