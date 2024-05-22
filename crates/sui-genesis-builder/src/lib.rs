@@ -1007,13 +1007,11 @@ fn create_genesis_transaction(
                 &epoch_data.epoch_id(),
                 epoch_data.epoch_start_timestamp(),
                 InputObjects::new(vec![]),
-                shared_object_refs,
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
                 signer,
                 genesis_digest,
-                transaction_dependencies,
             );
         assert!(inner_temp_store.input_objects.is_empty());
         assert!(inner_temp_store.mutable_inputs.is_empty());
