@@ -157,7 +157,7 @@ impl IndexerConfig {
         let url_str = self.get_db_url()?;
         let url = Url::parse(&url_str).expect("Failed to parse URL");
         Ok(format!(
-            "{}://{}:{}@{}:{}/",
+            "{}://{}:{}@{}:{}/obcdb",
             url.scheme(),
             url.username(),
             url.password().unwrap_or_default(),
