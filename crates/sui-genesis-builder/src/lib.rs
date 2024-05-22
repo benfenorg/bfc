@@ -1006,7 +1006,7 @@ fn create_genesis_transaction(
                 &certificate_deny_set,
                 &epoch_data.epoch_id(),
                 epoch_data.epoch_start_timestamp(),
-                InputObjects::new(vec![]),
+                input_objects,
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
