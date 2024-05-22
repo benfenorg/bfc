@@ -9,6 +9,7 @@ use fastcrypto::encoding::Base64;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 use move_core_types::language_storage::{StructTag, TypeTag};
+use tracing::error;
 
 use sui_core::authority::AuthorityState;
 use sui_json::SuiJsonValue;
@@ -74,27 +75,25 @@ impl DataReader for AuthorityStateDataReader {
         let epoch_store = self.0.load_epoch_store_one_call_per_task();
         Ok(epoch_store.reference_gas_price())
     }
-    // async fn get_stable_reference_gas_price(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
-    //     let epoch_store = self.0.load_epoch_store_one_call_per_task();
-    //     let bfc_reference_gas_price = epoch_store.reference_gas_price();
-    //
-    //     let bfc_system_state = self.0.get_bfc_system_state()?;
-    //     let mut temp_map = HashMap::<String, u64>::new();
-    //     for entity in &bfc_system_state.inner_state().rate_map.contents {
-    //         temp_map.insert((*entity.key).to_string(), entity.value);
-    //     }
-    //     let rate = temp_map.get(&type_tag.to_string()).ok_or_else(|| anyhow::anyhow!("rate not found"))?;
-    //     let stable_reference_gas_price = (bfc_reference_gas_price as u128) * 1000000000u128 / (*rate as u128);
-    //     Ok(stable_reference_gas_price as u64)
-    // }
-    async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
+
+        async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
         let bfc_system_state = self.0.get_bfc_system_state()?;
         let mut temp_map = HashMap::<String, u64>::new();
         for entity in &bfc_system_state.inner_state().rate_map.contents {
             temp_map.insert((*entity.key).to_string(), entity.value);
         }
-        let rate = temp_map.get(&type_tag.to_string()).ok_or_else(|| anyhow::anyhow!("rate not found"))?;
-        Ok(*rate)
+        // 首先尝试长格式的 key
+        if let Some(rate) = temp_map.get(&type_tag.to_canonical_string()) {
+            return Ok(*rate);
+        }
+
+        // 如果长格式没有找到，尝试短格式的 key
+        if let Some(rate) = temp_map.get(&type_tag.to_string()) {
+            return Ok(*rate);
+        }
+
+        // 如果两种格式都没有找到，返回错误
+        Err(anyhow::anyhow!("rate not found"))
     }
 }
 
@@ -250,7 +249,7 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         primary_coin: ObjectID,
         coin_to_merge: ObjectID,
         gas: Option<ObjectID>,
-        gas_budget: BigInt<u64>,
+        gas_budget:
     ) -> RpcResult<TransactionBlockBytes> {
         let data = self
             .0
