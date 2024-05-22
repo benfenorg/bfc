@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
+#[allow(implicit_const_copy)]
 module sui_system::validator_tests {
     use sui::bfc::BFC;
     use sui::test_scenario;
@@ -9,17 +10,12 @@ module sui_system::validator_tests {
     use sui::url;
     use std::string::Self;
     use sui_system::validator::{Self, Validator, rate_vec_map};
-    use sui::tx_context::TxContext;
-    use std::option;
     use std::ascii;
     use sui::coin::{Self, Coin};
     use sui::balance;
     use sui_system::staking_pool::{Self, StakedBfc};
-    use std::vector;
     use bfc_system::busd::BUSD;
-    use sui::test_utils;
     use sui::bag;
-    use sui::transfer;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
 
@@ -151,7 +147,7 @@ module sui_system::validator_tests {
             assert!(validator::pending_stake_amount(&validator) == 30_000_000_000, 0);
             assert!(validator::pending_stake_withdraw_amount(&validator) == 1_000_000_000, 0);
 
-            validator::deposit_stake_rewards(&mut validator, balance::zero());
+            validator::deposit_stake_rewards(&mut validator, balance::zero(), &rate_vec_map());
 
             // Calling `process_pending_stakes_and_withdraws` will withdraw the coin and transfer to sender.
             validator::process_pending_stakes_and_withdraws(&mut validator, ctx);

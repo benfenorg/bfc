@@ -15,13 +15,10 @@ module sui_system::sui_system_tests {
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set;
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
-    use sui::transfer;
     use sui::vec_set;
     use sui::table;
-    use std::vector;
     use sui::balance;
     use sui::test_utils::{assert_eq, destroy};
-    use std::option::Self;
     use sui::url;
     use std::string;
     use std::ascii;
@@ -29,7 +26,6 @@ module sui_system::sui_system_tests {
     use bfc_system::bbrl::BBRL;
     use bfc_system::bjpy::BJPY;
     use bfc_system::busd::BUSD;
-    use sui::tx_context;
 
     #[test]
     fun test_report_validator() {
@@ -130,8 +126,11 @@ module sui_system::sui_system_tests {
         test_scenario::end(scenario_val);
     }
 
+    /// Capability code is not valid
+    const EInvalidCap: u64 = 101;
+
     #[test]
-    #[expected_failure(abort_code = sui_system::validator_set::EInvalidCap)]
+    #[expected_failure(abort_code = EInvalidCap)]
     fun test_report_validator_by_stakee_revoked() {
         let scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
@@ -157,7 +156,7 @@ module sui_system::sui_system_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = sui_system::validator_set::EInvalidCap)]
+    #[expected_failure(abort_code = EInvalidCap)]
     fun test_set_reference_gas_price_by_stakee_revoked() {
         let scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;

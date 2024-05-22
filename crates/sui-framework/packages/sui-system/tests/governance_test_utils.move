@@ -2,24 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
+#[allow(unused_variable)]
 module sui_system::governance_test_utils {
     use sui::address;
     use sui::balance;
-    use sui::object;
     use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{Self, StakedBfc, StakingPool};
-    use sui::test_utils::assert_eq;
+    use sui::test_utils::{assert_eq, destroy};
+
     use sui_system::validator::{Self, Validator};
     use sui_system::sui_system::{Self, SuiSystemState};
     use sui_system::sui_system_state_inner;
     use sui_system::stake_subsidy;
     use sui::test_scenario::{Self, Scenario};
-    use sui::test_utils;
     use sui::balance::Balance;
     use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
     use bfc_system::busd::BUSD;
-    use sui::transfer;
     use sui_system::stable_pool::StakedStable;
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
@@ -159,7 +158,7 @@ module sui_system::governance_test_utils {
         storage_charge: u64, computation_charge: u64, scenario: &mut Scenario
     ) {
         let storage_rebate = advance_epoch_with_reward_amounts_return_rebate(storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, scenario);
-        test_utils::destroy(storage_rebate)
+        destroy(storage_rebate)
     }
 
     public fun advance_epoch_with_reward_amounts_and_slashing_rates(
@@ -177,7 +176,7 @@ module sui_system::governance_test_utils {
         let storage_rebate = sui_system::advance_epoch_for_testing(
             &mut system_state, new_epoch, 1, storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, 0, reward_slashing_rate, 0, ctx
         );
-        test_utils::destroy(storage_rebate);
+        destroy(storage_rebate);
         test_scenario::return_shared(system_state);
         test_scenario::next_epoch(scenario, @0x0);
     }
@@ -388,7 +387,7 @@ module sui_system::governance_test_utils {
 
     /// Return the rewards for the validator at `addr` in terms of SUI.
     public fun stake_plus_current_rewards_for_validator(addr: address, system_state: &mut SuiSystemState, scenario: &mut Scenario): u64 {
-        let validator_ref = validator_set::get_active_validator_ref(sui_system::validators(system_state), addr);
+        let validator_ref = system_state.validators().get_active_validator_ref(addr);// validator_set::get_active_validator_ref(sui_system::validators(system_state), addr);
         let amount = stake_plus_current_rewards(addr, validator::get_staking_pool_ref(validator_ref), scenario);
         amount
     }

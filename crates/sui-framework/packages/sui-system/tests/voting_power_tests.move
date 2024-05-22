@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
+#[allow(unused_const)]
 module sui_system::voting_power_tests {
     use sui_system::governance_test_utils as gtu;
     use sui_system::voting_power;
     use sui::test_scenario;
     use sui::test_utils;
-    use sui::tx_context::TxContext;
-    use std::vector;
     use sui_system::validator::{Self, Validator, rate_vec_map};
 
     const TOTAL_VOTING_POWER: u64 = 10_000;

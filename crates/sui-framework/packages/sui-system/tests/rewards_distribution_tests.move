@@ -71,7 +71,7 @@ module sui_system::rewards_distribution_tests {
         let scenario = &mut scenario_val;
 
         // need to advance epoch so validator's staking starts counting
-        governance_test_utils::advance_epoch(scenario);
+        advance_epoch(scenario);
 
         advance_epoch_with_reward_amounts(0, 100, scenario);
         assert_validator_total_stake_with_stable_amounts(
@@ -154,8 +154,9 @@ module sui_system::rewards_distribution_tests {
         let scenario = &mut scenario_val;
 
         stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 200, scenario);
+
         stake_with_stable(STAKER_ADDR_2, VALIDATOR_ADDR_2, 100, scenario);
-        governance_test_utils::advance_epoch(scenario);
+        advance_epoch(scenario);
 
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),

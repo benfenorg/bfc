@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
+#[allow(unused_variable)]
 module sui_system::stake_tests {
     use sui::coin;
     use sui::test_scenario;
     use sui_system::sui_system::{Self, SuiSystemState};
-    use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate, PoolTokenExchangeRate};
+    use sui_system::staking_pool::{Self, StakedBfc, PoolTokenExchangeRate};
     use sui::test_utils::assert_eq;
     use sui_system::validator_set;
     use sui::test_utils;
-    use sui::table::{Self, Table};
-    use std::vector;
+    use sui::table::{ Table};
     use bfc_system::busd::BUSD;
     use sui_system::stable_pool::StakedStable;
     use sui_system::stable_pool;
@@ -591,7 +591,7 @@ module sui_system::stake_tests {
         let staked_sui = test_scenario::take_from_address<StakedBfc>(scenario, @0x42);
         let pool_id = staking_pool::pool_id(&staked_sui);
         scenario.next_tx(@0x42);
-        let staked_sui = scenario.take_from_address<StakedSui>(@0x42);
+        let staked_sui = scenario.take_from_address<StakedBfc>(@0x42);
         let pool_id = staked_sui.pool_id();
         test_scenario::return_to_address(@0x42, staked_sui);
         advance_epoch(scenario); // advances epoch to effectuate the stake
