@@ -38,6 +38,7 @@ use sui_types::object::{Object, ObjectRead, PastObjectRead};
 use sui_types::storage::WriteKind;
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::SuiSystemState;
+use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::transaction::{Transaction, TransactionData, TransactionKind};
 use thiserror::Error;
 use tokio::task::JoinError;
@@ -156,6 +157,7 @@ pub trait StateRead: Send + Sync {
     // governance_api
     async fn get_staked_sui(&self, owner: SuiAddress) -> StateReadResult<Vec<StakedSui>>;
     fn get_system_state(&self) -> StateReadResult<SuiSystemState>;
+    fn get_bfc_system_state(&self) -> StateReadResult<BFCSystemState>;
     fn get_or_latest_committee(&self, epoch: Option<BigInt<u64>>) -> StateReadResult<Committee>;
 
     // coin_api
@@ -397,6 +399,9 @@ impl StateRead for AuthorityState {
     }
     fn get_system_state(&self) -> StateReadResult<SuiSystemState> {
         Ok(self.database.get_sui_system_state_object()?)
+    }
+    fn get_bfc_system_state(&self) -> StateReadResult<BFCSystemState> {
+        Ok(self.database.get_bfc_system_state_object()?)
     }
     fn get_or_latest_committee(&self, epoch: Option<BigInt<u64>>) -> StateReadResult<Committee> {
         Ok(self

@@ -474,6 +474,10 @@ impl ObjectType {
         matches!(self, ObjectType::Struct(s) if s.is_gas_coin())
     }
 
+    pub fn is_stable_gas_coin(&self) -> bool {
+        matches!(self, ObjectType::Struct(s) if s.is_stable_gas_coin())
+    }
+
     pub fn is_coin(&self) -> bool {
         matches!(self, ObjectType::Struct(s) if s.is_coin())
     }

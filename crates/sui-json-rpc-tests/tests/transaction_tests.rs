@@ -12,7 +12,12 @@ use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::transaction::SenderSignedData;
 use test_cluster::TestClusterBuilder;
 
+use sui_keys::keystore::AccountKeystore;
 use sui_json_rpc::api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
+use sui_swarm_config::genesis_config::AccountConfig;
+use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress};
+use sui_types::crypto::{AccountKeyPair, deterministic_random_account_key, SuiKeyPair};
+use sui_types::object::Object;
 
 #[sim_test]
 async fn test_get_transaction_block() -> Result<(), anyhow::Error> {
@@ -411,6 +416,82 @@ async fn test_get_transaction_block_with_stable_gascoin() -> Result<(), anyhow::
     //         bcs::from_bytes(&response.raw_transaction).unwrap();
     //     assert_eq!(sender_signed_data.digest(), tx_digest);
     // }
+
+    Ok(())
+}
+
+#[sim_test]
+async fn test_get_raw_transaction_with_stable_gascoin() -> Result<(), anyhow::Error> {
+    let obj_id = ObjectID::random();
+    let (address, keypair): (SuiAddress, AccountKeyPair) =
+        deterministic_random_account_key();
+    let gas_object = Object::with_stable_id_owner_version_for_testing(
+        obj_id,
+        SequenceNumber::from_u64(1),
+        address,
+    );
+    let bfc_object = Object::with_id_owner_gas_for_testing(ObjectID::random(), address, 100000000000);
+    let exchange_id = ObjectID::random();
+    let bfc_exchange = Object::with_id_owner_gas_for_testing(exchange_id, address, 200000000000);
+
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_accounts(vec![AccountConfig {
+            gas_amounts: vec![30_000_000_000_000_000],
+            address: Some(address),
+        }])
+        .with_objects([
+            gas_object.clone(), bfc_object, bfc_exchange
+        ])
+        .build()
+        .await;
+
+    // let rgp = test_cluster.get_reference_gas_price().await;
+    let context = &mut test_cluster.wallet;
+    context
+        .config
+        .keystore
+        .add_key(SuiKeyPair::Ed25519(keypair))?;
+    let http_client = test_cluster.rpc_client();
+    // let address = cluster.get_address_0();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new_with_options(
+                SuiObjectDataOptions::new(),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    let object_to_transfer = objects.first().unwrap().object().unwrap().object_id;
+
+    // Make a transfer transactions
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .transfer_object(address, object_to_transfer, Some(gas_object.id()), 10_000.into(), address)
+        .await?;
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let original_sender_signed_data = tx.data().clone();
+
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_raw_input()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+
+    let decode_sender_signed_data: SenderSignedData =
+        bcs::from_bytes(&response.raw_transaction).unwrap();
+    // verify that the raw transaction data returned by the response is the same
+    // as the original transaction data
+    assert_eq!(decode_sender_signed_data, original_sender_signed_data);
 
     Ok(())
 }
