@@ -67,7 +67,7 @@ module sui_system::rewards_distribution_tests {
     #[test]
     fun test_validator_rewards_with_stable() {
         set_up_sui_system_state();
-        let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
         let scenario = &mut scenario_val;
 
         // need to advance epoch so validator's staking starts counting
@@ -150,7 +150,7 @@ module sui_system::rewards_distribution_tests {
     #[test]
     fun test_stake_stable_rewards() {
         set_up_sui_system_state();
-        let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
+        let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
         let scenario = &mut scenario_val;
 
         stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 200, scenario);

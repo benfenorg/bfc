@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
+#[allow(unused_const)]
 /// Tests for the pool module.
 /// They are sequential and based on top of each other.
 module deepbook::clob_test {
-    use std::vector;
 
     use sui::clock::{Self, Clock};
     use sui::coin::{Self, mint_for_testing, burn_for_testing};
@@ -295,7 +295,7 @@ module deepbook::clob_test {
             let account_cap = test::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             let clock = test::take_shared<Clock>(&mut test);
-            let order = clob::get_order_status(&pool, order_id(0, true), &account_cap);
+            let order = clob::get_order_status(&pool, order_id_for_test(0, true), &account_cap);
             let order_cmp = clob::test_construct_order(0, CLIENT_ID_ALICE, 5 * FLOAT_SCALING, 500, 500, true, account_cap_user);
             assert!(order == &order_cmp, 0);
             let (prices, depth) = clob::get_level2_book_status_bid_side(
@@ -382,7 +382,7 @@ module deepbook::clob_test {
             let account_cap = test::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             let clock = test::take_shared<Clock>(&mut test);
-            let order = clob::get_order_status(&pool, order_id(0, false), &account_cap);
+            let order = clob::get_order_status(&pool, order_id_for_test(0, false), &account_cap);
             let order_cmp = clob::test_construct_order(0, CLIENT_ID_ALICE,  5 * FLOAT_SCALING, 500, 500, false, account_cap_user);
             assert!(order == &order_cmp, 0);
             let (prices, depth) = clob::get_level2_book_status_ask_side(
@@ -696,8 +696,8 @@ module deepbook::clob_test {
             let account_cap = test::take_from_address<AccountCap>(&test, alice);
             let account_cap_user = account_owner(&account_cap);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
 
             {
                 let open_orders = vector::empty<Order>();
@@ -862,7 +862,8 @@ module deepbook::clob_test {
             let account_cap_owner_bob = account_owner(&account_cap_bob);
             let clock = test::take_shared<Clock>(&mut test);
             clock::increment_for_testing(&mut clock, 1);
-            let order_ids = vector<u64>[order_id(0, true), order_id(1, true), order_id(2, true), order_id(3, true), order_id(0, false)];
+            let order_ids = vector<u64>[order_id_for_test(0, true), order_id_for_test(1, true),
+                order_id_for_test(2, true), order_id_for_test(3, true), order_id_for_test(0, false)];
             let order_owners = vector<address>[account_cap_owner_alice, account_cap_owner_alice, account_cap_owner_alice, account_cap_owner_alice, account_cap_owner_alice];
             clob::clean_up_expired_orders(&mut pool, &clock, order_ids, order_owners);
             let (_, _, bids, _) = get_pool_stat(&pool);
@@ -892,7 +893,8 @@ module deepbook::clob_test {
             let clock = test::take_shared<Clock>(&mut test);
             let account_cap_bob = test::take_from_address<AccountCap>(&test, bob);
             let account_cap_owner_bob = account_owner(&account_cap_bob);
-            let order_ids = vector<u64>[order_id(1, false), order_id(2, false), order_id(3, false), order_id(4, false), order_id(4, true)];
+            let order_ids = vector<u64>[order_id_for_test(1, false), order_id_for_test(2, false),
+                order_id_for_test(3, false), order_id_for_test(4, false), order_id_for_test(4, true)];
             let order_owners = vector<address>[account_cap_owner_bob, account_cap_owner_bob, account_cap_owner_bob, account_cap_owner_bob, account_cap_owner_bob];
             clob::clean_up_expired_orders(&mut pool, &clock, order_ids, order_owners);
             let (_, _, _, asks) = get_pool_stat(&pool);
@@ -1006,8 +1008,8 @@ module deepbook::clob_test {
                 ctx(&mut test)
             );
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
             test::return_shared(clock);
             test::return_shared(pool);
             test::return_to_sender<AccountCap>(&test, account_cap);
@@ -1212,8 +1214,8 @@ module deepbook::clob_test {
                 ctx(&mut test)
             );
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
             let account_cap_user = account_owner(&account_cap);
             let (base_custodian, quote_custodian) = clob::borrow_custodian(&pool);
             custodian::assert_user_balance(base_custodian, account_cap_user, 0, 1000);
@@ -1370,8 +1372,8 @@ module deepbook::clob_test {
                 ctx(&mut test)
             );
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
             let account_cap_user = account_owner(&account_cap);
             let (base_custodian, quote_custodian) = clob::borrow_custodian(&pool);
             custodian::assert_user_balance(base_custodian, account_cap_user, 0, 1000);
@@ -1535,8 +1537,8 @@ module deepbook::clob_test {
                 ctx(&mut test)
             );
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
             let account_cap_user = account_owner(&account_cap);
             let (base_custodian, quote_custodian) = clob::borrow_custodian(&pool);
             custodian::assert_user_balance(base_custodian, account_cap_user, 0, 1000);
@@ -1699,8 +1701,8 @@ module deepbook::clob_test {
                 ctx(&mut test)
             );
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
             let account_cap_user = account_owner(&account_cap);
             let (base_custodian, quote_custodian) = clob::borrow_custodian(&pool);
             custodian::assert_user_balance(base_custodian, account_cap_user, 0, 1000);
@@ -1824,8 +1826,8 @@ module deepbook::clob_test {
                 ctx(&mut test)
             );
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(1, true), 0);
-            assert!(next_ask_order_id == clob::order_id(3, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(1, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(3, false), 0);
             let account_cap_user = account_owner(&account_cap);
             let (base_custodian, quote_custodian) = clob::borrow_custodian(&pool);
             custodian::assert_user_balance(base_custodian, account_cap_user, 8000, 2000);
@@ -2184,15 +2186,15 @@ module deepbook::clob_test {
             // check usr open orders before cancel
             {
                 let usr_open_orders_cmp = vector::empty<u64>();
-                vector::push_back(&mut usr_open_orders_cmp, order_id(0, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(0, true));
                 vector::push_back(&mut usr_open_orders_cmp, 5 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(1, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(1, true));
                 vector::push_back(&mut usr_open_orders_cmp, 5 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(2, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(2, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(3, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(3, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(0, false));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(0, false));
                 vector::push_back(&mut usr_open_orders_cmp, 20 * FLOAT_SCALING);
                 clob::check_usr_open_orders(clob::get_usr_open_orders(&pool, account_cap_user), &usr_open_orders_cmp);
             };
@@ -2217,13 +2219,13 @@ module deepbook::clob_test {
                 clob::check_tick_level(bids, 5 * FLOAT_SCALING, &open_orders);
                 // check usr open orders after remove order bid order of sequence_id 0
                 let usr_open_orders_cmp = vector::empty<u64>();
-                vector::push_back(&mut usr_open_orders_cmp, order_id(0, false));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(0, false));
                 vector::push_back(&mut usr_open_orders_cmp, 20 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(1, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(1, true));
                 vector::push_back(&mut usr_open_orders_cmp, 5 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(2, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(2, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(3, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(3, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
                 clob::check_usr_open_orders(clob::get_usr_open_orders(&pool, account_cap_user), &usr_open_orders_cmp);
             };
@@ -2252,11 +2254,11 @@ module deepbook::clob_test {
                 let (_, _, bids, _) = get_pool_stat(&pool);
                 clob::check_empty_tick_level(bids, 5 * FLOAT_SCALING);
                 let usr_open_orders_cmp = vector::empty<u64>();
-                vector::push_back(&mut usr_open_orders_cmp, order_id(0, false));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(0, false));
                 vector::push_back(&mut usr_open_orders_cmp, 20 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(3, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(3, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(2, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(2, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
                 clob::check_usr_open_orders(clob::get_usr_open_orders(&pool, account_cap_user), &usr_open_orders_cmp);
             };
@@ -2284,9 +2286,9 @@ module deepbook::clob_test {
                 let (_, _, _, asks) = get_pool_stat(&pool);
                 clob::check_empty_tick_level(asks, 20 * FLOAT_SCALING);
                 let usr_open_orders_cmp = vector::empty<u64>();
-                vector::push_back(&mut usr_open_orders_cmp, order_id(3, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(3, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
-                vector::push_back(&mut usr_open_orders_cmp, order_id(2, true));
+                vector::push_back(&mut usr_open_orders_cmp, order_id_for_test(2, true));
                 vector::push_back(&mut usr_open_orders_cmp, 2 * FLOAT_SCALING);
                 clob::check_usr_open_orders(clob::get_usr_open_orders(&pool, account_cap_user), &usr_open_orders_cmp);
             };
@@ -2366,8 +2368,8 @@ module deepbook::clob_test {
             custodian::assert_user_balance<USD>(quote_custodian, account_cap_user, 0, 10000);
             custodian::assert_user_balance<BFC>(base_custodian, account_cap_user, 8000, 2000);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(1, true), 0);
-            assert!(next_ask_order_id == clob::order_id(3, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(1, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(3, false), 0);
 
             {
                 let open_orders = vector::empty<Order>();
@@ -2808,8 +2810,8 @@ module deepbook::clob_test {
             custodian::assert_user_balance<USD>(quote_custodian, account_cap_user, 0, 10000);
             custodian::assert_user_balance<BFC>(base_custodian, account_cap_user, 8000, 2000);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(1, true), 0);
-            assert!(next_ask_order_id == clob::order_id(3, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(1, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(3, false), 0);
             {
                 let open_orders = vector::empty<Order>();
                 vector::push_back(
@@ -2948,8 +2950,8 @@ module deepbook::clob_test {
             custodian::assert_user_balance<USD>(quote_custodian, account_cap_user, 0, 10000);
             custodian::assert_user_balance<BFC>(base_custodian, account_cap_user, 8000, 2000);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(1, true), 0);
-            assert!(next_ask_order_id == clob::order_id(3, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(1, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(3, false), 0);
             {
                 let open_orders = vector::empty<Order>();
                 vector::push_back(
@@ -3102,8 +3104,8 @@ module deepbook::clob_test {
             custodian::assert_user_balance<USD>(quote_custodian, account_cap_user, 3000, 7000);
             custodian::assert_user_balance<BFC>(base_custodian, account_cap_user, 0, 10000);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(3, true), 0);
-            assert!(next_ask_order_id == clob::order_id(1, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(3, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(1, false), 0);
 
             {
                 let open_orders = vector::empty<Order>();
@@ -3289,8 +3291,8 @@ module deepbook::clob_test {
             custodian::assert_user_balance<USD>(quote_custodian, account_cap_user, 0, 10000);
             custodian::assert_user_balance<BFC>(base_custodian, account_cap_user, 8000, 2000);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(1, true), 0);
-            assert!(next_ask_order_id == clob::order_id(3, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(1, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(3, false), 0);
 
             {
                 let open_orders = vector::empty<Order>();
@@ -3492,8 +3494,8 @@ module deepbook::clob_test {
             custodian::assert_user_balance<USD>(quote_custodian, account_cap_user, 0, 10000);
             custodian::assert_user_balance<BFC>(base_custodian, account_cap_user, 8000, 2000);
             let (next_bid_order_id, next_ask_order_id, _, _) = clob::get_pool_stat(&pool);
-            assert!(next_bid_order_id == clob::order_id(1, true), 0);
-            assert!(next_ask_order_id == clob::order_id(3, false), 0);
+            assert!(next_bid_order_id == clob::order_id_for_test(1, true), 0);
+            assert!(next_ask_order_id == clob::order_id_for_test(3, false), 0);
             {
                 let open_orders = vector::empty<Order>();
                 vector::push_back(

@@ -116,7 +116,7 @@ module sui_system::governance_test_utils {
         )
     }
 
-    public fun set_up_sui_system_state(addrs: vector<address>) {
+    public fun set_up_sui_system_state(mut addrs: vector<address>) {
         let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);

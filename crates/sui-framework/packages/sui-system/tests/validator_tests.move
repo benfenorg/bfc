@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[test_only]
-#[allow(implicit_const_copy)]
+#[allow(implicit_const_copy,unused_mut_ref)]
 module sui_system::validator_tests {
     use sui::bfc::BFC;
     use sui::test_scenario;
@@ -387,7 +387,7 @@ module sui_system::validator_tests {
     #[test]
     fun test_validator_update_metadata_ok() {
         let sender = VALID_ADDRESS;
-        let scenario_val = test_scenario::begin(sender);
+        let mut scenario_val = test_scenario::begin(sender);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         let new_protocol_pub_key = x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c";
@@ -395,7 +395,7 @@ module sui_system::validator_tests {
         let new_worker_pub_key = vector[115, 220, 238, 151, 134, 159, 173, 41, 80, 2, 66, 196, 61, 17, 191, 76, 103, 39, 246, 127, 171, 85, 19, 235, 210, 106, 97, 97, 116, 48, 244, 191];
         let new_network_pub_key = vector[149, 128, 161, 13, 11, 183, 96, 45, 89, 20, 188, 205, 26, 127, 147, 254, 184, 229, 184, 102, 64, 170, 104, 29, 191, 171, 91, 99, 58, 178, 41, 156];
 
-        let validator = get_test_validator(ctx);
+        let mut validator = get_test_validator(ctx);
 
         test_scenario::next_tx(scenario, sender);
         {
@@ -469,7 +469,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EInvalidProofOfPossession)]
     #[test]
     fun test_validator_update_metadata_invalid_proof_of_possession() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario, mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -486,7 +486,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetPubkey)]
     #[test]
     fun test_validator_update_metadata_invalid_network_key() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut  scenario, mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -502,7 +502,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerPubkey)]
     #[test]
     fun test_validator_update_metadata_invalid_worker_key() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -518,7 +518,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidNetAddr)]
     #[test]
     fun test_validator_update_metadata_invalid_network_addr() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -534,7 +534,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidPrimaryAddr)]
     #[test]
     fun test_validator_update_metadata_invalid_primary_addr() {
-        let (sender, scenario, validator) = set_up();
+        let (sender,mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -550,7 +550,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidWorkerAddr)]
     #[test]
     fun test_validator_update_metadata_invalid_worker_addr() {
-        let (sender, scenario, validator) = set_up();
+        let (sender,mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -566,7 +566,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EMetadataInvalidP2pAddr)]
     #[test]
     fun test_validator_update_metadata_invalid_p2p_address() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario, mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -582,7 +582,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_metadata_primary_address_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender,mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -599,7 +599,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_metadata_net_address_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario,mut  validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -617,7 +617,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_metadata_worker_address_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario, mut validator) = set_up();
         test_scenario::next_tx(&mut scenario, sender);
         {
             validator::update_next_epoch_worker_address(
@@ -633,7 +633,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_metadata_p2p_address_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender,mut scenario, mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -650,7 +650,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_name_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario, mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -666,7 +666,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_description_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario, mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -682,7 +682,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_project_url_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -698,7 +698,7 @@ module sui_system::validator_tests {
     #[expected_failure(abort_code = sui_system::validator::EValidatorMetadataExceedingLengthLimit)]
     #[test]
     fun test_validator_update_image_url_too_long() {
-        let (sender, scenario, validator) = set_up();
+        let (sender, mut scenario,mut validator) = set_up();
 
         test_scenario::next_tx(&mut scenario, sender);
         {
@@ -713,7 +713,7 @@ module sui_system::validator_tests {
 
     fun set_up(): (address, test_scenario::Scenario, validator::Validator) {
         let sender = VALID_ADDRESS;
-        let scenario_val = test_scenario::begin(sender);
+        let mut scenario_val = test_scenario::begin(sender);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let validator = get_test_validator(ctx);
         (sender, scenario_val, validator)

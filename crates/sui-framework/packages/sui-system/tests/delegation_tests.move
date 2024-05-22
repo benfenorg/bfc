@@ -588,9 +588,6 @@ module sui_system::stake_tests {
         let scenario = &mut scenario_val;
         stake_with(@0x42, @0x2, 100, scenario); // stakes 100 SUI with 0x2
         test_scenario::next_tx(scenario, @0x42);
-        let staked_sui = test_scenario::take_from_address<StakedBfc>(scenario, @0x42);
-        let pool_id = staking_pool::pool_id(&staked_sui);
-        scenario.next_tx(@0x42);
         let staked_sui = scenario.take_from_address<StakedBfc>(@0x42);
         let pool_id = staked_sui.pool_id();
         test_scenario::return_to_address(@0x42, staked_sui);

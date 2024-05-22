@@ -450,7 +450,7 @@ module sui_system::stable_pool {
         let new_epoch_exchange_rate = pool_token_exchange_rate_at_epoch(pool, current_epoch);
         let total_sui_withdraw_amount = get_sui_amount(&new_epoch_exchange_rate, pool_token_withdraw_amount);
 
-        let reward_withdraw_amount =
+        let mut reward_withdraw_amount =
             if (total_sui_withdraw_amount >= staked_amount)
                 total_sui_withdraw_amount - staked_amount
             else 0;
