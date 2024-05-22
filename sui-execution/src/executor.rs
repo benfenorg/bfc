@@ -37,7 +37,6 @@ pub trait Executor {
         epoch_timestamp_ms: u64,
         // Transaction Inputs
         input_objects: InputObjects,
-        shared_object_refs: Vec<ObjectRef>,
         // Gas related
         gas_coins: Vec<ObjectRef>,
         gas_status: SuiGasStatus,
@@ -45,7 +44,6 @@ pub trait Executor {
         transaction_kind: TransactionKind,
         transaction_signer: SuiAddress,
         transaction_digest: TransactionDigest,
-        transaction_dependencies: BTreeSet<TransactionDigest>,
     ) -> (
         InnerTemporaryStore,
         TransactionEffects,

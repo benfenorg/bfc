@@ -952,10 +952,8 @@ fn create_genesis_transaction(
 
         let expensive_checks = false;
         let certificate_deny_set = HashSet::new();
-        let shared_object_refs = vec![];
         let transaction_data = &genesis_transaction.data().intent_message().value;
         let (kind, signer, _) = transaction_data.execution_parts();
-        let transaction_dependencies = BTreeSet::new();
         let (inner_temp_store, effects, _execution_error) = executor
             .execute_transaction_to_effects(
                 InMemoryStorage::new(Vec::new()),
@@ -969,13 +967,11 @@ fn create_genesis_transaction(
                 // shared_object_refs,
                 // &mut GasCharger::new_unmetered(genesis_digest),
                 InputObjects::new(vec![]),
-                shared_object_refs,
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
                 signer,
                 genesis_digest,
-                transaction_dependencies,
             );
         assert!(inner_temp_store.objects.is_empty());
         assert!(inner_temp_store.mutable_inputs.is_empty());

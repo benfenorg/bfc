@@ -731,13 +731,11 @@ impl LocalExec {
                 &tx_info.executed_epoch,
                 epoch_start_timestamp,
                 InputObjects::new(input_objects),
-                tx_info.shared_object_refs.clone(),
                 tx_info.gas.clone(),
                 gas_status,
                 override_transaction_kind.unwrap_or(tx_info.kind.clone()),
                 tx_info.sender,
                 *tx_digest,
-                tx_info.dependencies.clone().into_iter().collect(),
             )
         } else {
             unreachable!("Transaction was valid so gas status must be valid");

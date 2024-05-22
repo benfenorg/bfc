@@ -89,13 +89,11 @@ impl executor::Executor for Executor {
         epoch_id: &EpochId,
         epoch_timestamp_ms: u64,
         input_objects: InputObjects,
-        shared_object_refs: Vec<ObjectRef>,
         gas_coins: Vec<ObjectRef>,
         gas_status: SuiGasStatus,
         transaction_kind: TransactionKind,
         transaction_signer: SuiAddress,
         transaction_digest: TransactionDigest,
-        transaction_dependencies: BTreeSet<TransactionDigest>,
     ) -> (
         InnerTemporaryStore,
         TransactionEffects,
@@ -106,13 +104,11 @@ impl executor::Executor for Executor {
         let mut gas_charger =
             GasCharger::new(transaction_digest, gas_coins, gas_status, protocol_config);
         execute_transaction_to_effects::<execution_mode::Normal>(
-            shared_object_refs,
             temporary_store,
             transaction_kind,
             transaction_signer,
             &mut gas_charger,
             transaction_digest,
-            transaction_dependencies,
             &self.0,
             epoch_id,
             epoch_timestamp_ms,
