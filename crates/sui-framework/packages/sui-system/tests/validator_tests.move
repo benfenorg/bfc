@@ -37,7 +37,7 @@ module sui_system::validator_tests {
     #[test_only]
     fun get_test_validator(ctx: &mut TxContext): Validator {
         let init_stake = coin::into_balance(coin::mint_for_testing(1_000_000_000, ctx));
-        let validator = validator::new(
+        let mut validator = validator::new(
             VALID_ADDRESS,
             VALID_PUBKEY,
             VALID_NET_PUBKEY,
@@ -71,7 +71,7 @@ module sui_system::validator_tests {
     #[test]
     fun test_validator_with_stable() {
         let sender = VALID_ADDRESS;
-        let scenario_val = test_scenario::begin(sender);
+        let mut scenario_val = test_scenario::begin(sender);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
 

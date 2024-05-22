@@ -29,7 +29,7 @@ module sui_system::sui_system_tests {
 
     #[test]
     fun test_report_validator() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
@@ -74,7 +74,7 @@ module sui_system::sui_system_tests {
 
     #[test]
     fun test_validator_ops_by_stakee_ok() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         set_up_sui_system_state(vector[@0x1, @0x2]);
 
@@ -116,7 +116,7 @@ module sui_system::sui_system_tests {
         set_gas_price_helper(new_validator_addr, 777, scenario);
 
         test_scenario::next_tx(scenario, new_stakee_address);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let validator = sui_system::active_validator_by_address(&mut system_state, @0x1);
         assert!(validator::next_epoch_gas_price(validator) == 666, 0);
         let pending_validator = sui_system::pending_validator_by_address(&mut system_state, new_validator_addr);
@@ -132,7 +132,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = EInvalidCap)]
     fun test_report_validator_by_stakee_revoked() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         set_up_sui_system_state(vector[@0x1, @0x2]);
 
@@ -158,7 +158,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = EInvalidCap)]
     fun test_set_reference_gas_price_by_stakee_revoked() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         set_up_sui_system_state(vector[@0x1, @0x2]);
 
@@ -190,7 +190,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = validator::EGasPriceHigherThanThreshold)]
     fun test_set_gas_price_failure() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         set_up_sui_system_state(vector[@0x1, @0x2]);
 
@@ -203,12 +203,12 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = validator::ECommissionRateTooHigh)]
     fun test_set_commission_rate_failure() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         set_up_sui_system_state(vector[@0x1, @0x2]);
 
         test_scenario::next_tx(scenario, @0x2);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
 
         // Fails here since the commission rate is too high.
         sui_system::request_set_commission_rate(&mut system_state, 2001, test_scenario::ctx(scenario));
@@ -220,7 +220,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = sui_system_state_inner::ENotValidator)]
     fun test_report_non_validator_failure() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
@@ -231,7 +231,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = sui_system_state_inner::ECannotReportOneself)]
     fun test_report_self_failure() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
@@ -242,7 +242,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = sui_system_state_inner::EReportRecordNotFound)]
     fun test_undo_report_failure() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
@@ -252,17 +252,17 @@ module sui_system::sui_system_tests {
 
     #[test]
     fun test_staking_pool_mappings() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3, @0x4]);
         test_scenario::next_tx(scenario, @0x1);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let pool_id_1 = sui_system::validator_staking_pool_id(&mut system_state, @0x1);
         let pool_id_2 = sui_system::validator_staking_pool_id(&mut system_state, @0x2);
         let pool_id_3 = sui_system::validator_staking_pool_id(&mut system_state, @0x3);
         let pool_id_4 = sui_system::validator_staking_pool_id(&mut system_state, @0x4);
-        let pool_mappings = sui_system::validator_staking_pool_mappings(&mut system_state);
+        let mut pool_mappings = sui_system::validator_staking_pool_mappings(&mut system_state);
         assert_eq(table::length(pool_mappings), 4);
         assert_eq(*table::borrow(pool_mappings, pool_id_1), @0x1);
         assert_eq(*table::borrow(pool_mappings, pool_id_2), @0x2);
@@ -282,7 +282,7 @@ module sui_system::sui_system_tests {
         advance_epoch(scenario);
 
         test_scenario::next_tx(scenario, @0x1);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let pool_id_5 = sui_system::validator_staking_pool_id(&mut system_state, new_validator_addr);
         pool_mappings = sui_system::validator_staking_pool_mappings(&mut system_state);
         // Check that the previous mappings didn't change as well.
@@ -315,12 +315,12 @@ module sui_system::sui_system_tests {
 
     #[test]
     fun test_stable_staking_pool_mapping() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3, @0x4]);
         test_scenario::next_tx(scenario, @0x1);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let pool_id_1 = sui_system::validator_stable_staking_pool_id<BUSD>(&mut system_state, @0x1);
         let pool_id_2 = sui_system::validator_stable_staking_pool_id<BJPY>(&mut system_state, @0x2);
         let pool_id_3 = sui_system::validator_stable_staking_pool_id<BBRL>(&mut system_state, @0x3);
@@ -347,7 +347,7 @@ module sui_system::sui_system_tests {
 
         test_scenario::next_tx(scenario, @0x1);
 
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let pool_id_5 = sui_system::validator_stable_staking_pool_id<BUSD>(&mut system_state, new_validator_addr);
         pool_mappings = sui_system::validator_stable_staking_pool_mappings(&mut system_state);
         // Check that the previous mappings didn't change as well.
@@ -364,7 +364,7 @@ module sui_system::sui_system_tests {
         advance_epoch(scenario);
 
         test_scenario::next_tx(scenario, @0x1);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         pool_mappings = sui_system::validator_stable_staking_pool_mappings(&mut system_state);
         // Check that the previous mappings didn't change as well.
         assert_eq(table::length(pool_mappings), 4 * 17);
@@ -381,7 +381,7 @@ module sui_system::sui_system_tests {
     fun report_helper(sender: address, reported: address, is_undo: bool, scenario: &mut Scenario) {
         test_scenario::next_tx(scenario, sender);
 
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let cap = test_scenario::take_from_sender<UnverifiedValidatorOperationCap>(scenario);
         if (is_undo) {
             sui_system::undo_report_validator(&mut system_state, &cap, reported);
@@ -399,7 +399,7 @@ module sui_system::sui_system_tests {
     ) {
         test_scenario::next_tx(scenario, sender);
         let cap = test_scenario::take_from_sender<UnverifiedValidatorOperationCap>(scenario);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         sui_system::request_set_gas_price(&mut system_state, &cap, new_gas_price);
         test_scenario::return_to_sender(scenario, cap);
         test_scenario::return_shared(system_state);
@@ -408,7 +408,7 @@ module sui_system::sui_system_tests {
 
     fun rotate_operation_cap(sender: address, scenario: &mut Scenario) {
         test_scenario::next_tx(scenario, sender);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let ctx = test_scenario::ctx(scenario);
         sui_system::rotate_operation_cap(&mut system_state, ctx);
         test_scenario::return_shared(system_state);
@@ -416,7 +416,7 @@ module sui_system::sui_system_tests {
 
     fun get_reporters_of(addr: address, scenario: &mut Scenario): vector<address> {
         test_scenario::next_tx(scenario, addr);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let res = vec_set::into_keys(sui_system::get_reporters_of(&mut system_state, addr));
         test_scenario::return_shared(system_state);
         res
@@ -655,11 +655,11 @@ module sui_system::sui_system_tests {
         let new_pubkey1 = x"91b8de031e0b60861c655c8168596d98b065d57f26f287f8c810590b06a636eff13c4055983e95b2f60a4d6ba5484fa4176923d1f7807cc0b222ddf6179c1db099dba0433f098aae82542b3fd27b411d64a0a35aad01b2c07ac67f7d0a1d2c11";
         let new_pop1 = x"b61913eb4dc7ea1d92f174e1a3c6cad3f49ae8de40b13b69046ce072d8d778bfe87e734349c7394fd1543fff0cb6e2d0";
 
-        let scenario_val = test_scenario::begin(validator_addr);
+        let mut scenario_val = test_scenario::begin(validator_addr);
         let scenario = &mut scenario_val;
 
         // Set up SuiSystemState with an active validator
-        let validators = vector::empty();
+        let mut validators = vector::empty();
         let ctx = test_scenario::ctx(scenario);
         let validator = validator::new_for_testing(
             validator_addr,
@@ -686,7 +686,7 @@ module sui_system::sui_system_tests {
 
         test_scenario::next_tx(scenario, validator_addr);
 
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
 
         // Test active validator metadata changes
         test_scenario::next_tx(scenario, validator_addr);
@@ -727,9 +727,9 @@ module sui_system::sui_system_tests {
         test_scenario::end(scenario_val);
 
         // Test pending validator metadata changes
-        let scenario_val = test_scenario::begin(new_validator_addr);
+        let mut scenario_val = test_scenario::begin(new_validator_addr);
         let scenario = &mut scenario_val;
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         test_scenario::next_tx(scenario, new_validator_addr);
         {
             let ctx = test_scenario::ctx(scenario);
@@ -796,7 +796,7 @@ module sui_system::sui_system_tests {
 
         // Now both validators are active, verify their metadata.
         test_scenario::next_tx(scenario, new_validator_addr);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let validator = sui_system::active_validator_by_address(&mut system_state, validator_addr);
         verify_metadata_after_advancing_epoch(
             validator,
@@ -838,12 +838,12 @@ module sui_system::sui_system_tests {
         let pubkey1 = x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c";
         let pop1 = x"a8a0bcaf04e13565914eb22fa9f27a76f297db04446860ee2b923d10224cedb130b30783fb60b12556e7fc50e5b57a86";
 
-        let scenario_val = test_scenario::begin(validator_addr);
+        let mut scenario_val = test_scenario::begin(validator_addr);
         let scenario = &mut scenario_val;
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
         test_scenario::next_tx(scenario, validator_addr);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         test_scenario::next_tx(scenario, validator_addr);
         {
             sui_system::request_add_validator_candidate_for_testing(
@@ -902,7 +902,7 @@ module sui_system::sui_system_tests {
     #[test]
     #[expected_failure(abort_code = validator::EMetadataInvalidWorkerPubkey)]
     fun test_add_validator_candidate_failure_invalid_metadata() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
 
         // Generated using [fn test_proof_of_possession]
@@ -912,7 +912,7 @@ module sui_system::sui_system_tests {
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
         test_scenario::next_tx(scenario, new_validator_addr);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         sui_system::request_add_validator_candidate(
             &mut system_state,
             pubkey,
@@ -946,7 +946,7 @@ module sui_system::sui_system_tests {
 
         set_up_sui_system_state(vector[@0x1, @0x2, @0x3]);
         test_scenario::next_tx(scenario, new_validator_addr);
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         sui_system::request_add_validator_candidate(
             &mut system_state,
             pubkey,
@@ -1002,7 +1002,7 @@ module sui_system::sui_system_tests {
         let new_pubkey = x"96d19c53f1bee2158c3fcfb5bb2f06d3a8237667529d2d8f0fbb22fe5c3b3e64748420b4103674490476d98530d063271222d2a59b0f7932909cc455a30f00c69380e6885375e94243f7468e9563aad29330aca7ab431927540e9508888f0e1c";
         let new_pop = x"932336c35a8c393019c63eb0f7d385dd4e0bd131f04b54cf45aa9544f14dca4dab53bd70ffcb8e0b34656e4388309720";
 
-        let scenario_val = test_scenario::begin(validator_addr);
+        let mut scenario_val = test_scenario::begin(validator_addr);
         let scenario = &mut scenario_val;
 
         // Set up SuiSystemState with an active validator
@@ -1031,7 +1031,7 @@ module sui_system::sui_system_tests {
 
         test_scenario::next_tx(scenario, new_addr);
 
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
 
         // Add a candidate with the same name. Fails due to duplicating with an already active validator.
         sui_system::request_add_validator_candidate(
@@ -1059,7 +1059,7 @@ module sui_system::sui_system_tests {
 
     #[test]
     fun test_skip_stake_subsidy() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         // Epoch duration is set to be 42 here.
         set_up_sui_system_state(vector[@0x1, @0x2]);
@@ -1074,7 +1074,7 @@ module sui_system::sui_system_tests {
     fun advance_epoch_and_check_distribution_counter(scenario: &mut Scenario, epoch_length: u64, should_increment_counter: bool) {
         test_scenario::next_tx(scenario, @0x0);
         let new_epoch = tx_context::epoch(test_scenario::ctx(scenario)) + 1;
-        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let prev_epoch_time = sui_system::epoch_start_timestamp_ms(&mut system_state);
         let prev_counter = sui_system::get_stake_subsidy_distribution_counter(&mut system_state);
 

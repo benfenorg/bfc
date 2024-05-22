@@ -1384,7 +1384,7 @@ module sui_system::validator {
         p2p_address: vector<u8>,
         primary_address: vector<u8>,
         worker_address: vector<u8>,
-        initial_stake_option: Option<Balance<BFC>>,
+        mut initial_stake_option: Option<Balance<BFC>>,
         gas_price: u64,
         commission_rate: u64,
         is_active_at_genesis: bool,

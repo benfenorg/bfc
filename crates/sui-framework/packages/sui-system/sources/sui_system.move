@@ -880,7 +880,7 @@ module sui_system::sui_system {
     ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
-        let rates = vector::empty<u64>();
+        let mut rates = vector::empty<u64>();
         while (vector::length(&rates) < 17) {
             vector::push_back(&mut rates, 1000000000u64);
         };
