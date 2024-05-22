@@ -63,6 +63,9 @@ impl GovernanceReadApiServer for GovernanceReadApi {
     async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>> {
         self.fullnode.get_stable_pools(owner).await
     }
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
+        self.fullnode.get_stable_rate(tag).await
+    }
 }
 
 impl SuiRpcModule for GovernanceReadApi {

@@ -53,6 +53,9 @@ impl GovernanceReadApiServer for GovernanceReadApi {
         self.fullnode.get_reference_gas_price().await
     }
 
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
+        self.fullnode.get_stable_rate(tag).await
+    }
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys> {
         self.fullnode.get_validators_apy().await
     }

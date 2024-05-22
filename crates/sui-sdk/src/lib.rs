@@ -542,6 +542,6 @@ impl DataReader for ReadApi {
     }
 
     async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
-        Ok(self.get_stable_rate(type_tag).await?)
+        Ok(self.get_stable_rate(type_tag.to_canonical_string()).await?)
     }
 }
