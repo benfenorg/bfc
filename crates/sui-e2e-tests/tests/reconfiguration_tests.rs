@@ -2132,6 +2132,61 @@ async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_vali
     });
 }
 
+async fn rebalance(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
+    let objects = http_client
+        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_filter(
+            SuiObjectDataFilter::StructType(
+                parse_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap(),
+            )
+        )), None, None).await?.data;
+    let gas = objects.last().unwrap().object().unwrap();
+    let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let function = "rebalance".to_string();
+    let args = vec![
+        SuiJsonValue::from_str(&bfc_system_address.to_string())?,
+        SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
+    ];
+    let transaction_bytes: TransactionBlockBytes = http_client
+        .move_call(
+            address,
+            package_id,
+            module,
+            function,
+            vec![],
+            args,
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        )
+        .await?;
+
+    let tx = test_cluster
+        .wallet
+        .sign_transaction(&transaction_bytes.to_data()?);
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+    let effects = tx_response.effects.unwrap().clone();
+
+    match effects {
+        SuiTransactionBlockEffects::V1(_effects) => {
+            if _effects.status.is_err() {
+                error!("effects is {:?}",_effects);
+            }
+            assert!(_effects.status.is_ok());
+        },
+    };
+    Ok(())
+}
+
 #[sim_test]
 async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
@@ -2314,6 +2369,7 @@ async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Er
     let mut objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
     assert!(objects.len() == 0);
 
+    rebalance(&test_cluster, http_client, address).await?;
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
 
     let _ = sleep(Duration::from_secs(10)).await;
@@ -2344,6 +2400,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
         .effects
         .unwrap();
 
+    rebalance(&test_cluster, http_client, address).await?;
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
@@ -2380,6 +2437,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
         .unwrap();
     let _ = sleep(Duration::from_secs(2)).await;
 
+    rebalance(&test_cluster, http_client, address).await?;
     swap_bfc_to_stablecoin(&test_cluster, http_client, address).await?;
     let _ = sleep(Duration::from_secs(4)).await;
 
@@ -2426,7 +2484,7 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 60;
+    let amount  = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2436,6 +2494,11 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
     test_cluster.wait_for_epoch(Some(2)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
+
+    rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let _ = sleep(Duration::from_secs(2)).await;
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::bjpy::BJPY".to_string(),false,"0xc8::busd::BUSD".to_string()).await?;
@@ -2450,14 +2513,14 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(4000)
         .with_num_validators(5)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 60;
+    let amount  = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2468,6 +2531,8 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
         .unwrap();
     test_cluster.wait_for_epoch(Some(2)).await;
 
+    rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::busd::BUSD".to_string()).await?;
 
     Ok(())
@@ -2477,14 +2542,14 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(4000)
         .with_num_validators(5)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount  = 1_000_000_000u64 * 60;
+    let amount  = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -2493,6 +2558,9 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
         .await
         .effects
         .unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
+
+    rebalance(&test_cluster, http_client, address).await?;
     test_cluster.wait_for_epoch(Some(2)).await;
 
     transfer_with_stable(&test_cluster, http_client, address, amount,"0xc8::busd::BUSD".to_string(),true,"0xc8::bjpy::BJPY".to_string()).await?;
@@ -2536,8 +2604,8 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
         busd_balance_before += get_busd_balance(busd_data);
         gas_coins.push(busd_data.object_ref());
         tx = make_transfer_sui_transaction_with_gas_coins(&test_cluster.wallet,
-                                                    Some(receiver_address),
-                                                    Some(amount), address, gas_coins).await;
+                                                          Some(receiver_address),
+                                                          Some(amount), address, gas_coins).await;
     };
 
     if !multi_gas && token_name == another_token_name{
@@ -2569,6 +2637,7 @@ async fn transfer_with_stable(test_cluster: &TestCluster, http_client: &HttpClie
 
     Ok(())
 }
+
 
 fn get_busd_balance(busd_data: &SuiObjectData)->u64{
     if let SuiParsedData::MoveObject(move_object)=busd_data.content.clone().unwrap(){
@@ -2632,6 +2701,10 @@ async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> 
         .with_num_validators(5)
         .build()
         .await;
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, address).await?;
+
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT,
@@ -2664,6 +2737,7 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
+    rebalance(&test_cluster, http_client, address).await?;
     let amount  = 1_000_000_000u64 * 100;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
@@ -2734,6 +2808,7 @@ async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
 
     let http_client = test_cluster.rpc_client();
     let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
     stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::bjpy::BJPY", "0x2::coin::Coin<0xc8::bjpy::BJPY>", BJPY.type_tag()).await?;
     stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
     Ok(())
@@ -2825,6 +2900,10 @@ async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> 
         .with_num_validators(5)
         .build()
         .await;
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
+
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT,
@@ -2873,6 +2952,9 @@ async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> 
         .with_num_validators(5)
         .build()
         .await;
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT
@@ -2898,6 +2980,9 @@ async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::
         .with_num_validators(5)
         .build()
         .await;
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT
@@ -2923,6 +3008,9 @@ async fn test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
         .with_num_validators(5)
         .build()
         .await;
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
     let pt = ProgrammableTransaction {
         inputs: vec![
             CallArg::BFC_SYSTEM_MUT

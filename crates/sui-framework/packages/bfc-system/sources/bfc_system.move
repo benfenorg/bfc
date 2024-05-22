@@ -7,7 +7,6 @@ module bfc_system::bfc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
-    use sui::clock::{Self};
 
     use sui::bfc::BFC;
     use sui::object::UID;
@@ -128,7 +127,8 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
     }
 
-    public fun bfc_round(
+    #[test_only]
+    public fun bfc_round_test(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
         round: u64,
@@ -139,7 +139,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
         // X-treasury rebalance
         bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
+    }
 
+    public fun bfc_round(
+        wrapper: &mut BfcSystemState,
+        round: u64,
+        epoch_start_time: u64,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::update_round(inner_state, round);
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
 
@@ -263,15 +272,15 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
     }
 
-    // /// X treasury rebalance
-    // public entry fun rebalance(
-    //     wrapper: &mut BfcSystemState,
-    //     clock: &Clock,
-    //     ctx: &mut TxContext,
-    // ) {
-    //     let inner_state = load_system_state_mut(wrapper);
-    //     bfc_system_state_inner::rebalance(inner_state, clock, ctx);
-    // }
+    /// X treasury rebalance
+    public fun rebalance(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+    }
 
     /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(

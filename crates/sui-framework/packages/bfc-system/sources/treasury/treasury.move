@@ -6,7 +6,7 @@ module bfc_system::treasury {
     use sui::balance::{Self, Balance, Supply};
     use sui::bfc::BFC;
     use sui::clock::{Self, Clock};
-    use sui::coin::{Self, Coin, value};
+    use sui::coin::{Self, Coin};
     use sui::dynamic_field;
     use sui::object::{Self, UID};
     use sui::transfer;
@@ -443,6 +443,10 @@ module bfc_system::treasury {
         };
 
         let current_ts = clock::timestamp_ms(_clock) / 1000;
+
+        if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
+            return
+        };
 
         // update updated_at
         _treasury.updated_at = current_ts;

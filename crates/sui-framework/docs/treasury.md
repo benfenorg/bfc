@@ -1097,6 +1097,10 @@ Rebalance
 
     <b>let</b> current_ts = <a href="../../../.././build/Sui/docs/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(_clock) / 1000;
 
+    <b>if</b> ((current_ts - _treasury.updated_at) &lt; (_treasury.time_interval <b>as</b> u64)) {
+        <b>return</b>
+    };
+
     // <b>update</b> updated_at
     _treasury.updated_at = current_ts;
     <b>let</b> bfc_in_vault = <a href="treasury.md#0xc8_treasury_rebalance_internal">rebalance_internal</a>(_treasury, _update, _ctx);
