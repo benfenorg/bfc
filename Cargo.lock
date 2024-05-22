@@ -9821,7 +9821,6 @@ dependencies = [
  "indexmap 1.9.3",
  "insta",
  "jsonrpsee",
- "log",
  "move-binary-format",
  "move-core-types",
  "move-package",

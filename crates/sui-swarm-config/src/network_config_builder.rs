@@ -417,11 +417,13 @@ mod test {
                 &epoch.epoch_id(),
                 epoch.epoch_start_timestamp(),
                 InputObjects::new(vec![]),
+                shared_object_refs,
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
                 signer,
                 genesis_digest,
+                transaction_dependencies,
             );
 
         assert_eq!(&effects, genesis.effects());
