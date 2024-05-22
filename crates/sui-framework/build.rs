@@ -219,6 +219,8 @@ fn build_packages_with_move_config(
     let deepbook_members =
         serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
     let stdlib_members = serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
+    let bfc_system_members =
+        serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
 
     // write out generated docs
     if write_docs {
@@ -254,6 +256,7 @@ fn build_packages_with_move_config(
             sui_system_members.join("\n"),
             sui_framework_members.join("\n"),
             deepbook_members.join("\n"),
+            bfc_system_members.join("\n"),
             stdlib_members.join("\n"),
         ]
             .join("\n");

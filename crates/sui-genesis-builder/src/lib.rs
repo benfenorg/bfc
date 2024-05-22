@@ -9,11 +9,13 @@ use move_binary_format::CompiledModule;
 use move_core_types::ident_str;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::collections::{BTreeMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use sui_config::genesis::{Genesis, GenesisCeremonyParameters, GenesisChainParameters, TokenDistributionSchedule, UnsignedGenesis, BfcSystemParameters, TOTAL_SUPPLY_WITH_ALLOCATION_MIST, TokenAllocation};
+use sui_config::genesis::{Genesis, GenesisCeremonyParameters,
+                          GenesisChainParameters, TokenDistributionSchedule,
+                          UnsignedGenesis, BfcSystemParameters,
+                          TOTAL_SUPPLY_WITH_ALLOCATION_MIST, TokenAllocation};
 use sui_execution::{self, Executor};
 use sui_framework::{BuiltInFramework, SystemPackage};
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
@@ -44,14 +46,11 @@ use sui_types::metrics::LimitsMetrics;
 use sui_types::object::{Object, Owner};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
-use sui_types::transaction::{CallArg, Command, InputObjectKind, InputObjects, Transaction};
 use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::{trace};
 use sui_types::transaction::{
-    CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
+    CallArg,InputObjects, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
-use sui_types::{SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
-use tracing::trace;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
 pub mod validator_info;
@@ -510,14 +509,9 @@ impl Builder {
                         *owner == allocation.recipient_address &&
                             s.principal() == allocation.amount_mist
                             && s.pool_id() == staking_pool_id
-                        panic!("gas object owner must be address owner");
-                    };
-                *owner == allocation.recipient_address
-                    && s.principal() == allocation.amount_mist
-                    && s.pool_id() == staking_pool_id
-            })
-            .map(|(k, _)| *k)
-                .expect("all allocations should be present");
+                    })
+                    .map(|(k, _)| *k)
+                    .expect("all allocations should be present");
             let staked_sui_object = staked_sui_objects.remove(&staked_sui_object_id).unwrap();
             assert_eq!(
                 staked_sui_object.0.owner,
@@ -1002,6 +996,7 @@ fn create_genesis_transaction(
         let transaction_data = &genesis_transaction.data().intent_message().value;
         let (kind, signer, _) = transaction_data.execution_parts();
         let input_objects = CheckedInputObjects::new_for_genesis(vec![]);
+        let transaction_dependencies = BTreeMap::new();
         let (inner_temp_store, _, effects, _execution_error) = executor
             .execute_transaction_to_effects(
                 &InMemoryStorage::new(Vec::new()),
@@ -1011,17 +1006,14 @@ fn create_genesis_transaction(
                 &certificate_deny_set,
                 &epoch_data.epoch_id(),
                 epoch_data.epoch_start_timestamp(),
-                // temporary_store,
-                // shared_object_refs,
-                // &mut GasCharger::new_unmetered(genesis_digest),
                 InputObjects::new(vec![]),
                 shared_object_refs,
-                input_objects,
                 vec![],
                 SuiGasStatus::new_unmetered(),
                 kind,
                 signer,
                 genesis_digest,
+                transaction_dependencies,
             );
         assert!(inner_temp_store.input_objects.is_empty());
         assert!(inner_temp_store.mutable_inputs.is_empty());
@@ -1171,10 +1163,8 @@ fn process_package(
     // } = temporary_store.into_inner();
 
     let InnerTemporaryStore {
-        written, deleted, ..
+        mut written, ..
     } = executor.update_genesis_state(
-        store.clone(),
-    let InnerTemporaryStore { written, .. } = executor.update_genesis_state(
         &*store,
         protocol_config,
         metrics,
@@ -1496,10 +1486,8 @@ pub fn generate_genesis_system_object(
     // )?;
 
     let InnerTemporaryStore {
-        written, deleted, ..
+        mut written, ..
     } = executor.update_genesis_state(
-        store.clone(),
-    let InnerTemporaryStore { mut written, .. } = executor.update_genesis_state(
         &*store,
         &protocol_config,
         metrics,
