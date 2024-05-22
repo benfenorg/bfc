@@ -296,6 +296,9 @@ impl WalletContext {
         tx: Transaction,
     ) -> SuiTransactionBlockResponse {
         let response = self.execute_transaction_may_fail(tx).await.unwrap();
+        if !response.status_ok().unwrap() {
+            tracing::error!("response: {:?}", response);
+        }
         assert!(response.status_ok().unwrap());
         response
     }

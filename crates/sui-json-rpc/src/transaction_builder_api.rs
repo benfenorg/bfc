@@ -9,7 +9,6 @@ use fastcrypto::encoding::Base64;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 use move_core_types::language_storage::{StructTag, TypeTag};
-use tracing::error;
 
 use sui_core::authority::AuthorityState;
 use sui_json::SuiJsonValue;
