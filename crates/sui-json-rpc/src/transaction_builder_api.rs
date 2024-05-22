@@ -249,7 +249,7 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         primary_coin: ObjectID,
         coin_to_merge: ObjectID,
         gas: Option<ObjectID>,
-        gas_budget:
+        gas_budget:BigInt<u64>
     ) -> RpcResult<TransactionBlockBytes> {
         let data = self
             .0
