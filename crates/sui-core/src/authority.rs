@@ -1593,7 +1593,6 @@ impl AuthorityState {
         let tx_digest = *certificate.digest();
         let protocol_config = epoch_store.protocol_config();
         let shared_object_refs = input_objects.filter_shared_objects();
-        let transaction_dependencies = input_objects.transaction_dependencies();
         let temporary_store = TemporaryStore::new(
             self.database.clone(),
             input_objects.clone(),
@@ -1659,6 +1658,7 @@ impl AuthorityState {
         epoch_store: &Arc<AuthorityPerEpochStore>,
         ) -> SuiResult<(
         InnerTemporaryStore,
+        Option<VecMap<u64, ProposalStatus>>,
         TransactionEffects,
         Option<ExecutionError>,
         )> {
@@ -3176,20 +3176,13 @@ impl AuthorityState {
     }
 
 
-    /// This function should be called once and exactly once during reconfiguration.
-    /// Instead of this function use AuthorityEpochStore::epoch_start_configuration() to access this object everywhere
-    /// besides when we are reading fields for the current epoch
-    pub fn get_sui_system_state_object_during_reconfig(&self) -> SuiResult<SuiSystemState> {
-        self.database.get_sui_system_state_object()
-    }
-
     // This function is only used for testing.
     pub fn get_sui_system_state_object_for_testing(&self) -> SuiResult<SuiSystemState> {
         self.execution_cache.get_sui_system_state_object_unsafe()
     }
 
     pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
-        self.database.get_bfc_system_state_object()
+        self.execution_cache.get_bfc_system_state_object()
     }
 
 
@@ -3542,7 +3535,7 @@ impl AuthorityState {
             epoch_store.multi_get_transaction_checkpoint(digests)
         } else {
             Ok(self
-                .database
+                .execution_cache
                 .deprecated_multi_get_transaction_checkpoint(digests)?
                 .iter()
                 .map(|opt| match opt {
@@ -3555,12 +3548,15 @@ impl AuthorityState {
 
     }
 
-    pub fn multi_get_events(
-        &self,
-        digests: &[TransactionEventsDigest],
-    ) -> SuiResult<Vec<Option<TransactionEvents>>> {
-        self.database.multi_get_events(digests)
-    }
+    // pub fn multi_get_events(
+    //     &self,
+    //     event_digests: &[TransactionEventsDigest],
+    // ) -> SuiResult<Vec<Option<TransactionEvents>>> {
+    //     Ok(event_digests
+    //         .iter()
+    //         .map(|digest| self.get_events(digest))
+    //         .collect::<Result<Vec<_>, _>>()?)
+    // }
 
     #[instrument(level = "trace", skip_all)]
     pub fn multi_get_checkpoint_by_sequence_number(
@@ -4591,17 +4587,7 @@ impl AuthorityState {
             ));
             };
 
-        let tx = VerifiedTransaction::new_change_epoch(
-            next_epoch,
-            next_epoch_protocol_version,
-            bfc_gas_cost_summary.storage_cost,
-            bfc_gas_cost_summary.computation_cost,
-            bfc_gas_cost_summary.storage_rebate,
-            bfc_gas_cost_summary.non_refundable_storage_fee,
-            stable_gas_cost_summarys.clone(),
-            epoch_start_timestamp_ms,
-            next_epoch_system_package_bytes,
-        );
+
         let tx = if epoch_store
             .protocol_config()
             .end_of_epoch_transaction_supported()
@@ -4613,6 +4599,7 @@ impl AuthorityState {
                 bfc_gas_cost_summary.computation_cost,
                 bfc_gas_cost_summary.storage_rebate,
                 bfc_gas_cost_summary.non_refundable_storage_fee,
+                stable_gas_cost_summarys.clone(),
                 epoch_start_timestamp_ms,
                 next_epoch_system_package_bytes,
             ));
@@ -4626,6 +4613,7 @@ impl AuthorityState {
                 bfc_gas_cost_summary.computation_cost,
                 bfc_gas_cost_summary.storage_rebate,
                 bfc_gas_cost_summary.non_refundable_storage_fee,
+                stable_gas_cost_summarys.clone(),
                 epoch_start_timestamp_ms,
                 next_epoch_system_package_bytes,
             )
@@ -4687,7 +4675,7 @@ impl AuthorityState {
             .await?;
 
         let (temporary_store, proposal_map, effects, _execution_error_opt) = self
-            .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store);
+            .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store)?;
 
 
         if let Some(new_proposal_map) = proposal_map {
@@ -4742,7 +4730,6 @@ impl AuthorityState {
         let _tx_lock = epoch_store.acquire_tx_guard(&executable_tx).await?;
 
         if self
-            .database
             .is_tx_already_executed(tx_digest)
             .expect("read cannot fail")
         {
@@ -4753,7 +4740,6 @@ impl AuthorityState {
         }
 
         let execution_guard = self
-            .database
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
 
@@ -4774,19 +4760,18 @@ impl AuthorityState {
             )
             .await?;
         let (store, _, effects, _execution_error_opt) = self
-            .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store)
-            .await?;
+            .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store)?;
 
-
-        self.commit_cert_and_notify(
-            &executable_tx,
-            store.clone(),
+        self.commit_certificate(
+            certificate,
+            inner_temporary_store,
             &effects,
-            _tx_lock,
+            tx_guard,
             execution_guard,
             epoch_store,
         )
             .await?;
+
 
         // We must write tx and effects to the state sync tables so that state sync is able to
         // deliver to the transaction to CheckpointExecutor after it is included in a certified

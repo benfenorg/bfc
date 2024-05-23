@@ -701,7 +701,7 @@ impl ConsensusAdapter {
             None
         };
         if let Some(processed_waiter) = processed_waiter {
-            debug!("Submitting {transaction_key:?} to consensus");
+            //debug!("Submitting {transaction_key:?} to consensus");
 
             // populate the position only when this authority submits the transaction
             // to consensus

@@ -630,51 +630,7 @@ impl AuthorityStore {
         Ok(result)
     }
 
-    /// Gets the input object keys and lock modes from input object kinds, by determining the
-    /// versions and types of owned, shared and package objects.
-    /// When making changes, please see if check_sequenced_input_objects() below needs
-    /// similar changes as well.
 
-    /// Checks if the input object identified by the InputKey exists, with support for non-system
-    /// packages i.e. when version is None.
-    pub fn multi_input_objects_exist(
-        &self,
-        keys: impl Iterator<Item = InputKey> + Clone,
-    ) -> Result<Vec<bool>, SuiError> {
-        let (keys_with_version, keys_without_version): (Vec<_>, Vec<_>) =
-            keys.enumerate().partition(|(_, key)| key.1.is_some());
-
-        let versioned_results = keys_with_version.iter().map(|(idx, _)| *idx).zip(
-            self.perpetual_tables
-                .objects
-                .multi_get(
-                    keys_with_version
-                        .iter()
-                        .map(|(_, k)| ObjectKey(k.0, k.1.unwrap())),
-                )?
-                .into_iter()
-                .map(|o| o.is_some()),
-        );
-
-        let unversioned_results = keys_without_version.into_iter().map(|(idx, key)| {
-            (
-                idx,
-                match self
-                    .get_latest_object_ref_or_tombstone(key.0)
-                    .expect("read cannot fail")
-                {
-                    None => false,
-                    Some(entry) => entry.2.is_alive(),
-                },
-            )
-        });
-
-        let mut results = versioned_results
-            .chain(unversioned_results)
-            .collect::<Vec<_>>();
-        results.sort_by_key(|(idx, _)| *idx);
-        Ok(results.into_iter().map(|(_, result)| result).collect())
-    }
 
     /// Attempts to acquire execution lock for an executable transaction.
     /// Returns the lock if the transaction is matching current executed epoch
@@ -2155,30 +2111,7 @@ impl ObjectStore for AuthorityStore {
     }
 }
 
-impl ChildObjectResolver for AuthorityStore {
-    fn read_child_object(
-        &self,
-        parent: &ObjectID,
-        child: &ObjectID,
-        child_version_upper_bound: SequenceNumber,
-    ) -> SuiResult<Option<Object>> {
-        let Some(child_object) =
-            self.find_object_lt_or_eq_version(*child, child_version_upper_bound)
-        else {
-            return Ok(None)
-        };
 
-        let parent = *parent;
-        if child_object.owner != Owner::ObjectOwner(parent.into()) {
-            return Err(SuiError::InvalidChildObjectAccess {
-                object: *child,
-                given_parent: parent,
-                actual_owner: child_object.owner,
-            });
-        }
-        Ok(Some(child_object))
-    }
-}
 
 impl ParentSync for AuthorityStore {
     fn get_latest_parent_entry_ref_deprecated(&self, object_id: ObjectID) -> SuiResult<Option<ObjectRef>> {

@@ -3614,7 +3614,7 @@ impl AuthorityPerEpochStore {
         let gas_by_stable = "gas_by_stable";
 
         for item in stats.total_stable_reward {
-            let type_tag = item.0.to_canonical_string();
+            let type_tag = item.0.to_canonical_string(true);
             self.metrics
                 .epoch_stable_gas_reward_vec
                 .with_label_values(&[&format!("{:?}", type_tag), &format!("{:?}", gas_by_bfc), &format!("{:?}", computation_cost)])

@@ -1425,7 +1425,7 @@ impl CheckpointBuilder {
     fn new_from_txn_effects<'a>(&self,
         transactions: impl Iterator<Item = &'a TransactionEffects>,
     ) -> (GasCostSummary,HashMap<TypeTag,GasCostSummaryAdjusted> ){
-        let authority_store = self.state.database.clone();
+        //let authority_store = self.state.database.clone();
 
         let mut bfc_gas_cost_summary = GasCostSummary {
             base_point:0,
@@ -1439,7 +1439,7 @@ impl CheckpointBuilder {
 
         for effect in transactions.into_iter(){
             let gas_object_id = effect.gas_object().0.0;
-            let object_result = authority_store.get_object(&gas_object_id);
+            let object_result = self.state.get_object(&gas_object_id);
             if object_result.is_err() {
                 bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
                 bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
