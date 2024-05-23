@@ -899,8 +899,8 @@ impl AuthorityPerEpochStore {
             protocol_config.accept_zklogin_in_multisig(),
             protocol_config.zklogin_max_epoch_upper_bound_delta(),
         );
-        for (jwk_id, jwk) in oauth_provider_jwk.iter() {
-            signature_verifier.insert_oauth_jwk(jwk_id, jwk);
+        //for (jwk_id, jwk) in oauth_provider_jwk.iter() {
+            //signature_verifier.insert_oauth_jwk(jwk_id, jwk);
 
         let authenticator_state_exists = epoch_start_configuration
             .authenticator_obj_initial_shared_version()
@@ -2072,16 +2072,16 @@ impl AuthorityPerEpochStore {
         Ok(result?)
     }
 
-    /// Caller is responsible to call consensus_message_processed before this method
-    pub async fn record_owned_object_cert_from_consensus(
-        &self,
-        batch: &mut DBBatch,
-        transaction: &SequencedConsensusTransactionKind,
-        certificate: &VerifiedExecutableTransaction,
-        consensus_index: &ExecutionIndicesWithHash,
-    ) -> Result<(), SuiError> {
-        let key = transaction.key();
-        self.finish_consensus_certificate_process(batch, key, certificate, consensus_index)
+    // /// Caller is responsible to call consensus_message_processed before this method
+    // pub async fn record_owned_object_cert_from_consensus(
+    //     &self,
+    //     batch: &mut DBBatch,
+    //     transaction: &SequencedConsensusTransactionKind,
+    //     certificate: &VerifiedExecutableTransaction,
+    //     consensus_index: &ExecutionIndicesWithHash,
+    // ) -> Result<(), SuiError> {
+    //     let key = transaction.key();
+    //     self.finish_consensus_certificate_process(batch, key, certificate, consensus_index)
     pub fn record_jwk_vote(
         &self,
         batch: &mut DBBatch,
@@ -3681,17 +3681,7 @@ impl AuthorityPerEpochStore {
             .set(self.epoch_open_time.elapsed().as_millis() as i64);
     }
 
-    // TODO: should be pub(crate) when it is inserted only from consensus
-    pub fn insert_oauth_jwk(&self, jwk_id: &JwkId, jwk: &JWK) {
-        if self.signature_verifier.insert_oauth_jwk(jwk_id, jwk) {
-            self.tables
-                .oauth_provider_jwk
-                .insert(jwk_id, jwk)
-                .expect("write to oauth_provider_jwk should not fail");
-            // TODO: Remove old kid -> jwks.
-            info!("Added new JWK with id {:?}: {:?}", jwk_id, jwk);
-        } else {
-            info!("JWK with id {:?} already exists", jwk_id);
+
     pub(crate) fn update_authenticator_state(&self, update: &AuthenticatorStateUpdate) {
         info!("Updating authenticator state: {:?}", update);
         for active_jwk in &update.new_active_jwks {

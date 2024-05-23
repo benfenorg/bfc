@@ -56,7 +56,7 @@ impl TestTransactionBuilder {
     }
 
     pub fn gas_object(&self) -> ObjectRef {
-        self.gas_object
+        self.gas_objects[0]
     }
 
     // Use `with_type_args` below to provide type args if any
@@ -85,6 +85,7 @@ impl TestTransactionBuilder {
         } else {
             panic!("Cannot set type args for non-move call");
         }
+        self
     }
 
     pub fn move_call_with_tag(
@@ -619,7 +620,9 @@ pub async fn make_and_sign_stable_staking_transaction(
         .build();
     let msg = bcs::to_bytes(&txn_data).unwrap();
     let sig= key.sign(&msg);
-    Transaction::from_data(txn_data.clone(), Intent::sui_transaction(), vec![sig])
+    //Transaction::from_data(txn_data.clone(), Intent::sui_transaction(), vec![sig])
+    Transaction::from_data(txn_data.clone(), vec![sig])
+
 }
 
 

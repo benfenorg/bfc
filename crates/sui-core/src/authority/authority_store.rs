@@ -719,7 +719,6 @@ impl AuthorityStore {
     /// Attempts to acquire execution lock for an executable transaction.
     /// Returns the lock if the transaction is matching current executed epoch
     /// Returns None otherwise
-    pub async fn execution_lock_for_executable_transaction(
     pub fn have_deleted_owned_object_at_version_or_after(
         &self,
         object_id: &ObjectID,
@@ -1017,7 +1016,7 @@ impl AuthorityStore {
         // Insert each output object into the stores
         let (new_objects, new_indirect_move_objects): (Vec<_>, Vec<_>) = written
             .iter()
-            .map(|(_, (obj_ref, new_object, _))| {
+            //.map(|(_, (obj_ref, new_object, _))| {
             .map(|(id, new_object)| {
                 let version = new_object.version();
                 debug!(?id, ?version, "writing object");
@@ -1778,7 +1777,6 @@ impl AuthorityStore {
             .iter_live_object_set(include_wrapped_object)
     }
 
-    pub fn expensive_check_sui_conservation(
     pub fn expensive_check_sui_conservation<T>(
         self: &Arc<Self>,
         type_layout_store: T,

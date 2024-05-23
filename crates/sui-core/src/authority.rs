@@ -34,13 +34,8 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
 use std::sync::atomic::Ordering;
-use std::time::Duration;
 use std::{
-    collections::{ HashSet},
-    collections::{HashMap, HashSet},
-    fs,
-    pin::Pin,
-    sync::Arc,
+    collections::{HashSet},
     vec,
 };
 use sui_config::node::{AuthorityOverloadConfig, StateDebugDumpConfig};
@@ -814,7 +809,7 @@ pub struct AuthorityState {
     /// Config for state dumping on forks
     debug_dump_config: StateDebugDumpConfig,
 
-    pub proposal_state_map: Mutex<VecMap<u64, ProposalStatus>>
+    pub proposal_state_map: Mutex<VecMap<u64, ProposalStatus>>,
 
     /// Config for when we consider the node overloaded.
     authority_overload_config: AuthorityOverloadConfig,
@@ -1334,11 +1329,7 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, _, effects, execution_error_opt) = match self
-            .prepare_certificate(&execution_guard, certificate, epoch_store)
-            .await
-        {
-            let (inner_temporary_store, effects, execution_error_opt) = match self.prepare_certificate(
+        let (inner_temporary_store, effects, execution_error_opt) = match self.prepare_certificate(
             &execution_guard,
             certificate,
             input_objects,
@@ -1356,23 +1347,23 @@ impl AuthorityState {
             if effects.digest() != expected_effects_digest {
             // We dont want to mask the original error, so we log it and continue.
             match self.debug_dump_transaction_state(
-            &digest,
-            &effects,
-            expected_effects_digest,
-            &inner_temporary_store,
-            certificate,
-            &self.debug_dump_config,
+                &digest,
+                &effects,
+                expected_effects_digest,
+                &inner_temporary_store,
+                certificate,
+                &self.debug_dump_config,
             ) {
-            Ok(out_path) => {
-            info!(
-            "Dumped node state for transaction {} to {}",
-            digest,
-            out_path.as_path().display().to_string()
-            );
-            }
-            Err(e) => {
-            error!("Error dumping state for transaction {}: {e}", digest);
-            }
+                Ok(out_path) => {
+                    info!(
+                        "Dumped node state for transaction {} to {}",
+                        digest,
+                        out_path.as_path().display().to_string()
+                    );
+                }
+                Err(e) => {
+                    error!("Error dumping state for transaction {}: {e}", digest);
+                }
             }
             error!(
             tx_digest = ?digest,
@@ -1628,8 +1619,6 @@ impl AuthorityState {
 
         let (kind, signer, gas) = transaction_data.execution_parts();
         //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
-
-        let (inner_temp_store, effects, execution_error_opt) =
 
         #[allow(unused_mut)]
         let (inner_temp_store, _, mut effects, execution_error_opt) =
@@ -1893,8 +1882,6 @@ impl AuthorityState {
         "Failed to convert transaction to SuiTransactionBlockData: {}",
         e
         ),
-        })?, // TODO: replace the underlying try_from to SuiError. This one goes deep
-        effects:  effects.clone().try_into()?,
         },
         )?, // TODO: replace the underlying try_from to SuiError. This one goes deep
         effects: effects.clone().try_into()?,
@@ -3221,9 +3208,12 @@ impl AuthorityState {
         self.database.get_bfc_system_state_object()
     }
 
-    pub fn get_transaction_checkpoint_sequence(
+
+
+
+
         #[instrument(level = "trace", skip_all)]
-    fn get_transaction_checkpoint_sequence(
+    pub fn get_transaction_checkpoint_sequence(
         &self,
         digest: &TransactionDigest,
         epoch_store: &AuthorityPerEpochStore,
@@ -4697,8 +4687,7 @@ impl AuthorityState {
         let execution_guard = self
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
-        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
-            .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
+
 
         let input_objects = self
             .input_loader
@@ -4713,15 +4702,16 @@ impl AuthorityState {
             )
             .await?;
 
+        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
+            .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store);
+
+
         if let Some(new_proposal_map) = proposal_map {
             let mut tmp = self.proposal_state_map.lock();
             tmp.contents = new_proposal_map.contents;
         }
 
         //let system_obj = temporary_store.get_sui_system_state_object();
-
-        let (temporary_store, effects, _execution_error_opt) =
-            self.prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store)?;
         let system_obj = get_sui_system_state(&temporary_store.written)
             .expect("change epoch tx must write to system object");
 
@@ -4787,8 +4777,20 @@ impl AuthorityState {
             "Try to execute transaction: {:?}",tx_digest
         );
 
+        let input_objects = self
+            .input_loader
+            .read_objects_for_synchronous_execution(
+                tx_digest,
+                &executable_tx
+                    .data()
+                    .intent_message()
+                    .value
+                    .input_objects()?,
+                epoch_store.protocol_config(),
+            )
+            .await?;
         let (store, _, effects, _execution_error_opt) = self
-            .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
+            .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store)
             .await?;
 
 

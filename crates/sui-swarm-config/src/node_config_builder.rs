@@ -420,7 +420,7 @@ impl FullnodeConfigBuilder {
             grpc_load_shed: None,
             grpc_concurrency_limit: None,
             p2p_config,
-            authority_store_pruning_config: AuthorityStorePruningConfig::fullnode_config(),
+            authority_store_pruning_config: AuthorityStorePruningConfig::default(),
             end_of_epoch_broadcast_channel_capacity:
             default_end_of_epoch_broadcast_channel_capacity(),
             checkpoint_executor_config: Default::default(),
@@ -444,6 +444,14 @@ impl FullnodeConfigBuilder {
             transaction_kv_store_read_config: Default::default(),
             transaction_kv_store_write_config: Default::default(),
             enable_experimental_rest_api: true,
+            // note: not used by fullnodes.
+            jwk_fetch_interval_seconds: 3600,
+            zklogin_oauth_providers: default_zklogin_oauth_providers(),
+            authority_overload_config: Default::default(),
+            run_with_range: self.run_with_range,
+            websocket_only: false,
+            policy_config: self.policy_config,
+            firewall_config: self.fw_config,
         }
     }
 
