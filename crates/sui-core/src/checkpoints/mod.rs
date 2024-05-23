@@ -32,7 +32,6 @@ use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemS
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::consensus_handler::SequencedConsensusTransactionKey;
-use std::collections::{HashMap, HashSet};
 use chrono::Utc;
 use rand::rngs::OsRng;
 use rand::seq::SliceRandom;
@@ -51,8 +50,6 @@ use sui_types::digests::{CheckpointContentsDigest, CheckpointDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
 use sui_types::error::{SuiError, SuiResult};
 use sui_types::gas::{calculate_bfc_to_stable_cost_with_base_point, GasCostSummary, GasCostSummaryAdjusted};
-use sui_types::error::SuiResult;
-use sui_types::gas::GasCostSummary;
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointResponseV2, CheckpointSequenceNumber,
@@ -69,16 +66,13 @@ use tokio::{
     sync::{watch, Notify},
     time::timeout,
 };
-use tracing::{debug, error, info, trace, warn};
+use tracing::{debug, error, info, trace, warn, instrument};
 use sui_types::storage::ObjectStore;
-use typed_store::rocks::{DBMap, MetricConf, TypedStoreError};
-use tracing::{debug, error, info, instrument, warn};
+use typed_store::rocks::{DBMap, MetricConf};
+use typed_store::TypedStoreError;
+
 use typed_store::traits::{TableSummary, TypedStoreDebug};
 use typed_store::Map;
-use typed_store::{
-    rocks::{DBMap, MetricConf},
-    TypedStoreError,
-};
 use typed_store_derive::DBMapUtils;
 
 pub type CheckpointHeight = u64;

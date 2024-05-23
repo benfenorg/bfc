@@ -10,7 +10,6 @@ use sui_types::coin::Coin;
 use sui_types::crypto::{default_hash, Signable};
 use sui_types::error::SuiError;
 use sui_types::move_package::MovePackage;
-use sui_types::object::{Data, MoveObject, Object, Owner};
 use sui_types::stable_coin::stable::checked::STABLE;
 use sui_types::object::{Data, MoveObject, Object, ObjectInner, Owner};
 use sui_types::storage::ObjectKey;

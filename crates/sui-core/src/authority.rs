@@ -72,7 +72,6 @@ use sui_json_rpc_types::{
 };
 use sui_macros::{fail_point, fail_point_async, fail_point_if};
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
-use sui_simulator::sui_adapter::temporary_store::TemporaryStore;
 use sui_storage::indexes::{CoinInfo, ObjectIndexChanges};
 use sui_storage::key_value_store::{TransactionKeyValueStore, TransactionKeyValueStoreTrait};
 use sui_storage::key_value_store_metrics::KeyValueStoreMetrics;
@@ -116,23 +115,14 @@ use sui_types::storage::{
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature, error::{SuiError, SuiResult}, fp_ensure, object::{Object, ObjectFormatOptions, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature,
+                error::{SuiError, SuiResult}, fp_ensure,
+                object::{Object, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
-use sui_types::{
-    base_types::*,
-    committee::Committee,
-    crypto::AuthoritySignature,
-    error::{SuiError, SuiResult},
-    fp_ensure,
-    object::{Object, ObjectRead},
-    transaction::*,
-    SUI_SYSTEM_ADDRESS,
-};
 use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::proposal::ProposalStatus;
-use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use typed_store::Map;
 use typed_store::TypedStoreError;
 
@@ -1329,7 +1319,7 @@ impl AuthorityState {
         // non-transient (transaction input is invalid, move vm errors). However, all errors from
         // this function occur before we have written anything to the db, so we commit the tx
         // guard and rely on the client to retry the tx (if it was transient).
-        let (inner_temporary_store, effects, execution_error_opt) = match self.prepare_certificate(
+        let (inner_temporary_store,_, effects, execution_error_opt) = match self.prepare_certificate(
             &execution_guard,
             certificate,
             input_objects,
@@ -1605,16 +1595,16 @@ impl AuthorityState {
         let shared_object_refs = input_objects.filter_shared_objects();
         let transaction_dependencies = input_objects.transaction_dependencies();
         let temporary_store = TemporaryStore::new(
-        self.database.clone(),
-        input_objects.clone(),
-        tx_digest,
-        protocol_config,
-        );
+            self.database.clone(),
+            input_objects.clone(),
+            tx_digest,
+            protocol_config,
+            );
         let transaction_data = &certificate.data().intent_message().value;
         let mut proposal_map= None;
 
         if transaction_data.is_change_epoch_tx() {
-        proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
+            proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
         };
 
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -1678,43 +1668,39 @@ impl AuthorityState {
         self.prepare_certificate(&execution_guard, certificate, input_objects, epoch_store)
         }
 
-        pub async fn dry_exec_transaction(
+    pub async fn dry_exec_transaction(
         &self,
         transaction: TransactionData,
         transaction_digest: TransactionDigest,
-        ) -> SuiResult<(
+    ) -> SuiResult<(
         DryRunTransactionBlockResponse,
         BTreeMap<ObjectID, (ObjectRef, Object, WriteKind)>,
         TransactionEffects,
         Option<ObjectID>,
-        )> {
+    )> {
         let epoch_store = self.load_epoch_store_one_call_per_task();
         if !self.is_fullnode(&epoch_store) {
-        return Err(SuiError::UnsupportedFeatureError {
-        error: "dry-exec is only supported on fullnodes".to_string(),
-        });
+            return Err(SuiError::UnsupportedFeatureError {
+                error: "dry-exec is only supported on fullnodes".to_string(),
+            });
         }
-        match transaction.kind() {
-        TransactionKind::ProgrammableTransaction(_) => (),
-        TransactionKind::ChangeEpoch(_)
-        | TransactionKind::Genesis(_)
-        | TransactionKind::ChangeBfcRound(_)
-        | TransactionKind::ConsensusCommitPrologue(_) => {
-        return Err(SuiError::UnsupportedFeatureError {
-        error: "dry-exec does not support system transactions".to_string(),
-        });
-        }
+
+        if transaction.kind().is_system_tx() {
+            return Err(SuiError::UnsupportedFeatureError {
+                error: "dry-exec does not support system transactions".to_string(),
+            });
         }
 
         self.dry_exec_transaction_impl(&epoch_store, transaction, transaction_digest)
-        .await
-        }
+            .await
+    }
 
-        pub async fn dry_exec_transaction_for_benchmark(
+
+    pub async fn dry_exec_transaction_for_benchmark(
         &self,
         transaction: TransactionData,
         transaction_digest: TransactionDigest,
-        ) -> SuiResult<(
+    ) -> SuiResult<(
         DryRunTransactionBlockResponse,
         BTreeMap<ObjectID, (ObjectRef, Object, WriteKind)>,
         TransactionEffects,
@@ -1723,19 +1709,19 @@ impl AuthorityState {
         let epoch_store = self.load_epoch_store_one_call_per_task();
         self.dry_exec_transaction_impl(&epoch_store, transaction, transaction_digest)
         .await
-        }
+    }
 
-        async fn dry_exec_transaction_impl(
+    async fn dry_exec_transaction_impl(
         &self,
         epoch_store: &AuthorityPerEpochStore,
         transaction: TransactionData,
         transaction_digest: TransactionDigest,
-        ) -> SuiResult<(
+    ) -> SuiResult<(
         DryRunTransactionBlockResponse,
         BTreeMap<ObjectID, (ObjectRef, Object, WriteKind)>,
         TransactionEffects,
         Option<ObjectID>,
-        )> {
+    )> {
         // Cheap validity checks for a transaction, including input size limits.
         transaction.check_version_supported(epoch_store.protocol_config())?;
         transaction.validity_check_no_gas_check(epoch_store.protocol_config())?;
@@ -1744,23 +1730,23 @@ impl AuthorityState {
         let receiving_object_refs = transaction.receiving_objects();
 
         sui_transaction_checks::deny::check_transaction_for_signing(
-        &transaction,
-        &[],
-        &input_object_kinds,
-        &receiving_object_refs,
-        &self.transaction_deny_config,
-        self.get_backing_package_store().as_ref(),
+            &transaction,
+            &[],
+            &input_object_kinds,
+            &receiving_object_refs,
+            &self.transaction_deny_config,
+            self.get_backing_package_store().as_ref(),
         )?;
 
         let (input_objects, receiving_objects) = self
-        .input_loader
-        .read_objects_for_dry_run_exec(
-        &transaction_digest,
-        &input_object_kinds,
-        &receiving_object_refs,
-        epoch_store.protocol_config(),
-        )
-        .await?;
+            .input_loader
+            .read_objects_for_dry_run_exec(
+                &transaction_digest,
+                &input_object_kinds,
+                &receiving_object_refs,
+                epoch_store.protocol_config(),
+            )
+            .await?;
 
         // make a gas object if one was not provided
         let mut gas_object_refs = transaction.gas().to_vec();
@@ -1772,41 +1758,39 @@ impl AuthorityState {
         let max_coin_value = MIST_TO_SUI * DRY_RUN_SUI;
         let gas_object_id = ObjectID::random();
         let gas_object = Object::new_move(
-        MoveObject::new_gas_coin(OBJECT_START_VERSION, gas_object_id, max_coin_value),
-        Owner::AddressOwner(sender),
-        TransactionDigest::genesis_marker(),
+            MoveObject::new_gas_coin(OBJECT_START_VERSION, gas_object_id, max_coin_value),
+            Owner::AddressOwner(sender),
+            TransactionDigest::genesis_marker(),
         );
         let gas_object_ref = gas_object.compute_object_reference();
         gas_object_refs = vec![gas_object_ref];
         (
-        sui_transaction_checks::check_transaction_input_with_given_gas(
-        epoch_store.protocol_config(),
-        epoch_store.reference_gas_price(),
-        &transaction,
-        input_objects,
-        receiving_objects,
-        gas_object,
-        &self.metrics.bytecode_verifier_metrics,
-        )?,
-        Some(gas_object_id),
+            sui_transaction_checks::check_transaction_input_with_given_gas(
+                epoch_store.protocol_config(),
+                epoch_store.reference_gas_price(),
+                &transaction,
+                input_objects,
+                receiving_objects,
+                gas_object,
+                &self.metrics.bytecode_verifier_metrics,
+            )?,
+            Some(gas_object_id),
         )
         } else {
-        (
-        sui_transaction_checks::check_transaction_input(
-        epoch_store.protocol_config(),
-        epoch_store.reference_gas_price(),
-        &transaction,
-        input_objects,
-        &receiving_objects,
-        &self.metrics.bytecode_verifier_metrics,
-        )?,
-        None,
-        )
+            (
+            sui_transaction_checks::check_transaction_input(
+                epoch_store.protocol_config(),
+                epoch_store.reference_gas_price(),
+                &transaction,
+                input_objects,
+                &receiving_objects,
+                &self.metrics.bytecode_verifier_metrics,
+            )?,
+            None,
+            )
         };
 
         let protocol_config = epoch_store.protocol_config();
-        let transaction_dependencies = input_objects.transaction_dependencies();
-
         let (kind, signer, _) = transaction.execution_parts();
 
         let silent = true;
@@ -1815,36 +1799,36 @@ impl AuthorityState {
 
         let expensive_checks = false;
         let (inner_temp_store, _, effects, _execution_error) = executor
-        .execute_transaction_to_effects(
-        self.get_backing_store().as_ref(),
-        protocol_config,
-        self.metrics.limits_metrics.clone(),
-        expensive_checks,
-        self.certificate_deny_config.certificate_deny_set(),
-        &epoch_store.epoch_start_config().epoch_data().epoch_id(),
-        epoch_store
-        .epoch_start_config()
-        .epoch_data()
-        .epoch_start_timestamp(),
-        checked_input_objects,
-        gas_object_refs,
-        gas_status,
-        kind,
-        signer,
-        transaction_digest,
+            .execute_transaction_to_effects(
+            self.get_backing_store().as_ref(),
+            protocol_config,
+            self.metrics.limits_metrics.clone(),
+            expensive_checks,
+            self.certificate_deny_config.certificate_deny_set(),
+            &epoch_store.epoch_start_config().epoch_data().epoch_id(),
+            epoch_store
+                .epoch_start_config()
+                .epoch_data()
+                .epoch_start_timestamp(),
+            checked_input_objects,
+            gas_object_refs,
+            gas_status,
+            kind,
+            signer,
+            transaction_digest,
         );
         let tx_digest = *effects.transaction_digest();
 
         let module_cache =
-        TemporaryModuleResolver::new(&inner_temp_store, epoch_store.module_cache().clone());
+            TemporaryModuleResolver::new(&inner_temp_store, epoch_store.module_cache().clone());
 
         let mut layout_resolver =
-        epoch_store
-        .executor()
-        .type_layout_resolver(Box::new(TemporaryPackageStore::new(
-        &inner_temp_store,
-        self.execution_cache.clone(),
-        )));
+            epoch_store
+                .executor()
+                .type_layout_resolver(Box::new(TemporaryPackageStore::new(
+                &inner_temp_store,
+                self.execution_cache.clone(),
+            )));
         // Returning empty vector here because we recalculate changes in the rpc layer.
         let object_changes = Vec::new();
 
@@ -1852,52 +1836,52 @@ impl AuthorityState {
         let balance_changes = Vec::new();
 
         let written_with_kind = effects
-        .created()
-        .into_iter()
-        .map(|(oref, _)| (oref, WriteKind::Create))
-        .chain(
-        effects
-        .unwrapped()
-        .into_iter()
-        .map(|(oref, _)| (oref, WriteKind::Unwrap)),
-        )
-        .chain(
-        effects
-        .mutated()
-        .into_iter()
-        .map(|(oref, _)| (oref, WriteKind::Mutate)),
+            .created()
+            .into_iter()
+            .map(|(oref, _)| (oref, WriteKind::Create))
+            .chain(
+                effects
+                .unwrapped()
+                .into_iter()
+                .map(|(oref, _)| (oref, WriteKind::Unwrap)),
+            )
+            .chain(
+                effects
+                .mutated()
+                .into_iter()
+                .map(|(oref, _)| (oref, WriteKind::Mutate)),
         )
         .map(|(oref, kind)| {
-        let obj = inner_temp_store.written.get(&oref.0).unwrap();
-        // TODO: Avoid clones.
-        (oref.0, (oref, obj.clone(), kind))
+            let obj = inner_temp_store.written.get(&oref.0).unwrap();
+            // TODO: Avoid clones.
+            (oref.0, (oref, obj.clone(), kind))
         })
         .collect();
 
         Ok((
-        DryRunTransactionBlockResponse {
-        input: SuiTransactionBlockData::try_from(transaction, &module_cache).map_err(
-        |e| SuiError::TransactionSerializationError {
-        error: format!(
-        "Failed to convert transaction to SuiTransactionBlockData: {}",
-        e
-        ),
-        },
+            DryRunTransactionBlockResponse {
+                input: SuiTransactionBlockData::try_from(transaction, &module_cache).map_err(
+                    |e| SuiError::TransactionSerializationError {
+                        error: format!(
+                            "Failed to convert transaction to SuiTransactionBlockData: {}",
+                            e
+                        ),
+            },
         )?, // TODO: replace the underlying try_from to SuiError. This one goes deep
         effects: effects.clone().try_into()?,
         events: SuiTransactionBlockEvents::try_from(
-        inner_temp_store.events.clone(),
-        tx_digest,
-        None,
-        layout_resolver.as_mut(),
-        )?,
-        object_changes,
-        balance_changes,
-        },
-        written_with_kind,
-        effects,
-        mock_gas,
-        ))
+            inner_temp_store.events.clone(),
+            tx_digest,
+            None,
+            layout_resolver.as_mut(),
+            )?,
+                object_changes,
+                balance_changes,
+            },
+            written_with_kind,
+            effects,
+            mock_gas,
+            ))
         }
 
     /// The object ID for gas can be any object ID, even for an uncreated object
@@ -4625,10 +4609,10 @@ impl AuthorityState {
             txns.push(EndOfEpochTransactionKind::new_change_epoch(
                 next_epoch,
                 next_epoch_protocol_version,
-                gas_cost_summary.storage_cost,
-                gas_cost_summary.computation_cost,
-                gas_cost_summary.storage_rebate,
-                gas_cost_summary.non_refundable_storage_fee,
+                bfc_gas_cost_summary.storage_cost,
+                bfc_gas_cost_summary.computation_cost,
+                bfc_gas_cost_summary.storage_rebate,
+                bfc_gas_cost_summary.non_refundable_storage_fee,
                 epoch_start_timestamp_ms,
                 next_epoch_system_package_bytes,
             ));
@@ -4638,10 +4622,10 @@ impl AuthorityState {
             VerifiedTransaction::new_change_epoch(
                 next_epoch,
                 next_epoch_protocol_version,
-                gas_cost_summary.storage_cost,
-                gas_cost_summary.computation_cost,
-                gas_cost_summary.storage_rebate,
-                gas_cost_summary.non_refundable_storage_fee,
+                bfc_gas_cost_summary.storage_cost,
+                bfc_gas_cost_summary.computation_cost,
+                bfc_gas_cost_summary.storage_rebate,
+                bfc_gas_cost_summary.non_refundable_storage_fee,
                 epoch_start_timestamp_ms,
                 next_epoch_system_package_bytes,
             )
@@ -5123,14 +5107,14 @@ impl TransactionKeyValueStoreTrait for AuthorityState {
         Ok((summaries, contents, summaries_by_digest, contents_by_digest))
     }
 
-    async fn deprecated_get_transaction_checkpoint(
-        &self,
-        digest: TransactionDigest,
-    ) -> SuiResult<Option<CheckpointSequenceNumber>> {
-        self.database
-            .deprecated_get_transaction_checkpoint(&digest)
-            .map(|maybe| maybe.map(|(_epoch, checkpoint)| checkpoint))
-    }
+    // async fn deprecated_get_transaction_checkpoint(
+    //     &self,
+    //     digest: TransactionDigest,
+    // ) -> SuiResult<Option<CheckpointSequenceNumber>> {
+    //     self.database
+    //         .deprecated_get_transaction_checkpoint(&digest)
+    //         .map(|maybe| maybe.map(|(_epoch, checkpoint)| checkpoint))
+    // }
 
     async fn deprecated_get_transaction_checkpoint(
         &self,

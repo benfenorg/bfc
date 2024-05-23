@@ -53,6 +53,9 @@ use sui_types::{
     programmable_transaction_builder::ProgrammableTransactionBuilder,
     transaction::{GasData, TransactionData, TransactionKind},
 };
+use std::collections::HashMap;
+use sui_types::TypeTag;
+use sui_types::gas::GasCostSummaryAdjusted;
 
 mod epoch_state;
 pub mod store;
@@ -253,6 +256,7 @@ impl<R, S: store::SimulatorStore> Simulacrum<R, S> {
         let next_epoch_system_package_bytes = vec![];
 
         let mut kinds = vec![];
+        let mut hash: HashMap<TypeTag,GasCostSummaryAdjusted> = HashMap::new();
 
         if create_random_state {
             kinds.push(EndOfEpochTransactionKind::new_randomness_state_create());
@@ -265,6 +269,7 @@ impl<R, S: store::SimulatorStore> Simulacrum<R, S> {
             gas_cost_summary.computation_cost,
             gas_cost_summary.storage_rebate,
             gas_cost_summary.non_refundable_storage_fee,
+            hash,
             epoch_start_timestamp_ms,
             next_epoch_system_package_bytes,
         ));

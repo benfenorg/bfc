@@ -39,7 +39,6 @@ use typed_store::{
     rocks::{DBBatch, DBMap},
     TypedStoreError,
 };
-use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfiguration};
 use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 
 use super::authority_store_tables::LiveObject;
@@ -49,7 +48,11 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
 use sui_types::bfc_system_state::{get_bfc_system_state, BFCSystemState};
 use typed_store::rocks::util::is_ref_count_value;
-
+use move_bytecode_utils::module_cache::GetModule;
+use sui_types::storage::ParentSync;
+use sui_types::storage::ChildObjectResolver;
+use sui_types::storage::InputKey;
+use sui_types::storage::get_module_by_id;
 const NUM_SHARDS: usize = 4096;
 
 struct AuthorityStoreMetrics {
@@ -631,49 +634,6 @@ impl AuthorityStore {
     /// versions and types of owned, shared and package objects.
     /// When making changes, please see if check_sequenced_input_objects() below needs
     /// similar changes as well.
-    pub fn get_input_object_locks(
-        &self,
-        digest: &TransactionDigest,
-        objects: &[InputObjectKind],
-        epoch_store: &AuthorityPerEpochStore,
-    ) -> BTreeMap<InputKey, LockMode> {
-        let mut shared_locks = HashMap::<ObjectID, SequenceNumber>::new();
-        objects
-            .iter()
-            .map(|kind| {
-                match kind {
-                    InputObjectKind::SharedMoveObject { id, initial_shared_version: _, mutable } => {
-                        if shared_locks.is_empty() {
-                            shared_locks = epoch_store
-                                .get_shared_locks(digest)
-                                .expect("Read from storage should not fail!")
-                                .into_iter()
-                                .collect();
-                        }
-                        // If we can't find the locked version, it means
-                        // 1. either we have a bug that skips shared object version assignment
-                        // 2. or we have some DB corruption
-                        let Some(version) = shared_locks.get(id) else {
-                            panic!(
-                                "Shared object locks should have been set. tx_digset: {digest:?}, obj \
-                                id: {id:?}",
-                            )
-                        };
-                        let lock_mode = if *mutable {
-                            LockMode::Default
-                        } else {
-                            LockMode::ReadOnly
-                        };
-                        (InputKey(*id, Some(*version)), lock_mode)
-                    }
-                    // TODO: use ReadOnly lock?
-                    InputObjectKind::MovePackage(id) => (InputKey(*id, None), LockMode::Default),
-                    // Cannot use ReadOnly lock because we do not know if the object is immutable.
-                    InputObjectKind::ImmOrOwnedMoveObject(objref) => (InputKey(objref.0, Some(objref.1)), LockMode::Default),
-                }
-            })
-            .collect()
-    }
 
     /// Checks if the input object identified by the InputKey exists, with support for non-system
     /// packages i.e. when version is None.
@@ -2221,7 +2181,7 @@ impl ChildObjectResolver for AuthorityStore {
 }
 
 impl ParentSync for AuthorityStore {
-    fn get_latest_parent_entry_ref(&self, object_id: ObjectID) -> SuiResult<Option<ObjectRef>> {
+    fn get_latest_parent_entry_ref_deprecated(&self, object_id: ObjectID) -> SuiResult<Option<ObjectRef>> {
         self.get_latest_object_ref_or_tombstone(object_id)
     }
 }

@@ -44,7 +44,7 @@ use typed_store::{
     traits::{TableSummary, TypedStoreDebug},
     TypedStoreError,
 };
-
+use sui_types::authenticator_state::ActiveJwk;
 use super::authority_store_tables::ENV_VAR_LOCKS_BLOCK_CACHE_SIZE;
 use super::epoch_start_configuration::EpochStartConfigTrait;
 use super::shared_object_congestion_tracker::SharedObjectCongestionTracker;
@@ -91,9 +91,8 @@ use sui_types::messages_checkpoint::{
     CheckpointContents, CheckpointSequenceNumber, CheckpointSignatureMessage, CheckpointSummary,
 };
 use sui_types::messages_consensus::{
-    AuthorityCapabilities, ConsensusTransaction, ConsensusTransactionKey, ConsensusTransactionKind,
-    check_total_jwk_size, AuthorityCapabilities, ConsensusTransaction, ConsensusTransactionKey,
-    ConsensusTransactionKind,
+    AuthorityCapabilities, ConsensusTransaction, ConsensusTransactionKind,
+    check_total_jwk_size, ConsensusTransactionKey,
 };
 use sui_types::storage::GetSharedLocks;
 use sui_types::sui_system_state::epoch_start_sui_system_state::{
@@ -103,6 +102,9 @@ use tap::TapOptional;
 use tokio::time::Instant;
 use typed_store::{retry_transaction_forever, Map};
 use typed_store_derive::DBMapUtils;
+use crate::stake_aggregator::GenericMultiStakeAggregator;
+use sui_types::authenticator_state::{get_authenticator_state};
+
 
 /// The key where the latest consensus index is stored in the database.
 // TODO: Make a single table (e.g., called `variables`) storing all our lonely variables in one place.
@@ -868,7 +870,6 @@ impl AuthorityPerEpochStore {
 
         let execution_component = ExecutionComponents::new(
             &protocol_config,
-            store,
             execution_cache.clone(),
             cache_metrics,
             expensive_safety_check_config,
@@ -929,6 +930,14 @@ impl AuthorityPerEpochStore {
                 .flags()
                 .contains(&EpochFlag::InMemoryCheckpointRoots));
         }
+        let mut jwk_aggregator = JwkAggregator::new(committee.clone());
+
+        for ((authority, id, jwk), _) in tables.pending_jwks.unbounded_iter().seek_to_first() {
+            jwk_aggregator.insert(authority, (id, jwk));
+        }
+
+        let jwk_aggregator = Mutex::new(jwk_aggregator);
+
         let s = Arc::new(Self {
             name,
             committee,
