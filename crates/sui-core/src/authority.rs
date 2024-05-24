@@ -1560,47 +1560,47 @@ impl AuthorityState {
         /// may also cause this function to fail.
         #[instrument(level = "trace", skip_all)]
         fn prepare_certificate(
-        &self,
-        _execution_guard: &ExecutionLockReadGuard<'_>,
-        certificate: &VerifiedExecutableTransaction,
-        input_objects: InputObjects,
-        epoch_store: &Arc<AuthorityPerEpochStore>,
+            &self,
+            _execution_guard: &ExecutionLockReadGuard<'_>,
+            certificate: &VerifiedExecutableTransaction,
+            input_objects: InputObjects,
+            epoch_store: &Arc<AuthorityPerEpochStore>,
         ) -> SuiResult<(
-        InnerTemporaryStore,
-        Option<VecMap<u64, ProposalStatus>>,
-        TransactionEffects,
-        Option<ExecutionError>,
+            InnerTemporaryStore,
+            Option<VecMap<u64, ProposalStatus>>,
+            TransactionEffects,
+            Option<ExecutionError>,
         )> {
-        let _scope = monitored_scope("Execution::prepare_certificate");
-        let _metrics_guard = self.metrics.prepare_certificate_latency.start_timer();
-        let prepare_certificate_start_time = tokio::time::Instant::now();
+            let _scope = monitored_scope("Execution::prepare_certificate");
+            let _metrics_guard = self.metrics.prepare_certificate_latency.start_timer();
+            let prepare_certificate_start_time = tokio::time::Instant::now();
 
-        // Cheap validity checks for a transaction, including input size limits.
-        let tx_data = certificate.data().transaction_data();
-        tx_data.check_version_supported(epoch_store.protocol_config())?;
-        tx_data.validity_check(epoch_store.protocol_config())?;
+            // Cheap validity checks for a transaction, including input size limits.
+            let tx_data = certificate.data().transaction_data();
+            tx_data.check_version_supported(epoch_store.protocol_config())?;
+            tx_data.validity_check(epoch_store.protocol_config())?;
 
-        // The cost of partially re-auditing a transaction before execution is tolerated.
-        let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
-        certificate,
-        input_objects,
-        epoch_store.protocol_config(),
-        epoch_store.reference_gas_price(),
-        )?;
+            // The cost of partially re-auditing a transaction before execution is tolerated.
+            let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
+                certificate,
+                input_objects,
+                epoch_store.protocol_config(),
+                epoch_store.reference_gas_price(),
+            )?;
 
-        let owned_object_refs = input_objects.inner().filter_owned_objects();
-        self.check_owned_locks(&owned_object_refs)?;
-        let tx_digest = *certificate.digest();
-        let protocol_config = epoch_store.protocol_config();
-        let shared_object_refs = input_objects.filter_shared_objects();
-        let temporary_store = TemporaryStore::new(
-            self.database.clone(),
-            input_objects.clone(),
-            tx_digest,
-            protocol_config,
+            let owned_object_refs = input_objects.inner().filter_owned_objects();
+            self.check_owned_locks(&owned_object_refs)?;
+            let tx_digest = *certificate.digest();
+            let protocol_config = epoch_store.protocol_config();
+            //let shared_object_refs = input_objects.filter_shared_objects();
+            let temporary_store = TemporaryStore::new(
+                self.database.clone(),
+                input_objects.clone(),
+                tx_digest,
+                protocol_config,
             );
-        let transaction_data = &certificate.data().intent_message().value;
-        let mut proposal_map= None;
+            let transaction_data = &certificate.data().intent_message().value;
+            let mut proposal_map= None;
 
         if transaction_data.is_end_of_epoch_tx() {
             proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());

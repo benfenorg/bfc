@@ -59,7 +59,7 @@ use crate::checkpoints::checkpoint_executor::data_ingestion_handler::store_check
 use crate::state_accumulator::StateAccumulator;
 use crate::transaction_manager::TransactionManager;
 use crate::{checkpoints::CheckpointStore, execution_cache::ExecutionCacheRead};
-
+use crate::execution_cache::ExecutionCache;
 
 
 mod data_ingestion_handler;
@@ -580,8 +580,11 @@ impl CheckpointExecutor {
         .await;
     }
 
+
+    // todo: delete this , useless.
     pub async fn check_epoch_first_checkpoint(
         &self,
+        execution_cache: Arc<ExecutionCache>,
         epoch_store: Arc<AuthorityPerEpochStore>,
         checkpoint: &VerifiedCheckpoint,
     ) -> bool {
@@ -594,7 +597,7 @@ impl CheckpointExecutor {
                 if let Some((bfc_round_execution_digests, bfc_round_tx)) =
                     extract_bfc_round_tx(
                         checkpoint,
-                        self.authority_store.clone(),
+                        execution_cache.clone(),
                         self.checkpoint_store.clone(),
                         epoch_store.clone(),
                     )
@@ -1014,7 +1017,7 @@ fn extract_end_of_epoch_tx(
 
 fn extract_bfc_round_tx(
     checkpoint: &VerifiedCheckpoint,
-    authority_store: Arc<AuthorityStore>,
+    execution_cache: Arc<ExecutionCache>,
     checkpoint_store: Arc<CheckpointStore>,
     epoch_store: Arc<AuthorityPerEpochStore>,
 ) -> Option<(ExecutionDigests, VerifiedExecutableTransaction)> {
@@ -1038,17 +1041,17 @@ fn extract_bfc_round_tx(
         }
     };
 
-    let round_txn = authority_store
+    let round_txn = execution_cache
         .get_transaction_block(&digests.transaction)
         .expect("read cannot fail");
 
     let change_epoch_tx = VerifiedExecutableTransaction::new_from_checkpoint(
-        round_txn.unwrap_or_else(||
+        (*round_txn.unwrap_or_else(||
             panic!(
                 "state-sync should have ensured that transaction with digest {:?} exists for checkpoint: {checkpoint:?}",
                 digests.transaction,
             )
-        ),
+        )).clone(),
         epoch_store.epoch(),
         *checkpoint_sequence,
     );

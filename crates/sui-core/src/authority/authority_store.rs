@@ -1685,13 +1685,13 @@ impl AuthorityStore {
         get_bfc_system_state(self.perpetual_tables.as_ref())
     }
 
-    pub fn iter_live_object_set(
-        &self,
-        include_wrapped_object: bool,
-    ) -> impl Iterator<Item = LiveObject> + '_ {
-        self.perpetual_tables
-            .iter_live_object_set(include_wrapped_object)
-    }
+    // pub fn iter_live_object_set(
+    //     &self,
+    //     include_wrapped_object: bool,
+    // ) -> impl Iterator<Item = LiveObject> + '_ {
+    //     self.perpetual_tables
+    //         .iter_live_object_set(include_wrapped_object)
+    // }
 
     pub fn expensive_check_sui_conservation<T>(
         self: &Arc<Self>,
