@@ -1592,18 +1592,22 @@ impl AuthorityState {
             self.check_owned_locks(&owned_object_refs)?;
             let tx_digest = *certificate.digest();
             let protocol_config = epoch_store.protocol_config();
-            //let shared_object_refs = input_objects.filter_shared_objects();
-            let temporary_store = TemporaryStore::new(
-                self.database.clone(),
-                input_objects.clone(),
-                tx_digest,
-                protocol_config,
-            );
+
+
+            //todo : add temporary store
+            // let temporary_store = TemporaryStore::new(
+            //     self.database.clone(),
+            //     input_objects.clone(),
+            //     tx_digest,
+            //     protocol_config,
+            // );
+
+
             let transaction_data = &certificate.data().intent_message().value;
             let mut proposal_map= None;
 
         if transaction_data.is_end_of_epoch_tx() {
-            proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
+            //proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
         };
 
         let (kind, signer, gas) = transaction_data.execution_parts();
