@@ -25,7 +25,6 @@ use sui_types::digests::{ChainIdentifier, TransactionDigest};
 use sui_types::sui_serde::BigInt;
 
 use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
-use sui_types::dao::DaoRPC;
 
 #[derive(Clone)]
 pub(crate) struct ReadApi<T: R2D2Connection + 'static> {
@@ -295,10 +294,6 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
 
     async fn get_chain_identifier(&self) -> RpcResult<String> {
         self.get_chain_identifier().await.map(|id| id.to_string())
-    }
-
-    async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
-        todo!()
     }
 }
 
