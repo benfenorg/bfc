@@ -12,7 +12,7 @@ use crate::authority::AuthorityStore;
 use crate::checkpoints::CheckpointStore;
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
-
+use sui_types::bfc_system_state::BFCSystemState;
 use either::Either;
 use futures::{
     future::{join_all, BoxFuture},
@@ -39,7 +39,7 @@ use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use tap::TapFallible;
 use tracing::instrument;
 use typed_store::Map;
-
+use sui_types::bfc_system_state::get_bfc_system_state;
 use super::{
     implement_passthrough_traits, CheckpointCache, ExecutionCacheCommit, ExecutionCacheMetrics,
     ExecutionCacheRead, ExecutionCacheReconfigAPI, ExecutionCacheWrite, NotifyReadWrapper,
@@ -248,6 +248,12 @@ impl ExecutionCacheRead for PassthroughCache {
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState> {
         get_sui_system_state(self)
     }
+
+    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
+        get_bfc_system_state(self)
+    }
+
+
 
     fn get_marker_value(
         &self,

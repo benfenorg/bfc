@@ -43,6 +43,7 @@ pub mod writeback_cache;
 
 use passthrough_cache::PassthroughCache;
 use writeback_cache::WritebackCache;
+use sui_types::bfc_system_state::BFCSystemState;
 
 pub struct ExecutionCacheMetrics {
     pending_notify_read: IntGauge,
@@ -416,8 +417,10 @@ pub trait ExecutionCacheRead: Send + Sync {
     }
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
+    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
 
-    // Marker methods
+
+        // Marker methods
 
     /// Get the marker at a specific version
     fn get_marker_value(

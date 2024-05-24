@@ -82,7 +82,8 @@ use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, ObjectStore,
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use tracing::{debug, info, instrument, trace};
-
+use sui_types::bfc_system_state::get_bfc_system_state;
+use sui_types::bfc_system_state::BFCSystemState;
 use super::ExecutionCacheAPI;
 use super::{
     cache_types::CachedVersionMap, implement_passthrough_traits, object_locks::ObjectLocks,
@@ -1262,6 +1263,9 @@ impl ExecutionCacheRead for WritebackCache {
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState> {
         get_sui_system_state(self)
+    }
+    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
+        get_bfc_system_state(self)
     }
 
     fn get_marker_value(
