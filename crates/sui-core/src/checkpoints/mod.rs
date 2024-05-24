@@ -1275,7 +1275,7 @@ impl CheckpointBuilder {
 
             let (mut effects, mut signatures): (Vec<_>, Vec<_>) = transactions.into_iter().unzip();
             let (epoch_rolling_bfc_gas_cost_summary,epoch_rolling_stable_gas_cost_summary_map)=
-                self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects);
+                self.get_epoch_total_gas_cost(last_checkpoint.as_ref().map(|(_, c)| c), &effects).await;
 
             let end_of_epoch_data = if last_checkpoint_of_epoch {
                 let system_state_obj = self
@@ -1370,7 +1370,7 @@ impl CheckpointBuilder {
         Ok(checkpoints)
     }
 
-    fn get_epoch_total_gas_cost(
+    async fn get_epoch_total_gas_cost(
         &self,
         last_checkpoint: Option<&CheckpointSummary>,
         cur_checkpoint_effects: &[TransactionEffects],
@@ -1379,7 +1379,7 @@ impl CheckpointBuilder {
             .map(|c| (c.epoch, c.epoch_rolling_bfc_gas_cost_summary.clone(),c.epoch_rolling_stable_gas_cost_summary_map.clone()))
             .unwrap_or_default();
 
-        let (current_bfc_gas_costs, current_stable_gas_costs_map) = self.new_from_txn_effects(cur_checkpoint_effects.iter());
+        let (current_bfc_gas_costs, current_stable_gas_costs_map) = self.new_from_txn_effects(cur_checkpoint_effects.iter()).await;
 
         if previous_epoch == self.epoch_store.epoch() {
             // sum only when we are within the same epoch
@@ -1422,7 +1422,7 @@ impl CheckpointBuilder {
 
         result
     }
-    fn new_from_txn_effects<'a>(&self,
+    async fn new_from_txn_effects<'a>(&self,
         transactions: impl Iterator<Item = &'a TransactionEffects>,
     ) -> (GasCostSummary,HashMap<TypeTag,GasCostSummaryAdjusted> ){
         //let authority_store = self.state.database.clone();
@@ -1439,7 +1439,7 @@ impl CheckpointBuilder {
 
         for effect in transactions.into_iter(){
             let gas_object_id = effect.gas_object().0.0;
-            let object_result = self.state.get_object(&gas_object_id);
+            let object_result = self.state.get_object(&gas_object_id).await;
             if object_result.is_err() {
                 bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
                 bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;

@@ -687,6 +687,7 @@ impl ConsensusAdapter {
                 | ConsensusTransactionKind::RandomnessDkgMessage(_, _)
                 | ConsensusTransactionKind::RandomnessDkgConfirmation(_, _)
         ) {
+            let transaction_key = transaction_key.clone();
             Some(CancelOnDrop(spawn_monitored_task!(async {
                 let mut i = 0u64;
                 loop {

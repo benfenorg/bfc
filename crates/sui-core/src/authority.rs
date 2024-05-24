@@ -1602,7 +1602,7 @@ impl AuthorityState {
         let transaction_data = &certificate.data().intent_message().value;
         let mut proposal_map= None;
 
-        if transaction_data.is_change_epoch_tx() {
+        if transaction_data.is_end_of_epoch_tx() {
             proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
         };
 
@@ -4763,14 +4763,15 @@ impl AuthorityState {
             .prepare_certificate(&execution_guard, &executable_tx,input_objects, epoch_store)?;
 
         self.commit_certificate(
-            certificate,
-            inner_temporary_store,
+            &executable_tx,
+            store.clone(),
             &effects,
-            tx_guard,
+            _tx_lock,
             execution_guard,
             epoch_store,
         )
             .await?;
+
 
 
         // We must write tx and effects to the state sync tables so that state sync is able to
