@@ -22,15 +22,10 @@ use fastcrypto_zkp::bn254::zk_login::JwkId;
 use fastcrypto_zkp::bn254::zk_login::OIDCProvider;
 use futures::TryFutureExt;
 use prometheus::Registry;
-use std::collections::{BTreeSet, HashMap, HashSet};
-use std::fmt;
+use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
-use std::path::PathBuf;
-use std::str::FromStr;
 #[cfg(msim)]
 use std::sync::atomic::Ordering;
-use std::sync::Arc;
-use std::time::Duration;
 use sui_core::authority::RandomnessRoundReceiver;
 use sui_core::authority::CHAIN_IDENTIFIER;
 use sui_core::consensus_adapter::SubmitToConsensus;
@@ -55,7 +50,7 @@ use tokio::task::JoinHandle;
 use tower::ServiceBuilder;
 use tracing::{debug, error, warn};
 use tracing::{error_span, info, Instrument};
-
+use sui_types::messages_consensus::check_total_jwk_size;
 use fastcrypto_zkp::bn254::zk_login::JWK;
 pub use handle::SuiNodeHandle;
 use mysten_metrics::{spawn_monitored_task, RegistryService};
@@ -136,7 +131,8 @@ use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemS
 use sui_types::sui_system_state::SuiSystemStateTrait;
 use typed_store::rocks::default_db_options;
 use typed_store::DBMetrics;
-
+use sui_core::consensus_manager::narwhal_manager::NarwhalManager;
+use sui_core::consensus_manager::narwhal_manager::NarwhalConfiguration;
 use crate::metrics::{GrpcMetrics, SuiNodeMetrics};
 
 pub mod admin;
@@ -259,6 +255,8 @@ impl fmt::Debug for SuiNode {
     }
 }
 
+static MAX_JWK_KEYS_PER_FETCH: usize = 100;
+
 impl SuiNode {
     pub async fn start(
         config: NodeConfig,
@@ -268,7 +266,6 @@ impl SuiNode {
         Self::start_async(config, registry_service, custom_rpc_runtime, "unknown").await
     }
 
-    fn start_jwk_updater(epoch_store: Arc<AuthorityPerEpochStore>) {
     fn start_jwk_updater(
         config: &NodeConfig,
         metrics: Arc<SuiNodeMetrics>,
@@ -277,21 +274,6 @@ impl SuiNode {
         consensus_adapter: Arc<ConsensusAdapter>,
     ) {
         let epoch = epoch_store.epoch();
-        tokio::task::spawn(
-            async move {
-                info!("Starting JWK updater task");
-                loop {
-                    let epoch_store_ = epoch_store.clone();
-                    let supported_providers = epoch_store
-                        .protocol_config()
-                        .zklogin_supported_providers()
-                        .iter()
-                        .map(|s| OIDCProvider::from_str(s).expect("Invalid provider string"))
-                        .collect::<Vec<_>>();
-                    let fetch_and_sleep = async move {
-                        // Update the JWK value in the authority server
-                        info!("fetching new JWKs");
-                        match Self::fetch_jwks(&supported_providers).await {
 
         let supported_providers = config
             .zklogin_oauth_providers
@@ -377,10 +359,8 @@ impl SuiNode {
                                 warn!("Error when fetching JWK for provider {:?} {:?}", p, e);
                                 // Retry in 30 seconds
                                 tokio::time::sleep(Duration::from_secs(30)).await;
+                                continue;
                             }
-                            Ok(keys) => {
-                                for (jwk_id, jwk) in keys {
-                                    epoch_store_.insert_oauth_jwk(&jwk_id, &jwk);
                             Ok(mut keys) => {
                                 metrics.total_jwks
                                     .with_label_values(&[&provider_str])
@@ -413,49 +393,17 @@ impl SuiNode {
                                 }
                             }
                         }
-                        // Sleep for 1 hour
-                        tokio::time::sleep(Duration::from_secs(3600)).await;
-                    };
-
-                    tokio::select! {
-                        _ = fetch_and_sleep => {}
-                        _ = epoch_store.wait_epoch_terminated() => {
-                            break;
-                        }
                         tokio::time::sleep(fetch_interval).await;
                     }
                 }
-                info!("JWK updater task terminated");
-            }
-            .instrument(error_span!("jwk_updater_task", epoch)),
-        );
-    }
-
-    #[cfg(not(msim))]
-    async fn fetch_jwks(supported_providers: &[OIDCProvider]) -> SuiResult<Vec<(JwkId, JWK)>> {
-        use fastcrypto_zkp::bn254::zk_login::fetch_jwks;
-        let mut res = Vec::new();
-        let client = reqwest::Client::new();
-        for p in supported_providers {
-            let jwks = fetch_jwks(p, &client)
-                .await
-                .map_err(|_| SuiError::JWKRetrievalError)?;
-            res.extend(jwks);
+                .instrument(error_span!("jwk_updater_task", epoch)),
+            ));
         }
-        Ok(res)
     }
 
-    #[cfg(msim)]
-    #[allow(unused_variables)]
-    async fn fetch_jwks(supported_providers: &[OIDCProvider]) -> SuiResult<Vec<(JwkId, JWK)>> {
-        use fastcrypto_zkp::bn254::zk_login::parse_jwks;
-        // Just load a default Twitch jwk for testing.
-        parse_jwks(
-            sui_types::zk_login_util::DEFAULT_JWK_BYTES,
-            &OIDCProvider::Twitch,
-        )
-        .map_err(|_| SuiError::JWKRetrievalError)
-    }
+
+
+
 
     pub async fn start_async(
         config: NodeConfig,
@@ -541,10 +489,6 @@ impl SuiNode {
             &config.expensive_safety_check_config,
             ChainIdentifier::from(*genesis.checkpoint().digest()),
         );
-
-        if epoch_store.protocol_config().zklogin_auth() {
-            Self::start_jwk_updater(epoch_store.clone());
-        }
 
         replay_log!(
             "Beginning replay run. Epoch: {:?}, Protocol config: {:?}",
@@ -1320,7 +1264,7 @@ impl SuiNode {
                 epoch_store.clone(),
                 consensus_handler_initializer,
                 SuiTxValidator::new(
-                    epoch_store,
+                    epoch_store.clone(),
                     checkpoint_service.clone(),
                     state.transaction_manager().clone(),
                     sui_tx_validator_metrics.clone(),
@@ -1399,26 +1343,6 @@ impl SuiNode {
         )
     }
 
-    fn construct_narwhal_manager(
-        config: &NodeConfig,
-        consensus_config: &ConsensusConfig,
-        registry_service: &RegistryService,
-    ) -> Result<NarwhalManager> {
-        let narwhal_config = NarwhalConfiguration {
-            primary_keypair: config.protocol_key_pair().copy(),
-            network_keypair: config.network_key_pair().copy(),
-            worker_ids_and_keypairs: vec![(0, config.worker_key_pair().copy())],
-            storage_base_path: consensus_config.db_path().to_path_buf(),
-            parameters: consensus_config.narwhal_config().to_owned(),
-            registry_service: registry_service.clone(),
-        };
-
-        info!("=============Narwhal config: {:?}", narwhal_config.storage_base_path);
-
-        let metrics = NarwhalManagerMetrics::new(&registry_service.default_registry());
-
-        Ok(NarwhalManager::new(narwhal_config, metrics))
-    }
 
     fn construct_consensus_adapter(
         committee: &Committee,
@@ -1666,13 +1590,11 @@ impl SuiNode {
                     .await;
 
                 if next_epoch > 3 {
-                    narwhal_epoch_data_remover
+                    consensus_epoch_data_remover
                         .remove_old_data(next_epoch - 3)
                         .await;
                 }
-                consensus_epoch_data_remover
-                    .remove_old_data(next_epoch - 1)
-                    .await;
+
 
                 if self.state.is_validator(&new_epoch_store) {
                     // Only restart Narwhal if this node is still a validator in the new epoch.
@@ -1810,7 +1732,7 @@ impl SuiNode {
             new_epoch_store.epoch_start_config().flags(),
         );
 
-        Self::start_jwk_updater(new_epoch_store.clone());
+        //Self::start_jwk_updater(new_epoch_store.clone());
         new_epoch_store
     }
 
