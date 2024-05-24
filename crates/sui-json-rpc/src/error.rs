@@ -218,41 +218,6 @@ impl From<Error> for RpcError {
                                 }
                             })
                             .collect();
-                        let error_object = ErrorObject::owned(
-                            TRANSACTION_EXECUTION_CLIENT_ERROR_CODE,
-                            error_message,
-                            Some(new_map),
-                        );
-                        RpcError::Call(CallError::Custom(error_object))
-                    }
-                    QuorumDriverError::NonRecoverableTransactionError { errors } => {
-                        let new_errors: Vec<String> = errors
-                            .into_iter()
-                            // sort by total stake, descending, so users see the most prominent one first
-                            .sorted_by(|(_, a, _), (_, b, _)| b.cmp(a))
-                            .filter_map(|(err, _, _)| {
-                                match &err {
-                                    // Special handling of UserInputError:
-                                    // ObjectNotFound and DependentPackageNotFound are considered
-                                    // retryable errors but they have different treatment
-                                    // in AuthorityAggregator.
-                                    // The optimal fix would be to examine if the total stake
-                                    // of ObjectNotFound/DependentPackageNotFound exceeds the
-                                    // quorum threshold, but it takes a Committee here.
-                                    // So, we take an easier route and consider them non-retryable
-                                    // at all. Combining this with the sorting above, clients will
-                                    // see the dominant error first.
-                                    SuiError::UserInputError { error } => Some(error.to_string()),
-                                    _ => {
-                                        if err.is_retryable().0 {
-                                            None
-                                        } else {
-                                            Some(err.to_string())
-                                        }
-                                    }
-                                }
-                            })
-                            .collect();
 
                         assert!(
                             !new_errors.is_empty(),

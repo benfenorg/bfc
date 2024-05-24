@@ -1022,7 +1022,7 @@ impl ReadApiServer for ReadApi {
 
     #[instrument(skip(self))]
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
-        let inner_system_state = self.state.get_db().get_bfc_system_state_object()
+        let inner_system_state = self.state.get_bfc_system_state()
             .expect("Reading bfc system state object cannot fail").inner_state();
         let dao = inner_system_state.dao;
         let mut proposal_record = Vec::new();
