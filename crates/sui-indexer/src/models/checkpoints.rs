@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use diesel::prelude::*;
-
+use std::collections::HashMap;
 use sui_json_rpc_types::Checkpoint as RpcCheckpoint;
 use sui_types::base_types::TransactionDigest;
 use sui_types::digests::CheckpointDigest;
@@ -139,12 +139,15 @@ impl TryFrom<StoredCheckpoint> for RpcCheckpoint {
             digest: parsed_digest,
             previous_digest: parsed_previous_digest,
             end_of_epoch_data,
-            epoch_rolling_gas_cost_summary: GasCostSummary {
+            epoch_rolling_bfc_gas_cost_summary: GasCostSummary {
                 computation_cost: checkpoint.computation_cost as u64,
                 storage_cost: checkpoint.storage_cost as u64,
                 storage_rebate: checkpoint.storage_rebate as u64,
+                base_point: 0,
+                rate: 1,
                 non_refundable_storage_fee: checkpoint.non_refundable_storage_fee as u64,
             },
+            epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
             network_total_transactions: checkpoint.network_total_transactions as u64,
             timestamp_ms: checkpoint.timestamp_ms as u64,
             transactions,

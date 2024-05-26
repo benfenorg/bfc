@@ -64,11 +64,7 @@ impl<T: R2D2Connection> DataReader for TransactionBuilderApi<T> {
     }
 
     async fn get_reference_gas_price(&self) -> Result<u64, anyhow::Error> {
-        let epoch_info = GovernanceReadApi::new(self.inner.clone())
-            .get_epoch_info(None)
-            .await?;
-        Ok(epoch_info
-            .reference_gas_price
-            .ok_or_else(|| anyhow::anyhow!("missing latest reference_gas_price"))?)
+        let epoch_info = 10;
+        Ok(epoch_info)
     }
 }

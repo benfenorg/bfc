@@ -8,7 +8,8 @@ use jsonrpsee::RpcModule;
 use sui_json_rpc::error::SuiRpcInputError;
 use sui_types::error::SuiObjectResponseError;
 use sui_types::object::ObjectRead;
-
+use crate::HttpClient;
+use sui_json_rpc_api::ReadApiClient;
 use crate::errors::IndexerError;
 use crate::indexer_reader::IndexerReader;
 use sui_json_rpc::SuiRpcModule;
@@ -25,15 +26,21 @@ use sui_types::digests::{ChainIdentifier, TransactionDigest};
 use sui_types::sui_serde::BigInt;
 
 use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
-
+use sui_types::dao::DaoRPC;
 #[derive(Clone)]
 pub(crate) struct ReadApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
+    fullnode: HttpClient,
+
 }
 
 impl<T: R2D2Connection + 'static> ReadApi<T> {
-    pub fn new(inner: IndexerReader<T>) -> Self {
-        Self { inner }
+    pub fn new(inner: IndexerReader<T>, fullnode_client: HttpClient) -> Self {
+
+        Self {
+            inner,
+            fullnode: fullnode_client,
+        }
     }
 
     async fn get_checkpoint(&self, id: CheckpointId) -> Result<Checkpoint, IndexerError> {
@@ -185,6 +192,10 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
             jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
         )
         .into())
+    }
+
+    async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
+        self.fullnode.get_inner_dao_info().await
     }
 
     async fn try_multi_get_past_objects(

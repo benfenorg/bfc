@@ -11,7 +11,7 @@ use sui_json_rpc_types::{
 };
 use sui_open_rpc::Module;
 use sui_types::sui_serde::BigInt;
-
+use sui_json_rpc_types::NetworkMetrics;
 pub(crate) struct ExtendedApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
 }
@@ -24,6 +24,7 @@ impl<T: R2D2Connection> ExtendedApi<T> {
 
 #[async_trait::async_trait]
 impl<T: R2D2Connection + 'static> ExtendedApiServer for ExtendedApi<T> {
+
     async fn get_epochs(
         &self,
         cursor: Option<BigInt<u64>>,

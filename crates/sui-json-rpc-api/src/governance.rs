@@ -46,9 +46,10 @@ pub trait GovernanceReadApi {
     #[method(name = "getValidatorsApy")]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys>;
 
-    #[method(name = "getProposal")]
-    async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
+    //todo: fix indexer to reopen these apis
+    // #[method(name = "getProposal")]
+    // async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
 
-    #[method(name = "getStablePools")]
-    async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>>;
+    // #[method(name = "getStablePools")]
+    // async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>>;
 }

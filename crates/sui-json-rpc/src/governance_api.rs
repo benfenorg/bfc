@@ -268,15 +268,15 @@ impl GovernanceReadApiServer for GovernanceReadApi {
         })
     }
 
-    #[instrument(skip(self))]
-    async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal> {
-        with_tracing!(async move { self.get_proposal(owner).await })
-    }
+    // #[instrument(skip(self))]
+    // async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal> {
+    //     with_tracing!(async move { self.get_proposal(owner).await })
+    // }
 
-    #[instrument(skip(self))]
-    async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>> {
-        with_tracing!(async move { self.get_stable_pools(owner).await })
-    }
+    // #[instrument(skip(self))]
+    // async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>> {
+    //     with_tracing!(async move { self.get_stable_pools(owner).await })
+    // }
 
     #[instrument(skip(self))]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys> {
