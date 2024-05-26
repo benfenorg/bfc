@@ -63,15 +63,15 @@ impl CheckpointHandler {
             sequence_number,
             network_total_transactions,
             previous_digest,
-            epoch_rolling_gas_cost_summary,
+            epoch_rolling_bfc_gas_cost_summary,
             timestamp_ms,
             end_of_epoch_data,
             ..
         } = summary.data();
 
-        let total_gas_cost = epoch_rolling_gas_cost_summary.computation_cost as i64
-            + epoch_rolling_gas_cost_summary.storage_cost as i64
-            - epoch_rolling_gas_cost_summary.storage_rebate as i64;
+        let total_gas_cost = epoch_rolling_bfc_gas_cost_summary.computation_cost as i64
+            + epoch_rolling_bfc_gas_cost_summary.storage_cost as i64
+            - epoch_rolling_bfc_gas_cost_summary.storage_rebate as i64;
         let total_transaction_blocks = checkpoint_transactions.len() as u64;
         let mut total_transactions: u64 = 0;
         let mut total_successful_transaction_blocks: u64 = 0;
@@ -93,10 +93,10 @@ impl CheckpointHandler {
             epoch: *epoch,
             end_of_epoch: end_of_epoch_data.is_some(),
             total_gas_cost,
-            computation_cost: epoch_rolling_gas_cost_summary.computation_cost,
-            storage_cost: epoch_rolling_gas_cost_summary.storage_cost,
-            storage_rebate: epoch_rolling_gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee: epoch_rolling_gas_cost_summary.non_refundable_storage_fee,
+            computation_cost: epoch_rolling_bfc_gas_cost_summary.computation_cost,
+            storage_cost: epoch_rolling_bfc_gas_cost_summary.storage_cost,
+            storage_rebate: epoch_rolling_bfc_gas_cost_summary.storage_rebate,
+            non_refundable_storage_fee: epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
             total_transaction_blocks,
             total_transactions,
             total_successful_transaction_blocks,

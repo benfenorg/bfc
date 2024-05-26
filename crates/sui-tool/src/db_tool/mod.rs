@@ -6,6 +6,7 @@ use self::index_search::{search_index, SearchRange};
 use crate::db_tool::db_dump::{compact, print_table_metadata, prune_checkpoints, prune_objects};
 use anyhow::{anyhow, bail};
 use clap::Parser;
+use sui_types::sui_system_state::get_sui_system_state;
 use narwhal_storage::NodeStorage;
 use std::path::{Path, PathBuf};
 use sui_core::authority::authority_per_epoch_store::AuthorityEpochTables;
