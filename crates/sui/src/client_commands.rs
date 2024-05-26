@@ -3066,9 +3066,6 @@ impl Display for SwitchResponse {
         if let Some(addr) = self.address {
             let bfc_address = sui_address_to_bfc_address(addr);
             writeln!(writer, "Active address switched to {}", bfc_address)?;
-
-        if let Some(addr) = &self.address {
-            writeln!(writer, "Active address switched to {addr}")?;
         }
         if let Some(env) = &self.env {
             writeln!(writer, "Active environment switched to [{env}]")?;
