@@ -6,6 +6,9 @@ use crate::committee::CommitteeWithNetworkMetadata;
 use crate::dynamic_field::{
     get_dynamic_field_from_store, get_dynamic_field_object_from_store, Field,
 };
+use crate::collection_types::VecMap;
+use crate::proposal::ProposalStatus;
+use crate::bfc_system_state::{BfcSystemStateInnerV1,get_bfc_system_state_wrapper};
 use crate::error::SuiError;
 use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
@@ -73,6 +76,30 @@ impl SuiSystemStateWrapper {
             name: SUI_SYSTEM_STATE_WRAPPER_STRUCT_NAME.to_owned(),
             module: SUI_SYSTEM_MODULE_NAME.to_owned(),
             type_params: vec![],
+        }
+    }
+
+    pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
+        let wrapper = get_bfc_system_state_wrapper(object_store)?;
+        let id = wrapper.id.id.bytes;
+        match wrapper.version {
+            1 => {
+                let result: BfcSystemStateInnerV1 =
+                    get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
+                        |err| {
+                            SuiError::DynamicFieldReadError(format!(
+                                "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
+                                id, wrapper.version, err
+                            ))
+                        },
+                    )?;
+
+                Ok(result.dao.current_proposal_status)
+            }
+            _ => Err(SuiError::SuiSystemStateReadError(format!(
+                "Unsupported BfcSystemState version: {}",
+                wrapper.version
+            ))),
         }
     }
 
@@ -223,6 +250,31 @@ impl SuiSystemState {
         self.system_state_version()
     }
 }
+
+pub fn get_bfc_system_proposal_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
+    let wrapper = get_bfc_system_state_wrapper(object_store)?;
+    let id = wrapper.id.id.bytes;
+    match wrapper.version {
+        1 => {
+            let result: BfcSystemStateInnerV1 =
+                get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
+                    |err| {
+                        SuiError::DynamicFieldReadError(format!(
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
+                            id, wrapper.version, err
+                        ))
+                    },
+                )?;
+
+            Ok(result.dao.current_proposal_status)
+        }
+        _ => Err(SuiError::SuiSystemStateReadError(format!(
+            "Unsupported BfcSystemState version: {}",
+            wrapper.version
+        ))),
+    }
+}
+
 
 pub fn get_sui_system_state_wrapper(
     object_store: &dyn ObjectStore,

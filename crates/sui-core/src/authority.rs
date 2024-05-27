@@ -1593,21 +1593,21 @@ impl AuthorityState {
             let tx_digest = *certificate.digest();
             let protocol_config = epoch_store.protocol_config();
 
-
             //todo : add temporary store
             // let temporary_store = TemporaryStore::new(
-            //     self.database.clone(),
-            //     input_objects.clone(),
-            //     tx_digest,
+            //     InMemoryStorage::new(Vec::new()),
+            //     InputObjects::new(vec![]),
+            //     genesis_digest,
             //     protocol_config,
             // );
+
 
 
             let transaction_data = &certificate.data().intent_message().value;
             let mut proposal_map= None;
 
         if transaction_data.is_end_of_epoch_tx() {
-            //proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
+            proposal_map = Some(self.get_bfc_system_proposal_state_map().unwrap());
         };
 
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -1639,6 +1639,8 @@ impl AuthorityState {
         signer,
         tx_digest,
         );
+
+
 
         fail_point_if!("cp_execution_nondeterminism", || {
         #[cfg(msim)]
@@ -3190,10 +3192,12 @@ impl AuthorityState {
     }
 
 
+    pub fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        self.execution_cache.get_bfc_system_proposal_state_map()
+    }
 
 
-
-        #[instrument(level = "trace", skip_all)]
+    #[instrument(level = "trace", skip_all)]
     pub fn get_transaction_checkpoint_sequence(
         &self,
         digest: &TransactionDigest,

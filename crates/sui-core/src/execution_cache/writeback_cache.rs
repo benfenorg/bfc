@@ -90,6 +90,9 @@ use super::{
     CheckpointCache, ExecutionCacheCommit, ExecutionCacheMetrics, ExecutionCacheRead,
     ExecutionCacheReconfigAPI, ExecutionCacheWrite, NotifyReadWrapper, StateSyncAPI,
 };
+use sui_types::collection_types::VecMap;
+use sui_types::sui_system_state::{get_bfc_system_proposal_map};
+use sui_types::proposal::ProposalStatus;
 
 #[cfg(test)]
 #[path = "unit_tests/writeback_cache_tests.rs"]
@@ -932,6 +935,10 @@ impl ExecutionCacheCommit for WritebackCache {
 }
 
 impl ExecutionCacheRead for WritebackCache {
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_map(self)
+    }
+
     fn get_package_object(&self, package_id: &ObjectID) -> SuiResult<Option<PackageObject>> {
         if let Some(p) = self.packages.get(package_id) {
             if cfg!(debug_assertions) {

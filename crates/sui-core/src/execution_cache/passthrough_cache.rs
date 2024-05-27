@@ -6,6 +6,7 @@ use crate::authority::authority_store::{ExecutionLockWriteGuard, SuiLockResult};
 use crate::authority::authority_store_pruner::{
     AuthorityStorePruner, AuthorityStorePruningMetrics, EPOCH_DURATION_MS_FOR_TESTING,
 };
+use sui_types::collection_types::VecMap;
 use crate::authority::epoch_start_configuration::EpochFlag;
 use crate::authority::epoch_start_configuration::EpochStartConfiguration;
 use crate::authority::AuthorityStore;
@@ -34,12 +35,14 @@ use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::Object;
 use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, ObjectStore, PackageObject};
-use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
+use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, get_bfc_system_proposal_map};
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use tap::TapFallible;
 use tracing::instrument;
 use typed_store::Map;
 use sui_types::bfc_system_state::get_bfc_system_state;
+use sui_types::proposal::ProposalStatus;
+
 use super::{
     implement_passthrough_traits, CheckpointCache, ExecutionCacheCommit, ExecutionCacheMetrics,
     ExecutionCacheRead, ExecutionCacheReconfigAPI, ExecutionCacheWrite, NotifyReadWrapper,
@@ -249,11 +252,15 @@ impl ExecutionCacheRead for PassthroughCache {
         get_sui_system_state(self)
     }
 
+
+
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         get_bfc_system_state(self)
     }
 
-
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_map(self)
+    }
 
     fn get_marker_value(
         &self,

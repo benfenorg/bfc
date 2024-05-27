@@ -44,6 +44,8 @@ pub mod writeback_cache;
 use passthrough_cache::PassthroughCache;
 use writeback_cache::WritebackCache;
 use sui_types::bfc_system_state::BFCSystemState;
+use sui_types::collection_types::VecMap;
+use sui_types::proposal::ProposalStatus;
 
 pub struct ExecutionCacheMetrics {
     pending_notify_read: IntGauge,
@@ -418,7 +420,7 @@ pub trait ExecutionCacheRead: Send + Sync {
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
-
+    fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
 
         // Marker methods
 
