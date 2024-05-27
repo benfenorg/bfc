@@ -412,7 +412,6 @@ async fn test_computation_ok_oog_storage_minimal_ok_one_coin() -> SuiResult {
 async fn test_computation_ok_oog_storage_minimal_ok_multi_coins() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
     const BUDGET: u64 = 100_200;
-    const BUDGET: u64 = 1_100_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,

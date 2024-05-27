@@ -10,6 +10,7 @@ use prometheus::Registry;
 use rand::prelude::StdRng;
 use rand::SeedableRng;
 use std::path::PathBuf;
+use std::collections::HashMap;
 use std::time::Duration;
 use sui_storage::blob::{Blob, BlobEncoding};
 use sui_types::crypto::KeypairTraits;
@@ -142,6 +143,7 @@ fn mock_checkpoint_data_bytes(seq_number: CheckpointSequenceNumber) -> Vec<u8> {
         &contents,
         None,
         GasCostSummary::default(),
+        HashMap::new(),
         None,
         0,
     );

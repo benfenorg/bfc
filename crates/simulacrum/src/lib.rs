@@ -697,7 +697,7 @@ mod tests {
 
         let checkpoint = sim.create_checkpoint();
 
-        assert_eq!(&checkpoint.epoch_rolling_gas_cost_summary, gas_summary);
+        assert_eq!(&checkpoint.epoch_rolling_bfc_gas_cost_summary, gas_summary);
         assert_eq!(checkpoint.network_total_transactions, 2); // genesis + 1 txn
     }
 }

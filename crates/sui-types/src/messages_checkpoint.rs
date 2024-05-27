@@ -872,6 +872,7 @@ mod tests {
             )]),
             None,
             GasCostSummary::default(),
+            HashMap::new(),
             None,
             100,
         )

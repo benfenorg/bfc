@@ -9,6 +9,7 @@ use sui_types::{
     base_types::ObjectID, digests::TransactionDigest, object::Object, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_PACKAGE_ID,
 };
 use test_cluster::TestClusterBuilder;
+use sui_types::MOVE_STDLIB_PACKAGE_ID;
 
 #[sim_test]
 async fn test_additional_objects() {
