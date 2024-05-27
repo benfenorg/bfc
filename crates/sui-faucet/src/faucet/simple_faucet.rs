@@ -1391,10 +1391,6 @@ mod tests {
         // Now we transfer one gas out
         let res = SuiClientCommands::PayAllBfc {
             input_coins: vec![*bad_gas.id()],
-            recipient: SuiAddress::random_for_testing_only(),
-            gas_budget: 200_000_000,
-            serialize_unsigned_transaction: false,
-            serialize_signed_transaction: false,
             recipient: KeyIdentity::Address(SuiAddress::random_for_testing_only()),
             opts: Opts::for_testing(2_000_000),
         }
