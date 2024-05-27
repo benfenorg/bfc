@@ -75,7 +75,6 @@ use sui_types::storage::ReadStore;
 use sui_types::transaction::Command;
 use sui_types::transaction::ProgrammableTransaction;
 use sui_types::MOVE_STDLIB_PACKAGE_ID;
-use sui_types::SUI_SYSTEM_ADDRESS;
 use sui_types::{
     base_types::{ObjectID, ObjectRef, SuiAddress, SUI_ADDRESS_LENGTH},
     crypto::{get_key_pair_from_rng, AccountKeyPair},
@@ -85,7 +84,6 @@ use sui_types::{
     MOVE_STDLIB_ADDRESS, SUI_CLOCK_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_STATE_OBJECT_ID,
 };
 use sui_types::{clock::Clock, SUI_SYSTEM_ADDRESS,BFC_SYSTEM_ADDRESS};
-use sui_types::{crypto::get_authority_key_pair, storage::ObjectStore};
 use sui_types::{execution_status::ExecutionStatus, transaction::TransactionKind};
 use sui_types::{gas::GasCostSummary, object::GAS_VALUE_FOR_TESTING};
 use sui_types::{
@@ -1893,10 +1891,8 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
     };
     let fully_compiled_res = move_compiler::construct_pre_compiled_lib(
         vec![PackagePaths {
-            name: None,
             paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps, deepbook_sources],
             name: Some(("sui-framework".into(), config)),
-            paths: vec![sui_system_sources, sui_sources, sui_deps, deepbook_sources],
             named_address_map: NAMED_ADDRESSES.clone(),
         }],
         None,

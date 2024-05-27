@@ -158,7 +158,7 @@ impl TransactionalAdapter for ValidatorWithFullnode {
         );
 
         let epoch_store = self.validator.load_epoch_store_one_call_per_task().clone();
-        let (_, effects, error) =
+        let (_,_, effects, error) =
             self.validator
                 .prepare_certificate_for_benchmark(&tx, input_objects, &epoch_store)?;
         Ok((effects, error))
