@@ -39,7 +39,6 @@ use sui_swarm_config::network_config_builder::ConfigBuilder;
 use sui_swarm_config::node_config_builder::FullnodeConfigBuilder;
 use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair};
 use sui_types::multiaddr::Multiaddr;
-use sui_types::crypto::{SignatureScheme, SuiKeyPair};
 use tracing::info;
 use sui_keys::keypair_file::{read_authority_keypair_from_file, read_keypair_from_file, read_network_keypair_from_file};
 
@@ -741,8 +740,9 @@ pub async fn genesis_private(
                 // Make a keystore containing the key for the genesis gas object.
                 let path = sui_config_dir.join(SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME);
                 let mut keystore = FileBasedKeystore::new(&path)?;
-                let gas_key = GenesisConfig::benchmark_gas_key();
-                keystore.add_key(gas_key)?;
+                for gas_key in GenesisConfig::benchmark_gas_keys(5) {
+                    keystore.add_key(None, gas_key)?;
+                }
                 keystore.save()?;
 
                 // Make a new genesis config from the provided ip addresses.
@@ -841,6 +841,7 @@ pub async fn genesis_private(
             consensus_address: local_ip_utils::new_tcp_address_for_local_testing(),
             consensus_internal_worker_address: None,
             stake: sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
+            name: None,
         };
 
         validator_private.push(tmp);
@@ -862,7 +863,9 @@ pub async fn genesis_private(
 
     let mut keystore = FileBasedKeystore::new(&keystore_path)?;
     for key in &network_config.account_keys {
-        keystore.add_key(SuiKeyPair::Ed25519(key.copy()))?;
+        keystore.add_key(
+            None,
+            SuiKeyPair::Ed25519(key.copy()))?;
     }
     let active_address = keystore.addresses().pop();
     if with_genesis {
@@ -895,7 +898,7 @@ pub async fn genesis_private(
         for (i, ssfn) in ssfn_info.into_iter().enumerate() {
             let path = sui_config_dir.join(multiaddr_to_filename(
                 ssfn.p2p_address.clone(),
-                sui_config::ssfn_config_file(i),
+                sui_config::ssfn_config_file(ssfn.p2p_address.clone(),i),
             ));
             // join base fullnode config with each SsfnGenesisConfig entry
             let ssfn_config = FullnodeConfigBuilder::new()
@@ -931,7 +934,7 @@ pub async fn genesis_private(
         {
             let path = sui_config_dir.join(multiaddr_to_filename(
                 validator.network_address.clone(),
-                sui_config::validator_config_file(i),
+                sui_config::validator_config_file(validator.network_address.clone(), i),
             ));
             let mut val_p2p = validator.p2p_config.clone();
             val_p2p.seed_peers = ssfn_seed_peers.clone();
@@ -946,7 +949,7 @@ pub async fn genesis_private(
         {
             let path = sui_config_dir.join(multiaddr_to_filename(
                 validator.network_address.clone(),
-                sui_config::validator_config_file(i),
+                sui_config::validator_config_file(validator.network_address.clone(), i),
             ));
             info!("genesis_private function : validator config  is stored in {:?}.", path.clone());
             validator.save(path)?;
@@ -1008,7 +1011,6 @@ async fn prompt_if_no_config(
                     } else {
                         print!(
                             "Bfc Full node server URL (Defaults to Bfc Devnet if not specified) : "
-                            "Sui Full node server URL (Defaults to Sui Testnet if not specified) : "
                         );
                         read_line()?
                     };

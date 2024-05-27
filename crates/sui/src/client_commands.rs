@@ -9,11 +9,8 @@ use crate::{
 };
 use std::{
     collections::{btree_map::Entry, BTreeMap},
-    fmt::{Debug, Display, Formatter, Write},
     fs,
-    path::PathBuf,
     str::FromStr,
-    sync::Arc,
 };
 
 use anyhow::{anyhow, bail, ensure, Context};
@@ -24,7 +21,7 @@ use fastcrypto::{
     encoding::{Base64, Encoding},
     traits::ToFromBytes,
 };
-
+use crate::validator_commands::write_transaction_response;
 use move_binary_format::CompiledModule;
 use move_bytecode_verifier_meter::Scope;
 use move_core_types::language_storage::TypeTag;
@@ -45,7 +42,6 @@ use sui_json_rpc_types::{
     SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
-use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectDataOptions};
 use sui_keys::keystore::AccountKeystore;
 use sui_move_build::{
     build_from_resolution_graph, check_invalid_dependencies, check_unpublished_dependencies,
@@ -314,16 +310,6 @@ pub enum SuiClientCommands {
         ws: Option<String>,
     },
 
-    #[clap(name = "object")]
-    Object {
-        /// Object ID of the object to fetch
-        #[clap(name = "object_id")]
-        id: ObjectID,
-
-        /// Return the bcs serialized version of the object
-        #[clap(long)]
-        bcs: bool,
-    },
 
 
     /// Obtain all objects owned by the address
@@ -2492,16 +2478,12 @@ impl Display for SuiClientCommandResult {
             }
             SuiClientCommandResult::TransferBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
-            SuiClientCommandResult::TransferSui(response) => {
-                write!(writer, "{}", response)?;
             }
             SuiClientCommandResult::Pay(response) => {
                 write!(writer, "{}", response)?;
             }
             SuiClientCommandResult::PayBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
-            SuiClientCommandResult::PaySui(response) => {
-                write!(writer, "{}", response)?;
             }
             SuiClientCommandResult::PayAllBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
@@ -2539,19 +2521,20 @@ impl Display for SuiClientCommandResult {
                     }
                 }
                 writeln!(writer, "Showing {} results.", object_refs.len())?;
-            SuiClientCommandResult::PayAllSui(response) => {
-                write!(writer, "{}", response)?;
             }
+
             SuiClientCommandResult::SyncClientState => {
                 writeln!(writer, "Client state sync complete.")?;
             }
+
+
             // Do not use writer for new address output, which may get sent to logs.
             #[allow(clippy::print_in_format_impl)]
-            SuiClientCommandResult::NewAddress((address, recovery_phrase, scheme)) => {
-                let bfc_address =  sui_address_to_bfc_address(*address);
+            SuiClientCommandResult::NewAddress(NewAddressOutput {alias,address, recovery_phrase, key_scheme }) => {
+                let bfc_address = sui_address_to_bfc_address(*address);
                 println!(
                     "Created new keypair for address with scheme {:?}: [{bfc_address}]",
-                    scheme
+                    key_scheme
                 );
                 println!("Secret Recovery Phrase : [{recovery_phrase}]");
             }
@@ -2598,203 +2581,203 @@ impl Display for SuiClientCommandResult {
                 let mut builder = TableBuilder::default();
                 builder.set_header(["alias", "url", "active"]);
                 for env in envs {
-                    write!(writer, "{} => {}", env.alias, env.rpc)?;
-                    if Some(env.alias.as_str()) == active.as_deref() {
-                        write!(writer, " (active)")?;
-
-                    };
-                    writeln!(writer)?;
-                    builder.push_record(vec![env.alias.clone(), env.rpc.clone(), {
-                        if Some(env.alias.as_str()) == active.as_deref() {
-                            "*".to_string()
-                        } else {
-                            "".to_string()
+                                write!(writer, "{} => {}", env.alias, env.rpc)?;
+                                if Some(env.alias.as_str()) == active.as_deref() {
+                                    write!(writer, " (active)")?;
+                                };
+                                writeln!(writer)?;
+                                builder.push_record(vec![env.alias.clone(), env.rpc.clone(), {
+                                    if Some(env.alias.as_str()) == active.as_deref() {
+                                        "*".to_string()
+                                    } else {
+                                        "".to_string()
+                                    }
+                                }]);
+                            }
+                            let mut table = builder.build();
+                            table.with(TableStyle::rounded());
+                            write!(f, "{}", table)?
                         }
-                    }]);
-                }
-                let mut table = builder.build();
-                table.with(TableStyle::rounded());
-                write!(f, "{}", table)?
-            }
             SuiClientCommandResult::VerifySource => {
                 writeln!(writer, "Source verification succeeded!")?;
             }
             SuiClientCommandResult::VerifyBytecodeMeter {
                 success,
-                max_package_ticks,
-                max_module_ticks,
-                max_function_ticks,
-                used_ticks,
-            } => {
-                let mut builder = TableBuilder::default();
+                            max_package_ticks,
+                            max_module_ticks,
+                            max_function_ticks,
+                            used_ticks,
+                        } => {
+                            let mut builder = TableBuilder::default();
 
-                /// Convert ticks to string, using commas as thousands separators
-                fn format_ticks(ticks: u128) -> String {
-                    let ticks = ticks.to_string();
-                    let mut formatted = String::with_capacity(ticks.len() + ticks.len() / 3);
-                    for (i, c) in ticks.chars().rev().enumerate() {
-                        if i != 0 && (i % 3 == 0) {
-                            formatted.push(',');
+                            /// Convert ticks to string, using commas as thousands separators
+                            fn format_ticks(ticks: u128) -> String {
+                                let ticks = ticks.to_string();
+                                let mut formatted = String::with_capacity(ticks.len() + ticks.len() / 3);
+                                for (i, c) in ticks.chars().rev().enumerate() {
+                                    if i != 0 && (i % 3 == 0) {
+                                        formatted.push(',');
+                                    }
+                                    formatted.push(c);
+                                }
+                                formatted.chars().rev().collect()
+                            }
+
+                            // Build up the limits table
+                            builder.push_record(vec!["Limits"]);
+                            builder.push_record(vec![
+                                "packages".to_string(),
+                                max_package_ticks.map_or_else(|| "None".to_string(), format_ticks),
+                            ]);
+                            builder.push_record(vec![
+                                "  modules".to_string(),
+                                max_module_ticks.map_or_else(|| "None".to_string(), format_ticks),
+                            ]);
+                            builder.push_record(vec![
+                                "    functions".to_string(),
+                                max_function_ticks.map_or_else(|| "None".to_string(), format_ticks),
+                            ]);
+
+                            // Build up usage table
+                            builder.push_record(vec!["Ticks Used"]);
+                            let mut stack = vec![used_ticks];
+                            while let Some(usage) = stack.pop() {
+                                let indent = match usage.scope {
+                                    Scope::Transaction => 0,
+                                    Scope::Package => 0,
+                                    Scope::Module => 2,
+                                    Scope::Function => 4,
+                                };
+
+                                builder.push_record(vec![
+                                    format!("{:indent$}{}", "", usage.name),
+                                    format_ticks(usage.ticks),
+                                ]);
+
+                                stack.extend(usage.children.iter().rev())
+                            }
+
+                            let mut table = builder.build();
+
+                            let message = if *success {
+                                "Package will pass metering check!"
+                            } else {
+                                "Package will NOT pass metering check!"
+                            };
+
+                            // Add overall header and footer message;
+                            table.with(TablePanel::header(message));
+                            table.with(TablePanel::footer(message));
+
+                            // Set-up spans for headers
+                            table.with(TableModify::new(TableRows::new(0..2)).with(TableSpan::column(2)));
+                            table.with(TableModify::new(TableRows::single(5)).with(TableSpan::column(2)));
+
+                            // Styling
+                            table.with(TableStyle::rounded());
+                            table.with(TableModify::new(TableCols::new(1..)).with(TableAlignment::right()));
+
+                            // Separators before and after headers/footers
+                            let hl = TableStyle::modern().get_horizontal();
+                            let last = table.count_rows() - 1;
+                            table.with(HorizontalLine::new(2, hl));
+                            table.with(HorizontalLine::new(5, hl));
+                            table.with(HorizontalLine::new(6, hl));
+                            table.with(HorizontalLine::new(last, hl));
+
+                            table.with(tabled::settings::style::BorderSpanCorrection);
+
+                            writeln!(f, "{}", table)?;
                         }
-                        formatted.push(c);
-                    }
-                    formatted.chars().rev().collect()
-                }
-
-                // Build up the limits table
-                builder.push_record(vec!["Limits"]);
-                builder.push_record(vec![
-                    "packages".to_string(),
-                    max_package_ticks.map_or_else(|| "None".to_string(), format_ticks),
-                ]);
-                builder.push_record(vec![
-                    "  modules".to_string(),
-                    max_module_ticks.map_or_else(|| "None".to_string(), format_ticks),
-                ]);
-                builder.push_record(vec![
-                    "    functions".to_string(),
-                    max_function_ticks.map_or_else(|| "None".to_string(), format_ticks),
-                ]);
-
-                // Build up usage table
-                builder.push_record(vec!["Ticks Used"]);
-                let mut stack = vec![used_ticks];
-                while let Some(usage) = stack.pop() {
-                    let indent = match usage.scope {
-                        Scope::Transaction => 0,
-                        Scope::Package => 0,
-                        Scope::Module => 2,
-                        Scope::Function => 4,
-                    };
-
-                    builder.push_record(vec![
-                        format!("{:indent$}{}", "", usage.name),
-                        format_ticks(usage.ticks),
-                    ]);
-
-                    stack.extend(usage.children.iter().rev())
-                }
-
-                let mut table = builder.build();
-
-                let message = if *success {
-                    "Package will pass metering check!"
-                } else {
-                    "Package will NOT pass metering check!"
-                };
-
-                // Add overall header and footer message;
-                table.with(TablePanel::header(message));
-                table.with(TablePanel::footer(message));
-
-                // Set-up spans for headers
-                table.with(TableModify::new(TableRows::new(0..2)).with(TableSpan::column(2)));
-                table.with(TableModify::new(TableRows::single(5)).with(TableSpan::column(2)));
-
-                // Styling
-                table.with(TableStyle::rounded());
-                table.with(TableModify::new(TableCols::new(1..)).with(TableAlignment::right()));
-
-                // Separators before and after headers/footers
-                let hl = TableStyle::modern().get_horizontal();
-                let last = table.count_rows() - 1;
-                table.with(HorizontalLine::new(2, hl));
-                table.with(HorizontalLine::new(5, hl));
-                table.with(HorizontalLine::new(6, hl));
-                table.with(HorizontalLine::new(last, hl));
-
-                table.with(tabled::settings::style::BorderSpanCorrection);
-
-                writeln!(f, "{}", table)?;
-            }
             SuiClientCommandResult::NoOutput => {}
             SuiClientCommandResult::PTB(_) => {} // this is handled in PTB execute
             SuiClientCommandResult::DryRun(response) => {
                 writeln!(
-                    f,
-                    "Dry run completed, execution status: {}",
-                    response.effects.status()
-                )?;
+                                f,
+                                "Dry run completed, execution status: {}",
+                                response.effects.status()
+                            )?;
 
-                let mut builder = TableBuilder::default();
-                builder.push_record(vec![format!("{}", response.input)]);
-                let mut table = builder.build();
-                table.with(TablePanel::header("Dry Run Transaction Data"));
-                table.with(TableStyle::rounded().horizontals([HorizontalLine::new(
-                    1,
-                    TableStyle::modern().get_horizontal(),
-                )]));
-                writeln!(f, "{}", table)?;
-                writeln!(f, "{}", response.effects)?;
-                write!(f, "{}", response.events)?;
+                            let mut builder = TableBuilder::default();
+                            builder.push_record(vec![format!("{}", response.input)]);
+                            let mut table = builder.build();
+                            table.with(TablePanel::header("Dry Run Transaction Data"));
+                            table.with(TableStyle::rounded().horizontals([HorizontalLine::new(
+                                1,
+                                TableStyle::modern().get_horizontal(),
+                            )]));
+                            writeln!(f, "{}", table)?;
+                            writeln!(f, "{}", response.effects)?;
+                            write!(f, "{}", response.events)?;
 
-                if response.object_changes.is_empty() {
-                    writeln!(f, "╭─────────────────────────────╮")?;
-                    writeln!(f, "│ No object changes           │")?;
-                    writeln!(f, "╰─────────────────────────────╯")?;
-                } else {
-                    let mut builder = TableBuilder::default();
-                    let (
-                        mut created,
-                        mut deleted,
-                        mut mutated,
-                        mut published,
-                        mut transferred,
-                        mut wrapped,
-                    ) = (vec![], vec![], vec![], vec![], vec![], vec![]);
-                    for obj in &response.object_changes {
-                        match obj {
-                            ObjectChange::Created { .. } => created.push(obj),
-                            ObjectChange::Deleted { .. } => deleted.push(obj),
-                            ObjectChange::Mutated { .. } => mutated.push(obj),
-                            ObjectChange::Published { .. } => published.push(obj),
-                            ObjectChange::Transferred { .. } => transferred.push(obj),
-                            ObjectChange::Wrapped { .. } => wrapped.push(obj),
-                        };
+                            if response.object_changes.is_empty() {
+                                writeln!(f, "╭─────────────────────────────╮")?;
+                                writeln!(f, "│ No object changes           │")?;
+                                writeln!(f, "╰─────────────────────────────╯")?;
+                            } else {
+                                let mut builder = TableBuilder::default();
+                                let (
+                                    mut created,
+                                    mut deleted,
+                                    mut mutated,
+                                    mut published,
+                                    mut transferred,
+                                    mut wrapped,
+                                ) = (vec![], vec![], vec![], vec![], vec![], vec![]);
+                                for obj in &response.object_changes {
+                                    match obj {
+                                        ObjectChange::Created { .. } => created.push(obj),
+                                        ObjectChange::Deleted { .. } => deleted.push(obj),
+                                        ObjectChange::Mutated { .. } => mutated.push(obj),
+                                        ObjectChange::Published { .. } => published.push(obj),
+                                        ObjectChange::Transferred { .. } => transferred.push(obj),
+                                        ObjectChange::Wrapped { .. } => wrapped.push(obj),
+                                    };
+                                }
+
+                                write_obj_changes(created, "Created", &mut builder)?;
+                                write_obj_changes(deleted, "Deleted", &mut builder)?;
+                                write_obj_changes(mutated, "Mutated", &mut builder)?;
+                                write_obj_changes(published, "Published", &mut builder)?;
+                                write_obj_changes(transferred, "Transferred", &mut builder)?;
+                                write_obj_changes(wrapped, "Wrapped", &mut builder)?;
+
+                                let mut table = builder.build();
+                                table.with(TablePanel::header("Object Changes"));
+                                table.with(TableStyle::rounded().horizontals([HorizontalLine::new(
+                                    1,
+                                    TableStyle::modern().get_horizontal(),
+                                )]));
+                                writeln!(writer, "{}", table)?;
+                            }
+                            if response.balance_changes.is_empty() {
+                                writeln!(f, "╭─────────────────────────────╮")?;
+                                writeln!(f, "│ No balance changes          │")?;
+                                writeln!(f, "╰─────────────────────────────╯")?;
+                            } else {
+                                let mut builder = TableBuilder::default();
+                                for balance in &response.balance_changes {
+                                    builder.push_record(vec![format!("{}", balance)]);
+                                }
+                                let mut table = builder.build();
+                                table.with(TablePanel::header("Balance Changes"));
+                                table.with(TableStyle::rounded().horizontals([HorizontalLine::new(
+                                    1,
+                                    TableStyle::modern().get_horizontal(),
+                                )]));
+                                writeln!(writer, "{}", table)?;
+                            }
+                            writeln!(
+                                writer,
+                                "Dry run completed, execution status: {}",
+                                response.effects.status()
+                            )?;
+                        }
                     }
-
-                    write_obj_changes(created, "Created", &mut builder)?;
-                    write_obj_changes(deleted, "Deleted", &mut builder)?;
-                    write_obj_changes(mutated, "Mutated", &mut builder)?;
-                    write_obj_changes(published, "Published", &mut builder)?;
-                    write_obj_changes(transferred, "Transferred", &mut builder)?;
-                    write_obj_changes(wrapped, "Wrapped", &mut builder)?;
-
-                    let mut table = builder.build();
-                    table.with(TablePanel::header("Object Changes"));
-                    table.with(TableStyle::rounded().horizontals([HorizontalLine::new(
-                        1,
-                        TableStyle::modern().get_horizontal(),
-                    )]));
-                    writeln!(writer, "{}", table)?;
+                    write!(f, "{}", writer.trim_end_matches('\n'))
                 }
-                if response.balance_changes.is_empty() {
-                    writeln!(f, "╭─────────────────────────────╮")?;
-                    writeln!(f, "│ No balance changes          │")?;
-                    writeln!(f, "╰─────────────────────────────╯")?;
-                } else {
-                    let mut builder = TableBuilder::default();
-                    for balance in &response.balance_changes {
-                        builder.push_record(vec![format!("{}", balance)]);
-                    }
-                    let mut table = builder.build();
-                    table.with(TablePanel::header("Balance Changes"));
-                    table.with(TableStyle::rounded().horizontals([HorizontalLine::new(
-                        1,
-                        TableStyle::modern().get_horizontal(),
-                    )]));
-                    writeln!(writer, "{}", table)?;
-                }
-                writeln!(
-                    writer,
-                    "Dry run completed, execution status: {}",
-                    response.effects.status()
-                )?;
             }
-        }
-        write!(f, "{}", writer.trim_end_matches('\n'))
-    }
-}
+
 
 fn write_obj_changes<T: Display>(
     values: Vec<T>,
@@ -3030,6 +3013,7 @@ pub enum SuiClientCommandResult {
     Object(SuiObjectResponse),
     Objects(Vec<SuiObjectResponse>),
     Pay(SuiTransactionBlockResponse),
+    PTB(SuiTransactionBlockResponse),
     PayAllBfc(SuiTransactionBlockResponse),
     PayBfc(SuiTransactionBlockResponse),
     Publish(SuiTransactionBlockResponse),
@@ -3063,8 +3047,9 @@ pub struct SwitchResponse {
 impl Display for SwitchResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut writer = String::new();
-        if let Some(addr) = self.address {
-            let bfc_address = sui_address_to_bfc_address(addr);
+        if let Some(addr) = &self.address {
+            let sui_address = SuiAddress::from_str(&addr).unwrap();
+            let bfc_address = sui_address_to_bfc_address(sui_address);
             writeln!(writer, "Active address switched to {}", bfc_address)?;
         }
         if let Some(env) = &self.env {

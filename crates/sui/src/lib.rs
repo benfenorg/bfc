@@ -24,8 +24,6 @@ pub mod validator_commands;
 mod verifier_meter;
 pub mod zklogin_commands_util;
 
-pub mod genesis_ceremony;
-pub mod genesis_inspector;
 use sui_keys::keystore::AccountKeystore;
 use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::SUI_SYSTEM_PACKAGE_ID;
@@ -71,7 +69,7 @@ pub async fn call_system_txn_with(
             .config
             .keystore
             .sign_secure(&sender, &txn_data, Intent::sui_transaction())?;
-    let transaction = Transaction::from_data(txn_data, Intent::sui_transaction(), vec![signature]);
+    let transaction = Transaction::from_data(txn_data, vec![signature]);
     let sui_client = context.get_client().await?;
     sui_client
         .quorum_driver_api()
@@ -96,7 +94,7 @@ pub async fn call_system_txn(
             .config
             .keystore
             .sign_secure(&sender, &txn_data, Intent::sui_transaction())?;
-    let transaction = Transaction::from_data(txn_data, Intent::sui_transaction(), vec![signature]);
+    let transaction = Transaction::from_data(txn_data, vec![signature]);
     let sui_client = context.get_client().await?;
     sui_client
         .quorum_driver_api()

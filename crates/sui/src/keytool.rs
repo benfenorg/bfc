@@ -49,11 +49,7 @@ use sui_types::crypto::{DefaultHash, PublicKey};
 use sui_types::error::SuiResult;
 use sui_types::multisig::{MultiSig, MultiSigPublicKey, ThresholdUnit, WeightUnit};
 use sui_types::multisig_legacy::{MultiSigLegacy, MultiSigPublicKeyLegacy};
-use sui_types::signature::{AuthenticatorTrait, GenericSignature, VerifyParams};
-use sui_types::transaction::TransactionData;
-use tracing::info;
-
-use rand::Rng;
+use sui_types::signature::{AuthenticatorTrait};
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_evm_address, sui_address_to_bfc_address};
 use sui_types::signature::{GenericSignature, VerifyParams};
 use sui_types::transaction::{TransactionData, TransactionDataAPI};
@@ -63,8 +59,6 @@ use tabled::settings::Rotate;
 use tabled::settings::{object::Rows, Modify, Width};
 use sui_json_rpc_types::TransactionBlockBytes;
 use sui_types::transaction::SenderSignedData;
-
-use crate::zklogin_commands_util::{perform_zk_login_test_tx, read_cli_line};
 
 use tracing::info;
 #[cfg(test)]
@@ -159,9 +153,6 @@ pub enum KeyToolCommand {
         key_scheme: SignatureScheme,
         derivation_path: Option<DerivationPath>,
     },
-    /// List all keys by its Bfc address, Base64 encoded public key, key scheme name in
-    /// bfc.keystore.
-    List,
     /// Output the private key of the given key identity in Sui CLI Keystore as Bech32
     /// encoded string starting with `suiprivkey`.
     Export {
@@ -231,8 +222,6 @@ pub enum KeyToolCommand {
     /// default will be used.
     Sign {
         //#[clap(long, value_parser = decode_bytes_hex::<SuiAddress>)]
-        #[clap(long)]
-        address: String,
         #[clap(long)]
         address: KeyIdentity,
         #[clap(long)]
@@ -495,7 +484,6 @@ pub enum CommandOutput {
     Error(String),
     Generate(Key),
     GenerateWithName(Key),
-    GenerateZkLoginAddress(SuiAddress, AddressParams),
     Import(Key),
     Export(ExportedKey),
     List(Vec<Key>),
@@ -597,7 +585,7 @@ impl KeyToolCommand {
             }
 
 
-            KeyToolCommand::DecodeTxBytes { tx_bytes } => {
+            //KeyToolCommand::DecodeTxBytes { tx_bytes } => {
             KeyToolCommand::DecodeOrVerifyTx {
                 tx_bytes,
                 sig,
@@ -666,6 +654,7 @@ impl KeyToolCommand {
                     let file_name = format!("{name}.key");
                     write_authority_keypair_to_file(&kp, file_name)?;
                     CommandOutput::Generate(Key {
+                        alias: None,
                         sui_address,
                         public_base64_key: kp.public().encode_base64(),
                         key_scheme: key_scheme.to_string(),
@@ -691,32 +680,7 @@ impl KeyToolCommand {
                 key_scheme,
                 derivation_path,
             } => {
-                // check if input is a private key -- should start with 0x
-                if input_string.starts_with("0x") {
-                    let bytes = Hex::decode(&input_string).map_err(|_| {
-                        anyhow!("Private key is malformed. Importing private key failed.")
-                    })?;
-                    match key_scheme {
-                        SignatureScheme::ED25519 => {
-                            let kp = Ed25519KeyPair::from_bytes(&bytes).map_err(|_| anyhow!("Cannot decode ed25519 keypair from the private key. Importing private key failed."))?;
-                            let skp = SuiKeyPair::Ed25519(kp);
-                            let key = Key::from(&skp);
-                            keystore.add_key(skp)?;
-                            CommandOutput::Import(key)
-                        }
-                        _ => return Err(anyhow!(
-                                "Only ed25519 signature scheme is supported for importing private keys at the moment."
-                            ))
-                    }
-                } else {
-                    let sui_address = keystore.import_from_mnemonic(
-                        &input_string,
-                        key_scheme,
-                        derivation_path,
-                    )?;
-                    let skp = keystore.get_key(&sui_address)?;
-                    let key = Key::from(skp);
-                    CommandOutput::Import(key)
+
                 if Hex::decode(&input_string).is_ok() {
                     return Err(anyhow!(
                         "Sui Keystore and Sui Wallet no longer support importing
@@ -907,11 +871,11 @@ impl KeyToolCommand {
                 data,
                 intent,
             } => {
-                let mut evm_address = address.clone();
-                if address.as_str().starts_with("bfc") || address.as_str().starts_with("BFC") {
-                    evm_address = convert_to_evm_address(address.clone());
+                let mut evm_address_string = address.to_string();
+                if address.to_string().starts_with("bfc") || address.to_string().starts_with("BFC") {
+                    evm_address_string = convert_to_evm_address(address.to_string().clone());
                 }
-                let sui_address = SuiAddress::from_str(evm_address.as_str()).unwrap_or_else(|_e| panic!("Incorrect sui_address"));
+                let sui_address = SuiAddress::from_str(&evm_address_string.to_string()).unwrap_or_else(|_e| panic!("Incorrect sui_address"));
 
                 let address = get_identity_address_from_keystore(address, keystore)?;
                 let intent = intent.unwrap_or_else(Intent::sui_transaction);
