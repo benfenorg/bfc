@@ -12,7 +12,6 @@ use crate::types::transaction_block_kind::{
 };
 use async_graphql::*;
 use sui_types::transaction::TransactionKind as NativeTransactionKind;
-
 pub(crate) mod authenticator_state_update;
 pub(crate) mod consensus_commit_prologue;
 pub(crate) mod end_of_epoch;
@@ -70,6 +69,9 @@ impl TransactionBlockKind {
                 native: rsu,
                 checkpoint_viewed_at,
             }),
+            K::ChangeBfcRound(changeBfcRound) => {
+                todo!("ChangeBfcRoundTransaction not implemented yet")
+            }
         }
     }
 }

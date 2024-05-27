@@ -14,7 +14,6 @@ use sui_types::{
         EndOfEpochTransactionKind as NativeEndOfEpochTransactionKind,
     },
 };
-
 use crate::consistency::ConsistentIndexCursor;
 use crate::types::cursor::{JsonCursor, Page};
 use crate::types::sui_address::SuiAddress;
@@ -48,6 +47,8 @@ pub(crate) struct ChangeEpochTransaction {
     /// The checkpoint sequence number this was viewed at.
     pub checkpoint_viewed_at: u64,
 }
+
+
 
 /// System transaction for creating the on-chain state used by zkLogin.
 #[derive(SimpleObject, Clone, PartialEq, Eq)]
@@ -137,23 +138,23 @@ impl ChangeEpochTransaction {
 
     /// The total amount of gas charged for storage during the previous epoch (in MIST).
     async fn storage_charge(&self) -> BigInt {
-        BigInt::from(self.native.storage_charge)
+        BigInt::from(self.native.bfc_storage_charge)
     }
 
     /// The total amount of gas charged for computation during the previous epoch (in MIST).
     async fn computation_charge(&self) -> BigInt {
-        BigInt::from(self.native.computation_charge)
+        BigInt::from(self.native.bfc_computation_charge)
     }
 
     /// The SUI returned to transaction senders for cleaning up objects (in MIST).
     async fn storage_rebate(&self) -> BigInt {
-        BigInt::from(self.native.storage_rebate)
+        BigInt::from(self.native.bfc_storage_rebate)
     }
 
     /// The total gas retained from storage fees, that will not be returned by storage rebates when
     /// the relevant objects are cleaned up (in MIST).
     async fn non_refundable_storage_fee(&self) -> BigInt {
-        BigInt::from(self.native.non_refundable_storage_fee)
+        BigInt::from(self.native.bfc_non_refundable_storage_fee)
     }
 
     /// Time at which the next epoch will start.
