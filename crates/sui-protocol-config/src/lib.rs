@@ -11,7 +11,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 23;
+const MAX_PROTOCOL_VERSION: u64 = 24;
 
 // Record history of protocol version allocations here:
 //
@@ -1388,6 +1388,8 @@ impl ProtocolConfig {
                     // responsibility is shared amongst more nodes. We can increase that once we do have
                     // higher confidence.
                     cfg.consensus_bad_nodes_stake_threshold = Some(20);
+                }
+                24 => {
                 }
                 // Use this template when making changes:
                 //

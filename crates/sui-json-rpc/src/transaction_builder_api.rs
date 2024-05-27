@@ -75,7 +75,7 @@ impl DataReader for AuthorityStateDataReader {
         Ok(epoch_store.reference_gas_price())
     }
 
-        async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
+    async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error> {
         let bfc_system_state = self.0.get_bfc_system_state()?;
         let mut temp_map = HashMap::<String, u64>::new();
         for entity in &bfc_system_state.inner_state().rate_map.contents {

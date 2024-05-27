@@ -222,8 +222,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
-    #[test_only]
-    public fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
+    public entry fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::judge_proposal_state(system_state, current_time);
     }

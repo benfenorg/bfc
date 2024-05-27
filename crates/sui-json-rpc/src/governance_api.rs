@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::cmp::max;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -327,6 +327,20 @@ impl GovernanceReadApiServer for GovernanceReadApi {
         Ok(ValidatorApys {
             apys,
             epoch: system_state_summary.epoch,
+        })
+    }
+
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
+        with_tracing!(async move {
+            let bfc_state = self.state.get_bfc_system_state()?;
+            let mut temp_map = HashMap::<String, u64>::new();
+            for entity in &bfc_state.inner_state().rate_map.contents {
+                temp_map.insert((*entity.key).to_string(), entity.value);
+            };
+           // Correctly handle the case where the tag is not found in temp_map
+        let rate = temp_map.get(&tag)
+            .ok_or_else(|| Error::from(anyhow::anyhow!("Rate not found for tag: {}", tag)))?;
+        Ok(BigInt::from(*rate))
         })
     }
 }
