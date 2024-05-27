@@ -2507,7 +2507,7 @@ async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(4000)
+        .with_epoch_duration_ms(6000)
         .with_num_validators(5)
         .build()
         .await;

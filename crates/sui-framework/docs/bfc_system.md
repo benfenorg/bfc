@@ -20,6 +20,7 @@
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
 -  [Function `propose`](#0xc8_bfc_system_propose)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_create_bfcdao_action)
+-  [Function `judge_proposal_state`](#0xc8_bfc_system_judge_proposal_state)
 -  [Function `set_voting_period`](#0xc8_bfc_system_set_voting_period)
 -  [Function `set_voting_quorum_rate`](#0xc8_bfc_system_set_voting_quorum_rate)
 -  [Function `set_min_action_delay`](#0xc8_bfc_system_set_min_action_delay)
@@ -540,6 +541,31 @@
     ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfcdao_action">bfc_system_state_inner::create_bfcdao_action</a>(system_state, payment, actionName,<a href="../../../.././build/Sui/docs/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_judge_proposal_state"></a>
+
+## Function `judge_proposal_state`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, current_time: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, current_time: u64) {
+    <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(system_state, current_time);
 }
 </code></pre>
 
