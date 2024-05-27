@@ -67,8 +67,6 @@ async fn main() -> Result<(), anyhow::Error> {
         ..
     } = config;
     config.amount = DEFAULT_AMOUNT;
-    let context = create_wallet_context(wallet_client_timeout_secs).await?;
-
     let context = create_wallet_context(wallet_client_timeout_secs)?;
 
     let prom_binding = PROM_PORT_ADDR.parse().unwrap();
