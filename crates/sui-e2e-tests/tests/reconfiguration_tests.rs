@@ -20,7 +20,7 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
@@ -2495,7 +2495,7 @@ async fn sim_test_dry_run_stable_gas() -> Result<(), anyhow::Error> {
         http_client,
         address,
         swap_amount,
-        100,
+        100000,
         "0xc8::busd::BUSD".to_string(),
     ).await?;
     test_cluster.wait_for_epoch(Some(2)).await;
@@ -2692,8 +2692,8 @@ async fn transfer_with_dry_run_stable_coin(
     let gas_cost_summary= effects.gas_cost_summary();
 
     error!("gas_cost_summary {:?}",gas_cost_summary);
-    let price = test_cluster.get_reference_gas_price().await;
-    let gas_budget = ((125 * calculate_stable_net_used_with_base_point(gas_cost_summary) /100) as u64)*price*50;
+    //let price = test_cluster.get_reference_gas_price().await;
+    let gas_budget = (125 * calculate_stable_net_used_with_base_point(gas_cost_summary) /100) as u64;
 
     let split_coin_txn_bytes = http_client.split_coin(address,busd_data.object_id,vec![BigInt::from(gas_budget)],
                                                       None,BigInt::from(10000000)).await?.to_data()?;
@@ -2719,12 +2719,13 @@ async fn transfer_with_dry_run_stable_coin(
 
     let _ = sleep(Duration::from_secs(1)).await;
 
-    let tx = make_transfer_sui_transaction_with_gas_coins(
+    let tx = make_transfer_sui_transaction_with_gas_coins_budget(
         &test_cluster.wallet,
         Some(receiver_address),
         Some(amount),
         address,
         gas_coins.clone(),
+        gas_budget,
     ).await;
 
     let resp=test_cluster.wallet.execute_transaction_may_fail(tx.clone()).await?;
