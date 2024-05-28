@@ -1,20 +1,34 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { formatAddress } from '@benfen/bfc.js';
 import { isKioskOwnerToken, useGetObject } from '@mysten/core';
 import { cva, cx } from 'class-variance-authority';
 
 import { Kiosk } from './Kiosk';
 import { useResolveVideo } from '../../hooks/useResolveVideo';
+=======
+>>>>>>> mainnet-v1.24.1
 import { Heading } from '_app/shared/heading';
 import Loading from '_components/loading';
 import { NftImage, type NftImageProps } from '_components/nft-display/NftImage';
-import { useGetNFTMeta, useFileExtensionType } from '_hooks';
-
+import { useFileExtensionType, useGetNFTMeta } from '_hooks';
+import { isKioskOwnerToken, useGetObject } from '@mysten/core';
+import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
+import { formatAddress } from '@mysten/sui.js/utils';
+import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 
+<<<<<<< HEAD
 const nftDisplayCardStyles = cva('flex flex-nowrap items-center h-full', {
+=======
+import { useResolveVideo } from '../../hooks/useResolveVideo';
+import { Text } from '../../shared/text';
+import { Kiosk } from './Kiosk';
+
+const nftDisplayCardStyles = cva('flex flex-nowrap items-center h-full relative', {
+>>>>>>> mainnet-v1.24.1
 	variants: {
 		animateHover: {
 			true: 'group',
@@ -36,7 +50,7 @@ const nftDisplayCardStyles = cva('flex flex-nowrap items-center h-full', {
 
 export interface NFTDisplayCardProps extends VariantProps<typeof nftDisplayCardStyles> {
 	objectId: string;
-	showLabel?: boolean;
+	hideLabel?: boolean;
 	size: NftImageProps['size'];
 	borderRadius?: NftImageProps['borderRadius'];
 	playable?: boolean;
@@ -45,7 +59,7 @@ export interface NFTDisplayCardProps extends VariantProps<typeof nftDisplayCardS
 
 export function NFTDisplayCard({
 	objectId,
-	showLabel,
+	hideLabel,
 	size,
 	wideView,
 	animateHover,
@@ -55,17 +69,18 @@ export function NFTDisplayCard({
 	isLocked,
 }: NFTDisplayCardProps) {
 	const { data: objectData } = useGetObject(objectId);
-	const { data: nftMeta, isLoading } = useGetNFTMeta(objectId);
+	const { data: nftMeta, isPending } = useGetNFTMeta(objectId);
 	const nftName = nftMeta?.name || formatAddress(objectId);
 	const nftImageUrl = nftMeta?.imageUrl || '';
 	const video = useResolveVideo(objectData);
 	const fileExtensionType = useFileExtensionType(nftImageUrl);
-	const isOwnerToken = isKioskOwnerToken(objectData);
+	const kioskClient = useKioskClient();
+	const isOwnerToken = isKioskOwnerToken(kioskClient.network, objectData);
 	const shouldShowLabel = !wideView && orientation !== 'horizontal';
 
 	return (
 		<div className={nftDisplayCardStyles({ animateHover, wideView, orientation })}>
-			<Loading loading={isLoading}>
+			<Loading loading={isPending}>
 				{objectData?.data && isOwnerToken ? (
 					<Kiosk
 						object={objectData}
@@ -102,6 +117,7 @@ export function NFTDisplayCard({
 						</div>
 					</div>
 				)}
+<<<<<<< HEAD
 				{showLabel && !wideView && (
 					<div
 						className={cx(
@@ -111,6 +127,18 @@ export function NFTDisplayCard({
 						)}
 					>
 						{isOwnerToken ? 'Kiosk' : nftName}
+=======
+
+				{orientation === 'horizontal' ? (
+					<div className="flex-1 text-steel-dark overflow-hidden max-w-full ml-2">{nftName}</div>
+				) : !isOwnerToken && !hideLabel ? (
+					<div className="w-10/12 absolute bottom-2 bg-white/90 rounded-lg left-1/2 -translate-x-1/2 flex items-center justify-center opacity-0 group-hover:opacity-100">
+						<div className="mt-0.5 px-2 py-1 overflow-hidden">
+							<Text variant="subtitleSmall" weight="semibold" mono color="steel-darker" truncate>
+								{nftName}
+							</Text>
+						</div>
+>>>>>>> mainnet-v1.24.1
 					</div>
 				)}
 			</Loading>

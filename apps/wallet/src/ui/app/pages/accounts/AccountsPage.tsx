@@ -2,14 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Outlet } from 'react-router-dom';
+<<<<<<< HEAD
+=======
+
+>>>>>>> mainnet-v1.24.1
 import { Toaster } from '../../shared/toaster';
-import PageLayout from '_pages/layout';
 
 export function AccountsPage() {
 	return (
+<<<<<<< HEAD
 		<PageLayout>
 			<Outlet />
 			<Toaster bottomNavEnabled={false} />
 		</PageLayout>
+=======
+		<>
+			<Outlet />
+			<Toaster />
+		</>
+>>>>>>> mainnet-v1.24.1
 	);
 }

@@ -1,11 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { formatAddress } from '@benfen/bfc.js/utils';
 import { isSuiNSName } from '@mysten/core';
 
+=======
+>>>>>>> mainnet-v1.24.1
 import ExplorerLink from '_components/explorer-link';
 import { ExplorerLinkType } from '_components/explorer-link/ExplorerLinkType';
+import { isSuiNSName } from '@mysten/core';
+import { formatAddress } from '@mysten/sui.js/utils';
 
 type TxnAddressLinkProps = {
 	address: string;

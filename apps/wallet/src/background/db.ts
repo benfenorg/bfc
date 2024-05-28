@@ -3,17 +3,28 @@
 
 import Dexie, { type Table } from 'dexie';
 import { exportDB, importDB } from 'dexie-export-import';
+
 import { type AccountSourceSerialized } from './account-sources/AccountSource';
+<<<<<<< HEAD
 import { type SerializedAccount } from './accounts/Account';
+=======
+import { type AccountType, type SerializedAccount } from './accounts/Account';
+import { captureException } from './sentry';
+>>>>>>> mainnet-v1.24.1
 import { getFromLocalStorage, setToLocalStorage } from './storage-utils';
 
 const dbName = 'SuiWallet DB';
 const dbLocalStorageBackupKey = 'indexed-db-backup';
 
+export const settingsKeys = {
+	isPopulated: 'isPopulated',
+	autoLockMinutes: 'auto-lock-minutes',
+};
+
 class DB extends Dexie {
 	accountSources!: Table<AccountSourceSerialized, string>;
 	accounts!: Table<SerializedAccount, string>;
-	settings!: Table<{ value: boolean; setting: string }, string>;
+	settings!: Table<{ value: boolean | number | null; setting: string }, string>;
 
 	constructor() {
 		super(dbName);
@@ -22,12 +33,21 @@ class DB extends Dexie {
 			accounts: 'id, type, address, sourceID',
 			settings: 'setting',
 		});
+		this.version(2).upgrade((transaction) => {
+			const zkLoginType: AccountType = 'zkLogin';
+			transaction
+				.table('accounts')
+				.where({ type: 'zk' })
+				.modify((anAccount) => {
+					anAccount.type = zkLoginType;
+				});
+		});
 	}
 }
 
 async function init() {
 	const db = new DB();
-	const isPopulated = !!(await db.settings.get('isPopulated'))?.value;
+	const isPopulated = !!(await db.settings.get(settingsKeys.isPopulated))?.value;
 	if (!isPopulated) {
 		try {
 			const backup = await getFromLocalStorage<string>(dbLocalStorageBackupKey);
@@ -36,7 +56,7 @@ async function init() {
 				(await importDB(new Blob([backup], { type: 'application/json' }))).close();
 				await db.open();
 			}
-			await db.settings.put({ setting: 'isPopulated', value: true });
+			await db.settings.put({ setting: settingsKeys.isPopulated, value: true });
 		} catch (e) {
 			console.error(e);
 		}

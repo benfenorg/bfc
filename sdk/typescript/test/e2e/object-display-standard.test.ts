@@ -1,8 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { describe, it, expect, beforeAll } from 'vitest';
 import { bfc2SuiAddress } from '../../src';
+=======
+import { beforeAll, describe, expect, it } from 'vitest';
+
+>>>>>>> mainnet-v1.24.1
 import { SuiObjectData } from '../../src/client';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
@@ -58,8 +63,8 @@ describe('Test Object Display Standard', () => {
 	});
 
 	it('Test getting Display fields for object that has no display object', async () => {
-		const coin = (await toolbox.getGasObjectsOwnedByAddress())[0].data as SuiObjectData;
-		const coinId = coin.objectId;
+		const coin = (await toolbox.getGasObjectsOwnedByAddress()).data[0];
+		const coinId = coin.coinObjectId;
 		const display = (
 			await toolbox.client.getObject({
 				id: coinId,

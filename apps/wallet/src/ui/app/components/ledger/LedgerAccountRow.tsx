@@ -1,13 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { formatAddress, SUI_TYPE_ARG } from '@benfen/bfc.js';
 import { useFormatCoin, useGetCoinBalance, useResolveSuiNSName } from '@mysten/core';
 import { CheckFill16 } from '@mysten/icons';
 import cl from 'classnames';
+=======
+import { Text } from '_src/ui/app/shared/text';
+import { useFormatCoin, useResolveSuiNSName } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
+import { CheckFill16 } from '@mysten/icons';
+import { formatAddress, SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+import cl from 'clsx';
+>>>>>>> mainnet-v1.24.1
 
 import { useCoinsReFetchingConfig } from '../../hooks';
-import { Text } from '_src/ui/app/shared/text';
 
 type LedgerAccountRowProps = {
 	isSelected: boolean;
@@ -16,11 +24,25 @@ type LedgerAccountRowProps = {
 
 export function LedgerAccountRow({ isSelected, address }: LedgerAccountRowProps) {
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
+<<<<<<< HEAD
 	const { data: coinBalance } = useGetCoinBalance(
 		SUI_TYPE_ARG,
 		address,
 		refetchInterval,
 		staleTime,
+=======
+
+	const { data: coinBalance } = useSuiClientQuery(
+		'getBalance',
+		{
+			coinType: SUI_TYPE_ARG,
+			owner: address,
+		},
+		{
+			refetchInterval,
+			staleTime,
+		},
+>>>>>>> mainnet-v1.24.1
 	);
 	const { data: domainName } = useResolveSuiNSName(address);
 	const [totalAmount, totalAmountSymbol] = useFormatCoin(

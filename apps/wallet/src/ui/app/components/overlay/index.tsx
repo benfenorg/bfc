@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { X32 } from '@mysten/icons';
-import cl from 'classnames';
+import cl from 'clsx';
 import { useCallback } from 'react';
+import type { ReactNode } from 'react';
 
 import useAppSelector from '../../hooks/useAppSelector';
 import { AppType } from '../../redux/slices/app/AppType';
 import { Portal } from '../../shared/Portal';
-
-import type { ReactNode } from 'react';
-
 import st from './Overlay.module.scss';
 
 type OverlayProps = {
@@ -20,6 +18,7 @@ type OverlayProps = {
 	closeOverlay?: () => void;
 	closeIcon?: ReactNode | null;
 	setShowModal?: (showModal: boolean) => void;
+	background?: 'bg-sui-lightest';
 };
 
 function Overlay({
@@ -28,7 +27,12 @@ function Overlay({
 	showModal,
 	closeOverlay,
 	setShowModal,
+<<<<<<< HEAD
 	closeIcon = <X32 fill="currentColor" className="text-white w-6 h-6" />,
+=======
+	closeIcon = <X32 fill="currentColor" className="text-sui-light w-8 h-8" />,
+	background,
+>>>>>>> mainnet-v1.24.1
 }: OverlayProps) {
 	const closeModal = useCallback(
 		(e: React.MouseEvent<HTMLElement>) => {
@@ -58,7 +62,7 @@ function Overlay({
 					</div>
 				)}
 				<div
-					className={st.content}
+					className={cl(st.content, background)}
 					style={{
 						height: title ? 'calc(100% - 108px)' : 'calc(100% - 60px)',
 					}}

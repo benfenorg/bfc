@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { getObjectDisplay } from '@benfen/bfc.js';
 import { getKioskIdFromOwnerCap, isKioskOwnerToken, useMultiGetObjects } from '@mysten/core';
 import { Check12, EyeClose16 } from '@mysten/icons';
@@ -11,6 +12,8 @@ import { Link } from 'react-router-dom';
 
 import { Link as InlineLink } from '../../../shared/Link';
 import { Text } from '../../../shared/text';
+=======
+>>>>>>> mainnet-v1.24.1
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';
@@ -19,10 +22,19 @@ import { NFTDisplayCard } from '_components/nft-display';
 import { ampli } from '_src/shared/analytics/ampli';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
+import { getKioskIdFromOwnerCap, isKioskOwnerToken, useMultiGetObjects } from '@mysten/core';
+import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
+import { EyeClose16 } from '@mysten/icons';
+import { keepPreviousData } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+
+import { useHiddenAssets } from './HiddenAssetsProvider';
 
 const HIDDEN_ASSET_IDS = 'hidden-asset-ids';
 
 function HiddenNftsPage() {
+<<<<<<< HEAD
 	const [hiddenAssetIds, setHiddenAssetIds] = useState<string[]>([]);
 	const [internalHiddenAssetIds, setInternalHiddenAssetIds] = useState<string[]>([]);
 
@@ -30,6 +42,18 @@ function HiddenNftsPage() {
 		// Prevents dupes
 		Array.from(new Set(hiddenAssetIds))!,
 		{ showContent: true, showDisplay: true, showType: true },
+=======
+	const { hiddenAssetIds, showAsset } = useHiddenAssets();
+	const kioskClient = useKioskClient();
+
+	const { data, isLoading, isPending, isError, error } = useMultiGetObjects(
+		hiddenAssetIds,
+		{
+			showDisplay: true,
+			showType: true,
+		},
+		{ placeholderData: keepPreviousData },
+>>>>>>> mainnet-v1.24.1
 	);
 
 	const filteredAndSortedNfts = useMemo(() => {
@@ -150,7 +174,7 @@ function HiddenNftsPage() {
 		showAssetId(objectId);
 	};
 
-	if (isInitialLoading) {
+	if (isLoading) {
 		return (
 			<div className="mt-1 flex w-full justify-center">
 				<LoadingSpinner />
@@ -161,7 +185,11 @@ function HiddenNftsPage() {
 	return (
 		<div className="flex flex-1 flex-col flex-nowrap items-center gap-4">
 			<PageTitle title="Hidden Assets" back="/nfts" />
+<<<<<<< HEAD
 			<Loading loading={isLoading && Boolean(internalHiddenAssetIds.length)}>
+=======
+			<Loading loading={isPending && Boolean(hiddenAssetIds.length)}>
+>>>>>>> mainnet-v1.24.1
 				{isError ? (
 					<Alert>
 						<div>
@@ -171,14 +199,14 @@ function HiddenNftsPage() {
 					</Alert>
 				) : null}
 				{filteredAndSortedNfts?.length ? (
-					<div className="flex flex-col w-full divide-y divide-solid divide-gray-40 divide-x-0 gap-2 mb-5">
+					<div className="flex flex-col w-full divide-y divide-solid divide-gray-40 divide-x-0 gap-2">
 						{filteredAndSortedNfts.map((nft) => {
 							const { objectId, type } = nft.data!;
 							return (
 								<div className="flex justify-between items-center pt-2 pr-1" key={objectId}>
 									<Link
 										to={
-											isKioskOwnerToken(nft.data)
+											isKioskOwnerToken(kioskClient.network, nft.data)
 												? `/kiosk?${new URLSearchParams({
 														kioskId: getKioskIdFromOwnerCap(nft.data!),
 												  })}`
@@ -195,12 +223,7 @@ function HiddenNftsPage() {
 										className="no-underline relative truncate"
 									>
 										<ErrorBoundary>
-											<NFTDisplayCard
-												objectId={objectId}
-												size="xs"
-												showLabel
-												orientation="horizontal"
-											/>
+											<NFTDisplayCard objectId={objectId} size="xs" orientation="horizontal" />
 										</ErrorBoundary>
 									</Link>
 									<div className="h-8 w-8">

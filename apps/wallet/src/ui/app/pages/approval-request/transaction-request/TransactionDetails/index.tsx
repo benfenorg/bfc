@@ -1,13 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { type TransactionBlock } from '@benfen/bfc.js/transactions';
+=======
+import { useTransactionData } from '_src/ui/app/hooks';
+>>>>>>> mainnet-v1.24.1
 import { Tab as HeadlessTab, type TabProps } from '@headlessui/react';
 
+import { SummaryCard } from '../SummaryCard';
 import { Command } from './Command';
 import { Input } from './Input';
-import { SummaryCard } from '../SummaryCard';
-import { useTransactionData } from '_src/ui/app/hooks';
 
 interface Props {
 	sender?: string;
@@ -22,15 +25,21 @@ const Tab = (props: TabProps<'div'>) => (
 );
 
 export function TransactionDetails({ sender, transaction }: Props) {
-	const { data: transactionData, isLoading, isError } = useTransactionData(sender, transaction);
+	const { data: transactionData, isPending, isError } = useTransactionData(sender, transaction);
 	if (transactionData?.transactions.length === 0 && transactionData.inputs.length === 0) {
 		return null;
 	}
 	return (
 		<SummaryCard header="Transaction Details" initialExpanded>
+<<<<<<< HEAD
 			{isLoading || isError ? (
 				<div className="ml-0 text-bfc-text1 text-body font-medium">
 					{isLoading ? 'Gathering data...' : "Couldn't gather data"}
+=======
+			{isPending || isError ? (
+				<div className="ml-0 text-steel-darker text-pBodySmall font-medium">
+					{isPending ? 'Gathering data...' : "Couldn't gather data"}
+>>>>>>> mainnet-v1.24.1
 				</div>
 			) : transactionData ? (
 				<div>

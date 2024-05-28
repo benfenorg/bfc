@@ -1,11 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD:sdk/typescript/src/builder/__tests__/bcs.test.ts
 import { toB58 } from '../../bcs/src/index.js';
 import { it, expect } from 'vitest';
 import type { MoveCallTransaction, TransferObjectsTransaction } from '../index.js';
 import { builder, PROGRAMMABLE_CALL, TRANSACTION } from '../index.js';
 import { sui2BfcAddress } from '../../utils/format.js';
+=======
+import { toB58 } from '@mysten/bcs';
+import { expect, it } from 'vitest';
+
+import { bcs } from '../../bcs/index.js';
+import { normalizeSuiAddress } from '../../utils/sui-types.js';
+import type { MoveCallTransaction, TransferObjectsTransaction } from '../index.js';
+import { PROGRAMMABLE_CALL, TRANSACTION } from '../index.js';
+>>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/__tests__/bcs.test.ts
 
 // Oooh-weeee we nailed it!
 it('can serialize simplified programmable call struct', () => {
@@ -25,8 +35,8 @@ it('can serialize simplified programmable call struct', () => {
 		],
 	};
 
-	const bytes = builder.ser(PROGRAMMABLE_CALL, moveCall).toBytes();
-	const result: MoveCallTransaction = builder.de(PROGRAMMABLE_CALL, bytes);
+	const bytes = bcs.ser(PROGRAMMABLE_CALL, moveCall).toBytes();
+	const result: MoveCallTransaction = bcs.de(PROGRAMMABLE_CALL, bytes);
 
 	// since we normalize addresses when (de)serializing, the returned value differs
 	// only check the module and the function; ignore address comparison (it's not an issue
@@ -45,25 +55,44 @@ it('can serialize enum with "kind" property', () => {
 		address: { kind: 'Input', index: 0 },
 	};
 
-	const bytes = builder.ser(TRANSACTION, transaction).toBytes();
-	const result: TransferObjectsTransaction = builder.de(TRANSACTION, bytes);
+	const bytes = bcs.ser(TRANSACTION, transaction).toBytes();
+	const result: TransferObjectsTransaction = bcs.de(TRANSACTION, bytes);
 
 	expect(result).toEqual(transaction);
 });
 
+it('can serialize Option<T> types using the legacy registry API', () => {
+	const none = bcs.ser('Option<u8>', { None: true }).toBytes();
+	const some = bcs.ser('Option<u8>', { Some: 2 }).toBytes();
+
+	expect(none).toEqual(new Uint8Array([0]));
+	expect(some).toEqual(new Uint8Array([1, 2]));
+});
+
 function ref(): { objectId: string; version: string; digest: string } {
 	return {
+<<<<<<< HEAD:sdk/typescript/src/builder/__tests__/bcs.test.ts
 		objectId: sui2BfcAddress((Math.random() * 100000).toFixed(0).padEnd(64, '0')),
+=======
+		objectId: normalizeSuiAddress((Math.random() * 100000).toFixed(0).padEnd(64, '0')),
+>>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/__tests__/bcs.test.ts
 		version: String((Math.random() * 10000).toFixed(0)),
 		digest: toB58(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])),
 	};
 }
 
 it('can serialize transaction data with a programmable transaction', () => {
+<<<<<<< HEAD:sdk/typescript/src/builder/__tests__/bcs.test.ts
 	let sui = sui2BfcAddress('0x2');
 	let txData = {
 		V1: {
 			sender: sui2BfcAddress('0xBAD'),
+=======
+	let sui = normalizeSuiAddress('0x2');
+	let txData = {
+		V1: {
+			sender: normalizeSuiAddress('0xBAD'),
+>>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/__tests__/bcs.test.ts
 			expiration: { None: true },
 			gasData: {
 				payment: [ref()],
@@ -79,13 +108,13 @@ it('can serialize transaction data with a programmable transaction', () => {
 						// second argument is a vector of names
 						{
 							Pure: Array.from(
-								builder.ser('vector<string>', ['name', 'description', 'img_url']).toBytes(),
+								bcs.ser('vector<string>', ['name', 'description', 'img_url']).toBytes(),
 							),
 						},
 						// third argument is a vector of values
 						{
 							Pure: Array.from(
-								builder
+								bcs
 									.ser('vector<string>', [
 										'Capy {name}',
 										'A cute little creature',
@@ -96,7 +125,7 @@ it('can serialize transaction data with a programmable transaction', () => {
 						},
 						// 4th and last argument is the account address to send display to
 						{
-							Pure: Array.from(builder.ser('address', ref().objectId).toBytes()),
+							Pure: Array.from(bcs.ser('address', ref().objectId).toBytes()),
 						},
 					],
 					transactions: [
@@ -147,7 +176,7 @@ it('can serialize transaction data with a programmable transaction', () => {
 	};
 
 	const type = 'TransactionData';
-	const bytes = builder.ser(type, txData).toBytes();
-	const result = builder.de(type, bytes);
+	const bytes = bcs.ser(type, txData).toBytes();
+	const result = bcs.de(type, bytes);
 	expect(result).toEqual(txData);
 });

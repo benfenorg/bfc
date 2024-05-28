@@ -1,14 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { Outlet } from 'react-router-dom';
 
 import PageMainLayout from '_app/shared/page-main-layout';
 import { useLockedGuard } from '_app/wallet/hooks';
+=======
+>>>>>>> mainnet-v1.24.1
 import Loading from '_components/loading';
 import { useInitializedGuard } from '_hooks';
-import PageLayout from '_pages/layout';
 import { useSetGrowthbookAttributes } from '_shared/utils';
+import { PageMainLayout } from '_src/ui/app/shared/page-main-layout/PageMainLayout';
+import { Outlet } from 'react-router-dom';
 
 interface Props {
 	disableNavigation?: boolean;
@@ -21,17 +25,15 @@ const HomePage = ({ disableNavigation }: Props) => {
 
 	useSetGrowthbookAttributes();
 	return (
-		<PageLayout>
-			<Loading loading={guardChecking}>
-				<PageMainLayout
-					bottomNavEnabled={!disableNavigation}
-					dappStatusEnabled={!disableNavigation}
-					topNavMenuEnabled={!disableNavigation}
-				>
-					<Outlet />
-				</PageMainLayout>
-			</Loading>
-		</PageLayout>
+		<Loading loading={guardChecking}>
+			<PageMainLayout
+				bottomNavEnabled={!disableNavigation}
+				dappStatusEnabled={!disableNavigation}
+				topNavMenuEnabled={!disableNavigation}
+			>
+				<Outlet />
+			</PageMainLayout>
+		</Loading>
 	);
 };
 

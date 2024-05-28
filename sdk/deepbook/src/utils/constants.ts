@@ -1,7 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { SUI_TYPE_ARG, normalizeStructTag } from '@benfen/bfc.js/utils';
+=======
+import { normalizeStructTag, SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+>>>>>>> mainnet-v1.24.1
 
 export const PACKAGE_ID = '0xdee9';
 

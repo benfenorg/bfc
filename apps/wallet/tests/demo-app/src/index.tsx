@@ -1,17 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { ReadonlyWalletAccount, type Wallet, getWallets } from '@benfen/bfc.js/wallet-standard';
+=======
+import { type SuiWallet } from '_src/dapp-interface/WalletStandardInterface';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { getWallets, ReadonlyWalletAccount, type Wallet } from '@mysten/wallet-standard';
+>>>>>>> mainnet-v1.24.1
 import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { type SuiWallet } from '_src/dapp-interface/WalletStandardInterface';
-
 function getDemoTransaction(address: string) {
 	const txb = new TransactionBlock();
-	const [coin] = txb.splitCoins(txb.gas, [txb.pure(1)]);
-	txb.transferObjects([coin], txb.pure(address));
+	const [coin] = txb.splitCoins(txb.gas, [1]);
+	txb.transferObjects([coin], address);
 	return txb;
 }
 
@@ -94,7 +98,7 @@ function App() {
 			<button
 				onClick={async () => {
 					setError(null);
-					const txb = getDemoTransaction(accounts[0]?.address);
+					const txb = getDemoTransaction(accounts[0]?.address || '');
 					try {
 						await suiWallet.features[
 							'bfc:signAndExecuteTransactionBlock'
@@ -113,7 +117,7 @@ function App() {
 			<button
 				onClick={async () => {
 					setError(null);
-					const txb = getDemoTransaction(accounts[0]?.address);
+					const txb = getDemoTransaction(accounts[0]?.address || '');
 					try {
 						await suiWallet.features['bfc:signTransactionBlock'].signTransactionBlock({
 							transactionBlock: txb,

@@ -11,458 +11,50 @@
  * @property {BcsReader}
  */
 
+<<<<<<< HEAD:sdk/typescript/src/bcs/src/index.ts
 import { toB64, fromB64 } from './b64.js';
 import { toHEX, fromHEX } from './hex.js';
 import bs58 from 'bs58';
 import sha256 from 'fast-sha256';
+=======
+import { fromB58, toB58 } from './b58.js';
+import { fromB64, toB64 } from './b64.js';
+import type { BcsTypeOptions } from './bcs-type.js';
+import { BcsType, isSerializedBcs, SerializedBcs } from './bcs-type.js';
+import { bcs } from './bcs.js';
+import { fromHEX, toHEX } from './hex.js';
+import { BcsReader } from './reader.js';
+import type { InferBcsInput, InferBcsType } from './types.js';
+import { decodeStr, encodeStr, splitGenericParameters } from './utils.js';
+import type { BcsWriterOptions } from './writer.js';
+import { BcsWriter } from './writer.js';
+>>>>>>> mainnet-v1.24.1:sdk/bcs/src/index.ts
 
-const SUI_ADDRESS_LENGTH = 32;
-
-function toLittleEndian(bigint: bigint, size: number) {
-	let result = new Uint8Array(size);
-	let i = 0;
-	while (bigint > 0) {
-		result[i] = Number(bigint % BigInt(256));
-		bigint = bigint / BigInt(256);
-		i += 1;
-	}
-	return result;
-}
-
-const toB58 = (buffer: Uint8Array) => bs58.encode(buffer);
-const fromB58 = (str: string) => bs58.decode(str);
+export * from './legacy-registry.js';
 
 // Re-export all encoding dependencies.
-export { toB58, fromB58, toB64, fromB64, fromHEX, toHEX };
-
-/**
- * Supported encodings.
- * Used in `Reader.toString()` as well as in `decodeStr` and `encodeStr` functions.
- */
-export type Encoding = 'base58' | 'base64' | 'hex';
-
-/**
- * Allows for array definitions for names.
- * @example
- * ```
- * bcs.registerStructType(['vector', BCS.STRING], ...);
- * // equals
- * bcs.registerStructType('vector<string>', ...);
- * ```
- */
-export type TypeName = string | [string, ...(TypeName | string)[]];
-
-/**
- * Class used for reading BCS data chunk by chunk. Meant to be used
- * by some wrapper, which will make sure that data is valid and is
- * matching the desired format.
- *
- * @example
- * // data for this example is:
- * // { a: u8, b: u32, c: bool, d: u64 }
- *
- * let reader = new BcsReader("647f1a060001ffffe7890423c78a050102030405");
- * let field1 = reader.read8();
- * let field2 = reader.read32();
- * let field3 = reader.read8() === '1'; // bool
- * let field4 = reader.read64();
- * // ....
- *
- * Reading vectors is another deal in bcs. To read a vector, you first need to read
- * its length using {@link readULEB}. Here's an example:
- * @example
- * // data encoded: { field: [1, 2, 3, 4, 5] }
- * let reader = new BcsReader("050102030405");
- * let vec_length = reader.readULEB();
- * let elements = [];
- * for (let i = 0; i < vec_length; i++) {
- *   elements.push(reader.read8());
- * }
- * console.log(elements); // [1,2,3,4,5]
- *
- * @param {String} data HEX-encoded data (serialized BCS)
- */
-export class BcsReader {
-	private dataView: DataView;
-	private bytePosition: number = 0;
-
-	/**
-	 * @param {Uint8Array} data Data to use as a buffer.
-	 */
-	constructor(data: Uint8Array) {
-		this.dataView = new DataView(data.buffer);
-	}
-	/**
-	 * Shift current cursor position by `bytes`.
-	 *
-	 * @param {Number} bytes Number of bytes to
-	 * @returns {this} Self for possible chaining.
-	 */
-	shift(bytes: number) {
-		this.bytePosition += bytes;
-		return this;
-	}
-	/**
-	 * Read U8 value from the buffer and shift cursor by 1.
-	 * @returns
-	 */
-	read8(): number {
-		let value = this.dataView.getUint8(this.bytePosition);
-		this.shift(1);
-		return value;
-	}
-	/**
-	 * Read U16 value from the buffer and shift cursor by 2.
-	 * @returns
-	 */
-	read16(): number {
-		let value = this.dataView.getUint16(this.bytePosition, true);
-		this.shift(2);
-		return value;
-	}
-	/**
-	 * Read U32 value from the buffer and shift cursor by 4.
-	 * @returns
-	 */
-	read32(): number {
-		let value = this.dataView.getUint32(this.bytePosition, true);
-		this.shift(4);
-		return value;
-	}
-	/**
-	 * Read U64 value from the buffer and shift cursor by 8.
-	 * @returns
-	 */
-	read64(): string {
-		let value1 = this.read32();
-		let value2 = this.read32();
-
-		let result = value2.toString(16) + value1.toString(16).padStart(8, '0');
-
-		return BigInt('0x' + result).toString(10);
-	}
-	/**
-	 * Read U128 value from the buffer and shift cursor by 16.
-	 */
-	read128(): string {
-		let value1 = BigInt(this.read64());
-		let value2 = BigInt(this.read64());
-		let result = value2.toString(16) + value1.toString(16).padStart(16, '0');
-
-		return BigInt('0x' + result).toString(10);
-	}
-	/**
-	 * Read U128 value from the buffer and shift cursor by 32.
-	 * @returns
-	 */
-	read256(): string {
-		let value1 = BigInt(this.read128());
-		let value2 = BigInt(this.read128());
-		let result = value2.toString(16) + value1.toString(16).padStart(32, '0');
-
-		return BigInt('0x' + result).toString(10);
-	}
-	/**
-	 * Read `num` number of bytes from the buffer and shift cursor by `num`.
-	 * @param num Number of bytes to read.
-	 */
-	readBytes(num: number): Uint8Array {
-		let start = this.bytePosition + this.dataView.byteOffset;
-		let value = new Uint8Array(this.dataView.buffer, start, num);
-
-		this.shift(num);
-
-		return value;
-	}
-	/**
-	 * Read ULEB value - an integer of varying size. Used for enum indexes and
-	 * vector lengths.
-	 * @returns {Number} The ULEB value.
-	 */
-	readULEB(): number {
-		let start = this.bytePosition + this.dataView.byteOffset;
-		let buffer = new Uint8Array(this.dataView.buffer, start);
-		let { value, length } = ulebDecode(buffer);
-
-		this.shift(length);
-
-		return value;
-	}
-	/**
-	 * Read a BCS vector: read a length and then apply function `cb` X times
-	 * where X is the length of the vector, defined as ULEB in BCS bytes.
-	 * @param cb Callback to process elements of vector.
-	 * @returns {Array<Any>} Array of the resulting values, returned by callback.
-	 */
-	readVec(cb: (reader: BcsReader, i: number, length: number) => any): any[] {
-		let length = this.readULEB();
-		let result = [];
-		for (let i = 0; i < length; i++) {
-			result.push(cb(this, i, length));
-		}
-		return result;
-	}
-}
-
-/**
- * Class used to write BCS data into a buffer. Initializer requires
- * some size of a buffer to init; default value for this buffer is 1KB.
- *
- * Most methods are chainable, so it is possible to write them in one go.
- *
- * @example
- * let serialized = new BcsWriter()
- *   .write8(10)
- *   .write32(1000000)
- *   .write64(10000001000000)
- *   .hex();
- */
-
-interface BcsWriterOptions {
-	/** The initial size (in bytes) of the buffer tht will be allocated */
-	size?: number;
-	/** The maximum size (in bytes) that the buffer is allowed to grow to */
-	maxSize?: number;
-	/** The amount of bytes that will be allocated whenever additional memory is required */
-	allocateSize?: number;
-}
-
-export class BcsWriter {
-	private dataView: DataView;
-	private bytePosition: number = 0;
-	private size: number;
-	private maxSize: number;
-	private allocateSize: number;
-
-	constructor({ size = 1024, maxSize, allocateSize = 1024 }: BcsWriterOptions = {}) {
-		this.size = size;
-		this.maxSize = maxSize || size;
-		this.allocateSize = allocateSize;
-		this.dataView = new DataView(new ArrayBuffer(size));
-	}
-
-	private ensureSizeOrGrow(bytes: number) {
-		const requiredSize = this.bytePosition + bytes;
-		if (requiredSize > this.size) {
-			const nextSize = Math.min(this.maxSize, this.size + this.allocateSize);
-			if (requiredSize > nextSize) {
-				throw new Error(
-					`Attempting to serialize to BCS, but buffer does not have enough size. Allocated size: ${this.size}, Max size: ${this.maxSize}, Required size: ${requiredSize}`,
-				);
-			}
-
-			this.size = nextSize;
-			const nextBuffer = new ArrayBuffer(this.size);
-			new Uint8Array(nextBuffer).set(new Uint8Array(this.dataView.buffer));
-			this.dataView = new DataView(nextBuffer);
-		}
-	}
-
-	/**
-	 * Shift current cursor position by `bytes`.
-	 *
-	 * @param {Number} bytes Number of bytes to
-	 * @returns {this} Self for possible chaining.
-	 */
-	shift(bytes: number): this {
-		this.bytePosition += bytes;
-		return this;
-	}
-	/**
-	 * Write a U8 value into a buffer and shift cursor position by 1.
-	 * @param {Number} value Value to write.
-	 * @returns {this}
-	 */
-	write8(value: number | bigint): this {
-		this.ensureSizeOrGrow(1);
-		this.dataView.setUint8(this.bytePosition, Number(value));
-		return this.shift(1);
-	}
-	/**
-	 * Write a U16 value into a buffer and shift cursor position by 2.
-	 * @param {Number} value Value to write.
-	 * @returns {this}
-	 */
-	write16(value: number | bigint): this {
-		this.ensureSizeOrGrow(2);
-		this.dataView.setUint16(this.bytePosition, Number(value), true);
-		return this.shift(2);
-	}
-	/**
-	 * Write a U32 value into a buffer and shift cursor position by 4.
-	 * @param {Number} value Value to write.
-	 * @returns {this}
-	 */
-	write32(value: number | bigint): this {
-		this.ensureSizeOrGrow(4);
-		this.dataView.setUint32(this.bytePosition, Number(value), true);
-		return this.shift(4);
-	}
-	/**
-	 * Write a U64 value into a buffer and shift cursor position by 8.
-	 * @param {bigint} value Value to write.
-	 * @returns {this}
-	 */
-	write64(value: number | bigint): this {
-		toLittleEndian(BigInt(value), 8).forEach((el) => this.write8(el));
-
-		return this;
-	}
-	/**
-	 * Write a U128 value into a buffer and shift cursor position by 16.
-	 *
-	 * @param {bigint} value Value to write.
-	 * @returns {this}
-	 */
-	write128(value: number | bigint): this {
-		toLittleEndian(BigInt(value), 16).forEach((el) => this.write8(el));
-
-		return this;
-	}
-	/**
-	 * Write a U256 value into a buffer and shift cursor position by 16.
-	 *
-	 * @param {bigint} value Value to write.
-	 * @returns {this}
-	 */
-	write256(value: number | bigint): this {
-		toLittleEndian(BigInt(value), 32).forEach((el) => this.write8(el));
-
-		return this;
-	}
-	/**
-	 * Write a ULEB value into a buffer and shift cursor position by number of bytes
-	 * written.
-	 * @param {Number} value Value to write.
-	 * @returns {this}
-	 */
-	writeULEB(value: number): this {
-		ulebEncode(value).forEach((el) => this.write8(el));
-		return this;
-	}
-	/**
-	 * Write a vector into a buffer by first writing the vector length and then calling
-	 * a callback on each passed value.
-	 *
-	 * @param {Array<Any>} vector Array of elements to write.
-	 * @param {WriteVecCb} cb Callback to call on each element of the vector.
-	 * @returns {this}
-	 */
-	writeVec(vector: any[], cb: (writer: BcsWriter, el: any, i: number, len: number) => void): this {
-		this.writeULEB(vector.length);
-		Array.from(vector).forEach((el, i) => cb(this, el, i, vector.length));
-		return this;
-	}
-
-	/**
-	 * Adds support for iterations over the object.
-	 * @returns {Uint8Array}
-	 */
-	*[Symbol.iterator](): Iterator<number, Iterable<number>> {
-		for (let i = 0; i < this.bytePosition; i++) {
-			yield this.dataView.getUint8(i);
-		}
-		return this.toBytes();
-	}
-
-	/**
-	 * Get underlying buffer taking only value bytes (in case initial buffer size was bigger).
-	 * @returns {Uint8Array} Resulting bcs.
-	 */
-	toBytes(): Uint8Array {
-		return new Uint8Array(this.dataView.buffer.slice(0, this.bytePosition));
-	}
-
-	/**
-	 * Represent data as 'hex' or 'base64'
-	 * @param encoding Encoding to use: 'base64' or 'hex'
-	 */
-	toString(encoding: Encoding): string {
-		return encodeStr(this.toBytes(), encoding);
-	}
-}
-
-// Helper utility: write number as an ULEB array.
-// Original code is taken from: https://www.npmjs.com/package/uleb128 (no longer exists)
-function ulebEncode(num: number): number[] {
-	let arr = [];
-	let len = 0;
-
-	if (num === 0) {
-		return [0];
-	}
-
-	while (num > 0) {
-		arr[len] = num & 0x7f;
-		if ((num >>= 7)) {
-			arr[len] |= 0x80;
-		}
-		len += 1;
-	}
-
-	return arr;
-}
-
-// Helper utility: decode ULEB as an array of numbers.
-// Original code is taken from: https://www.npmjs.com/package/uleb128 (no longer exists)
-function ulebDecode(arr: number[] | Uint8Array): {
-	value: number;
-	length: number;
-} {
-	let total = 0;
-	let shift = 0;
-	let len = 0;
-
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		let byte = arr[len];
-		len += 1;
-		total |= (byte & 0x7f) << shift;
-		if ((byte & 0x80) === 0) {
-			break;
-		}
-		shift += 7;
-	}
-
-	return {
-		value: total,
-		length: len,
-	};
-}
-
-/**
- * Set of methods that allows data encoding/decoding as standalone
- * BCS value or a part of a composed structure/vector.
- */
-export interface TypeInterface {
-	encode: (
-		self: BCS,
-		data: any,
-		options: BcsWriterOptions | undefined,
-		typeParams: TypeName[],
-	) => BcsWriter;
-	decode: (self: BCS, data: Uint8Array, typeParams: TypeName[]) => any;
-
-	_encodeRaw: (
-		writer: BcsWriter,
-		data: any,
-		typeParams: TypeName[],
-		typeMap: { [key: string]: TypeName },
-	) => BcsWriter;
-	_decodeRaw: (
-		reader: BcsReader,
-		typeParams: TypeName[],
-		typeMap: { [key: string]: TypeName },
-	) => any;
-}
-
-/**
- * Struct type definition. Used as input format in BcsConfig.types
- * as well as an argument type for `bcs.registerStructType`.
- */
-export type StructTypeDefinition = {
-	[key: string]: TypeName | StructTypeDefinition;
+export {
+	bcs,
+	BcsType,
+	type BcsTypeOptions,
+	SerializedBcs,
+	isSerializedBcs,
+	toB58,
+	fromB58,
+	toB64,
+	fromB64,
+	fromHEX,
+	toHEX,
+	encodeStr,
+	decodeStr,
+	splitGenericParameters,
+	BcsReader,
+	BcsWriter,
+	type BcsWriterOptions,
+	type InferBcsInput,
+	type InferBcsType,
 };
+<<<<<<< HEAD:sdk/typescript/src/bcs/src/index.ts
 
 /**
  * Enum type definition. Used as input format in BcsConfig.types
@@ -1287,9 +879,9 @@ export class BCS {
 	/**
 	 * Parse a type name and get the type's generics.
 	 * @example
-	 * let { typeName, typeParams } = parseTypeName('Option<Coin<BFC>>');
+	 * let { typeName, typeParams } = parseTypeName('Option<Coin<SUI>>');
 	 * // typeName: Option
-	 * // typeParams: [ 'Coin<BFC>' ]
+	 * // typeParams: [ 'Coin<SUI>' ]
 	 *
 	 * @param name Name of the type to process
 	 * @returns Object with typeName and typeParams listed as Array
@@ -1546,3 +1138,5 @@ export function splitGenericParameters(
 
 	return tok;
 }
+=======
+>>>>>>> mainnet-v1.24.1:sdk/bcs/src/index.ts

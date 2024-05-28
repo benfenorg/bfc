@@ -3,11 +3,16 @@
 import { getObjectDisplay } from '@benfen/bfc.js';
 import { type SuiObjectResponse } from '@benfen/bfc.js/client';
 import { getKioskIdFromOwnerCap, hasDisplayData, useGetKioskContents } from '@mysten/core';
+<<<<<<< HEAD
 import cl from 'classnames';
+=======
+import { type SuiObjectResponse } from '@mysten/sui.js/client';
+import cl from 'clsx';
+>>>>>>> mainnet-v1.24.1
 
-import { NftImage, type NftImageProps } from './NftImage';
 import { useActiveAddress } from '../../hooks';
 import { Text } from '../../shared/text';
+import { NftImage, type NftImageProps } from './NftImage';
 
 type KioskProps = {
 	object: SuiObjectResponse;
@@ -25,9 +30,18 @@ const cardStyles = [
 	`scale-[0.90] group-hover:rotate-6 group-hover:translate-x-5 group-hover:-translate-y-2 z-10 -translate-y-2 group-hover:shadow-xl`,
 ];
 
+<<<<<<< HEAD
+=======
+function getLabel(item?: SuiObjectResponse) {
+	if (!item) return;
+	const display = item.data?.display?.data;
+	return display?.name ?? display?.description ?? item.data?.objectId;
+}
+
+>>>>>>> mainnet-v1.24.1
 export function Kiosk({ object, orientation, ...nftImageProps }: KioskProps) {
 	const address = useActiveAddress();
-	const { data: kioskData, isLoading } = useGetKioskContents(address);
+	const { data: kioskData, isPending } = useGetKioskContents(address);
 
 	const kioskId = getKioskIdFromOwnerCap(object);
 	const kiosk = kioskData?.kiosks.get(kioskId!);
@@ -37,7 +51,14 @@ export function Kiosk({ object, orientation, ...nftImageProps }: KioskProps) {
 	const imagesToDisplay = orientation !== 'horizontal' ? 3 : 1;
 	const items = kiosk?.items.slice(0, imagesToDisplay) ?? [];
 
+<<<<<<< HEAD
 	if (isLoading) return null;
+=======
+	// get the label for the first item to show on hover
+	const displayName = getLabel(items[0]);
+
+	if (isPending) return null;
+>>>>>>> mainnet-v1.24.1
 
 	return (
 		<div className="relative hover:bg-transparent group rounded-xl transform-gpu overflow-visible w-36 h-36">

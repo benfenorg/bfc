@@ -1,14 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SignedTransaction } from '_src/ui/app/WalletSigner';
+import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 import {
 	type SuiSignAndExecuteTransactionBlockInput,
 	type SuiSignMessageOutput,
 } from '@benfen/bfc.js/wallet-standard';
 
+<<<<<<< HEAD
 import type { SignedTransaction } from '@benfen/bfc.js';
 import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 
+=======
+>>>>>>> mainnet-v1.24.1
 export type TransactionDataType = {
 	type: 'transaction';
 	data: string;

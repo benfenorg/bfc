@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ChevronRight16 } from '@mysten/icons';
+<<<<<<< HEAD
 import { Link } from 'react-router-dom';
 
+=======
+import clsx from 'clsx';
+>>>>>>> mainnet-v1.24.1
 import type { MouseEventHandler, ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 export type ItemProps = {
 	icon: ReactNode;

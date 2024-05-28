@@ -1,5 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+<<<<<<< HEAD
 import {
 	getExecutionStatusError,
 	getExecutionStatusType,
@@ -13,12 +14,24 @@ import { Link } from 'react-router-dom';
 
 import { TxnTypeLabel } from './TxnActionLabel';
 import { TxnIcon } from './TxnIcon';
+=======
+
+>>>>>>> mainnet-v1.24.1
 import { DateCard } from '_app/shared/date-card';
 import { Text } from '_app/shared/text';
 import { useGetTxnRecipientAddress } from '_hooks';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
+<<<<<<< HEAD
 
 import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+=======
+import { getLabel, useTransactionSummary } from '@mysten/core';
+import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import { Link } from 'react-router-dom';
+
+import { TxnTypeLabel } from './TxnActionLabel';
+import { TxnIcon } from './TxnIcon';
+>>>>>>> mainnet-v1.24.1
 
 export function TransactionCard({
 	txn,

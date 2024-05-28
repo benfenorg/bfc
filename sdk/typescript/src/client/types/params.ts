@@ -485,7 +485,7 @@ export interface UnsafePublishParams {
 export interface UnsafeRequestAddStakeParams {
 	/** the transaction signer's Sui address */
 	signer: string;
-	/** Coin<BFC> object to stake */
+	/** Coin<SUI> object to stake */
 	coins: string[];
 	/** stake amount */
 	amount?: string | null | undefined;

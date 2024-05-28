@@ -11,6 +11,7 @@ export function createStakeTransaction(
 	coins: CoinStruct[] = [],
 ) {
 	const tx = new TransactionBlock();
+<<<<<<< HEAD
 	let stakeCoin: ReturnType<typeof tx.splitCoins>;
 	if (coinType === SUI_TYPE_ARG) {
 		stakeCoin = tx.splitCoins(tx.gas, [tx.pure(amount)]);
@@ -26,6 +27,9 @@ export function createStakeTransaction(
 		'0xc8::busd::BUSD': '0x3::sui_system::request_add_stable_stake',
 	}[coinType]!;
 
+=======
+	const stakeCoin = tx.splitCoins(tx.gas, [amount]);
+>>>>>>> mainnet-v1.24.1
 	tx.moveCall({
 		target: target as any,
 		arguments: [
@@ -35,7 +39,7 @@ export function createStakeTransaction(
 				mutable: true,
 			}),
 			stakeCoin,
-			tx.pure(validator, 'address'),
+			tx.pure.address(validator),
 		],
 	});
 	return tx;

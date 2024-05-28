@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { SUI_TYPE_ARG, type SuiAddress, type StakeObject } from '@benfen/bfc.js';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
 import { cx, cva, type VariantProps } from 'class-variance-authority';
@@ -11,7 +12,20 @@ import { NUM_OF_EPOCH_BEFORE_STAKING_REWARDS_REDEEMABLE } from '_src/shared/cons
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
 
+=======
+import { NUM_OF_EPOCH_BEFORE_STAKING_REWARDS_REDEEMABLE } from '_src/shared/constants';
+import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
+import { Text } from '_src/ui/app/shared/text';
+import { IconTooltip } from '_src/ui/app/shared/tooltip';
+import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
+import { type StakeObject } from '@mysten/sui.js/client';
+import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+import { cva, cx, type VariantProps } from 'class-variance-authority';
+>>>>>>> mainnet-v1.24.1
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+
+import { ValidatorLogo } from '../validators/ValidatorLogo';
 
 export enum StakeState {
 	WARM_UP = 'WARM_UP',

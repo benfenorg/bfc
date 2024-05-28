@@ -34,8 +34,13 @@ export * from './hooks/useZodForm';
 export * from './utils/kiosk';
 export * from './hooks/useElementDimensions';
 export * from './hooks/useLocalStorage';
+<<<<<<< HEAD
 export * from './hooks/useGetReferenceGasPrice';
 export * from './hooks/useGetTotalTransactionBlocks';
 export * from './hooks/useGetSystemState';
 export * from './hooks/useGetCoinBalance';
 export * from './hooks/useGetAllBalances';
+=======
+export * from './hooks/useGetDelegatedStake';
+export * from './hooks/useTokenPrice';
+>>>>>>> mainnet-v1.24.1

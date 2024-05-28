@@ -1,18 +1,32 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+=======
+import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
+>>>>>>> mainnet-v1.24.1
 import { useTransactionSummary } from '@mysten/core';
 import { Handclap } from '@mysten/icons';
 
+<<<<<<< HEAD
 import { StakeTxnCard } from './StakeTxnCard';
 import { UnStakeTxnCard } from './UnstakeTxnCard';
+=======
+>>>>>>> mainnet-v1.24.1
 import { DateCard } from '../../shared/date-card';
 import { TransactionSummary } from '../../shared/transaction-summary';
 import { GasSummary } from '../../shared/transaction-summary/cards/GasSummary';
+<<<<<<< HEAD
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { useExplorerLink } from '_src/ui/app/hooks/useExplorerLink';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
+=======
+import { StakeTxnCard } from './StakeTxnCard';
+import { StatusIcon } from './StatusIcon';
+import { UnStakeTxnCard } from './UnstakeTxnCard';
+
+>>>>>>> mainnet-v1.24.1
 type ReceiptCardProps = {
 	txn: SuiTransactionBlockResponse;
 	activeAddress: string;

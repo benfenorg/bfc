@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { getKioskIdFromOwnerCap, isKioskOwnerToken, useOnScreen } from '@mysten/core';
 import { Check12, EyeClose16 } from '@mysten/icons';
 import { get, set } from 'idb-keyval';
@@ -11,6 +12,8 @@ import { Link } from 'react-router-dom';
 import AssetsOptionsMenu from './AssetsOptionsMenu';
 import { Link as InlineLink } from '../../../shared/Link';
 import { Text } from '../../../shared/text';
+=======
+>>>>>>> mainnet-v1.24.1
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
@@ -21,6 +24,14 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { useGetNFTs } from '_src/ui/app/hooks/useGetNFTs';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
+import { useOnScreen } from '@mysten/core';
+import { useEffect, useMemo, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { useHiddenAssets } from '../hidden-assets/HiddenAssetsProvider';
+import AssetsOptionsMenu from './AssetsOptionsMenu';
+import NonVisualAssets from './NonVisualAssets';
+import VisualAssets from './VisualAssets';
 
 const HIDDEN_ASSET_IDS = 'hidden-asset-ids';
 
@@ -30,10 +41,10 @@ function NftsPage() {
 	const {
 		data: ownedAssets,
 		hasNextPage,
-		isInitialLoading,
+		isLoading,
 		isFetchingNextPage,
 		error,
-		isLoading,
+		isPending,
 		fetchNextPage,
 		isError,
 	} = useGetNFTs(accountAddress);
@@ -144,10 +155,17 @@ function NftsPage() {
 	};
 
 	const filteredNFTs = useMemo(() => {
+<<<<<<< HEAD
 		return ownedAssets?.filter((nft) => !internalHiddenAssetIds.includes(nft.objectId));
 	}, [ownedAssets, internalHiddenAssetIds]);
+=======
+		if (!filterType) return ownedAssets?.visual;
+		return ownedAssets?.[filterType as AssetFilterTypes] ?? [];
+	}, [ownedAssets, filterType]);
+	const { hiddenAssetIds } = useHiddenAssets();
+>>>>>>> mainnet-v1.24.1
 
-	if (isInitialLoading) {
+	if (isLoading) {
 		return (
 			<div className="mt-1 flex w-full justify-center">
 				<LoadingSpinner />
@@ -156,9 +174,18 @@ function NftsPage() {
 	}
 
 	return (
+<<<<<<< HEAD
 		<div className="flex flex-1 flex-col flex-nowrap items-center gap-4">
 			<PageTitle title="Assets" after={<AssetsOptionsMenu />} />
 			<Loading loading={isLoading}>
+=======
+		<div className="flex min-h-full flex-col flex-nowrap items-center gap-4">
+			<PageTitle title="Assets" after={hiddenAssetIds.length ? <AssetsOptionsMenu /> : null} />
+			{!!ownedAssets?.other.length && (
+				<FiltersPortal firstLastMargin tags={tags} callback={handleFilterChange} />
+			)}
+			<Loading loading={isPending}>
+>>>>>>> mainnet-v1.24.1
 				{isError ? (
 					<Alert>
 						<div>
@@ -226,7 +253,7 @@ function NftsPage() {
 					</div>
 				)}
 			</Loading>
-			<div className="mb-5" ref={observerElem}>
+			<div ref={observerElem}>
 				{isSpinnerVisible ? (
 					<div className="mt-1 flex w-full justify-center">
 						<LoadingSpinner />

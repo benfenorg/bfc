@@ -1,29 +1,38 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+<<<<<<< HEAD
 import {
 	SuiObjectChangeTransferred,
 	formatAddress,
 	is,
 	SuiObjectChangePublished,
 } from '@benfen/bfc.js';
+=======
+import ExplorerLink from '_src/ui/app/components/explorer-link';
+import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
+import { Text } from '_src/ui/app/shared/text';
+>>>>>>> mainnet-v1.24.1
 import { Disclosure } from '@headlessui/react';
 import {
 	getObjectChangeLabel,
 	type ObjectChangesByOwner,
 	type ObjectChangeSummary,
-	type SuiObjectChangeWithDisplay,
 	type SuiObjectChangeTypes,
+	type SuiObjectChangeWithDisplay,
 } from '@mysten/core';
+<<<<<<< HEAD
 import { ChevronDown14, ChevronRight14 } from '@mysten/icons';
 import cx from 'classnames';
+=======
+import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui.js/utils';
+import cx from 'clsx';
+>>>>>>> mainnet-v1.24.1
 
-import { ObjectChangeDisplay } from './objectSummary/ObjectChangeDisplay';
 import { ExpandableList } from '../../ExpandableList';
 import { Card } from '../Card';
 import { OwnerFooter } from '../OwnerFooter';
-import ExplorerLink from '_src/ui/app/components/explorer-link';
-import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
-import { Text } from '_src/ui/app/shared/text';
+import { ObjectChangeDisplay } from './objectSummary/ObjectChangeDisplay';
 
 function ChevronDown({ expanded }: { expanded: boolean }) {
 	return expanded ? (

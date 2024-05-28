@@ -1,12 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD:sdk/typescript/test/unit/bcs/array.type.test.ts
 import { describe, it, expect } from 'vitest';
 import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 import { serde } from './utils.js';
+=======
+import { describe, expect, it } from 'vitest';
+
+import { BCS, getSuiMoveConfig } from '../src/index';
+import { serde } from './utils';
+>>>>>>> mainnet-v1.24.1:sdk/bcs/tests/array.type.test.ts
 
 describe('BCS: Array type', () => {
-	it.skip('should support destructured type name in ser/de', () => {
+	it('should support destructured type name in ser/de', () => {
 		const bcs = new BCS(getSuiMoveConfig());
 		const values = ['this is a string'];
 

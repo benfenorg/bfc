@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { fromB64, toB64 } from '../bcs/src/index.js';
 import type { TransactionBlock } from '../builder/TransactionBlock.js';
 import { isTransactionBlock } from '../builder/TransactionBlock.js';
@@ -8,30 +9,30 @@ import { TransactionBlockDataBuilder } from '../builder/TransactionBlockData.js'
 import type { SerializedSignature } from '../cryptography/signature.js';
 import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
 import type { HttpHeaders } from '../rpc/client.js';
+=======
+import { fromB64, toB64 } from '@mysten/bcs';
+
+import { bcs } from '../bcs/index.js';
+>>>>>>> mainnet-v1.24.1
 import type {
-	ExecuteTransactionRequestType,
 	DevInspectResults,
 	DryRunTransactionBlockResponse,
+	ExecuteTransactionRequestType,
+	SuiClient,
 	SuiTransactionBlockResponse,
 	SuiTransactionBlockResponseOptions,
 } from '../client/index.js';
-import { getTotalGasUsedUpperBound } from '../types/index.js';
 import { IntentScope, messageWithIntent } from '../cryptography/intent.js';
+import type { SerializedSignature } from '../cryptography/signature.js';
+import type { TransactionBlock } from '../transactions/TransactionBlock.js';
+import { isTransactionBlock } from '../transactions/TransactionBlock.js';
+import { TransactionBlockDataBuilder } from '../transactions/TransactionBlockData.js';
 import type { Signer } from './signer.js';
-import type { SignedTransaction, SignedMessage } from './types.js';
-import type { SuiClient } from '../client/index.js';
-import { bcs } from '../bcs/index.js';
+import type { SignedMessage, SignedTransaction } from './types.js';
 
 ///////////////////////////////
 // Exported Abstracts
 export abstract class SignerWithProvider implements Signer {
-	/**
-	 * @deprecated Use `client` instead.
-	 */
-	get provider(): JsonRpcProvider | SuiClient {
-		return this.client;
-	}
-
 	readonly client: SuiClient;
 
 	///////////////////
@@ -47,11 +48,12 @@ export abstract class SignerWithProvider implements Signer {
 
 	// Returns a new instance of the Signer, connected to provider.
 	// This MAY throw if changing providers is not supported.
-	abstract connect(client: SuiClient | JsonRpcProvider): SignerWithProvider;
+	abstract connect(client: SuiClient): SignerWithProvider;
 
 	///////////////////
 	// Sub-classes MAY override these
 
+<<<<<<< HEAD
 	/**
 	 * Request gas tokens from a faucet server and send to the signer
 	 * address
@@ -67,6 +69,9 @@ export abstract class SignerWithProvider implements Signer {
 	}
 
 	constructor(client: JsonRpcProvider | SuiClient) {
+=======
+	constructor(client: SuiClient) {
+>>>>>>> mainnet-v1.24.1
 		this.client = client as SuiClient;
 	}
 
@@ -77,7 +82,7 @@ export abstract class SignerWithProvider implements Signer {
 		const signature = await this.signData(
 			messageWithIntent(
 				IntentScope.PersonalMessage,
-				bcs.ser(['vector', 'u8'], input.message).toBytes(),
+				bcs.vector(bcs.u8()).serialize(input.message).toBytes(),
 			),
 		);
 
@@ -170,7 +175,7 @@ export abstract class SignerWithProvider implements Signer {
 	 * provided, including both the transaction effects and any return values.
 	 */
 	async devInspectTransactionBlock(
-		input: Omit<Parameters<JsonRpcProvider['devInspectTransactionBlock']>[0], 'sender'>,
+		input: Omit<Parameters<SuiClient['devInspectTransactionBlock']>[0], 'sender'>,
 	): Promise<DevInspectResults> {
 		const address = await this.getAddress();
 		return this.client.devInspectTransactionBlock({
@@ -202,20 +207,5 @@ export abstract class SignerWithProvider implements Signer {
 		return this.client.dryRunTransactionBlock({
 			transactionBlock: dryRunTxBytes,
 		});
-	}
-
-	/**
-	 * Returns the estimated gas cost for the transaction
-	 * @param tx The transaction to estimate the gas cost. When string it is assumed it's a serialized tx in base64
-	 * @returns total gas cost estimation
-	 * @throws whens fails to estimate the gas cost
-	 */
-	async getGasCostEstimation(...args: Parameters<SignerWithProvider['dryRunTransactionBlock']>) {
-		const txEffects = await this.dryRunTransactionBlock(...args);
-		const gasEstimation = getTotalGasUsedUpperBound(txEffects.effects);
-		if (typeof gasEstimation === 'undefined') {
-			throw new Error('Failed to estimate the gas cost from transaction');
-		}
-		return gasEstimation;
 	}
 }

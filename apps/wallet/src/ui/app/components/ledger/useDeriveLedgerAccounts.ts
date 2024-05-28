@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
@@ -9,10 +10,22 @@ import { AccountType } from '_src/background/keyring/Account';
 import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
 
 import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
+=======
+import { type LedgerAccountSerializedUI } from '_src/background/accounts/LedgerAccount';
+import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
+import { Ed25519PublicKey } from '@mysten/sui.js/keypairs/ed25519';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+
+import { useSuiLedgerClient } from './SuiLedgerClientProvider';
+>>>>>>> mainnet-v1.24.1
 
 type UseDeriveLedgerAccountOptions = {
 	numAccountsToDerive: number;
+<<<<<<< HEAD
 } & Pick<UseQueryOptions<SerializedLedgerAccount[], unknown>, 'select' | 'onSuccess' | 'onError'>;
+=======
+} & Pick<UseQueryOptions<DerivedLedgerAccount[], unknown>, 'select'>;
+>>>>>>> mainnet-v1.24.1
 
 export function useDeriveLedgerAccounts(options: UseDeriveLedgerAccountOptions) {
 	const { numAccountsToDerive, ...useQueryOptions } = options;
@@ -28,7 +41,7 @@ export function useDeriveLedgerAccounts(options: UseDeriveLedgerAccountOptions) 
 			return deriveAccountsFromLedger(suiLedgerClient, numAccountsToDerive);
 		},
 		...useQueryOptions,
-		cacheTime: 0,
+		gcTime: 0,
 	});
 }
 

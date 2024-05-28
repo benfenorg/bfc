@@ -17,7 +17,11 @@ import {
 	strToHex,
 } from './bfc-types.js';
 
+<<<<<<< HEAD
 export { fromB64, toB64 } from '../bcs/src/index.js';
+=======
+export { fromB64, toB64, fromHEX, toHEX } from '@mysten/bcs';
+>>>>>>> mainnet-v1.24.1
 export { is, assert } from 'superstruct';
 
 export {
@@ -36,6 +40,8 @@ export {
 	hexToString,
 	strToHex,
 };
+
+export { isValidSuiNSName, normalizeSuiNSName } from './suins.js';
 
 export const SUI_DECIMALS = 9;
 export const MIST_PER_SUI = BigInt(1000000000);

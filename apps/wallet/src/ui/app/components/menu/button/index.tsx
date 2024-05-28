@@ -1,12 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+<<<<<<< HEAD
 import { Menu, Close } from '@mysten/icons';
 import cl from 'classnames';
+=======
+import { useMenuIsOpen, useNextMenuUrl } from '_components/menu/hooks';
+import cl from 'clsx';
+>>>>>>> mainnet-v1.24.1
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-
-import { useMenuIsOpen, useNextMenuUrl } from '_components/menu/hooks';
 
 import st from './MenuButton.module.scss';
 
