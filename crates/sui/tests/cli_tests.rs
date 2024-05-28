@@ -2920,7 +2920,7 @@ async fn test_serialize_tx() -> Result<(), anyhow::Error> {
     .await?;
 
     // use alias for transfer
-    SuiClientCommands::TransferSui {
+    SuiClientCommands::TransferBfc {
         to: KeyIdentity::Alias(alias1),
         sui_coin_object_id: coin,
         amount: Some(1),
@@ -3240,7 +3240,7 @@ async fn test_dry_run() -> Result<(), anyhow::Error> {
     assert_dry_run(transfer_dry_run, object_id, "Transfer");
 
     // === TRANSFER SUI === //
-    let transfer_sui_dry_run = SuiClientCommands::TransferSui {
+    let transfer_sui_dry_run = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(SuiAddress::random_for_testing_only()),
         sui_coin_object_id: object_to_send,
         amount: Some(1),
@@ -3285,7 +3285,7 @@ async fn test_dry_run() -> Result<(), anyhow::Error> {
     assert_dry_run(pay_dry_run, gas_coin_id, "Pay");
 
     // === PAY SUI === //
-    let pay_sui_dry_run = SuiClientCommands::PaySui {
+    let pay_sui_dry_run = SuiClientCommands::PayBfc {
         input_coins: vec![object_id],
         recipients: vec![KeyIdentity::Address(SuiAddress::random_for_testing_only())],
         amounts: vec![1],
@@ -3294,10 +3294,10 @@ async fn test_dry_run() -> Result<(), anyhow::Error> {
     .execute(context)
     .await?;
 
-    assert_dry_run(pay_sui_dry_run, object_id, "PaySui");
+    assert_dry_run(pay_sui_dry_run, object_id, "PayBfc");
 
     // === PAY ALL SUI === //
-    let pay_all_sui_dry_run = SuiClientCommands::PayAllSui {
+    let pay_all_sui_dry_run = SuiClientCommands::PayAllBfc {
         input_coins: vec![object_id],
         recipient: KeyIdentity::Address(SuiAddress::random_for_testing_only()),
         opts: Opts::for_testing_dry_run(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
@@ -3305,7 +3305,7 @@ async fn test_dry_run() -> Result<(), anyhow::Error> {
     .execute(context)
     .await?;
 
-    assert_dry_run(pay_all_sui_dry_run, object_id, "PayAllSui");
+    assert_dry_run(pay_all_sui_dry_run, object_id, "PayAllBfc");
 
     Ok(())
 }
@@ -3463,7 +3463,7 @@ async fn test_pay_sui() -> Result<(), anyhow::Error> {
     let (address2, address3) = (addresses[0], addresses[1]);
     let context = &mut test_cluster.wallet;
     let amounts = [1000, 5000];
-    let pay_sui = SuiClientCommands::PaySui {
+    let pay_sui = SuiClientCommands::PayBfc {
         input_coins: vec![object_id1, object_id2],
         recipients: vec![recipient1.clone(), recipient2.clone()],
         amounts: amounts.into(),
@@ -3477,7 +3477,7 @@ async fn test_pay_sui() -> Result<(), anyhow::Error> {
     // check if each recipient has one object, if the tx status is success,
     // and if the gas object used was the first object in the input coins
     // we also check if the balances of each recipient are right!
-    if let SuiClientCommandResult::PaySui(response) = pay_sui {
+    if let SuiClientCommandResult::PayBfc(response) = pay_sui {
         assert!(response.status_ok().unwrap());
         // check gas coin used
         assert_eq!(
@@ -3528,7 +3528,7 @@ async fn test_pay_sui() -> Result<(), anyhow::Error> {
             amounts[1] as u128
         );
     } else {
-        panic!("PaySui test failed");
+        panic!("PayBfc test failed");
     }
     Ok(())
 }
@@ -3541,7 +3541,7 @@ async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
     let recipient1 = &recipients[0];
     let address2 = addresses[0];
     let context = &mut test_cluster.wallet;
-    let pay_all_sui = SuiClientCommands::PayAllSui {
+    let pay_all_sui = SuiClientCommands::PayAllBfc {
         input_coins: vec![object_id1, object_id2],
         recipient: recipient1.clone(),
         opts: Opts::for_testing(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
@@ -3552,7 +3552,7 @@ async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
     // pay all sui will take the input coins and smash them into one coin and transfer that coin to
     // the recipient, so we check that the recipient has one object, if the tx status is success,
     // and if the gas object used was the first object in the input coins
-    if let SuiClientCommandResult::PayAllSui(response) = pay_all_sui {
+    if let SuiClientCommandResult::PayAllBfc(response) = pay_all_sui {
         let objs_refs = client
             .read_api()
             .get_owned_objects(
@@ -3572,7 +3572,7 @@ async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
             object_id1
         );
     } else {
-        panic!("PayAllSui test failed");
+        panic!("PayAllBfc test failed");
     }
 
     Ok(())
@@ -3644,7 +3644,7 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     let address2 = addresses[0];
     let context = &mut test_cluster.wallet;
     let amount = 1000;
-    let transfer_sui = SuiClientCommands::TransferSui {
+    let transfer_sui = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address2),
         sui_coin_object_id: object_id1,
         amount: Some(amount),
@@ -3656,7 +3656,7 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     // transfer sui will transfer the amount from object_id1 to address2, and use the same object
     // as gas, and we check if the recipient address received the object, and the expected balance
     // is correct
-    if let SuiClientCommandResult::TransferSui(response) = transfer_sui {
+    if let SuiClientCommandResult::TransferBfc(response) = transfer_sui {
         assert!(response.status_ok().unwrap());
         assert_eq!(
             response.effects.as_ref().unwrap().gas_object().object_id(),
@@ -3682,10 +3682,10 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
             .total_balance;
         assert_eq!(balance, amount as u128);
     } else {
-        panic!("TransferSui test failed");
+        panic!("TransferBfc test failed");
     }
     // transfer the whole object by not passing an amount
-    let transfer_sui = SuiClientCommands::TransferSui {
+    let transfer_sui = SuiClientCommands::TransferBfc {
         to: recipient1.clone(),
         sui_coin_object_id: object_id1,
         amount: None,
@@ -3693,7 +3693,7 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     }
     .execute(context)
     .await?;
-    if let SuiClientCommandResult::TransferSui(response) = transfer_sui {
+    if let SuiClientCommandResult::TransferBfc(response) = transfer_sui {
         assert!(response.status_ok().unwrap());
         assert_eq!(
             response.effects.as_ref().unwrap().gas_object().object_id(),
@@ -3714,14 +3714,14 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
         assert_eq!(
             objs_refs.data.len(),
             2,
-            "Expected to have two coins when calling transfer sui the 2nd time"
+            "Expected to have two coins when calling transfer bfc the 2nd time"
         );
         assert!(objs_refs
             .data
             .iter()
             .any(|x| x.object().unwrap().object_id == object_id1));
     } else {
-        panic!("TransferSui test failed");
+        panic!("TransferBfc test failed");
     }
     Ok(())
 }
@@ -3739,7 +3739,7 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
     let gas_estimate = estimate_gas_budget(context, sender, tx_kind, rgp, None, None).await;
     assert!(gas_estimate.is_ok());
 
-    let transfer_sui_cmd = SuiClientCommands::TransferSui {
+    let transfer_sui_cmd = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address2),
         sui_coin_object_id: object_id1,
         amount: Some(amount),
@@ -3753,7 +3753,7 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
     .execute(context)
     .await
     .unwrap();
-    if let SuiClientCommandResult::TransferSui(response) = transfer_sui_cmd {
+    if let SuiClientCommandResult::TransferBfc(response) = transfer_sui_cmd {
         assert!(response.status_ok().unwrap());
         let gas_used = response.effects.as_ref().unwrap().gas_object().object_id();
         assert_eq!(gas_used, object_id1);
@@ -3767,7 +3767,7 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
                 <= gas_estimate.unwrap()
         );
     } else {
-        panic!("TransferSui test failed");
+        panic!("TransferBfc test failed");
     }
     Ok(())
 }
