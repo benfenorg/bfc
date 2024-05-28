@@ -134,7 +134,7 @@ where
     F: FnOnce(&GasCostSummary, u64, u64) -> SuiResult,
 {
     // initial system with given gas coins
-    const GAS_AMOUNT: u64 = 0;//1_000_000_000;
+    let mut GAS_AMOUNT: u64 = 0;//1_000_000_000;
     let gas_amount: u64 = if budget < 10_000_000_000 {
         10_000_000_000
     } else {
