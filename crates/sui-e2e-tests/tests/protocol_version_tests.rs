@@ -82,16 +82,11 @@ mod sim_only_tests {
         TransactionData, TEST_ONLY_GAS_UNIT_FOR_GENERIC,
     };
     use sui_types::{
-        base_types::SequenceNumber, digests::TransactionDigest, object::Object,
+        digests::TransactionDigest, object::Object,
         programmable_transaction_builder::ProgrammableTransactionBuilder, storage::ObjectStore,
         transaction::TransactionKind, MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID,
         base_types::{SequenceNumber, SuiAddress},
-        digests::TransactionDigest,
-        object::Object,
-        programmable_transaction_builder::ProgrammableTransactionBuilder,
-        transaction::TransactionKind,
-        MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID,
     };
     use sui_types::{
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID,

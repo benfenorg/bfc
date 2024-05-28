@@ -25,7 +25,6 @@ use prometheus::Registry;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
 #[cfg(msim)]
-use std::sync::atomic::Ordering;
 use sui_core::authority::RandomnessRoundReceiver;
 use sui_core::authority::CHAIN_IDENTIFIER;
 use sui_core::consensus_adapter::SubmitToConsensus;
