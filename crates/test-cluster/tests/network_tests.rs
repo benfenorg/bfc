@@ -10,6 +10,7 @@ use sui_types::{
 };
 use test_cluster::TestClusterBuilder;
 use sui_types::MOVE_STDLIB_PACKAGE_ID;
+use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
 
 #[sim_test]
 async fn test_additional_objects() {
@@ -59,16 +60,10 @@ async fn test_package_override() {
 
         let package_override = Object::new_package_for_testing(
             &framework_modules,
-            TransactionDigest::genesis_marker(),
+            TransactionDigest::genesis(),
             BuiltInFramework::genesis_move_packages(),
-            TransactionDigest::genesis_marker(),
-            [
-                BuiltInFramework::get_package_by_id(&MOVE_STDLIB_PACKAGE_ID).genesis_move_package(),
-                BuiltInFramework::get_package_by_id(&SUI_FRAMEWORK_PACKAGE_ID)
-                    .genesis_move_package(),
-            ],
         )
-        .unwrap();
+            .unwrap();;
 
         let modified_cluster = TestClusterBuilder::new()
             .with_objects([package_override])
