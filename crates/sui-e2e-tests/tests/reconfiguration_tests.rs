@@ -2495,7 +2495,7 @@ async fn sim_test_dry_run_stable_gas() -> Result<(), anyhow::Error> {
         http_client,
         address,
         swap_amount,
-        100000,
+        10000,
         "0xc8::busd::BUSD".to_string(),
     ).await?;
     test_cluster.wait_for_epoch(Some(2)).await;
