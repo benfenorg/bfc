@@ -116,7 +116,7 @@ pub struct IndexerConfig {
 
     #[clap(
         long,
-        default_value = "BFC697b63cd5a30f919d003eb0b5cf69fbfdcd8a5231a17b702b56f57846023493ec247",
+        default_value = "BFCe7d93ab2b98057bcb73c4fd42dcfd91931baf73d55eb6e9ec9be1255be6edc6e3226",
         global = true
     )]
     pub mining_nft_dex_contract: String,
@@ -212,7 +212,7 @@ impl Default for IndexerConfig {
                     .to_string(),
             ],
             mining_nft_dex_contract:
-                "BFC697b63cd5a30f919d003eb0b5cf69fbfdcd8a5231a17b702b56f57846023493ec247"
+                "BFCe7d93ab2b98057bcb73c4fd42dcfd91931baf73d55eb6e9ec9be1255be6edc6e3226"
                     .to_string(),
             mining_nft_contract:
                 "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"

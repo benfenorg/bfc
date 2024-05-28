@@ -205,7 +205,8 @@ async fn get_mining_nft_cost_in_usd(
 }
 
 fn get_price_from_sqrt_price(sqrt_price: &str) -> Result<f64, IndexerError> {
-    let div: Decimal = (u64::MAX - 1/* 2^64 */).into();
+    let two: Decimal = 2u64.into();
+    let div = two.powi(64); // 2^64
     let coin_a_price = Decimal::from_str_exact(sqrt_price)
         .map_err(|err| IndexerError::UncategorizedError(err.into()))?
         .div(&div)
