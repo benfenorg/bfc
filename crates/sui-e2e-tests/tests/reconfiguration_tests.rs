@@ -17,8 +17,6 @@ use serde::{Deserialize, Serialize};
 use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
-use sui_macros::sim_test;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_macros::{register_fail_point_arg, sim_test};
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
@@ -284,7 +282,6 @@ async fn reconfig_with_revert_end_to_end_test() {
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[sim_test]
 async fn sim_test_passive_reconfig() {
-async fn test_passive_reconfig() {
     do_test_passive_reconfig().await;
 }
 
@@ -2155,7 +2152,6 @@ async fn test_reconfig_with_committee_change_basic() {
 
 #[sim_test]
 async fn sim_test_reconfig_with_committee_change_stress() {
-async fn test_reconfig_with_committee_change_stress() {
     do_test_reconfig_with_committee_change_stress().await;
 }
 
