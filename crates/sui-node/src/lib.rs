@@ -151,7 +151,7 @@ pub struct ValidatorComponents {
     checkpoint_metrics: Arc<CheckpointMetrics>,
     sui_tx_validator_metrics: Arc<SuiTxValidatorMetrics>,
 }
-
+use sui_core::authority::RandomnessRoundReceiver;
 #[cfg(msim)]
 mod simulator {
     use super::*;
