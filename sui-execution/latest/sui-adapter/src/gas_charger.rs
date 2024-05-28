@@ -301,7 +301,7 @@ pub mod checked {
                     let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
                     cost_summary.rate = rate;
                     cost_summary.base_point = base_point;
-                    let stable_gas_used= calculate_stable_net_used_with_base_point(cost_summary.clone());
+                    let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
                     deduct_gas(&mut gas_object, stable_gas_used);
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
