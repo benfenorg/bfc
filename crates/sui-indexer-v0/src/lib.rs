@@ -22,8 +22,8 @@ use tracing::{info, warn};
 use url::Url;
 
 use apis::{
-    CoinReadApi, ExtendedApi, GovernanceReadApi, IndexerApi, ReadApi, TransactionBuilderApi,
-    WriteApi,
+    BenfenApi, CoinReadApi, ExtendedApi, GovernanceReadApi, IndexerApi, ReadApi,
+    TransactionBuilderApi, WriteApi,
 };
 use errors::IndexerError;
 use handlers::checkpoint_handler::CheckpointHandler;
@@ -432,7 +432,13 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         config.migrated_methods.clone(),
     ))?;
     builder.register_module(WriteApi::new(state.clone(), http_client.clone()))?;
-    builder.register_module(ExtendedApi::new(
+    builder.register_module(BenfenApi::new(
+        state.clone(),
+        http_client.clone(),
+        config.clone(),
+    ))?;
+    builder.register_module(ExtendedApi::new(state.clone(), http_client.clone()))?;
+    builder.register_module(BenfenApi::new(
         state.clone(),
         http_client.clone(),
         config.clone(),
