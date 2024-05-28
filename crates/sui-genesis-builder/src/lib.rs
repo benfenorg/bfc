@@ -1052,6 +1052,7 @@ fn create_genesis_objects(
         .expect("Creating an executor should not fail here");
 
     for system_package in system_packages.into_iter() {
+
         process_package(
             &mut store,
             executor.as_ref(),

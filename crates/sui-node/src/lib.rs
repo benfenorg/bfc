@@ -24,7 +24,6 @@ use futures::TryFutureExt;
 use prometheus::Registry;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
-#[cfg(msim)]
 use sui_core::authority::RandomnessRoundReceiver;
 use sui_core::authority::CHAIN_IDENTIFIER;
 use sui_core::consensus_adapter::SubmitToConsensus;
@@ -151,7 +150,6 @@ pub struct ValidatorComponents {
     checkpoint_metrics: Arc<CheckpointMetrics>,
     sui_tx_validator_metrics: Arc<SuiTxValidatorMetrics>,
 }
-use sui_core::authority::RandomnessRoundReceiver;
 #[cfg(msim)]
 mod simulator {
     use super::*;

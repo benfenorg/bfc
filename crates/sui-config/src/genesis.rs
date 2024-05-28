@@ -422,7 +422,7 @@ impl Genesis {
             .with_context(|| format!("Unable to parse Genesis from {}", path.display()))
     }
 
-    pub fn load_gensis<P: AsRef<Path>>(&self, path: P) -> Result<Self, anyhow::Error> {
+    pub fn load_genesis<P: AsRef<Path>>(&self, path: P) -> Result<Self, anyhow::Error> {
         let path = path.as_ref();
         trace!("Reading Genesis from {}", path.display());
         let bytes = fs::read(path)

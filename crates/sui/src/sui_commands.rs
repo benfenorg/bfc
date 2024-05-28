@@ -869,8 +869,8 @@ pub async fn genesis_private(
     }
     let active_address = keystore.addresses().pop();
     if with_genesis {
-        let mygensis = network_config.genesis.load_gensis(&PathBuf::from("./genesis/genesis.blob")).unwrap();
-        network_config.genesis = mygensis;
+        let mygenesis = network_config.genesis.load_genesis(&PathBuf::from("./genesis/genesis.blob")).unwrap();
+        network_config.genesis = mygenesis;
     }
 
     network_config.genesis.save(&genesis_path)?;
