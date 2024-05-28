@@ -4,6 +4,9 @@
 use anyhow::anyhow;
 use mysten_metrics::histogram::Histogram;
 
+pub use benfen::BenfenApiClient;
+pub use benfen::BenfenApiOpenRpc;
+pub use benfen::BenfenApiServer;
 pub use coin::CoinReadApiClient;
 pub use coin::CoinReadApiOpenRpc;
 pub use coin::CoinReadApiServer;
@@ -33,6 +36,7 @@ pub use write::WriteApiClient;
 pub use write::WriteApiOpenRpc;
 pub use write::WriteApiServer;
 
+mod benfen;
 mod coin;
 mod extended;
 mod governance;
