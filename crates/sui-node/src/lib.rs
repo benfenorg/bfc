@@ -129,8 +129,6 @@ use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemS
 use sui_types::sui_system_state::SuiSystemStateTrait;
 use typed_store::rocks::default_db_options;
 use typed_store::DBMetrics;
-use sui_core::consensus_manager::narwhal_manager::NarwhalManager;
-use sui_core::consensus_manager::narwhal_manager::NarwhalConfiguration;
 use crate::metrics::{GrpcMetrics, SuiNodeMetrics};
 
 pub mod admin;

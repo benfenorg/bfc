@@ -25,7 +25,7 @@ use sui_types::balance::Supply;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::coin::{CoinMetadata, TreasuryCap};
 use sui_types::effects::TransactionEffectsAPI;
-use sui_types::gas_coin::{GAS, TOTAL_SUPPLY_MIST};
+use sui_types::gas_coin::{GAS};
 use sui_types::object::Object;
 use sui_types::parse_sui_struct_tag;
 
