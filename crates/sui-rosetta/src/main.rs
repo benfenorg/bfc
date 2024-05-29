@@ -16,7 +16,7 @@ use fastcrypto::traits::EncodeDecodeBase64;
 use serde_json::{json, Value};
 use sui_config::{sui_config_dir, Config, NodeConfig, SUI_FULLNODE_CONFIG, SUI_KEYSTORE_FILENAME};
 use sui_keys::aes_utils::default_des_128_decode;
-use sui_node::{metrics, SuiNode};
+use sui_node::{SuiNode};
 use sui_rosetta::types::{CurveType, PrefundedAccount, SuiEnv};
 use sui_rosetta::{RosettaOfflineServer, RosettaOnlineServer, SUI};
 use sui_sdk::{SuiClient, SuiClientBuilder};
@@ -209,7 +209,7 @@ fn read_prefunded_account(path: &Path) -> Result<Vec<PrefundedAccount>, anyhow::
     let mut contents = String::new();
     reader.read_to_string(&mut contents).expect("Can not read keytore file content.");
 
-    let mut kp_strings: Vec<String> = Vec::new();
+    let kp_strings: Vec<String>;
     if contents.starts_with("[") {
         kp_strings = serde_json::from_str(&*contents)
             .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;

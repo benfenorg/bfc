@@ -1951,27 +1951,6 @@ impl<'a, K, V> Map<'a, K, V> for DBMap<K, V>
     /// Returns an unbounded iterator visiting each key-value pair in the map.
     /// This is potentially unsafe as it can perform a full table scan
     fn unbounded_iter(&'a self) -> Self::Iterator {
-        let _timer = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_latency_seconds
-            .with_label_values(&[&self.cf])
-            .start_timer();
-        let bytes_scanned = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_bytes
-            .with_label_values(&[&self.cf]);
-        let keys_scanned = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_keys
-            .with_label_values(&[&self.cf]);
-        let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext)
-        } else {
-            None
-        };
         let db_iter = self
             .rocksdb
             .raw_iterator_cf(&self.cf(), self.opts.readopts());
@@ -2032,12 +2011,6 @@ impl<'a, K, V> Map<'a, K, V> for DBMap<K, V>
         lower_bound: Option<K>,
         upper_bound: Option<K>,
     ) -> Self::Iterator {
-
-        let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext)
-        } else {
-            None
-        };
         let readopts = self.create_read_options_with_bounds(lower_bound, upper_bound);
         let db_iter = self.rocksdb.raw_iterator_cf(&self.cf(), readopts);
         let (_timer, bytes_scanned, keys_scanned, _perf_ctx) = self.create_iter_context();
@@ -2056,27 +2029,6 @@ impl<'a, K, V> Map<'a, K, V> for DBMap<K, V>
     /// TODO: find better name
     fn range_iter(&'a self, range: impl RangeBounds<K>) -> Self::Iterator {
         // TODO: Change the metrics?
-        let _timer = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_latency_seconds
-            .with_label_values(&[&self.cf])
-            .start_timer();
-        let bytes_scanned = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_bytes
-            .with_label_values(&[&self.cf]);
-        let keys_scanned = self
-            .db_metrics
-            .op_metrics
-            .rocksdb_iter_keys
-            .with_label_values(&[&self.cf]);
-        let _perf_ctx = if self.iter_sample_interval.sample() {
-            Some(RocksDBPerfContext)
-        } else {
-            None
-        };
         let mut readopts = self.opts.readopts();
 
         let lower_bound = range.start_bound();

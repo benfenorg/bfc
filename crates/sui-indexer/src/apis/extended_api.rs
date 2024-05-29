@@ -11,7 +11,6 @@ use sui_json_rpc_types::{
 };
 use sui_open_rpc::Module;
 use sui_types::sui_serde::BigInt;
-use sui_json_rpc_types::NetworkMetrics;
 pub(crate) struct ExtendedApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
 }

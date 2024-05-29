@@ -256,7 +256,7 @@ impl<R, S: store::SimulatorStore> Simulacrum<R, S> {
         let next_epoch_system_package_bytes = vec![];
 
         let mut kinds = vec![];
-        let mut hash: HashMap<TypeTag,GasCostSummaryAdjusted> = HashMap::new();
+        let hash: HashMap<TypeTag,GasCostSummaryAdjusted> = HashMap::new();
 
         if create_random_state {
             kinds.push(EndOfEpochTransactionKind::new_randomness_state_create());

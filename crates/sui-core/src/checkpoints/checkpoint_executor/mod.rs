@@ -54,7 +54,6 @@ use tracing::{debug, error, info, instrument, trace, warn};
 use self::metrics::CheckpointExecutorMetrics;
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::authority::AuthorityState;
-use crate::authority::AuthorityStore;
 use crate::checkpoints::checkpoint_executor::data_ingestion_handler::store_checkpoint_locally;
 use crate::state_accumulator::StateAccumulator;
 use crate::transaction_manager::TransactionManager;

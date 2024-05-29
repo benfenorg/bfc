@@ -7,7 +7,6 @@ use std::sync::Arc;
 use crate::{errors::IndexerError, indexer_reader::IndexerReader};
 use async_trait::async_trait;
 use jsonrpsee::{core::RpcResult, RpcModule};
-use sui_json_rpc_api::GovernanceReadApiClient;
 use cached::{proc_macro::cached, CachedAsync, SizedCache};
 use diesel::r2d2::R2D2Connection;
 use sui_json_rpc::{governance_api::ValidatorExchangeRates, SuiRpcModule};
@@ -24,9 +23,6 @@ use sui_types::{
     sui_system_state::{sui_system_state_summary::SuiSystemStateSummary, PoolTokenExchangeRate},
 };
 use tokio::sync::Mutex;
-use sui_types::dynamic_field::DynamicFieldInfo;
-use sui_types::proposal::Proposal;
-use crate::HttpClient;
 #[derive(Clone)]
 pub struct GovernanceReadApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,

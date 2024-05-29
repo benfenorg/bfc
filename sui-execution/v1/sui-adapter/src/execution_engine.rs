@@ -46,7 +46,6 @@ mod checked {
     use sui_types::execution_config_utils::to_binary_config;
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::GasCostSummary;
-    use sui_types::messages_consensus::ConsensusCommitPrologue;
     use sui_types::gas::SuiGasStatus;
     use sui_types::storage::BackingStore;
     #[cfg(msim)]
