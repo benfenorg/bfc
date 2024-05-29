@@ -48,11 +48,6 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
 use sui_types::bfc_system_state::{get_bfc_system_state, BFCSystemState};
 use typed_store::rocks::util::is_ref_count_value;
-use move_bytecode_utils::module_cache::GetModule;
-use sui_types::storage::ParentSync;
-use sui_types::storage::ChildObjectResolver;
-use sui_types::storage::InputKey;
-use sui_types::storage::get_module_by_id;
 const NUM_SHARDS: usize = 4096;
 
 struct AuthorityStoreMetrics {
