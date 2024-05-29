@@ -322,7 +322,7 @@ impl FileBasedKeystore {
             let mut contents = String::new();
             reader.read_to_string(&mut contents).expect("Can not read keytore file content.");
 
-            let mut kp_strings: Vec<String> = Vec::new();
+            let kp_strings: Vec<String>;
             if contents.starts_with("[") {
                 kp_strings = serde_json::from_str(&*contents)
                     .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
@@ -332,14 +332,6 @@ impl FileBasedKeystore {
                 kp_strings = serde_json::from_str(&*decode_data)
                     .map_err(|e| anyhow!("Can't deserialize FileBasedKeystore from {:?}: {e}", path))?;
             }
-
-            let reader =
-                BufReader::new(File::open(path).with_context(|| {
-                    format!("Cannot open the keystore file: {}", path.display())
-                })?);
-            let kp_strings: Vec<String> = serde_json::from_reader(reader).with_context(|| {
-                format!("Cannot deserialize the keystore file: {}", path.display(),)
-            })?;
             kp_strings
                 .iter()
                 .map(|kpstr| {

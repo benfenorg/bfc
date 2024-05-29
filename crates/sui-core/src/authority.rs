@@ -31,8 +31,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::{Duration, Instant};
-use std::{collections::HashMap, fs, pin::Pin, sync::Arc, thread};
+use std::time::{Duration};
+use std::{collections::HashMap, fs, pin::Pin, sync::Arc};
 use std::sync::atomic::Ordering;
 use std::{
     collections::{HashSet},
@@ -123,7 +123,6 @@ use sui_types::{is_system_package, TypeTag};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::proposal::ProposalStatus;
-use typed_store::Map;
 use typed_store::TypedStoreError;
 
 use crate::authority::authority_per_epoch_store::{AuthorityPerEpochStore, CertTxGuard};

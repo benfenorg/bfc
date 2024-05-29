@@ -70,7 +70,6 @@ impl SuiTxValidator {
                     ckpt_batch.push(signature.summary);
                 }
                 ConsensusTransactionKind::EndOfPublish(_)
-                | ConsensusTransactionKind::CapabilityNotification(_) => {}
                 | ConsensusTransactionKind::CapabilityNotification(_)
                 | ConsensusTransactionKind::NewJWKFetched(_, _, _)
                 | ConsensusTransactionKind::RandomnessStateUpdate(_, _)

@@ -49,7 +49,6 @@ use sui_types::crypto::{DefaultHash, PublicKey};
 use sui_types::error::SuiResult;
 use sui_types::multisig::{MultiSig, MultiSigPublicKey, ThresholdUnit, WeightUnit};
 use sui_types::multisig_legacy::{MultiSigLegacy, MultiSigPublicKeyLegacy};
-use sui_types::signature::{AuthenticatorTrait};
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_evm_address, sui_address_to_bfc_address};
 use sui_types::signature::{GenericSignature, VerifyParams};
 use sui_types::transaction::{TransactionData, TransactionDataAPI};
@@ -877,7 +876,6 @@ impl KeyToolCommand {
                 }
                 let sui_address = SuiAddress::from_str(&evm_address_string.to_string()).unwrap_or_else(|_e| panic!("Incorrect sui_address"));
 
-                let address = get_identity_address_from_keystore(address, keystore)?;
                 let intent = intent.unwrap_or_else(Intent::sui_transaction);
                 let intent_clone = intent.clone();
                 let msg: TransactionData =
