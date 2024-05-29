@@ -158,7 +158,19 @@ Aborts with <code><a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_E
 ) {
     <b>let</b> object_addr = <a href="../sui-framework/object.md#0x2_object">object</a>.to_address();
     <b>let</b> hash = <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_hash_type_and_key">hash_type_and_key</a>(object_addr, name);
-    <b>assert</b>!(!<a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_has_child_object">has_child_object</a>(object_addr, hash), <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_EFieldAlreadyExists">EFieldAlreadyExists</a>);
+    <b>if</b>(<a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_has_child_object">has_child_object</a>(object_addr, hash)){
+        //<a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_EFieldAlreadyExists">EFieldAlreadyExists</a>);
+        <b>let</b> <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_Field">Field</a> { id, name: _, value: value_old } = <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_remove_child_object">remove_child_object</a>&lt;<a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_Field">Field</a>&lt;Name, Value&gt;&gt;(object_addr, hash);
+        id.delete();
+        <b>let</b> field = <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_Field">Field</a> {
+            id: <a href="../sui-framework/object.md#0x2_object_new_uid_from_hash">object::new_uid_from_hash</a>(hash),
+            name,
+            value:value_old,
+        };
+
+        <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_add_child_object">add_child_object</a>(@0x0, field)
+    };
+
     <b>let</b> field = <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_Field">Field</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new_uid_from_hash">object::new_uid_from_hash</a>(hash),
         name,

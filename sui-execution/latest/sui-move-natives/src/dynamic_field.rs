@@ -419,6 +419,10 @@ pub fn has_child_object(
     let parent = pop_arg!(args, AccountAddress).into();
     let object_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut();
     let has_child = object_runtime.child_object_exists(parent, child_id)?;
+
+
+    println!("has_child_object: parent: {}, child_id: {}, has_child: {}", parent, child_id, has_child);
+
     Ok(NativeResult::ok(
         context.gas_used(),
         smallvec![Value::bool(has_child)],
