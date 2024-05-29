@@ -8,7 +8,7 @@ use fastcrypto::traits::KeyPair;
 use move_binary_format::CompiledModule;
 use move_core_types::ident_str;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -49,7 +49,7 @@ use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSyste
 use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use tracing::{trace};
 use sui_types::transaction::{
-    CallArg,InputObjects, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
+    CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
@@ -1135,7 +1135,7 @@ fn process_package(
         })
         .collect();
 
-    let _genesis_digest = ctx.digest();
+    // let _genesis_digest = ctx.digest();
     // let mut temporary_store = TemporaryStore::new(
     //     store.clone(),
     //     InputObjects::new(loaded_dependencies),
@@ -1159,7 +1159,7 @@ fn process_package(
 
 
     let InnerTemporaryStore {
-        mut written, ..
+        written, ..
     } = executor.update_genesis_state(
         &*store,
         protocol_config,
