@@ -114,6 +114,7 @@ impl BuiltInFramework {
                 "sui-framework",
                 [MOVE_STDLIB_PACKAGE_ID]
             ),
+
             (
                 BFC_SYSTEM_PACKAGE_ID,
                 "bfc-system",
@@ -123,12 +124,15 @@ impl BuiltInFramework {
                 SUI_SYSTEM_PACKAGE_ID,
                 "sui-system",
                 [MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,BFC_SYSTEM_PACKAGE_ID]
+                //[MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID]
+
             ),
             (
                 DEEPBOOK_PACKAGE_ID,
                 "deepbook",
                 [MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID]
             ),
+
         ])
         .iter()
     }
