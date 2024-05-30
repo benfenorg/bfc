@@ -305,7 +305,7 @@ pub async fn get_nft_staking_overview(
             overall_profits.push(SuiOwnedMiningNFTProfit {
                 mint_bfc: latest_profit.mint_bfc + overall_reward,
                 mint_usd: 0,
-                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 250)),
+                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 500)),
                 dt_timestamp_ms: dp * 1_000,
             })
         }
