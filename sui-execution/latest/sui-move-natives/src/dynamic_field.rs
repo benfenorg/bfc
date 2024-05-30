@@ -165,6 +165,7 @@ pub fn add_child_object(
     mut ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    println!("=====add_child_object begin:========");
     assert!(ty_args.len() == 1);
     assert!(args.len() == 2);
 
@@ -227,6 +228,8 @@ pub fn add_child_object(
             .dynamic_field_add_child_object_struct_tag_cost_per_byte
             * struct_tag_size.into()
     );
+
+    println!("=====add_child_object: parent: {}, child_id: {}, ", parent, child_id);
 
     let object_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut();
     object_runtime.add_child_object(
