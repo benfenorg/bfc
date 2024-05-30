@@ -4,6 +4,7 @@ use crate::{
 };
 use chrono::Utc;
 use diesel::prelude::*;
+use diesel::QueryableByName;
 use move_core_types::{
     account_address::{account_address_util::convert_to_evm_address, AccountAddress},
     ident_str,
@@ -393,4 +394,9 @@ impl From<MiningNFTLiquiditiy> for SuiMiningNFTLiquidity {
 
 fn parse_to_type_tag(coin_type: &str) -> TypeTag {
     parse_type_tag(coin_type).unwrap_or(sui_types::TypeTag::Bool)
+}
+
+#[derive(Debug, QueryableByName)]
+pub struct MiningNFTSummary {
+    pub total_addresses: i64,
 }

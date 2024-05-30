@@ -442,6 +442,10 @@ pub struct SuiOwnedMiningNFTOverview {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub yesterady_reward: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_addresses: u64,
 }
 
 #[serde_as]

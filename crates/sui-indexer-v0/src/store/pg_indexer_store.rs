@@ -67,7 +67,7 @@ use crate::models::epoch::DBEpochInfo;
 use crate::models::epoch_stake;
 use crate::models::events::Event;
 use crate::models::mining_nft::{
-    MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MiningNFTStaking,
+    MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MiningNFTStaking, MiningNFTSummary,
 };
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
@@ -1551,6 +1551,8 @@ impl PgIndexerStore {
                 bfc_usd_price: 0f64,
                 profit_rate: 0f64,
                 yesterady_reward: stakings.iter().map(|x| x.yesterday_mint_bfc as u64).sum(),
+                total_addresses: get_mining_summary_cached(&self.blocking_cp)?.total_addresses
+                    as u64,
             },
             ticket_ids,
             total_cost,
@@ -3830,4 +3832,16 @@ fn get_network_overview_cached(cp: &PgConnectionPool) -> Result<NetworkOverview,
     )
     .get_result::<DBNetworkOverview>(conn))?;
     Ok(overview.into())
+}
+
+// Run this function only once every `time` seconds
+#[once(name = "SFT_STAKED_ADDRESS", time = 60, result = true)]
+fn get_mining_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, IndexerError> {
+    let summary = read_only_blocking!(cp, |conn| diesel::sql_query(
+        "SELECT
+           COUNT(DISTINCT owner)::BIGINT AS total_addresses
+        FROM  mining_ticket_id is not null;"
+    )
+    .get_result::<MiningNFTSummary>(conn))?;
+    Ok(summary)
 }
