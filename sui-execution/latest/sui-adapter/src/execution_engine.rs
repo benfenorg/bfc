@@ -5,7 +5,6 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
-
     use move_binary_format::CompiledModule;
     use move_vm_runtime::move_vm::MoveVM;
     use once_cell::sync::Lazy;
@@ -20,7 +19,7 @@ mod checked {
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
-    }, transaction::ChangeBfcRound};
+    }};
 
 
     use sui_types::execution_mode::{self, ExecutionMode};
@@ -311,7 +310,6 @@ mod checked {
     }
 
 
-
     #[instrument(name = "run_conservation_checks", level = "debug", skip_all)]
     fn run_conservation_checks<Mode: ExecutionMode>(
         temporary_store: &mut TemporaryStore<'_>,
@@ -363,7 +361,7 @@ mod checked {
                 }
             }
         } // else, we're in the genesis transaction which mints the SUI supply, and hence does not satisfy SUI conservation, or
-          // we're in the non-production dev inspect mode which allows us to violate conservation
+        // we're in the non-production dev inspect mode which allows us to violate conservation
 
         result
     }
@@ -441,7 +439,7 @@ mod checked {
                             max_size: lim as u64,
                         },
                         "Written objects size crossed hard limit",
-                    ))
+                    ));
                 }
             };
         }
@@ -501,7 +499,7 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                .expect("ConsensusCommitPrologue cannot fail");
+                    .expect("ConsensusCommitPrologue cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ProgrammableTransaction(pt) => {
@@ -514,18 +512,6 @@ mod checked {
                     gas_charger,
                     pt,
                 )
-            }
-            TransactionKind::ChangeBfcRound(change_round) => {
-                bfc_round(
-                    change_round,
-                    temporary_store,
-                    tx_ctx,
-                    move_vm,
-                    gas_charger,
-                    protocol_config,
-                    metrics,
-                )?;
-                Ok(Mode::empty_results())
             }
         }
     }
@@ -592,7 +578,7 @@ mod checked {
 
     pub fn construct_advance_epoch_pt(
         params: &AdvanceEpochParams,
-        rate_map: &VecMap<String, u64>
+        rate_map: &VecMap<String, u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create storage and computation rewards.
@@ -611,9 +597,9 @@ mod checked {
             CallArg::Pure(bcs::to_bytes(&params.epoch_start_timestamp_ms).unwrap()),
             CallArg::Pure(bcs::to_bytes(&rate_vec).unwrap()),
         ]
-        .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<Result<_, _>>();
+            .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
 
         assert_invariant!(
             call_arg_arguments.is_ok(),
@@ -698,7 +684,7 @@ mod checked {
         param: ChangeObcRoundParams,
         reward_rate: u64,
         storage_rebate: u64,
-        epoch_start_time: u64
+        epoch_start_time: u64,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         let mut arguments = vec![];
@@ -707,7 +693,7 @@ mod checked {
             CallArg::BFC_SYSTEM_MUT,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
             CallArg::Pure(bcs::to_bytes(&epoch_start_time).unwrap()),
-        ] .into_iter()
+        ].into_iter()
             .map(|a| builder.input(a))
             .collect::<Result<_, _>>();
 
@@ -722,7 +708,7 @@ mod checked {
             vec![],
             arguments,
         );
-        for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
+        for (type_tag, gas_cost_summary) in param.stable_gas_summarys {
             // create rewards in stable coin
 
             let charge_arg = builder
@@ -751,7 +737,7 @@ mod checked {
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
                 STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![system_obj,rewards,charge_arg],
+                vec![system_obj, rewards, charge_arg],
             );
 
             // Destroy the rewards.
@@ -762,11 +748,10 @@ mod checked {
                 vec![GAS::type_tag()],
                 vec![rewards_bfc],
             );
-
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ param.bfc_computation_charge -calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
+                bcs::to_bytes(&(storage_rebate + param.bfc_computation_charge - calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -783,51 +768,10 @@ mod checked {
             BFC_SYSTEM_MODULE_NAME.to_owned(),
             DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
             vec![],
-            vec![system_obj,storage_rebate],
+            vec![system_obj, storage_rebate],
         );
 
         Ok(builder.finish())
-    }
-
-    fn bfc_round(
-        _change_round: ChangeBfcRound,
-        _temporary_store: &mut TemporaryStore<'_>,
-        _tx_ctx: &mut TxContext,
-        _move_vm: &Arc<MoveVM>,
-        _gas_charger: &mut GasCharger,
-        _protocol_config: &ProtocolConfig,
-        _metrics: Arc<LimitsMetrics>,
-    ) -> Result<(), ExecutionError>{
-        // let _ = BfcRoundParams {
-        //     round_id:change_round.bfc_round
-        // };
-        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
-        //     protocol_config,
-        //     metrics.clone(),
-        //     move_vm,
-        //     temporary_store,
-        //     tx_ctx,
-        //     gas_charger,
-        //     advance_epoch_pt,
-        // );
-
-        // #[cfg(msim)]
-        // let _result = maybe_modify_result(result, change_round.bfc_round);
-
-        // if result.is_err() {
-        //     tracing::error!(
-        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-        //     result.as_ref().err(),
-        //     temporary_store.objects(),
-        // );
-        //     temporary_store.drop_writes();
-        //     // Must reset the storage rebate since we are re-executing.
-        //     gas_charger.reset_storage_cost_and_rebate();
-        //
-        //     temporary_store.advance_bfc_round_mode(protocol_config);
-        // }
-        Ok(())
     }
 
     fn advance_epoch(
@@ -842,14 +786,14 @@ mod checked {
         let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
-        let mut storage_charge=0u64;
-        let mut computation_charge =0u64;
+        let mut storage_charge = 0u64;
+        let mut computation_charge = 0u64;
 
         info!("change epoch: {:?}",change_epoch);
-        for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
+        for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
             storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
             non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
-            computation_charge += gas_cost_summary.gas_by_bfc.computation_cost-calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+            computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
             storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
         }
 
@@ -881,10 +825,10 @@ mod checked {
         let params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.bfc_storage_charge+storage_charge,
-            computation_charge:  change_epoch.bfc_computation_charge- calculate_reward_rate(change_epoch.bfc_computation_charge, reward_rate) + computation_charge,
-            storage_rebate: change_epoch.bfc_storage_rebate+storage_rebate,
-            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee+non_refundable_storage_fee,
+            storage_charge: change_epoch.bfc_storage_charge + storage_charge,
+            computation_charge: change_epoch.bfc_computation_charge - calculate_reward_rate(change_epoch.bfc_computation_charge, reward_rate) + computation_charge,
+            storage_rebate: change_epoch.bfc_storage_rebate + storage_rebate,
+            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee + non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
@@ -902,7 +846,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let result = maybe_modify_result(result, change_epoch.epoch);
+            let result = maybe_modify_result(result, change_epoch.epoch);
 
         if result.is_err() {
             tracing::error!(
@@ -929,7 +873,7 @@ mod checked {
                     gas_charger,
                     advance_epoch_safe_mode_pt,
                 )
-                .expect("Advance epoch with safe mode must succeed");
+                    .expect("Advance epoch with safe mode must succeed");
             }
         }
 
@@ -944,7 +888,7 @@ mod checked {
                         max_format_version,
                         protocol_config.no_extraneous_module_bytes(),
                     )
-                    .unwrap()
+                        .unwrap()
                 })
                 .collect();
 
@@ -967,7 +911,7 @@ mod checked {
                     gas_charger,
                     publish_pt,
                 )
-                .expect("System Package Publish must succeed");
+                    .expect("System Package Publish must succeed");
             } else {
                 let mut new_package = Object::new_system_package(
                     &deserialized_modules,

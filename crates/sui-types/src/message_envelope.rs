@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::base_types::AuthorityName;
-use crate::committee::{Committee, EpochId, BfcRoundId};
+use crate::committee::{Committee, EpochId};
 use crate::crypto::{
     AuthorityKeyPair, AuthorityQuorumSignInfo, AuthoritySignInfo, AuthoritySignInfoTrait,
     AuthoritySignature, AuthorityStrongQuorumSignInfo, EmptySignInfo, Signer,
@@ -216,8 +216,8 @@ impl<T: Message + AuthenticatedMessage> Envelope<T, EmptySignInfo> {
 }
 
 impl<T> Envelope<T, AuthoritySignInfo>
-where
-    T: Message + Serialize,
+    where
+        T: Message + Serialize,
 {
     pub fn new(
         epoch: EpochId,
@@ -247,8 +247,8 @@ where
     }
 
     pub fn verify_committee_sigs_only(&self, committee: &Committee) -> SuiResult
-    where
-        <T as Message>::DigestType: PartialEq,
+        where
+            <T as Message>::DigestType: PartialEq,
     {
         self.data.verify_epoch(self.auth_sig().epoch)?;
         self.auth_signature
@@ -257,8 +257,8 @@ where
 }
 
 impl<T> Envelope<T, AuthoritySignInfo>
-where
-    T: Message + AuthenticatedMessage + Serialize,
+    where
+        T: Message + AuthenticatedMessage + Serialize,
 {
     pub fn verify_signatures_authenticated(
         &self,
@@ -284,8 +284,8 @@ where
 }
 
 impl<T> Envelope<T, AuthoritySignInfo>
-where
-    T: Message + UnauthenticatedMessage + Serialize,
+    where
+        T: Message + UnauthenticatedMessage + Serialize,
 {
     pub fn verify_authority_signatures(&self, committee: &Committee) -> SuiResult {
         self.data.verify_epoch(self.auth_sig().epoch)?;
@@ -305,8 +305,8 @@ where
 }
 
 impl<T, const S: bool> Envelope<T, AuthorityQuorumSignInfo<S>>
-where
-    T: Message + Serialize,
+    where
+        T: Message + Serialize,
 {
     pub fn new(
         data: T,
@@ -350,8 +350,8 @@ where
 }
 
 impl<T, const S: bool> Envelope<T, AuthorityQuorumSignInfo<S>>
-where
-    T: Message + AuthenticatedMessage + Serialize,
+    where
+        T: Message + AuthenticatedMessage + Serialize,
 {
     // TODO: Eventually we should remove all calls to verify_signature
     // and make sure they all call verify to avoid repeated verifications.
@@ -376,8 +376,8 @@ where
     }
 
     pub fn verify_committee_sigs_only(&self, committee: &Committee) -> SuiResult
-    where
-        <T as Message>::DigestType: PartialEq,
+        where
+            <T as Message>::DigestType: PartialEq,
     {
         self.data.verify_epoch(self.auth_sig().epoch)?;
         self.auth_signature
@@ -386,8 +386,8 @@ where
 }
 
 impl<T, const S: bool> Envelope<T, AuthorityQuorumSignInfo<S>>
-where
-    T: Message + UnauthenticatedMessage + Serialize,
+    where
+        T: Message + UnauthenticatedMessage + Serialize,
 {
     pub fn verify_authority_signatures(&self, committee: &Committee) -> SuiResult {
         self.data.verify_epoch(self.auth_sig().epoch)?;
@@ -421,8 +421,8 @@ where
 pub struct TrustedEnvelope<T: Message, S>(Envelope<T, S>);
 
 impl<T, S: Debug> Debug for TrustedEnvelope<T, S>
-where
-    T: Message + Debug,
+    where
+        T: Message + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.0)
@@ -449,11 +449,11 @@ static_assertions::assert_not_impl_any!(NoSer: Serialize, DeserializeOwned);
 pub struct VerifiedEnvelope<T: Message, S>(TrustedEnvelope<T, S>, NoSer);
 
 impl<T, S: Debug> Debug for VerifiedEnvelope<T, S>
-where
-    T: Message + Debug,
+    where
+        T: Message + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.0 .0)
+        write!(f, "{:?}", self.0.0)
     }
 }
 
@@ -471,11 +471,11 @@ impl<T: Message, S> VerifiedEnvelope<T, S> {
     }
 
     pub fn into_inner(self) -> Envelope<T, S> {
-        self.0 .0
+        self.0.0
     }
 
     pub fn inner(&self) -> &Envelope<T, S> {
-        &self.0 .0
+        &self.0.0
     }
 
     pub fn into_message(self) -> T {
@@ -519,7 +519,7 @@ impl<T: Message, S> From<TrustedEnvelope<T, S>> for VerifiedEnvelope<T, S> {
 impl<T: Message, S> Deref for VerifiedEnvelope<T, S> {
     type Target = Envelope<T, S>;
     fn deref(&self) -> &Self::Target {
-        &self.0 .0
+        &self.0.0
     }
 }
 
@@ -538,28 +538,28 @@ impl<T: Message, S> DerefMut for Envelope<T, S> {
 
 impl<T: Message, S> From<VerifiedEnvelope<T, S>> for Envelope<T, S> {
     fn from(v: VerifiedEnvelope<T, S>) -> Self {
-        v.0 .0
+        v.0.0
     }
 }
 
 impl<T: Message, S> PartialEq for VerifiedEnvelope<T, S>
-where
-    Envelope<T, S>: PartialEq,
+    where
+        Envelope<T, S>: PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.0 .0 == other.0 .0
+        self.0.0 == other.0.0
     }
 }
 
 impl<T: Message, S> Eq for VerifiedEnvelope<T, S> where Envelope<T, S>: Eq {}
 
 impl<T, S> Display for VerifiedEnvelope<T, S>
-where
-    T: Message,
-    Envelope<T, S>: Display,
+    where
+        T: Message,
+        Envelope<T, S>: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0 .0)
+        write!(f, "{}", self.0.0)
     }
 }
 
@@ -605,24 +605,6 @@ impl<T: Message> VerifiedEnvelope<T, CertificateProof> {
         })
     }
 
-    pub fn new_round_from_checkpoint(
-        transaction: VerifiedEnvelope<T, EmptySignInfo>,
-        epoch: EpochId,
-        round: BfcRoundId,
-        checkpoint: CheckpointSequenceNumber,
-    ) -> Self {
-        let inner = transaction.into_inner();
-        let Envelope {
-            digest,
-            data,
-            auth_signature: _,
-        } = inner;
-        VerifiedEnvelope::new_unchecked(Envelope {
-            digest,
-            data,
-            auth_signature: CertificateProof::new_round_from_checkpoint(round,epoch,checkpoint),
-        })
-    }
     pub fn new_system(transaction: VerifiedEnvelope<T, EmptySignInfo>, epoch: EpochId) -> Self {
         let inner = transaction.into_inner();
         let Envelope {

@@ -437,9 +437,6 @@ mod checked {
                     pt,
                 )
             }
-            TransactionKind::ChangeBfcRound(_) => {
-                Ok(Mode::empty_results())
-            }
         }
     }
 

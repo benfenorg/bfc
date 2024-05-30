@@ -1218,22 +1218,6 @@ impl CheckpointBuilder {
         (bfc_gas_cost_summary,stable_gas_cost_summary_map)
     }
 
-    #[allow(unused)]
-async fn augment_bfc_round(
-        &self,
-        checkpoint: CheckpointSequenceNumber,
-        checkpoint_effects: &mut Vec<TransactionEffects>,
-        signatures: &mut Vec<Vec<GenericSignature>>,
-    )-> anyhow::Result<()>{
-        let (_,effects) = self
-            .state
-            .create_and_execute_bfc_round_tx(&self.epoch_store, checkpoint)
-            .await?;
-        checkpoint_effects.push(effects);
-        signatures.push(vec![]);
-        Ok(())
-    }
-
     async fn augment_epoch_last_checkpoint(
         &self,
         epoch_bfc_gas_cost: &GasCostSummary,

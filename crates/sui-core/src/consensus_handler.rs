@@ -248,7 +248,7 @@ impl<T: ParentSync + Send + Sync> ExecutionState for ConsensusHandler<T> {
             let mut processed_set = HashSet::new();
 
             for (seq, (serialized, transaction, output_cert)) in
-                transactions.into_iter().enumerate()
+            transactions.into_iter().enumerate()
             {
                 if let Some(digest) = transaction.executable_transaction_digest() {
                     roots.insert(digest);
@@ -278,7 +278,7 @@ impl<T: ParentSync + Send + Sync> ExecutionState for ConsensusHandler<T> {
                         .0
                         .as_ref(),
                 )
-                .unwrap();
+                    .unwrap();
 
                 let sequenced_transaction = SequencedConsensusTransaction {
                     certificate: output_cert.clone(),
@@ -396,9 +396,9 @@ fn order_by_gas_price(sequenced_transactions: &mut [VerifiedSequencedConsensusTr
         std::cmp::Reverse({
             match &txn.0.transaction {
                 SequencedConsensusTransactionKind::External(ConsensusTransaction {
-                    tracking_id: _,
-                    kind: ConsensusTransactionKind::UserTransaction(cert),
-                }) => cert.gas_price(),
+                                                                tracking_id: _,
+                                                                kind: ConsensusTransactionKind::UserTransaction(cert),
+                                                            }) => cert.gas_price(),
                 // Non-user transactions are considered to have gas price of MAX u64 and are put to the beginning.
                 // This way consensus commit prologue transactions will stay at the beginning.
                 _ => u64::MAX,
@@ -453,17 +453,6 @@ impl<T> ConsensusHandler<T> {
         );
         VerifiedExecutableTransaction::new_system(transaction, self.epoch())
     }
-    #[allow(dead_code)]
-    fn bfc_round_transaction(
-        &self,
-        round: u64,
-    ) -> VerifiedExecutableTransaction {
-        let transaction = VerifiedTransaction::new_change_bfc_round(
-            round,
-        );
-        VerifiedExecutableTransaction::new_system(transaction, self.epoch())
-    }
-
 
     fn epoch(&self) -> EpochId {
         self.epoch_store.epoch()
@@ -572,9 +561,9 @@ impl SequencedConsensusTransaction {
     pub fn as_shared_object_txn(&self) -> Option<&SenderSignedData> {
         match &self.transaction {
             SequencedConsensusTransactionKind::External(ConsensusTransaction {
-                kind: ConsensusTransactionKind::UserTransaction(certificate),
-                ..
-            }) if certificate.contains_shared_object() => Some(certificate.data()),
+                                                            kind: ConsensusTransactionKind::UserTransaction(certificate),
+                                                            ..
+                                                        }) if certificate.contains_shared_object() => Some(certificate.data()),
             SequencedConsensusTransactionKind::System(txn) if txn.contains_shared_object() => {
                 Some(txn.data())
             }

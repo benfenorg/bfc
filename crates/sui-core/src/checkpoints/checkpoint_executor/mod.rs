@@ -176,7 +176,7 @@ impl CheckpointExecutor {
                 &mut next_to_schedule,
                 epoch_store.clone(),
             )
-            .await;
+                .await;
             self.metrics
                 .checkpoint_exec_inflight
                 .set(pending.len() as i64);
@@ -320,7 +320,9 @@ impl CheckpointExecutor {
         }
     }
 
-    #[instrument(level = "error", skip_all, fields(seq = ?checkpoint.sequence_number(), epoch = ?epoch_store.epoch()))]
+    #[instrument(level = "error", skip_all, fields(
+        seq = ? checkpoint.sequence_number(), epoch = ? epoch_store.epoch()
+    ))]
     async fn schedule_checkpoint(
         &self,
         checkpoint: VerifiedCheckpoint,
@@ -395,7 +397,7 @@ impl CheckpointExecutor {
             pending,
             prepare_start,
         )
-        .await?;
+            .await?;
         Ok(())
     }
 
@@ -548,7 +550,7 @@ impl CheckpointExecutor {
             self.accumulator.clone(),
             self.config.local_execution_timeout_sec,
         )
-        .await;
+            .await;
     }
 
     pub async fn check_epoch_first_checkpoint(
@@ -586,10 +588,10 @@ impl CheckpointExecutor {
                         checkpoint.clone(),
                     ).await;
                 }
-            }else {
+            } else {
                 warn!("First checkpoint for epoch {} is not the first checkpoint, {}, verify: {}", cur_epoch, first_.sequence_number, checkpoint.sequence_number());
             }
-        }else {
+        } else {
             warn!("No first checkpoint for epoch {}", cur_epoch);
         }
         return true;
@@ -630,7 +632,7 @@ impl CheckpointExecutor {
                         epoch_store.clone(),
                         checkpoint.clone(),
                     )
-                    .await;
+                        .await;
 
                     // For finalizing the checkpoint, we need to pass in all checkpoint
                     // transaction effects, not just the change_epoch tx effects. However,
@@ -660,7 +662,7 @@ impl CheckpointExecutor {
                         self.accumulator.clone(),
                         effects,
                     )
-                    .expect("Finalizing checkpoint cannot fail");
+                        .expect("Finalizing checkpoint cannot fail");
 
                     self.accumulator
                         .accumulate_epoch(
@@ -680,7 +682,9 @@ impl CheckpointExecutor {
     }
 }
 
-#[instrument(level = "error", skip_all, fields(seq = ?checkpoint.sequence_number(), epoch = ?epoch_store.epoch()))]
+#[instrument(level = "error", skip_all, fields(
+    seq = ? checkpoint.sequence_number(), epoch = ? epoch_store.epoch()
+))]
 async fn handle_execution_effects(
     execution_digests: Vec<ExecutionDigests>,
     all_tx_digests: Vec<TransactionDigest>,
@@ -773,7 +777,7 @@ async fn handle_execution_effects(
             Ok(Err(err)) => panic!("Failed to notify_read_executed_effects: {:?}", err),
             Ok(Ok(effects)) => {
                 for (tx_digest, expected_digest, actual_effects) in
-                    izip!(&all_tx_digests, &execution_digests, &effects)
+                izip!(&all_tx_digests, &execution_digests, &effects)
                 {
                     let expected_effects_digest = &expected_digest.effects;
                     assert_not_forked(
@@ -798,7 +802,7 @@ async fn handle_execution_effects(
                         accumulator.clone(),
                         effects,
                     )
-                    .expect("Finalizing checkpoint cannot fail");
+                        .expect("Finalizing checkpoint cannot fail");
                 }
                 return;
             }
@@ -906,11 +910,11 @@ fn extract_bfc_round_tx(
             )
         })
         .into_inner();
-    let digests:ExecutionDigests = {
+    let digests: ExecutionDigests = {
         let digests_len = execution_digests.len();
         if digests_len >= 2 {
             execution_digests[digests_len - 2]
-        }else {
+        } else {
             execution_digests[0]
         }
     };
@@ -929,12 +933,6 @@ fn extract_bfc_round_tx(
         epoch_store.epoch(),
         *checkpoint_sequence,
     );
-
-    assert!(change_epoch_tx
-        .data()
-        .intent_message()
-        .value
-        .is_change_bfc_round_tx());
 
     Some((digests, change_epoch_tx))
 }

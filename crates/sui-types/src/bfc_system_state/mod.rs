@@ -45,11 +45,6 @@ pub struct TreasuryPool {
     pub balance: Balance,
 }
 
-#[derive(Debug)]
-pub struct BfcRoundParams {
-    pub round_id: u64,
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BfcSystemStateWrapper {
     pub id: UID,
