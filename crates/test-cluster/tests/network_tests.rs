@@ -9,8 +9,6 @@ use sui_types::{
     base_types::ObjectID, digests::TransactionDigest, object::Object, SUI_SYSTEM_ADDRESS, SUI_SYSTEM_PACKAGE_ID,
 };
 use test_cluster::TestClusterBuilder;
-use sui_types::MOVE_STDLIB_PACKAGE_ID;
-use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
 
 #[sim_test]
 async fn test_additional_objects() {
@@ -63,7 +61,7 @@ async fn test_package_override() {
             TransactionDigest::genesis(),
             BuiltInFramework::genesis_move_packages(),
         )
-            .unwrap();;
+            .unwrap();
 
         let modified_cluster = TestClusterBuilder::new()
             .with_objects([package_override])

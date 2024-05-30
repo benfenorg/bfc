@@ -12,7 +12,6 @@ use network::client::NetworkClient;
 use prometheus::Registry;
 use std::num::NonZeroUsize;
 use std::path::{Path};
-use std::sync::Arc;
 use std::time::Duration;
 use storage::NodeStorage;
 use test_utils::{latest_protocol_version, temp_dir, CommitteeFixture};

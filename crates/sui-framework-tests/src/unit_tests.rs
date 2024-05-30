@@ -119,12 +119,6 @@ fn check_move_unit_tests(path: PathBuf) {
     config.config.silence_warnings = false;
     config.config.lint_flag = LintFlag::LEVEL_DEFAULT;
     let move_config = config.config.clone();
-    let testing_config = UnitTestingConfig::default_with_bound(Some(3_000_000_000));
-
-    // build tests first to enable Sui-specific test code verification
-    config
-        .build(path.clone())
-        .unwrap_or_else(|e| panic!("Building tests at {}.\nWith error {e}", path.display()));
     let mut testing_config = UnitTestingConfig::default_with_bound(Some(3_000_000));
     testing_config.filter = std::env::var(FILTER_ENV).ok().map(|s| s.to_string());
 

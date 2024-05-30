@@ -20,7 +20,6 @@ use sui_types::transaction::{
     TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
 };
 use tokio::time::sleep;
-use tracing::info;
 
 use sui::{
     client_commands::{

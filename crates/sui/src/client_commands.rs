@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use core::fmt;
 use std::{fmt::{Debug, Display, Formatter, Write}, path::PathBuf, sync::Arc};
 use crate::{
     client_ptb::ptb::PTB,
@@ -2344,7 +2343,7 @@ impl Display for SuiClientCommandResult {
                 builder.set_header(vec!["gasCoinId", "mistBalance (MIST)", "suiBalance (SUI)"]);
                 for coin in &gas_coins {
                     builder.push_record(vec![
-                        coin.gas_coin_id.to_string(),
+                        objects_id_to_bfc_address(coin.gas_coin_id),
                         coin.mist_balance.to_string(),
                         coin.sui_balance.to_string(),
                     ]);
@@ -2375,7 +2374,7 @@ impl Display for SuiClientCommandResult {
             SuiClientCommandResult::NewAddress(new_address) => {
                 let mut builder = TableBuilder::default();
                 builder.push_record(vec!["alias", new_address.alias.as_str()]);
-                builder.push_record(vec!["address", new_address.address.to_string().as_str()]);
+                builder.push_record(vec!["address", sui_address_to_bfc_address(new_address.address).as_str()]);
                 builder.push_record(vec![
                     "keyScheme",
                     new_address.key_scheme.to_string().as_str(),
@@ -2488,67 +2487,8 @@ impl Display for SuiClientCommandResult {
             SuiClientCommandResult::PayAllBfc(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
-            SuiClientCommandResult::Objects(object_refs) => {
-                writeln!(
-                    writer,
-                    " {0: ^42} | {1: ^10} | {2: ^44} | {3: ^15} | {4: ^40}",
-                    "Object ID", "Version", "Digest", "Owner Type", "Object Type"
-                )?;
-                writeln!(writer, "{}", ["-"; 165].join(""))?;
-                for oref in object_refs {
-                    let obj = oref.clone().into_object();
-                    match obj {
-                        Ok(obj) => {
-                            let owner_type = match obj.owner {
-                                Some(Owner::AddressOwner(_)) => "AddressOwner",
-                                Some(Owner::ObjectOwner(_)) => "object_owner",
-                                Some(Owner::Shared { .. }) => "Shared",
-                                Some(Owner::Immutable) => "Immutable",
-                                None => "None",
-                            };
-
-                            writeln!(
-                                writer,
-                                " {0: ^42} | {1: ^10} | {2: ^44} | {3: ^15} | {4: ^40}",
-                                objects_id_to_bfc_address(obj.object_id),
-                                obj.version.value(),
-                                Base64::encode(obj.digest),
-                                owner_type,
-                                format!("{:?}", obj.type_)
-                            )?
-                        }
-                        Err(e) => writeln!(writer, "Error: {e:?}")?,
-                    }
-                }
-                writeln!(writer, "Showing {} results.", object_refs.len())?;
-            }
-
             SuiClientCommandResult::SyncClientState => {
                 writeln!(writer, "Client state sync complete.")?;
-            }
-
-
-            // Do not use writer for new address output, which may get sent to logs.
-            #[allow(clippy::print_in_format_impl)]
-            SuiClientCommandResult::NewAddress(NewAddressOutput {alias,address, recovery_phrase, key_scheme }) => {
-                let bfc_address = sui_address_to_bfc_address(*address);
-                println!(
-                    "Created new keypair for address with scheme {:?}: [{bfc_address}]",
-                    key_scheme
-                );
-                println!("Secret Recovery Phrase : [{recovery_phrase}]");
-            }
-            SuiClientCommandResult::Gas(gases) => {
-                // TODO: generalize formatting of CLI
-                writeln!(writer, " {0: ^66} | {1: ^11}", "Object ID", "Gas Value")?;
-                writeln!(
-                    writer,
-                    "----------------------------------------------------------------------------------"
-                )?;
-                for gas in gases {
-                    writeln!(writer, " {0: ^66} | {1: ^11}",
-                             objects_id_to_bfc_address(*gas.id()), gas.value())?;
-                }
             }
             SuiClientCommandResult::ChainIdentifier(ci) => {
                 writeln!(writer, "{}", ci)?;
