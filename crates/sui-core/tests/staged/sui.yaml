@@ -39,9 +39,6 @@ CallArg:
       Object:
         NEWTYPE:
           TYPENAME: ObjectArg
-ChangeBfcRound:
-  STRUCT:
-    - bfc_round: U64
 ChangeEpoch:
   STRUCT:
     - epoch: U64
@@ -870,10 +867,6 @@ TransactionKind:
       ConsensusCommitPrologue:
         NEWTYPE:
           TYPENAME: ConsensusCommitPrologue
-    4:
-      ChangeBfcRound:
-        NEWTYPE:
-          TYPENAME: ChangeBfcRound
 TypeArgumentError:
   ENUM:
     0:

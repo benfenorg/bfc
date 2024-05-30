@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{base_types::*, error::*};
-use crate::committee::{EpochId, BfcRoundId, ProtocolVersion};
+use crate::committee::{EpochId, ProtocolVersion};
 use crate::crypto::{
     default_hash, AuthoritySignInfo, AuthoritySignature, AuthorityStrongQuorumSignInfo,
     DefaultHash, Ed25519SuiSignature, EmptySignInfo, Signature, Signer, SuiSignatureInner,
@@ -157,7 +157,7 @@ pub struct ChangeEpoch {
     /// The non-refundable storage fee.
     pub bfc_non_refundable_storage_fee: u64,
 
-    pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
+    pub stable_gas_summarys: Vec<(TypeTag, GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
@@ -166,12 +166,6 @@ pub struct ChangeEpoch {
     /// will be upgraded to, their modules in serialized form (which include their package ID), and
     /// a list of their transitive dependencies.
     pub system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
-}
-
-
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
-pub struct ChangeBfcRound {
-    pub bfc_round: BfcRoundId,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
@@ -210,8 +204,6 @@ pub enum TransactionKind {
     ChangeEpoch(ChangeEpoch),
     Genesis(GenesisTransaction),
     ConsensusCommitPrologue(ConsensusCommitPrologue),
-    // .. more transaction types go here
-    ChangeBfcRound(ChangeBfcRound),
 }
 
 impl VersionedProtocolMessage for TransactionKind {
@@ -225,8 +217,7 @@ impl VersionedProtocolMessage for TransactionKind {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ProgrammableTransaction(_)
-            | TransactionKind::ChangeBfcRound(_)=> Ok(()),
+            | TransactionKind::ProgrammableTransaction(_) => Ok(()),
         }
     }
 }
@@ -239,10 +230,10 @@ impl CallArg {
                 vec![InputObjectKind::ImmOrOwnedMoveObject(*object_ref)]
             }
             CallArg::Object(ObjectArg::SharedObject {
-                id,
-                initial_shared_version,
-                mutable,
-            }) => {
+                                id,
+                                initial_shared_version,
+                                mutable,
+                            }) => {
                 let id = *id;
                 let initial_shared_version = *initial_shared_version;
                 let mutable = *mutable;
@@ -618,7 +609,7 @@ impl Command {
 
 fn write_sep<T: Display>(
     f: &mut Formatter<'_>,
-    items: impl IntoIterator<Item = T>,
+    items: impl IntoIterator<Item=T>,
     sep: &str,
 ) -> std::fmt::Result {
     let mut xs = items.into_iter().peekable();
@@ -672,16 +663,16 @@ impl ProgrammableTransaction {
         Ok(())
     }
 
-    fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         self.inputs
             .iter()
             .filter_map(|arg| match arg {
                 CallArg::Pure(_) | CallArg::Object(ObjectArg::ImmOrOwnedObject(_)) => None,
                 CallArg::Object(ObjectArg::SharedObject {
-                    id,
-                    initial_shared_version,
-                    mutable,
-                }) => Some(vec![SharedInputObject {
+                                    id,
+                                    initial_shared_version,
+                                    mutable,
+                                }) => Some(vec![SharedInputObject {
                     id: *id,
                     initial_shared_version: *initial_shared_version,
                     mutable: *mutable,
@@ -704,7 +695,7 @@ impl ProgrammableTransaction {
             .collect()
     }
 
-    pub fn non_system_packages_to_be_published(&self) -> impl Iterator<Item = &Vec<Vec<u8>>> + '_ {
+    pub fn non_system_packages_to_be_published(&self) -> impl Iterator<Item=&Vec<Vec<u8>>> + '_ {
         self.commands
             .iter()
             .filter_map(|q| q.non_system_packages_to_be_published())
@@ -845,7 +836,6 @@ impl TransactionKind {
             TransactionKind::ChangeEpoch(_)
                 | TransactionKind::Genesis(_)
                 | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeBfcRound(_)
         )
     }
 
@@ -867,16 +857,16 @@ impl TransactionKind {
 
     /// Returns an iterator of all shared input objects used by this transaction.
     /// It covers both Call and ChangeEpoch transaction kind, because both makes Move calls.
-    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         match &self {
             Self::ChangeEpoch(_) => {
                 let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
                                 SharedInputObject::BFC_SYSTEM_OBJ,
                                 SharedInputObject {
-                        id: SUI_CLOCK_OBJECT_ID,
-                        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                        mutable: true,
-                    }];
+                                    id: SUI_CLOCK_OBJECT_ID,
+                                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                                    mutable: true,
+                                }];
                 Either::Left(Either::Left(objs.into_iter()))
             }
             Self::ConsensusCommitPrologue(_) => {
@@ -889,11 +879,7 @@ impl TransactionKind {
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            Self::ChangeBfcRound(_) => {
-                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
-                                SharedInputObject::BFC_SYSTEM_OBJ,];
-                Either::Left(Either::Left(objs.into_iter()))
-            }
+
             _ => Either::Right(Either::Right(vec![].into_iter())),
         }
     }
@@ -916,11 +902,11 @@ impl TransactionKind {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },InputObjectKind::SharedMoveObject {
+                }, InputObjectKind::SharedMoveObject {
                     id: BFC_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
-                },InputObjectKind::SharedMoveObject {
+                }, InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
@@ -931,21 +917,6 @@ impl TransactionKind {
             }
             Self::ConsensusCommitPrologue(_) => {
                 vec![InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                }]
-            }
-            Self::ChangeBfcRound(_)=>{
-                vec![InputObjectKind::SharedMoveObject {
-                    id: SUI_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
@@ -972,8 +943,7 @@ impl TransactionKind {
             TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeBfcRound(_) => (),
+            | TransactionKind::ConsensusCommitPrologue(_) => (),
         };
         Ok(())
     }
@@ -986,7 +956,7 @@ impl TransactionKind {
         }
     }
 
-    pub fn iter_commands(&self) -> impl Iterator<Item = &Command> {
+    pub fn iter_commands(&self) -> impl Iterator<Item=&Command> {
         match self {
             TransactionKind::ProgrammableTransaction(pt) => pt.commands.iter(),
             _ => [].iter(),
@@ -999,7 +969,6 @@ impl TransactionKind {
             Self::Genesis(_) => "Genesis",
             Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
             Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
-            Self::ChangeBfcRound(_) => "ChangeBfcRound",
         }
     }
 }
@@ -1018,9 +987,6 @@ impl Display for TransactionKind {
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis")?;
-            }
-            Self::ChangeBfcRound(_) => {
-                writeln!(writer, "Transaction Kind : ChangeBfcRound")?;
             }
             Self::ConsensusCommitPrologue(p) => {
                 writeln!(writer, "Transaction Kind : Consensus Commit Prologue")?;
@@ -1056,21 +1022,6 @@ pub enum TransactionExpiration {
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
 pub enum TransactionData {
     V1(TransactionDataV1),
-}
-
-impl TransactionData {
-    pub fn is_change_bfc_round_tx(&self) -> bool {
-        match self {
-            Self::V1(txn_data) => {
-                match txn_data.kind {
-                    TransactionKind::ChangeBfcRound(_) => true,
-                    _ => {
-                        false
-                    },
-                }
-            }
-        }
-    }
 }
 
 impl VersionedProtocolMessage for TransactionData {
@@ -1455,12 +1406,12 @@ impl TransactionData {
                 Owner::Immutable => {
                     return Err(anyhow::anyhow!(
                         "Upgrade capability is stored immutably and cannot be used for upgrades"
-                    ))
+                    ));
                 }
                 // If the capability is owned by an object, then the module defining the owning
                 // object gets to decide how the upgrade capability should be used.
                 Owner::ObjectOwner(_) => {
-                    return Err(anyhow::anyhow!("Upgrade capability controlled by object"))
+                    return Err(anyhow::anyhow!("Upgrade capability controlled by object"));
                 }
             };
             builder.obj(capability_arg).unwrap();
@@ -1580,7 +1531,6 @@ pub trait TransactionDataAPI {
     fn is_system_tx(&self) -> bool;
     fn is_change_epoch_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
-    fn is_change_bfc_round_tx(&self) -> bool;
 
     /// Check if the transaction is sponsored (namely gas owner != sender)
     fn is_sponsored_tx(&self) -> bool;
@@ -1707,8 +1657,7 @@ impl TransactionDataAPI for TransactionDataV1 {
             TransactionKind::ProgrammableTransaction(_) => true,
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeBfcRound(_) => false,
+            | TransactionKind::Genesis(_) => false,
         };
         if allow_sponsored_tx {
             return Ok(());
@@ -1718,10 +1667,6 @@ impl TransactionDataAPI for TransactionDataV1 {
 
     fn is_change_epoch_tx(&self) -> bool {
         matches!(self.kind, TransactionKind::ChangeEpoch(_))
-    }
-
-    fn is_change_bfc_round_tx(&self) -> bool {
-        matches!(self.kind, TransactionKind::ChangeBfcRound(_))
     }
 
     fn is_system_tx(&self) -> bool {
@@ -1904,6 +1849,7 @@ impl Message for SenderSignedData {
         Ok(())
     }
 }
+
 impl AuthenticatedMessage for SenderSignedData {
     fn verify_message_signature(&self, verify_params: &VerifyParams) -> SuiResult {
         fp_ensure!(
@@ -1959,7 +1905,7 @@ impl<S> Envelope<SenderSignedData, S> {
         self.shared_input_objects().next().is_some()
     }
 
-    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
         self.data()
             .inner()
             .intent_message
@@ -2040,15 +1986,15 @@ impl VerifiedTransaction {
         bfc_computation_charge: u64,
         bfc_storage_rebate: u64,
         bfc_non_refundable_storage_fee: u64,
-        stable_gas_summary_map:HashMap<TypeTag,GasCostSummaryAdjusted>,
+        stable_gas_summary_map: HashMap<TypeTag, GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
-        let mut stable_gas_summarys= vec![];
+        let mut stable_gas_summarys = vec![];
         for type_tag in STABLE::all_stable_coins_type() {
             let gas_summary = stable_gas_summary_map.get(&type_tag);
             if let Some(summary) = gas_summary {
-                stable_gas_summarys.push((type_tag.clone(),summary.clone()));
+                stable_gas_summarys.push((type_tag.clone(), summary.clone()));
             }
         }
 
@@ -2063,17 +2009,7 @@ impl VerifiedTransaction {
             epoch_start_timestamp_ms,
             system_packages,
         }
-        .pipe(TransactionKind::ChangeEpoch)
-        .pipe(Self::new_system_transaction)
-    }
-
-    pub fn new_change_bfc_round(
-        round_id: BfcRoundId,
-    ) -> Self {
-        ChangeBfcRound {
-            bfc_round:round_id,
-        }
-            .pipe(TransactionKind::ChangeBfcRound)
+            .pipe(TransactionKind::ChangeEpoch)
             .pipe(Self::new_system_transaction)
     }
 
@@ -2093,8 +2029,8 @@ impl VerifiedTransaction {
             round,
             commit_timestamp_ms,
         }
-        .pipe(TransactionKind::ConsensusCommitPrologue)
-        .pipe(Self::new_system_transaction)
+            .pipe(TransactionKind::ConsensusCommitPrologue)
+            .pipe(Self::new_system_transaction)
     }
 
     fn new_system_transaction(system_transaction: TransactionKind) -> Self {

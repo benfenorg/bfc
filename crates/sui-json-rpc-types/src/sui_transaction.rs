@@ -23,7 +23,6 @@ use sui_types::base_types::{
     EpochId, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 };
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, objects_id_to_bfc_address, sui_address_to_bfc_address};
-use sui_types::committee::BfcRoundId;
 use sui_types::digests::{ObjectDigest, TransactionEventsDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
 use sui_types::error::{ExecutionError, SuiError, SuiResult};
@@ -46,6 +45,7 @@ use sui_types::transaction::{
 };
 use sui_types::SUI_FRAMEWORK_ADDRESS;
 use std::str::FromStr;
+
 // similar to EpochId of sui-types but BigInt
 pub type SuiEpochId = BigInt<u64>;
 
@@ -286,8 +286,6 @@ pub enum SuiTransactionBlockKind {
     /// A series of transactions where the results of one transaction can be used in future
     /// transactions
     ProgrammableTransaction(SuiProgrammableTransactionBlock),
-    // .. more transaction types go here
-    ChangeBfcRound(SuiChangeBfcRound)
 }
 
 impl Display for SuiTransactionBlockKind {
@@ -301,10 +299,6 @@ impl Display for SuiTransactionBlockKind {
                 writeln!(writer, "Computation gas reward : {}", e.computation_charge)?;
                 writeln!(writer, "Storage rebate : {}", e.storage_rebate)?;
                 writeln!(writer, "Timestamp : {}", e.epoch_start_timestamp_ms)?;
-            }
-            Self::ChangeBfcRound(e) => {
-                writeln!(writer, "Transaction Kind : Epoch Bfc Round")?;
-                writeln!(writer, "New Bfc Round ID : {}", e.round)?;
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis Transaction")?;
@@ -336,9 +330,6 @@ impl SuiTransactionBlockKind {
                 storage_rebate: e.bfc_storage_rebate,
                 epoch_start_timestamp_ms: e.epoch_start_timestamp_ms,
             }),
-            TransactionKind::ChangeBfcRound(o) =>  Self::ChangeBfcRound(SuiChangeBfcRound {
-                round:o.bfc_round,
-            }),
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),
             }),
@@ -365,7 +356,6 @@ impl SuiTransactionBlockKind {
     pub fn name(&self) -> &'static str {
         match self {
             Self::ChangeEpoch(_) => "ChangeEpoch",
-            Self::ChangeBfcRound(_) => "ChangeBfcRound",
             Self::Genesis(_) => "Genesis",
             Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
             Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
@@ -393,13 +383,6 @@ pub struct SuiChangeEpoch {
     pub epoch_start_timestamp_ms: u64,
 }
 
-#[serde_as]
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
-pub struct SuiChangeBfcRound {
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub round: BfcRoundId,
-}
 #[derive(Debug, Deserialize, Serialize, JsonSchema, Clone, PartialEq, Eq)]
 #[enum_dispatch(SuiTransactionBlockEffectsAPI)]
 #[serde(
@@ -1112,6 +1095,7 @@ impl Display for SuiProgrammableTransactionBlock {
         writeln!(f, "]")
     }
 }
+
 fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow::Error> {
     let mut writer = String::new();
     match input {
@@ -1144,9 +1128,9 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
                         //
                         // write!(writer, "value: {:?} ", json_value)?;
                         let address = json_value.as_str().unwrap();
-                        if address.starts_with("bfc") || address.starts_with("BFC"){
+                        if address.starts_with("bfc") || address.starts_with("BFC") {
                             write!(writer, "value: {} ", address)?;
-                        }else{
+                        } else {
                             let sui_address = SuiAddress::from_str(json_value.as_str().unwrap()).unwrap();
                             let bfc_address = sui_address_to_bfc_address(sui_address);
                             write!(writer, "value: {} ", bfc_address)?;
@@ -1165,10 +1149,7 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
                     write!(writer, "value: {:?} ", json_value)?;
                 }
             }
-
         }
-
-
     }
 
     Ok(writer)
@@ -1421,12 +1402,12 @@ pub struct SuiProgrammableMoveCall {
 
 fn write_sep_bfc<T: Display>(
     f: &mut Formatter<'_>,
-    items: impl IntoIterator<Item = T>,
+    items: impl IntoIterator<Item=T>,
     sep: &str,
 ) -> std::fmt::Result {
     let mut xs = items.into_iter().peekable();
     while let Some(x) = xs.next() {
-        write!(f, "{}", convert_to_bfc_address(format!("{}",x).as_str()))?;
+        write!(f, "{}", convert_to_bfc_address(format!("{}", x).as_str()))?;
         if xs.peek().is_some() {
             write!(f, "{sep}")?;
         }
@@ -1436,7 +1417,7 @@ fn write_sep_bfc<T: Display>(
 
 fn write_sep<T: Display>(
     f: &mut Formatter<'_>,
-    items: impl IntoIterator<Item = T>,
+    items: impl IntoIterator<Item=T>,
     sep: &str,
 ) -> std::fmt::Result {
     let mut xs = items.into_iter().peekable();
@@ -1637,10 +1618,10 @@ impl SuiCallArg {
                 })
             }
             CallArg::Object(ObjectArg::SharedObject {
-                id,
-                initial_shared_version,
-                mutable,
-            }) => SuiCallArg::Object(SuiObjectArg::SharedObject {
+                                id,
+                                initial_shared_version,
+                                mutable,
+                            }) => SuiCallArg::Object(SuiObjectArg::SharedObject {
                 object_id: id,
                 initial_shared_version,
                 mutable,
@@ -1667,10 +1648,8 @@ impl SuiCallArg {
 }
 
 
-
-
 #[serde_as]
-#[derive(Eq, PartialEq,Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct SuiPureValue {
     #[schemars(with = "Option<String>")]
@@ -1688,8 +1667,6 @@ impl SuiPureValue {
         self.value_type.clone()
     }
 }
-
-
 
 
 #[serde_as]

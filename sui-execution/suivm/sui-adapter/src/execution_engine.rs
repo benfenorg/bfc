@@ -25,7 +25,7 @@ mod checked {
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
-    } , transaction::ChangeBfcRound};
+    }};
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::metrics::LimitsMetrics;
@@ -509,19 +509,6 @@ mod checked {
                     pt,
                 )
             }
-            TransactionKind::ChangeBfcRound(change_round) => {
-                bfc_round(
-                    change_round,
-                    temporary_store,
-                    tx_ctx,
-                    move_vm,
-                    gas_charger,
-                    protocol_config,
-                    metrics,
-                )?;
-                Ok(Mode::empty_results())
-            }
-
         }
     }
 
@@ -759,46 +746,6 @@ mod checked {
         );
 
         Ok(builder.finish())
-    }
-
-    fn bfc_round(
-        _change_round: ChangeBfcRound,
-        _temporary_store: &mut TemporaryStore<'_>,
-        _tx_ctx: &mut TxContext,
-        _move_vm: &Arc<MoveVM>,
-        _gas_charger: &mut GasCharger,
-        _protocol_config: &ProtocolConfig,
-        _metrics: Arc<LimitsMetrics>,
-    ) -> Result<(), ExecutionError>{
-        // let _ = BfcRoundParams {
-        //     round_id:change_round.bfc_round
-        // };
-        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round, )?;
-        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
-        //     protocol_config,
-        //     metrics.clone(),
-        //     move_vm,
-        //     temporary_store,
-        //     tx_ctx,
-        //     gas_charger,
-        //     advance_epoch_pt,
-        // );
-        //
-        // #[cfg(msim)]
-        //     let result = maybe_modify_result(result, change_round.bfc_round);
-        //
-        // if result.is_err() {
-        //     tracing::error!(
-        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-        //     result.as_ref().err(),
-        //     temporary_store.objects(),
-        // );
-        //     // temporary_store.drop_writes();
-        //     // // Must reset the storage rebate since we are re-executing.
-        //     // gas_charger.reset_storage_cost_and_rebate();
-        //     // temporary_store.advance_bfc_round_mode(protocol_config);
-        // }
-        Ok(())
     }
 
     fn advance_epoch(

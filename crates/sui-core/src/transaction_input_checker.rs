@@ -50,7 +50,7 @@ mod checked {
             transaction.gas_price(),
             transaction.kind(),
         )
-        .await
+            .await
     }
 
     #[instrument(level = "trace", skip_all)]
@@ -127,13 +127,12 @@ mod checked {
             TransactionKind::ProgrammableTransaction(_) => (),
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::ConsensusCommitPrologue(_) => {
                 return Err(UserInputError::Unsupported(format!(
                     "Transaction kind {} is not supported in dev-inspect",
                     kind
                 ))
-                .into())
+                    .into());
             }
         }
         let mut input_objects = kind.input_objects()?;
@@ -176,7 +175,7 @@ mod checked {
 
         let tx_data = &cert.data().intent_message().value;
         let input_object_kinds = tx_data.input_objects()?;
-        let input_object_data: Vec<Object> = if tx_data.is_change_epoch_tx()||tx_data.is_change_bfc_round_tx() {
+        let input_object_data: Vec<Object> = if tx_data.is_change_epoch_tx() {
             // When changing the epoch, we update a the system object, which is shared, without going
             // through sequencing, so we must bypass the sequence checks here.
             store.check_input_objects(&input_object_kinds, epoch_store.protocol_config())?
@@ -302,13 +301,13 @@ mod checked {
 
                 // This is an invariant - we just load the object with the given ID and version.
                 assert_eq!(
-                object.version(),
-                sequence_number,
-                "The fetched object version {} does not match the requested version {}, object id: {}",
-                object.version(),
-                sequence_number,
-                object.id(),
-            );
+                    object.version(),
+                    sequence_number,
+                    "The fetched object version {} does not match the requested version {}, object id: {}",
+                    object.version(),
+                    sequence_number,
+                    object.id(),
+                );
 
                 // Check the digest matches - user could give a mismatched ObjectDigest
                 let expected_digest = object.digest();
@@ -402,8 +401,8 @@ mod checked {
         }
 
         let TransactionKind::ProgrammableTransaction(pt) = transaction.kind() else {
-        return Ok(());
-    };
+            return Ok(());
+        };
 
         // We use a custom config with metering enabled
         let is_metered = true;
