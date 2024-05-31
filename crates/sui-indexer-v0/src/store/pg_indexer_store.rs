@@ -1551,12 +1551,15 @@ impl PgIndexerStore {
                 bfc_usd_price: 0f64,
                 profit_rate: 0f64,
                 yesterady_reward: stakings.iter().map(|x| x.yesterday_mint_bfc as u64).sum(),
-                total_addresses: get_mining_summary_cached(&self.blocking_cp)?.total_addresses
-                    as u64,
             },
             ticket_ids,
             total_cost,
         ))
+    }
+
+    fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError> {
+        let summary = get_mining_summary_cached(&self.blocking_cp)?;
+        Ok(summary.total_addresses as u64)
     }
 
     fn get_unsettle_mining_nfts(
@@ -3586,6 +3589,11 @@ impl IndexerStore for PgIndexerStore {
         limit: usize,
     ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError> {
         self.spawn_blocking(move |this| this.get_mining_nft_liquidities(base_coin, limit))
+            .await
+    }
+
+    async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError> {
+        self.spawn_blocking(move |this| this.get_mining_nft_total_addressess())
             .await
     }
 }

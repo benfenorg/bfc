@@ -330,6 +330,7 @@ pub async fn get_nft_staking_overview(
                 dt_timestamp_ms: x.dt_timestamp_ms,
             })
             .collect(),
+        total_addresses: 0,
     })
 }
 
