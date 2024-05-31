@@ -4,7 +4,6 @@ use crate::{
 };
 use chrono::Utc;
 use diesel::prelude::*;
-use diesel::QueryableByName;
 use move_core_types::{
     account_address::{account_address_util::convert_to_evm_address, AccountAddress},
     ident_str,
