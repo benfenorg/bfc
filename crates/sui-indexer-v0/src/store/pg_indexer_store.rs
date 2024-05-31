@@ -3848,7 +3848,7 @@ fn get_mining_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, 
     let summary = read_only_blocking!(cp, |conn| diesel::sql_query(
         "SELECT
            COUNT(DISTINCT owner)::BIGINT AS total_addresses
-        FROM  mining_ticket_id is not null;"
+        FROM mining_nfts WHERE mining_ticket_id is not null;"
     )
     .get_result::<MiningNFTSummary>(conn))?;
     Ok(summary)
