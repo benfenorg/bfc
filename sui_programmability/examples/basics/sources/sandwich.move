@@ -6,30 +6,27 @@
 module basics::sandwich {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::object::{Self, UID};
     use sui::bfc::BFC;
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
 
-    struct Ham has key, store {
+    public struct Ham has key, store {
         id: UID
     }
 
-    struct Bread has key, store {
+    public struct Bread has key, store {
         id: UID
     }
 
-    struct Sandwich has key, store {
+    public struct Sandwich has key, store {
         id: UID,
     }
 
     // This Capability allows the owner to withdraw profits
-    struct GroceryOwnerCapability has key {
+    public struct GroceryOwnerCapability has key {
         id: UID
     }
 
     // Grocery is created on module init
-    struct Grocery has key {
+    public struct Grocery has key {
         id: UID,
         profits: Balance<BFC>
     }
@@ -118,59 +115,57 @@ module basics::test_sandwich {
     use basics::sandwich::{Self, Grocery, GroceryOwnerCapability};
     use sui::test_scenario;
     use sui::coin::{Self};
-    use sui::bfc::BFC;
-    use sui::transfer;
+    use sui::sui::SUI;
     use sui::test_utils;
-    use sui::tx_context;
 
     #[test]
     fun test_make_sandwich() {
         let owner = @0x1;
         let the_guy = @0x2;
 
-        let scenario_val = test_scenario::begin(owner);
+        let mut scenario_val = test_scenario::begin(owner);
         let scenario = &mut scenario_val;
         test_scenario::next_tx(scenario, owner);
         {
-            sandwich::init_for_testing(test_scenario::ctx(scenario));
+        sandwich::init_for_testing(test_scenario::ctx(scenario));
         };
 
         test_scenario::next_tx(scenario, the_guy);
         {
-            let grocery_val = test_scenario::take_shared<Grocery>(scenario);
-            let grocery = &mut grocery_val;
-            let ctx = test_scenario::ctx(scenario);
+        let mut grocery_val = test_scenario::take_shared<Grocery>(scenario);
+        let grocery = &mut grocery_val;
+        let ctx = test_scenario::ctx(scenario);
 
-            let ham = sandwich::buy_ham(
-                grocery,
-                coin::mint_for_testing<BFC>(10, ctx),
-                ctx
-            );
+        let ham = sandwich::buy_ham(
+        grocery,
+        coin::mint_for_testing<BFC>(10, ctx),
+        ctx
+        );
 
-            let bread = sandwich::buy_bread(
-                grocery,
-                coin::mint_for_testing<BFC>(2, ctx),
-                ctx
-            );
-            let sandwich = sandwich::make_sandwich(ham, bread, ctx);
+        let bread = sandwich::buy_bread(
+        grocery,
+        coin::mint_for_testing<BFC>(2, ctx),
+        ctx
+        );
+        let sandwich = sandwich::make_sandwich(ham, bread, ctx);
 
-            test_scenario::return_shared( grocery_val);
-            transfer::public_transfer(sandwich, tx_context::sender(ctx))
+        test_scenario::return_shared( grocery_val);
+        transfer::public_transfer(sandwich, tx_context::sender(ctx))
         };
 
         test_scenario::next_tx(scenario, owner);
         {
-            let grocery_val = test_scenario::take_shared<Grocery>(scenario);
-            let grocery = &mut grocery_val;
-            let capability = test_scenario::take_from_sender<GroceryOwnerCapability>(scenario);
+        let mut grocery_val = test_scenario::take_shared<Grocery>(scenario);
+        let grocery = &mut grocery_val;
+        let capability = test_scenario::take_from_sender<GroceryOwnerCapability>(scenario);
 
-            assert!(sandwich::profits(grocery) == 12, 0);
-            let profits = sandwich::collect_profits(&capability, grocery, test_scenario::ctx(scenario));
-            assert!(sandwich::profits(grocery) == 0, 0);
+        assert!(sandwich::profits(grocery) == 12, 0);
+        let profits = sandwich::collect_profits(&capability, grocery, test_scenario::ctx(scenario));
+        assert!(sandwich::profits(grocery) == 0, 0);
 
-            test_scenario::return_to_sender(scenario, capability);
-            test_scenario::return_shared(grocery_val);
-            test_utils::destroy(profits)
+        test_scenario::return_to_sender(scenario, capability);
+        test_scenario::return_shared(grocery_val);
+        test_utils::destroy(profits)
         };
         test_scenario::end(scenario_val);
     }
