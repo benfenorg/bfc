@@ -41,6 +41,8 @@ mod checked {
         gas: &[ObjectRef],
         epoch_store: &AuthorityPerEpochStore,
         transaction: &TransactionData,
+        stable_rate: Option<u64>,
+        base_points: Option<u64>,
     ) -> SuiResult<SuiGasStatus> {
         check_gas(
             objects,
@@ -48,6 +50,8 @@ mod checked {
             gas,
             transaction.gas_budget(),
             transaction.gas_price(),
+            stable_rate,
+            base_points,
             transaction.kind(),
         )
             .await
@@ -79,8 +83,13 @@ mod checked {
         )?;
 
         let objects = store.check_input_objects(&input_objects, epoch_store.protocol_config())?;
+        let (stable_rate, base_point) = if !transaction.is_system_txn() {
+            store.get_stable_rate_and_base_points(transaction.gas())?
+        }else {
+            (None, None)
+        };
         let gas_status =
-            get_gas_status(&objects, transaction.gas(), epoch_store, transaction).await?;
+            get_gas_status(&objects, transaction.gas(), epoch_store, transaction, stable_rate, base_point).await?;
         let input_objects = check_objects(transaction, input_objects, objects)?;
         Ok((gas_status, input_objects))
     }
@@ -107,8 +116,13 @@ mod checked {
         input_objects.push(InputObjectKind::ImmOrOwnedMoveObject(gas_object_ref));
         objects.push(gas_object);
 
+        let (stable_rate, base_points) = if !transaction.is_system_txn() {
+            store.get_stable_rate_and_base_points(transaction.gas())?
+        }else {
+            (None, None)
+        };
         let gas_status =
-            get_gas_status(&objects, &[gas_object_ref], epoch_store, transaction).await?;
+            get_gas_status(&objects, &[gas_object_ref], epoch_store, transaction, stable_rate, base_points).await?;
         let input_objects = check_objects(transaction, input_objects, objects)?;
         Ok((gas_status, input_objects))
     }
@@ -182,8 +196,13 @@ mod checked {
         } else {
             store.check_sequenced_input_objects(cert.digest(), &input_object_kinds, epoch_store)?
         };
+        let (stable_rate, base_points) = if !tx_data.is_system_txn() {
+            store.get_stable_rate_and_base_points(tx_data.gas())?
+        }else {
+            (None, None)
+        };
         let gas_status =
-            get_gas_status(&input_object_data, tx_data.gas(), epoch_store, tx_data).await?;
+            get_gas_status(&input_object_data, tx_data.gas(), epoch_store, tx_data, stable_rate, base_points).await?;
         let input_objects = check_objects(tx_data, input_object_kinds, input_object_data)?;
         Ok((gas_status, input_objects))
     }
@@ -197,6 +216,8 @@ mod checked {
         gas: &[ObjectRef],
         gas_budget: u64,
         gas_price: u64,
+        stable_rate: Option<u64>,
+        base_points: Option<u64>,
         tx_kind: &TransactionKind,
     ) -> SuiResult<SuiGasStatus> {
         if tx_kind.is_system_tx() {
@@ -205,7 +226,7 @@ mod checked {
             let protocol_config = epoch_store.protocol_config();
             let reference_gas_price = epoch_store.reference_gas_price();
             let gas_status =
-                SuiGasStatus::new(gas_budget, gas_price, reference_gas_price, protocol_config)?;
+                SuiGasStatus::new(gas_budget, gas_price, reference_gas_price, protocol_config, stable_rate, base_points)?;
 
             // check balance and coins consistency
             // load all gas coins

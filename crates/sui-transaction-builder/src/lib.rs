@@ -50,7 +50,7 @@ pub trait DataReader {
     ) -> Result<SuiObjectResponse, anyhow::Error>;
 
     async fn get_reference_gas_price(&self) -> Result<u64, anyhow::Error>;
-    // async fn get_stable_reference_gas_price(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error>;
+
     async fn get_stable_rate(&self, type_tag: TypeTag) -> Result<u64, anyhow::Error>;
 }
 

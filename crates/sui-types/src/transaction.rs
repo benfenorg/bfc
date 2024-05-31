@@ -1024,6 +1024,35 @@ pub enum TransactionData {
     V1(TransactionDataV1),
 }
 
+impl TransactionData {
+    pub fn is_change_bfc_round_tx(&self) -> bool {
+        match self {
+            Self::V1(txn_data) => {
+                match txn_data.kind {
+                    TransactionKind::ChangeBfcRound(_) => true,
+                    _ => {
+                        false
+                    },
+                }
+            }
+        }
+    }
+
+    pub fn is_system_txn(&self) -> bool {
+        match self {
+            Self::V1(txn_data) => {
+                match txn_data.kind {
+                    TransactionKind::Genesis(_) | TransactionKind::ChangeEpoch(_) | TransactionKind::ConsensusCommitPrologue(_)  => true,
+                    _ => {
+                        false
+                    },
+                }
+            }
+        }
+    }
+
+}
+
 impl VersionedProtocolMessage for TransactionData {
     fn message_version(&self) -> Option<u64> {
         Some(match self {

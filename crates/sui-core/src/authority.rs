@@ -1392,7 +1392,7 @@ impl AuthorityState {
             }
         };
         let gas_status =
-            SuiGasStatus::new(max_tx_gas, gas_price, reference_gas_price, protocol_config)?;
+            SuiGasStatus::new(max_tx_gas, gas_price, reference_gas_price, protocol_config, None, None)?;
 
         let gas_object_id = ObjectID::random();
         // give the gas object 2x the max gas to have coin balance to play with during execution

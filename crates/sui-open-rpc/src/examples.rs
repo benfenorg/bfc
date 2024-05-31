@@ -18,7 +18,7 @@ use serde_json::json;
 
 use sui_json::SuiJsonValue;
 use sui_json_rpc::error::Error;
-use sui_json_rpc_types::DevInspectResults;
+use sui_json_rpc_types::{DevInspectResults, SuiGasCostSummary};
 use sui_json_rpc_types::EventFilter;
 use sui_json_rpc_types::ProtocolConfigResponse;
 use sui_json_rpc_types::SuiTransactionBlockEvents;
@@ -54,7 +54,6 @@ use sui_types::crypto::{get_key_pair_from_rng, AccountKeyPair, AggregateAuthorit
 use sui_types::digests::TransactionEventsDigest;
 use sui_types::dynamic_field::{DynamicFieldInfo, DynamicFieldName, DynamicFieldType};
 use sui_types::event::EventID;
-use sui_types::gas::GasCostSummary;
 use sui_types::gas_coin::GasCoin;
 use sui_types::id::UID;
 use sui_types::messages_checkpoint::CheckpointDigest;
@@ -728,9 +727,7 @@ impl RpcExampleProvider {
                     status: SuiExecutionStatus::Success,
                     executed_epoch: 0,
                     modified_at_versions: vec![],
-                    gas_used: GasCostSummary {
-                        base_point: 0,
-                        rate:1,
+                    gas_used: SuiGasCostSummary {
                         computation_cost: 100,
                         storage_cost: 100,
                         storage_rebate: 10,

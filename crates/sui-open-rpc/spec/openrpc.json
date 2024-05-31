@@ -92,8 +92,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -237,8 +235,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -441,8 +437,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -1384,7 +1378,7 @@
             "name": "Result",
             "value": {
               "minSupportedProtocolVersion": "1",
-              "maxSupportedProtocolVersion": "23",
+              "maxSupportedProtocolVersion": "24",
               "protocolVersion": "6",
               "featureFlags": {
                 "advance_epoch_start_time_in_safe_mode": true,
@@ -2043,8 +2037,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -2423,8 +2415,6 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
-                    "basePoint": 0,
-                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -2541,8 +2531,6 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
-                    "basePoint": 0,
-                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -2659,8 +2647,6 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
-                    "basePoint": 0,
-                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -3793,6 +3779,31 @@
             "maxItems": 2,
             "minItems": 2
           }
+        }
+      }
+    },
+    {
+      "name": "bfcx_getStableRate",
+      "tags": [
+        {
+          "name": "Governance Read API"
+        }
+      ],
+      "description": "Return the rate of stable coin",
+      "params": [
+        {
+          "name": "tag",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "BigInt<u64>",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/BigInt_for_uint64"
         }
       }
     },
@@ -8670,6 +8681,49 @@
           }
         }
       },
+      "SuiGasCostSummary": {
+        "type": "object",
+        "required": [
+          "computationCost",
+          "nonRefundableStorageFee",
+          "storageCost",
+          "storageRebate"
+        ],
+        "properties": {
+          "computationCost": {
+            "description": "Cost of computation/execution",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "nonRefundableStorageFee": {
+            "description": "The fee for the rebate. The portion of the storage rebate kept by the system.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "storageCost": {
+            "description": "Storage cost, it's the sum of all storage cost for all objects created or mutated.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "storageRebate": {
+            "description": "The amount of storage cost refunded to the user for all objects deleted or mutated in the transaction.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          }
+        }
+      },
       "SuiJsonValue": {},
       "SuiMoveAbility": {
         "type": "string",
@@ -10156,7 +10210,7 @@
                 ]
               },
               "gasUsed": {
-                "$ref": "#/components/schemas/GasCostSummary"
+                "$ref": "#/components/schemas/SuiGasCostSummary"
               },
               "messageVersion": {
                 "type": "string",

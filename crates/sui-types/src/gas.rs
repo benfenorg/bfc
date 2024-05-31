@@ -22,7 +22,7 @@ pub mod checked {
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
     use sui_protocol_config::ProtocolConfig;
-    use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate};
 
     #[enum_dispatch]
     pub trait SuiGasStatusAPI {
@@ -42,6 +42,8 @@ pub mod checked {
         fn track_storage_mutation(&mut self, new_size: usize, storage_rebate: u64) -> u64;
         fn charge_storage_and_rebate(&mut self) -> Result<(), ExecutionError>;
         fn adjust_computation_on_out_of_gas(&mut self);
+        fn stable_rate(&self) -> Option<u64>;
+        fn base_points(&self) -> Option<u64>;
     }
 
     /// Version aware enum for gas status.
@@ -59,6 +61,8 @@ pub mod checked {
             gas_price: u64,
             reference_gas_price: u64,
             config: &ProtocolConfig,
+            stable_rate: Option<u64>,
+            base_points: Option<u64>,
         ) -> SuiResult<Self> {
             // Common checks. We may pull them into version specific status as needed, but they
             // are unlikely to change.
@@ -71,10 +75,11 @@ pub mod checked {
                 }
                 .into());
             }
-            if gas_price_too_high(config.gas_model_version()) && gas_price >= config.max_gas_price()
+            let stable_max_price= calculate_divide_rate(config.max_gas_price(), stable_rate);
+            if gas_price_too_high(config.gas_model_version()) && gas_price >= stable_max_price
             {
                 return Err(UserInputError::GasPriceTooHigh {
-                    max_gas_price: config.max_gas_price(),
+                    max_gas_price: stable_max_price,
                 }
                 .into());
             }
@@ -84,6 +89,8 @@ pub mod checked {
                 gas_price,
                 reference_gas_price,
                 config,
+                stable_rate,
+                base_points,
             )))
         }
 
@@ -277,6 +284,29 @@ pub mod checked {
                 object_id: gas_object.id(),
             })
         }
+    }
+}
+
+pub fn calculate_divide_rate(val: u64, rate_option: Option<u64>) -> u64 {
+    if let Some(rate) = rate_option {
+        if rate == 0 {
+            return val;
+        }
+        let bfc_default_rate = 1000000000u128;
+       let result =  (val as u128)  * bfc_default_rate / (rate as u128);
+        result as u64
+    }else {
+        val
+    }
+}
+
+pub fn calculate_multiply_rate(val: u64, rate_option: Option<u64>) -> u64 {
+    if let Some(rate) = rate_option {
+        let bfc_default_rate = 1000000000u128;
+        let result =  (val as u128)  * (rate as u128) / bfc_default_rate;
+        result as u64
+    }else {
+        val
     }
 }
 

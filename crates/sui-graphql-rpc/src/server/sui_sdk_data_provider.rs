@@ -33,18 +33,13 @@ use async_graphql::*;
 use async_trait::async_trait;
 use fastcrypto::traits::EncodeDecodeBase64;
 use std::str::FromStr;
-use sui_json_rpc_types::{
-    OwnedObjectRef, SuiExecutionStatus, SuiGasData, SuiObjectDataOptions, SuiObjectResponseQuery,
-    SuiPastObjectResponse, SuiRawData, SuiTransactionBlockDataAPI, SuiTransactionBlockEffectsAPI,
-    SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{OwnedObjectRef, SuiExecutionStatus, SuiGasCostSummary, SuiGasData, SuiObjectDataOptions, SuiObjectResponseQuery, SuiPastObjectResponse, SuiRawData, SuiTransactionBlockDataAPI, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions};
 use sui_sdk::types::sui_serde::BigInt as SerdeBigInt;
 use sui_sdk::types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
 use sui_sdk::{
     types::{
         base_types::{ObjectID as NativeObjectID, SuiAddress as NativeSuiAddress},
         digests::TransactionDigest,
-        gas::GasCostSummary as NativeGasCostSummary,
         object::Owner as NativeOwner,
         sui_system_state::sui_system_state_summary::SuiValidatorSummary,
     },
@@ -326,9 +321,10 @@ pub(crate) fn convert_json_rpc_checkpoint(
 
     let previous_checkpoint_digest = c.previous_digest.map(|x| x.to_string());
     let network_total_transactions = Some(c.network_total_transactions);
-    let rolling_gas_summary = convert_to_gas_cost_summary(&c.epoch_rolling_bfc_gas_cost_summary).ok();
+    let gas_cost_summary= SuiGasCostSummary::from(c.epoch_rolling_bfc_gas_cost_summary.clone());
+    let rolling_gas_summary = convert_to_gas_cost_summary(&gas_cost_summary).ok();
     let epoch = convert_to_epoch(
-        &c.epoch_rolling_bfc_gas_cost_summary,
+        &gas_cost_summary,
         system_state,
         protocol_configs,
     )
@@ -429,7 +425,7 @@ pub(crate) async fn convert_to_gas_input(
     })
 }
 
-pub(crate) fn convert_to_gas_cost_summary(gcs: &NativeGasCostSummary) -> Result<GasCostSummary> {
+pub(crate) fn convert_to_gas_cost_summary(gcs: &SuiGasCostSummary) -> Result<GasCostSummary> {
     Ok(GasCostSummary {
         computation_cost: Some(BigInt::from(gcs.computation_cost)),
         storage_cost: Some(BigInt::from(gcs.storage_cost)),
@@ -440,7 +436,7 @@ pub(crate) fn convert_to_gas_cost_summary(gcs: &NativeGasCostSummary) -> Result<
 
 pub(crate) async fn convert_to_gas_effects(
     cl: &SuiClient,
-    gcs: &NativeGasCostSummary,
+    gcs: &SuiGasCostSummary,
     gas_obj_ref: &OwnedObjectRef,
 ) -> Result<GasEffects> {
     let gas_summary = convert_to_gas_cost_summary(gcs)?;
@@ -459,7 +455,7 @@ pub(crate) async fn convert_to_gas_effects(
 }
 
 pub(crate) fn convert_to_epoch(
-    gcs: &NativeGasCostSummary,
+    gcs: &SuiGasCostSummary,
     system_state: &SuiSystemStateSummary,
     protocol_configs: &ProtocolConfigs,
 ) -> Result<Epoch> {

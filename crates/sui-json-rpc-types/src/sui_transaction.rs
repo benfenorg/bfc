@@ -410,8 +410,8 @@ pub trait SuiTransactionBlockEffectsAPI {
     fn dependencies(&self) -> &[TransactionDigest];
     fn executed_epoch(&self) -> EpochId;
     fn transaction_digest(&self) -> &TransactionDigest;
-    fn gas_cost_summary(&self) -> &GasCostSummary;
-    fn mut_gas_cost_summary(&mut self) -> &mut GasCostSummary;
+    fn gas_cost_summary(&self) -> &SuiGasCostSummary;
+    fn mut_gas_cost_summary(&mut self) -> &mut SuiGasCostSummary;
 
     /// Return an iterator of mutated objects, but excluding the gas object.
     fn mutated_excluding_gas(&self) -> Vec<OwnedObjectRef>;
@@ -433,6 +433,61 @@ pub struct SuiTransactionBlockEffectsModifiedAtVersions {
     sequence_number: SequenceNumber,
 }
 
+#[serde_as]
+#[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SuiGasCostSummary {
+    /// Cost of computation/execution
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub computation_cost: u64,
+    /// Storage cost, it's the sum of all storage cost for all objects created or mutated.
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub storage_cost: u64,
+    /// The amount of storage cost refunded to the user for all objects deleted or mutated in the
+    /// transaction.
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub storage_rebate: u64,
+    /// The fee for the rebate. The portion of the storage rebate kept by the system.
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub non_refundable_storage_fee: u64,
+}
+
+impl SuiGasCostSummary {
+    pub fn from(
+        gas_cost_summary: GasCostSummary
+    ) -> Self {
+        Self{
+            computation_cost: gas_cost_summary.computation_cost,
+            storage_cost: gas_cost_summary.storage_cost,
+            storage_rebate: gas_cost_summary.storage_rebate,
+            non_refundable_storage_fee: gas_cost_summary.non_refundable_storage_fee,
+        }
+    }
+
+    pub fn gas_used(&self) -> u64 {
+        self.computation_cost + self.storage_cost
+    }
+
+    pub fn net_gas_usage(&self) -> i64 {
+        self.gas_used() as i64 - self.storage_rebate as i64
+    }
+
+}
+
+impl Display for SuiGasCostSummary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "computation_cost: {}, storage_cost: {},  storage_rebate: {}, non_refundable_storage_fee: {}",
+            self.computation_cost, self.storage_cost, self.storage_rebate, self.non_refundable_storage_fee,
+        )
+    }
+}
+
 /// The response from processing a transaction or a certified transaction
 #[serde_as]
 #[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -444,7 +499,7 @@ pub struct SuiTransactionBlockEffectsV1 {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub executed_epoch: EpochId,
-    pub gas_used: GasCostSummary,
+    pub gas_used: SuiGasCostSummary,
     /// The version that every modified (mutated or deleted) object had before it was modified by
     /// this transaction.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -532,11 +587,11 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
         &self.transaction_digest
     }
 
-    fn gas_cost_summary(&self) -> &GasCostSummary {
+    fn gas_cost_summary(&self) -> &SuiGasCostSummary {
         &self.gas_used
     }
 
-    fn mut_gas_cost_summary(&mut self) -> &mut GasCostSummary {
+    fn mut_gas_cost_summary(&mut self) -> &mut SuiGasCostSummary {
         &mut self.gas_used
     }
 
@@ -611,7 +666,7 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                             }
                         })
                         .collect(),
-                    gas_used: effect.gas_cost_summary().into_rpc(),
+                    gas_used: SuiGasCostSummary::from(effect.gas_cost_summary().clone()),
                     shared_objects: to_sui_object_ref(
                         effect
                             .input_shared_objects()

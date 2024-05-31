@@ -26,9 +26,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::{convert::TryInto, env};
 
-use sui_json_rpc_types::{
-    SuiArgument, SuiExecutionResult, SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTypeTag,
-};
+use sui_json_rpc_types::{SuiArgument, SuiExecutionResult, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI, SuiTypeTag};
 use sui_macros::sim_test;
 use sui_protocol_config::{ProtocolConfig, SupportedProtocolVersions};
 use sui_types::dynamic_field::DynamicFieldType;
@@ -364,7 +362,7 @@ async fn test_dev_inspect_object_by_bytes() {
         .contents()
         .to_vec();
     // gas used should be the same
-    assert_eq!(effects.gas_cost_summary(), &dev_inspect_gas_summary);
+    assert_eq!(SuiGasCostSummary::from(effects.gas_cost_summary().clone()), dev_inspect_gas_summary);
 
     // use the created object directly, via its bytes
     let DevInspectResults {
@@ -510,14 +508,14 @@ async fn test_dev_inspect_dynamic_field() {
     let (test_object1_bytes, test_object2_bytes) = {
         let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_object_id = ObjectID::random();
-        let (validator, fullnode, object_basics) =
+        let (validator, full_node, object_basics) =
             init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)])
                 .await;
         macro_rules! mk_obj {
             () => {{
                 let effects = call_move_(
                     &validator,
-                    Some(&fullnode),
+                    Some(&full_node),
                     &gas_object_id,
                     &sender,
                     &sender_key,
@@ -553,7 +551,7 @@ async fn test_dev_inspect_dynamic_field() {
 
     let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
-    let (_validator, fullnode, object_basics) =
+    let (_validator, full_node, object_basics) =
         init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)]).await;
 
     // add a dynamic field to itself
@@ -571,7 +569,7 @@ async fn test_dev_inspect_dynamic_field() {
         }))],
     };
     let kind = TransactionKind::programmable(pt);
-    let DevInspectResults { error, .. } = fullnode
+    let DevInspectResults { error, .. } = full_node
         .dev_inspect_transaction_block(sender, kind, None)
         .await
         .unwrap();
@@ -587,7 +585,7 @@ async fn test_dev_inspect_dynamic_field() {
     let DevInspectResults {
         effects, results, ..
     } = call_dev_inspect(
-        &fullnode,
+        &full_node,
         &sender,
         &object_basics.0,
         "object_basics",

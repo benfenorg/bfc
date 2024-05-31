@@ -470,7 +470,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
 
     authority_state.insert_genesis_object(stable_gas_object.clone()).await;
 
-    let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET,true,stable_gas_object,gas_object_id_stable,
+    let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET / 10,true,stable_gas_object,gas_object_id_stable,
                                                             sender,recipient,sender_key.copy(),rgp,authority_state.clone()).await;
 
     let effects = result
@@ -1015,7 +1015,7 @@ async fn move_call_with_gas_objects(gas_objects: Vec<ObjectRef>,sender: SuiAddre
         Vec::new(),
         gas_objects,
         args.clone(),
-        *MAX_GAS_BUDGET,
+        *MAX_GAS_BUDGET / 10,
         rgp,
     )
         .unwrap();
@@ -1034,6 +1034,13 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
         CallArg::Pure(16u64.to_le_bytes().to_vec()),
         CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
     ];
+
+    let gas_budget = if gas_object.is_stable_gas_coin() {
+        *MAX_GAS_BUDGET / 10
+    } else {
+        *MAX_GAS_BUDGET
+    };
+
     let data = TransactionData::new_move_call(
         sender,
         package_object_ref.0,
@@ -1042,7 +1049,7 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
         Vec::new(),
         gas_object.compute_object_reference(),
         args.clone(),
-        *MAX_GAS_BUDGET,
+        gas_budget,
         rgp,
     )
         .unwrap();
@@ -1082,7 +1089,7 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
         vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(
             created_object_ref,
         ))],
-        *MAX_GAS_BUDGET,
+        gas_budget,
         rgp,
     )
         .unwrap();

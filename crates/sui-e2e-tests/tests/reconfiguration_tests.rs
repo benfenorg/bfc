@@ -25,7 +25,7 @@ use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
-use sui_types::gas::{calculate_stable_net_used_with_base_point, GasCostSummary};
+use sui_types::gas::GasCostSummary;
 use sui_types::governance::{MIN_VALIDATOR_JOINING_STAKE_MIST, StakedStable};
 use sui_types::message_envelope::Message;
 use sui_types::sui_system_state::{
@@ -2378,7 +2378,7 @@ async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Er
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(6000)
+        .with_epoch_duration_ms(20000)
         .with_num_validators(5)
         .build()
         .await;
@@ -2691,11 +2691,8 @@ async fn transfer_with_dry_run_stable_coin(
     let SuiTransactionBlockEffects::V1(effects) =  dry_run_resp.effects;
     let gas_cost_summary= effects.gas_cost_summary();
 
-    error!("gas_cost_summary {:?}",gas_cost_summary);
-    //let price = test_cluster.get_reference_gas_price().await;
-    let gas_budget = (125 * calculate_stable_net_used_with_base_point(gas_cost_summary) /100) as u64;
-
-    let split_coin_txn_bytes = http_client.split_coin(address,busd_data.object_id,vec![BigInt::from(gas_budget)],
+    let gas_budget = gas_cost_summary.gas_used() - gas_cost_summary.storage_rebate;
+    let split_coin_txn_bytes = http_client.split_coin(address,busd_data.object_id,vec![BigInt::from(gas_budget+amount)],
                                                       None,BigInt::from(10000000)).await?.to_data()?;
     let split_coin_txn = test_cluster.wallet.sign_transaction(&split_coin_txn_bytes);
     let _response = test_cluster.wallet.execute_transaction_must_succeed(split_coin_txn).await;
@@ -2707,17 +2704,17 @@ async fn transfer_with_dry_run_stable_coin(
     ).await?;
 
     assert_eq!(busd_response_vec.len(), 2);
-    error!("busd_response_vec {:?}",busd_response_vec);
 
     for busd_response in busd_response_vec {
         let busd_data = busd_response.data.as_ref().unwrap();
         let balance = get_balance(&busd_data);
-        if balance == gas_budget {
+        if balance == gas_budget+amount {
             gas_coins= vec![busd_data.object_ref()];
         }
     }
 
     let _ = sleep(Duration::from_secs(1)).await;
+
 
     let tx = make_transfer_sui_transaction_with_gas_coins_budget(
         &test_cluster.wallet,
@@ -2737,7 +2734,6 @@ async fn transfer_with_dry_run_stable_coin(
         Some(SuiObjectDataOptions::new().with_owner().with_type().with_display().with_content()),
     ).await?;
     let busd_balance_after = get_balance(gas_object_info.data.as_ref().unwrap());
-    println!("busd_balance {} {}", busd_balance_after, busd_balance_before);
     assert!(busd_balance_after < busd_balance_before);
 
     Ok(())
@@ -2754,7 +2750,7 @@ async fn transfer_with_swapped_stable_coin(
     assert!(token_names.len() > 0);
 
     let mut gas_coins = Vec::with_capacity(token_names.len());
-    for token_name in token_names {
+    for token_name in &token_names {
         let busd_response_vec = swap_bfc_to_stablecoin_and_get_data(
             test_cluster, http_client, address, token_name.clone(), swap_amount).await?;
         assert!(busd_response_vec.len() >= 1);
@@ -2772,6 +2768,7 @@ async fn transfer_with_swapped_stable_coin(
         Some(SuiObjectDataOptions::new().with_owner().with_type().with_display().with_content()),
     ).await?;
     let busd_balance_before = get_balance(gas_object_info.data.as_ref().unwrap());
+
     let tx = make_transfer_sui_transaction_with_gas_coins(
         &test_cluster.wallet,
         Some(receiver_address),
@@ -2790,7 +2787,6 @@ async fn transfer_with_swapped_stable_coin(
         Some(SuiObjectDataOptions::new().with_owner().with_type().with_display().with_content()),
     ).await?;
     let busd_balance_after = get_balance(gas_object_info.data.as_ref().unwrap());
-    println!("busd_balance {} {}", busd_balance_after, busd_balance_before);
     assert!(busd_balance_after < busd_balance_before);
 
     Ok(())

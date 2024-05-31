@@ -720,7 +720,7 @@ impl LocalExec {
         let certificate_deny_set = HashSet::new();
         let store = self.to_backing_store();
         let res = if let Ok(gas_status) =
-            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config)
+            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config, None, None)
         {
             executor.execute_transaction_to_effects(
                 store,

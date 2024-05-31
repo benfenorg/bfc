@@ -14,14 +14,13 @@ use tracing::info;
 
 use sui_json_rpc::api::ReadApiClient;
 use sui_json_rpc::{get_balance_changes, ObjectProvider};
-use sui_json_rpc_types::SuiTransactionBlockResponseOptions;
+use sui_json_rpc_types::{SuiGasCostSummary, SuiTransactionBlockResponseOptions};
 use sui_json_rpc_types::{
     BalanceChange, SuiExecutionStatus, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI,
 };
 use sui_json_rpc_types::{ObjectChange, OwnedObjectRef, SuiObjectRef};
 use sui_types::base_types::TransactionDigest;
 use sui_types::base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress};
-use sui_types::gas::GasCostSummary;
 use sui_types::gas_coin::GAS;
 use sui_types::object::Owner;
 use sui_types::storage::WriteKind;
@@ -131,7 +130,7 @@ pub async fn get_balance_changes_from_effect<P: ObjectProvider<Error = E>, E>(
 ) -> Result<Vec<BalanceChange>, E> {
     let gas_owner = effects.gas_object().owner;
     // Only charge gas when tx fails, skip all object parsing
-    let gas_cost_summary: GasCostSummary = effects.gas_cost_summary().clone();
+    let gas_cost_summary: SuiGasCostSummary = effects.gas_cost_summary().clone();
     if effects.status() != &SuiExecutionStatus::Success {
         return Ok(vec![BalanceChange {
             owner: gas_owner,

@@ -45,9 +45,7 @@ use sui_core::authority::{
 use sui_framework::BuiltInFramework;
 use sui_framework::DEFAULT_FRAMEWORK_PATH;
 use sui_json_rpc::api::QUERY_MAX_RESULT_LIMIT;
-use sui_json_rpc_types::{
-    DevInspectResults, EventFilter, SuiExecutionStatus, SuiTransactionBlockEffectsAPI,
-};
+use sui_json_rpc_types::{DevInspectResults, EventFilter, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
 use sui_storage::{
     key_value_store::TransactionKeyValueStore, key_value_store_metrics::KeyValueStoreMetrics,
@@ -71,7 +69,7 @@ use sui_types::{
 use sui_types::{clock::Clock, SUI_SYSTEM_ADDRESS,BFC_SYSTEM_ADDRESS};
 use sui_types::{crypto::get_authority_key_pair, storage::ObjectStore};
 use sui_types::{execution_status::ExecutionStatus, transaction::TransactionKind};
-use sui_types::{gas::GasCostSummary, object::GAS_VALUE_FOR_TESTING};
+use sui_types::{object::GAS_VALUE_FOR_TESTING};
 use sui_types::{id::UID, DEEPBOOK_ADDRESS};
 use sui_types::{
     move_package::MovePackage,
@@ -145,7 +143,7 @@ struct TxnSummary {
     unwrapped_then_deleted: Vec<ObjectID>,
     wrapped: Vec<ObjectID>,
     events: Vec<Event>,
-    gas_summary: GasCostSummary,
+    gas_summary: SuiGasCostSummary,
 }
 
 static GENESIS: Lazy<Genesis> = Lazy::new(create_genesis_module_objects);
@@ -1179,7 +1177,7 @@ impl<'a> SuiTestAdapter<'a> {
                     .collect();
                 Ok(TxnSummary {
                     events,
-                    gas_summary: gas_summary.clone(),
+                    gas_summary: SuiGasCostSummary::from(gas_summary.clone()),
                     created: created_ids,
                     mutated: mutated_ids,
                     unwrapped: unwrapped_ids,
