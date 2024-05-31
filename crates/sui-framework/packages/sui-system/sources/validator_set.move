@@ -184,8 +184,6 @@ module sui_system::validator_set {
                 table::add(&mut stable_pool_mappings, *id, sui_address(validator));
                 j = j + 1;
             };
-            //let validator = &init_active_validators[i];
-            //staking_pool_mappings.add(staking_pool_id(validator), sui_address(validator));
             i = i + 1;
         };
         let mut validators = ValidatorSet {
@@ -201,7 +199,6 @@ module sui_system::validator_set {
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
         };
-        let rate_map = rate_vec_map();
         voting_power::set_voting_power(&mut validators.active_validators, rate_map);
         validators
     }
@@ -272,8 +269,6 @@ module sui_system::validator_set {
             table::remove(&mut self.stable_pool_mappings, *id);
             j = j + 1;
         };
-        //self.staking_pool_mappings.remove(staking_pool_id);
-
         // Deactivate the staking pool.
         let deactivation_epoch = tx_context::epoch(ctx);
         validator::deactivate(&mut validator, deactivation_epoch);
@@ -294,7 +289,6 @@ module sui_system::validator_set {
         validator::deactivate_stable<BTRY>(&mut validator, deactivation_epoch);
         validator::deactivate_stable<BZAR>(&mut validator, deactivation_epoch);
         validator::deactivate_stable<MGG>(&mut validator, deactivation_epoch);
-        validator.deactivate(ctx.epoch());
 
         // Add to the inactive tables.
         self.inactive_validators.add(

@@ -468,6 +468,7 @@ pub struct ValidatorSetV1 {
     pub pending_removals: Vec<u64>,
     pub staking_pool_mappings: Table,
     pub stable_pool_mappings: Table,
+    pub last_epoch_stable_rate: VecMap<String, u64>,
     pub inactive_validators: Table,
     pub validator_candidates: Table,
     pub at_risk_validators: VecMap<SuiAddress, u64>,
@@ -663,6 +664,7 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV1 {
                         id: _stable_pool_mappings_id,
                         size: _stable_pool_mappings_size,
                     },
+                    last_epoch_stable_rate:_,
                     inactive_validators:
                         Table {
                             id: inactive_pools_id,

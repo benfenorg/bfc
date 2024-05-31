@@ -213,6 +213,7 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                         id: _stable_pool_mappings_id,
                         size: _stable_pool_mappings_size,
                     },
+                    last_epoch_stable_rate: _,
                     inactive_validators:
                         Table {
                             id: inactive_pools_id,
