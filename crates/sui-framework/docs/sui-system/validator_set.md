@@ -708,8 +708,8 @@ The epoch value corresponds to the first epoch this change takes place.
             <a href="../sui-framework/table.md#0x2_table_add">table::add</a>(&<b>mut</b> stable_pool_mappings, *id, sui_address(<a href="validator.md#0x3_validator">validator</a>));
             j = j + 1;
         };
-        <b>let</b> <a href="validator.md#0x3_validator">validator</a> = &init_active_validators[i];
-        staking_pool_mappings.add(staking_pool_id(<a href="validator.md#0x3_validator">validator</a>), sui_address(<a href="validator.md#0x3_validator">validator</a>));
+        //<b>let</b> <a href="validator.md#0x3_validator">validator</a> = &init_active_validators[i];
+        //staking_pool_mappings.add(staking_pool_id(<a href="validator.md#0x3_validator">validator</a>), sui_address(<a href="validator.md#0x3_validator">validator</a>));
         i = i + 1;
     };
     <b>let</b> <b>mut</b> validators = <a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a> {
@@ -833,7 +833,7 @@ Called by <code><a href="sui_system.md#0x3_sui_system">sui_system</a></code> to 
         <a href="../sui-framework/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.stable_pool_mappings, *id);
         j = j + 1;
     };
-    self.staking_pool_mappings.remove(staking_pool_id);
+    //self.staking_pool_mappings.remove(staking_pool_id);
 
     // Deactivate the staking pool.
     <b>let</b> deactivation_epoch = <a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx);

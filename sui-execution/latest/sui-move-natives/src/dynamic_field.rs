@@ -165,7 +165,7 @@ pub fn add_child_object(
     mut ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
-    println!("=====add_child_object begin:========");
+    //println!("=====add_child_object begin:========");
     assert!(ty_args.len() == 1);
     assert!(args.len() == 2);
 
@@ -229,7 +229,7 @@ pub fn add_child_object(
             * struct_tag_size.into()
     );
 
-    println!("=====add_child_object: parent: {}, child_id: {}, ", parent, child_id);
+    //println!("=====add_child_object: parent: {}, child_id: {}, ", parent, child_id);
 
     let object_runtime: &mut ObjectRuntime = context.extensions_mut().get_mut();
     object_runtime.add_child_object(
@@ -424,7 +424,7 @@ pub fn has_child_object(
     let has_child = object_runtime.child_object_exists(parent, child_id)?;
 
 
-    println!("has_child_object: parent: {}, child_id: {}, has_child: {}", parent, child_id, has_child);
+    //println!("has_child_object: parent: {}, child_id: {}, has_child: {}", parent, child_id, has_child);
 
     Ok(NativeResult::ok(
         context.gas_used(),

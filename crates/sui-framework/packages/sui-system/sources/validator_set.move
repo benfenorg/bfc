@@ -184,8 +184,8 @@ module sui_system::validator_set {
                 table::add(&mut stable_pool_mappings, *id, sui_address(validator));
                 j = j + 1;
             };
-            let validator = &init_active_validators[i];
-            staking_pool_mappings.add(staking_pool_id(validator), sui_address(validator));
+            //let validator = &init_active_validators[i];
+            //staking_pool_mappings.add(staking_pool_id(validator), sui_address(validator));
             i = i + 1;
         };
         let mut validators = ValidatorSet {
@@ -272,7 +272,7 @@ module sui_system::validator_set {
             table::remove(&mut self.stable_pool_mappings, *id);
             j = j + 1;
         };
-        self.staking_pool_mappings.remove(staking_pool_id);
+        //self.staking_pool_mappings.remove(staking_pool_id);
 
         // Deactivate the staking pool.
         let deactivation_epoch = tx_context::epoch(ctx);
