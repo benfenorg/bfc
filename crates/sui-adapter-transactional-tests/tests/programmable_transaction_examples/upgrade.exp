@@ -5,7 +5,7 @@ A: object(0,0)
 
 task 1 'publish'. lines 8-18:
 created: object(1,0)
-mutated: object(0,2)
+mutated: object(0,1)
 gas summary: computation_cost: 1000000, storage_cost: 467400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'publish'. lines 20-23:
@@ -15,7 +15,7 @@ gas summary: computation_cost: 1000000, storage_cost: 539600,  storage_rebate: 0
 
 task 3 'publish'. lines 25-28:
 created: object(3,0)
-mutated: object(0,2)
+mutated: object(0,1)
 gas summary: computation_cost: 1000000, storage_cost: 376200,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 5 'programmable'. lines 36-41:
@@ -30,10 +30,10 @@ task 7 'set-address'. lines 47-47:
 Error: INVALID TEST. Unknown object, object(5,0)
 
 task 8 'programmable'. lines 49-51:
-Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 9 'publish'. lines 53-58:
-Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 10 'run'. lines 60-60:
-Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }

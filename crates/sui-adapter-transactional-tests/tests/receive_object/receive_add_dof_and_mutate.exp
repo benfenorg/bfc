@@ -6,15 +6,15 @@ A: object(0,0)
 task 1 'publish'. lines 6-36:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7835600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 815480,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 38-38:
 created: object(2,0), object(2,1)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 3541600,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 386080,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'view-object'. lines 40-40:
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -26,7 +26,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 42-42:
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC05f4ec7f95d0f6c8f8f8bb830d23e8c4f1d488df1834604b86cd7a1d10e579213eb2 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -40,10 +40,10 @@ Contents: tto::M1::A {
 task 5 'run'. lines 44-44:
 created: object(5,0), object(5,1), object(5,2)
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 9728000,  storage_rebate: 3506184, non_refundable_storage_fee: 35416
+gas summary: computation_cost: 1000000, storage_cost: 1004720,  storage_rebate: 382219, non_refundable_storage_fee: 3861
 
 task 6 'view-object'. lines 46-46:
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -55,7 +55,7 @@ Contents: tto::M1::A {
 }
 
 task 7 'view-object'. lines 48-48:
-Owner: Object ID: ( fake(5,0) )
+Owner: Object ID: ( BFCe3a1fca1627357930e6525755d55d6a1b0bb7129f2e33759c603601fce5df23a01aa )
 Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -67,7 +67,7 @@ Contents: tto::M1::A {
 }
 
 task 8 'view-object'. lines 50-50:
-Owner: Object ID: ( fake(2,0) )
+Owner: Object ID: ( BFC05f4ec7f95d0f6c8f8f8bb830d23e8c4f1d488df1834604b86cd7a1d10e579213eb2 )
 Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -84,7 +84,7 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
 }
 
 task 9 'view-object'. lines 52-52:
-Owner: Object ID: ( fake(2,1) )
+Owner: Object ID: ( BFCc7a3a6ca224d7f084b21ad1a7d4d490838f98083c65de4bd75fcb56a7b34f0d0e3af )
 Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -101,7 +101,7 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
 }
 
 task 10 'view-object'. lines 54-54:
-Owner: Object ID: ( fake(5,1) )
+Owner: Object ID: ( BFCf764d66fe7ce7a8a4ed515c24b75820095642c17d6125d4d4634b262e552d3f53bfc )
 Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {

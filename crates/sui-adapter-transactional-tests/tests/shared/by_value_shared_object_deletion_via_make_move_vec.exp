@@ -1,67 +1,58 @@
 processed 10 tasks
 
 task 1 'publish'. lines 6-45:
-created: object(1,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6900800,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: error[E03002]: unbound module
+  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpelWP1m:8:9
+  │
+8 │     use sui::sui::SUI;
+  │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
+
+error[E03004]: unbound type
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpelWP1m:14:50
+   │
+14 │         transfer::public_share_object(coin::zero<BFC>(ctx))
+   │                                                  ^^^ Unbound type 'BFC' in current scope
+
+error[E03004]: unbound type
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpelWP1m:29:45
+   │
+29 │     public fun pop_coin(mut o2: vector<Coin<BFC>>): Coin<BFC> {
+   │                                             ^^^ Unbound type 'BFC' in current scope
+
+error[E03004]: unbound type
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpelWP1m:29:58
+   │
+29 │     public fun pop_coin(mut o2: vector<Coin<BFC>>): Coin<BFC> {
+   │                                                          ^^^ Unbound type 'BFC' in current scope
+
+error[E03004]: unbound type
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpelWP1m:34:36
+   │
+34 │     public fun share_coin(o2: Coin<BFC>) {
+   │                                    ^^^ Unbound type 'BFC' in current scope
+
+
 
 task 2 'run'. lines 47-47:
-created: object(2,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 3 'run'. lines 49-49:
-created: object(3,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 4 'view-object'. lines 51-51:
-Owner: Shared
-Version: 3
-Contents: t2::o2::Obj2 {
-    id: sui::object::UID {
-        id: sui::object::ID {
-            bytes: fake(2,0),
-        },
-    },
-}
+Error: task 4, lines 51-51. Unbound fake id 2,0
 
 task 5 'view-object'. lines 53-55:
-Owner: Shared
-Version: 4
-Contents: t2::o2::Obj2 {
-    id: sui::object::UID {
-        id: sui::object::ID {
-            bytes: fake(3,0),
-        },
-    },
-}
+Error: task 5, lines 53-53. Unbound fake id 3,0
 
 task 6 'programmable'. lines 56-58:
-mutated: object(0,0), object(2,0)
-deleted: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 3430944, non_refundable_storage_fee: 34656
+Error: INVALID TEST. Unknown object, object(2,0)
 
 task 7 'run'. lines 60-60:
-created: object(7,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 8 'view-object'. lines 62-64:
-Owner: Shared
-Version: 6
-Contents: sui::coin::Coin<sui::sui::SUI> {
-    id: sui::object::UID {
-        id: sui::object::ID {
-            bytes: fake(7,0),
-        },
-    },
-    balance: sui::balance::Balance<sui::sui::SUI> {
-        value: 0u64,
-    },
-}
+Error: task 8, lines 62-62. Unbound fake id 7,0
 
 task 9 'programmable'. lines 65-70:
-created: object(9,0)
-mutated: object(0,0), object(7,0)
-gas summary: computation_cost: 1000000, storage_cost: 2964000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+Error: INVALID TEST. Unknown object, object(7,0)

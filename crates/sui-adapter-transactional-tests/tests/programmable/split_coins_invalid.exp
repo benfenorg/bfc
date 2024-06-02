@@ -4,49 +4,61 @@ init:
 A: object(0,0), B: object(0,1), C: object(0,2)
 
 task 1 'publish'. lines 9-26:
-created: object(1,0)
-mutated: object(0,4)
-gas summary: computation_cost: 1000000, storage_cost: 588240,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpvZt7he:11:14
+   │
+11 │     use std::vector;
+   │              ^^^^^^ Unnecessary alias 'vector' for module 'std::vector'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpvZt7he:13:14
+   │
+13 │     use sui::transfer;
+   │              ^^^^^^^^ Unnecessary alias 'transfer' for module 'sui::transfer'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+error[E04024]: invalid usage of immutable variable
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpvZt7he:19:38
+   │
+17 │     public fun transfer(v: vector<coin::Coin<sui::bfc::BFC>>, r: address) {
+   │                         - To use the variable mutably, it must be declared 'mut', e.g. 'mut v'
+18 │         while (!vector::is_empty(&v)) {
+19 │             let c = vector::pop_back(&mut v);
+   │                                      ^^^^^^ Invalid mutable borrow of immutable variable 'v'
+
+
 
 task 2 'programmable'. lines 28-32:
-created: object(2,0)
+created: object(1,0)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 33-33:
-created: object(3,0)
-mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 392160,  storage_rebate: 258826, non_refundable_storage_fee: 2614
+Error: INVALID TEST. Unknown object, object(2,0)
 
 task 4 'view-object'. lines 35-37:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
-Version: 3
-Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}, balance: sui::balance::Balance<sui::bfc::BFC> {value: 1000u64}}
+Error: task 4, lines 35-35. Unbound fake id 3,0
 
 task 5 'programmable'. lines 38-41:
-Error: Transaction Effects Status: Insufficient coin balance for operation.
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: InsufficientCoinBalance, source: Some("balance: 1000 required: 10001"), command: Some(0) } }
+Error: INVALID TEST. Unknown object, object(3,0)
 
 task 6 'programmable'. lines 42-45:
-Error: Transaction Effects Status: Insufficient coin balance for operation.
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: InsufficientCoinBalance, source: Some("balance: 334 required: 335"), command: Some(0) } }
+Error: INVALID TEST. Unknown object, object(3,0)
 
 task 7 'programmable'. lines 46-49:
-Error: Transaction Effects Status: Invalid command argument at 1. The argument cannot be deserialized into a value of the specified type
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: CommandArgumentError { arg_idx: 1, kind: InvalidBCSBytes }, source: None, command: Some(0) } }
+Error: INVALID TEST. Unknown object, object(3,0)
 
 task 8 'programmable'. lines 50-53:
-Error: Transaction Effects Status: Invalid command argument at 1. The argument cannot be deserialized into a value of the specified type
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: CommandArgumentError { arg_idx: 1, kind: InvalidBCSBytes }, source: None, command: Some(0) } }
+Error: INVALID TEST. Unknown object, object(3,0)
 
 task 9 'programmable'. lines 54-58:
-Error: Transaction Effects Status: Invalid command argument at 1. The type of the value does not match the expected type
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: CommandArgumentError { arg_idx: 1, kind: TypeMismatch }, source: None, command: Some(1) } }
+Error: INVALID TEST. Unknown object, object(3,0)
 
 task 10 'programmable'. lines 59-64:
-Error: Transaction Effects Status: Invalid command argument at 1. The type of the value does not match the expected type
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: CommandArgumentError { arg_idx: 1, kind: TypeMismatch }, source: None, command: Some(1) } }
+Error: INVALID TEST. Unknown object, object(3,0)
 
 task 11 'programmable'. lines 65-67:
-Error: Transaction Effects Status: Invalid command argument at 0. Invalid usage of result 0, expected a single result but found either no return values or multiple.
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: CommandArgumentError { arg_idx: 0, kind: InvalidResultArity { result_idx: 0 } }, source: None, command: Some(1) } }
+Error: INVALID TEST. Unknown object, object(3,0)

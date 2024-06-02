@@ -3,15 +3,15 @@ processed 9 tasks
 task 1 'publish'. lines 6-44:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 8071200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 839040,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 46-46:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 4636000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 495520,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'view-object'. lines 48-48:
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -22,7 +22,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 50-50:
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFCd767c52b4c32b3ffb34c88b66d16fadc77f021043f1563552b01584386259882fcba )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -33,7 +33,7 @@ Contents: tto::M1::B {
 }
 
 task 5 'view-object'. lines 52-54:
-Owner: Account Address ( fake(2,1) )
+Owner: Account Address ( BFC69a60d31a3c4eb2da42b84dceb838fa86836dde2030e10ca455a0a25f7bda29c6838 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -45,11 +45,11 @@ Contents: tto::M1::B {
 
 task 6 'programmable'. lines 55-58:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 252320,  storage_rebate: 249797, non_refundable_storage_fee: 2523
 
 task 7 'programmable'. lines 59-63:
 Error: Error checking transaction input objects: DuplicateObjectRefInput
 
 task 8 'programmable'. lines 64-67:
-mutated: object(0,0), object(2,0), object(2,1), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 4636000,  storage_rebate: 4589640, non_refundable_storage_fee: 46360
+Error: Transaction Effects Status: Move Runtime Abort. Location: sui::transfer::receive_impl (function index 12) at offset 0, Abort Code: 3
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("transfer") }, function: 12, instruction: 0, function_name: Some("receive_impl") }, 3), source: Some(VMError { major_status: ABORTED, sub_status: Some(3), message: None, exec_state: None, location: Module(ModuleId { address: sui, name: Identifier("transfer") }), indices: [], offsets: [(FunctionDefinitionIndex(12), 0)] }), command: Some(1) } }

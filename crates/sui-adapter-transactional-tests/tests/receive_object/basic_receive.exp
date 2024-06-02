@@ -3,15 +3,15 @@ processed 9 tasks
 task 1 'publish'. lines 6-30:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6923600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 724280,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 32-32:
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 373920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'view-object'. lines 34-34:
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -22,7 +22,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 36-38:
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFCdd341483f482a4683c5279d95ca596f3d4ca37cc8fb7939e488d0ce62183cfd78aaa )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -34,10 +34,10 @@ Contents: tto::M1::B {
 
 task 5 'run'. lines 39-39:
 mutated: object(0,0), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 373920,  storage_rebate: 370181, non_refundable_storage_fee: 3739
 
 task 6 'view-object'. lines 41-41:
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -48,7 +48,7 @@ Contents: tto::M1::A {
 }
 
 task 7 'view-object'. lines 43-45:
-Owner: Account Address ( _ )
+Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
 Version: 4
 Contents: tto::M1::B {
     id: sui::object::UID {

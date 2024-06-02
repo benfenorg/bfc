@@ -51,7 +51,7 @@ async fn main() {
     let _guard = match args.command {
         SuiCommand::Console { .. } | SuiCommand::KeyTool { .. } | SuiCommand::Move { .. } => {
             telemetry_subscribers::TelemetryConfig::new()
-                .with_log_level("info")
+                .with_log_level("error")
                 .with_env()
                 .init()
         }
@@ -93,7 +93,7 @@ async fn main() {
         }
 
         _ => telemetry_subscribers::TelemetryConfig::new()
-            .with_log_level("info")
+            .with_log_level("error")
             .with_env()
             .init(),
     };

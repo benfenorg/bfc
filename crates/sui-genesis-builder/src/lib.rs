@@ -1057,8 +1057,8 @@ fn create_genesis_objects(
 
 
     for system_package in system_packages.into_iter() {
-        info!("Processing system package: {:?}", system_package);
-        info!("Processing system package dependencies: {:?}", system_package.dependencies().to_vec());
+        //info!("Processing system package: {:?}", system_package);
+        //info!("Processing system package dependencies: {:?}", system_package.dependencies().to_vec());
         process_package(
             &mut store,
             executor.as_ref(),
@@ -1101,7 +1101,7 @@ fn process_package(
     protocol_config: &ProtocolConfig,
     metrics: Arc<LimitsMetrics>,
 ) -> anyhow::Result<()> {
-    info!("Processing package with {} modules", modules.len());
+    //info!("Processing package with {} modules", modules.len());
 
     let dependency_objects = store.get_objects(&dependencies);
     // When publishing genesis packages, since the std framework packages all have
