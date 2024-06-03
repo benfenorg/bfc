@@ -3128,7 +3128,7 @@ async fn test_get_owned_objects_owned_by_address_and_check_pagination() -> Resul
 async fn test_linter_suppression_stats() -> Result<(), anyhow::Error> {
     const LINTER_MSG: &str =
         "Total number of linter warnings suppressed: 5 (filtered categories: 3)";
-    let mut cmd = assert_cmd::Command::cargo_bin("sui").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("bfc").unwrap();
     let args = vec!["move", "test", "--path", "tests/data/linter"];
     let output = cmd
         .args(&args)
