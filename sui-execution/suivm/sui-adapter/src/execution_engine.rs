@@ -656,7 +656,7 @@ mod checked {
         param: ChangeObcRoundParams,
         reward_rate: u64,
         storage_rebate: u64,
-        epoch_start_time: u64
+        epoch_end_time: u64
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         let mut arguments = vec![];
@@ -665,7 +665,7 @@ mod checked {
             CallArg::BFC_SYSTEM_MUT,
             CallArg::CLOCK_IMM,
             CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&epoch_start_time).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&epoch_end_time).unwrap()),
         ] .into_iter()
             .map(|a| builder.input(a))
             .collect::<Result<_, _>>();
@@ -776,7 +776,7 @@ mod checked {
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate, change_epoch.epoch_start_timestamp_ms)?;
+        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate, change_epoch.epoch_start_timestamp_ms + change_epoch.epoch_duration_ms)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
