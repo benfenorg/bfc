@@ -635,6 +635,7 @@ mod checked {
     }
 
     pub fn construct_advance_epoch_safe_mode_pt(
+        obc_params: &ChangeObcRoundParams,
         params: &AdvanceEpochParams,
         protocol_config: &ProtocolConfig,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
@@ -681,6 +682,7 @@ mod checked {
             arguments,
         );
 
+        construct_bfc_round_safe_mode_pt(obc_params, &mut builder)?;
         Ok(builder.finish())
     }
 
@@ -888,7 +890,7 @@ mod checked {
                 temporary_store.advance_epoch_safe_mode(&params, protocol_config);
             } else {
                 let advance_epoch_safe_mode_pt =
-                    construct_advance_epoch_safe_mode_pt(&params, protocol_config)?;
+                    construct_advance_epoch_safe_mode_pt(&obc_params,&params, protocol_config)?;
                 programmable_transactions::execution::execute::<execution_mode::System>(
                     protocol_config,
                     metrics.clone(),
@@ -901,7 +903,6 @@ mod checked {
                     .expect("Advance epoch with safe mode must succeed");
             }
         }
-
 
         for (version, modules, dependencies) in change_epoch.system_packages.into_iter() {
             let max_format_version = protocol_config.move_binary_format_version();
