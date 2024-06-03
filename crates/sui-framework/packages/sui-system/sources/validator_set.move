@@ -1113,10 +1113,8 @@ module sui_system::validator_set {
         let length = vector::length(validators);
         let mut i = 0;
         while (i < length) {
-            let v = vector::borrow(validators, i);
-            stake = stake + validator::total_stake_with_all_stable(v, stable_rate);
             let v = &validators[i];
-            stake = stake + v.total_stake_amount();
+            stake = stake + v.total_stake_with_all_stable(stable_rate);
             i = i + 1;
         };
         stake
