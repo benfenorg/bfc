@@ -635,13 +635,11 @@ mod checked {
     }
 
     pub fn construct_advance_epoch_safe_mode_pt(
-        obc_params: &ChangeObcRoundParams,
-        params: &mut AdvanceEpochParams,
+        params: &AdvanceEpochParams,
         protocol_config: &ProtocolConfig,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create storage and computation rewards.
-        params.computation_charge = params.computation_charge - obc_params.bfc_computation_charge  + calculate_reward_rate(obc_params.bfc_computation_charge, obc_params.reward_rate);
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
 
         // Step 2: Advance the epoch.
@@ -683,38 +681,7 @@ mod checked {
             arguments,
         );
 
-        construct_bfc_round_safe_mode_pt(obc_params, &mut builder)?;
         Ok(builder.finish())
-    }
-
-    pub fn construct_bfc_round_safe_mode_pt(
-        param: &ChangeObcRoundParams,
-        builder: &mut ProgrammableTransactionBuilder,
-    ) -> Result<(), ExecutionError> {
-        let storage_rebate_arg = builder
-            .input(CallArg::Pure(
-                bcs::to_bytes(&(
-                    param.storage_rebate + param.bfc_computation_charge)).unwrap(),
-            ))
-            .unwrap();
-        let storage_rebate = builder.programmable_move_call(
-            SUI_FRAMEWORK_PACKAGE_ID,
-            BALANCE_MODULE_NAME.to_owned(),
-            BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
-            vec![GAS::type_tag()],
-            vec![storage_rebate_arg],
-        );
-
-        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
-            vec![],
-            vec![system_obj, storage_rebate],
-        );
-
-        Ok(())
     }
 
     pub fn construct_bfc_round_pt(
@@ -849,6 +816,7 @@ mod checked {
             storage_rebate,
         };
 
+        let computation_charge_safe = computation_charge + change_epoch.bfc_computation_charge;
         let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
@@ -885,12 +853,13 @@ mod checked {
             temporary_store.drop_writes();
             // Must reset the storage rebate since we are re-executing.
             gas_charger.reset_storage_cost_and_rebate();
+            params.computation_charge = computation_charge_safe;
 
             if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
                 temporary_store.advance_epoch_safe_mode(&params, protocol_config);
             } else {
                 let advance_epoch_safe_mode_pt =
-                    construct_advance_epoch_safe_mode_pt(&obc_params,&mut params, protocol_config)?;
+                    construct_advance_epoch_safe_mode_pt(&params, protocol_config)?;
                 programmable_transactions::execution::execute::<execution_mode::System>(
                     protocol_config,
                     metrics.clone(),
