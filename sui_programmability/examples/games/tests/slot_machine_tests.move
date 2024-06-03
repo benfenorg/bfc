@@ -5,7 +5,7 @@
 module games::slot_machine_tests {
     use sui::coin::{Self, Coin};
     use sui::random::{Self, update_randomness_state_for_testing, Random};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
     use games::slot_machine;
 

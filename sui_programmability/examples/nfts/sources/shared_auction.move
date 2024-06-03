@@ -28,8 +28,6 @@
 module nfts::shared_auction {
     use sui::coin::{Self, Coin};
     use sui::bfc::BFC;
-    use sui::tx_context::{Self, TxContext};
-
     use nfts::auction_lib::{Self, Auction};
 
     // Error codes.

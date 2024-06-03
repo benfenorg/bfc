@@ -14,7 +14,7 @@ module games::raffle_with_tickets {
     use sui::clock::{Self, Clock};
     use sui::coin::{Self, Coin};
     use sui::random::{Self, Random, new_generator};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     /// Error codes
     const EGameInProgress: u64 = 0;
@@ -132,7 +132,7 @@ module games::small_raffle {
     use sui::clock::{Self, Clock};
     use sui::coin::{Self, Coin};
     use sui::random::{Self, Random, new_generator};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::table::{Self, Table};
     use sui::tx_context::sender;
 

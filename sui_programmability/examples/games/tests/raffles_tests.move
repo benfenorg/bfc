@@ -6,7 +6,7 @@ module games::raffles_tests {
     use sui::clock;
     use sui::coin::{Self, Coin};
     use sui::random::{Self, update_randomness_state_for_testing, Random};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_scenario::{Self, Scenario};
     use games::small_raffle;
 

@@ -2,6 +2,7 @@
 name = "tokens"
 version = "0.0.2"
 published-at = "BFCdb3c375db4763295d63b241054d39ddd4d26ba8adba73669b8d5c5b5cb997bc24de5"
+edition = "2024.beta"
 
 [dependencies]
 #Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }

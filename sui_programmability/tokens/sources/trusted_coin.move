@@ -6,7 +6,7 @@ module tokens::peace {
     use sui::tx_context::{Self, TxContext};
 
     /// This type is intended to be used only once.
-    struct PEACE has drop {}
+    public struct PEACE has drop {}
 
     /// Register the trusted currency to acquire its `TreasuryCap`. Because
     /// this is a module initializer, it ensures the currency only gets
@@ -37,6 +37,6 @@ module tokens::peace {
     #[test_only]
     /// Wrapper of module initializer for testing
     public fun test_init(ctx: &mut TxContext) {
-        init(ctx)
+        init(PEACE{},ctx)
     }
 }

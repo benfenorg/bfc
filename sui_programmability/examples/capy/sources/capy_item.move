@@ -8,15 +8,12 @@
 /// as well as allows collecting profits in a single call.
 module capy::capy_item {
     use sui::url::{Self, Url};
-    use sui::object::{Self, ID, UID};
-    use sui::tx_context::{sender, TxContext};
+
     use std::string::{Self, String};
     use sui::bfc::BFC;
     use sui::balance::{Self, Balance};
-    use std::option::{Self, Option};
     use sui::dynamic_object_field as dof;
     use sui::coin::{Self, Coin};
-    use sui::transfer;
     use std::vector as vec;
     use sui::event::emit;
     use sui::pay;
@@ -27,13 +24,13 @@ module capy::capy_item {
 
     /// Store for any type T. Collects profits from all sold listings
     /// to be later acquirable by the Capy Admin.
-    struct ItemStore has key {
+    public struct ItemStore has key {
         id: UID,
         balance: Balance<BFC>
     }
 
     /// A Capy item, that is being purchased from the `ItemStore`.
-    struct CapyItem has key, store {
+    public struct CapyItem has key, store {
         id: UID,
         name: String,
         /// Urls and other meta information should
@@ -43,14 +40,14 @@ module capy::capy_item {
     }
 
     /// A Capability granting the bearer full control over the `ItemStore`.
-    struct StoreOwnerCap has key, store { id: UID }
+    public struct StoreOwnerCap has key, store { id: UID }
 
     /// A listing for an Item. Supply is either finite or infinite.
-    struct ListedItem has key, store {
+    public struct ListedItem has key, store {
         id: UID,
         url: Url,
         name: String,
-        type: String,
+        `type`: String,
         price: u64,
         quantity: Option<u64>,
     }
@@ -58,7 +55,7 @@ module capy::capy_item {
     /// Emitted when new item is purchased.
     /// Off-chain we only need to know which ID
     /// corresponds to which name to serve the data.
-    struct ItemCreated has copy, drop {
+    public struct ItemCreated has copy, drop {
         id: ID,
         name: String,
     }
@@ -73,7 +70,7 @@ module capy::capy_item {
 
         transfer::public_transfer(StoreOwnerCap {
             id: object::new(ctx)
-        }, sender(ctx))
+        },  ctx.sender())
     }
 
     /// Admin action - collect Profits from the `ItemStore`.
@@ -83,7 +80,7 @@ module capy::capy_item {
         let a = balance::value(&s.balance);
         let b = balance::split(&mut s.balance, a);
 
-        transfer::public_transfer(coin::from_balance(b, ctx), sender(ctx))
+        transfer::public_transfer(coin::from_balance(b, ctx), ctx.sender())
     }
 
     /// Change the quantity value for the listing in the `ItemStore`.
@@ -100,7 +97,7 @@ module capy::capy_item {
         _: &StoreOwnerCap,
         s: &mut ItemStore,
         name: vector<u8>,
-        type: vector<u8>,
+        `type`: vector<u8>,
         price: u64,
         // quantity: Option<u64>,
         ctx: &mut TxContext
@@ -111,7 +108,7 @@ module capy::capy_item {
             price,
             quantity: option::none(), // temporarily only infinite quantity
             name: string::utf8(name),
-            type: string::utf8(type)
+            `type`: string::utf8(`type`)
         });
     }
 
@@ -144,7 +141,7 @@ module capy::capy_item {
             id,
             url: listing_mut.url,
             name: listing_mut.name,
-        }, sender(ctx))
+        }, ctx.sender())
     }
 
     /// Buy a CapyItem with a single Coin which may be bigger than the
@@ -152,7 +149,7 @@ module capy::capy_item {
     public entry fun buy_mut(
         s: &mut ItemStore, name: vector<u8>, payment: &mut Coin<BFC>, ctx: &mut TxContext
     ) {
-        let listing = dof::borrow<vector<u8>, ListedItem>(&mut s.id, name);
+        let listing = dof::borrow<vector<u8>, ListedItem>(&s.id, name);
         let paid = coin::split(payment, listing.price, ctx);
         buy_and_take(s, name, paid, ctx)
     }
@@ -160,19 +157,19 @@ module capy::capy_item {
     /// Buy a CapyItem with multiple Coins by joining them first and then
     /// calling the `buy_mut` function.
     public entry fun buy_mul_coin(
-        s: &mut ItemStore, name: vector<u8>, coins: vector<Coin<BFC>>, ctx: &mut TxContext
+        s: &mut ItemStore, name: vector<u8>, mut coins: vector<Coin<BFC>>, ctx: &mut TxContext
     ) {
-        let paid = vec::pop_back(&mut coins);
+        let mut paid = vec::pop_back(&mut coins);
         pay::join_vec(&mut paid, coins);
         buy_mut(s, name, &mut paid, ctx);
-        transfer::public_transfer(paid, sender(ctx))
+        transfer::public_transfer(paid, ctx.sender())
     }
 
     /// Construct an image URL for the `CapyItem`.
     fun img_url(name: vector<u8>): Url {
-        let capy_url = *&IMAGE_URL;
-        vec::append(&mut capy_url, name);
-        vec::append(&mut capy_url, b"/svg");
+        let mut capy_url = IMAGE_URL;
+        capy_url.append(name);
+        capy_url.append(b"/svg");
 
         url::new_unsafe_from_bytes(capy_url)
     }

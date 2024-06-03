@@ -115,7 +115,7 @@ module basics::test_sandwich {
     use basics::sandwich::{Self, Grocery, GroceryOwnerCapability};
     use sui::test_scenario;
     use sui::coin::{Self};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_utils;
 
     #[test]

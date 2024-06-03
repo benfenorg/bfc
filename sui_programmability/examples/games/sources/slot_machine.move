@@ -13,7 +13,7 @@ module games::slot_machine {
     use sui::coin::{Self, Coin};
     use sui::math;
     use sui::random::{Self, Random, new_generator};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     /// Error codes
     const EInvalidAmount: u64 = 0;

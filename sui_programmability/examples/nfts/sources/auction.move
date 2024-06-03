@@ -34,7 +34,7 @@
 module nfts::auction {
     use sui::coin::{Self, Coin};
     use sui::balance::Balance;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     use nfts::auction_lib::{Self, Auction};
 

@@ -6,20 +6,15 @@
 /// one using single-owner objects only and the other using shared
 /// objects.
 module nfts::auction_lib {
-    use std::option::{Self, Option};
-
     use sui::coin;
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use sui::object::{Self, UID};
-    use sui::transfer;
-    use sui::tx_context::{Self,TxContext};
 
-    friend nfts::auction;
-    friend nfts::shared_auction;
+    /* friend nfts::auction; */
+    /* friend nfts::shared_auction; */
 
     /// Stores information about an auction bid.
-    struct BidData has store {
+    public struct BidData has store {
         /// Coin representing the current (highest) bid.
         funds: Balance<BFC>,
         /// Address of the highest bidder.
@@ -28,7 +23,7 @@ module nfts::auction_lib {
 
     /// Maintains the state of the auction owned by a trusted
     /// auctioneer.
-    struct Auction<T:  key + store> has key {
+    public struct Auction<T:  key + store> has key {
         id: UID,
         /// Item to be sold. It only really needs to be wrapped in
         /// Option if Auction represents a shared object but we do it
@@ -124,7 +119,6 @@ module nfts::auction_lib {
             transfer::public_transfer(item, owner);
         };
     }
-
     /// Ends auction and destroys auction object (can only be used if
     /// Auction is single-owner object) - transfers item to the
     /// currently highest bidder or to the original owner if no bids
@@ -132,7 +126,7 @@ module nfts::auction_lib {
     public fun end_and_destroy_auction<T: key + store>(
         auction: Auction<T>, ctx: &mut TxContext
     ) {
-        let Auction { id, to_sell, owner, bid_data } = auction;
+        let Auction { id, mut to_sell, owner, mut bid_data } = auction;
         object::delete(id);
 
         end_auction(&mut to_sell, owner, &mut bid_data, ctx);
@@ -159,7 +153,7 @@ module nfts::auction_lib {
     public fun transfer<T: key + store>(obj: Auction<T>, recipient: address) {
         transfer::transfer(obj, recipient)
     }
-
+    #[allow(lint(share_owned))]
     public fun share_object<T: key + store>(obj: Auction<T>) {
         transfer::share_object(obj)
     }
