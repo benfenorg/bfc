@@ -1025,19 +1025,6 @@ pub enum TransactionData {
 }
 
 impl TransactionData {
-    pub fn is_change_bfc_round_tx(&self) -> bool {
-        match self {
-            Self::V1(txn_data) => {
-                match txn_data.kind {
-                    TransactionKind::ChangeBfcRound(_) => true,
-                    _ => {
-                        false
-                    },
-                }
-            }
-        }
-    }
-
     pub fn is_system_txn(&self) -> bool {
         match self {
             Self::V1(txn_data) => {
