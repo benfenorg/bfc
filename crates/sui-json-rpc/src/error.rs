@@ -502,7 +502,7 @@ mod tests {
             let rpc_error: RpcError = Error::QuorumDriverError(quorum_driver_error).into();
 
             let error_object: ErrorObjectOwned = rpc_error.into();
-            let expected_code = expect!["-32001"];
+            let expected_code = expect!["-32050"];
             expected_code.assert_eq(&error_object.code().to_string());
             let expected_message = expect!["Transaction is not processed because 10 of validators by stake are overloaded with certificates pending execution."];
             expected_message.assert_eq(error_object.message());
