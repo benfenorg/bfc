@@ -5,7 +5,7 @@ A: object(0,0)
 
 task 1 'publish'. lines 8-13:
 Error: error[E01002]: unexpected token
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpwvxaGH:12:16
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmpMNraXY:12:16
    │
 12 │     public fun mut<T: key>(_: &mut T, _: T) { abort 0 }
    │                ^^^

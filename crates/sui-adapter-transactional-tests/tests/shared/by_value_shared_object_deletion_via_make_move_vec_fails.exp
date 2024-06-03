@@ -2,31 +2,31 @@ processed 22 tasks
 
 task 1 'publish'. lines 6-97:
 Error: error[E03002]: unbound module
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmp5zSv85:10:9
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmpI119Il:10:9
    │
 10 │     use sui::sui::SUI;
    │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
 
 error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmp5zSv85:16:50
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmpI119Il:16:50
    │
 16 │         transfer::public_share_object(coin::zero<BFC>(ctx))
    │                                                  ^^^ Unbound type 'BFC' in current scope
 
 error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmp5zSv85:18:45
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmpI119Il:18:45
    │
 18 │     public fun pop_coin(mut o2: vector<Coin<BFC>>): Coin<BFC> {
    │                                             ^^^ Unbound type 'BFC' in current scope
 
 error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmp5zSv85:18:58
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmpI119Il:18:58
    │
 18 │     public fun pop_coin(mut o2: vector<Coin<BFC>>): Coin<BFC> {
    │                                                          ^^^ Unbound type 'BFC' in current scope
 
 error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmp5zSv85:76:36
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmpI119Il:76:36
    │
 76 │     public fun share_coin(o2: Coin<BFC>) {
    │                                    ^^^ Unbound type 'BFC' in current scope

@@ -2654,10 +2654,8 @@ Calculate the total active validator stake.
     <b>let</b> length = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(validators);
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; length) {
-        <b>let</b> v = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(validators, i);
-        stake = stake + <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(v, stable_rate);
         <b>let</b> v = &validators[i];
-        stake = stake + v.total_stake_amount();
+        stake = stake + v.total_stake_with_all_stable(stable_rate);
         i = i + 1;
     };
     stake
