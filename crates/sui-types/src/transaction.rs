@@ -55,15 +55,14 @@ use tracing::trace;
 use crate::gas::GasCostSummaryAdjusted;
 use crate::stable_coin::stable::checked::STABLE;
 
-// TODO: The following constants appear to be very large.
-// We should revisit them.
-pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 200_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 10_000_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_PUBLISH: u64 = 25_000_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_STAKING: u64 = 10_000_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_GENERIC: u64 = 5_000_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_VALIDATOR: u64 = 25_000_000;
-pub const TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN: u64 = 1_000_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 10_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 50_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_PUBLISH: u64 = 70_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_STAKING: u64 = 50_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_GENERIC: u64 = 50_000;
+pub const TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN: u64 = 10_000;
+//pub const TEST_ONLY_GAS_UNIT_FOR_VALIDATOR: u64 = 25_000_000;
+
 
 // For some transactions we may either perform heavy operations or touch
 // objects that are storage expensive. That may happen (and often is the case)
