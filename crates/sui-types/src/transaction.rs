@@ -1029,15 +1029,14 @@ impl TransactionData {
         match self {
             Self::V1(txn_data) => {
                 match txn_data.kind {
-                    TransactionKind::Genesis(_) | TransactionKind::ChangeEpoch(_) | TransactionKind::ConsensusCommitPrologue(_)  => true,
+                    TransactionKind::Genesis(_) | TransactionKind::ChangeEpoch(_) | TransactionKind::ConsensusCommitPrologue(_) => true,
                     _ => {
                         false
-                    },
+                    }
                 }
             }
         }
     }
-
 }
 
 impl VersionedProtocolMessage for TransactionData {
