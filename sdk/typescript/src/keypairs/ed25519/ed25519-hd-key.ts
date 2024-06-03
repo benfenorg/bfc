@@ -7,7 +7,7 @@
 import { sha512 } from '@noble/hashes/sha512';
 import { hmac } from '@noble/hashes/hmac';
 import nacl from 'tweetnacl';
-import { fromHEX } from '../../bcs/src';
+import { fromHEX } from '../../bcs/src/index.js';
 
 type Hex = string;
 type Path = string;
