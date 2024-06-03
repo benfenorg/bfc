@@ -580,10 +580,11 @@ mod checked {
         obc_params: &ChangeObcRoundParams,
         params: &AdvanceEpochParams,
         rate_map: &VecMap<String, u64>,
+        is_safe_mode: bool,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // obc
-        construct_bfc_round_pt(obc_params, &mut builder)?;
+        construct_bfc_round_pt(obc_params, &mut builder,is_safe_mode)?;
 
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
@@ -686,29 +687,32 @@ mod checked {
     pub fn construct_bfc_round_pt(
         param: &ChangeObcRoundParams,
         builder: &mut ProgrammableTransactionBuilder,
+        is_safe_mode:bool,
     ) -> Result<(), ExecutionError> {
         let mut arguments = vec![];
 
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::CLOCK_IMM,
-            CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
-        ].into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
+        if is_safe_mode { // if safe mode skip judge dao vote result
+            let args = vec![
+                CallArg::BFC_SYSTEM_MUT,
+                CallArg::CLOCK_IMM,
+                CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
+            ].into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
 
-        arguments.append(&mut args.unwrap());
+            arguments.append(&mut args.unwrap());
 
-        info!("Call arguments to bfc round transaction: {:?}",param.epoch);
+            info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_ROUND_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+        }
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
 
@@ -788,6 +792,8 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
         let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
+
+        let is_safe_mode = temporary_store.is_safe_mode();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge = 0u64;
@@ -822,7 +828,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, &rate_map)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, &rate_map,is_safe_mode)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),

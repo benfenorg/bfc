@@ -18,14 +18,14 @@ use sui_types::execution::{ExecutionResults, LoadedChildObjectMetadata};
 use sui_types::execution_status::ExecutionStatus;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, DeleteKindWithOldVersion};
-use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
+use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams, get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
 use sui_types::type_resolver::LayoutResolver;
 use sui_types::{base_types::{
     ObjectDigest, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 }, error::{ExecutionError, SuiError, SuiResult}, event::Event, fp_bail, gas::GasCostSummary, object::Owner, object::{Data, Object}, storage::{
     BackingPackageStore, ChildObjectResolver, DeleteKind, ObjectChange, ParentSync, Storage,
     WriteKind,
-}, transaction::InputObjects};
+}, transaction::InputObjects, sui_system_state};
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
@@ -841,6 +841,21 @@ impl<'backing> TemporaryStore<'backing> {
 
     pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {
         get_bfc_system_state_wrapper(self.store.as_object_store()).expect("System state wrapper object must exist")
+    }
+
+    pub fn is_safe_mode(& self) -> bool {
+        let sui_system_state = get_sui_system_state(self.store.as_object_store()).expect("System state wrapper object must exist")
+        match sui_system_state {
+            SuiSystemState::V1(inner)=>{
+                inner.safe_mode()
+            },
+            SuiSystemState::V2(inner)=>{
+                inner.safe_mode()
+            }
+            _ => {
+                false
+            }
+        }
     }
 
 }
