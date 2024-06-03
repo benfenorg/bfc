@@ -1944,7 +1944,7 @@ async fn test_package_size_limit() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_payment_object_id = ObjectID::random();
     let gas_payment_object =
-        Object::with_id_owner_gas_for_testing(gas_payment_object_id, sender, u64::MAX);
+        Object::with_id_owner_gas_for_testing(gas_payment_object_id, sender, 50*1000_000_000);
     let gas_payment_object_ref = gas_payment_object.compute_object_reference();
     let mut package = Vec::new();
     let mut modules_size = 0;
@@ -1973,7 +1973,7 @@ async fn test_package_size_limit() {
         gas_payment_object_ref,
         package,
         vec![],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        10*1000_000_000,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data, &sender_key);
@@ -1984,6 +1984,7 @@ async fn test_package_size_limit() {
     let ExecutionStatus::Failure { error, command: _ } = signed_effects.status() else {
         panic!("expected transaction to fail")
     };
+    println!("the error is: {:?}", error);
     assert!(matches!(
         error,
         ExecutionFailureStatus::MovePackageTooBig { .. }
