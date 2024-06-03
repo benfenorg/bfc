@@ -8,6 +8,7 @@
 import { sha512 } from '@noble/hashes/sha512';
 import { hmac } from '@noble/hashes/hmac';
 import nacl from 'tweetnacl';
+<<<<<<< HEAD
 import { fromHEX } from '../../bcs/src';
 =======
 import { fromHEX } from '@mysten/bcs';
@@ -15,6 +16,9 @@ import { hmac } from '@noble/hashes/hmac';
 import { sha512 } from '@noble/hashes/sha512';
 import nacl from 'tweetnacl';
 >>>>>>> mainnet-v1.24.1
+=======
+import { fromHEX } from '../../bcs/src/index.js';
+>>>>>>> 101c2cf2bd (fix: update bcs/index.js and package.json)
 
 type Hex = string;
 type Path = string;

@@ -3,6 +3,7 @@
 	"name": "@benfen/bfc.js",
 	"author": "OpenBlock<developers@benfen.org>",
 	"description": "BenFen TypeScript API(Work in Progress)",
+<<<<<<< HEAD
 	"version": "0.1.5",
 =======
 	"name": "@mysten/sui.js",
@@ -11,6 +12,9 @@
 	"homepage": "https://sdk.mystenlabs.com",
 	"version": "0.52.0",
 >>>>>>> mainnet-v1.24.1
+=======
+	"version": "0.1.6",
+>>>>>>> 101c2cf2bd (fix: update bcs/index.js and package.json)
 	"license": "Apache-2.0",
 	"sideEffects": false,
 	"files": [
