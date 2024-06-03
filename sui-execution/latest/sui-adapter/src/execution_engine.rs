@@ -684,6 +684,37 @@ mod checked {
         Ok(builder.finish())
     }
 
+    pub fn construct_bfc_round_safe_mode_pt(
+        param: &ChangeObcRoundParams,
+        builder: &mut ProgrammableTransactionBuilder,
+    ) -> Result<(), ExecutionError> {
+        let storage_rebate_arg = builder
+            .input(CallArg::Pure(
+                bcs::to_bytes(&(
+                    param.storage_rebate + param.bfc_computation_charge - calculate_reward_rate(param.bfc_computation_charge,
+                                                                                                param.reward_rate))).unwrap(),
+            ))
+            .unwrap();
+        let storage_rebate = builder.programmable_move_call(
+            SUI_FRAMEWORK_PACKAGE_ID,
+            BALANCE_MODULE_NAME.to_owned(),
+            BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+            vec![GAS::type_tag()],
+            vec![storage_rebate_arg],
+        );
+
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+        builder.programmable_move_call(
+            BFC_SYSTEM_PACKAGE_ID,
+            BFC_SYSTEM_MODULE_NAME.to_owned(),
+            DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
+            vec![],
+            vec![system_obj, storage_rebate],
+        );
+
+        Ok(())
+    }
+
     pub fn construct_bfc_round_pt(
         param: &ChangeObcRoundParams,
         builder: &mut ProgrammableTransactionBuilder,
