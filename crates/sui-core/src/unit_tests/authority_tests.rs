@@ -1916,7 +1916,7 @@ async fn test_publish_non_existing_dependent_module() {
         gas_payment_object_ref,
         vec![dependent_module_bytes],
         vec![ObjectID::from(*genesis_module.address()), not_on_chain],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        10*1000_000_000,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data, &sender_key);
@@ -1924,8 +1924,10 @@ async fn test_publish_non_existing_dependent_module() {
     let response = authority
         .handle_transaction(&epoch_store, transaction)
         .await;
+
+    println!("the error is {:?}", response);
     assert!(std::string::ToString::to_string(&response.unwrap_err())
-        .contains("BFCObjectNotFound"));
+        .contains("DependentPackageNotFound"));
     // Check that gas was not charged.
     assert_eq!(
         authority
