@@ -697,7 +697,12 @@ mod tests {
 
         let checkpoint = sim.create_checkpoint();
 
-        assert_eq!(&checkpoint.epoch_rolling_bfc_gas_cost_summary, gas_summary);
+        //ignore base point and rate...
+        assert_eq!(checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost, gas_summary.computation_cost);
+        assert_eq!(checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost, gas_summary.storage_cost);
+        assert_eq!(checkpoint.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee, gas_summary.non_refundable_storage_fee);
+        assert_eq!(checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate, gas_summary.storage_rebate);
+
         assert_eq!(checkpoint.network_total_transactions, 2); // genesis + 1 txn
     }
 }

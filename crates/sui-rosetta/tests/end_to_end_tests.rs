@@ -434,7 +434,7 @@ async fn test_pay_sui() {
 #[tokio::test]
 async fn test_pay_sui_multiple_times() {
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(30000)
         .build()
         .await;
     let sender = test_cluster.get_address_0();
@@ -476,7 +476,7 @@ async fn test_pay_sui_multiple_times() {
             )
             .await
             .unwrap();
-        println!("Sui TX: {tx:?}");
+        println!("Bfc TX: {tx:?}");
         assert_eq!(
             &SuiExecutionStatus::Success,
             tx.effects.as_ref().unwrap().status()
