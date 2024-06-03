@@ -693,7 +693,7 @@ mod checked {
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
                 bcs::to_bytes(&(
-                    param.storage_rebate + param.bfc_computation_charge - calculate_reward_rate(param.bfc_computation_charge,
+                    param.storage_rebate + param.bfc_computation_charge - 2*calculate_reward_rate(param.bfc_computation_charge,
                                                                                                 param.reward_rate))).unwrap(),
             ))
             .unwrap();
