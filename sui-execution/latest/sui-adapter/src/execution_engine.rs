@@ -636,11 +636,12 @@ mod checked {
 
     pub fn construct_advance_epoch_safe_mode_pt(
         obc_params: &ChangeObcRoundParams,
-        params: &AdvanceEpochParams,
+        params: &mut AdvanceEpochParams,
         protocol_config: &ProtocolConfig,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // Step 1: Create storage and computation rewards.
+        params.computation_charge = params.computation_charge - obc_params.bfc_computation_charge  + calculate_reward_rate(obc_params.bfc_computation_charge, obc_params.reward_rate);
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
 
         // Step 2: Advance the epoch.
@@ -693,8 +694,7 @@ mod checked {
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
                 bcs::to_bytes(&(
-                    param.storage_rebate + param.bfc_computation_charge - 2*calculate_reward_rate(param.bfc_computation_charge,
-                                                                                                param.reward_rate))).unwrap(),
+                    param.storage_rebate + param.bfc_computation_charge)).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -849,7 +849,7 @@ mod checked {
             storage_rebate,
         };
 
-        let params = AdvanceEpochParams {
+        let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
             storage_charge: change_epoch.bfc_storage_charge + storage_charge,
@@ -890,7 +890,7 @@ mod checked {
                 temporary_store.advance_epoch_safe_mode(&params, protocol_config);
             } else {
                 let advance_epoch_safe_mode_pt =
-                    construct_advance_epoch_safe_mode_pt(&obc_params,&params, protocol_config)?;
+                    construct_advance_epoch_safe_mode_pt(&obc_params,&mut params, protocol_config)?;
                 programmable_transactions::execution::execute::<execution_mode::System>(
                     protocol_config,
                     metrics.clone(),
