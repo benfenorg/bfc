@@ -816,7 +816,6 @@ mod checked {
             storage_rebate,
         };
 
-        let computation_charge_safe = computation_charge + change_epoch.bfc_computation_charge;
         let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,

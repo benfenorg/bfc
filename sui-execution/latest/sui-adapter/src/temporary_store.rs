@@ -852,6 +852,7 @@ impl<'backing> TemporaryStore<'backing> {
             SuiSystemState::V2(inner)=>{
                 inner.safe_mode()
             }
+            _ => unreachable!()
         }
     }
 
