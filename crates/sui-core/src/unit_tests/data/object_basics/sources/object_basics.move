@@ -8,9 +8,6 @@ module examples::object_basics {
     use sui::random::Random;
     use sui::dynamic_object_field as ofield;
     use sui::event;
-    use sui::object::{Self, UID, ID};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer;
 
     public struct Object has key, store {
         id: UID,

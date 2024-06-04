@@ -83,7 +83,7 @@ mod sim_only_tests {
     };
     use sui_types::{
         digests::TransactionDigest, object::Object,
-        programmable_transaction_builder::ProgrammableTransactionBuilder, storage::ObjectStore,
+        programmable_transaction_builder::ProgrammableTransactionBuilder,
         transaction::TransactionKind, MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID,
         base_types::{SequenceNumber, SuiAddress},
