@@ -14,6 +14,7 @@ module bfc_system::bfc_system_tests {
     use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
     use sui::vec_map::{Self};
+    use bfc_system::treasury::ERR_INSUFFICIENT;
 
     use bfc_system::busd;
     use bfc_system::bjpy;
@@ -259,8 +260,6 @@ module bfc_system::bfc_system_tests {
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
-
-    const ERR_INSUFFICIENT: u64 = 103;
 
     #[test]
     #[expected_failure(abort_code = ERR_INSUFFICIENT)]

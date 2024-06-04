@@ -5,8 +5,8 @@ module locked_stake::locked_stake {
     use sui::coin;
     use sui::balance::{Self, Balance};
     use sui::vec_map::{Self, VecMap};
-    use sui::sui::SUI;
-    use sui_system::staking_pool::StakedSui;
+    use sui::bfc::BFC;
+    use sui_system::staking_pool::StakedBfc;
     use sui_system::sui_system::{Self, SuiSystemState};
     use locked_stake::epoch_time_lock::{Self, EpochTimeLock};
 
@@ -17,7 +17,7 @@ module locked_stake::locked_stake {
     /// staking and unstaking operations when locked.
     public struct LockedStake has key {
         id: UID,
-        staked_sui: VecMap<ID, StakedSui>,
+        staked_sui: VecMap<ID, StakedBfc>,
         sui: Balance<BFC>,
         locked_until_epoch: EpochTimeLock,
     }
@@ -37,7 +37,7 @@ module locked_stake::locked_stake {
 
     /// Unlocks and returns all the assets stored inside this LockedStake object.
     /// Aborts if the unlock epoch is in the future.
-    public fun unlock(ls: LockedStake, ctx: &TxContext): (VecMap<ID, StakedSui>, Balance<BFC>) {
+    public fun unlock(ls: LockedStake, ctx: &TxContext): (VecMap<ID, StakedBfc>, Balance<BFC>) {
         let LockedStake { id, staked_sui, sui, locked_until_epoch } = ls;
         epoch_time_lock::destroy(locked_until_epoch, ctx);
         object::delete(id);
@@ -45,7 +45,7 @@ module locked_stake::locked_stake {
     }
 
     /// Deposit a new stake object to the LockedStake object.
-    public fun deposit_staked_sui(ls: &mut LockedStake, staked_sui: StakedSui) {
+    public fun deposit_staked_sui(ls: &mut LockedStake, staked_sui: StakedBfc) {
         let id = object::id(&staked_sui);
         // This insertion can't abort since each object has a unique id.
         vec_map::insert(&mut ls.staked_sui, id, staked_sui);
@@ -95,7 +95,7 @@ module locked_stake::locked_stake {
 
     // ============================= getters =============================
 
-    public fun staked_sui(ls: &LockedStake): &VecMap<ID, StakedSui> {
+    public fun staked_sui(ls: &LockedStake): &VecMap<ID, StakedBfc> {
         &ls.staked_sui
     }
 

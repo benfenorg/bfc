@@ -8,7 +8,7 @@ module hero::example {
     use sui::coin::{Self, Coin};
     use sui::event;
     use sui::math;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     /// Our hero!
     public struct Hero has key, store {
