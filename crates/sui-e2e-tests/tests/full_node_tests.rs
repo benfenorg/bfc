@@ -1316,7 +1316,7 @@ async fn sim_test_pass_back_no_object() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_access_old_object_pruned() {
+async fn sim_test_access_old_object_pruned() {
     // This test checks that when we ask a validator to handle a transaction that uses
     // an old object that's already been pruned, it's able to return an non-retriable
     // error ObjectVersionUnavailableForConsumption, instead of the retriable error

@@ -92,7 +92,7 @@ async fn sim_advance_epoch_tx_test() {
 }
 
 #[sim_test]
-async fn basic_reconfig_end_to_end_test() {
+async fn sim_basic_reconfig_end_to_end_test() {
     // TODO remove this sleep when this test passes consistently
     sleep(Duration::from_secs(1)).await;
     let test_cluster = TestClusterBuilder::new().build().await;
@@ -1942,7 +1942,7 @@ async fn test_create_advance_epoch_tx_race() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_failing_validator() {
+async fn sim_test_reconfig_with_failing_validator() {
     sui_protocol_config::ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = Arc::new(
@@ -2105,7 +2105,7 @@ async fn sim_test_inactive_validator_pool_read() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_committee_change_basic() {
+async fn sim_test_reconfig_with_committee_change_basic() {
     // This test exercise the full flow of a validator joining the network, catch up and then leave.
 
     let new_validator = ValidatorGenesisConfigBuilder::new().build(&mut OsRng);
