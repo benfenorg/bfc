@@ -2619,11 +2619,9 @@ Process all active validators' pending stake deposits and withdraws.
     <b>let</b> length = validators.length();
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; length) {
-        <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="../move-stdlib/vector.md#0x1_vector_borrow_mut">vector::borrow_mut</a>(validators, i);
-        <a href="validator.md#0x3_validator_process_pending_stakes_and_withdraws">validator::process_pending_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
-        <a href="validator.md#0x3_validator_process_pending_all_stable_stakes_and_withdraws">validator::process_pending_all_stable_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = &<b>mut</b> validators[i];
         <a href="validator.md#0x3_validator">validator</a>.<a href="validator_set.md#0x3_validator_set_process_pending_stakes_and_withdraws">process_pending_stakes_and_withdraws</a>(ctx);
+        <a href="validator.md#0x3_validator">validator</a>.process_pending_all_stable_stakes_and_withdraws(ctx);
         i = i + 1;
     }
 }
