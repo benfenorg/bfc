@@ -853,7 +853,11 @@ mod checked {
             temporary_store.drop_writes();
             // Must reset the storage rebate since we are re-executing.
             gas_charger.reset_storage_cost_and_rebate();
-            params.computation_charge = computation_charge_safe;
+            params.storage_charge = change_epoch.bfc_storage_charge ;
+            params.computation_charge = change_epoch.bfc_computation_charge ;
+            params.storage_rebate = change_epoch.bfc_storage_rebate ;
+            params.non_refundable_storage_fee= change_epoch.bfc_non_refundable_storage_fee ;
+
 
             if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
                 temporary_store.advance_epoch_safe_mode(&params, protocol_config);
