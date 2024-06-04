@@ -1098,11 +1098,9 @@ module sui_system::validator_set {
         let length = validators.length();
         let mut i = 0;
         while (i < length) {
-            let validator = vector::borrow_mut(validators, i);
-            validator::process_pending_stakes_and_withdraws(validator, ctx);
-            validator::process_pending_all_stable_stakes_and_withdraws(validator, ctx);
             let validator = &mut validators[i];
             validator.process_pending_stakes_and_withdraws(ctx);
+            validator.process_pending_all_stable_stakes_and_withdraws(ctx);
             i = i + 1;
         }
     }
