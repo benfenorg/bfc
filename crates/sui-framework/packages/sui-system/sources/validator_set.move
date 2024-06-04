@@ -1001,7 +1001,7 @@ module sui_system::validator_set {
         );
 
         // Deactivate the validator and its staking pool
-        validator::deactivate(&mut validator, new_epoch);
+        validator.deactivate(new_epoch);
         validator::deactivate_stable<BUSD>(&mut validator, new_epoch);
         validator::deactivate_stable<BJPY>(&mut validator, new_epoch);
         validator::deactivate_stable<BARS>(&mut validator, new_epoch);
@@ -1019,8 +1019,6 @@ module sui_system::validator_set {
         validator::deactivate_stable<BTRY>(&mut validator, new_epoch);
         validator::deactivate_stable<BZAR>(&mut validator, new_epoch);
         validator::deactivate_stable<MGG>(&mut validator, new_epoch);
-
-        validator.deactivate(new_epoch);
         self.inactive_validators.add(
             validator_pool_id,
             validator_wrapper::create_v1(validator, ctx),
