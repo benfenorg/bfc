@@ -2239,7 +2239,7 @@ async fn test_missing_package() {
         vec![],
         gas_object_ref,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        10*1000_000_000,
         rgp,
     )
     .unwrap();
@@ -2248,9 +2248,10 @@ async fn test_missing_package() {
     let result = authority_state
         .handle_transaction(&epoch_store, transaction)
         .await;
+    println!("the error is {:?}", result);
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::BFCObjectNotFound { .. }
+        UserInputError::DependentPackageNotFound { .. }
     ));
 }
 
@@ -2349,9 +2350,10 @@ async fn test_type_argument_dependencies() {
         .handle_transaction(&epoch_store, transaction)
         .await;
 
+    println!("the error is {:?}", result);
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::BFCObjectNotFound { .. }
+        UserInputError::DependentPackageNotFound { .. }
     ));
 }
 
