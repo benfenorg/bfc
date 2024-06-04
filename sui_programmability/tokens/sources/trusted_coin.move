@@ -1,9 +1,7 @@
 /// Example coin with a trusted owner responsible for minting/burning (e.g., a stablecoin)
 module tokens::peace {
-    use std::option;
     use sui::coin::{Self, TreasuryCap};
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
+
 
     /// This type is intended to be used only once.
     public struct PEACE has drop {}

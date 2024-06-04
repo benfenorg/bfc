@@ -477,6 +477,7 @@ module bfc_system::bfc_dao {
         }
     }
 
+    #[allow(lint(self_transfer))]
     /// votes for a proposal.
     /// User can only vote once, then the vote is locked,
     /// which can only be un vote by user after the proposal is expired, or cancelled, or executed.
@@ -601,7 +602,7 @@ module bfc_system::bfc_dao {
         };
         total_voted
     }
-
+    #[allow(lint(custom_state_change,self_transfer))]
     /// Revoke some voting powers from vote on `proposal_id` of `proposer_address`.
     public(package) fun revoke_vote(
         dao:  &mut Dao,
@@ -662,7 +663,7 @@ module bfc_system::bfc_dao {
         //reverted_vote
     }
 
-
+    #[allow(lint(self_transfer))]
     fun do_revoke_vote(
         proposal: &mut Proposal,
         vote: &mut Vote,
@@ -690,6 +691,7 @@ module bfc_system::bfc_dao {
         transfer::public_transfer(reverted_vote, tx_context::sender(ctx));
     }
 
+    #[allow(lint(self_transfer))]
     /// Retrieve back my voted token voted for a proposal.
     public(package) fun unvote_votes(
         proposal: & Proposal,
@@ -1125,7 +1127,7 @@ module bfc_system::bfc_dao {
         synchronize_proposal_into_dao(proposal_obj, dao);
     }
 
-
+    #[allow(lint(self_transfer))]
     public(package) fun create_voting_bfc(dao: &mut Dao,
                                        coin: Coin<BFC>,
                                         clock: & Clock,
@@ -1137,7 +1139,7 @@ module bfc_system::bfc_dao {
 
         transfer::public_transfer(voting_bfc, sender);
     }
-
+    #[allow(lint(self_transfer))]
     public(package) fun withdraw_voting(  dao: &mut Dao,
                                        voting_bfc: VotingBfc,
                                         clock: & Clock,

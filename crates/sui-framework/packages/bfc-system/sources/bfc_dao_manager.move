@@ -60,7 +60,7 @@ module bfc_system::bfc_dao_manager {
         transfer::transfer(managerBfc, sender);
 
     }
-
+    #[allow(lint(self_transfer))]
     public (package) fun unstake_key(key:BFCDaoManageKey, token: ManagerKeyBfc, ctx: &mut TxContext){
 
         assert!(key.key_type == STAKE_KEY, ERROR_KEY_TYPE);

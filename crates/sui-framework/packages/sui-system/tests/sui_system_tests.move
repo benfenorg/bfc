@@ -13,7 +13,7 @@ module sui_system::sui_system_tests {
     use sui_system::sui_system::{Self, SuiSystemState};
     use sui_system::sui_system_state_inner;
     use sui_system::validator::{Self, Validator};
-    use sui_system::validator_set;
+    use sui_system::validator_set::{Self,EInvalidCap};
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui::vec_set;
     use sui::table;
@@ -125,10 +125,6 @@ module sui_system::sui_system_tests {
 
         test_scenario::end(scenario_val);
     }
-
-    /// Capability code is not valid
-    const EInvalidCap: u64 = 101;
-
     #[test]
     #[expected_failure(abort_code = EInvalidCap)]
     fun test_report_validator_by_stakee_revoked() {
