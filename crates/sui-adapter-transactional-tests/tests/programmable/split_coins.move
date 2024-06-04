@@ -16,7 +16,7 @@ module test::m1 {
         100
     }
 
-    public fun transfer(v: vector<coin::Coin<sui::bfc::BFC>>, r: address) {
+    public fun transfer(mut v: vector<coin::Coin<sui::bfc::BFC>>, r: address) {
         while (!vector::is_empty(&v)) {
             let c = vector::pop_back(&mut v);
             transfer::public_transfer(c, r);
