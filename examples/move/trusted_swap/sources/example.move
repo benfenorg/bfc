@@ -7,7 +7,7 @@
 module trusted_swap::example {
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     public struct Object has key, store {
         id: UID,

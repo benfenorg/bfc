@@ -1,12 +1,11 @@
 ---
 source: crates/sui-protocol-config/src/lib.rs
-assertion_line: 1572
+assertion_line: 2403
 expression: "ProtocolConfig::get_for_version(cur, *chain_id)"
 ---
-version: 16
+version: 11
 feature_flags:
   package_upgrades: true
-  commit_root_state_digest: true
   advance_epoch_start_time_in_safe_mode: true
   loaded_child_objects_fixed: true
   missing_type_is_compatibility_error: true
@@ -19,10 +18,6 @@ feature_flags:
   package_digest_hash_module: true
   disallow_change_struct_type_params_on_upgrade: true
   no_extraneous_module_bytes: true
-  narwhal_versioned_metadata: true
-  zklogin_auth: true
-  consensus_transaction_ordering: ByGasPrice
-  simplified_unwrap_then_delete: true
 max_tx_size_bytes: 131072
 max_input_objects: 2048
 max_size_written_objects: 5000000
@@ -42,7 +37,6 @@ max_move_package_size: 102400
 max_tx_gas: 50000000000
 max_gas_price: 10000
 max_gas_computation_bucket: 500000
-gas_rounding_step: 1000
 max_loop_depth: 5
 max_generic_instantiation_length: 32
 max_function_parameters: 128
@@ -67,8 +61,8 @@ max_move_identifier_len: 128
 max_move_value_depth: 128
 max_back_edges_per_function: 10000
 max_back_edges_per_module: 10000
-max_verifier_meter_ticks_per_function: 16000000
-max_meter_ticks_per_module: 16000000
+max_verifier_meter_ticks_per_function: 17000000
+max_meter_ticks_per_module: 17000000
 object_runtime_max_num_cached_objects: 1000
 object_runtime_max_num_cached_objects_system_tx: 16000
 object_runtime_max_num_store_entries: 1000
@@ -81,7 +75,7 @@ obj_access_cost_read_per_byte: 5
 obj_access_cost_mutate_per_byte: 40
 obj_access_cost_delete_per_byte: 40
 obj_access_cost_verify_per_byte: 200
-gas_model_version: 6
+gas_model_version: 5
 obj_data_cost_refundable: 10
 obj_metadata_cost_non_refundable: 50
 storage_rebate_rate: 9900

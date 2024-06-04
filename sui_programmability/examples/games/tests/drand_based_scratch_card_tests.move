@@ -5,7 +5,6 @@
 module games::drand_based_scratch_card_tests {
     use sui::coin::{Self, Coin};
     use sui::bfc::BFC;
-    use std::debug;
     use sui::test_scenario::{Self, Scenario};
 
     use games::drand_based_scratch_card;

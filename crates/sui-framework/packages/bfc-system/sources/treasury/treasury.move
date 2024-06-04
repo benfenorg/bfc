@@ -318,7 +318,7 @@ module bfc_system::treasury {
         let sc_vault = borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>());
         vault::calculate_swap_result(sc_vault, _a2b, true, _amount)
     }
-
+    #[allow(lint(self_transfer))]
     fun transfer_or_delete<CoinType>(
         _balance: Balance<CoinType>,
         _ctx: &mut TxContext
